@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>See the pricing engines a party holds prototype — Reporting prototypes</title>
+<title>See the pricing engine configurations a party holds prototype — Reporting prototypes</title>
 <style>
 :root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
 *{box-sizing:border-box}[hidden]{display:none!important}
@@ -151,12 +151,17 @@ label.plain{white-space:nowrap}
 <!--
   PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
 
-  The pricing engines list and one configuration's page, drawn only as the Record
-  screen standard (doc/knowledge/ui/record_screen_standard.org) draws a record
-  screen: breadcrumb, plural title, one sentence, Refresh and Add, search, two
+  The pricing engine configurations list and one configuration's page, drawn only as
+  the Record screen standard (doc/knowledge/ui/record_screen_standard.org) draws a
+  record screen: breadcrumb, plural title, one sentence, Refresh and Add, search, two
   filters, the table, the pager and the four states; then the record page with the
   lead line, the access mark, Edit and Delete only for a person who may, and the
   tabs Details, Products, Parameters, Reports and History with Revert.
+
+  This page is one of two engine-facing configurations. It chooses the model and the
+  engine for each product type. How the engine runs is the engine run settings, drawn
+  by ../see-the-engine-settings-a-party-holds/. The Details tab says which is which
+  and lists the related configurations the same report binds.
   Add, Edit and the file import are the other three prototypes of this journey group.
 
   Addresses: ?screen=list | record&id=c1|c2|c3&tab=details|products|parameters|reports|history
@@ -464,17 +469,17 @@ function visible() {
   return rows.sort((x, y) => (val(x) > val(y) ? 1 : val(x) < val(y) ? -1 : 0) * sortDir);
 }
 function listScreen() {
-  const head = `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engines']])}
-  <div class="titlebar"><div><h1>Pricing engines</h1><div class="sub">The configurations that decide which model and engine price each product. A party holds few official ones, one for each cycle.</div></div>
-    <div class="actions">${btn('Refresh', 'refresh', '', 'id="refresh"')}${may('add') ? `<details class="menu"><summary class="btn">Workflows ▾</summary><div class="items"><a href="${OTHER.imp}">Bring in a pricing engines file</a><a href="${OTHER.sign}">Sign off a change</a></div></details><a class="btn primary" href="${OTHER.add}">${G.add} Add</a>` : ''}</div></div>`;
+  const head = `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations']])}
+  <div class="titlebar"><div><h1>Pricing engine configurations</h1><div class="sub">The configurations that choose the model and the engine for each product type, and how they are set. A party holds few official ones, one for each cycle.</div></div>
+    <div class="actions">${btn('Refresh', 'refresh', '', 'id="refresh"')}${may('add') ? `<details class="menu"><summary class="btn">Workflows ▾</summary><div class="items"><a href="${OTHER.imp}">Bring in a pricing engine configuration file</a><a href="${OTHER.sign}">Sign off a change</a></div></details><a class="btn primary" href="${OTHER.add}">${G.add} Add</a>` : ''}</div></div>`;
   if (state === 'loading') return head + '<div class="card"><div class="body"><div class="muted">Loading…</div></div></div>';
-  if (state === 'error') return head + '<div class="badbox">The pricing engines could not be read. The server could not be reached. <button class="btn" id="retry">Retry</button></div>';
+  if (state === 'error') return head + '<div class="badbox">The pricing engine configurations could not be read. The server could not be reached. <button class="btn" id="retry">Retry</button></div>';
   const list = state === 'empty' ? [] : visible();
   const th = (k, l) => `<th class="sort" data-sort="${k}">${l}${sortKey === k ? (sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
   const tr = c => `<tr class="rec" tabindex="0" data-open="${c.id}"><td><a data-nav class="link" href="${href({ screen: 'record', id: c.id })}">${esc(c.name)}</a>${c.proposal ? ' ' + tag('1 proposal', 'warn') : ''}</td><td>${statusTag(c.status)}</td><td>${officialTag(c)}</td><td>${c.variant ? tag(esc(c.variant), 'cls') : dash}</td><td class="num">${c.products.length}</td><td class="num">${c.reports.length ? c.reports.length : '<span class="faint">0</span>'}</td><td title="${exact(c.changed)}">${rel(c.changed)}</td></tr>`;
   let body;
-  if (state === 'empty') body = `<div class="card"><div class="body"><div class="muted">There are no pricing engines yet.${may('add') ? ` <a class="btn primary" href="${OTHER.add}">${G.add} Add</a>` : ''}</div></div></div>`;
-  else if (!list.length) body = '<div class="notice">No pricing engines match the search. <button class="btn" id="clear">Clear</button></div>';
+  if (state === 'empty') body = `<div class="card"><div class="body"><div class="muted">There are no pricing engine configurations yet.${may('add') ? ` <a class="btn primary" href="${OTHER.add}">${G.add} Add</a>` : ''}</div></div></div>`;
+  else if (!list.length) body = '<div class="notice">No pricing engine configurations match the search. <button class="btn" id="clear">Clear</button></div>';
   else body = `<table><thead><tr>${th('name', 'Name')}${th('status', 'Status')}${th('cycle', 'Official for')}${th('variant', 'Variant')}${th('products', 'Products')}${th('reports', 'Reports')}${th('changed', 'Last changed')}</tr></thead><tbody>${list.map(tr).join('')}</tbody></table>`;
   const variants = [...new Set(CONFIGS.map(c => c.variant || 'none'))];
   return head + `<div class="notice"><b>Official, approved, draft.</b> An official configuration is the approved one an official report runs with, one for each cycle. An approved version never changes in place: a change is a proposal, and it needs sign-off. A draft is a place to try a change, and no official report can bind it. The status, the cycle and the counts are fixtures: no operation returns them for a list row.</div>
@@ -495,15 +500,31 @@ function paramsTab(c) {
   return `<div class="muted">Every setting the document carries, with the scope it applies to. The same name can sit in two scopes, so the scope is a column.</div><div class="card"><table><thead><tr><th>Scope</th><th>Applies to</th><th>Name</th><th>Value</th></tr></thead><tbody>${g.concat(p).join('') || '<tr><td colspan="4" class="muted">None yet.</td></tr>'}</tbody></table></div>`;
 }
 function detailsTab(c) {
-  return `<div class="card"><div class="body">${kv('Name', esc(c.name))}${kv('Status', statusTag(c.status))}${kv('Official for', officialTag(c))}${kv('Version in force', c.status === 'approved' ? 'Version ' + c.ver : dash)}${kv('Signed off by', c.status === 'approved' ? esc(signedBy(c.versions[c.versions.length - 1])) : dash)}${kv('Variant', c.variant ? esc(c.variant) : dash)}${kv('Products', c.products.length)}${kv('Bound by', c.reports.length + ' reports')}${kv('Description', esc(c.desc), true)}${kv('Reporting row', `<span class="mono">${esc(c.cfgRow)}</span> of type <span class="mono">pricing_engines</span>`, true)}</div>${lastChanged(c)}</div>`;
+  return `<div class="card"><div class="body">${kv('Name', esc(c.name))}${kv('Status', statusTag(c.status))}${kv('Official for', officialTag(c))}${kv('Version in force', c.status === 'approved' ? 'Version ' + c.ver : dash)}${kv('Signed off by', c.status === 'approved' ? esc(signedBy(c.versions[c.versions.length - 1])) : dash)}${kv('Variant', c.variant ? esc(c.variant) : dash)}${kv('Products', c.products.length)}${kv('Bound by', c.reports.length + ' reports')}${kv('Description', esc(c.desc), true)}${kv('Reporting row', `<span class="mono">${esc(c.cfgRow)}</span> of type <span class="mono">pricing_engines</span>`, true)}</div>${lastChanged(c)}</div>${whatThisIs()}${relatedCard(c)}`;
+}
+
+/** The one sentence that separates this configuration from the engine run settings. */
+function whatThisIs() {
+  return `<div class="notice"><b>What this configuration decides.</b> It chooses the model and the engine for each product type, and their parameters. It does not decide how the engine runs. That is the <a href="../see-the-engine-settings-a-party-holds/">engine run settings</a>, a configuration of its own that the same report binds.</div>`;
+}
+
+/** The other configurations the reports that bind this one also bind. */
+function relatedCard(c) {
+  const rows = [
+    ['Engine run settings', 'HK standard EOD', 'how the engine prepares its inputs and runs the job', '../see-the-engine-settings-a-party-holds/'],
+    ['Today\'s market', 'ACME HK market', 'how the curves and surfaces are built', null],
+    ['Curve configuration', 'HK curves', 'how each curve is defined and bootstrapped', null],
+    ['Conventions', 'HK conventions', 'the market terms a trade is read on', null],
+  ].map(([kind, name, what, href]) => `<tr><td>${esc(kind)}</td><td>${esc(name)}</td><td>${esc(what)}</td><td>${href ? `<a class="btn small" href="${href}">Open</a>` : '<span class="muted">No screen yet</span>'}</td></tr>`).join('');
+  return `<div class="card"><div class="body"><b>Related configurations</b><div class="muted">The other configurations that the reports binding this one bind as well.</div><table><thead><tr><th>Configuration</th><th>This report binds</th><th>What it decides</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 function recordScreen(c) {
   const r = route();
-  if (!c) return crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engines', LIST()], ['Not found']]) + '<div class="notice">This pricing engine does not exist.</div>';
+  if (!c) return crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations', LIST()], ['Not found']]) + '<div class="notice">This pricing engine configuration does not exist.</div>';
   const tabHref = t => href({ screen: 'record', id: c.id, tab: t });
   const tabs = [['details', 'Details'], ['products', 'Products'], ['parameters', 'Parameters'], ['reports', 'Reports'], ['history', 'History']];
   const body = { details: detailsTab, products: productsTab, parameters: paramsTab, reports: reportsTab, history: historyTab }[r.tab](c);
-  return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engines', LIST()], [esc(c.name)]])}
+  return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations', LIST()], [esc(c.name)]])}
   <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">${statusTag(c.status)} ${officialTag(c) === dash ? '' : officialTag(c)} version ${c.ver}${c.variant ? ' · ' + esc(c.variant) : ''}</div></div>
     <div class="actions"><span class="access">${may('edit') ? '✎ Editable' : '🔒 Read only'}</span>${may('edit') ? `<a class="btn" href="${OTHER.change}?config=${c.id}&status=${c.status}">${G.edit} ${c.status === 'approved' ? 'Propose a change' : 'Edit'}</a>` : ''}${may('delete') && c.status !== 'approved' ? btn('Delete', 'delete', 'danger', 'data-delete') : ''}</div></div>
   ${pendingBanner(c)}${c.status === 'approved' ? '<div class="notice">This version is in force and cannot change in place. A change is proposed, approved by the approval parts model risk names, and then becomes the next version.</div>' : ''}
@@ -511,7 +532,7 @@ function recordScreen(c) {
 }
 function deleteDialog(c) {
   const blocked = c.reports.length > 0;
-  dialog('Delete ' + c.name + '?', blocked ? `<div class="badbox">${c.reports.length} reports bind this configuration: ${c.reports.map(esc).join(', ')}. Their next run would have no pricing engines. Rebind them first.</div><div class="faint">No service refuses this delete today. The screen refuses it because the server would not.</div>` : `<div>The configuration, its products and its parameters are deleted. Its history stays.</div>${reasonField(false).replace(/<option[^>]*>Non-material update<\/option>/, '')}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn danger" id="d-save" ${blocked ? 'disabled data-block="1"' : ''}>Delete</button>`);
+  dialog('Delete ' + c.name + '?', blocked ? `<div class="badbox">${c.reports.length} reports bind this configuration: ${c.reports.map(esc).join(', ')}. Their next run would have no pricing engine configuration. Rebind them first.</div><div class="faint">No service refuses this delete today. The screen refuses it because the server would not.</div>` : `<div>The configuration, its products and its parameters are deleted. Its history stays.</div>${reasonField(false).replace(/<option[^>]*>Non-material update<\/option>/, '')}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn danger" id="d-save" ${blocked ? 'disabled data-block="1"' : ''}>Delete</button>`);
   if (!blocked) ready('d-save');
   document.getElementById('d-save').onclick = () => { CONFIGS.splice(CONFIGS.indexOf(c), 1); closeDlg(); nav({ screen: 'list' }); };
 }
@@ -532,7 +553,7 @@ function wire() {
 function render() {
   const r = route();
   document.getElementById('app').innerHTML = r.screen === 'record' ? recordScreen(byId(r.id)) : listScreen();
-  chrome('see the pricing engines a party holds · ' + r.screen + ' · ' + state + ' · acting as ' + actorName, [['state', ['all', 'empty', 'error', 'loading'], state], ['actor', ['viewer', 'analyst', 'admin'], actor]]);
+  chrome('see the pricing engine configurations a party holds · ' + r.screen + ' · ' + state + ' · acting as ' + actorName, [['state', ['all', 'empty', 'error', 'loading'], state], ['actor', ['viewer', 'analyst', 'admin'], actor]]);
   wire();
 }
 render();

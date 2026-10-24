@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: 9F374ABC-8D56-45DE-9A0F-8D811AD9B319
 :END:
-#+title: See the pricing engines a party holds prototype
-#+description: The pricing engines list and one configuration page, drawn only as the Record screen standard draws a record screen, with a status and an official cycle for each configuration, a coverage strip on the Products tab and the reach on the Reports tab.
+#+title: See the pricing engine configurations a party holds prototype
+#+description: The pricing engine configurations list and one configuration page, drawn only as the Record screen standard draws a record screen, with a status and an official cycle for each configuration, a coverage strip on the Products tab, the reach on the Reports tab, and the link to the engine run settings.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:reporting:
 #+created: 2026-10-19
-#+updated: 2026-10-20
+#+updated: 2026-10-24
 
 | Item          | Where                                             |
 |---------------+---------------------------------------------------|
@@ -17,13 +17,19 @@
 
 * Summary
 
-This prototype draws the list of pricing engine configurations and the page of one, and nothing else. It invents no layout. The list is the standard list: breadcrumb, plural title, one sentence, Refresh, Workflows and Add, a search, three filters, the table, the pager and the four states. The page is the standard record page: the lead line, the access mark, the actions only for a person who may take them, and the tabs Details, Products, Parameters, Reports and History with Revert.
+This prototype draws the list of pricing engine configurations and the page of one, and nothing else. It keeps its earlier file name; the screen it draws is *Pricing engine configurations*. It invents no layout. The list is the standard list: breadcrumb, plural title, one sentence, Refresh, Workflows and Add, a search, three filters, the table, the pager and the four states. The page is the standard record page: the lead line, the access mark, the actions only for a person who may take them, and the tabs Details, Products, Parameters, Reports and History with Revert.
 
 A party holds few official configurations, one for each cycle, and model risk signs them off. The prototype draws that. Each configuration has a status (approved, in review, draft or retired), and the one that is official for a cycle carries an *Official for* tag. An approved configuration offers *Propose a change* in place of *Edit*, and no *Delete*. A pending proposal shows as a banner and in the History tab. A draft edits and deletes as the standard says.
 
+The page carries one addition for clarity. The Details tab says what the configuration decides and
+lists the other configurations the reports binding this one also bind, with a link to the engine run
+settings. The two engine-facing configurations are named apart in every title, card and journey: this
+one chooses the model and the engine for each product type, and the engine run settings decide how the
+engine runs. See [[id:146461B4-C00E-4FA7-A01D-DEFBC862BC73][Investigation: the two engine-facing configurations]].
+
 The two other additions are the two things a market-risk owner asks that the standard does not answer. The Products tab opens with a *coverage strip*: how many of the product types the reports that bind the configuration need have a row, and which do not. The Reports tab opens with the rule and the reach: a report needs a price for every product type in its portfolio, a change reaches the next run of each report named once it is approved, and a run already produced keeps what it ran with. It lists each report with its cycle, its portfolio, and what the configuration leaves unpriced for it.
 
-The page answers to the journey [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]]. It is throwaway: it reads no service, writes nothing to one, and states which parts of the interaction no operation supports. It follows the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and the rules in [[file:../index.org][Prototypes]]: plain HTML, CSS and JavaScript, no framework, no build and no backend, with the design tokens of =projects/ores.web/packages/web/src/styles.css=.
+The page answers to the journey [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]]. It is throwaway: it reads no service, writes nothing to one, and states which parts of the interaction no operation supports. It follows the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and the rules in [[file:../index.org][Prototypes]]: plain HTML, CSS and JavaScript, no framework, no build and no backend, with the design tokens of =projects/ores.web/packages/web/src/styles.css=.
 
 * Detail
 
@@ -49,6 +55,7 @@ Every value. The product and report counts in the list are fixtures, because no 
 
 ** What it argues
 
+- The Details tab says what the configuration decides and lists the related configurations the same report binds, so the two engine-facing configurations are not confused.
 - The History tab draws the shared timeline as the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] draws it: an event chart split by kind, a rail grouped by day with the time in the left gutter, one header line for each entry, the note on its own line, a collapsed detail, the current-version emblem and the *Hide system activity* toggle. The prototype does not draw batches of entries that are one act, and the toggle is always on, because the fixture has no reader without the account permission.
 - The list is drawn as the record screen standard draws it, without a variation.
 - The coverage strip belongs on the Products tab, above the table, and states the products left unpriced by name.
@@ -69,6 +76,6 @@ None yet. This page is on the branch that proposes it and waits for review.
 * See also
 
 - [[file:index.org][Reporting prototypes]] — the group, and what each prototype argues.
-- [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]] — the journey this prototype answers.
+- [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engine configurations a party holds]] — the journey this prototype answers.
 - [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the shape of the list, the page and the dialogs.
 - [[file:../setup/first-run/][First run]] — the prototype the standard steps UI is copied from.

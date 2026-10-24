@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>See the engine settings a party holds prototype — Reporting prototypes</title>
+<title>See the engine run settings a party holds prototype — Reporting prototypes</title>
 <style>
 :root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
 *{box-sizing:border-box}[hidden]{display:none!important}
@@ -168,11 +168,11 @@ table.vals{font-size:.82rem;border:1px solid var(--line-soft);border-radius:6px}
 <!--
   PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
 
-  The engine settings list and one configuration's page, drawn as the Record screen
+  The engine run settings list and one configuration's page, drawn as the Record screen
   standard (doc/knowledge/ui/record_screen_standard.org) draws a record screen, and
   beside the pricing engines prototype: breadcrumb, plural title, one sentence, Refresh
   and Add, search, a filter, the table, the pager and the four states; then the record
-  page with the access mark and the tabs Details, the five groups, Used by and History.
+  page with the access mark and the tabs Details, the three sections, Used by and History.
 
   Each group has a tab of its own, and each group is one part table with its own version.
   A write to any group makes the next version of the whole, and History shows one
@@ -222,9 +222,9 @@ const GROUPS = [
     { key: 'lazy_market_building', ore: 'lazyMarketBuilding', label: 'Lazy market building', kind: 'bool', dv: 'Yes', help: 'Whether the market is built on demand.',
       desc: 'Decides when the engine builds the curves listed in today’s market. When it is Yes, a curve is built only when a trade or analytic asks for it, which saves time when the configuration lists curves that the portfolio never uses. When it is No, every curve in today’s market is built at the start.',
       dflt: 'Yes. Curves are built on demand.' },
-    { key: 'build_failed_trades', ore: 'buildFailedTrades', label: 'Build failed trades', kind: 'bool', dv: 'No', help: 'Whether a failed trade is replaced by a dummy.',
+    { key: 'build_failed_trades', ore: 'buildFailedTrades', label: 'Build failed trades', kind: 'bool', dv: 'Yes', help: 'Whether a failed trade is replaced by a dummy.',
       desc: 'Decides what happens to a trade that cannot be loaded or built. When it is Yes, the engine builds a dummy trade of type Failed, with zero notional and zero NPV, so the trade still appears in the portfolio. When it is No, the failed trade is left out. Yes keeps the trade count honest, but a reader must know that a Failed trade has no value.',
-      dflt: 'No. A failed trade is left out. The ORE application sets this default; the engine library itself defaults to Yes.' },
+      dflt: 'Yes. A failed trade is replaced by a dummy trade of type Failed, with zero notional and zero NPV. The ORE source sets this default; the user guide says No.' },
     { key: 'continue_on_error', ore: 'continueOnError', label: 'Continue on error', kind: 'bool', dv: 'Yes', help: 'Whether the run goes on after an error.',
       desc: 'Decides whether the engine stops at the first error or goes on. When it is Yes, the engine does not exit on an error but tries to continue the processing, so one bad curve or trade does not lose the whole run, and the reports may be incomplete. When it is No, the run exits at the error.',
       dflt: 'Yes. The run goes on after an error.' },
@@ -297,7 +297,7 @@ const seedParts = g => Object.keys(g).map(k => ({ group: k, gver: 1, before: nul
 
 const CONFIGS = [
   { id: 'e1', name: 'Standard engine settings', desc: 'The engine settings of every HK report that runs on one thread.', cfgRow: 'configuration 4c21e9b0',
-    groups: std(), reports: HK_STANDARD, versions: [] },
+    groups: std(), reports: HK_STANDARD, proposal: { group: 'fixings' }, versions: [] },
   { id: 'e2', name: 'Simulation engine settings', desc: 'The standard settings with four threads, for the two reports that simulate.', cfgRow: 'configuration 9d03a7f2',
     groups: (() => { const g = std(); g.execution.v = 2; g.execution.vals.n_threads = '4'; return g; })(), reports: HK_SIMULATION, versions: [] },
   { id: 'e3', name: 'Intraday engine settings', desc: 'A trial for the intraday monitor: the market is built on demand.', cfgRow: 'configuration b7e5106d',
@@ -426,28 +426,44 @@ function visible() {
 }
 
 function listScreen() {
-  const head = `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Engine settings']])}
-  <div class="titlebar"><div><h1>Engine settings</h1><div class="sub">The named settings the risk engine runs with. A report binds one, and several reports can share it.</div></div>
+  const head = `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Engine run settings']])}
+  <div class="titlebar"><div><h1>Engine run settings</h1><div class="sub">How the engine runs a report: the fixings and cash flows, the market and trade building, and the execution. A report binds one, and several reports can share it.</div></div>
     <div class="actions">${btn('Refresh', 'refresh', '', 'id="refresh"')}${may('add') ? `<button class="btn primary" id="add">${G.add} Add</button>` : ''}</div></div>`;
   if (state === 'loading') return head + '<div class="card"><div class="body"><div class="muted">Loading…</div></div></div>';
-  if (state === 'error') return head + '<div class="badbox">The engine settings could not be read. The server could not be reached. <button class="btn" id="retry">Retry</button></div>';
+  if (state === 'error') return head + '<div class="badbox">The engine run settings could not be read. The server could not be reached. <button class="btn" id="retry">Retry</button></div>';
   const list = state === 'empty' ? [] : visible();
   const th = (k, l) => `<th class="sort" data-sort="${k}">${l}${sortKey === k ? (sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
   const tr = c => `<tr class="rec" tabindex="0" data-open="${c.id}"><td><a data-nav class="link" href="${href({ screen: 'record', id: c.id })}">${esc(c.name)}</a></td><td class="num">${setCount(c)} of ${GROUPS.length}</td><td class="num">${threadsOf(c) || '<span class="faint">default</span>'}</td><td class="num">${c.reports.length ? c.reports.length : '<span class="faint">0</span>'}</td><td title="${exact(c.changed)}">${rel(c.changed)}</td></tr>`;
   let body;
-  if (state === 'empty') body = `<div class="card"><div class="body"><div class="muted">There are no engine settings yet.${may('add') ? ` <button class="btn primary" id="add">${G.add} Add</button>` : ''}</div></div></div>`;
-  else if (!list.length) body = '<div class="notice">No engine settings match the search. <button class="btn" id="clear">Clear</button></div>';
+  if (state === 'empty') body = `<div class="card"><div class="body"><div class="muted">There are no engine run settings yet.${may('add') ? ` <button class="btn primary" id="add">${G.add} Add</button>` : ''}</div></div></div>`;
+  else if (!list.length) body = '<div class="notice">No engine run settings match the search. <button class="btn" id="clear">Clear</button></div>';
   else body = `<table><thead><tr>${th('name', 'Name')}${th('sets', 'Groups set')}${th('threads', 'Threads')}${th('reports', 'Reports')}${th('changed', 'Last changed')}</tr></thead><tbody>${list.map(tr).join('')}</tbody></table>`;
   return head + `<div class="card"><div class="listbar"><input id="search" placeholder="Search the name and description" value="${esc(search)}"><select id="usedf"><option value="any">Used by reports: any</option><option value="yes" ${usedF === 'yes' ? 'selected' : ''}>Bound by a report</option><option value="no" ${usedF === 'no' ? 'selected' : ''}>Bound by none</option></select></div>${body}
   <div class="pager"><span>${list.length ? '1–' + list.length + ' of ' + list.length : '0 of 0'}</span><span><button class="btn" disabled>« First</button> <button class="btn" disabled>‹ Previous</button> <button class="btn" disabled>Next ›</button> <button class="btn" disabled>Last »</button></span><span>Page size <select><option>15</option><option>25</option><option>50</option></select></span></div></div>
   ${protoNote('The group count, the thread count and the report count are fixtures. No operation returns them for a list row.')}`;
 }
 
+/** The one sentence that separates this configuration from the pricing engine configuration. */
+function whatThisIs() {
+  return `<div class="notice"><b>What this configuration decides.</b> How the engine prepares its inputs and runs the job: which fixings and cash flows count, how the market and the trades are built, and how the work executes. It does not decide which model or engine prices a product. That is the <a href="../see-the-pricing-engines-a-party-holds/">pricing engine configuration</a>, a configuration of its own that the same report binds.</div>`;
+}
+
+/** The other configurations the reports that bind this one also bind. */
+function relatedCard() {
+  const rows = [
+    ['Pricing engine configuration', 'EOD pricing', 'which model and engine price each product', '../see-the-pricing-engines-a-party-holds/'],
+    ["Today's market", 'ACME HK market', 'how the curves and surfaces are built', null],
+    ['Curve configuration', 'HK curves', 'how each curve is defined and bootstrapped', null],
+    ['Conventions', 'HK conventions', 'the market terms a trade is read on', null],
+  ].map(([kind, name, what, href]) => `<tr><td>${esc(kind)}</td><td>${esc(name)}</td><td>${esc(what)}</td><td>${href ? `<a class="btn small" href="${href}">Open</a>` : '<span class="muted">No screen yet</span>'}</td></tr>`).join('');
+  return `<div class="card"><div class="body"><b>Related configurations</b><div class="muted">The other configurations that the reports binding this one bind as well.</div><table><thead><tr><th>Configuration</th><th>This report binds</th><th>What it decides</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
 function detailsTab(c) {
   const l = c.versions[c.versions.length - 1];
   const set = GROUPS.filter(g => c.groups[g.id]).map(g => g.title);
-  return `<div class="card"><div class="body">${kv('Name', esc(c.name))}${kv('Version', 'Version ' + c.ver)}${kv('Groups set', setCount(c) + ' of ' + GROUPS.length)}${kv('Bound by', c.reports.length + ' reports')}${kv('Description', esc(c.desc), true)}${kv('Groups', set.length ? esc(set.join(', ')) : '<span class="faint">None. Every setting uses the engine default.</span>', true)}${kv('Reporting row', `<span class="mono">${esc(c.cfgRow)}</span> of type <span class="mono">engine_settings</span>`, true)}</div>
-  <div class="foot">Last changed: version ${l.v} · ${esc(l.by)} · <span title="${exact(l.at)}">${rel(l.at)}</span> · <span class="mono">${esc(l.reason)}</span>${l.note ? ' · “' + esc(l.note) + '”' : ''}</div></div>`;
+  return `${whatThisIs()}<div class="card"><div class="body">${kv('Name', esc(c.name))}${kv('Version', 'Version ' + c.ver)}${kv('Groups set', setCount(c) + ' of ' + GROUPS.length)}${kv('Bound by', c.reports.length + ' reports')}${kv('Description', esc(c.desc), true)}${kv('Groups', set.length ? esc(set.join(', ')) : '<span class="faint">None. Every setting uses the engine default.</span>', true)}${kv('Reporting row', `<span class="mono">${esc(c.cfgRow)}</span> of type <span class="mono">engine_settings</span>`, true)}</div>
+  <div class="foot">Last changed: version ${l.v} · ${esc(l.by)} · <span title="${exact(l.at)}">${rel(l.at)}</span> · <span class="mono">${esc(l.reason)}</span>${l.note ? ' · “' + esc(l.note) + '”' : ''}</div></div>${relatedCard()}`;
 }
 
 const metaLine = (k, v) => `<div class="dl"><div class="k">${k}</div><div class="v">${v}</div></div>`;
@@ -476,16 +492,28 @@ function settingRow(c, g, f) {
 }
 function editFooter(c, g) {
   const n = diffParts([{ group: g.id, before: (c.groups[g.id] || { vals: {} }).vals, after: editing.draft }]).length;
-  const reach = c.reports.length ? `This group reaches ${c.reports.length} reports. They run with it from their next run.` : 'No report binds these engine settings, so this change reaches no run.';
-  return `<div class="editfoot"><div class="${g.changes ? 'warnbox' : 'notice'}">${g.changes ? 'These settings change the numbers a run computes. ' : ''}${reach}</div>
+  const gov = governed(c, g);
+  const reach = c.reports.length ? `This section reaches ${c.reports.length} reports. They run with it from their next run.` : 'No report binds these engine run settings, so this change reaches no run.';
+  const rule = gov
+    ? `This section changes the numbers a run computes, so Save submits a proposal for version ${c.ver + 1}. Version ${c.ver} stays in force until the sign-off completes.`
+    : (g.changes ? 'These settings change the numbers a run computes. ' : '') + reach;
+  return `<div class="editfoot"><div class="${g.changes ? 'warnbox' : 'notice'}">${rule}</div>
     <div id="d-err"></div>${reasonField(true)}
-    <div class="actions"><button class="btn primary" id="e-save">${G.save} Save</button><button class="btn" id="e-cancel">${G.cancel} Cancel</button><span class="faint" id="e-count">${n === 0 ? 'No changes yet' : n + (n === 1 ? ' change' : ' changes')}</span></div></div>`;
+    <div class="actions"><button class="btn primary" id="e-save">${G.save} ${gov ? 'Submit the proposal' : 'Save'}</button><button class="btn" id="e-cancel">${G.cancel} Cancel</button><span class="faint" id="e-count">${n === 0 ? 'No changes yet' : n + (n === 1 ? ' change' : ' changes')}</span></div></div>`;
 }
+/** A section that changes the numbers, on a configuration a report binds, is proposed. */
+const governed = (c, g) => Boolean(g.changes && c.reports.length);
+
+function proposalBanner(c, g) {
+  if (!c.proposal || c.proposal.group !== g.id) return '';
+  return `<div class="notice">A proposed version ${c.ver + 1} of this section waits for sign-off. 1 of 3 approval parts have approved. Version ${c.ver} stays in force.</div>`;
+}
+
 function groupCard(c, g) {
-  const part = c.groups[g.id], edit = isEditing(c, g);
+  const part = c.groups[g.id], edit = isEditing(c, g), gov = governed(c, g);
   const keys = g.fields.map(f => c.id + ':' + f.key), allOpen = keys.every(k => openDocs.has(k));
   return `<div class="card ${edit ? 'editing' : ''}"><div class="gh"><div><h3>${esc(g.title)}</h3><div class="faint">${esc(g.what)}</div></div>
-    <div class="actions">${changesTag(g)}${part ? tag('version ' + part.v, '') : tag('not set', 'off')}<button class="btn small ghost" data-alldocs="${g.id}">${allOpen ? 'Hide documentation' : 'Show documentation'}</button>${may('edit') && !edit ? `<button class="btn small" data-edit="${g.id}">${G.edit} Edit</button>` : ''}${edit ? tag('Editing', 'info') : ''}</div></div>
+    <div class="actions">${changesTag(g)}${part ? tag('version ' + part.v, '') : tag('not set', 'off')}<button class="btn small ghost" data-alldocs="${g.id}">${allOpen ? 'Hide documentation' : 'Show documentation'}</button>${may('edit') && !edit ? `<button class="btn small" data-edit="${g.id}">${G.edit} ${gov ? 'Propose a change' : 'Edit'}</button>` : ''}${edit ? tag('Editing', 'info') : ''}</div></div>${proposalBanner(c, g)}
     ${g.fields.map(f => settingRow(c, g, f)).join('')}
     ${edit ? editFooter(c, g) : `<div class="foot">${part ? `Part <span class="mono">${g.table}</span>` : `No <span class="mono">${g.table}</span> row. The engine uses its default for every setting here.`}</div>`}</div>`;
 }
@@ -507,16 +535,17 @@ function historyTab(c) {
       note: x.note, current: x.v === cur.v, detail: d.length ? diffTable(d) : null,
       actions: x.v !== cur.v && x.v > 1 && x.parts.length === 1 && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} Revert</button>` : '' };
   });
-  return `<div class="muted">Every version of these engine settings and of its five groups, in one stream, newest first. A change to a group is one entry, and it makes the next version of the whole. Revert writes the values a group had before as a new version.</div>${timeline(ent)}`;
+  const pending = c.proposal ? `<div class="notice">A proposed version ${c.ver + 1} of ${esc(groupOf(c.proposal.group).title)} waits for sign-off. It is not a version in force.</div>` : '';
+  return `${pending}<div class="muted">Every version of these engine run settings and of its three sections, in one stream, newest first. A change to a section is one entry, and it makes the next version of the whole. Revert writes the values a section had before as a new version, and on a section that changes the numbers it is a proposal.</div>${timeline(ent)}`;
 }
 
 function recordScreen(c) {
   const r = route();
-  if (!c) return crumbs([['Home', LIST()], ['Reporting', LIST()], ['Engine settings', LIST()], ['Not found']]) + '<div class="notice">These engine settings do not exist.</div>';
+  if (!c) return crumbs([['Home', LIST()], ['Reporting', LIST()], ['Engine run settings', LIST()], ['Not found']]) + '<div class="notice">These engine run settings do not exist.</div>';
   const tabHref = t => href({ screen: 'record', id: c.id, tab: t });
   const tabs = [['details', 'Details']].concat(GROUPS.map(g => [g.id, g.title]), [['reports', 'Used by'], ['history', 'History']]);
   const body = groupOf(r.tab) ? groupCard(c, groupOf(r.tab)) : { details: detailsTab, reports: reportsTab, history: historyTab }[r.tab](c);
-  return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Engine settings', LIST()], [esc(c.name)]])}
+  return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Engine run settings', LIST()], [esc(c.name)]])}
   <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">Version ${c.ver} · ${setCount(c)} of ${GROUPS.length} groups set · bound by ${c.reports.length} reports</div></div>
     <div class="actions">${groupOf(r.tab) ? modeToggle() : ''}<span class="access">${may('edit') ? '✎ Editable' : '🔒 Read only'}</span>${may('delete') ? btn('Delete', 'delete', 'danger', 'data-delete') : ''}</div></div>
   <div class="tabbar">${tabs.map(([k, l]) => `<a data-nav href="${tabHref(k)}" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${groupOf(r.tab) && mode === 'advanced' ? protoNote('Advanced shows the documentation entry of each setting: the ORE XML argument, the release that introduced it, the release that removed it, its default and its format. The entries are data of their own, apart from the settings. The dialogs look an entry up by the name of the setting. The same entry shape serves the conventions, the pricing engines and every other ORE document.') : ''}${body}`;
@@ -568,11 +597,11 @@ function revertDialog(c, v) {
   document.getElementById('d-save').onclick = () => { apply(c, back, document.getElementById('f-reason').value, document.getElementById('f-note').value || 'Reverted version ' + v, true); closeDlg(); render(); };
 }
 function addDialog() {
-  dialog('Add engine settings', `<div class="field"><label>Name</label><input type="text" id="f-name"></div><div class="field"><label>Description</label><textarea id="f-desc"></textarea></div><div class="help faint">A new configuration sets no group. Every setting uses the engine default until a group is edited.</div><div id="d-err"></div>`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">${G.save} Save</button>`);
+  dialog('Add engine run settings', `<div class="field"><label>Name</label><input type="text" id="f-name"></div><div class="field"><label>Description</label><textarea id="f-desc"></textarea></div><div class="help faint">A new configuration sets no group. Every setting uses the engine default until a group is edited.</div><div id="d-err"></div>`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">${G.save} Save</button>`);
   document.getElementById('d-save').onclick = () => {
     const name = document.getElementById('f-name').value.trim();
     if (!name) { document.getElementById('d-err').innerHTML = '<div class="badbox">A name is required.</div>'; return; }
-    if (CONFIGS.some(c => c.name.toLowerCase() === name.toLowerCase())) { document.getElementById('d-err').innerHTML = '<div class="badbox">Engine settings with this name exist.</div>'; return; }
+    if (CONFIGS.some(c => c.name.toLowerCase() === name.toLowerCase())) { document.getElementById('d-err').innerHTML = '<div class="badbox">Engine run settings with this name exist.</div>'; return; }
     const at = new Date(NOW).toISOString();
     const c = { id: 'e' + (CONFIGS.length + 1), name, desc: document.getElementById('f-desc').value.trim(), cfgRow: 'configuration new', groups: {}, reports: [], ver: 1, changed: at, versions: [{ v: 1, at, by: actorName, reason: 'New record', note: '', parts: [] }] };
     CONFIGS.push(c); closeDlg(); nav({ screen: 'record', id: c.id, tab: 'details' });
@@ -580,7 +609,7 @@ function addDialog() {
 }
 function deleteDialog(c) {
   const blocked = c.reports.length > 0;
-  dialog('Delete ' + c.name + '?', blocked ? `<div class="badbox">${c.reports.length} reports bind these engine settings. Their next run would have no engine settings. Rebind them first.</div>${protoNote('No service refuses this delete today. The screen refuses it because the server would not.')}` : `<div>The engine settings and their groups are deleted. Their history stays.</div>${reasonField(false).replace(/<option[^>]*>Non-material update<\/option>/, '')}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn danger" id="d-save" ${blocked ? 'disabled data-block="1"' : ''}>Delete</button>`);
+  dialog('Delete ' + c.name + '?', blocked ? `<div class="badbox">${c.reports.length} reports bind these engine run settings. Their next run would have no engine run settings. Rebind them first.</div>${protoNote('No service refuses this delete today. The screen refuses it because the server would not.')}` : `<div>The engine run settings and their groups are deleted. Their history stays.</div>${reasonField(false).replace(/<option[^>]*>Non-material update<\/option>/, '')}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn danger" id="d-save" ${blocked ? 'disabled data-block="1"' : ''}>Delete</button>`);
   if (!blocked) ready('d-save');
   document.getElementById('d-save').onclick = () => { CONFIGS.splice(CONFIGS.indexOf(c), 1); closeDlg(); nav({ screen: 'list' }); };
 }
@@ -617,7 +646,7 @@ function render() {
   // A draft belongs to the group tab it was opened on, so leaving that tab or record ends the edit.
   if (editing && (r.screen !== 'record' || r.id !== editing.cid || r.tab !== editing.gid)) editing = null;
   document.getElementById('app').innerHTML = r.screen === 'record' ? recordScreen(byId(r.id)) : listScreen();
-  chrome('see the engine settings a party holds · ' + r.screen + ' · ' + state + ' · acting as ' + actorName, [['state', ['all', 'empty', 'error', 'loading'], state], ['actor', ['viewer', 'analyst', 'admin'], actor]]);
+  chrome('see the engine run settings a party holds · ' + r.screen + ' · ' + state + ' · acting as ' + actorName, [['state', ['all', 'empty', 'error', 'loading'], state], ['actor', ['viewer', 'analyst', 'admin'], actor]]);
   wire();
 }
 { const r0 = route(), eg = P0.get('edit'), c0 = byId(r0.id); if (eg && c0 && groupOf(eg) && may('edit')) { const part0 = c0.groups[eg]; editing = { cid: c0.id, gid: eg, draft: clone(part0 ? part0.vals : {}), reason: null, note: '' }; } }

@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: AB74EE5D-4E3B-499A-A964-BDCFF7853663
+:END:
+#+title: Story: Make every configuration screen follow one standard
+#+description: The engine settings work set the pattern for every configuration that comes off ORE XML. Generalise it into one UX standard, apply it to the pricing engine configuration, and make the two similarly named configurations impossible to confuse.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:reporting:configuration:sprint_29:v0:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-24                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7D30043A-E1A9-414B-9367-C9C794C80590][Investigate the two engine-facing configurations]] | BACKLOG | | | Establish what the pricing engine configuration and the engine run settings each decide, where one ends and the other starts, how they are linked, and which names and patterns follow. |
+| [[id:0A7787A1-4AAA-4B68-B425-DB82E856C9A3][Write the configuration screen standard]] | BACKLOG | | | Generalise the engine run settings pattern into one UX standard for every configuration that comes off ORE XML, and record the pricing engine configuration as its second application. |
+| [[id:AF272041-13E2-4525-B634-7BA1A81031A5][Update the configuration prototypes to the standard]] | BACKLOG | | | Bring the pricing engine configuration and engine run settings prototypes onto the standard, and add the cross-links that say how the two configurations relate. |
+| [[id:12525577-9902-44BB-9E18-413E72F1A0CF][Rename the configuration screens and their words]] | BACKLOG | | | Apply the standard's screen words to the area cards, the list and record pages, the journeys and the translations. |
+| [[id:5BF23494-E801-4B0A-8FE0-CEB8DE48BF13][Apply the standard to the pricing engine configuration]] | BACKLOG | | | Bring the pricing engine configuration list, page, dialogs, journey and import onto the standard. |
+| [[id:C9C764D9-99DF-4327-8FE6-87704D32B34C][Move the pricing engine documentation onto the one contract]] | BACKLOG | | | Extract the pricing engine pairs, models, engines and parameters from the ORE guide and source into the one documentation contract, with the format, the release and the XPath. |
+| [[id:4EC59CB6-0169-485F-9F85-889A9BFC0535][Put the numbers-changing engine run settings through sign-off]] | BACKLOG | | | A change to an engine run settings group that alters the numbers a run computes becomes a proposal, signed off by the kind's approval parts. |
+
+* Decisions
+
+* Out of scope
+
+-

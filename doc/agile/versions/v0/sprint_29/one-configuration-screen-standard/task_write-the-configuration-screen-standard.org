@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 0A7787A1-4AAA-4B68-B425-DB82E856C9A3
+:END:
+#+title: Task: Write the configuration screen standard
+#+description: Generalise the engine run settings pattern into one UX standard for every configuration that comes off ORE XML, and record the pricing engine configuration as its second application.
+#+type: task
+#+level: s1
+#+filetags: :one-configuration-screen-standard:sprint_29:v0:
+#+owner: marco
+#+branch: feature/write-the-configuration-screen-standard
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One standard page states the words, the list, the record page, the sections, the documentation, the reach, the history, the import, the lifecycle and the naming rules for every configuration screen, with the engine run settings as the reference and the pricing engine configuration as the second application.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-24                               |
+
+* Acceptance
+
+- The standard is a knowledge page in doc/knowledge/ui and is wired into the UX hub reading order.
+- The screen review checklist carries one line per rule, naming the standard and its section.
+- The standard fixes the screen words for every configuration kind and states which model names they replace.
+- The standard states which rules are universal and which a kind declares, including its sections and its lifecycle.
+- The standard carries a conformance table for the two configuration screens that exist, with each gap named.
+- The standard states the prototype changes it requires, and the story carries those tasks.
+- The standard follows ASD-STE100 and the UX Language.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -188,7 +188,6 @@ on delete to "ores_marketdata_routes_tbl" do instead (
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Route
--- System-tenant sessions may also read every tenant's rows.
 -- =============================================================================
 alter table ores_marketdata_routes_tbl enable row level security;
 
@@ -199,12 +198,22 @@ create policy routes_tbl_tenant_isolation_policy
 on ores_marketdata_routes_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
-    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );
+
+-- Cross-tenant read for one service role: a second, permissive, SELECT-only
+-- policy is OR'd with the tenant policy above, so the role reads every
+-- tenant's rows. No other role gains a read, and nobody gains a write.
+drop policy if exists routes_tbl_cross_tenant_read_policy
+    on ores_marketdata_routes_tbl;
+
+create policy routes_tbl_cross_tenant_read_policy
+on ores_marketdata_routes_tbl
+for select
+to :marketdata_service_user
+using (true);
 
 -- Party isolation (RESTRICTIVE): ANDed with the permissive tenant
 -- policy above, a session sees only rows whose party_id its visible

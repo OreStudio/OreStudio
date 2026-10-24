@@ -24,13 +24,14 @@
  *
  * The adapters are shared by every tenant, so the marketdata service computes one
  * demand for each adapter from the routes and the subscriptions of all tenants.
- * The service reads as the system tenant. Its session must see the rows of every
- * tenant, and a tenant must see its own rows and no others.
+ * It reads them through a select-only policy for its own database role. A tenant
+ * must see its own rows and no others, and a system-tenant session of any other
+ * role must see no row of another tenant.
  *
  * The behavioural assertions need a tenant that people set up, with its routes
  * and subscriptions, so provision the Acme dataset first, as the test
  * environments do. Without one they are skipped, and the structural assertions
- * on the two policies still run.
+ * on the policies still run.
  *
  * Run as ORES_TEST_DB_USER, never as the owner role, which bypasses row-level
  * security: pg_prove -d <database> test/marketdata_route_visibility_test.sql
@@ -38,23 +39,49 @@
 
 begin;
 
-select plan(8);
+select plan(11);
 
--- Structural: each tenant policy admits a system-tenant session.
+-- Structural: the tenant policy holds the own-tenant shape and no system-tenant clause.
 select ok(
-    (select qual ~ 'ores_iam_current_tenant_id_fn\(\)\s*=\s*ores_utility_system_tenant_id_fn\(\)'
+    (select qual !~ 'ores_utility_system_tenant_id_fn' and with_check !~ 'ores_utility_system_tenant_id_fn'
      from pg_policies
      where tablename = 'ores_marketdata_routes_tbl'
        and policyname = 'routes_tbl_tenant_isolation_policy'),
-    'the routes policy admits a system-tenant session'
+    'the routes tenant policy does not admit a system-tenant session'
 );
 
 select ok(
-    (select qual ~ 'ores_iam_current_tenant_id_fn\(\)\s*=\s*ores_utility_system_tenant_id_fn\(\)'
+    (select qual !~ 'ores_utility_system_tenant_id_fn' and with_check !~ 'ores_utility_system_tenant_id_fn'
      from pg_policies
      where tablename = 'ores_marketdata_subscriptions_tbl'
        and policyname = 'subscriptions_tbl_tenant_isolation_policy'),
-    'the subscriptions policy admits a system-tenant session'
+    'the subscriptions tenant policy does not admit a system-tenant session'
+);
+
+-- Structural: one select-only policy that admits every row, for one role.
+select ok(
+    exists(select 1 from pg_policies
+           where tablename = 'ores_marketdata_routes_tbl'
+             and policyname ~ 'cross_tenant_read_policy$'
+             and cmd = 'SELECT' and qual = 'true' and permissive = 'PERMISSIVE'),
+    'the routes have a select-only cross-tenant read policy'
+);
+
+select ok(
+    exists(select 1 from pg_policies
+           where tablename = 'ores_marketdata_subscriptions_tbl'
+             and policyname ~ 'cross_tenant_read_policy$'
+             and cmd = 'SELECT' and qual = 'true' and permissive = 'PERMISSIVE'),
+    'the subscriptions have a select-only cross-tenant read policy'
+);
+
+-- Structural: the policy names the marketdata service role and no other role.
+select ok(
+    not exists(select 1 from pg_policies
+               where tablename in ('ores_marketdata_routes_tbl', 'ores_marketdata_subscriptions_tbl')
+                 and policyname ~ 'cross_tenant_read_policy$'
+                 and (array_length(roles, 1) <> 1 or roles[1] !~ '_marketdata_service$')),
+    'the cross-tenant read policies name the marketdata service role alone'
 );
 
 create temporary table t_people as
@@ -65,20 +92,20 @@ where id <> ores_utility_system_tenant_id_fn()
   and type <> 'automation'
 order by id;
 
--- The system tenant reads the routes and the subscriptions of the tenants that people set up.
+-- A system-tenant session of another role reads no row of another tenant.
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
 select case when not exists(select 1 from t_people)
     then skip('no tenant that people set up is provisioned', 2)
     else collect_tap(
-        ok(exists(select 1 from ores_marketdata_routes_tbl
-                  where tenant_id in (select id from t_people)
-                    and valid_to = ores_utility_infinity_timestamp_fn()),
-           'the system tenant reads the routes of another tenant'),
-        ok(exists(select 1 from ores_marketdata_subscriptions_tbl
-                  where tenant_id in (select id from t_people)
-                    and valid_to = ores_utility_infinity_timestamp_fn()),
-           'the system tenant reads the subscriptions of another tenant'))
+        is((select count(*)::int from ores_marketdata_routes_tbl
+            where tenant_id in (select id from t_people)),
+           0,
+           'a system-tenant session reads no route of another tenant'),
+        is((select count(*)::int from ores_marketdata_subscriptions_tbl
+            where tenant_id in (select id from t_people)),
+           0,
+           'a system-tenant session reads no subscription of another tenant'))
     end;
 
 -- A tenant reads its own rows and no other tenant's.

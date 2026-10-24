@@ -68,6 +68,7 @@ _FEATURE_NAMESPACE: dict[str, str] = {
     "rls_party_isolation": "sql",
     "rls_system_tenant_visible": "sql",
     "rls_own_or_system_tenant_rows": "sql",
+    "rls_service_read_role": "sql",
     "has_pagination": "presentation",
     "has_uuid_primary_key": "presentation",
     "has_change_reason_cache": "presentation",

@@ -95,11 +95,12 @@ models of that variation. How the system uses them is in
   conditional intensity and the compensator.
 - Lewis, P. A. W., & Shedler, G. S. (1979). "Simulation of nonhomogeneous
   Poisson processes by thinning." /Naval Research Logistics Quarterly/,
-  26(3), 403-413.
+  26(3), 403-413. doi:10.1002/nav.3800260304.
 - Ogata, Y. (1981). "On Lewis' simulation method for point processes." /IEEE
   Transactions on Information Theory/, 27(1), 23-31. Thinning for an
   intensity that depends on the history.
 - Brown, E. N., Barbieri, R., Ventura, V., Kass, R. E., & Frank, L. M.
   (2002). "The time-rescaling theorem and its application to neural spike
   train data analysis." /Neural Computation/, 14(2), 325-346.
+  doi:10.1162/08997660252741149.
 - Wikipedia: [[https://en.wikipedia.org/wiki/Point_process][Point process]].

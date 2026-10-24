@@ -73,8 +73,9 @@ count grows without bound, as a family tree that never dies out. For $n < 1$:
 
 Filimonov and Sornette (2012) call $n$ the *endogeneity* or *reflexivity*
 ratio: the share of events that earlier events caused rather than outside news.
-They estimate it for index futures and report values that rose to well above
-one half over the 1990s and 2000s. Hardiman, Bercot and Bouchaud (2013) argue
+They fit E-mini S&P 500 futures from 1998 to 2010 and report that the share of
+price changes that outside news caused fell from about 70% in 1998 to under 30%
+after 2007, so the endogenous share rose to about 70% or more. Hardiman, Bercot and Bouchaud (2013) argue
 that a kernel with a power-law tail gives an $n$ close to one.
 
 ** The cluster view
@@ -172,17 +173,22 @@ implementation in ORE Studio, treat one stream. The reason is in
   Transactions on Information Theory/, 27(1), 23-31.
 - Dassios, A., & Zhao, H. (2013). "Exact simulation of Hawkes process with
   exponentially decaying intensity." /Electronic Communications in
-  Probability/, 18(62), 1-13.
+  Probability/, 18(62), 1-13. doi:10.1214/ECP.v18-2717.
 - Filimonov, V., & Sornette, D. (2012). "Quantifying reflexivity in financial
   markets: Toward a prediction of flash crashes." /Physical Review E/, 85(5),
-  056108.
+  056108. doi:10.1103/PhysRevE.85.056108. arXiv:1201.3572.
 - Hardiman, S. J., Bercot, N., & Bouchaud, J.-P. (2013). "Critical reflexivity
   in financial markets: a Hawkes process analysis." /European Physical Journal
-  B/, 86, 442.
+  B/ (2013). doi:10.1140/epjb/e2013-40107-3. arXiv:1302.1405. Fits the
+  E-mini S&P 500 future and finds a kernel that integrates to about one in
+  every period from 1998 to 2011.
 - Bacry, E., Mastromatteo, I., & Muzy, J.-F. (2015). "Hawkes processes in
   finance." /Market Microstructure and Liquidity/, 1(1), 1550005.
-  arXiv:1502.04592.
+  doi:10.1142/S2382626615500057. arXiv:1502.04592.
 - Bacry, E., Bompaire, M., Gaïffas, S., & Poulsen, S. (2017). "tick: a Python
   library for statistical learning, with a particular emphasis on
-  time-dependent modelling." arXiv:1707.03003.
+  time-dependent modelling." arXiv:1707.03003. The journal version, with Philip
+  Deegan as a fifth author and the title "tick: a Python Library for
+  Statistical Learning, with an emphasis on Hawkes Processes and Time-Dependent
+  Models", is /Journal of Machine Learning Research/ 18(214), 1-5 (2018).
 - Wikipedia: [[https://en.wikipedia.org/wiki/Hawkes_process][Hawkes process]].

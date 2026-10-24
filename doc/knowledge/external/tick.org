@@ -85,8 +85,10 @@ the file must then carry tick's notice.
 ** How to cite
 
 The tick README asks that scientific work cite the library. The paper is
-Bacry, Bompaire, Gaïffas and Poulsen (2017), arXiv:1707.03003. The Hawkes note
-lists it under further reading.
+Bacry, Bompaire, Gaïffas and Poulsen (2017), arXiv:1707.03003. A shorter
+journal version, with Philip Deegan as a fifth author, is in the /Journal of
+Machine Learning Research/ 18(214), 2018. The Hawkes note lists both under
+further reading.
 
 * See also
 

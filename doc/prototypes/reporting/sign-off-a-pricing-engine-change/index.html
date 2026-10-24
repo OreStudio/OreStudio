@@ -470,7 +470,7 @@ const partName = id => PARTS.find(r => r.id === id).name;
 const chips = p => p.approvals.map(a => `<span class="tag ${a.state === 'approved' ? 'ok' : a.state === 'rejected' ? 'bad' : 'off'}" title="${esc(partName(a.role))}: ${a.state}">${esc(partName(a.role).split(' ')[0])}</span>`).join(' ');
 const route = () => { const p = new URLSearchParams(location.search); return { screen: p.get('screen') || 'queue', id: p.get('id') || 'pr1', tab: p.get('tab') || 'signoff' }; };
 const QUEUE = () => href({ screen: 'queue' });
-const LIST = '../see-the-pricing-engines-a-party-holds/';
+const LIST = '../product-pricing/';
 const iso = () => new Date(NOW).toISOString();
 
 function queueScreen() {

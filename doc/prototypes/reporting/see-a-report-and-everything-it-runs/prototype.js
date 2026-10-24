@@ -114,7 +114,7 @@
             what: 'Which model prices each product',
             used: 22,
             screen: 'prototype',
-            href: '../see-the-pricing-engines-a-party-holds/'
+            href: '../product-pricing/'
         },
         {
             type: 'Today’s market',

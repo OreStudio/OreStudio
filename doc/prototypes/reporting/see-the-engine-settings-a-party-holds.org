@@ -181,6 +181,6 @@ What it does not take up:
 * See also
 
 - [[file:index.org][Reporting prototypes]] — the group.
-- [[file:see-the-pricing-engines-a-party-holds.org][See the pricing engine configurations a party holds]] — the named configuration this page sits beside.
+- [[file:product-pricing.org][See the pricing engine configurations a party holds]] — the named configuration this page sits beside.
 - [[file:see-a-report-and-everything-it-runs.org][See a report and everything it runs]] — the page whose Analytics tab shows these settings today.
 - [[id:29C26BB5-2F89-448C-8E1E-BAA60C91B327][See and change the engine run settings a party holds]] — the journey this prototype answers to.

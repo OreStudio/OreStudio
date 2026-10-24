@@ -458,7 +458,7 @@ const cfg = () => { const c = CONFIGS.find(x => x.id === (status0 === 'draft' ? 
   if (pending0) { c.proposal = proposalIn('partly'); c.working = c.working || { base: c.ver, saves: [{ k: 1, at: PROPOSAL.at, by: PROPOSAL.by, reason: 'Rectification', note: PROPOSAL.note, products: PROPOSAL.products }] }; } return c; };
 let current = cfg(), tabNow = P0.get('tab') || 'products', draft = null, markType = null, banner = '', stale = conflict;
 const route = () => ({ tab: tabNow });
-const LIST = () => '../see-the-pricing-engines-a-party-holds/';
+const LIST = () => '../product-pricing/';
 function newProductParams(orig, d) { // the product's params after the draft
   const keep = d.rows.filter(r => !(r.state === 'drop' && r.drop)), add = d.rows.filter(r => r.state === 'need' && r.add);
   return keep.filter(r => r.state !== 'need').map(r => P(r.scope, r.name, r.value)).concat(add.map(r => P(r.scope, r.name, r.value)));

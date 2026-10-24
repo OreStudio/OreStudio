@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 9F374ABC-8D56-45DE-9A0F-8D811AD9B319
 :END:
-#+title: See the pricing engine configurations a party holds prototype
+#+title: Product pricing prototype
 #+description: The pricing engine configurations list and one configuration page, drawn only as the Record screen standard draws a record screen, with a status and an official cycle for each configuration, a coverage strip on the Products tab, the reach on the Reports tab, and the link to the engine run settings.
 #+type: knowledge
 #+level: cross
@@ -11,7 +11,7 @@
 
 | Item          | Where                                             |
 |---------------+---------------------------------------------------|
-| Prototype     | [[file:see-the-pricing-engines-a-party-holds/][the prototype]] |
+| Prototype     | [[file:product-pricing/][the prototype]] |
 | Gemini review | none                                              |
 | Group         | [[file:index.org][Reporting prototypes]]            |
 
@@ -79,7 +79,7 @@ is a fixture. The product and report counts in the list are fixtures, because no
 
 ** Where the code lives
 
-=doc/prototypes/reporting/see-the-pricing-engines-a-party-holds/index.html=. One file, plain HTML, CSS and JavaScript, with the style and the script inline, no modules, no fetch and no build step.
+=doc/prototypes/reporting/product-pricing/index.html=. One file, plain HTML, CSS and JavaScript, with the style and the script inline, no modules, no fetch and no build step.
 
 ** What it argues
 

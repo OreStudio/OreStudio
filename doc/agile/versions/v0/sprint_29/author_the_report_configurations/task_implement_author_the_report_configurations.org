@@ -85,7 +85,7 @@ Four journeys and four prototypes, in the reporting group.
 
 | Journey | Prototype |
 |---------+-----------|
-| [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]] | =doc/prototypes/reporting/see-the-pricing-engines-a-party-holds/= |
+| [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]] | =doc/prototypes/reporting/product-pricing/= |
 | [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]] | =doc/prototypes/reporting/author-a-pricing-engine-configuration/= |
 | [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]] | =doc/prototypes/reporting/change-how-a-product-is-priced/= |
 | [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]] | =doc/prototypes/reporting/bring-in-a-pricing-engines-file/= |

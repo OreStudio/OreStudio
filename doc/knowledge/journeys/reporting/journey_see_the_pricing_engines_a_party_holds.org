@@ -181,9 +181,9 @@ the Reports tab carries the reach, rather than a separate screen for each.
 
 * Prototype
 
-The [[file:../../prototypes/reporting/see-the-pricing-engines-a-party-holds/][see the pricing engine configurations a party holds prototype]] owns this journey, and
-[[file:../../prototypes/reporting/see-the-pricing-engines-a-party-holds.org][its design note]] says what it argues, which states it can reach and what is
-fake. It belongs at =doc/prototypes/reporting/see-the-pricing-engines-a-party-holds/=. The prototype keeps its earlier file name; the screen it draws is *Pricing engine configurations*.
+The [[file:../../prototypes/reporting/product-pricing/][see the pricing engine configurations a party holds prototype]] owns this journey, and
+[[file:../../prototypes/reporting/product-pricing.org][its design note]] says what it argues, which states it can reach and what is
+fake. It belongs at =doc/prototypes/reporting/product-pricing/=. The prototype keeps its earlier file name; the screen it draws is *Pricing engine configurations*.
 
 It must draw the list and the record page as the Record screen standard draws
 them, with no layout of its own. The list must show the name, status, the cycle a

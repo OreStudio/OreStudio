@@ -111,9 +111,91 @@ several disagree with the guide.
 | Execution | =gzipCompressionLevel= | 6 | 6 |
 | Execution | =logMask= | read from =Logging=, which overrides =Setup= | 255 in the example |
 
+** Every =Setup= choice, with its source default
+
+The list below is the whole extraction: every parameter ORE reads from =Setup=
+that is a choice rather than a file name, a path or a date. The count and the
+types come from the =loadParameter= calls in =inputparameters.cpp= lines 144 to
+207, and the defaults from the member initialisers in =inputparameters.hpp=
+lines 76 to 122.
+
+*Affects the numbers* is the engine run settings model's own classification
+where the model holds the setting. Where it does not, the mark is the reading of
+the source taken for this investigation, and the standard treats it as a claim
+to confirm.
+
+The model marks a whole section at once. The building section therefore carries
+the mark even for =lazyMarketBuilding= and =observationModel=, which change how
+the engine reaches a value rather than the value itself. That coarseness is what
+a per-section lifecycle inherits, and the standard must say so.
+
+| Parameter | Type | Source default | Affects the numbers | Held in the model |
+|-----------+------+----------------+---------------------+-------------------|
+| =allFixings= | flag | false | yes | no |
+| =allowModelBuilderFallbacks= | flag | true | yes | no |
+| =baseCurrency= | word | derived, then USD | yes | no |
+| =buildFailedTrades= | flag | true | yes | yes, building |
+| =continueOnError= | flag | true | yes | yes, building |
+| =csvCommentReportHeader= | char | =#= | no | no |
+| =csvSeparator= | char | =,= | no | no |
+| =discountingIndex= | word | empty | yes | no |
+| =dryRun= | flag | false | no | no |
+| =enableScenarioInformation= | flag | false | no | no |
+| =enrichIndexFixings= | flag | false | yes | yes, fixings |
+| =entireMarket= | flag | false | no | no |
+| =eomInflationFixings= | flag | true | yes | no |
+| =gzipCompressionLevel= | whole 0 to 9 | 6 | no | yes, execution |
+| =iborFallbackOverride= | flag | false | yes | no |
+| =ignoreFixingLag= | whole | 0 | yes | yes, fixings |
+| =ignoreFixingLead= | whole | 0 | yes | yes, fixings |
+| =implyTodaysFixings= | flag | false | yes | yes, fixings |
+| =includePastCashflows= | flag | false | yes, in the report | no |
+| =includeReferenceDateEvents= | flag | unset, guide says false | yes | yes, fixings |
+| =includeTodaysCashFlows= | flag | unset, guide says false | yes | yes, fixings |
+| =lazyMarketBuilding= | flag | true | yes | yes, building |
+| =marketDataLoaderInput= | text | empty | no | no |
+| =marketDataLoaderOutput= | text | empty | no | no |
+| =nThreads= | whole | 1 | no | yes, execution |
+| =observationModel= | word | None | yes | yes, building |
+| =reportBufferSize= | whole | 0 | no | no |
+| =reportNaString= | text | =#N/A= | no | no |
+| =useAtParCouponsCurves= | flag | true | yes | yes, building |
+| =useAtParCouponsTrades= | flag | true | yes | yes, building |
+| =useMarketDataFixings= | flag | true | yes | no |
+
+=logMask= is the one engine setting that ORE reads from =Logging=, not from
+=Setup=, and the =Logging= value overrides a =Setup= value when both are
+present.
+
+** Where the 15 are consumed
+
+The setting is not a label on a screen. Each one reaches a named place in the
+ORE source.
+
+| Setting | Consumed at |
+|---------+-------------|
+| =implyTodaysFixings= | =marketdatainmemoryloader.cpp= lines 40 and 51 |
+| =includeTodaysCashFlows= | the QuantLib setting, set in =inputparameters.cpp= lines 186 to 189 |
+| =includeReferenceDateEvents= | the QuantLib setting, set in =inputparameters.cpp= lines 191 to 194 |
+| =enrichIndexFixings= | =analytic.cpp= lines 275 and 415 |
+| =ignoreFixingLead= | =analytic.cpp= lines 420 and 421 |
+| =ignoreFixingLag= | =analytic.cpp= lines 424 and 425 |
+| =observationModel= | =ObservationMode::setMode=, called in =inputparameters.cpp= line 197 |
+| =lazyMarketBuilding= | =oreapp.cpp= line 1791, =analytic.cpp= line 304 |
+| =buildFailedTrades= | =portfoliomodifier.cpp= line 450, =xvaanalytic.cpp= line 815 |
+| =continueOnError= | =pricinganalytic.cpp= lines 177 and 191 |
+| =useAtParCouponsCurves= | =pricinganalytic.cpp= line 239, =xvaanalytic.cpp= line 1100 |
+| =useAtParCouponsTrades= | =pricinganalytic.cpp= lines 227 and 239 |
+| =nThreads= | =pricinganalytic.cpp= lines 219 and 233 |
+| =gzipCompressionLevel= | =analyticsmanager.cpp= line 301, =oreapp.cpp= line 316 |
+| =logMask= | the logging setup, from the =Logging= block |
+
+The consumer is what a documentation entry should name. A person who reads
+"Lazy market building" and does not know where it acts cannot judge the change.
+
 Three observations follow.
 
-1. The 15 are a *subset* of the 30 Setup choices. Other live choices that can
+1. The 15 are a *subset* of the 31 Setup choices. Other live choices that can
    change the numbers are not held: =allowModelBuilderFallbacks= (default
    true), =fixingCutOffDate=, =useMarketDataFixings= (true),
    =eomInflationFixings= (true), =entireMarket= (false) and =allFixings=

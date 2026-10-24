@@ -552,7 +552,7 @@ KEEP = ['mode', 'doc'];
 const MAY = { viewer: {}, analyst: { add: 1, edit: 1 }, admin: { add: 1, edit: 1, delete: 1 } };
 const may = a => !!(MAY[actor] || {})[a];
 const actorName = { viewer: 'a viewer', analyst: 'market risk owner', admin: 'tenant administrator' }[actor];
-let search = '', variantF = 'all', usedF = 'any', statusF = 'all', sortKey = 'name', sortDir = 1, mode = (new URLSearchParams(location.search).get('mode') === 'advanced' ? 'advanced' : 'simple');
+let search = '', variantF = 'all', usedF = 'any', statusF = 'all', sortKey = 'name', sortDir = 1, mode = (new URLSearchParams(location.search).get('mode') === 'advanced' ? 'advanced' : 'simple'), editing = false;
 const route = () => { const p = new URLSearchParams(location.search); return { screen: p.get('screen') || 'list', id: p.get('id'), tab: p.get('tab') || 'details', product: p.get('product') }; };
 CONFIGS.push({ ...clone(CONFIGS[0]), id: 'c2', name: 'Intraday pricing', cycle: 'intraday', variant: '', reports: CONFIGS[0].reports.slice(0, 2) });
 CONFIGS.push({ ...clone(CONFIGS[0]), id: 'c3', name: 'US swaptions SABR trial', status: 'draft', cycle: '', variant: 'SABR', reports: [] });
@@ -634,7 +634,7 @@ function recordScreen(c) {
   const body = { details: detailsTab, globals: globalParams, products: (cc) => productTab(cc, r.product), reports: reportsTab, history: historyTab }[r.tab](c);
   return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Product pricing', LIST()], [esc(c.name)]])}
   <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">${statusTag(c.status)} ${officialTag(c) === dash ? '' : officialTag(c)} version ${c.ver} · ${c.products.length} products · bound by ${c.reports.length} reports${c.variant ? ' · ' + esc(c.variant) : ''}</div></div>
-    <div class="actions"><button class="btn" id="h-refresh">↻ Refresh</button><span class="access">✎ Editable</span>${c.status === 'draft' ? '<button class="btn" id="h-edit">✎ Edit</button><button class="btn danger" id="h-delete">🗑 Delete</button>' : '<button class="btn" id="h-propose">✎ Propose a change</button>'}</div></div>
+    <div class="actions"><button class="btn" id="h-refresh">↻ Refresh</button><span class="access">✎ Editable</span>${editing ? '<button class="btn" id="h-cancel">✕ Cancel</button>' : (c.status === 'draft' ? '<button class="btn" id="h-edit">✎ Edit</button><button class="btn danger" id="h-delete">🗑 Delete</button>' : '<button class="btn" id="h-propose">✎ Propose a change</button>')}</div></div>
   ${pendingBanner(c)}${c.status === 'approved' ? '<div class="notice">This version is in force and cannot change in place. A change is proposed, approved by the approval parts model risk names, and then becomes the next version.</div>' : ''}
   <div class="tabbar">${tabs.map(([k, l]) => `<a data-nav href="${tabHref(k)}" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${body}`;
 }
@@ -710,7 +710,7 @@ function treePane(c, sel) {
 function settingRow(scope, k, p) {
   const cur = p.params.find(x => x.name === k.name), v = cur ? cur.value : '';
   const opts = k.kind === 'select' ? k.opts : (k.kind === 'bool' ? ['true', 'false'] : null);
-  const ctl = opts
+  const ctl = !editing ? `<span class="mono">${esc(v || k.usual || '—')}</span>` : opts
     ? `<select data-pset="${esc(k.name)}">${opts.map(o => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`
     : `<input data-pset="${esc(k.name)}" value="${esc(v)}" placeholder="${esc(k.usual || '')}" ${k.kind === 'number' ? 'inputmode="decimal"' : ''}>`;
   const open = new URLSearchParams(location.search).get('doc') === k.name;
@@ -738,16 +738,16 @@ function productTab(c, want) {
     </div></div>
     <div class="card"><div class="gh"><div><h3>Model</h3><div class="faint">${definition('model')}</div></div></div>
       <div class="body" style="grid-template-columns:1fr">
-        <div class="wide"><div class="faint">Model</div><select data-pmodel style="width:100%;margin-top:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:9px 10px">${(modelOptions.length ? modelOptions : MODELS).map(m => `<option ${m === p.model ? 'selected' : ''}>${esc(m)}</option>`).join('')}</select><p class="help" style="margin-top:8px">${esc(MODEL_NOTES[p.model] || 'No description is held for this model.')}</p></div>
+        <div class="wide"><div class="faint">Model</div>${editing ? `<select data-pmodel style="width:100%;margin-top:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:9px 10px">${(modelOptions.length ? modelOptions : MODELS).map(m => `<option ${m === p.model ? 'selected' : ''}>${esc(m)}</option>`).join('')}</select>` : `<div class="sval mono" style="margin-top:4px">${esc(p.model)}</div>`}<p class="help" style="margin-top:8px">${esc(MODEL_NOTES[p.model] || 'No description is held for this model.')}</p></div>
       </div>${group('model')}</div>
     <div class="card"><div class="gh"><div><h3>Engine</h3><div class="faint">${definition('engine')}</div></div></div>
       <div class="body" style="grid-template-columns:1fr">
-        <div class="wide"><div class="faint">Engine</div><select data-pengine style="width:100%;margin-top:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:9px 10px">${(engineOptions.length ? engineOptions : enginesFor(p.model)).map(e => `<option ${e === p.engine ? 'selected' : ''}>${esc(e)}</option>`).join('')}</select><p class="help" style="margin-top:8px">${esc(ENGINE_NOTES[p.engine] || 'No description is held for this engine.')}</p><p class="help">${knownPair(p.model, p.engine) ? 'This model and engine are known to work together.' : 'This model and engine are not known to work together for this product.'}</p></div>
+        <div class="wide"><div class="faint">Engine</div>${editing ? `<select data-pengine style="width:100%;margin-top:4px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:9px 10px">${(engineOptions.length ? engineOptions : enginesFor(p.model)).map(e => `<option ${e === p.engine ? 'selected' : ''}>${esc(e)}</option>`).join('')}</select>` : `<div class="sval mono" style="margin-top:4px">${esc(p.engine)}</div>`}<p class="help" style="margin-top:8px">${esc(ENGINE_NOTES[p.engine] || 'No description is held for this engine.')}</p><p class="help">${knownPair(p.model, p.engine) ? 'This model and engine are known to work together.' : 'This model and engine are not known to work together for this product.'}</p></div>
       </div>${group('engine')}</div>
-    <div class="card"><div class="gh"><div><h3>Change</h3><div class="faint">A change to an approved configuration is proposed for sign-off.</div></div></div><div class="body" style="grid-template-columns:1fr 2fr">
+    ${editing ? `<div class="card"><div class="gh"><div><h3>Change</h3><div class="faint">A change to an approved configuration is proposed for sign-off.</div></div></div><div class="body" style="grid-template-columns:1fr 2fr">
       <div class="field"><label>Change reason</label><select><option>Rectification</option><option>Correction of a data entry error</option></select></div>
       <div class="field"><label>Commentary</label><textarea rows="2" placeholder="Why this product changes"></textarea></div>
-    </div><div class="foot"><button class="btn primary" id="p-save">✓ Propose</button> <button class="btn" id="p-cancel">✕ Cancel</button> <span class="faint" id="p-msg"></span></div></div>`;
+    </div><div class="foot"><button class="btn primary" id="p-save">✓ Propose</button> <button class="btn" id="p-cancel">✕ Cancel</button> <span class="faint" id="p-msg"></span></div></div>` : ''}`;
   return `<div class="notice">This page sets how each product is priced. How the engine runs every product — fixings, market building, threads — is set once for the run in <a class="link" href="../see-the-engine-settings-a-party-holds/">Engine run settings</a>.</div><div class="split">${treePane(c, p.type)}<div style="display:grid;gap:14px">${detail}</div></div>`;
 }
 
@@ -768,11 +768,12 @@ function wire() {
   document.querySelectorAll('[data-pset]').forEach(x => x.onchange = () => { const cur = p.params.find(y => y.name === x.dataset.pset); if (cur) cur.value = x.value; });
   const mo = document.querySelector('[data-pmodel]'); if (mo) mo.onchange = () => { p.model = mo.value; const es = [...new Set(TRIPLES.filter(x => x[0] === p.type && x[1] === p.model).map(x => x[2]))].sort(); p.engine = es[0] || p.engine; render(); };
   const en = document.querySelector('[data-pengine]'); if (en) en.onchange = () => { p.engine = en.value; render(); };
-  const sv = document.getElementById('p-save'); if (sv) sv.onclick = () => { document.getElementById('p-msg').textContent = 'A proposal is recorded in the prototype only. Nothing is written.'; };
-  const cx = document.getElementById('p-cancel'); if (cx) cx.onclick = () => render();
+  const sv = document.getElementById('p-save'); if (sv) sv.onclick = () => { editing = false; render(); };
+  const cx = document.getElementById('p-cancel'); if (cx) cx.onclick = () => { editing = false; render(); };
+  const hc = document.getElementById('h-cancel'); if (hc) hc.onclick = () => { editing = false; render(); };
   const rf = document.getElementById('h-refresh'); if (rf) rf.onclick = () => render();
-  const ed = document.getElementById('h-edit'); if (ed) ed.onclick = () => { const m = document.getElementById('p-msg'); if (m) m.textContent = 'Edit opens the record dialog in the built screen.'; };
-  const pr = document.getElementById('h-propose'); if (pr) pr.onclick = () => { const m = document.getElementById('p-msg'); if (m) m.textContent = 'A change is proposed here; the sign-off is its own screen.'; };
+  const ed = document.getElementById('h-edit'); if (ed) ed.onclick = () => { editing = true; render(); };
+  const pr = document.getElementById('h-propose'); if (pr) pr.onclick = () => { editing = true; render(); };
   const dl = document.getElementById('h-delete'); if (dl) dl.onclick = () => render();
 }
 render();

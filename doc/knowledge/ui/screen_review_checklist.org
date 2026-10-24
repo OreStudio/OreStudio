@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :web:ux:standards:checklist:
 #+created: 2026-10-20
-#+updated: 2026-10-20
+#+updated: 2026-10-24
 
 * Summary
 
@@ -22,7 +22,8 @@ line says so. The [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen speci
 for one kind of record.
 
 Source names: RSS is the Record screen standard, ESS is the Entity screen
-specification, UXL is [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]], UDP is [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]].
+specification, UXL is [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]], UDP is [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]],
+CFG is the [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]].
 
 * Detail
 
@@ -137,6 +138,23 @@ specification, UXL is [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]], 
 - [ ] Every write carries a change reason. There is no silent write. (RSS Safety)
 - [ ] A save goes through the shared record dialog, remove dialog or revert dialog. A screen builds no dialog of its own. (RSS Writes)
 
+** The configuration screen
+
+- [ ] The kind is named as the standard names it: *Pricing engine configuration*, *Engine run settings*, and the rest of the table. No screen says *Pricing engines* or *Engine settings* alone. (CFG The name of each kind)
+- [ ] The pricing page's parameter tab is *Parameters*. No configuration screen has a *Settings* tab. (CFG The name of each kind)
+- [ ] Details is first, the section tabs follow in the declared order, and Used by and History are last. (CFG The record page)
+- [ ] A group shows the value in force, and the default where the parameter is unset. (CFG Reading a group)
+- [ ] A group is edited in place; a collection is edited in a dialog per row. (CFG Changing a group; Changing a collection)
+- [ ] Every label, help, description, default, format and release comes from the documentation contract, not from the screen. (CFG The documentation contract)
+- [ ] A setting with no documentation entry shows its ORE name and a note. (CFG Reading a group)
+- [ ] Simple and Advanced are the shared switch, and Advanced adds the schema entry. (CFG Reading a group)
+- [ ] The page says what the configuration decides and lists the related configurations the same report binds, with links both ways. (CFG What this configuration decides, and the related configurations)
+- [ ] Used by lists the reports that bind the configuration and states the reach rule. (CFG Reach)
+- [ ] History is the shared timeline, and a change names the section and moves the version of the whole. (CFG History)
+- [ ] A change to a numbers-changing section of a bound configuration is a proposal: the version in force stays and the proposer cannot sign. (CFG The lifecycle)
+- [ ] A change to an operational section writes directly, with a reason. (CFG The lifecycle)
+- [ ] An import parses on the server, names every dropped value, lists removed rows first with *Keep it* as the default, and never makes a file official. (CFG Import)
+
 ** Exceptions
 
 - [ ] A part the screen lacks is named in the standard's list of how screens conform, with the reason. (RSS How today's record screens conform)
@@ -152,6 +170,7 @@ specification, UXL is [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]], 
 - [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders this cluster.
 - [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the source of the list, record page, write and history lines.
 - [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — the source of the card, Edit, link and refresh lines.
+- [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]] — the source of the configuration lines.
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the source of the colour, access mark and Audit lines.
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the source of the grid, type and control lines.
 - [[id:46F465EE-7693-4852-B125-12C56290B695][Icon reference]] — the icon for each action.

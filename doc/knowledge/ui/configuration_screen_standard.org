@@ -1,0 +1,473 @@
+:PROPERTIES:
+:ID: E69C008D-7092-4855-98EC-47A75F422F61
+:END:
+#+title: Configuration screen standard
+#+description: The one shape and behaviour of every ores.web screen whose subject is a configuration that comes off an ORE XML document: the words, the family, the list, the record page, the sections, the documentation, the reach, the history, the lifecycle, the import and the naming rules.
+#+type: knowledge
+#+level: cross
+#+filetags: :web:ux:standards:reporting:configuration:
+#+created: 2026-10-24
+#+updated: 2026-10-24
+
+* Summary
+
+A /configuration/ is a named, party-owned, versioned set of values that a report
+definition binds in a slot. Almost every configuration in ORE Studio is a view
+of an ORE XML document: =pricingengine.xml=, =ore.xml=, =todaysmarket.xml=,
+=curveconfig.xml=, =conventions.xml= and fifteen more.
+
+Every configuration screen has the same list, the same page and the same
+behaviour: Details, a tab for each section, Used by and History; one
+documentation contract; the value in force always visible; a read of the reach;
+one timeline; and a change that alters the numbers goes through a proposal and a
+sign-off.
+
+This page states those rules once. It builds on the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and the
+[[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] and
+adds only what a configuration has and a plain record does not. It fixes the
+screen words so that no two configurations read as the same thing.
+
+* Detail
+
+** Where this standard applies
+
+A /configuration screen/ is a screen whose subject is the records of one
+configuration kind: it lists them, opens one, and reads and changes its sections.
+The pricing engine configuration and the engine run settings are configuration
+screens.
+
+These are not configuration screens, and this standard does not govern them:
+
+- a feed, which the [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]] governs;
+- a plain record such as a currency, which the record standard governs;
+- the report definition and the run, which are state rather than configuration;
+- a wizard step that imports or exports a file, though the import step of a
+  configuration follows [[*Import][Import]].
+
+** Words
+
+One word per idea, in code, on screen and in conversation.
+
+| Word | Meaning |
+|------+---------|
+| /Configuration/ | A named, party-owned, versioned set of values that a report definition binds in a slot |
+| /Kind/ | What a configuration is: a =configuration_type= row, whose ORE root element names the document it serialises to |
+| /Section/ | One part of a configuration: a group or a collection |
+| /Group/ | A fixed set of scalar ORE parameters, held in one row, edited in place |
+| /Collection/ | Repeated ORE elements with their own identity, such as products, edited in dialogs |
+| /Parameter/ | One leaf of an ORE document |
+| /Setting/ | A scalar parameter, shown with its documentation |
+| /Documentation entry/ | The one record of what a parameter means: label, help, description, default, format, releases, XPath |
+| /Value in force/ | The value a run uses: the set value, or the default when the parameter is absent |
+| /Default/ | The value ORE uses when the parameter is absent; the first option of every control |
+| /Reach/ | The reports that bind the configuration |
+| /Official/ | The version in force for a cycle |
+| /Proposal/ | A change to a numbers-changing section that waits for sign-off |
+| /Draft/ | A configuration no report binds, which changes in place |
+
+Never print *run settings* on a configuration screen. It names an internal
+entity, =risk_report_config=, and not a configuration.
+
+** The family of configurations
+
+A report definition binds one configuration per kind, as sibling rows of
+[[id:7F2C8A41-6E93-4B57-A0D4-3C9E1B5D7826][report_configuration]]. A
+configuration is reached through a
+[[id:6B3D9E27-5C41-4A86-8F19-2E7B0D4C6A53][configuration]] row, and its kind
+comes from [[id:2E7A4C18-9F63-4D05-B8A2-6C1E3D7F9042][configuration_type]],
+which carries the ORE root element and, where one exists, the run parameter that
+names the file.
+
+The family has one exception that the screen must know. The ORE =Setup= block is
+a single document split across two kinds: =risk_report_config= holds the run's
+paths, currency, market kind and scope, and =engine_settings= holds the engine
+choices. Neither names a file of its own, so =configuration_type.run_parameter=
+is null for both. The pricing engine configuration is a document of its own, and
+the =Setup= block names it through =pricingEnginesFile=.
+
+** The name of each kind
+
+The screen name is the kind's subject. Where the subject alone would name the
+instances rather than the configuration, the name carries the word
+*configuration*. Two kinds never differ only by that word, and no kind is named
+for one thing inside it.
+
+| Kind code | Screen name | What it decides |
+|-----------+-------------+-----------------|
+| =pricing_engines= | Pricing engine configuration | Which model and engine price each product type, and their parameters |
+| =engine_settings= | Engine run settings | How the engine prepares its inputs and runs the job: fixings, building, execution |
+| =todays_market= | Today's market | How the curves and surfaces of a run are built |
+| =curve_configuration= | Curve configuration | How each curve is defined and bootstrapped |
+| =conventions= | Conventions | The market terms a trade is read on |
+| =simulation= | Simulation | How the risk factors are simulated |
+| =sensitivity= | Sensitivity analysis | How the risk factors are bumped and reported |
+| =stress_test= | Stress test | How scenarios are built and applied |
+| =credit_simulation= | Credit simulation | How credit migrations are simulated |
+| =simm_calibration= | SIMM calibration | How the SIMM parameters are calibrated |
+| =historical_return= | Historical return | How historical returns are computed |
+| =basel_traffic_light= | Basel traffic light | How the traffic-light test is configured |
+| =reference_data= | Reference data | The reference data of a run |
+| =calendar_adjustment= | Calendar adjustments | The holidays and business days added to a calendar |
+| =currency_configuration= | Currency configuration | The currencies a run may use |
+| =ibor_fallback= | IBOR fallback | How a discontinued index falls back |
+| =counterparty_information= | Counterparty information | The counterparty data a run reads |
+| =netting_set_definitions= | Netting set definitions | The netting sets a run reads |
+| =risk_report_config= | Run settings | The run's paths, currency, market kind and scope |
+
+The list title is the plural of the screen name, except for a mass noun such as
+*Engine run settings* and *Reference data*, which take the same title in both
+numbers.
+
+Three words are fixed by this table and replace the earlier screen words:
+
+- *Pricing engines* becomes *Pricing engine configuration*. It lists
+  configurations, not engines.
+- *Engine settings* becomes *Engine run settings*. It does not hold the settings
+  of a pricing engine.
+- The pricing page's *Settings* tab becomes *Parameters*, which is the ORE
+  element name.
+
+The model names, the configuration type codes and the API routes keep their
+spelling. Only the screen words change.
+
+** What a configuration kind declares
+
+A kind is declared once, and every part of its screen reads the declaration.
+
+| Declaration | What it decides |
+|-------------+-----------------|
+| Screen name and one line | The list title, the card and the breadcrumb |
+| ORE root element and schema | The import, the export and the documentation key |
+| Sections | Their order, their titles, whether each is a group or a collection, and whether each changes the numbers |
+| Lifecycle | Whether the kind has an official version per cycle, and which approval parts sign it |
+| Import | Whether a person may bring the document in, and what the parse reports |
+| List columns and filters | What a row shows and how a person narrows the list |
+
+** The list
+
+The list follows the record standard without a variation: breadcrumb, the plural
+title, one sentence, Refresh, Workflows and Add, the server search, the filters,
+the paged table and the four states.
+
+A configuration list adds three rules.
+
+1. A row shows what the configuration holds: the count of its sections that are
+   set, or the count of rows in its principal collection. It never shows a count
+   that needs a read for every row unless the server returns the counts in one
+   read.
+2. A filter narrows by *Used by reports*: bound by a report, or bound by none.
+3. Where the kind has a lifecycle, a filter narrows by status, and a row marks
+   the configuration that is official for a cycle.
+
+The list never shows the ORE root element, the configuration type code or a UUID.
+The kind is what the screen is about; a person does not need its schema name.
+
+** The record page
+
+The page follows the record standard's header, access mark and actions, and adds
+this tab order, which is fixed:
+
+1. *Details*.
+2. One tab per section, in the order the kind declares them.
+3. *Used by*.
+4. *History*.
+
+Details is always first and History is always last. A tab that does not apply is
+not drawn. A kind with no sections has no section tabs.
+
+The header carries the name as the title, the version, what the configuration
+holds, the count of reports that bind it, the access mark, and the actions the
+person may take.
+
+Details holds the name, the party, the description, the version, the reporting
+configuration row it is bound through and the last-changed line. It opens with
+[[*What this configuration decides, and the related configurations][the sentence that says what the configuration decides]], and it ends with
+the related configurations card.
+
+** Sections: a group and a collection
+
+A field set earns its own section when it has its own multiplicity, change reason
+or reader. A section is one of two shapes, and the shape decides how it is
+changed.
+
+| Shape | Holds | Owns | Changed |
+|-------+-------+------+---------|
+| Group | A fixed set of scalar parameters | One row and one version | In place, one Save for the section |
+| Collection | Repeated elements with their own identity | Rows, and the configuration's version | In a dialog per row, then one Save for the document |
+
+A group that has no row shows *not set*, and the engine uses its default for
+every parameter in it. A collection with no rows says so, and adds a row the way
+the record standard draws a parts table.
+
+Every section declares whether it changes the numbers a run computes. The
+declaration drives the label on the section, the warning on a change and the
+lifecycle.
+
+** Reading a group
+
+- Every parameter shows the *value in force*: the set value, or *Default: X*.
+  The value the engine uses is never hidden.
+- The documentation is collapsed under the parameter. A button opens or closes it
+  for the whole section.
+- Simple shows the label, the value and the short help. Advanced adds the schema
+  entry: the ORE path, the format, the release that introduced the parameter and
+  the release that removed it. It is the same switch as the feed screens, and the
+  choice is remembered for every screen that offers it.
+- Two filters narrow a long section: *Set in this configuration* and *Changes the
+  numbers*.
+- A parameter with no documentation entry shows its ORE name and a note. It is
+  never hidden, because a gap in the data must be visible.
+
+** Changing a group
+
+- *Edit* turns the section's card into a form in place. There is no dialog, so
+  nothing hides the documentation.
+- The first option of every control is the default, which unsets the parameter.
+- A parameter that differs from the saved value is marked, and the foot of the
+  card counts the changes.
+- The foot states the reach: how many reports the section reaches, and the rule.
+- A section that changes the numbers states that it does, and asks for a change
+  reason and a commentary. See [[*The lifecycle][The lifecycle]] for what Save
+  then does.
+- *Save* claims the version the page read. A section that changed since is a
+  conflict, and the page offers to read it again.
+- *Save* writes the section and moves the version of the whole configuration in
+  the same transaction.
+- *Cancel* leaves the card as it was, and a close with changes asks before it
+  discards them.
+
+** Changing a collection
+
+- A row is added, changed and removed in the record standard's dialog. A
+  collection is not edited in place.
+- The dialog shows the documentation of the choice, and where a choice depends on
+  another (a model on a product type, an engine on a model), it offers only the
+  choices that belong together.
+- A change that drops a row or a parameter states what will be dropped before it
+  is dropped. Nothing is dropped silently.
+- The save states the difference: added, changed and removed.
+- The save claims the configuration's version. A stale save is a conflict, and
+  the dialog offers to read again.
+- The save asks for a change reason and a commentary, and follows the lifecycle
+  rule for the section it touches.
+
+** The documentation contract
+
+One contract serves every ORE leaf, and it is data, not text in a screen.
+
+A documentation entry carries:
+
+- the schema and the XPath that identify the leaf;
+- the label and the short help;
+- the long description, which says what each value means;
+- the default;
+- the format;
+- the release that introduced the parameter, and the release that removed it,
+  empty while ORE still reads it;
+- the kind of value, its closed list where it has one, and its range;
+- whether it changes the numbers;
+- the source of the words, where they are not ORE's.
+
+Three rules follow.
+
+1. The screen never holds ORE text. A missing entry shows the ORE name and a note.
+2. The documentation validates nothing. The type, the range and the check of a
+   value stay with the data model.
+3. The contract holds no table of values. A value that names an entity, such as a
+   calendar or a currency, is bound to that entity by the control, and the
+   description gives examples.
+
+A parameter whose meaning depends on an element pair, such as a pricing parameter
+that belongs to a model and an engine, keys its entry by the schema, the XPath
+and the pair. The screen looks it up by the same key.
+
+** Reach: Used by
+
+A configuration page says which reports bind it, and never guesses.
+
+- *Used by* lists each report with a link to its page, and the rule: a change
+  reaches the next run of each report below, and a run already produced keeps what
+  it ran with.
+- The read is =reporting.v1.report_configurations.list_by_configuration_id=.
+- A run records the version of each configuration it read. Until it does, the
+  page cannot name the runs a change reached, and it says so.
+- When the read fails, the tab says so. It does not show an empty list as if
+  nothing bound the configuration.
+
+** History
+
+History is the shared timeline, as the entity specification draws it: the event
+chart, the rail under day headings, the collapsed detail, the current-version
+emblem and the *Hide system activity* toggle.
+
+- A change to a section is one entry that names the section and its part version.
+- The entry moves the version of the whole configuration, because a write to any
+  section makes the next version of the central row.
+- A proposal that waits shows at the top, and is not a version in force.
+- *Revert* is offered on every entry that is not current. It writes the values the
+  section had before as a new version. On a numbers-changing section it writes
+  them as a proposal.
+
+** The lifecycle
+
+The lifecycle attaches to a section, not to a kind, because one configuration may
+hold both kinds of section.
+
+A kind declares whether it has an official version for a cycle, and which
+approval parts sign it. A section declares whether it changes the numbers.
+
+The rule:
+
+1. On a configuration that at least one report binds, a write to a
+   numbers-changing section is a *proposal*. The version in force stays in force
+   until the proposal is signed off, and the proposal never rewrites the rows a
+   run reads.
+2. On the same configuration, a write to an operational section lands directly,
+   with a change reason and a history entry.
+3. A configuration that no report binds is a *draft*, and every section changes
+   in place. It becomes governed the moment a report binds it.
+4. A numbers-changing section never changes in place. On an approved
+   configuration, *Edit* is *Propose a change* for that section.
+5. A proposal names the version it was written on. The version in force keeps
+   its section versions until the sign-off completes.
+6. The person who proposed a change cannot sign it off, even when they hold a
+   part.
+7. Making a proposal official changes the section versions in force in one step.
+8. An operational change moves the central version and leaves every section
+   version as it was.
+9. A revert follows the same rule as the change it reverts.
+
+A kind that has no lifecycle yet is a gap, not an exception: the screen still
+edits in place, and the history still records the change. The standard names the
+gap on the kind's conformance line.
+
+** Import
+
+The import of a configuration file follows five steps, on the standard steps UI.
+
+1. *Choose the file.* The screen accepts the kind's root element. A file of
+   another kind is refused, and the refusal names the root element it found.
+2. *Read what the file holds.* The parse happens on the server, so a browser
+   parser cannot drift. The step states the counts before anything is written.
+3. *Read what the system does not know.* Three lists, each only when not empty: a
+   product or element type with no vocabulary row, an element the tables cannot
+   hold, and a duplicate. An element with no column is dropped and named; a
+   duplicate is resolved by the person.
+4. *Choose the target.* A new configuration, or an existing one. A file put into
+   an official configuration is a proposal; a file put into a draft changes the
+   draft in place.
+5. *Read the difference and review.* Added, changed and removed, with the removed
+   rows first and *Keep it* as the default, because a file that omits a row
+   usually leaves it out by accident. The review states the reach, asks for a
+   change reason and a commentary, and claims the version read.
+
+A file never becomes official directly. Nothing is dropped in silence, and every
+drop is named in the review.
+
+** Export
+
+The export writes the kind's ORE document from the configuration, in the order
+the rows carry.
+
+A configuration never names its own file. The run document names it, through the
+parameter that =configuration_type.run_parameter= records.
+
+** What this configuration decides, and the related configurations
+
+Every configuration page answers two questions before the person asks them.
+
+1. *What this configuration decides.* One sentence at the top of Details, in the
+   pattern "It decides X. It does not decide Y; that is <the other
+   configuration>." The second half is required only where a person is likely to
+   confuse the kind with another, and it always links to the other.
+2. *Related configurations.* A card that lists the other kinds the same report
+   binds, one row each: the screen name, the configuration this report binds, a
+   one-line statement of what it decides, and a link. A kind with no screen yet
+   says *No screen yet*, and the row stays, because the relationship is the
+   point.
+
+The link goes both ways. A page that names another configuration links to it.
+
+** States
+
+The list has the record standard's four states: loading, loading again with
+dimmed rows, none yet, nothing matches with a way to clear, and an error in place
+with Retry.
+
+A configuration adds these states.
+
+| State | Where | What it says |
+|-------+-------+--------------|
+| Not set | A group with no row | The engine uses its default for every parameter |
+| Undocumented | A parameter with no entry | Its ORE name, and a note that the documentation is missing |
+| Conflict | A save against a stale version | Who changed what, and the offer to read again |
+| Proposal pending | A numbers-changing section | The proposal, the parts that approved it, and the version that stays in force |
+| Read only | A configuration of another party | Why, and the switch to the owning party |
+
+** Access and the owning party
+
+A configuration belongs to a party and is editable only there. From another party
+the page is read only, says so, and offers a switch to the owning party. The
+server refuses the write and the page shows the refusal in the server's words.
+
+An action the person may not take is not drawn. It is not drawn disabled.
+
+** How to add a screen for a new kind
+
+1. Seed or confirm the =configuration_type= row: code, name, ORE root element and
+   run parameter.
+2. Declare the sections: order, shape, parameters, whether each changes the
+   numbers, and the lifecycle.
+3. Seed the documentation entries for every leaf the sections show.
+4. Build the list and the page from the shared parts. Do not copy a screen.
+5. Add *Used by* on the reach read and *History* on the shared timeline.
+6. Add the related configurations card and the sentence that says what the kind
+   decides.
+7. Add the import where the kind has a document a person brings in.
+8. Run the screen review checklist and record each gap on the kind's conformance
+   line.
+
+** Conformance today
+
+Measured on 2026-10-24. This is the gap list the tasks close; it is not a licence
+to differ.
+
+| Rule | Engine run settings | Pricing engine configuration |
+|------+---------------------+------------------------------|
+| List and record page | Meets | Gap: sections are stacked, not tabs; no Used by, no History |
+| Sections and editing | Meets | Meets for the collection dialogs |
+| Documentation contract | Meets, from =ore_parameter= | Gap: four vocabulary tables hold the words |
+| Value in force and Simple/Advanced | Meets | Partial: usual values, no default-in-force, no schema panel |
+| Reach | Meets | Gap: the page says the reach cannot be read |
+| History | Meets | Gap |
+| Numbers-changing lifecycle | Gap | Gap: the model has no status or sign-off |
+| Import | Gap: the run document import drops and warns | Gap |
+| What it decides and related | Partial: the lead says what it is | Partial: the lead says what it is |
+| Screen words | Meets, after the prototype update | Meets in the prototype; the built screen still says *Settings* |
+
+** The prototype changes this standard requires
+
+The two configuration prototypes were updated in PR #3720 and draw the words,
+the sentence, the related card and the section lifecycle. Two changes remain,
+and they belong to the pricing application task:
+
+- The pricing prototype's product and parameter dialogs must show the
+  documentation, collapsed, with the schema panel under Simple and Advanced.
+- The importing prototype must follow [[*Import][Import]] in the same words as the
+  engine run settings prototype, including the server parse.
+
+The report page prototype is the third place a person meets both configurations.
+It belongs to the story *See and change everything a report runs — the remaining
+work*, and it must use the words in this page.
+
+* See also
+
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the base this page extends.
+- [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — tabs, cards, the timeline and the edit pattern.
+- [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]] — the other extension, and the Simple and Advanced switch it shares.
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the words and the colours this page uses.
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the reading order this page joins.
+- [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] — one line per rule of this page.
+- [[id:146461B4-C00E-4FA7-A01D-DEFBC862BC73][Investigation: the two engine-facing configurations]] — the boundary between the first two kinds, and the ORE source extraction behind the rules.
+- [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] — the story that writes and applies this page.

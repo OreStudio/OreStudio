@@ -268,15 +268,20 @@ rail. It is one page in tabs, and the [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41]
 
 *** Reporting
 
-Reporting is the topic of what a party has run. It holds Reports: every report
-definition the session's party owns, with the health of its latest run, and one
-definition's own page. A report is produced by a schedule the party set, so a
-person who asks what the party ran and whether the run worked looks here and not
-in Operations, which says how the installation is running.
+Reporting is the topic of what a party has run, and of the configurations a
+report binds. It holds Reports: every report definition the session's party owns,
+with the health of its latest run, and one definition's own page. It also holds
+the configuration screens, one per kind a person creates and changes, each named
+as the [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]]
+names it. Today those are Pricing engine configurations and Engine run settings.
 
-The screen reads =reporting::report_definitions:read=, so the area is drawn for a
-person who holds that read and for nobody else. The screen needs no other read,
-so the menu entry asks for that one and the card asks for the same one.
+A report is produced by a schedule the party set, so a person who asks what the
+party ran and whether the run worked looks here and not in Operations, which says
+how the installation is running.
+
+The area page reads =reporting::report_definitions:read=, so it is drawn for a
+person who holds that read and for nobody else. Each screen inside the area asks
+for its own read, and its writes ask for the write permission of its kind.
 
 Reporting sits after Operations and before Development: what a party ran follows
 how the installation runs, and it is not work the team does on the product.
@@ -338,6 +343,8 @@ the same thing. A screen has one address.
 | Reporting, the area page | =/reporting= |
 | Reports | =/reporting/reports= |
 | A report definition's page | =/reporting/reports/:id= |
+| Pricing engine configurations | =/reporting/pricing-engines= |
+| Engine run settings | =/reporting/engine-settings= |
 | Development, with its tabs Tests, Board and Backlog | =/development= |
 | A test scenario | =/development/tests/:id= |
 | A document | =/development/docs/:id= |

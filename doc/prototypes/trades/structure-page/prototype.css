@@ -223,9 +223,9 @@ input[disabled],select[disabled],textarea[disabled]{opacity:.5;cursor:not-allowe
 .listrail{display:grid;grid-template-columns:14rem minmax(0,1fr);gap:1.25rem;align-items:start;margin-top:.5rem}
 @media (max-width:820px){.listrail{grid-template-columns:1fr}}
 .listmain{min-width:0}
-.rail{border:1px solid var(--line);border-radius:var(--radius-card);background:var(--panel);padding:.35rem 0;position:sticky;top:.5rem}
-.rail-head{padding:.2rem .8rem .45rem;color:var(--ink-faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--line-soft);margin-bottom:.3rem}
-.rail-note{padding:.45rem .8rem .2rem;border-top:1px solid var(--line-soft);margin-top:.3rem}
+.ptree{border:1px solid var(--line);border-radius:var(--radius-card);background:var(--panel);padding:.35rem 0;position:sticky;top:.5rem}
+.ptree-head{padding:.2rem .8rem .45rem;color:var(--ink-faint);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--line-soft);margin-bottom:.3rem}
+.ptree-note{padding:.45rem .8rem .2rem;border-top:1px solid var(--line-soft);margin-top:.3rem}
 .tree-node{display:flex;width:100%;gap:.5rem;align-items:baseline;justify-content:space-between;background:none;border:0;color:var(--ink);font:inherit;font-size:.85rem;padding:.22rem .8rem;text-align:left}
 .tree-node:hover{background:var(--panel-2)}
 .tree-chosen{background:var(--panel-2);box-shadow:inset 2px 0 0 var(--accent)}

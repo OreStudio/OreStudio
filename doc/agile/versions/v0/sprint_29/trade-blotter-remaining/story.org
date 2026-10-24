@@ -37,7 +37,7 @@ authorisation queue (see =* Decisions=).
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started. Split from [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]], which closed in sprint 28 with its done tasks. |
+| Now           | Started: the prototype and the plan are settled, the screens are next. Split from [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]], which closed in sprint 28 with its done tasks. |
 | Waiting on    | Nothing. |
 | Next          | Triage into a sprint. |
 | Last touched  | 2026-10-24                               |

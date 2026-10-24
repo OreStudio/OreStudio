@@ -82,8 +82,8 @@ const SORT_FIELDS = { code: 'code', type: 'trade_type_code', cp: 'counterparty_i
  * here because a prototype stands alone. A trade is filed in one book, so choosing a portfolio keeps the trades of
  * every book under it. A sandbox's portfolios are virtual. */
 const ICONS = {
-    portfolio: '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden="true"><path fill="currentColor" d="M11.25 2C12.2165 2 13 2.7835 13 3.75V5H15C16.6569 5 18 6.34315 18 8V14C18 15.6569 16.6569 17 15 17H5C3.39489 17 2.08421 15.7394 2.00391 14.1543L2 14V8C2 6.34315 3.34315 5 5 5H7V3.75C7 2.7835 7.7835 2 8.75 2H11.25ZM17 11.2314C16.469 11.7077 15.7695 12 15 12H11V12.5C11 12.7761 10.7761 13 10.5 13H9.5C9.22386 13 9 12.7761 9 12.5V12H5C4.23053 12 3.53103 11.7077 3 11.2314V14L3.01074 14.2041C3.113 15.2128 3.96435 16 5 16H15C16.1046 16 17 15.1046 17 14V11.2314ZM5 6C3.89543 6 3 6.89543 3 8V9C3 10.1046 3.89543 11 5 11H9V10.5C9 10.2239 9.22386 10 9.5 10H10.5C10.7761 10 11 10.2239 11 10.5V11H15C16.1046 11 17 10.1046 17 9V8C17 6.89543 16.1046 6 15 6H5ZM8.75 3C8.33579 3 8 3.33579 8 3.75V5H12V3.75C12 3.33579 11.6642 3 11.25 3H8.75Z"/></svg>',
-    book: '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" aria-hidden="true"><path fill="currentColor" d="M6 5C6 4.44772 6.44772 4 7 4H13C13.5523 4 14 4.44772 14 5V6C14 6.55228 13.5523 7 13 7H7C6.44772 7 6 6.55228 6 6V5ZM7 5V6H13V5H7ZM4 4V16C4 17.1046 4.89543 18 6 18H15.5C15.7761 18 16 17.7761 16 17.5C16 17.2239 15.7761 17 15.5 17H6C5.44772 17 5 16.5523 5 16H15C15.5523 16 16 15.5523 16 15V4C16 2.89543 15.1046 2 14 2H6C4.89543 2 4 2.89543 4 4ZM14 3C14.5523 3 15 3.44772 15 4V15H5V4C5 3.44772 5.44772 3 6 3H14Z"/></svg>'
+    portfolio: '<svg viewBox="0 0 20 20" width="20" height="20" fill="none" aria-hidden="true"><path fill="currentColor" d="M11.25 2C12.2165 2 13 2.7835 13 3.75V5H15C16.6569 5 18 6.34315 18 8V14C18 15.6569 16.6569 17 15 17H5C3.39489 17 2.08421 15.7394 2.00391 14.1543L2 14V8C2 6.34315 3.34315 5 5 5H7V3.75C7 2.7835 7.7835 2 8.75 2H11.25ZM17 11.2314C16.469 11.7077 15.7695 12 15 12H11V12.5C11 12.7761 10.7761 13 10.5 13H9.5C9.22386 13 9 12.7761 9 12.5V12H5C4.23053 12 3.53103 11.7077 3 11.2314V14L3.01074 14.2041C3.113 15.2128 3.96435 16 5 16H15C16.1046 16 17 15.1046 17 14V11.2314ZM5 6C3.89543 6 3 6.89543 3 8V9C3 10.1046 3.89543 11 5 11H9V10.5C9 10.2239 9.22386 10 9.5 10H10.5C10.7761 10 11 10.2239 11 10.5V11H15C16.1046 11 17 10.1046 17 9V8C17 6.89543 16.1046 6 15 6H5ZM8.75 3C8.33579 3 8 3.33579 8 3.75V5H12V3.75C12 3.33579 11.6642 3 11.25 3H8.75Z"/></svg>',
+    book: '<svg viewBox="0 0 20 20" width="20" height="20" fill="none" aria-hidden="true"><path fill="currentColor" d="M6 5C6 4.44772 6.44772 4 7 4H13C13.5523 4 14 4.44772 14 5V6C14 6.55228 13.5523 7 13 7H7C6.44772 7 6 6.55228 6 6V5ZM7 5V6H13V5H7ZM4 4V16C4 17.1046 4.89543 18 6 18H15.5C15.7761 18 16 17.7761 16 17.5C16 17.2239 15.7761 17 15.5 17H6C5.44772 17 5 16.5523 5 16H15C15.5523 16 16 15.5523 16 15V4C16 2.89543 15.1046 2 14 2H6C4.89543 2 4 2.89543 4 4ZM14 3C14.5523 3 15 3.44772 15 4V15H5V4C5 3.44772 5.44772 3 6 3H14Z"/></svg>'
 };
 const treeIcon = kind => {
     const el = h('span', { class: 'tree-icon' });
@@ -103,7 +103,8 @@ const PORTFOLIOS = [
     { id: 'SANDBOX-ORE', name: 'ORE samples', parent: 'SANDBOX', virtual: true },
     { id: 'SANDBOX-WHATIF', name: 'Rates what-ifs', parent: 'SANDBOX', virtual: true }
 ];
-/* The portfolio each mock book belongs to. A book states its portfolio with parent_portfolio_id. */
+/* The mock books carry a group name, not a portfolio id, so the prototype maps each book to its portfolio by hand. The
+ * model states the same link with book.parent_portfolio_id, which is what the junction capture asks the server for. */
 const PORTFOLIO_OF_BOOK = {
     'EMEA-RATES': 'RATES', 'EMEA-RATES-2025': 'CLOSED-2025', 'EMEA-FX': 'FX', 'EMEA-CREDIT': 'CREDIT',
     'EMEA-EQ': 'EQUITY', 'EMEA-CMDTY': 'COMMODITY', 'VIRT-DRAFT': 'SANDBOX-WHATIF',
@@ -111,7 +112,7 @@ const PORTFOLIO_OF_BOOK = {
 };
 const childPortfolios = id => PORTFOLIOS.filter(p => p.parent === id);
 const booksIn = id => BOOKS.filter(b => PORTFOLIO_OF_BOOK[b.code] === id);
-/* A portfolio holds its own books and the books of every portfolio under it. */
+/* A folder that counted only its own books would look empty while its children held the population. */
 function subtree(id) {
     const out = [id];
     for (const child of childPortfolios(id)) out.push(...subtree(child.id));
@@ -123,38 +124,42 @@ const tradesInPortfolio = id => {
     const codes = new Set(booksUnder(id).map(b => b.code));
     return TRADES.filter(t => codes.has(t.book)).length;
 };
+/* The node the tree has chosen, and the books that choice selects: a book selects itself, a portfolio selects the books
+ * under it. Both the list and the request line ask these two, so the rule is written once. */
+const chosenNode = q => q.book || q.portfolio || '';
+const chosenBookCodes = q => {
+    if (q.book) return [q.book];
+    if (q.portfolio) return booksUnder(q.portfolio).map(b => b.code);
+    return null;
+};
 function portfolioRail(q) {
-    const node = (label, kind, chosen, count, depth, opts) => h('button', {
-        class: 'tree-node' + (chosen ? ' tree-chosen' : '') + (opts.virtual ? ' tree-virtual' : ''),
+    const chosen = chosenNode(q);
+    /* One row builder for both kinds: choosing it sets its own field and clears the other, because the tree holds one
+     * choice at a time. */
+    const treeRow = ({ kind, id, label, count, depth, virtual, title }) => h('button', {
+        class: 'tree-node' + (chosen === id ? ' tree-chosen' : '') + (virtual ? ' tree-virtual' : ''),
         style: 'padding-left:' + (0.5 + depth * 0.9).toFixed(2) + 'rem',
-        'aria-current': chosen ? 'true' : null,
-        title: opts.title,
-        onclick: opts.pick
+        'aria-current': chosen === id ? 'true' : null,
+        title,
+        onclick: () => { q[kind] = q[kind] === id ? '' : id; q[kind === 'book' ? 'portfolio' : 'book'] = ''; q.offset = 0; renderList(); }
     }, treeIcon(kind), h('span', { class: 'tree-name' }, label), h('span', { class: 'tree-count' }, String(count)));
-    const portfolioRow = (p, depth) => [
-        node(p.name, 'portfolio', q.portfolio === p.id, tradesInPortfolio(p.id), depth, {
-            virtual: p.virtual,
-            title: p.virtual ? p.name + ' — a virtual portfolio, in a sandbox' : p.name + ' — a portfolio',
-            pick: () => { q.portfolio = q.portfolio === p.id ? '' : p.id; q.book = ''; q.offset = 0; renderList(); }
-        }),
-        childPortfolios(p.id).map(k => portfolioRow(k, depth + 1)),
-        booksIn(p.id).map(b => node(b.name, 'book', q.book === b.code, tradesInBook(b.code), depth + 1, {
-            title: b.name + ' — a book in ' + p.name,
-            pick: () => { q.book = q.book === b.code ? '' : b.code; q.portfolio = ''; q.offset = 0; renderList(); }
-        }))
+    const portfolioRows = (p, depth) => [
+        treeRow({ kind: 'portfolio', id: p.id, label: p.name, count: tradesInPortfolio(p.id), depth, virtual: p.virtual,
+            title: p.virtual ? p.name + ' — a virtual portfolio, in a sandbox' : p.name + ' — a portfolio' }),
+        childPortfolios(p.id).map(k => portfolioRows(k, depth + 1)),
+        booksIn(p.id).map(b => treeRow({ kind: 'book', id: b.code, label: b.name, count: tradesInBook(b.code), depth: depth + 1,
+            title: b.name + ' — a book in ' + p.name }))
     ];
-    const chosen = q.portfolio || q.book;
-    return h('aside', { class: 'rail', 'aria-label': 'Portfolio tree' },
-        h('div', { class: 'rail-head' }, 'Portfolio tree'),
-        PORTFOLIOS.filter(p => !p.parent).map(p => portfolioRow(p, 0)),
-        h('div', { class: 'rail-note faint small' }, chosen ? 'A portfolio holds the books under it. Choose it again to clear.' : 'Choose a portfolio or a book to narrow the list.'));
+    return h('aside', { class: 'ptree', 'aria-label': 'Portfolio tree' },
+        h('div', { class: 'ptree-head' }, 'Portfolio tree'),
+        PORTFOLIOS.filter(p => !p.parent).map(p => portfolioRows(p, 0)),
+        h('div', { class: 'ptree-note faint small' }, chosen ? 'A portfolio holds the books under it. Choose it again to clear.' : 'Choose a portfolio or a book to narrow the list.'));
 }
 /* A structure matches a filter when one of its legs does. */
 function listTrades(q) {
-    /* Choosing a portfolio keeps the trades of every book under it, and choosing a book keeps its own. */
-    const chosenBooks = q.book ? new Set([q.book]) : q.portfolio ? new Set(booksUnder(q.portfolio).map(b => b.code)) : null;
-    const inTree = t => !chosenBooks || chosenBooks.has(t.book);
-    const tradeOk = t => inTree(t) && (!q.status || t.state === q.status) && (!q.type || t.type === q.type) && (!q.from || t.date >= q.from) && (!q.to || t.date <= q.to);
+    const codes = chosenBookCodes(q);
+    const chosen = codes ? new Set(codes) : null;
+    const tradeOk = t => (!chosen || chosen.has(t.book)) && (!q.status || t.state === q.status) && (!q.type || t.type === q.type) && (!q.from || t.date >= q.from) && (!q.to || t.date <= q.to);
     const showT = q.show !== 'structures', showS = q.show !== 'trades' && SERVER !== 'today';
     let rows = showT ? TRADES.filter(t => tradeOk(t) && (!q.cp || t.cp === q.cp)).map(t => ({ kind: 'trade', t })) : [];
     if (showS) rows = rows.concat(dealRows().filter(r => (!q.cp || r.d.cp === q.cp) && r.legs.some(tradeOk)));
@@ -178,12 +183,17 @@ function requestLine(q, total) {
     const f = {};
     if (q.search) f[SERVER === 'today' ? 'id_one_of' : 'search'] = q.search;
     if (SERVER !== 'today') {
-        /* A portfolio names no column of a trade: a trade is filed in one book, so the portfolio is the books under it. */
-        if (q.portfolio) f.book_id_one_of = booksUnder(q.portfolio).map(b => b.code);
-        if (q.status) f.state = q.status;
+        /* A portfolio names no column of a trade: a trade is filed in one book, so a portfolio asks for the books under
+         * it and a book asks for itself. One value is an equals member and many are a one-of member, which is the shape
+         * the filter record states. */
+        const codes = chosenBookCodes(q);
+        if (codes) {
+            if (codes.length === 1) f.book_id = codes[0];
+            else f.book_id_one_of = codes;
+        }
+        if (q.status) f.status = q.status;
         if (q.cp) f.counterparty_id = q.cp;
-        if (q.type) f.trade_type_code = q.type;
-        if (q.book) f.book_id_one_of = [q.book];
+        if (q.type) f.instrument_type = q.type;
         if (q.from) f.trade_date_from = q.from;
         if (q.to) f.trade_date_to = q.to;
     }
@@ -192,6 +202,15 @@ function requestLine(q, total) {
     const structures = q.show !== 'trades' && SERVER !== 'today' ? '  +  trading.v1.structures.list  (a structure matches when one of its legs does)' : '';
     return subject + '  offset=' + q.offset + ' limit=' + q.limit + ' order=' + JSON.stringify(order) + ' filter=' + JSON.stringify(f) + structures + '  →  total=' + total;
 }
+/* A row says what it is: a trade whose instrument is composite, or a trade a deal holds. Both are links to the record
+ * that holds the trade, and a plain trade says nothing. */
+const rowChips = t => {
+    const legs = compositeLegs(t.code);
+    if (!legs.length && !t.structure) return null;
+    return h('div', { class: 'chips' },
+        legs.length ? h('a', { class: 'chip acc', href: tradeHref(t.code), title: 'Its instrument holds ' + legs.join(' and ') }, 'composite · ' + legs.length + ' constituent trades') : null,
+        t.structure ? h('a', { class: 'chip acc', href: dealHref(t.structure), title: 'A ' + (roleOfTrade(t.code) || 'leg') + ' of ' + t.structure }, 'leg of ' + t.structure) : null);
+};
 const stateChip = s => chip(s, { live: 'ok', draft: 'warn', expired: '', cancelled: 'bad' }[s]);
 const tradeHref = (code, tab) => qs({ trade: code, tab: tab || null, state: null, workflow: null });
 function syncUrl() {
@@ -247,7 +266,7 @@ function renderList() {
                 h('span', { class: 'filter-group' }, h('span', { class: 'faint small' }, 'Trade date'), dateBox('from', 'Trade date from'), h('span', { class: 'faint small' }, 'to'), dateBox('to', 'Trade date to'))));
     /* The tree sits beside the list. It keeps its shape while the list shows its state, so a person can leave a
      * portfolio that holds nothing. */
-    const rail = portfolioRail(q);
+    const rail = SERVER === 'today' ? null : portfolioRail(q);
     const body = (...kids) => h('div', { class: 'listrail' }, rail, h('div', { class: 'listmain' }, kids));
     if (STATE_P === 'loading') return put(wrap(head, body(filters, h('div', { class: 'notice' }, 'Loading…'))));
     if (STATE_P === 'error') return put(wrap(head, body(h('div', { class: 'notice bad' }, h('b', null, 'The trades could not be read. '), 'trading.v1.trade_summaries.list answered 503 (request 4f1c9a02). ', h('button', { class: 'btn small', onclick: () => location.href = qs({ state: null }) }, 'Retry')))));
@@ -263,10 +282,7 @@ function renderList() {
         h('thead', null, h('tr', null, sel ? h('th', { class: 'sel' }) : null, sortTh('code', 'Id'), sortTh('type', 'Type'), sortTh('cp', 'Counterparty'), sortTh('book', 'Book'), sortTh('status', 'State'), sortTh('date', 'Trade date'), sortTh('ver', 'Version', 'num'))),
         h('tbody', null, rows.length ? rows.map(r => r.kind === 'structure' ? structureRow(r, sel) : (t => h('tr', { class: stale && t.code === newsCode ? 'row-news' : '' },
             sel ? h('td', { class: 'sel' }, h('input', { type: 'checkbox', checked: selected.has(t.code), 'aria-label': 'Choose ' + t.code, onchange: e => { e.target.checked ? selected.add(t.code) : selected.delete(t.code); renderList(); } })) : null,
-            h('td', { class: 'nw' }, h('a', { href: tradeHref(t.code) }, t.code)), h('td', null, tradeType(t.type).description,
-                compositeLegs(t.code).length || t.structure ? h('div', { class: 'chips' },
-                    compositeLegs(t.code).length ? h('a', { class: 'chip acc', href: tradeHref(t.code), title: 'Its instrument holds ' + compositeLegs(t.code).join(' and ') }, 'composite · ' + compositeLegs(t.code).length + ' constituent trades') : null,
-                    t.structure ? h('a', { class: 'chip acc', href: dealHref(t.structure), title: 'A ' + (roleOfTrade(t.code) || 'leg') + ' of ' + t.structure }, 'leg of ' + t.structure) : null) : null),
+            h('td', { class: 'nw' }, h('a', { href: tradeHref(t.code) }, t.code)), h('td', null, tradeType(t.type).description, rowChips(t)),
             h('td', null, ref('counterparty', t.cp, cpty(t.cp).name)), h('td', null, ref('book', t.book, book(t.book).name)),
             h('td', { class: 'nw' }, stateChip(t.state)), h('td', { class: 'nw' }, t.date),
             h('td', { class: 'num mono nw' }, 'v' + t.ver + ' · ext ' + t.ext)))(r.t)) :

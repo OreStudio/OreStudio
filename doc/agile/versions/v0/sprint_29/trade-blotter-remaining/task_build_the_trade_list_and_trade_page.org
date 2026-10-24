@@ -31,7 +31,7 @@ Build the two screens from doc/prototypes/trades/trade-page. Settle the open ite
 | Now          | The prototype is settled and the plan is written. The screens are next. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-10-21                               |
+| Last touched | 2026-10-24                               |
 
 * Acceptance
 
@@ -44,7 +44,7 @@ Build the two screens from doc/prototypes/trades/trade-page. Settle the open ite
 The list ships in the first PR and the page in the second.
 
 - *The list reads =trading.v1.trade_summaries.list=.* The read model already carries the filter record the prototype asks for: =search=, =trade_date_from=, =trade_date_to=, =status=, =book_id=, =counterparty_id=, =instrument_type=, the =_one_of= sets, and the order and page.
-- *A portfolio tree sits beside the list, and it holds books.* A portfolio nests under a portfolio and a book hangs from exactly one portfolio, so the tree draws both: the briefcase for a portfolio and the book for a book, the two icons the icon guidelines already name. Choosing a portfolio filters by =book_id_one_of= over the books under it; choosing a book filters by its own =book_id=. The read model already carries =book_id=, so the tree needs no server change.
+- *A portfolio tree sits beside the list, and it holds books.* A portfolio nests under a portfolio and a book hangs from exactly one portfolio, so the tree draws both: the briefcase for a portfolio and the book for a book, the two icons the icon guidelines already name. A choice names books: one book is an equals member, =book_id=, and the books under a portfolio are a one-of member, =book_id_one_of=. The read model already carries =book_id=, so the filter needs no new column. The tree itself still needs the hierarchy read, which is what the capture investigates: no column, but not no read.
 - *The trade's other portfolios are out of scope here.* =ores_trading_trade_portfolios_tbl= records the portfolios a trade is reported in beside the book it is filed in. The tree follows the book, which is the trade's filing position. A list that must also answer for the reported portfolios needs a portfolio set on the summary, and that is a later decision.
 - *The tree's junction reads are investigated after the prototype is signed off.* The prototype draws the tree from mock data. Serving it for real asks the server for two junctions, books to portfolios and trades to books, and file [[id:247B37A7-15AF-4C24-80D1-8BC4CD45DBF1][Read the portfolio tree's junctions from the server]] holds the six questions that decide the shape. This PR builds the screen and does not answer them.
 - *The Id column shows an identifier, never the uuid.* The summary's =id= is a uuid, which is unreadable in a list. The trade's identifiers are =ores_trading.trade_identifier= rows typed =Internal=, =UTI=, =USI= or =ORE=, and no type is marked primary. The display rule for the first PR is the first that exists, in that order, so a real trade shows its internal reference and a UTI only when nothing better exists. That rule is a decision to confirm, and it belongs beside the enrichment the BFF already does.
@@ -54,7 +54,8 @@ The list ships in the first PR and the page in the second.
 - *A structure is filtered by its own columns in the first PR.* The prototype asks that a structure match a filter when one of its trades does. The view does the opposite on purpose, because a structure row carries no book, state or date. The refinement waits for a decision; the first PR follows the view.
 - *Authorisation is not drawn*, as the prototypes index records. The read model carries =authorisation_status= and the list ignores it.
 - *A structure row opens the structure screen.* The list draws the deal's identifier as a link to =/trades/structures/:id=, which [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] already states, and the =leg of STR-0007= chip of a leg opens the same screen. A trade's own identifier still opens the trade page, so a leg is never taken away from its trade. The destination is [[id:3D378FE8-743B-4057-859D-961369D90845][Build the structure page]], so the link goes live when that task lands; this PR must not draw a link to a route that answers nothing.
-- *The open audit items.* The permission of each tab is settled with the page in the second PR. The links a lifecycle event writes are settled there too.
+- *The permission of each tab of the trade page.* A tab is drawn by the read it needs, and a tab whose read is refused is not drawn, because a control the person may not use is not drawn. Details and Instrument read =trading::trades=, Identifiers read =trading::trade_identifiers=, Links read =trading::trade_links=, and History reads =trading::trade_activities=. All four codes are seeded.
+- *The links a lifecycle event writes.* Exercise writes an =Exercise= link from the exercised trade to the resulting trade, and a partial termination writes =CloseOut= from the original to the closing one. Novation writes =Novation=, a roll writes =Roll=, and a cancel and rebook writes =MisbookingCorrection=. Expire, Cancel, Unexpire and Uncancel write no link, because nothing new is recorded, and Execute writes none because the same trade goes live.
 
 * Measurements
 
@@ -91,8 +92,26 @@ via its "Verifies task" field.
 
 * Review
 
+Two axes, run independently on the branch: standards against the repo's documented conventions, and spec against this task and the prototype's own record.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The audit's two open items are deferred, and a deferral is not a decision | task | Accepted | Both are now settled in =* Plan=: the read each tab needs, and the link each lifecycle event writes |
+| 2 | The inbox index also gains a row for the curve-binding capture | inbox.org | Kept | The index was stale on =main=; the row reproduces byte for byte from the regenerator and the PR body says so |
+| 3 | The plan, the page and the code disagree on =book_id= against =book_id_one_of= | plan, page, prototype.js | Accepted | One book is =book_id=, many are =book_id_one_of=; all three records now say the same |
+| 4 | The request line still emits =state= and =trade_type_code=, which the filter does not have | prototype.js | Accepted | Changed to =status= and =instrument_type=, the names the protocol carries |
+| 5 | The page still claims a structure matches when a leg does, against the plan's deferral | trade-page.org | Accepted | The page now states the divergence and the deferral, as notional does |
+| 6 | The address list in the list row omits =portfolio= | trade-page.org | Accepted | Added |
+| 7 | =?server=today= draws and applies the tree while the request line ignores it | prototype.js, trade-page.org | Accepted | The tree is not drawn in that state, and the page says why |
+| 8 | The comment says a book states its portfolio, but the mock maps it by hand | prototype.js | Accepted | The comment now says the map is by hand and the model uses =parent_portfolio_id= |
+| 9 | The plan says the tree needs no server change while the capture says it cannot be drawn from one read | plan, capture | Accepted | The plan now separates no new column from the read the tree still needs |
+| 10 | =Last touched= was not bumped when the task went STARTED | task | Accepted | Set to 2026-10-24 |
+| 11 | The story's =Now= still said not yet started | story | Accepted | Corrected |
+| 12 | The tree icons are 16 px where the guidelines put navigation at 20 px | prototype.js | Accepted | Both icons are drawn at 20 px |
+| 13 | Three comments restate the line below them | prototype.js | Accepted | Tightened to the reason |
+| 14 | The prototype page's =#+updated= was stale and =What is fake= omitted the new mock | trade-page.org | Accepted | Bumped, and the portfolios and both joins are listed as mock |
+| 15 | The choice rule is re-derived in four places, and the chip expression repeats a call four times | prototype.js | Accepted | =chosenNode= and =chosenBookCodes= state the rule once; =rowChips= builds the chips once |
+| 16 | =node= takes six positional arguments and =chosen= holds an id | prototype.js | Accepted | =treeRow= takes one object; the value is named for what it holds |
+| 17 | =.rail= reuses the name of the timeline's rail rule | prototype.css | Accepted | Renamed to =.ptree=, and =booksUnder= and =treeIcon= are kept because each names a concept used twice |
 
 * Result

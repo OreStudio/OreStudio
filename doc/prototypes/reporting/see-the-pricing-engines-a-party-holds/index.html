@@ -50,6 +50,12 @@ td.num{text-align:right;font-family:var(--mono)}
 .card .body{padding:16px;display:grid;gap:16px 20px;grid-template-columns:repeat(4,minmax(0,1fr))}
 @media(max-width:900px){.card .body{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .card .foot{border-top:1px solid var(--line-soft);padding:10px 16px;color:var(--ink-faint);font-size:.8rem}
+.gh{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line-soft)}
+.gh h3{font-size:1rem}
+.setting{padding:14px 16px;border-top:1px solid var(--line-soft);display:grid;gap:8px}.setting:first-of-type{border-top:0}
+.shead{display:flex;gap:12px;justify-content:space-between;align-items:baseline;flex-wrap:wrap}.sval{font-weight:600}
+.setting .help{color:var(--ink-faint);font-size:.8rem}
+
 .dl .k{font-size:.78rem;color:var(--ink-faint)}.dl .v{margin-top:2px}.dl.wide{grid-column:1/-1}
 a.link{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}a.link:hover{text-decoration-color:var(--accent)}
 .listbar{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px solid var(--line-soft)}.listbar input{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
@@ -542,13 +548,22 @@ function coverageStrip(c) {
   return `<div class="${un.length ? 'warnbox' : 'okbox'}"><b>Coverage:</b> ${c.reports.length ? `the reports that bind it need ${n} product types, and ${n - un.length} have a row here.` : `no report binds it. Of the ${TRADED.length} product types this party trades, ${TRADED.length - un.length} have a row here.`} ${un.length ? `Not covered: ${un.map(u => `<span class="mono">${u}</span>`).join(', ')}. A product with no row has no model in a run.` : 'Nothing is left unpriced.'} <span class="faint">${RULE} The portfolios and the traded products are fixtures: no operation returns them.</span></div>`;
 }
 function productsTab(c) {
-  const rows = c.products.map(p => { const t = typeOf(p.type); const cls = t ? CLASSES[t.cls] : null; return `<tr><td><a class="link" href="#" data-product="${esc(p.type)}">${esc(p.type)}</a><div class="faint" style="font-size:.78rem">${t ? esc(t.desc) : ''}</div></td><td>${cls ? `<a class="link" href="#" data-class="${esc(t.cls)}">${esc(cls.name)}</a>` : dash}</td><td>${t ? esc(t.instrument) : dash}</td><td class="mono">${esc(p.model)}</td><td class="mono">${esc(p.engine)} ${pairTag(p.model, p.engine)}</td><td class="num">${p.params.length}</td><td>${may('edit') ? `<a class="btn small" href="${OTHER.change}?config=${c.id}&open=${p.type}&status=${c.status}">${G.edit} ${c.status === 'approved' ? 'Propose' : 'Edit'}</a>` : ''}</td></tr>`; }).join('');
-  return `${notDrilldown}${coverageStrip(c)}<div class="card"><table><thead><tr><th>Product type</th><th>Asset class</th><th>Instrument</th><th>Model</th><th>Engine</th><th>Parameters</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="7" class="muted">None yet.</td></tr>'}</tbody></table></div>${may('add') ? `<div class="actions">${btn('Add', 'add', '', 'disabled title="Add a product opens the same dialog as Edit, with the product type empty"')}</div>` : ''}`;
+  const rows = c.products.map(p => { const t = typeOf(p.type), cls = t ? CLASSES[t.cls] : null; return `<div class="setting"><div class="shead">
+    <div><b><a class="link" href="#" data-product="${esc(p.type)}">${esc(p.type)}</a></b>${cls ? `<span class="faint"> · <a class="link" href="#" data-class="${esc(t.cls)}">${esc(cls.name)}</a> · ${esc(t.instrument)}</span>` : ''}<div class="faint" style="font-size:.8rem;margin-top:3px">${t ? esc(t.desc) : ''}</div></div>
+    <div class="sval" style="text-align:right"><span class="mono">${esc(p.model)} / ${esc(p.engine)}</span> ${pairTag(p.model, p.engine)}<div class="faint" style="font-weight:400;margin-top:3px">${p.params.length} ${p.params.length === 1 ? 'setting' : 'settings'}${may('edit') ? ` · <a class="link" href="${OTHER.change}?config=${c.id}&open=${p.type}&status=${c.status}">${c.status === 'approved' ? 'Propose' : 'Change'}</a>` : ''}</div></div>
+  </div></div>`; }).join('');
+  return `${notDrilldown}<div class="card"><div class="gh"><div><h3>Products</h3><div class="faint">${c.products.length} product types. Each is priced by one model and one engine.</div></div><div class="actions">${may('add') ? `<button class="btn small" disabled title="Add a product opens the same dialog as Edit, with the product type empty">${G.add} Add product</button>` : ''}</div></div>${rows || '<div class="setting"><span class="muted">No product yet.</span></div>'}<div class="foot">${coverageLine(c)}</div></div>`;
+}
+function coverageLine(c) {
+  const un = gaps(c), n = needed(c).length;
+  const base = c.reports.length ? `Coverage: ${n - un.length} of ${n} product types the reports need have a row.` : `Coverage: no report binds it. Of the ${TRADED.length} product types this party trades, ${TRADED.length - un.length} have a row.`;
+  return `${base}${un.length ? ` Not covered: ${un.map(u => `<span class="mono">${u}</span>`).join(', ')}. A product with no row has no model in a run.` : ' Nothing is left unpriced.'} <span class="faint">${RULE} The portfolios and the traded products are fixtures.</span>`;
 }
 function paramsTab(c) {
-  const g = c.globals.map(x => `<tr><td>global</td><td>All products</td><td class="mono">${esc(x.name)}</td><td class="mono">${esc(x.value)}</td></tr>`);
-  const p = c.products.flatMap(pr => pr.params.map(x => `<tr><td>${x.scope}</td><td class="mono">${pr.type}</td><td class="mono">${esc(x.name)}</td><td class="mono">${esc(x.value)}</td></tr>`));
-  return `<div class="muted">Every setting the document carries, with the scope it applies to. The same name can sit in two scopes, so the scope is a column.</div><div class="card"><table><thead><tr><th>Scope</th><th>Applies to</th><th>Name</th><th>Value</th></tr></thead><tbody>${g.concat(p).join('') || '<tr><td colspan="4" class="muted">None yet.</td></tr>'}</tbody></table></div>`;
+  const one = (scope, applies, x) => `<div class="setting"><div class="shead"><div><b class="mono">${esc(x.name)}</b><div class="faint">${esc(scope)} · ${esc(applies)}</div></div><div class="sval mono">${esc(x.value)}</div></div></div>`;
+  const globals = c.globals.map(x => one('global', 'every product', x));
+  const product = c.products.flatMap(pr => pr.params.map(x => one(x.scope, pr.type, x)));
+  return `<div class="card"><div class="gh"><div><h3>Parameters</h3><div class="faint">Every setting the document carries, with the scope it applies to.</div></div></div>${globals.concat(product).join('') || '<div class="setting"><span class="muted">No setting. The engine uses its own defaults.</span></div>'}<div class="foot">The same name can sit in two scopes, so the scope is named.</div></div>`;
 }
 function detailsTab(c) {
   return `<div class="card"><div class="body">${kv('Name', esc(c.name))}${kv('Status', statusTag(c.status))}${kv('Official for', officialTag(c))}${kv('Version in force', c.status === 'approved' ? 'Version ' + c.ver : dash)}${kv('Signed off by', c.status === 'approved' ? esc(signedBy(c.versions[c.versions.length - 1])) : dash)}${kv('Variant', c.variant ? esc(c.variant) : dash)}${kv('Products', c.products.length)}${kv('Bound by', c.reports.length + ' reports')}${kv('Description', esc(c.desc), true)}${kv('Reporting row', `<span class="mono">${esc(c.cfgRow)}</span> of type <span class="mono">pricing_engines</span>`, true)}</div>${lastChanged(c)}</div>`;
@@ -561,7 +576,7 @@ function recordScreen(c) {
   const tabs = [['details', 'Details'], ['products', 'Products'], ['parameters', 'Parameters'], ['reports', 'Reports'], ['history', 'History']];
   const body = { details: detailsTab, products: productsTab, parameters: paramsTab, reports: reportsTab, history: historyTab }[r.tab](c);
   return `${crumbs([['Home', LIST()], ['Reporting', LIST()], ['Pricing engine configurations', LIST()], [esc(c.name)]])}
-  <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">${statusTag(c.status)} ${officialTag(c) === dash ? '' : officialTag(c)} version ${c.ver}${c.variant ? ' · ' + esc(c.variant) : ''}</div></div>
+  <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">${statusTag(c.status)} ${officialTag(c) === dash ? '' : officialTag(c)} version ${c.ver} · ${c.products.length} products · bound by ${c.reports.length} reports${c.variant ? ' · ' + esc(c.variant) : ''}</div></div>
     <div class="actions"><span class="access">${may('edit') ? '✎ Editable' : '🔒 Read only'}</span>${may('edit') ? `<a class="btn" href="${OTHER.change}?config=${c.id}&status=${c.status}">${G.edit} ${c.status === 'approved' ? 'Propose a change' : 'Edit'}</a>` : ''}${may('delete') && c.status !== 'approved' ? btn('Delete', 'delete', 'danger', 'data-delete') : ''}</div></div>
   ${pendingBanner(c)}${c.status === 'approved' ? '<div class="notice">This version is in force and cannot change in place. A change is proposed, approved by the approval parts model risk names, and then becomes the next version.</div>' : ''}
   <div class="tabbar">${tabs.map(([k, l]) => `<a data-nav href="${tabHref(k)}" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${body}`;

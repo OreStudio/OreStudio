@@ -26,11 +26,11 @@ Run the ACME definition against a freshly recreated database, record the instanc
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | The run is witnessed on a database built from nothing, and the failure path now records a failed result. Waiting on review.                       |
+| Now          | Nothing. |
 | Waiting on   | Review of the pull request.                               |
-| Next         | Address review, then close.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance

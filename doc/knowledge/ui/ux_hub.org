@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:ui:ux:structure_note:
 #+created: 2026-10-10
-#+updated: 2026-10-10
+#+updated: 2026-10-24
 
 A screen in ORE Studio is built from decisions made at four levels. The first
 is how it looks. The second is what its marks mean. The third is where it
@@ -66,6 +66,16 @@ extension for a record that produces market data: the list as a dashboard,
 the process edited as one set with its engine and previews, saving with a
 reason and a restart, the ticks, and the quant help. It applies to every asset
 class. Where it and the record standard disagree, this page rules for a feed.
+
+** How a screen of a configuration behaves
+
+[[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]] — the
+extension for a named, party-owned configuration that a report binds and that
+comes off an ORE XML document: the words, the list, the record page with a tab
+per section, the documentation contract, the reach, the history, the per-section
+lifecycle and the import. It applies to every configuration kind in the
+=configuration_type= vocabulary. Where it and the record standard disagree, this
+page rules for a configuration.
 
 ** How to check a screen
 

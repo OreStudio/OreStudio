@@ -224,20 +224,16 @@ const party = (partyId: string, name: string) => ({
     businessCenterCode: 'GBLO',
 });
 
-const ONE_PARTY = { defaultPartyId: 'p-london', parties: [party('p-london', 'ACME Corporation UK')] };
+const ONE_PARTY = {
+    defaultPartyId: 'p-london',
+    parties: [party('p-london', 'ACME Corporation UK')],
+};
 const TWO_PARTIES = {
     defaultPartyId: 'p-london',
-    parties: [
-        party('p-london', 'ACME Corporation UK'),
-        party('p-newyork', 'ACME Corporation US'),
-    ],
+    parties: [party('p-london', 'ACME Corporation UK'), party('p-newyork', 'ACME Corporation US')],
 };
 
-function list(
-    codes: string[],
-    parties = TWO_PARTIES,
-    query = '',
-): string {
+function list(codes: string[], parties = TWO_PARTIES, query = ''): string {
     return renderRecords(
         `/reporting/pricing-engines${query}`,
         [],
@@ -339,9 +335,7 @@ describe('the list of pricing engine configurations', () => {
         const page = { offset: 0, limit: 15, sort: 'name', descending: false, search: '' };
         const text = pageOf(ROWS, { ...page, filters: { party: 'p-london' } });
         expect(text.rows.map((row) => row.name)).toEqual(['EOD pricing']);
-        expect(pageOf(ROWS, { ...page, filters: { party: 'p-newyork' } }).rows).toEqual([
-            ROWS[1],
-        ]);
+        expect(pageOf(ROWS, { ...page, filters: { party: 'p-newyork' } }).rows).toEqual([ROWS[1]]);
     });
 
     it('lists the workflows only to a person who may write', () => {

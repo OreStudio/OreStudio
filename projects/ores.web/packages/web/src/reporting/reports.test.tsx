@@ -696,6 +696,30 @@ function withBindings(bindings: readonly ReportConfigurationBinding[]): string {
     );
 }
 
+describe('the latest run on a report page', () => {
+    it('links to the page of that run', () => {
+        const html = renderRecords(
+            `/reporting/reports/${DAILY}`,
+            [],
+            <Route path="/reporting/reports/:id" element={<ReportPage />} />,
+            (client) => {
+                client.setQueryData(['my-access'], accessOf([]));
+                client.setQueryData(reportKey(DAILY), {
+                    kind: 'record',
+                    detail: {
+                        ...DETAIL,
+                        report: DAILY_ROW,
+                        definition: { ...DETAIL.definition, id: DAILY, name: 'ACME daily PnL' },
+                    },
+                } satisfies ReportOpen);
+            },
+        );
+
+        expect(html).toContain(`href="/operations/grid/report-runs/${RUN}"`);
+        expect(textOf(html)).toContain('Open the run');
+    });
+});
+
 describe('the configurations of a report', () => {
     it('lists each by its kind, and links its name to the configuration page', () => {
         const html = withBindings(BINDINGS);

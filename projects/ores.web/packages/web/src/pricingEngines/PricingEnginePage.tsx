@@ -356,7 +356,8 @@ function GlobalParametersTab({
     const [values, setValues] = useState<Readonly<Record<string, string>>>({});
     const [saving, setSaving] = useState<Draft | null>(null);
     const globals = document.parameters.filter((parameter) => parameter.productId === null);
-    const docOf = (name: string) => (vocabulary?.globals ?? []).find((entry) => entry.name === name);
+    const docOf = (name: string) =>
+        (vocabulary?.globals ?? []).find((entry) => entry.name === name);
     const shown = globals.filter((parameter) => {
         if (!setOnly) return true;
         const doc = docOf(parameter.name);
@@ -420,7 +421,8 @@ function GlobalParametersTab({
                                                         parameter.name
                                                     }
                                                     inputMode={
-                                                        docOf(parameter.name)?.domain === 'double' ||
+                                                        docOf(parameter.name)?.domain ===
+                                                            'double' ||
                                                         docOf(parameter.name)?.domain === 'integer'
                                                             ? 'numeric'
                                                             : 'text'
@@ -444,8 +446,7 @@ function GlobalParametersTab({
                                             description: docOf(parameter.name)?.description ?? '',
                                             defaultText: docOf(parameter.name)?.defaultText ?? '',
                                             format: docOf(parameter.name)?.format ?? '',
-                                            introducedIn:
-                                                docOf(parameter.name)?.introducedIn ?? '',
+                                            introducedIn: docOf(parameter.name)?.introducedIn ?? '',
                                             removedIn: docOf(parameter.name)?.removedIn ?? '',
                                             xpath: docOf(parameter.name)?.xpath ?? '',
                                         }}
@@ -480,16 +481,14 @@ function GlobalParametersTab({
                                 onClick={() =>
                                     setSaving({
                                         ...draftOf(document),
-                                        parameters: draftOf(document).parameters.map(
-                                            (parameter) =>
-                                                values[parameter.id] === undefined
-                                                    ? parameter
-                                                    : {
-                                                          ...parameter,
-                                                          value:
-                                                              values[parameter.id] ??
-                                                              parameter.value,
-                                                      },
+                                        parameters: draftOf(document).parameters.map((parameter) =>
+                                            values[parameter.id] === undefined
+                                                ? parameter
+                                                : {
+                                                      ...parameter,
+                                                      value:
+                                                          values[parameter.id] ?? parameter.value,
+                                                  },
                                         ),
                                     })
                                 }
@@ -650,7 +649,10 @@ function ProductsTab({
                                             type="button"
                                             title={product.typeCode}
                                             onClick={() => {
-                                                if (editingId !== null && editingId !== product.id) {
+                                                if (
+                                                    editingId !== null &&
+                                                    editingId !== product.id
+                                                ) {
                                                     setPending(product.id);
                                                     return;
                                                 }
@@ -706,9 +708,7 @@ function ProductsTab({
                         product={chosen}
                         mayWrite={mayWrite}
                         mode={mode}
-                        onEditingChange={(editing) =>
-                            setEditingId(editing ? chosen.id : null)
-                        }
+                        onEditingChange={(editing) => setEditingId(editing ? chosen.id : null)}
                         onRemove={() => onRemove(chosen.id)}
                     />
                 )}
@@ -854,39 +854,44 @@ function Workbench({
                 />
             ) : (
                 <>
-            <RoleCard
-                mode={mode}
-                title={t('pricingEngines.fields.model')}
-                definition={t('pricingEngines.workbench.definitionModel')}
-                code={product.model}
-                description={model?.description ?? ''}
-                detail={model?.detail ?? ''}
-                source={model?.source ?? ''}
-                parameters={modelParameters}
-                settingOf={settingOf}
-                templateOf={(value) =>
-                    vocabulary === undefined ? undefined : templateInfo(vocabulary, value)
-                }
-            />
-            <RoleCard
-                mode={mode}
-                title={t('pricingEngines.fields.engine')}
-                definition={t('pricingEngines.workbench.definitionEngine')}
-                code={product.engine}
-                description={engine?.description ?? ''}
-                detail={engine?.detail ?? ''}
-                source={engine?.source ?? ''}
-                parameters={engineParameters}
-                settingOf={settingOf}
-                templateOf={(value) =>
-                    vocabulary === undefined ? undefined : templateInfo(vocabulary, value)
-                }
-                pairKnown={
-                    vocabulary === undefined
-                        ? undefined
-                        : isKnownPair(vocabulary, product.typeCode, product.model, product.engine)
-                }
-            />
+                    <RoleCard
+                        mode={mode}
+                        title={t('pricingEngines.fields.model')}
+                        definition={t('pricingEngines.workbench.definitionModel')}
+                        code={product.model}
+                        description={model?.description ?? ''}
+                        detail={model?.detail ?? ''}
+                        source={model?.source ?? ''}
+                        parameters={modelParameters}
+                        settingOf={settingOf}
+                        templateOf={(value) =>
+                            vocabulary === undefined ? undefined : templateInfo(vocabulary, value)
+                        }
+                    />
+                    <RoleCard
+                        mode={mode}
+                        title={t('pricingEngines.fields.engine')}
+                        definition={t('pricingEngines.workbench.definitionEngine')}
+                        code={product.engine}
+                        description={engine?.description ?? ''}
+                        detail={engine?.detail ?? ''}
+                        source={engine?.source ?? ''}
+                        parameters={engineParameters}
+                        settingOf={settingOf}
+                        templateOf={(value) =>
+                            vocabulary === undefined ? undefined : templateInfo(vocabulary, value)
+                        }
+                        pairKnown={
+                            vocabulary === undefined
+                                ? undefined
+                                : isKnownPair(
+                                      vocabulary,
+                                      product.typeCode,
+                                      product.model,
+                                      product.engine,
+                                  )
+                        }
+                    />
                 </>
             )}
             {saving !== null && vocabulary !== undefined && (
@@ -1454,7 +1459,10 @@ function ProductEditor({
                                 {t('pricingEngines.change.dropHint')}
                             </p>
                             {change.dropped.map((parameter) => (
-                                <label key={parameter.id} className="flex items-center gap-2 text-sm">
+                                <label
+                                    key={parameter.id}
+                                    className="flex items-center gap-2 text-sm"
+                                >
                                     <input
                                         type="checkbox"
                                         checked={drop.includes(
@@ -1497,7 +1505,10 @@ function ProductEditor({
                                         )}
                                         onChange={() =>
                                             setAdd(
-                                                toggle(add, settingKey(setting.scope, setting.name)),
+                                                toggle(
+                                                    add,
+                                                    settingKey(setting.scope, setting.name),
+                                                ),
                                             )
                                         }
                                     />

@@ -1704,9 +1704,9 @@ const fr: SourceCatalogue = {
                 loadingWorkunits: 'Lecture des unités de travail...',
                 loadingResults: 'Lecture des résultats...',
                 empty: 'Aucun lot n’a encore été enregistré.',
-            noMatch: 'Aucun lot ne correspond. Effacez les filtres.',
-            expandAll: 'Tout développer',
-            collapseAll: 'Tout réduire',
+                noMatch: 'Aucun lot ne correspond. Effacez les filtres.',
+                expandAll: 'Tout développer',
+                collapseAll: 'Tout réduire',
                 download: 'Télécharger le fichier',
                 runsTitle: 'Exécutions avec cette issue',
                 noRuns: 'Aucune exécution n’a pris fin avec cette issue.',
@@ -4254,8 +4254,7 @@ const fr: SourceCatalogue = {
                     'Comment les intervalles entre ticks se comportent : égaux, exponentiels ou groupés. Le rythme ci-dessus est la moyenne à long terme dans tous les modes.',
                 branching_ratio:
                     'Hawkes seulement : combien de ticks supplémentaires un tick provoque, en dessous de un. Un ou plus ne se stabilise jamais.',
-                decay:
-                    'Hawkes seulement : la vitesse à laquelle une salve s’estompe, en unités d’une seconde inverse.',
+                decay: 'Hawkes seulement : la vitesse à laquelle une salve s’estompe, en unités d’une seconde inverse.',
                 sensitivity:
                     'À quel point un régime de marché global déplace cette paire, où un est la moyenne. Il ne fait rien tant que le régime de marché n’arrive pas.',
                 price_source: {
@@ -4383,8 +4382,7 @@ const fr: SourceCatalogue = {
                     'Comment les intervalles entre ticks se comportent : égaux, exponentiels ou groupés. Le rythme ci-dessus est la moyenne à long terme dans tous les modes.',
                 branching_ratio:
                     'Hawkes seulement : combien de ticks supplémentaires un tick provoque, en dessous de un. Un ou plus ne se stabilise jamais.',
-                decay:
-                    'Hawkes seulement : la vitesse à laquelle une salve s’estompe, en unités d’une seconde inverse.',
+                decay: 'Hawkes seulement : la vitesse à laquelle une salve s’estompe, en unités d’une seconde inverse.',
                 sensitivity:
                     'À quel point un régime de marché global déplace cette paire, où un est la moyenne. Il ne fait rien tant que le régime de marché n’arrive pas.',
                 price_source: {
@@ -4983,7 +4981,8 @@ const fr: SourceCatalogue = {
             documentation: 'Documentation',
             filter: 'Filtrer les produits',
             discardTitle: 'Abandonner les modifications ?',
-            discardBody: 'Vous avez modifié {type} sans enregistrer. Passer à un autre produit perd ces modifications.',
+            discardBody:
+                'Vous avez modifié {type} sans enregistrer. Passer à un autre produit perd ces modifications.',
             discard: 'Abandonner',
             expandAll: 'Tout développer',
             collapseAll: 'Tout réduire',
@@ -5243,6 +5242,7 @@ const fr: SourceCatalogue = {
             health: 'État de la dernière exécution',
             healthHint: 'Dérivé de la dernière exécution, jamais de la définition.',
             latestRun: 'Dernière exécution',
+            openRun: 'Ouvrir l’exécution',
             neverRun:
                 "Cette définition n'a jamais été exécutée. Rien n'a été vérifié, elle ne se lit donc pas comme propre.",
             couldNotCheck:

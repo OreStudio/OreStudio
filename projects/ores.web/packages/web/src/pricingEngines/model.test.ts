@@ -57,16 +57,38 @@ const vocabulary: PricingVocabulary = {
         { code: 'Swap', description: '', instrumentTypeCode: 'IRS' },
     ],
     pairs: [
-        { typeCode: 'BermudanSwaption', model: 'LGM', engine: 'Grid', usual: true, help: '', description: '' },
-        { typeCode: 'BermudanSwaption', model: 'LGM', engine: 'MC', usual: false, help: '', description: '' },
+        {
+            typeCode: 'BermudanSwaption',
+            model: 'LGM',
+            engine: 'Grid',
+            usual: true,
+            help: '',
+            description: '',
+        },
+        {
+            typeCode: 'BermudanSwaption',
+            model: 'LGM',
+            engine: 'MC',
+            usual: false,
+            help: '',
+            description: '',
+        },
         {
             typeCode: 'Swap',
             model: 'DiscountedCashflows',
             engine: 'DiscountingSwapEngine',
             usual: true,
-            help: '', description: '',
+            help: '',
+            description: '',
         },
-        { typeCode: 'Swap', model: 'CrossAssetModel', engine: 'AMC', usual: false, help: '', description: '' },
+        {
+            typeCode: 'Swap',
+            model: 'CrossAssetModel',
+            engine: 'AMC',
+            usual: false,
+            help: '',
+            description: '',
+        },
     ],
     settings: [
         {
@@ -79,7 +101,8 @@ const vocabulary: PricingVocabulary = {
             usual: 'Bootstrap',
             options: ['Bootstrap', 'BestFit'],
             required: true,
-            help: '', description: '',
+            help: '',
+            description: '',
         },
         {
             typeCode: 'BermudanSwaption',
@@ -91,7 +114,8 @@ const vocabulary: PricingVocabulary = {
             usual: '3.0',
             options: [],
             required: true,
-            help: '', description: '',
+            help: '',
+            description: '',
         },
         {
             typeCode: 'BermudanSwaption',
@@ -103,7 +127,8 @@ const vocabulary: PricingVocabulary = {
             usual: 'IR_FD',
             options: [],
             required: false,
-            help: '', description: '',
+            help: '',
+            description: '',
         },
     ],
     models: [
@@ -198,10 +223,7 @@ describe('the vocabulary', () => {
     });
 
     it('offers the models and engines that price the type before the others', () => {
-        expect(modelsFor(vocabulary, 'Swap')).toEqual([
-            'DiscountedCashflows',
-            'CrossAssetModel',
-        ]);
+        expect(modelsFor(vocabulary, 'Swap')).toEqual(['DiscountedCashflows', 'CrossAssetModel']);
         expect(enginesFor(vocabulary, 'BermudanSwaption', 'LGM')).toEqual(['Grid', 'MC']);
     });
 });
@@ -419,7 +441,13 @@ describe('the words the vocabulary holds', () => {
     it('finds how ORE builds the engine of a pair, or says nothing', () => {
         const noted: PricingVocabulary = {
             ...vocabulary,
-            pairs: [{ ...vocabulary.pairs[0]!, help: 'Builds a grid engine.', description: 'Builds a grid engine.' }],
+            pairs: [
+                {
+                    ...vocabulary.pairs[0]!,
+                    help: 'Builds a grid engine.',
+                    description: 'Builds a grid engine.',
+                },
+            ],
         };
         expect(pairNote(noted, 'BermudanSwaption', 'LGM', 'Grid')).toBe('Builds a grid engine.');
         expect(pairNote(noted, 'BermudanSwaption', 'LGM', 'MC')).toBe('');

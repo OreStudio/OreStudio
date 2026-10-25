@@ -1695,9 +1695,9 @@ const pt: SourceCatalogue = {
                 loadingWorkunits: 'A ler as unidades de trabalho...',
                 loadingResults: 'A ler os resultados...',
                 empty: 'Ainda não foi registado nenhum lote.',
-            noMatch: 'Nenhum lote corresponde. Limpe os filtros.',
-            expandAll: 'Expandir tudo',
-            collapseAll: 'Recolher tudo',
+                noMatch: 'Nenhum lote corresponde. Limpe os filtros.',
+                expandAll: 'Expandir tudo',
+                collapseAll: 'Recolher tudo',
                 download: 'Descarregar o ficheiro',
                 runsTitle: 'Execuções com o desfecho',
                 noRuns: 'Nenhuma execução terminou com este desfecho.',
@@ -4948,7 +4948,8 @@ const pt: SourceCatalogue = {
             documentation: 'Documentação',
             filter: 'Filtrar produtos',
             discardTitle: 'Descartar as alterações?',
-            discardBody: 'Alterou {type} sem guardar. Mudar para outro produto perde essas alterações.',
+            discardBody:
+                'Alterou {type} sem guardar. Mudar para outro produto perde essas alterações.',
             discard: 'Descartar',
             expandAll: 'Expandir tudo',
             collapseAll: 'Recolher tudo',
@@ -5208,6 +5209,7 @@ const pt: SourceCatalogue = {
             health: 'Estado da última execução',
             healthHint: 'Derivado da última execução, nunca da definição.',
             latestRun: 'Última execução',
+            openRun: 'Abrir a execução',
             neverRun:
                 'Esta definição nunca foi executada. Nada foi verificado, pelo que não se lê como limpa.',
             couldNotCheck:

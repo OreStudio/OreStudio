@@ -28,9 +28,9 @@ Any tick anywhere raises a shared intensity that decays, so a panic spreads inst
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Slices 1 and 2 are in and the coupling is live. The single clock is not. |
+| Now          | The heat, the rate it reaches, the coupling and the scheduler are in. The feeds still own their clocks. |
 | Waiting on   | Nothing.                               |
-| Next         | The one clock: aggregate thinning over every registered feed. |
+| Next         | Register the feeds' tick bodies with the scheduler instead of running a clock each. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -83,6 +83,7 @@ task and name that file in the Command column.
 | Counts of two series sharing heat | correlated above 0.2 | =two series on one heat move together and separately without it= | 59a28138e1 |
 | The same two series with the factor off | within 0.1 of zero | same | 59a28138e1 |
 | The three affected suites | 3 of 3 pass, with the marketdata service stopped | =ctest -R "ores.(synthetic.api\|synthetic.service\|analytics.quant).tests"= | 59a28138e1 |
+| Scheduler cases | 5, covering order, the elapsed gap, re-rating, a throwing body and an empty run | =tick_scheduler_tests= | 21e0d48258 |
 
 * Notes
 
@@ -117,7 +118,18 @@ intensity is =sensitivity * (mean_rate * S + C)=, which the four numbers in one
 counts correlated above 0.2; the same two with the factor off stay within 0.1 of
 zero. That is the statistic the per-series tests cannot see.
 
-The single clock is not built. With per-feed clocks a gap is drawn from the rate
-at its start, so the coupling is right in expectation but not exact, and two
-events never advance one another mid-gap. The scheduler, with aggregate thinning
-over every feed, is the remaining slice of this task.
+The scheduler is built and tested: it holds every series' pending gap, sleeps to
+the earliest and calls only that series' body, which is the superposition of
+independent streams exactly. A series is re-armed from its current rate when it
+fires, and every series is re-armed once a period, so a change in the shared
+factors reaches a gap already in flight rather than waiting for it.
+
+The scheduler does not yet drive the feeds: each still starts its own clock, so
+the service takes the coupling through the shared heat but not the single thread.
+Registering the feeds' tick bodies with one scheduler is the remaining slice.
+
+One correction to the plan: aggregate thinning with per-stream intensity bounds is
+not what the scheduler does. The minimum of independent gaps *is* the
+superposition, so thinning would only be needed for a bound that is not exact —
+and the per-stream bound here is exact for a Poisson stream and approximate only
+while the shared heat moves within a gap, which the refresh bounds.

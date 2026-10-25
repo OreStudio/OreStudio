@@ -134,3 +134,11 @@ via its "Verifies task" field.
 | 2 | PR 3833 review: six findings | prototype.js, the render script | Accept all | The import counts reconcile (11 held, 2 changed, 1 new of 14); a reader's address with a write dialog draws no dialog, and two reader states joined the render; the data comment counts; the dead code goes; the script resolves Playwright from the web workspace and takes its paths from the command line; a disabled Next has no href |
 
 * Result
+
+The prototype is drawn under =doc/prototypes/currencies/= with its design
+note, listed on the group page and the inventory, linked from the three
+journeys, and rendered in 41 states with no script error. It draws the
+standard Import and Export pair on the currencies list, Export as an
+operation dialog and Import as the steps at their own address, and the pair
+dialog of two groups with its derived code. The task stays open until the
+owner walks it; their sign off, and any correction, lands on this task.

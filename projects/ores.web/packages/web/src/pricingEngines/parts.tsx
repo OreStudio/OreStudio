@@ -295,9 +295,20 @@ export function SettingValue({
     readonly onChange: (value: string) => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const setting = settingsFor(vocabulary, typeCode, model, engine).find(
-        (candidate) => candidate.name === name && candidate.scope === scope,
-    );
+    /*
+     * A setting the guide never lists has no pair row of its own: the contract
+     * holds it once, with no type, model or engine. The pair's own row wins,
+     * then the documented one by name and scope, so its value set still supplies
+     * the control.
+     */
+    const setting =
+        settingsFor(vocabulary, typeCode, model, engine).find(
+            (candidate) => candidate.name === name && candidate.scope === scope,
+        ) ??
+        vocabulary.settings.find(
+            (candidate) => candidate.name === name && candidate.scope === scope,
+        ) ??
+        vocabulary.settings.find((candidate) => candidate.name === name);
     const kind = setting?.kind ?? 'text';
     const choices = setting?.choices ?? [];
     const sourceKind = setting?.sourceKind ?? '';

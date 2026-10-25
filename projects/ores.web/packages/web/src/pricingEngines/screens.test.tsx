@@ -216,6 +216,26 @@ const VOCABULARY: PricingVocabulary = {
             required: false,
         },
         {
+            typeCode: '',
+            model: '',
+            engine: '',
+            scope: 'engine',
+            name: 'Training.Sequence',
+            kind: 'text',
+            usual: 'SobolBrownianBridge',
+            options: [],
+            valueSet: 'training_sequence',
+            sourceKind: 'enumerated',
+            choices: [
+                { value: 'MersenneTwister', label: 'MersenneTwister' },
+                { value: 'SobolBrownianBridge', label: 'SobolBrownianBridge' },
+            ],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+            required: false,
+        },
+        {
             typeCode: 'BermudanSwaption',
             model: 'LGM',
             engine: 'Grid',
@@ -648,6 +668,12 @@ describe('the value of a setting', () => {
         expect(html).toContain('type="number"');
         expect(html).toContain('min="1"');
         expect(html).toContain('max="500"');
+    });
+
+    it('draws a setting the guide does not list from its own value set', () => {
+        const html = setting('Training.Sequence', 'SobolBrownianBridge');
+        expect(html).toContain('<option value="SobolBrownianBridge" selected="">');
+        expect(html).toContain('<option value="MersenneTwister">MersenneTwister</option>');
     });
 
     it('draws an integer as a whole-number field from the set', () => {

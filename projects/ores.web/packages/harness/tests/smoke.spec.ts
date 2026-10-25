@@ -19,13 +19,14 @@
  *
  */
 
-import { expect, test } from '../src/signIn.js';
+import { expect, test } from '@playwright/test';
 
 /**
- * The harness reaches the environment: it signs in as a seeded person, opens a
- * record list and a record page. Every later check builds on this.
+ * The harness reaches the environment: the signed-in session the setup saved
+ * opens a record list, searches on the server and opens a record page. Every
+ * later check builds on this.
  */
-test('signs in as the tenant administrator and opens the currencies', async ({ asAdmin: page }) => {
+test('the signed-in session opens the currencies and a currency', async ({ page }) => {
     await page.goto('/refdata/currencies');
     await expect(page.getByRole('heading', { level: 1, name: 'Currencies' })).toBeVisible();
     // RS-LIST-03: Refresh, then Add, stand in the header for a person who may write.

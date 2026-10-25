@@ -19,8 +19,21 @@
  *
  */
 
-import { test as base, expect, type Page } from '@playwright/test';
-import { PASSWORD, TENANT_ADMIN, principal, type Person } from './acme.js';
+import { expect, type Page } from '@playwright/test';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { PASSWORD, principal, type Person } from './acme.js';
+
+/** Where the setup project keeps the administrator's signed-in session. */
+export const ADMIN_STATE = resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    '..',
+    '..',
+    '..',
+    '.runtime',
+    'harness',
+    'admin-state.json',
+);
 
 /**
  * Signs in through the form a person uses, on the two fields the sign-in page
@@ -42,13 +55,3 @@ export async function signIn(page: Page, person: Person): Promise<void> {
     }
     await expect(page).not.toHaveURL(/sign-in/);
 }
-
-/** A test with a page already signed in as the tenant administrator. */
-export const test = base.extend<{ asAdmin: Page }>({
-    asAdmin: async ({ page }, use) => {
-        await signIn(page, TENANT_ADMIN);
-        await use(page);
-    },
-});
-
-export { expect };

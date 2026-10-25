@@ -21,6 +21,7 @@
 
 import { defineConfig, devices } from '@playwright/test';
 import { webUrl } from './src/env.js';
+import { ADMIN_STATE } from './src/signIn.js';
 
 /**
  * The harness drives the environment's web, not a server it starts: the
@@ -37,6 +38,8 @@ export default defineConfig({
     reporter: [
         ['list'],
         ['html', { outputFolder: '../../.runtime/harness/report', open: 'never' }],
+
+        ['json', { outputFile: '../../.runtime/harness/results.json' }],
     ],
     use: {
         baseURL: webUrl(),
@@ -44,5 +47,13 @@ export default defineConfig({
         screenshot: 'only-on-failure',
         locale: 'en-GB',
     },
-    projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+    projects: [
+        { name: 'setup', testMatch: /auth\.setup\.ts/ },
+        {
+            name: 'chromium',
+            testIgnore: /auth\.setup\.ts/,
+            dependencies: ['setup'],
+            use: { ...devices['Desktop Chrome'], storageState: ADMIN_STATE },
+        },
+    ],
 });

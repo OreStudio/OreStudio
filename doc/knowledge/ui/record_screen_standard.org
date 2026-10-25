@@ -144,7 +144,8 @@ one path segment, as the pair code =EUR/USD= is.
   plural as the title, in sentence case (=PageHeader=).
 - *RS-LIST-02* One sentence that says what the records are.
 - *RS-LIST-03* At the right, /Refresh/, then /Import/ and /Export/ for a kind that has an
-  ORE document (see [[*Import and Export][Import and Export]]), then /Workflows/, then /Add/. Add is the primary
+  ORE document (Export stands on the record header instead when the document
+  is one record; see RS-ORE-02), then /Workflows/, then /Add/. Add is the primary
   button and is drawn only for a person who may write. Workflows is a menu of the
   guided workflows that act on this kind of record, such as onboarding a party.
   It lists only those the person may start, and is not drawn when there are none.
@@ -526,7 +527,9 @@ the owner asked for one standard pair across the screens).
   document is the whole table, such as currencies; on the record header, as the
   kind's own action (RS-PAGE-03), for a kind whose document is one record, such
   as an engine run setting. Each is drawn only for a person who may take it:
-  Export needs read and Import needs write (RS-FEEDBACK-01).
+  Export needs read on the kind, and Import needs write on it, the preview
+  included, because the preview is the first step of a write and a reader has
+  nothing to review (RS-FEEDBACK-01).
 - *RS-ORE-03* The words are the bare verbs /Import/ and /Export/ (RS-NAME-02),
   each with its icon from the icon table. The dialog names the document and its
   scope, such as "Writes currencyconfig.xml with 158 currencies."
@@ -691,9 +694,10 @@ refused.
 *RS-NAME-01* Interface words are in sentence case, as the table says.
 
 *RS-NAME-02* The verbs are Add, Edit, Save, Delete, Remove (for a link only), Revert,
-Refresh, Cancel, Propose, Import and Export (for an ORE document only). This is the one list; the Entity screen
-specification points here. A kind's own action is a verb and its object, such
-as /Derive a calendar/ or /Rebuild business days/.
+Refresh, Cancel, Propose, and Import and Export (for an ORE document only).
+This is the one list; the Entity screen specification points here. A kind's
+own action is a verb and its object, such as /Derive a calendar/ or /Rebuild
+business days/.
 
 ** Exceptions
 

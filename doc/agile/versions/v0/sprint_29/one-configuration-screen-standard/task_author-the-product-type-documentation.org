@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/author-the-product-type-documentation
-#+pr:
+#+pr: 3766
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3766][#3766]] | [seeder] Document every product type by hand |
 
 * Review
 

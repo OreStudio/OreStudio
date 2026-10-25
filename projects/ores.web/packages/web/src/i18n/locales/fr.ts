@@ -5207,6 +5207,11 @@ const fr: SourceCatalogue = {
         },
     },
     // pricingEngines:end
+    parameters: {
+        required: 'obligatoire',
+        true: 'vrai',
+        false: 'faux',
+    },
     reporting: {
         area: {
             title: 'Rapports',

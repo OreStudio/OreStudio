@@ -5174,6 +5174,11 @@ const pt: SourceCatalogue = {
         },
     },
     // pricingEngines:end
+    parameters: {
+        required: 'obrigatório',
+        true: 'verdadeiro',
+        false: 'falso',
+    },
     reporting: {
         area: {
             title: 'Relatórios',

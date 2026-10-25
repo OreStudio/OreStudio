@@ -225,18 +225,22 @@ export function registerCounterpartyRoutes(
     server.get('/api/counterparties/children', async (request) => {
         const session = requireSession(request);
         const { ids } = input(childrenQuerySchema, request.query);
-        const filter = { counterparty_id: null, id_one_of: null, counterparty_id_one_of: ids };
+        const filter = {
+            counterparty_id: null,
+            id_one_of: null,
+            counterparty_id_one_of: ids,
+        };
         const identifiers = await readAll(
             session,
             identifierSubjects.list_counterparty_identifiers_request,
             'counterparty_identifiers',
-            { filter },
+            { filter, as_of: null },
         );
         const contacts = await readAll(
             session,
             contactSubjects.list_counterparty_contact_informations_request,
             'counterparty_contact_informations',
-            { filter },
+            { filter, as_of: null },
         );
         const centres = await readAll(
             session,

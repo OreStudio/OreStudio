@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 2D9B7C41-5E38-4A62-B7F0-6C1D8E3A5B94
+:END:
+#+title: A route calls a subject nothing serves
+#+description: /api/counterparties/children reads counterparty_business_centres.list, and the refdata service subscribes to no such subject, so the route answers 503 and the counterparty screen cannot show its business centres.
+#+type: capture
+#+level: cross
+#+filetags: :web:bff:refdata:counterparties:bug:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+Seen while sweeping the hand-written list requests. =/api/counterparties/children= answers 503, and the BFF log names the cause:
+
+#+begin_example
+Request to ores.dev.jolly_knuth.refdata.v1.counterparty_business_centres.list failed: 503: 503
+#+end_example
+
+The shell confirms nothing serves that subject:
+
+#+begin_example
+✗ Request failed: NATS request failed: no service is handling subject
+  'ores.dev.jolly_knuth.refdata.v1.counterparty_business_centres.list'
+#+end_example
+
+The two lists beside it answer: =counterparty_identifiers.list= returns rows and =counterparty_contact_informations.list= returns an empty page.
+
+So the entity exists in the model and the BFF reads it, but the refdata service registers no list handler for it, or registers it under another subject. Either the handler is missing from the service's registration or the BFF names the wrong subject; the model and the generated subjects settle which.
+
+It is not the wire shape: the payload does not reach the service, so no decoder touches it. This capture is separate from the sweep for that reason.

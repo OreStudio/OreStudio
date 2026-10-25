@@ -1,0 +1,227 @@
+:PROPERTIES:
+:ID: F4EF9042-0EC2-4B64-95E7-7DEBF273F2F7
+:END:
+#+title: Audit of the UX standards
+#+description: Where the record screen standard, the entity screen specification and UX Language disagree, what the form layout leaves open, and which rules a check can name.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:ui:ux:web:standards:audit:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+* Summary
+
+The UX cluster is large and mostly sound. The Record screen standard, the Entity
+screen specification, UX Language, UI design principles and Change notification
+were read in full, together with the Screen review checklist and the shared
+dialog code. Nine contradictions were found, two of them load bearing: whether
+Save is allowed when nothing changed, and whether a page shows new values after
+a save or waits for Refresh. In both cases the code follows one page and the
+other page is wrong. The form layout has eleven open questions, from how fields
+group in a dialog to where the buttons stand, and the shared dialog answers
+most of them in code with no rule behind it. No rule has a stable identifier,
+so the checklist cites section titles and a check cannot name what it failed.
+About two thirds of the rules can be checked by a machine. Allium fits the
+behaviour rules and not the look.
+
+The second story takes each finding here as a decision to make, a rule to
+write or an identifier to add. Nothing here changes a standard.
+
+* Detail
+
+** How the audit was made
+
+The pages were read in full and every normative sentence was compared across
+pages. Where two pages disagree, the shared code was read to say which side the
+screens follow today. The dialog code is =web/src/refdata/records.tsx=, the
+shared controls are =web/src/ui/Primitives.tsx=, and the save hook is
+=web/src/access/useRecordEdit.ts=. The Qt dialogs come from the
+[[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]], whose
+script also recorded each dialog's tabs and group boxes.
+
+The names used below are those of the checklist. RSS is the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]], ESS the
+[[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]], UXL
+[[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]], UDP
+[[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] and CN
+[[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]].
+
+** Contradictions between the pages
+
+Each row is one rule with two answers. The code column says what the shared
+parts do today, read from the source. The last column says which page should
+rule, as a proposal for the second story to accept or change.
+
+| # | Rule | One page says | The other says | The code today | Proposal |
+|---+------+---------------+----------------+----------------+----------|
+| 1 | After a save | RSS Feedback: the dialog closes and the page shows the new values. RSS Paging: after a write the list returns to the first page | ESS Refresh: a save does not reload the page; the save's own event turns Refresh gold and the person presses it | =RecordDialog= marks the queries stale with =refetchType: 'none'= and reloads nothing. ESS wins in code | ESS rules. Rewrite RSS Feedback and RSS Paging |
+| 2 | Save with no change | RSS Amend: when no field changed, only the reason No change in substance is offered, so a save is allowed | ESS The Edit pattern: Save stays disabled until a field differs from the record. The same section then says which reason is offered when nothing changed, which cannot happen if Save is disabled | Save is disabled for an invalid field, a broken rule, a missing commentary or no reason. It is not disabled when nothing changed. RSS wins in code | RSS rules, because a version that records a reason with no field change is a feature of the history model. Delete the ESS sentence |
+| 3 | Where Edit stands | RSS Header: the record page header holds the kind's actions, then Edit, then Delete | ESS Header: the header carries no Edit; Edit is on the card it changes | A record page of one kind draws Edit in =RecordHeader=; the party and person pages draw Edit on each card | Both, by shape. One record kind has one card, so its Edit is in the header. An entity has a card per record, so Edit is on the card. State the rule once as "Edit stands on the thing it changes" and derive both |
+| 4 | The dialog title | RSS Amend: "Edit <key>" | ESS The Edit pattern: titled for the card. The checklist says "pick one per screen" | The screen passes the title; =titles.one= is per screen | Decide one form: "Edit <display field>" for a record, "Edit <card title>" for a card. The checklist must not offer a choice |
+| 5 | Where the version stands | RSS Header: the lead line reads "<key> · version <n>" | ESS Header: under the title is the identifier and nothing else; the version stands on each card | Both exist, each on its own shape | Same resolution as 3: the version stands beside the thing it versions |
+| 6 | Marking changed rows | RSS Recency: rows whose =recorded_at= is newer than the previous load, for three seconds, and a person can turn the mark off | ESS Rows that changed and CN §4: a row not on the page before or whose content differs, compared with the same page read before, no clock, gold left edge, three pulses, gone after four seconds, no toggle | =useChangedRows= compares content and uses no clock, four seconds | ESS and CN rule. Rewrite RSS Recency, drop the toggle or build it |
+| 7 | Reading a list whole | ESS Paging and the memory Lists are always paged: no screen reads an entity whole | RSS Exceptions: a classification list is read whole once and paged in the browser. RSS The shared components: a picker's choices are its whole kind | The classification screen reads one page of 1000 rows; =RecordPicker= reads the whole kind | Keep the classification exception, stated in ESS too, and bound it with the 1000 row Load all rule. The picker stays a recorded deviation |
+| 8 | What a journey is | UXL Journey screen anatomy: a journey is one screen organised around a goal, with a rail of steps, and the Journey runtime defines the step | ESS User journeys and screens: a journey is a design document, a screen is never a journey copied step by step, and a wizard is the exception | The remaining journey screens use the rail; the record and entity screens do not | ESS rules, and the owner's decision on the pipeline says the same. Move the UXL section to the Journey runtime page and say there that a rail is a wizard |
+| 9 | Labels | RSS Fields and ESS Cards: a label above each value, in sentence case | UDP Typography hierarchy: labels at 500 weight with positive tracking for uppercase | Labels are sentence case | RSS rules. Rewrite the UDP line or scope it to table headers |
+
+Two more disagreements are smaller. RSS lists the verbs without Propose, and
+ESS adds it; the list should live once. RSS draws the breadcrumb as "Area ›
+Currencies › EUR" and ESS as "Home › Organisation › Staff › Adrian Vance"; the
+Menu structure page should own the one shape.
+
+** Rules that the code already contradicts
+
+- UDP Isolated controls: never use a native form element for styled UI. The
+  shared =Select= in =Primitives.tsx= is a native =<select>=, and the record dialog
+  draws every classification, choice and record field with it. Either the rule
+  goes or the control does.
+- RSS The shared components says Recency is missing and needs the change
+  notification consumer. ESS The shared components says =useChangedRows= exists.
+  The two status tables describe one code base at two dates.
+- RSS The form says there is no text area yet. The field kinds table has no
+  long text kind, so a commentary is drawn as a text area by the dialog and not
+  by a field kind.
+
+A status table inside a standard drifts the day the code moves. The status
+belongs in a generated report or in the code, and the standard should state the
+rule only.
+
+** What the form layout leaves open
+
+The Qt dialogs show the need. Sixty of the sixty one had one content tab and one
+group box, so grouping was rare, and Currency alone had three tabs. Seven
+dialogs had eight or more fields. The web dialog today draws every field in a
+two column grid in field table order, with Cancel then Save or Add at the right
+of the footer, and no page states any of that.
+
+| # | Question | What the standards say | What the code does | Qt dialogs that show the need |
+|---+----------+------------------------+--------------------+-------------------------------|
+| 1 | How fields group in a dialog | Nothing. RSS tabs allow a field group tab on the record page, not in the dialog | One grid, field table order | Currency, three tabs; Party and Counterparty, group boxes |
+| 2 | Columns and order | Nothing | Two columns from the small breakpoint, one below it; order is the field table | Any dialog with eight or more fields |
+| 3 | Where the buttons stand and in what order | RSS names the button words only | Footer, right, Cancel then the primary | Qt had Save, Delete, Close in that order |
+| 4 | Required and optional | RSS: an optional field writes null when empty | No mark on the field; the message says required when left empty | Every dialog |
+| 5 | Help, description and placeholder | ESS: a fixed field says why, an owned field says who | Nothing else is drawn | Qt list headers carried a tooltip per column, the dialogs none |
+| 6 | Long text | RSS: long text is a text area; no field kind carries it | The commentary is a text area; no field table can ask for one | PartyContactInformation, CalendarRule |
+| 7 | Field kinds the table lacks | RSS names text, int, decimal, bool, date, choice, classification, record, image | No timestamp, time, long text, multi select, percentage or amount | TenorSchedule, CalendarEvent dates, convention terms |
+| 8 | The details layout | RSS draws a grid in its sketch and states no rule for columns, wrapping or long values | =RecordDetails= draws a grid | Any record page |
+| 9 | History in a dialog | RSS Parts: the history panel opens in a dialog | =HistoryPanel= in a wide dialog | Calendar rules, events and exceptions |
+| 10 | Keyboard | RSS: a row opens on Enter; nothing for the dialog | Escape closes through the guard; Enter does not save | Every dialog |
+| 11 | Refresh on a form | ESS: the dialog says when its record was loaded and warns of a newer version. CN says the same | Built | None; Qt did not tell the form |
+
+Questions 1 to 3 and 7 need a rule written. Questions 4 to 6 and 8 to 10 need
+the code's answer written down as the rule, or changed. Question 11 is settled
+and only needs an identifier.
+
+** What a rule needs so a check can name it
+
+The rules are prose bullets under headings. RSS has 84 bullets under 42
+headings, ESS 224 under 60, and the checklist cites them as "RSS The list ›
+Header". A heading moves when a page is edited, a bullet has no name at all,
+and a check that fails can only quote prose.
+
+A rule needs three things.
+
+- A stable identifier that does not change when the section moves, such as
+  =RS-LIST-03= for the third rule of the record standard's list section, or
+  =ES-EDIT-02=. The scheme names the page, the topic and a number, and a number
+  is never reused.
+- One sentence per identifier. A bullet that holds two rules is two
+  identifiers.
+- A place to carry it that org mode can check. A bold code at the start of the
+  bullet, such as =*RS-LIST-03*=, is readable and a script can collect it. A
+  heading property cannot carry a bullet.
+
+With that, the checklist cites identifiers and a check reports one, so a
+reviewer and a test point at the same rule. A script that collects every
+identifier, refuses a duplicate and refuses a checklist line that cites an
+unknown one keeps the two in step.
+
+** Which rules a machine can check
+
+Read against a running screen through a browser, about two thirds of the rules
+are structural and a machine can check them. The rest need a person.
+
+| A machine can check | A person must judge |
+|---------------------+---------------------|
+| The header action order: Refresh, Workflows, Add | The lead sentence says what the records are |
+| Add is absent without the write permission | Every message says what happened and what to do |
+| Search, sort and page change the request to the server | Colour appears only when it means something |
+| The pager shows the count first and defaults to 15 | The screen does not explain what is absent |
+| Page, size, search, filter and order live in the address | A word is the right word for the idea |
+| Tabs live in the address; Details first, History last | A gap in the history is stated in words |
+| A label stands above its value with no colon | Spacing reads as crafted |
+| An empty value is a muted dash | A dialog groups its fields well |
+| The access mark is present and no permission code is drawn | The reason list reads naturally |
+| The dialog title follows the form; Save is disabled while incomplete | |
+| The closing guard asks the stated question | |
+| A stale save is refused and the dialog offers to reload | |
+| Refresh turns gold on a change and nothing reloads by itself | |
+| Every string exists in the three locales, as a static check | |
+| A code cell is monospace; a number is right aligned | |
+| No native select or date input, as a static check | |
+| Every action carries its icon and the icon table has one icon per idea | |
+
+** Whether Allium fits
+
+Allium fits the rules that are behaviour: a state and the events that move it.
+It does not fit the rules that are look. The record screen's behaviour is one
+specification with these obligations.
+
+- The stale rule: a load, a change heard after it, Refresh gold, a reload that
+  clears it, and nothing reloading by itself.
+- The edit in progress: a dialog open on version n, a change to n plus one,
+  the warning, Keep my edit or Take the new values, and the base moving.
+- The stale write: a save that claims version n against n plus one is refused,
+  the dialog stays open and offers to reload.
+- The reasons that follow the change: a changed field removes the non material
+  reason, no change leaves only it, and a reason that needs a commentary blocks
+  Save without one.
+- Create: the one reason, the key that must not exist, and the page that opens
+  after.
+- Delete: the confirmation, the reason, the parts deleted first, the return to
+  the list.
+- Revert: a new version with the old values, never a lost version, and no
+  Revert on the current one.
+- A link is removed and has no history; a part is deleted and keeps its history.
+
+The layout rules, the words and the colours stay in prose with an identifier
+each, and the harness checks them in the browser. The =propagate= skill then
+lists the tests the specification requires, and the harness carries the rest.
+
+** The checklist as a review instrument
+
+The checklist is faithful to the pages and adds no rule, which is its strength.
+As an instrument it has four weaknesses.
+
+- Two lines offer a choice, on Edit's place and the dialog title. A checklist
+  that lets the reviewer pick is two checklists.
+- It cites sections, so a line cannot be matched to a failing check.
+- It has no place to record the outcome. A review that lives in a conversation
+  is repeated, as the superseded gaps page said.
+- It mixes what a machine can check with what a person must judge, so a
+  reviewer walks lines a test already answered.
+
+The third story gives it the outcome, through the sign off recipe, and the
+harness answers the machine lines. The second story removes the choices and
+adds the identifiers.
+
+** Findings that are work
+
+These are filed as captures in the next bucket, one each, so the second story
+and the pipeline pick them up.
+
+- Replace the native select in the shared controls or drop the UDP rule.
+- Add a long text field kind so a field table can ask for a text area.
+- Move the shared component status tables out of the standards into a
+  generated report.
+- Move the Journey screen anatomy section of UX Language to the Journey runtime
+  page.
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders this cluster.
+- [[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]] — the Qt dialogs this audit cites.
+- [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] — the instrument this audit judges.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — the two pages most of the contradictions sit between.
+- [[id:90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2][Story: Settle the UX language for record screens]] — the story that decides each finding.
+- [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Story: Inventory the Qt reference data screens and audit the UX standards]] — the story this page answers.

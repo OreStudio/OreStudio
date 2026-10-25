@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D9828693-44CC-4129-A7FF-CC835E0EB687
+:END:
+#+title: Replace the native select in the shared web controls
+#+description: The shared Select is a native select element, which UI design principles forbids; replace it or drop the rule.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:standards:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Replace the native select in the shared web controls or drop the UDP rule. UI design principles says never use a native form element for styled UI, and the shared Select in ui/Primitives.tsx is a native select element that every classification, choice and record field of the record dialog draws. Found by the audit of the UX standards.
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

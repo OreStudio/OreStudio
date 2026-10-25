@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 2FE94358-0F52-477A-A966-33B6160A20EE
+:END:
+#+title: Move the shared component status tables out of the standards
+#+description: The two standards state the same component's status at two dates; the status belongs in a generated report.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:standards:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Move the shared component status tables out of the UX standards into a generated report. The record screen standard says Recency is missing while the entity screen specification says useChangedRows exists; a status table inside a standard drifts the day the code moves. The standard should state the rule only. Found by the audit of the UX standards.
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

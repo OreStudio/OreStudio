@@ -42,7 +42,7 @@ The epic starts from facts. One document says, per reference data entity, what t
 |------+-------+-------+-----+-------------|
 | [[id:7AC77315-757B-49FF-8009-BAB3568E4B55][Scaffold story: Inventory the Qt reference data screens and audit the UX standards]] | DONE | 2026-10-25 | 2026-10-25 | Epic scaffolding rides this task: stories, tasks, sprint wiring and the scaffold PR. Close it before merging. |
 | [[id:43D56BE9-F0FE-4566-94D1-F62EB70AF75D][Build the Qt to web reference data matrix]] | DONE | 2026-10-25 | 2026-10-25 | Record what each Qt reference data screen offered against what ores.web shows: fields, children, actions, history. |
-| [[id:C07590C7-3A95-42B3-9CD2-B3A08C82EC18][Audit the UX standards for contradictions and gaps]] | BACKLOG | | | Read the UX standards in full and list the contradictions, the open layout questions and the rules no check can name. |
+| [[id:C07590C7-3A95-42B3-9CD2-B3A08C82EC18][Audit the UX standards for contradictions and gaps]] | STARTED | 2026-10-25 | | Read the UX standards in full and list the contradictions, the open layout questions and the rules no check can name. |
 | [[id:9FAC8BCB-3267-41AB-88CA-F5AD477EAC65][Order the Qt topics for the screen pipeline]] | BACKLOG | | | Group the Qt entities into topics, judge each as standard CRUD or a workflow, and order them for the pipeline. |
 
 * Decisions

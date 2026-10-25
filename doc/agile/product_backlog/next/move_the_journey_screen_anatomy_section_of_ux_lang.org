@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C814B766-1890-4BF3-85C2-F1ADEDEDD1D4
+:END:
+#+title: Move the Journey screen anatomy section to the Journey runtime page
+#+description: UX Language calls a journey a screen with a rail; the entity specification calls it a document. The rail is a wizard.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:standards:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Move the Journey screen anatomy section of UX Language to the Journey runtime page. UX Language says a journey is one screen with a rail of steps, while the entity screen specification says a journey is a design document and a screen is never a journey copied step by step, with a wizard as the exception. The owner's pipeline decision follows the entity specification, so the rail belongs with the runtime and is named a wizard. Found by the audit of the UX standards.
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

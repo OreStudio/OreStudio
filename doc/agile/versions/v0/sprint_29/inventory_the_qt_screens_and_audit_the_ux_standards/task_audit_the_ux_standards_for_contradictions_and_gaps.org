@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :inventory_the_qt_screens_and_audit_the_ux_standards:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/audit-the-ux-standards
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The second story knows exactly what to decide and what to write. The audit lists
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The audit page is written and its four work findings are captures in the next bucket. |
+| Waiting on   | PR #3742 and the matrix PR to merge, so this branch can target main. |
+| Next         | Raise the PR. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -43,9 +43,13 @@ The second story knows exactly what to decide and what to write. The audit lists
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read the five pages in full and compare every normative sentence across them.
+Where two pages disagree, read the shared code to say which side the screens
+follow today, so each contradiction comes with a proposal the second story can
+accept or change. Use the matrix script's record of the Qt dialogs' tabs and
+group boxes as the evidence for the form layout questions. Judge the checklist
+as an instrument, size the identifier work by counting bullets and headings,
+and say which rules a machine can check and which Allium can state.
 
 * Measurements
 
@@ -59,7 +63,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Rules in the record screen standard | 84 bullets under 42 headings | =grep -c '^- ' doc/knowledge/ui/record_screen_standard.org= and =grep -c '^\*\+ '= | c42c8b58a2 |
+| Rules in the entity screen specification | 224 bullets under 60 headings | same, on =entity_screen_specification.org= | c42c8b58a2 |
+| Lines in the screen review checklist | 109 | same, on =screen_review_checklist.org= | c42c8b58a2 |
+| Qt dialogs with one content tab | 60 of 61 | =evidence/qt_web_matrix.json=, =dialog.tabs= | c42c8b58a2 |
+| Qt dialogs with eight or more fields | 7 | same, =fields= | c42c8b58a2 |
 
 * Notes
 
@@ -87,3 +95,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The knowledge page Audit of the UX standards lists nine contradictions between
+the pages, each with the code's answer today and a proposal, three places where
+the code already contradicts a rule, eleven form layout questions the standards
+leave open, the identifier scheme a rule needs so a check can name it, which
+rules a machine can check, the obligations an Allium specification of the record
+screen would carry, and a judgement of the checklist as an instrument. The UX
+hub links it and the second story waits on it. The four findings that are work
+are captures in the next bucket.

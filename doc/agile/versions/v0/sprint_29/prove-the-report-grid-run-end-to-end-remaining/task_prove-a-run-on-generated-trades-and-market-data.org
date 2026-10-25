@@ -13,24 +13,25 @@
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A report run on the populations the synthetic component generates, with what it
+proves and what the generated data cannot yet say.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -84,3 +85,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A report runs on the trade population the system generates, and the run says so
+in its own errors.
+
+The two ACME trade generation configs run from the shell with =synthetic
+generate-trades=. Both answered that their populations are already present at
+version 5: the trades the earlier runs used are the generator's own output, with
+ids such as =POP-093311d2-000005=.
+
+A full run on those books, instance =ea28f0db=, failed on market data and
+recorded 33 rows across four scopes: 4 Analytics, 4 Curve, 24 Trade and 1
+Report. The trade rows carry =subject_version= 5 from the bundle manifest and
+=subject_as_of= from the run's priced date.
+
+Two things the generated data cannot yet express, both structural.
+
+- *A party has no generated market data.* The 59 IR curve and 51 FX spot
+  generation configs belong to the =system= tenant, and ACME owns none, so a
+  generated trade population is still priced against hand-seeded market data.
+  The run fails for that reason and not for a chain reason.
+- *Every generated trade is at one version.* Nothing in the product edits a
+  trade, so the population is uniform and a run cannot show two versions across
+  its rows. The per-trade lookup is held by the unit tests.
+
+Two defects were found on the way and fixed, each its own PR. A batch carrying
+its own repeated reasons was refused whole because the unique indexes saw the
+repeats (=#3824=). The index identity then left out the detail, so three
+analytics failing on one trade were one row to the database and the run stored
+none of them (=#3826=). The recorder now dedupes by the same identity the index
+uses, and says when an archive was read and stated no errors.

@@ -87,3 +87,44 @@ TEST_CASE("arithmetic_gaussian_mixture_model_process rejects a non-positive init
     CHECK_THROWS_AS(arithmetic_gaussian_mixture_model_process({0.0}, {0.01}, {1.0}, -1.0),
                     std::invalid_argument);
 }
+
+TEST_CASE("arithmetic_gaussian_mixture_model_process: a step of one tick is the old step",
+          "[arithmetic_gaussian_mixture_model_process]") {
+    arithmetic_gaussian_mixture_model_process one_tick(
+        {0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3}, 100.0, 7);
+    arithmetic_gaussian_mixture_model_process explicit_tick(
+        {0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3}, 100.0, 7);
+    for (int i = 0; i < 20; ++i)
+        CHECK(one_tick.next() == explicit_tick.next(1.0));
+}
+
+TEST_CASE("arithmetic_gaussian_mixture_model_process: the spread over a span does not depend on "
+          "the cut",
+          "[arithmetic_gaussian_mixture_model_process]") {
+    constexpr int paths = 400;
+    auto spread = [](int steps, double each) {
+        std::vector<double> changes;
+        changes.reserve(paths);
+        for (int seed = 0; seed < paths; ++seed) {
+            arithmetic_gaussian_mixture_model_process p({0.0}, {0.01}, {1.0}, 100.0, seed);
+            for (int i = 0; i < steps; ++i)
+                p.next(each);
+            changes.push_back(p.current() - 100.0);
+        }
+        const double mean =
+            std::accumulate(changes.begin(), changes.end(), 0.0) / static_cast<double>(paths);
+        double sum = 0.0;
+        for (const double c : changes)
+            sum += (c - mean) * (c - mean);
+        return sum / static_cast<double>(paths - 1);
+    };
+
+    CHECK(spread(100, 4.0) == Catch::Approx(spread(400, 1.0)).epsilon(0.15));
+}
+
+TEST_CASE("arithmetic_gaussian_mixture_model_process: a non-positive elapsed is refused",
+          "[arithmetic_gaussian_mixture_model_process]") {
+    arithmetic_gaussian_mixture_model_process p({0.0}, {0.01}, {1.0}, 100.0);
+    CHECK_THROWS_AS(p.next(0.0), std::invalid_argument);
+    CHECK(p.supports_variable_step());
+}

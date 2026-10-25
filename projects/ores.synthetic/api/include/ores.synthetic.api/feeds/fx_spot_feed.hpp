@@ -134,6 +134,8 @@ private:
     std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process_;
     std::unique_ptr<ores::analytics::quant::domain::i_arrival_process> arrivals_;
     ores::analytics::quant::service::tick_clock clock_;
+    /// The length of one nominal tick, in seconds: the unit a step is counted in.
+    double period_seconds_;
     std::string nats_subject_;
     std::optional<adapter_target> adapter_;
     std::optional<ores::marketdata::messaging::adapter_tick> previous_tick_;

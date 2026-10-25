@@ -48,6 +48,8 @@ public:
                                    std::uint32_t seed = 42);
 
     double next() override;
+    double next(double elapsed_ticks) override;
+    bool supports_variable_step() const override;
     double current() const override;
 
 private:

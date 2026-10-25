@@ -128,4 +128,15 @@ process_parameter_validation_result validate_arrival_process_parameters(const st
     return {};
 }
 
+process_parameter_validation_result
+validate_step_compatibility(const std::string& mode, bool process_supports_variable_step) {
+
+    if (mode == "periodic" || process_supports_variable_step)
+        return {};
+
+    return invalid("A '" + mode +
+                   "' arrival gives ticks of different lengths, so the price process must be "
+                   "able to step by elapsed time. Use a periodic arrival for this process.");
+}
+
 }

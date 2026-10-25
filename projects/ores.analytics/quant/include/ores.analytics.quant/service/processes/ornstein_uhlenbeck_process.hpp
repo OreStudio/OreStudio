@@ -57,6 +57,8 @@ public:
                                double dt = 1.0);
 
     double next() override;
+    double next(double elapsed_ticks) override;
+    bool supports_variable_step() const override;
     double current() const override;
 
 private:

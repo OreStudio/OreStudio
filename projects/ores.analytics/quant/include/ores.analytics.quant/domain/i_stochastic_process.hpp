@@ -20,6 +20,8 @@
 #ifndef ORES_ANALYTICS_QUANT_DOMAIN_I_STOCHASTIC_PROCESS_HPP
 #define ORES_ANALYTICS_QUANT_DOMAIN_I_STOCHASTIC_PROCESS_HPP
 
+#include <stdexcept>
+
 namespace ores::analytics::quant::domain {
 
 /**
@@ -41,6 +43,31 @@ public:
      * @brief Advance the process by one step and return the new price.
      */
     virtual double next() = 0;
+
+    /**
+     * @brief Advance the process by @p elapsed_ticks nominal ticks.
+     *
+     * A tick is the arrival process's unit, so a step of two ticks is a step of
+     * twice the time. A process whose law is written for one tick cannot answer
+     * for a longer step, and this default says so rather than pretending: one
+     * tick is next(), anything else is refused. The three processes that do
+     * have a time-scaled law override both this and supports_variable_step().
+     */
+    virtual double next(double elapsed_ticks) {
+        if (elapsed_ticks == 1.0)
+            return next();
+        throw std::invalid_argument("this process cannot step by other than one nominal tick");
+    }
+
+    /**
+     * @brief Whether next(elapsed) accepts an elapsed other than one.
+     *
+     * The feed refuses a non-periodic arrival mode for a process that answers
+     * false: irregular gaps would ask it for steps it cannot take.
+     */
+    virtual bool supports_variable_step() const {
+        return false;
+    }
 
     /**
      * @brief Return the current price without advancing.

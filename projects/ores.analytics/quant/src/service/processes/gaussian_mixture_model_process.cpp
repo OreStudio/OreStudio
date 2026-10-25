@@ -47,15 +47,29 @@ gaussian_mixture_model_process::gaussian_mixture_model_process(std::vector<doubl
 }
 
 double gaussian_mixture_model_process::next() {
+    return next(1.0);
+}
+
+double gaussian_mixture_model_process::next(double elapsed_ticks) {
+    if (elapsed_ticks <= 0.0)
+        throw std::invalid_argument(
+            "gaussian_mixture_model_process: elapsed_ticks must be strictly positive");
     const int k = component_dist_(rng_);
     // std::normal_distribution requires stddev > 0 (a libstdc++ assertion aborts
     // the process on σ <= 0 in debug builds). A zero-variance component is
     // degenerate: the draw is exactly the mean, so handle it directly.
-    const double sd = stdevs_[k];
-    const double log_return =
-        sd > 0.0 ? std::normal_distribution<double>(means_[k], sd)(rng_) : means_[k];
+    //
+    // Over t ticks the log-return keeps its mean and grows its variance with t,
+    // so the same seed at t = 1 draws exactly what it drew before.
+    const double sd = stdevs_[k] * std::sqrt(elapsed_ticks);
+    const double mean = means_[k] * elapsed_ticks;
+    const double log_return = sd > 0.0 ? std::normal_distribution<double>(mean, sd)(rng_) : mean;
     price_ *= std::exp(log_return);
     return price_;
+}
+
+bool gaussian_mixture_model_process::supports_variable_step() const {
+    return true;
 }
 
 double gaussian_mixture_model_process::current() const {

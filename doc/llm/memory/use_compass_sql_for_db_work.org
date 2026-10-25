@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 954798D6-05C8-4CF2-80A3-E3491EEA1060
+:END:
+#+title: Reach the database through compass sql
+#+description: Never call psql directly: compass sql carries the right user, password and database, which .env alone does not.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :llm:memory:feedback:database:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+Run every query through =compass sql=. Do not call =psql= directly, and do not source =.env= to build a connection.
+
+*Why:* A direct psql call authenticates as a different role than compass resolves, so it fails with 'password authentication failed', and the failure reads like a broken schema rather than the wrong credentials. It also bypasses the environment's database and schema selection.
+
+*How to apply:* Any time a query or a check needs the database: =compass sql -t -c "select ..."= for a query, =compass db status= for the schema, =compass db recreate -y -k= for a rebuild. When a query seems to fail on permissions, check the compass form before suspecting the database.

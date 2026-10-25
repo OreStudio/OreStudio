@@ -8,7 +8,7 @@
 #+filetags: :draw_every_ore_leaf_the_same_way:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-the-convention-terms-their-value-sets
-#+pr:
+#+pr: 3830
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3830][#3830]] | [sql] Give the convention terms their value sets |
 
 * Review
 

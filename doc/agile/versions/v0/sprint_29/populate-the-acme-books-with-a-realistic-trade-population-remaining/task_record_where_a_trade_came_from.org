@@ -95,6 +95,28 @@ task and name that file in the Command column.
 
 * Notes
 
+** Review findings, and what was withdrawn
+
+The review of PR #3786 found more than it should have, and one finding was a
+regression rather than a gap.
+
+- *The refusal judged the host, not the caller.* =refuse_origin= read
+  =ctx.service_account()=, which is the trading service's own database user,
+  fixed at startup and preserved across requests. Both the population writer
+  and the ORE import reach =book_trade= through that service, so their context
+  is the trading service's, and both would have been refused — the very paths
+  this task made state an origin. The refusal is withdrawn until it can key on
+  the token's roles instead.
+- *There is no foreign key.* The model adds =origin= under Columns but no
+  entry under Foreign keys, so codegen emits neither a constraint nor the
+  trigger check =entry_channel= and =booking_nature= get. The Result's claim
+  that the anchor references the lookup with a foreign key is false. An
+  unmappable code now throws on read rather than being prevented on write.
+- *Origin is a server-owned field in a client payload.* =trade_write= carries
+  it, so a client states its own provenance. The service could derive it from
+  the session, which would remove the refusal problem entirely.
+- The reason-code clause is still deferred, and nothing states =ux=.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -737,6 +737,12 @@
       "name": "ores_variability_system_settings_upsert_fn",
       "file": "projects/ores.sql/create/seed/upsert_functions_create.sql",
       "reason": "predates the check"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_commodities_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
     }
   ]
 }

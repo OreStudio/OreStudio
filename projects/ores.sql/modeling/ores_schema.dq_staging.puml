@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 139
+Tables: 140
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -602,6 +602,23 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_coding_schemes_artefact_tbl
     A published code list that a subject area's values come from, such as an ISO currency list or an FpML codelist. The scheme names the authority that publishes it and the subject area it applies to, and may point at the document that defines it. The authority and the subject-area columns are plain text rather than declared foreign keys, because the table has never carried a constraint and adding one would refuse rows the platform accepts today. - Artefact Table
+    end note
+
+    entity ores_dq_commodities_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * name : text
+        * description : text
+        * unit_code : text
+        * quotation_currency_code : text
+        * display_order : integer
+    }
+
+    note right of ores_dq_commodities_artefact_tbl
+    The commodities a population may draw from. A commodity trade names its commodity in free text today, and nothing holds the set a tenant may use, so a generator that needs one has to invent it. The code is the name the engine resolves, not a display name: ORE's own index corpus and example trades spell a commodity as an exchange-prefixed index, such as NYMEX:CL, ICE:B, XLME:AH or PM:XAUUSD. The catalogue therefore stores that spelling as its key. The unit and the quotation currency travel with the commodity because they are facts about how it trades and not about a particular trade: WTI is quoted in barrels for dollars, gas in MMBtu for dollars, LME aluminium in tonnes, gold in ounces. A population that quoted gold per barrel would be worse than one with no commodity at all. This model holds the vocabulary only. The forward curves a commodity prices on are market data, and they are not here. - Artefact Table
     end note
 
     entity ores_dq_commodity_forward_conventions_artefact_tbl  #F7E5FF {
@@ -1687,6 +1704,10 @@ package "dq_staging" #F3E5F5 {
           vintage_source : text
           vintage_date : text
           provider_code : text
+        * arrival_mode : text
+        * branching_ratio : double
+        * decay : double
+        * sensitivity : double
     }
 
     note right of ores_dq_fx_spot_generation_configs_artefact_tbl
@@ -1971,6 +1992,10 @@ package "dq_staging" #F3E5F5 {
           vintage_date : text
           vintage_series_uri : text
           provider_code : text
+        * arrival_mode : text
+        * branching_ratio : double
+        * decay : double
+        * sensitivity : double
     }
 
     note right of ores_dq_ir_curve_generation_configs_artefact_tbl

@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 165
+Tables: 166
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1213,6 +1213,45 @@ package "refdata" #FFF3E0 {
     The two period fields and the spot days stay in ORE's spelling, because they
     are tenors rather than frequency enumerations; the day count and the roll
     convention are normalised to the canonical codes the other tables hold.
+    end note
+
+    entity ores_refdata_commodities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * unit_code : text
+        * quotation_currency_code : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_commodities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Commodity Table
+    The commodities a population may draw from. A commodity trade names its
+    commodity in free text today, and nothing holds the set a tenant may use, so
+    a generator that needs one has to invent it.
+    The code is the name the engine resolves, not a display name: ORE's own
+    index corpus and example trades spell a commodity as an
+    exchange-prefixed index, such as NYMEX:CL, ICE:B, XLME:AH or
+    PM:XAUUSD. The catalogue therefore stores that spelling as its key.
+    The unit and the quotation currency travel with the commodity because they
+    are facts about how it trades and not about a particular trade: WTI is
+    quoted in barrels for dollars, gas in MMBtu for dollars, LME aluminium in
+    tonnes, gold in ounces. A population that quoted gold per barrel would be
+    worse than one with no commodity at all.
+    This model holds the vocabulary only. The forward curves a commodity prices
+    on are market data, and they are not here.
     end note
 
     entity ores_refdata_commodity_curve_configs_tbl <<temporal>> #C6F0D8 {

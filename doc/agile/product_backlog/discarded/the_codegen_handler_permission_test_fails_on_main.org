@@ -5,11 +5,16 @@
 #+description: Two codegen tests fail on main because commodity_handler.hpp needs permission codes iam_permissions_populate.sql lacks.
 #+type: capture
 #+level: cross
-#+filetags: :codegen:gate:bug:capture:inbox:
+#+filetags: :codegen:gate:bug:capture:discarded:
 #+created: 2026-10-25
 #+updated: 2026-10-25
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (2026-10-25)*: fixed by PR 3772, the seed story
+[[id:FDD5FC75-1A53-4F6C-8FC5-1BACDC9E9290][Seed the commodity permissions]],
+which added the three codes to =iam_permissions_populate.sql=. The two tests
+pass on main.
 
 * What
 

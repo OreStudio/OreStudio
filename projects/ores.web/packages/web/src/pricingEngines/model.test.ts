@@ -26,6 +26,7 @@ import {
     check,
     cloneDraft,
     difference,
+    documentationOf,
     draftOf,
     enginesFor,
     isKnownPair,
@@ -436,6 +437,46 @@ describe('the words the vocabulary holds', () => {
             (setting) => setting.name,
         );
         expect(names).toEqual(['Calibration', 'sx', 'SensitivityTemplate']);
+    });
+
+    it('finds a setting under any pair that names it', () => {
+        const named: PricingVocabulary = {
+            ...vocabulary,
+            settings: [
+                ...vocabulary.settings,
+                {
+                    typeCode: 'Swap',
+                    model: 'CrossAssetModel',
+                    engine: 'AMC',
+                    scope: 'engine',
+                    name: 'Training.Seed',
+                    kind: 'number',
+                    usual: '42',
+                    options: [],
+                    required: false,
+                    documented: true,
+                    label: 'Training seed',
+                    help: 'The seed.',
+                    description: 'The seed of the random engine.',
+                    defaultText: '42',
+                    format: 'A number.',
+                    introducedIn: '1.8.7.0',
+                    removedIn: '',
+                    xpath: "/PricingEngines/Product/EngineParameters/Parameter[@name='Training.Seed']",
+                },
+            ],
+        };
+        expect(
+            documentationOf(named, 'Swap', 'CrossAssetModel', 'AMC', 'engine', 'Training.Seed')
+                ?.description,
+        ).toBe('The seed of the random engine.');
+        expect(
+            documentationOf(named, 'BermudanSwaption', 'LGM', 'Grid', 'engine', 'Training.Seed')
+                ?.label,
+        ).toBe('Training seed');
+        expect(
+            documentationOf(named, 'Swap', 'CrossAssetModel', 'AMC', 'engine', 'Unknown'),
+        ).toBeUndefined();
     });
 
     it('reports only a missing setting that ORE needs', () => {

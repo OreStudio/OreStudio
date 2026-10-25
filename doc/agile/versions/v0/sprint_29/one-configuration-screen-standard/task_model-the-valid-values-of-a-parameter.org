@@ -33,7 +33,7 @@ code parser read at run time.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | The model is designed; the tables are next. |
+| Now          | The model, the seed, the reply and the control are in. The curation of the remaining settings and the retirement of the CSV are next. |
 | Waiting on   | Nothing.                               |
 | Next         | Model the four tables and generate them. |
 | Last touched | 2026-10-25                               |
@@ -212,3 +212,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The four tables exist and the database recreates with them. Twenty one sets, seventy seven values, fifty two setting links and two catalogue rows are seeded. The vocabulary reply carries each setting's set, its resolved choices, its bounds and its pattern, and the screen draws a combo of the labels. A catalogue set resolves through the relation its registry row names, with one typed reader per registered relation. The trigger refuses a value outside its set from any client; it refused `Training.BasisFunction = NotAValue` on the live database, and the provisioned configurations passed it.
+
+The retirement of the per-pair `options` and `kind` is not done. Those columns are still the only statement of allowed values for the settings the sets do not cover: the guide's fifty two links are seeded, and roughly one hundred and five settings, mostly the parameters the code reads and the guide never lists, have no set yet. Retiring the CSV now would lose that statement. The remaining work is a hand curation pass over those settings, using the ORE code as evidence, then the removal of the two columns and their generator use.

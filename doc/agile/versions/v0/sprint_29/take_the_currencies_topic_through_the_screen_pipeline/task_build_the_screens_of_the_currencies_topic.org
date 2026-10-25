@@ -8,7 +8,7 @@
 #+filetags: :take_the_currencies_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-screens-of-the-currencies-topic
-#+pr:
+#+pr: 3845
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -126,7 +126,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3845][#3845]] | [web] Move the currencies, desk groups and pairs screens to the shared timeline |
 
 * Review
 

@@ -74,7 +74,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The three affected suites | 3 of 3 pass | =ctest -R "ores.(synthetic.api\|synthetic.service\|analytics.quant).tests"= | 4ca777568c |
+| New cases | 8 across three test files | same run | 4ca777568c |
+| Long-run active share, measured over 200,000 one-second slices | 0.83 against the ratio's 0.83 | the market regime case | 2d47eb3458 |
 
 * Notes
 

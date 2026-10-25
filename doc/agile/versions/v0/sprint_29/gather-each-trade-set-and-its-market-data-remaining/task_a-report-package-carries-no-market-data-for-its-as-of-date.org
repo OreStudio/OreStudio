@@ -210,6 +210,16 @@ aggregate message, add =subject_version= (integer) and =subject_as_of=
 (timestamptz) to =ores_reporting_report_error_events_tbl= so a trade reference is
 versioned, then build the two screens on top of those rows.
 
+*Error rows, 2026-10-25.* A failed job now uploads what the engine wrote, and
+the reporting side reads that archive on the failure path, so a run's errors are
+recorded one reason at a time. Instance =47e0dd4c= recorded 33 rows: 32 name a
+subject, 24 of them a trade, for example scope =Trade=, subject =trade=,
+subject_id =28e6d1c3-…=. One row remains the report-level sentence about the job.
+
+=subject_version= and =subject_as_of= are in the model but still null: the
+engine names the trade id, not the version it read. Filling them means the
+gather recording the trade versions it exported, which is the next piece.
+
 * Test Scenarios
 
 | Scenario | State | Notes |

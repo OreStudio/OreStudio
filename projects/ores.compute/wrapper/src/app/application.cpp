@@ -713,6 +713,20 @@ void process_assignment(ores::nats::service::client& nats,
                 error_message = verdict.failure;
                 BOOST_LOG_SEV(lg, error)
                     << "Engine run failed for " << evt.result_id << ": " << verdict.failure;
+                // The engine's own log is the account of what went wrong, and
+                // the run's owner can only read it from the output. A failed
+                // job therefore uploads what the engine wrote, so the failure
+                // can be recorded per reason instead of as one message.
+                const fs::path failed_output_dir = job_dir / "Output";
+                if (fs::is_directory(failed_output_dir) &&
+                    fs::directory_iterator(failed_output_dir) != fs::directory_iterator{}) {
+                    const fs::path output_archive = job_dir / "output.tar.gz";
+                    ores::storage::filesystem::archiver::pack(failed_output_dir, output_archive);
+                    output_bytes = static_cast<std::int64_t>(fs::file_size(output_archive));
+                    ores::storage::net::http_client::put(
+                        make_url(cfg.http_base_url, evt.output_uri), output_archive,
+                        evt.storage_token);
+                }
                 // ClientError.
                 outcome = 3;
             } else {

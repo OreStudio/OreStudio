@@ -639,6 +639,25 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
             }
             for (const auto& one : results->results) {
                 if (one.outcome != compute_outcome_success) {
+                    // A failed job uploads what the engine wrote, so its own
+                    // log is readable here. Recording it per reason is what
+                    // makes the errors screen a list of causes rather than one
+                    // sentence about the run.
+                    std::string failed_bucket;
+                    std::string failed_key;
+                    if (!one.output_uri.empty() &&
+                        ores::storage::net::storage_paths::split_object_path(
+                            one.output_uri, failed_bucket, failed_key)) {
+                        const auto token = run_token(req.tenant_id, req.report_instance_id, err);
+                        if (!token.empty()) {
+                            ores::storage::net::storage_transfer failed(http_base_url_, token);
+                            const auto body = failed.download_blob(failed_bucket, failed_key);
+                            record_engine_errors(
+                                req.tenant_id,
+                                req.report_instance_id,
+                                std::as_bytes(std::span(body.data(), body.size())));
+                        }
+                    }
                     refuse(std::format("The run's compute job failed with outcome {}: {}",
                                        one.outcome,
                                        one.error_message.empty() ? "(no message)" :

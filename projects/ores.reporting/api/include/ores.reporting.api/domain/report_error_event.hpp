@@ -151,6 +151,20 @@ struct report_error_event final {
     std::optional<std::string> subject_id;
 
     /**
+     * @brief The version of the subject the run read, when the subject is versioned. A trade is one
+     * of many rows under one id, so a link to the trade that caused an error names the version as
+     * well as the id, and resolves to the row the run saw rather than to whatever the trade is now.
+     */
+    std::optional<int> subject_version;
+
+    /**
+     * @brief The instant the subject was current at, when the subject is versioned. It reads beside
+     * subject_version: the version alone names a row, and the instant says when that row was the
+     * live one.
+     */
+    std::optional<std::chrono::system_clock::time_point> subject_as_of;
+
+    /**
      * @brief The engine's remaining sub-fields for the message, as a JSON object, when it emitted
      * any: the exceptionType that says which failure this is, and the warningType on a warning. The
      * message alone does not carry them, and they are what tells two errors of one scope apart, so

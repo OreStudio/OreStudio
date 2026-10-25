@@ -26,6 +26,8 @@ import { subjects as settingsSubjects } from '@ores/wire-protocol/generated/repo
 import { subjects as fixingsSubjects } from '@ores/wire-protocol/generated/reporting/protocol/engine_settings_fixings_protocol';
 import { subjects as buildingSubjects } from '@ores/wire-protocol/generated/reporting/protocol/engine_settings_building_protocol';
 import { subjects as executionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/engine_settings_execution_protocol';
+import { subjects as groupSubjects } from '@ores/wire-protocol/generated/reporting/protocol/engine_settings_group_protocol';
+import { subjects as settingSubjects } from '@ores/wire-protocol/generated/reporting/protocol/engine_settings_group_setting_protocol';
 import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_protocol';
 import { subjects as bindingSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_configuration_protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
@@ -54,10 +56,15 @@ import type { LiveSession } from './sessions.js';
  * in force. A write to a part makes the next version of the central row, in the
  * service, so a part is written alone and the document is never saved whole.
  *
- * What a setting is, its range and its control, is the model of the screen and
- * lives here. What a setting means is documentation, and it comes from the ore
- * parameter of the same name, so the wording is edited in the data and never in
- * this file.
+ * What a setting is, its range and its control, comes from the engine settings
+ * groups tables, so a group and its settings are rows and never a change here.
+ * What a setting means is documentation, and it comes from the ore parameter of
+ * the same name, so the wording too is edited in the data and never in this
+ * file.
+ *
+ * The subjects a group's part is read and written under, and the key its rows
+ * travel as, stay here: they are the wiring of the service, not the model of the
+ * screen.
  *
  * A configuration is bound to a report through a reporting configuration of
  * type engine_settings, so a create writes that header first and the central
@@ -74,170 +81,164 @@ const NIL = '00000000-0000-0000-0000-000000000000';
 
 const idSchema = z.guid();
 
-type Kind = 'flag' | 'whole' | 'choice';
+/** The kind of value a setting takes, which is the control the screen draws. */
+const kindSchema = z.enum(['flag', 'whole', 'choice']);
 
-interface Setting {
-    /** The column of the part, which is the key a value travels under. */
+/** One group of settings, as the reporting service states it. */
+const groupRowSchema = z.looseObject({
+    code: z.string().trim().min(1),
+    position: z.number().default(0),
+});
+
+/** One setting of a group, as the reporting service states it. */
+const settingRowSchema = z.looseObject({
+    group_code: z.string().trim().min(1),
+    column_name: z.string().trim().min(1),
+    ore_name: z.string().trim().min(1),
+    kind: kindSchema,
+    changes_numbers: z.boolean().default(false),
+    /** The words a choice accepts, comma separated, and empty for a setting that is not one. */
+    options: z.string().default(''),
+    minimum: z.number().nullable().default(null),
+    maximum: z.number().nullable().default(null),
+    position: z.number().default(0),
+});
+
+type GroupRow = z.infer<typeof groupRowSchema>;
+type SettingRow = z.infer<typeof settingRowSchema>;
+
+/** One setting of a group: the column its value travels under, its control, and the values it accepts. */
+interface EngineSetting {
     readonly column: string;
-    /** The parameter as ORE writes it, which names its ore parameter. */
     readonly ore: string;
-    readonly kind: Kind;
+    readonly kind: z.infer<typeof kindSchema>;
     /** Whether the setting changes the numbers a run computes, and is not only operational. */
     readonly changesNumbers: boolean;
-    readonly options?: readonly string[];
-    readonly min?: number;
-    readonly max?: number;
+    readonly options: readonly string[];
+    readonly min: number | null;
+    readonly max: number | null;
 }
 
-interface Group {
-    readonly id: 'fixings' | 'building' | 'execution';
+/** One group of settings, in the order the data places it in the screen. */
+interface EngineGroup {
+    /** The code of the group, which is the word its part travels under. */
+    readonly id: string;
+    readonly settings: readonly EngineSetting[];
+}
+
+/** Where the rows of one group live: the subjects they travel under and the key they travel as. */
+interface GroupTransport {
     readonly list: string;
     readonly rows: string;
     readonly put: string;
     readonly delete: string;
     readonly versions: string;
-    readonly settings: readonly Setting[];
 }
 
-const OBSERVATION_MODELS = ['None', 'Disable', 'Defer', 'Unregister'] as const;
-
-export const GROUPS: readonly Group[] = [
-    {
-        id: 'fixings',
+/*
+ * The wiring of each group of settings. The data states the groups; this states
+ * where each group's part is read and written, which is the service's shape and
+ * not the screen's model. A group the data holds and this does not name has no
+ * rows to reach, so it is not offered.
+ */
+const TRANSPORT: Readonly<Record<string, GroupTransport>> = {
+    fixings: {
         list: fixingsSubjects.list_engine_settings_fixings_request,
         rows: 'engine_settings_fixings',
         put: fixingsSubjects.put_engine_settings_fixings_request,
         delete: fixingsSubjects.delete_engine_settings_fixings_request,
         versions: fixingsSubjects.list_engine_settings_fixings_versions_request,
-        settings: [
-            {
-                column: 'imply_todays_fixings',
-                ore: 'implyTodaysFixings',
-                kind: 'flag',
-                changesNumbers: true,
-            },
-            {
-                column: 'include_todays_cash_flows',
-                ore: 'includeTodaysCashFlows',
-                kind: 'flag',
-                changesNumbers: true,
-            },
-            {
-                column: 'include_reference_date_events',
-                ore: 'includeReferenceDateEvents',
-                kind: 'flag',
-                changesNumbers: true,
-            },
-            {
-                column: 'enrich_index_fixings',
-                ore: 'enrichIndexFixings',
-                kind: 'flag',
-                changesNumbers: true,
-            },
-            {
-                column: 'ignore_fixing_lag',
-                ore: 'ignoreFixingLag',
-                kind: 'whole',
-                changesNumbers: true,
-                min: 0,
-            },
-            {
-                column: 'ignore_fixing_lead',
-                ore: 'ignoreFixingLead',
-                kind: 'whole',
-                changesNumbers: true,
-                min: 0,
-            },
-        ],
     },
-    {
-        id: 'building',
+    building: {
         list: buildingSubjects.list_engine_settings_building_request,
         rows: 'engine_settings_building',
         put: buildingSubjects.put_engine_settings_building_request,
         delete: buildingSubjects.delete_engine_settings_building_request,
         versions: buildingSubjects.list_engine_settings_building_versions_request,
-        settings: [
-            {
-                column: 'observation_model',
-                ore: 'observationModel',
-                kind: 'choice',
-                changesNumbers: false,
-                options: OBSERVATION_MODELS,
-            },
-            {
-                column: 'lazy_market_building',
-                ore: 'lazyMarketBuilding',
-                kind: 'flag',
-                changesNumbers: false,
-            },
-            {
-                column: 'build_failed_trades',
-                ore: 'buildFailedTrades',
-                kind: 'flag',
-                changesNumbers: true,
-            },
-            {
-                column: 'continue_on_error',
-                ore: 'continueOnError',
-                kind: 'flag',
-                changesNumbers: true,
-            },
-            {
-                column: 'use_at_par_coupons_curves',
-                ore: 'useAtParCouponsCurves',
-                kind: 'flag',
-                changesNumbers: true,
-            },
-            {
-                column: 'use_at_par_coupons_trades',
-                ore: 'useAtParCouponsTrades',
-                kind: 'flag',
-                changesNumbers: true,
-            },
-        ],
     },
-    {
-        id: 'execution',
+    execution: {
         list: executionSubjects.list_engine_settings_execution_request,
         rows: 'engine_settings_execution',
         put: executionSubjects.put_engine_settings_execution_request,
         delete: executionSubjects.delete_engine_settings_execution_request,
         versions: executionSubjects.list_engine_settings_execution_versions_request,
-        settings: [
-            { column: 'n_threads', ore: 'nThreads', kind: 'whole', changesNumbers: false, min: 1 },
-            { column: 'log_mask', ore: 'logMask', kind: 'whole', changesNumbers: false, min: 0 },
-            {
-                column: 'gzip_compression_level',
-                ore: 'gzipCompressionLevel',
-                kind: 'whole',
-                changesNumbers: false,
-                min: 0,
-                max: 9,
-            },
-        ],
     },
-];
+};
 
-const GROUP_IDS = ['fixings', 'building', 'execution'] as const;
-const groupSchema = z.enum(GROUP_IDS);
+const groupSchema = z.enum(Object.keys(TRANSPORT) as [string, ...string[]]);
 
-function groupOf(id: string): Group {
-    const group = GROUPS.find((candidate) => candidate.id === id);
+function settingOf(row: SettingRow): EngineSetting {
+    return {
+        column: row.column_name,
+        ore: row.ore_name,
+        kind: row.kind,
+        changesNumbers: row.changes_numbers,
+        options: row.options
+            .split(',')
+            .map((option) => option.trim())
+            .filter((option) => option !== ''),
+        min: row.minimum,
+        max: row.maximum,
+    };
+}
+
+/**
+ * The groups of settings the data states, in the order it places them, with the
+ * settings of each in the order it places those. A group the wiring does not
+ * name is not offered, because its part could not be read or written.
+ */
+async function readGroups(session: LiveSession): Promise<readonly EngineGroup[]> {
+    const [groupRows, settingRows] = await Promise.all([
+        readAll(session, groupSubjects.list_engine_settings_groups_request, 'groups', {
+            filter: null,
+            as_of: null,
+        }),
+        readAll(session, settingSubjects.list_engine_settings_group_settings_request, 'settings', {
+            filter: null,
+            as_of: null,
+        }),
+    ]);
+    const settings = new Map<string, EngineSetting[]>();
+    for (const row of settingRows
+        .map((value) => settingRowSchema.parse(value))
+        .sort((left, right) => left.position - right.position)) {
+        const ofGroup = settings.get(row.group_code) ?? [];
+        ofGroup.push(settingOf(row));
+        settings.set(row.group_code, ofGroup);
+    }
+    return groupRows
+        .map((value) => groupRowSchema.parse(value))
+        .sort((left, right) => left.position - right.position)
+        .filter((group) => TRANSPORT[group.code] !== undefined)
+        .map((group) => ({ id: group.code, settings: settings.get(group.code) ?? [] }));
+}
+
+/** The group with this code, or a 404 when the data does not hold it. */
+function groupOf(groups: readonly EngineGroup[], id: string): EngineGroup {
+    const group = groups.find((candidate) => candidate.id === id);
     if (group === undefined) {
         throw notFound('There is no such group of engine settings.');
     }
     return group;
 }
 
+/** Where the rows of this group live. A group the data holds is one this names. */
+function transportOf(group: EngineGroup): GroupTransport {
+    const transport = TRANSPORT[group.id];
+    if (transport === undefined) {
+        throw notFound('There is no such group of engine settings.');
+    }
+    return transport;
+}
+
 /** One setting's value: null for the engine default, else a value its kind accepts. */
-function valueSchema(setting: Setting): z.ZodType<boolean | number | string | null> {
+function valueSchema(setting: EngineSetting): z.ZodType<boolean | number | string | null> {
     switch (setting.kind) {
         case 'flag':
             return z.boolean().nullable();
         case 'whole': {
             let whole = z.int().min(setting.min ?? 0);
-            if (setting.max !== undefined) {
+            if (setting.max !== null) {
                 whole = whole.max(setting.max);
             }
             return whole.nullable();
@@ -247,7 +248,7 @@ function valueSchema(setting: Setting): z.ZodType<boolean | number | string | nu
     }
 }
 
-function valuesSchema(group: Group): z.ZodType<Readonly<Record<string, unknown>>> {
+function valuesSchema(group: EngineGroup): z.ZodType<Readonly<Record<string, unknown>>> {
     return z.strictObject(
         Object.fromEntries(group.settings.map((setting) => [setting.column, valueSchema(setting)])),
     );
@@ -305,7 +306,10 @@ function partyOf(
 }
 
 /** The values a part row holds, by column, with null for the engine default. */
-function valuesOf(group: Group, part: Readonly<Record<string, unknown>>): Record<string, unknown> {
+function valuesOf(
+    group: EngineGroup,
+    part: Readonly<Record<string, unknown>>,
+): Record<string, unknown> {
     return Object.fromEntries(
         group.settings.map((setting) => [setting.column, part[setting.column] ?? null]),
     );
@@ -313,7 +317,7 @@ function valuesOf(group: Group, part: Readonly<Record<string, unknown>>): Record
 
 /** The part of one group for one configuration, or null when the group has no row. */
 function partOf(
-    group: Group,
+    group: EngineGroup,
     parts: readonly Readonly<Record<string, unknown>>[],
     id: string,
 ): Readonly<Record<string, unknown>> | null {
@@ -335,15 +339,19 @@ function partOf(
 async function readParts(
     session: LiveSession,
     ids: readonly string[] | null,
+    groups: readonly EngineGroup[],
 ): Promise<ReadonlyMap<string, readonly Readonly<Record<string, unknown>>[]>> {
     const filter =
         ids === null
             ? null
             : { engine_settings_id: null, id_one_of: null, engine_settings_id_one_of: [...ids] };
     const all = await Promise.all(
-        GROUPS.map((group) => readAll(session, group.list, group.rows, { filter, as_of: null })),
+        groups.map((group) => {
+            const transport = transportOf(group);
+            return readAll(session, transport.list, transport.rows, { filter, as_of: null });
+        }),
     );
-    return new Map(GROUPS.map((group, index) => [group.id, all[index] ?? []]));
+    return new Map(groups.map((group, index) => [group.id, all[index] ?? []]));
 }
 
 async function readCentral(
@@ -434,11 +442,12 @@ async function readBoundReports(
 async function documentOf(
     session: LiveSession,
     central: Readonly<Record<string, unknown>>,
+    groups: readonly EngineGroup[],
 ): Promise<Readonly<Record<string, unknown>>> {
     const id = text(central['id']);
     const [parties, parts, reports] = await Promise.all([
         readPartyNames(session),
-        readParts(session, [id]),
+        readParts(session, [id], groups),
         readBoundReports(session, text(central['configuration_id'])).catch(() => null),
     ]);
     return {
@@ -453,14 +462,17 @@ async function documentOf(
         changeReason: text(central['change_reason_code']),
         changeCommentary: text(central['change_commentary']),
         groups: Object.fromEntries(
-            GROUPS.map((group) => [group.id, partOf(group, parts.get(group.id) ?? [], id)]),
+            groups.map((group) => [group.id, partOf(group, parts.get(group.id) ?? [], id)]),
         ),
         reports,
     };
 }
 
 /** The settings of each group with the facts the screen needs and the documentation of each. */
-async function documentation(session: LiveSession): Promise<Readonly<Record<string, unknown>>> {
+async function documentation(
+    session: LiveSession,
+    groups: readonly EngineGroup[],
+): Promise<Readonly<Record<string, unknown>>> {
     const parameters = await readAll(
         session,
         parameterSubjects.list_ore_parameters_request,
@@ -477,7 +489,7 @@ async function documentation(session: LiveSession): Promise<Readonly<Record<stri
             .map((parameter) => [text(parameter['name']), parameter]),
     );
     return {
-        groups: GROUPS.map((group) => ({
+        groups: groups.map((group) => ({
             id: group.id,
             changesNumbers: group.settings.some((setting) => setting.changesNumbers),
             settings: group.settings.map((setting) => {
@@ -487,9 +499,9 @@ async function documentation(session: LiveSession): Promise<Readonly<Record<stri
                     ore: setting.ore,
                     kind: setting.kind,
                     changesNumbers: setting.changesNumbers,
-                    options: setting.options ?? [],
-                    min: setting.min ?? null,
-                    max: setting.max ?? null,
+                    options: setting.options,
+                    min: setting.min,
+                    max: setting.max,
                     documented: doc !== undefined,
                     label: text(doc?.['label']),
                     help: text(doc?.['help']),
@@ -593,18 +605,23 @@ export function registerEngineSettingsRoutes(
 ): void {
     server.get('/api/reporting/engine-settings', async (request) => {
         const session = requireSession(request);
+        const groups = await readGroups(session);
         const [parties, centrals, parts] = await Promise.all([
             readPartyNames(session),
             readAll(session, settingsSubjects.list_engine_settings_request, 'settings', {
                 filter: null,
                 as_of: null,
             }),
-            readParts(session, null),
+            readParts(session, null, groups),
         ]);
+        const executionGroup = groups.find((group) => group.id === 'execution');
         return {
             rows: centrals.map((central) => {
                 const id = text(central['id']);
-                const execution = partOf(groupOf('execution'), parts.get('execution') ?? [], id);
+                const execution =
+                    executionGroup === undefined
+                        ? null
+                        : partOf(executionGroup, parts.get(executionGroup.id) ?? [], id);
                 const values = (execution?.['values'] ?? {}) as Record<string, unknown>;
                 return {
                     id,
@@ -613,10 +630,10 @@ export function registerEngineSettingsRoutes(
                     name: text(central['name']),
                     description: text(central['description']),
                     configurationId: text(central['configuration_id']),
-                    groupsSet: GROUPS.filter(
+                    groupsSet: groups.filter(
                         (group) => partOf(group, parts.get(group.id) ?? [], id) !== null,
                     ).length,
-                    groups: GROUPS.length,
+                    groups: groups.length,
                     threads: typeof values['n_threads'] === 'number' ? values['n_threads'] : null,
                     modifiedBy: text(central['modified_by']),
                     recordedAt: text(central['recorded_at']),
@@ -625,13 +642,15 @@ export function registerEngineSettingsRoutes(
         };
     });
 
-    server.get('/api/reporting/engine-settings/documentation', async (request) =>
-        documentation(requireSession(request)),
-    );
+    server.get('/api/reporting/engine-settings/documentation', async (request) => {
+        const session = requireSession(request);
+        return documentation(session, await readGroups(session));
+    });
 
     server.get('/api/reporting/engine-settings/:id', async (request) => {
         const session = requireSession(request);
-        return documentOf(session, await readCentral(session, paramId(request)));
+        const groups = await readGroups(session);
+        return documentOf(session, await readCentral(session, paramId(request)), groups);
     });
 
     server.get('/api/reporting/engine-settings/:id/history', async (request) => {
@@ -645,24 +664,22 @@ export function registerEngineSettingsRoutes(
             'versions',
             { key: { name: text(central['name']) }, filter: null },
         );
-        const parts = await readParts(session, [id]);
+        const groups = await readGroups(session);
+        const parts = await readParts(session, [id], groups);
         const partVersions = await Promise.all(
-            GROUPS.map(async (group) => {
+            groups.map(async (group) => {
                 const current = parts.get(group.id)?.[0];
                 if (current === undefined) {
                     return [];
                 }
-                const rows = await readAll(session, group.versions, 'versions', {
+                const rows = await readAll(session, transportOf(group).versions, 'versions', {
                     key: { id: text(current['id']) },
                     filter: null,
                 });
                 return rows.map((version) => ({ group: group.id, version }));
             }),
         );
-        const entry = (
-            kind: 'central' | 'fixings' | 'building' | 'execution',
-            version: Readonly<Record<string, unknown>>,
-        ) => ({
+        const entry = (kind: string, version: Readonly<Record<string, unknown>>) => ({
             kind,
             version: num(version['version']),
             modifiedBy: text(version['modified_by']),
@@ -672,7 +689,7 @@ export function registerEngineSettingsRoutes(
             values:
                 kind === 'central'
                     ? { name: text(version['name']), description: text(version['description']) }
-                    : valuesOf(groupOf(kind), version),
+                    : valuesOf(groupOf(groups, kind), version),
         });
         return {
             entries: [
@@ -704,7 +721,7 @@ export function registerEngineSettingsRoutes(
                 body.intent,
             );
             void reply.code(201);
-            return await documentOf(session, central);
+            return await documentOf(session, central, await readGroups(session));
         } catch (failure) {
             await removeHeader(session, body.name, body.intent);
             throw failure;
@@ -729,19 +746,21 @@ export function registerEngineSettingsRoutes(
             body.version,
             body.intent,
         );
-        return documentOf(session, updated);
+        return documentOf(session, updated, await readGroups(session));
     });
 
     server.put('/api/reporting/engine-settings/:id/groups/:group', async (request) => {
         const session = requireSession(request);
         const id = paramId(request);
-        const group = groupOf(input(groupSchema, (request.params as { group: string }).group));
+        const code = input(groupSchema, (request.params as { group: string }).group);
+        const groups = await readGroups(session);
+        const group = groupOf(groups, code);
         const body = input(groupBodySchema, request.body);
         const values = input(valuesSchema(group), body.values);
         requireOwningParty(session, await readCentral(session, id));
-        const existing = (await readParts(session, [id])).get(group.id)?.[0];
+        const existing = (await readParts(session, [id], groups)).get(group.id)?.[0];
         const rowId = existing === undefined ? randomUUID() : text(existing['id']);
-        const result = await write(session, group.put, {
+        const result = await write(session, transportOf(group).put, {
             change: {
                 write: { id: rowId, engine_settings_id: id, ...values },
                 precondition:
@@ -754,7 +773,7 @@ export function registerEngineSettingsRoutes(
         if (result.outcome !== 'ok') {
             throw writeRefusal(result);
         }
-        return documentOf(session, await readCentral(session, id));
+        return documentOf(session, await readCentral(session, id), groups);
     });
 
     server.delete('/api/reporting/engine-settings/:id', async (request, reply) => {
@@ -770,11 +789,12 @@ export function registerEngineSettingsRoutes(
                 message: 'A report binds these engine settings, so they cannot be deleted.',
             });
         }
-        const parts = await readParts(session, [id]);
-        for (const group of GROUPS) {
+        const groups = await readGroups(session);
+        const parts = await readParts(session, [id], groups);
+        for (const group of groups) {
             const part = parts.get(group.id)?.[0];
             if (part !== undefined) {
-                const removed = await write(session, group.delete, {
+                const removed = await write(session, transportOf(group).delete, {
                     removal: {
                         key: { id: text(part['id']) },
                         precondition: { kind: 'any', version: null },

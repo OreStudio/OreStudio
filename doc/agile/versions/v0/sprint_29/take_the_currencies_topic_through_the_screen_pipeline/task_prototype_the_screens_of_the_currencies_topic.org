@@ -8,7 +8,7 @@
 #+filetags: :take_the_currencies_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
 #+branch: feature/prototype-the-screens-of-the-currencies-topic
-#+pr:
+#+pr: 3833
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -124,7 +124,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3833][#3833]] | [docs] Prototype the currencies, desk groups and pairs screens |
 
 * Review
 

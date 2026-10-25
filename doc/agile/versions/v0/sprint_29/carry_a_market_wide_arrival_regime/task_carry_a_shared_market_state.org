@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/carry-a-shared-market-state
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The market has a calm/active state that moves every feed's rate by its sensitivi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,25 @@ The market has a calm/active state that moves every feed's rate by its sensitivi
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three slices, each verifiable on its own.
+
+1. *The state.* =domain::market_regime=, a two-state continuous-time chain: a
+   calm market turns active at one rate and back at another, so the share of time
+   spent active is fixed by the ratio. It exposes =current()=, =multiplier()=,
+   =advance(elapsed_seconds)=, =pin()= and =unpin()=. It keeps no clock of its
+   own, so a caller that sleeps in slices and one that jumps to the next event use
+   the same object, and a scenario pins a state without waiting for a draw.
+2. *The rate.* Every arrival process gains a baseline multiplier, applied to its
+   mean rate: the chain scales it, the row's sensitivity scales it again. The
+   multiplier touches the baseline and not the branching ratio, because a busy
+   market raises how often events arrive, not how strongly they excite.
+3. *The clock.* The clock consults the market factor before each gap, so one run
+   has one market and every feed follows it. This is the ownership change: a feed
+   no longer decides the market, it reports what a tick did.
+
+Tests follow the slices: the chain's occupancy against its own ratio, a pin that
+holds however much time passes, the multiplier reaching the rate, and the clock
+passing the factor to every feed.
 
 * Measurements
 

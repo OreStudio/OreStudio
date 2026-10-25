@@ -5152,6 +5152,24 @@ export const en: SourceCatalogue = {
         false: 'false',
     },
     reporting: {
+        run: {
+            title: 'Report run',
+            tabs: {
+                run: 'Run',
+                results: 'Results',
+            },
+            definition: 'Report',
+            kind: 'Kind',
+            state: 'State',
+            started: 'Started',
+            completed: 'Completed',
+            pricedAt: 'Priced at',
+            message: 'What the run said',
+            output: 'Output archive',
+            noOutput: 'This run produced no output.',
+            download: 'Download the archive',
+            errors: "Read this run's errors",
+        },
         results: {
             title: 'Results',
             trades: 'Trades',
@@ -5175,6 +5193,10 @@ export const en: SourceCatalogue = {
             results: 'Results',
         },
         runs: {
+            pricedAt: 'Priced at',
+            actions: 'Actions',
+            details: 'Details',
+            results: 'Results',
             title: 'Runs',
             empty: 'This report has not run yet.',
             name: 'Run',

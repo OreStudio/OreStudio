@@ -5193,6 +5193,24 @@ const pt: SourceCatalogue = {
         false: 'falso',
     },
     reporting: {
+        run: {
+            title: 'Execução do relatório',
+            tabs: {
+                run: 'Execução',
+                results: 'Resultados',
+            },
+            definition: 'Relatório',
+            kind: 'Tipo',
+            state: 'Estado',
+            started: 'Início',
+            completed: 'Fim',
+            pricedAt: 'Avaliado em',
+            message: 'O que a execução disse',
+            output: 'Arquivo de saída',
+            noOutput: 'Esta execução não produziu saída.',
+            download: 'Baixar o arquivo',
+            errors: 'Ler os erros desta execução',
+        },
         results: {
             title: 'Resultados',
             trades: 'Transações',
@@ -5216,6 +5234,10 @@ const pt: SourceCatalogue = {
             results: 'Resultados',
         },
         runs: {
+            pricedAt: 'Avaliado em',
+            actions: 'Ações',
+            details: 'Detalhes',
+            results: 'Resultados',
             title: 'Execuções',
             empty: 'Este relatório ainda não foi executado.',
             name: 'Execução',

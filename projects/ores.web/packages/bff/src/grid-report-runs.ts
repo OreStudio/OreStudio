@@ -227,11 +227,12 @@ async function readRunsOfDefinition(
         state_name: states.get(text(run['id'])) ?? '',
         started_at: text(run['started_at']),
         completed_at: text(run['completed_at']),
+        priced_at: text(run['priced_at']),
     }));
 }
 
 /** The state name each run reached, for the runs whose health could be read. */
-async function readRunStates(
+export async function readRunStates(
     session: LiveSession,
     instanceIds: readonly string[],
 ): Promise<ReadonlyMap<string, string>> {

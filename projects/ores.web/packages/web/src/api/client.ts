@@ -465,6 +465,22 @@ export type ReportOpen =
           readonly choices: readonly ReportNameChoice[];
       };
 
+/** One report run, as the reporting area reads it. */
+export interface ReportRunDetail {
+    readonly id: string;
+    readonly name: string;
+    readonly party_id: string;
+    readonly definition_id: string;
+    readonly kind: string;
+    readonly state_name: string;
+    readonly started_at: string;
+    readonly completed_at: string;
+    readonly priced_at: string;
+    readonly price_note: string;
+    readonly output_message: string;
+    readonly output_storage_key: string;
+}
+
 /** Why a report shows no rows, as the server stated it. */
 export type ResultReason = '' | 'no-run' | 'no-output' | 'no-result-file' | 'no-figures';
 
@@ -2452,12 +2468,24 @@ export const api = {
         return reply.runs ?? [];
     },
 
-    /** The results of a report's latest run, and why it has none. */
-    async reportResults(id: string): Promise<{ rows: readonly unknown[]; reason: ResultReason }> {
-        const reply = (await request(`/api/reporting/reports/${id}/results`, {
+    /** One report run, with the state it reached and what it said. */
+    async reportRun(id: string): Promise<ReportRunDetail> {
+        return (await request(`/api/reporting/runs/${id}`, { method: 'GET' })) as ReportRunDetail;
+    },
+
+    /** The results of one run, and why it has none. */
+    async reportRunResults(
+        id: string,
+    ): Promise<{ rows: readonly unknown[]; reason: ResultReason }> {
+        const reply = (await request(`/api/reporting/runs/${id}/results`, {
             method: 'GET',
         })) as { rows?: readonly unknown[]; reason?: string };
         return { rows: reply.rows ?? [], reason: resultReasonOf(reply.reason) };
+    },
+
+    /** Where the run's output archive is downloaded from. */
+    reportRunOutputUrl(id: string): string {
+        return `/api/reporting/runs/${encodeURIComponent(id)}/output`;
     },
 
     /** The errors a report run recorded. */

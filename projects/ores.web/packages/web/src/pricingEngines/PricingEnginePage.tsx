@@ -791,6 +791,9 @@ function RoleCard({
             </header>
             <div className="space-y-1">
                 <div className="font-mono text-sm">{code}</div>
+                {pairKnown === false && (
+                    <Notice tone="warn">{t('pricingEngines.change.unknownPair')}</Notice>
+                )}
                 <Docs>
                     <div className="space-y-1">
                         {description === '' ? (
@@ -804,11 +807,6 @@ function RoleCard({
                         {source !== '' && (
                             <p className="text-xs text-ink-faint">
                                 {t(`pricingEngines.source.${source}`)}
-                            </p>
-                        )}
-                        {pairKnown === false && (
-                            <p className="text-xs text-ink-faint">
-                                {t('pricingEngines.change.unknownPair')}
                             </p>
                         )}
                     </div>
@@ -1060,6 +1058,10 @@ function ProductEditor({
                         </option>
                     ))}
                 </Select>
+                {model !== '' &&
+                    !vocabulary.pairs.some(
+                        (pair) => pair.typeCode === product.typeCode && pair.model === model,
+                    ) && <Notice tone="warn">{t('pricingEngines.change.unknownPair')}</Notice>}
                 {model !== '' && (
                     <p className="text-sm text-ink-muted">
                         {vocabulary.models.find((entry) => entry.code === model)?.description ??

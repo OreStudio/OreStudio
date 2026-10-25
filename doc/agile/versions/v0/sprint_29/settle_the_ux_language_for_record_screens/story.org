@@ -24,7 +24,7 @@ A reviewer or a check can point at a rule by its identifier, and the rule has on
 | State         | BACKLOG                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
-| Waiting on    | The audit task of [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]]: it lists the contradictions and the gaps this story decides. |
+| Waiting on    | The [[id:F4EF9042-0EC2-4B64-95E7-7DEBF273F2F7][Audit of the UX standards]] to merge: it lists the nine contradictions, the eleven form layout questions and the identifier scheme this story decides. |
 | Next          | Decide each contradiction between the standards. |
 | Last touched  | 2026-10-25                               |
 

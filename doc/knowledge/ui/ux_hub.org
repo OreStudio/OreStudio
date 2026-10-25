@@ -96,6 +96,11 @@ each Qt reference data screen offered against what the web shows today. Read it
 to find a gap before a topic enters the screen pipeline. It is a measurement,
 produced by a script a reviewer can rerun, and it adds no rule.
 
+[[id:F4EF9042-0EC2-4B64-95E7-7DEBF273F2F7][Audit of the UX standards]] — where the
+pages above disagree, what the form layout leaves open, and what a rule needs
+so a check can name it. Read it to see what the standards still have to settle.
+It adds no rule either.
+
 # aside
 
 [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]] —

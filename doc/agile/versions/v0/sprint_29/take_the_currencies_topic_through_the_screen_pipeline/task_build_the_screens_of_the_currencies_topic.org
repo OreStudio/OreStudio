@@ -139,3 +139,12 @@ via its "Verifies task" field.
 | 2 | PR 3845 review: the convention's Revert, the typed check's key order, the half-failed pair save, the reserved line, the convention table's typing, the harness selector | currencyPairs.tsx, records.tsx | Accept 2 and the typing; decline 1, 3, the reserved line and the selector with reasons | The typed check compares spec by spec; the convention table is typed before it is mapped. A part has no Revert by RS-HIST-02, as a calendar's rules have none, so the convention's goes by design and the note says so. The half-failed pair save is the server's gap, captured as the write-together. The reserved line is drawn only by the record form's fields; a plain Field with no hint draws nothing. Every record form ends in the commentary textarea, so the selector always finds a field |
 
 * Result
+
+Step 1 is built and merged: the currencies, desk groups and currency pairs
+screens draw History on the shared timeline, the pair's story carrying its
+convention; each page has Refresh with its load time; Edit and Delete are
+titled by the record's name; the pair dialog is the shared record dialog with
+two groups and a derived code. Proven by the unit tests, the harness on four
+screens and screenshots of the running web. Steps 2 and 3, the Import and
+Export pair's server side and screen, the two classification lists and the
+harness checks, follow on this task.

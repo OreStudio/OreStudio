@@ -48,12 +48,35 @@ struct fx_spot_quote final {
 };
 
 /**
+ * @brief One pillar of an interest rate curve, as a provider's id describes it.
+ *
+ * A pillar is the quote that ends where the pillar ends, on the curve of one currency and one
+ * index. It is where a curve starts and where it stops, so the two tenors are part of what the
+ * quote is and not of when it is read: the start is SPOT for a pillar that starts at once, and a
+ * period such as 3M for one that starts later.
+ *
+ * The index family is the code the refdata catalogue holds for the index, such as sofr, in its
+ * own lower case. A provider that spells the family in upper case spells it so in its id, and
+ * the description still holds the catalogue's spelling.
+ */
+struct ir_curve_pillar final {
+    std::string currency;
+    std::string index_family;
+    std::string instrument_code;
+    std::string start_tenor;
+    std::string end_tenor;
+
+    bool operator==(const ir_curve_pillar&) const = default;
+};
+
+/**
  * @brief What a vendor id says about the quote it names, in no provider's words.
  *
- * Only the FX spot quote is described today. A rate pillar or another instrument is a further
- * alternative, and each notation then reads and writes it or refuses it.
+ * The spot quote of a currency pair and one pillar of an interest rate curve are described
+ * today. Another instrument is a further alternative, and each notation then reads and writes
+ * it or refuses it.
  */
-using quote_description = std::variant<fx_spot_quote>;
+using quote_description = std::variant<fx_spot_quote, ir_curve_pillar>;
 
 }
 

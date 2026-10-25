@@ -105,6 +105,18 @@ vendor::quote_description fx(std::string base, std::string quote, vendor::price_
     return vendor::fx_spot_quote{std::move(base), std::move(quote), side};
 }
 
+vendor::quote_description pillar(std::string currency,
+                                 std::string family,
+                                 std::string instrument,
+                                 std::string start,
+                                 std::string end) {
+    return vendor::ir_curve_pillar{std::move(currency),
+                                   std::move(family),
+                                   std::move(instrument),
+                                   std::move(start),
+                                   std::move(end)};
+}
+
 } // namespace
 
 TEST_CASE("the_registry_lists_the_providers_that_have_a_notation", tags) {
@@ -132,10 +144,16 @@ TEST_CASE("every_id_in_the_corpus_reads_as_the_corpus_says_and_roundtrips", tags
             const auto outcome = split(cells[3], ' ');
 
             const auto read = sut.read(id);
-            if (outcome[0] == "fx") {
-                REQUIRE(outcome.size() == 4);
+            if (outcome[0] == "fx" || outcome[0] == "pillar") {
                 REQUIRE(read.has_value());
-                CHECK(*read == fx(outcome[1], outcome[2], side_named(outcome[3])));
+                if (outcome[0] == "fx") {
+                    REQUIRE(outcome.size() == 4);
+                    CHECK(*read == fx(outcome[1], outcome[2], side_named(outcome[3])));
+                } else {
+                    REQUIRE(outcome.size() == 6);
+                    CHECK(*read ==
+                          pillar(outcome[1], outcome[2], outcome[3], outcome[4], outcome[5]));
+                }
                 // The id is canonical: writing what was read gives the same id.
                 const auto written = sut.write(*read);
                 REQUIRE(written.has_value());
@@ -153,6 +171,70 @@ TEST_CASE("every_id_in_the_corpus_reads_as_the_corpus_says_and_roundtrips", tags
         }
         CHECK(valid > 20);
         CHECK(refused > 5);
+    }
+}
+
+TEST_CASE("every_pillar_in_the_corpus_writes_as_the_corpus_says_and_roundtrips", tags) {
+    std::size_t written_ids = 0;
+    std::size_t refusals = 0;
+    for (const auto& row : rows_of("ir_curve_pillar_descriptions.csv")) {
+        INFO(row);
+        const auto cells = split(row, ',');
+        REQUIRE(cells.size() == 8);
+        const auto description = pillar(cells[0], cells[1], cells[2], cells[3], cells[4]);
+        for (std::size_t i = 0; i < providers.size(); ++i) {
+            INFO(providers[i] << ": " << cells[5 + i]);
+            const auto& sut = notation(providers[i]);
+            const auto& expected = cells[5 + i];
+            const auto written = sut.write(description);
+            if (expected.starts_with("error:")) {
+                REQUIRE_FALSE(written.has_value());
+                CHECK(written.error().reason == kind_named(expected.substr(6)));
+                ++refusals;
+                continue;
+            }
+            const auto parts = split(expected, '|');
+            REQUIRE(parts.size() == 2);
+            REQUIRE(written.has_value());
+            CHECK(written->id_scheme == sut.id_scheme());
+            CHECK(written->external_id == parts[0]);
+            CHECK(written->field == parts[1]);
+            // What a notation writes it reads back as the same description.
+            const auto read = sut.read(*written);
+            REQUIRE(read.has_value());
+            CHECK(*read == description);
+            ++written_ids;
+        }
+    }
+    CHECK(written_ids >= 27);
+    CHECK(refusals >= 33);
+}
+
+TEST_CASE("a_pair_is_not_read_as_a_pillar_and_a_pillar_is_not_read_as_a_pair", tags) {
+    const std::vector<messaging::vendor_id> pairs{{"bbg_ticker", "EURUSD Curncy", "PX_LAST"},
+                                                  {"ric", "EUR=", "BID"},
+                                                  {"demo_key", "EUR/USD", "value"}};
+    const std::vector<messaging::vendor_id> pillars{
+        {"bbg_ticker", "USD SOFR DEPO SPOT 3M Curncy", "PX_LAST"},
+        {"ric", "USDSOFR.DEPO.SPOT.3M=", "BID"},
+        {"demo_key", "USD/sofr/DEPO/SPOT/3M", "value"}};
+
+    for (const auto& provider : providers) {
+        const auto& sut = notation(provider);
+        for (const auto& pair : pairs) {
+            if (pair.id_scheme != sut.id_scheme())
+                continue;
+            const auto read = sut.read(pair);
+            REQUIRE(read.has_value());
+            CHECK(std::holds_alternative<vendor::fx_spot_quote>(*read));
+        }
+        for (const auto& one : pillars) {
+            if (one.id_scheme != sut.id_scheme())
+                continue;
+            const auto read = sut.read(one);
+            REQUIRE(read.has_value());
+            CHECK(std::holds_alternative<vendor::ir_curve_pillar>(*read));
+        }
     }
 }
 
@@ -230,7 +312,8 @@ TEST_CASE("a_damaged_id_is_refused_or_read_as_exactly_that_id", tags) {
         const auto& sut = notation(provider);
         for (const auto& row : rows_of("ids_" + provider + ".csv")) {
             const auto cells = split(row, ',');
-            if (split(cells[3], ' ')[0] != "fx")
+            const auto outcome = split(cells[3], ' ')[0];
+            if (outcome != "fx" && outcome != "pillar")
                 continue;
             const messaging::vendor_id id{
                 .id_scheme = cells[0], .external_id = cells[1], .field = cells[2]};

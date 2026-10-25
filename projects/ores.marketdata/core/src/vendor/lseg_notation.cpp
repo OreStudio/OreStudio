@@ -82,6 +82,30 @@ lseg_notation::read(const messaging::vendor_id& id) const {
         return fail(notation_error::kind::wrong_scheme,
                     "LSEG ids use the scheme ric, not '" + id.id_scheme + "'.");
 
+    // A pillar of a curve: the currency and the index family together, then the instrument, the
+    // tenor it starts at and the tenor it ends at after dots, then the RIC's equals sign. Such a
+    // RIC names a curve and not a pair, so the pair reader below never sees it.
+    {
+        ir_curve_pillar pillar;
+        std::string family;
+        const auto curve_ric =
+            detail::currency_code[detail::assign_to(pillar.currency)] >>
+            detail::upper_index_family[detail::assign_to(family)] >> x3::lit('.') >>
+            detail::instrument_code[detail::assign_to(pillar.instrument_code)] >> x3::lit('.') >>
+            detail::start_tenor[detail::assign_to(pillar.start_tenor)] >> x3::lit('.') >>
+            detail::period_tenor[detail::assign_to(pillar.end_tenor)] >> x3::lit('=');
+        if (detail::parse_all(id.external_id, curve_ric)) {
+            if (id.field != field_of(primary_side()))
+                return fail(notation_error::kind::wrong_field,
+                            "An LSEG curve pillar carries the bid price: '" + id.field + "'.");
+            pillar.index_family = detail::lower_case(std::move(family));
+            if (pillar.start_tenor == pillar.end_tenor)
+                return fail(notation_error::kind::malformed,
+                            "A pillar ends after it starts: '" + id.external_id + "'.");
+            return quote_description{pillar};
+        }
+    }
+
     // "EURGBP=" is a cross of two currencies, and "EUR=" is a USD pair written with the other
     // currency. The longer form is tried first.
     std::string first;
@@ -124,6 +148,16 @@ lseg_notation::read(const messaging::vendor_id& id) const {
 std::expected<messaging::vendor_id, notation_error>
 lseg_notation::write(const quote_description& description) const {
     using detail::fail;
+    if (const auto* pillar = std::get_if<ir_curve_pillar>(&description)) {
+        if (const auto ok = detail::check_pillar(*pillar); !ok)
+            return std::unexpected(ok.error());
+        return messaging::vendor_id{
+            .id_scheme = std::string(scheme),
+            .external_id = pillar->currency + detail::upper_case(pillar->index_family) + "." +
+                           pillar->instrument_code + "." + pillar->start_tenor + "." +
+                           pillar->end_tenor + "=",
+            .field = std::string(field_of(primary_side()))};
+    }
     const auto fx = detail::fx_spot_of(description);
     if (!fx)
         return std::unexpected(fx.error());

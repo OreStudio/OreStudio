@@ -80,6 +80,91 @@ inline std::expected<void, notation_error> check_pair(const fx_spot_quote& q) {
     return {};
 }
 
+/**
+ * @brief A tenor of a curve template: a count of days, weeks, months or years, such as 1D, 3M or
+ * 2Y.
+ *
+ * The count is one to three digits and does not begin with a zero, because a tenor the catalogue
+ * holds is written one way. A template names its pillars by these codes and by SPOT, so the
+ * grammar keeps to them and a date is not a tenor.
+ */
+inline const auto period_tenor =
+    x3::raw[x3::char_("1-9") >> x3::repeat(0, 2)[x3::digit] >> x3::char_("DWMY")];
+
+/// A pillar's start: SPOT, or a period. A pillar never starts and ends nowhere.
+inline const auto start_tenor =
+    x3::raw[x3::string("SPOT") |
+            (x3::char_("1-9") >> x3::repeat(0, 2)[x3::digit] >> x3::char_("DWMY"))];
+
+/**
+ * @brief A refdata instrument code, such as DEPO, FRA or IRS: two to eight upper case letters.
+ *
+ * The grammar stops at the shape of the code and not at the codes the catalogue happens to hold,
+ * so the notation does not carry a second copy of that catalogue.
+ */
+inline const auto instrument_code = x3::raw[x3::repeat(2, 8)[x3::upper]];
+
+/**
+ * @brief An index family, such as sofr: one to eight lower case letters, in the catalogue's own
+ * spelling.
+ *
+ * A provider that writes the family in upper case does so in its id and reads it back to lower
+ * case, so the description holds one spelling whichever provider wrote the id.
+ */
+inline const auto index_family = x3::raw[x3::repeat(1, 8)[x3::lower]];
+
+/// The same family as a provider that spells it in upper case writes it.
+inline const auto upper_index_family = x3::raw[x3::repeat(1, 8)[x3::upper]];
+
+/// @p text in lower case, as the catalogue spells an index family.
+inline std::string lower_case(std::string text) {
+    std::ranges::transform(text, text.begin(), [](unsigned char c) {
+        return static_cast<char>(c >= 'A' && c <= 'Z' ? c - 'A' + 'a' : c);
+    });
+    return text;
+}
+
+/// @p text in upper case, as a provider that spells an index family so writes it.
+inline std::string upper_case(std::string text) {
+    std::ranges::transform(text, text.begin(), [](unsigned char c) {
+        return static_cast<char>(c >= 'a' && c <= 'z' ? c - 'a' + 'A' : c);
+    });
+    return text;
+}
+
+/// The ir_curve_pillar of a description, or an error when it holds another alternative.
+inline std::expected<ir_curve_pillar, notation_error> ir_pillar_of(const quote_description& d) {
+    if (const auto* pillar = std::get_if<ir_curve_pillar>(&d))
+        return *pillar;
+    return fail(notation_error::kind::not_representable,
+                "The notation writes only one pillar of an interest rate curve.");
+}
+
+/**
+ * @brief A pillar that can be written: a currency, an index family, an instrument code and two
+ * tenors, the first of which the pillar ends after.
+ */
+inline std::expected<void, notation_error> check_pillar(const ir_curve_pillar& p) {
+    const auto text = p.currency + "/" + p.index_family + "/" + p.instrument_code + "/" +
+                      p.start_tenor + "/" + p.end_tenor;
+    if (!is_currency_code(p.currency))
+        return fail(notation_error::kind::not_representable,
+                    "A currency is three upper case letters: '" + text + "'.");
+    if (!parse_all(p.index_family, index_family))
+        return fail(notation_error::kind::not_representable,
+                    "An index family is one to eight lower case letters: '" + text + "'.");
+    if (!parse_all(p.instrument_code, instrument_code))
+        return fail(notation_error::kind::not_representable,
+                    "An instrument code is two to eight upper case letters: '" + text + "'.");
+    if (!parse_all(p.start_tenor, start_tenor) || !parse_all(p.end_tenor, period_tenor))
+        return fail(notation_error::kind::not_representable,
+                    "A pillar starts at SPOT or at a period and ends at a period: '" + text + "'.");
+    if (p.start_tenor == p.end_tenor)
+        return fail(notation_error::kind::not_representable,
+                    "A pillar ends after it starts: '" + text + "'.");
+    return {};
+}
+
 }
 
 #endif

@@ -4373,7 +4373,7 @@ export const en: SourceCatalogue = {
                 allCollections: 'All collections',
                 groupBy: 'Group by',
                 group: { class: 'Asset class', underlying: 'Instrument', engine: 'Engine' },
-                groupHeading: '{group} · {count}',
+                groupHeading: '{group} · {count} on this page',
                 add: 'Add feed',
                 addTitle: 'Add a feed',
                 addBody: 'Choose the kind of feed. Its form opens next, and then its own page.',

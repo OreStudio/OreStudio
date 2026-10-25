@@ -4404,7 +4404,7 @@ const pt: SourceCatalogue = {
                 allCollections: 'Todas as coleções',
                 groupBy: 'Agrupar por',
                 group: { class: 'Classe de ativos', underlying: 'Instrumento', engine: 'Motor' },
-                groupHeading: '{group} · {count}',
+                groupHeading: '{group} · {count} nesta página',
                 add: 'Adicionar feed',
                 addTitle: 'Adicionar um feed',
                 addBody:

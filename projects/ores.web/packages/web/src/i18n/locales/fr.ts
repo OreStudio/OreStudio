@@ -4434,7 +4434,7 @@ const fr: SourceCatalogue = {
                 allCollections: 'Toutes les collections',
                 groupBy: 'Grouper par',
                 group: { class: "Classe d'actifs", underlying: 'Instrument', engine: 'Moteur' },
-                groupHeading: '{group} · {count}',
+                groupHeading: '{group} · {count} sur cette page',
                 add: 'Ajouter un flux',
                 addTitle: 'Ajouter un flux',
                 addBody: "Choisissez le type de flux. Son formulaire s'ouvre, puis sa propre page.",

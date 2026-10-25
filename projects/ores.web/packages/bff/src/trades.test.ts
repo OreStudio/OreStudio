@@ -288,7 +288,7 @@ describe('trade list route', () => {
             },
             'trading.v1.bond_issues.list': {
                 result: ok,
-                bond_issues: [{ issue_id: 'i', security_id: 'POP09MP3R9XP5' }],
+                issues: [{ issue_id: 'i', security_id: 'POP09MP3R9XP5' }],
             },
             'trading.v1.trade_identifiers.list': { result: ok, identifiers: [] },
             'trading.v1.trade_party_roles.list': { result: ok, roles: [] },
@@ -305,7 +305,7 @@ describe('trade list route', () => {
         expect(body.isInstrumentRouted).toBe(true);
         expect(body.instrument).toMatchObject({
             notional: '1000000.00',
-            issue_reference: 'POP09MP3R9XP5',
+            issue: { security_id: 'POP09MP3R9XP5' },
         });
     });
 

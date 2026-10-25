@@ -211,14 +211,19 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
                                                   "'{}', which the scope vocabulary does not name "
                                                   "yet, so those rows were not stored.",
                                                   scope),
-                                      std::nullopt,
-                                      std::nullopt,
+                                      std::string("scope"),
+                                      scope,
                                       std::nullopt,
                                       {}));
 
         repository::report_error_event_repository().write(ctx_, rows);
         return {};
     } catch (const std::exception& e) {
+        // Two callers can both find no rows and both write. The unique indexes
+        // let one win; the other is told the run already holds its errors,
+        // which is what it set out to make true.
+        if (std::string_view(e.what()).find("duplicate key") != std::string_view::npos)
+            return {};
         return std::format("The run's errors could not be stored: {}", e.what());
     }
 }

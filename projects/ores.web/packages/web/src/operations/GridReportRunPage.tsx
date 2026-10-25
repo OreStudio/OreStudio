@@ -221,6 +221,9 @@ function RunErrors({ id }: { id: string }): ReactNode {
     }, [shown]);
 
     if (errors.isPending) return null;
+    if (errors.isError) {
+        return <ReadFailure error={errors.error} onRetry={() => void errors.refetch()} />;
+    }
     if (rows.length === 0) {
         return (
             <Notice tone="success">

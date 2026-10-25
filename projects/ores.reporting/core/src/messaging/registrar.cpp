@@ -272,6 +272,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
             get_report_error_counts_request::nats_subject, group, [reeh](ores::nats::message msg) {
                 reeh->get_report_error_counts(std::move(msg));
             }));
+        subs.push_back(nats.queue_subscribe(
+            list_by_report_instance_id_report_error_events_request::nats_subject, group,
+            [reeh](ores::nats::message msg) {
+                reeh->list_by_report_instance_id_report_error_events(std::move(msg));
+            }));
+        subs.push_back(nats.queue_subscribe(
+            list_report_error_events_request::nats_subject, group,
+            [reeh](ores::nats::message msg) {
+                reeh->list_report_error_events(std::move(msg));
+            }));
     }
 
     // ----------------------------------------------------------------

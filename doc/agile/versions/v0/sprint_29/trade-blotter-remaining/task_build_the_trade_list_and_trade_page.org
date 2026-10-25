@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-trade-list-and-trade-page
-#+pr: 3801
+#+pr: 3803
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -88,6 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3803][#3803]] | [web] Open a trade's counterparty and its book |
 | [[https://github.com/OreStudio/OreStudio/pull/3801][#3801]] | [web] Draw the authorisation label the list asks for |
 | [[https://github.com/OreStudio/OreStudio/pull/3799][#3799]] | [web] Make Trading the area and Trades its card |
 | [[https://github.com/OreStudio/OreStudio/pull/3793][#3793]] | [web] Show one trade on its own page |

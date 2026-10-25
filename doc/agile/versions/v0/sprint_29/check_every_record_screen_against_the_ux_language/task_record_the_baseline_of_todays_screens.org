@@ -8,7 +8,7 @@
 #+filetags: :check_every_record_screen_against_the_ux_language:sprint_29:v0:
 #+owner: marco
 #+branch: feature/record-the-baseline
-#+pr:
+#+pr: 3778
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3778][#3778]] | [docs] Record the baseline of today's record screens |
 
 * Review
 

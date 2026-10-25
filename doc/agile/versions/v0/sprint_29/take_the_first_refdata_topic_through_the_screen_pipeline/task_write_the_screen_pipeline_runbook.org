@@ -8,7 +8,7 @@
 #+filetags: :take_the_first_refdata_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
 #+branch: feature/write-the-screen-pipeline-runbook
-#+pr:
+#+pr: 3818
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3818][#3818]] | [docs] Write the screen pipeline runbook and scaffold the currencies topic |
 
 * Review
 

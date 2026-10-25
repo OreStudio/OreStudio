@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/make-the-demand-self-correcting-and-visible
-#+pr:
+#+pr: 3735
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3735][#3735]] | [marketdata] Make the demand self-correcting and visible |
 
 * Review
 

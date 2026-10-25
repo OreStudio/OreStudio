@@ -74,7 +74,10 @@ async function readRuns(
     return reply.instances;
 }
 
-async function readRun(session: LiveSession, id: string): Promise<Record<string, unknown> | null> {
+export async function readRun(
+    session: LiveSession,
+    id: string,
+): Promise<Record<string, unknown> | null> {
     return (await readRuns(session, [id]))[0] ?? null;
 }
 
@@ -180,10 +183,95 @@ const nullableText = (value: unknown): string | null => {
     return stated === '' ? null : stated;
 };
 
+/**
+ * The runs of one definition, newest first, each with the state it reached.
+ *
+ * The list carries no order of its own, so the run with the latest start leads,
+ * and a report with more runs than the page holds shows its newest ones rather
+ * than an arbitrary slice.
+ */
+async function readRunsOfDefinition(
+    session: LiveSession,
+    definitionId: string,
+): Promise<readonly Record<string, unknown>[]> {
+    const reply = await session.client.callAuthenticated(
+        instanceSubjects.list_report_instances_request,
+        {
+            filter: {
+                definition_id: definitionId,
+                kind: null,
+                id_one_of: null,
+                definition_id_one_of: null,
+                kind_one_of: null,
+            },
+            as_of: null,
+            offset: 0,
+            limit: RUNS_OF_REPORT_LIMIT,
+            order: NO_ORDER,
+        },
+        z.looseObject({ result: resultSchema, instances: z.array(row).default([]) }),
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw refusal(reply.result);
+    }
+    const runs = [...reply.instances].sort((left, right) =>
+        text(right['started_at']).localeCompare(text(left['started_at'])),
+    );
+    const states = await readRunStates(
+        session,
+        runs.map((run) => text(run['id'])),
+    );
+    return runs.map((run) => ({
+        id: text(run['id']),
+        name: text(run['name']),
+        state_name: states.get(text(run['id'])) ?? '',
+        started_at: text(run['started_at']),
+        completed_at: text(run['completed_at']),
+    }));
+}
+
+/** The state name each run reached, for the runs whose health could be read. */
+async function readRunStates(
+    session: LiveSession,
+    instanceIds: readonly string[],
+): Promise<ReadonlyMap<string, string>> {
+    if (instanceIds.length === 0) {
+        return new Map();
+    }
+    const reply = await session.client.callAuthenticated(
+        instanceSubjects.get_report_instance_health_request,
+        { instance_ids: [...instanceIds] },
+        z.looseObject({ result: resultSchema, health: z.array(row).default([]) }),
+    );
+    if (reply.result.outcome !== 'ok') {
+        return new Map();
+    }
+    return new Map(
+        reply.health.map((entry) => [text(entry['report_instance_id']), text(entry['state_name'])]),
+    );
+}
+
+/** How many of a report's runs a page asks for. */
+const RUNS_OF_REPORT_LIMIT = 200;
+
 export function registerGridReportRunRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
+    /** The runs of one report, newest first, with the state each reached. */
+    server.get(
+        '/api/reporting/reports/:id/runs',
+        async (request): Promise<{ runs: readonly unknown[] }> => {
+            const session = requireSession(request);
+            const parsed = idParamsSchema.safeParse(request.params);
+            if (!parsed.success) {
+                throw invalidRequest('The address names an id that is not a uuid.');
+            }
+            const runs = await readRunsOfDefinition(session, parsed.data.id);
+            return { runs };
+        },
+    );
+
     server.get(
         '/api/operations/grid/report-runs/:id/errors',
         async (request): Promise<{ total: number; errors: readonly unknown[] }> => {

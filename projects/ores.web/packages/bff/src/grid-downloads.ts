@@ -47,6 +47,20 @@ const HEADER_TIMEOUT_MS = 15_000;
 /** Every stored object of the platform lives under this prefix of the storage service. */
 const STORAGE_PREFIX = '/api/v1/storage/';
 
+/** The bucket the platform's own objects live under. */
+const PLATFORM_BUCKET = 'ores';
+
+/**
+ * The address of a stored object from the key a row carries.
+ *
+ * A run's output key is a bare object key under the platform's bucket, while the
+ * storage service answers under its prefix, so the bucket is supplied here
+ * rather than stored twice on the row.
+ */
+export function storageUriOf(key: string): string {
+    return key.startsWith(STORAGE_PREFIX) ? key : `${STORAGE_PREFIX}${PLATFORM_BUCKET}/${key}`;
+}
+
 /**
  * The path of a stored object, or nothing when the address is not one.
  *
@@ -137,6 +151,58 @@ async function answering<T>(call: () => Promise<T>): Promise<T> {
 }
 
 /** Streams the stored object to the caller, or states why it cannot. */
+
+/**
+ * The bytes of a stored object, read with the session's own token.
+ *
+ * The address comes from a row, so only a plain object path is asked for, a
+ * redirect is an error so the token never leaves the deployment, and the wait
+ * is bounded so a file service that stops answering fails the read.
+ */
+export async function fetchStored(session: LiveSession, key: string): Promise<Buffer> {
+    const path = storagePath(storageUriOf(key));
+    if (path === null) {
+        throw notFound('The stored object names no file.');
+    }
+    const base = await session.client.discoverHttpBaseUrl();
+    if (base === null) {
+        throw notFound('The deployment has no file service.');
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), HEADER_TIMEOUT_MS);
+    let upstream: Response;
+    try {
+        upstream = await fetch(new URL(path, base), {
+            headers: { Authorization: `Bearer ${session.client.token}` },
+            redirect: 'error',
+            signal: controller.signal,
+        });
+        clearTimeout(timer);
+    } catch {
+        clearTimeout(timer);
+        throw new HttpFailure(502, {
+            code: 'upstream-unavailable',
+            message: 'The file service did not answer.',
+        });
+    }
+    if (upstream.status === 404) {
+        await upstream.body?.cancel();
+        throw notFound('The stored object is no longer there.');
+    }
+    if (upstream.status === 401 || upstream.status === 403) {
+        await upstream.body?.cancel();
+        throw notPermitted('The file service refused the stored object.');
+    }
+    if (!upstream.ok) {
+        await upstream.body?.cancel();
+        throw new HttpFailure(502, {
+            code: 'upstream-unavailable',
+            message: 'The stored object could not be read.',
+        });
+    }
+    return Buffer.from(await upstream.arrayBuffer());
+}
+
 async function stream(
     session: LiveSession,
     reply: FastifyReply,

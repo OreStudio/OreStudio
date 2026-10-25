@@ -465,6 +465,22 @@ export type ReportOpen =
           readonly choices: readonly ReportNameChoice[];
       };
 
+/** Why a report shows no rows, as the server stated it. */
+export type ResultReason = '' | 'no-run' | 'no-output' | 'no-result-file' | 'no-figures';
+
+const RESULT_REASONS: readonly ResultReason[] = [
+    'no-run',
+    'no-output',
+    'no-result-file',
+    'no-figures',
+];
+
+/** The reason the server named, or nothing when it named one this client does not know. */
+function resultReasonOf(value: string | undefined): ResultReason {
+    const found = RESULT_REASONS.find((candidate) => candidate === value);
+    return found ?? '';
+}
+
 export const api = {
     /**
      * Whether the deployment still needs its first administrator.
@@ -2426,6 +2442,22 @@ export const api = {
             method: 'GET',
         })) as { trade?: unknown | null };
         return reply.trade ?? null;
+    },
+
+    /** The runs of one report, newest first. */
+    async reportRuns(id: string): Promise<readonly unknown[]> {
+        const reply = (await request(`/api/reporting/reports/${id}/runs`, {
+            method: 'GET',
+        })) as { runs?: readonly unknown[] };
+        return reply.runs ?? [];
+    },
+
+    /** The results of a report's latest run, and why it has none. */
+    async reportResults(id: string): Promise<{ rows: readonly unknown[]; reason: ResultReason }> {
+        const reply = (await request(`/api/reporting/reports/${id}/results`, {
+            method: 'GET',
+        })) as { rows?: readonly unknown[]; reason?: string };
+        return { rows: reply.rows ?? [], reason: resultReasonOf(reply.reason) };
     },
 
     /** The errors a report run recorded. */

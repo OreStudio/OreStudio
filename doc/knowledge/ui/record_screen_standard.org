@@ -540,13 +540,15 @@ the owner asked for one standard pair across the screens).
   browser.
 - *RS-ORE-05* Import is the five steps of the
   [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]]'s
-  Import section, on the steps UI: the file, what it holds, what the system
-  does not know, the target, and the difference with /Keep it/ as the default
-  for a removed row. The parse is the server's; the screen shows the counts and
+  Import section, on the steps UI at its own address under the list, as a
+  workflow has (RS-LIST-03): the file, what it holds, what the system does
+  not know, the target, and the difference with /Keep it/ as the default for
+  a removed row. The parse is the server's; the screen shows the counts and
   the lists and writes nothing before the review. The target step is drawn
   only for a kind that has configurations to choose between; for a table kind
-  the target is the table. Every import carries a change reason and a
-  commentary (RS-FEEDBACK-06), and nothing is dropped in silence.
+  the target is the table and the steps are four. Every import carries a
+  change reason and a commentary (RS-FEEDBACK-06), and nothing is dropped in
+  silence.
 - *RS-ORE-06* The server operations live in the ORE component's namespace,
   =ore.v1.>=, as the [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][messaging reference]] requires of every subject,
   and take the verb-first shape of its operations: =ore.v1.ops.export_<document>=
@@ -557,8 +559,9 @@ the owner asked for one standard pair across the screens).
   through that component's messages, as its bundle import does today. The BFF
   serves the triple as =GET /api/<kind>/ore-document=,
   =POST /api/<kind>/ore-import/preview= and =POST /api/<kind>/ore-import=.
-- *RS-ORE-07* One shared module carries the two buttons and the two dialogs
-  (=OreExchange=). A kind declares its document once and draws nothing else.
+- *RS-ORE-07* One shared module carries the two buttons, the Export dialog
+  and the Import steps (=OreExchange=). A kind declares its document once and
+  draws nothing else.
   The currencies topic builds the first triple and the module; every later
   kind declares its document and gains the pair.
 

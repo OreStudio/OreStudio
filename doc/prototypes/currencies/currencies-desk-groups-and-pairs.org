@@ -1,0 +1,194 @@
+:PROPERTIES:
+:ID: E44A471B-E3FB-4B86-8DB3-E00C02C8BADF
+:END:
+#+title: Currencies, desk groups and pairs prototype
+#+description: The three lists, one record of each kind with its tabs, the shared dialogs with the pair's two groups and derived code, and the standard Import and Export pair on the currencies list, on the Acme seed.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:refdata:currencies:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+| Item          | Where                                                        |
+|---------------+--------------------------------------------------------------|
+| Prototype     | [[file:currencies-desk-groups-and-pairs/][the prototype]]       |
+| Gemini review | none                                                         |
+| Group         | [[file:index.org][Currencies and FX prototypes]]              |
+
+* Summary
+
+This prototype draws the screens of the three currencies journeys,
+[[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]], [[id:250CA101-1540-4A42-97F8-E73AA3400DA0][Group currencies for the desk]] and
+[[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][Set up a currency pair]], as the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] settled them,
+so the review is about the currencies topic and not about the language. It is
+the second prototype of the [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][screen pipeline]]: the web already draws the
+three screens, and this page says where each moves to meet the standard and
+the owner's decision of 2026-10-25, that every kind with an ORE document
+exchanges it through the standard /Import/ and /Export/ pair, which the
+currencies prove first.
+
+It is throwaway. It reads no service: the fourteen currencies, six desk groups
+and sixteen pairs are the Acme seed as the server holds them on 2026-10-25,
+cut to a page; the history, the two user changes and the import's file are
+invented.
+
+Open [[file:currencies-desk-groups-and-pairs/][the prototype]]. Every state has an address, for example
+=?screen=currency&code=EUR&tab=history= or =?screen=import&step=4&file=ok=.
+
+* Detail
+
+** What it asks
+
+Five questions the journeys' judgement left to the prototype:
+
+1. How do the two standard buttons stand, and what do they open? Export and
+   Import stand between Refresh and Add on the currencies list (RS-LIST-03,
+   RS-ORE-02). Export opens an operation dialog that names the document and
+   its count and saves on one press (RS-ORE-04). Import opens the steps at
+   their own address, =/refdata/currencies/import=, because a table kind has
+   no target to choose and the four steps that remain are a page, not a
+   dialog (RS-ORE-05). A reader sees Export and not Import.
+2. What kinds are Day basis and ORE currency type? Selects over their lists,
+   not free text (RS-WRITE-01): ORE currency type over ORE's own three values,
+   Day basis over the day count conventions. Neither list exists on the server
+   yet; the build task adds them as classifications. The numbers are number
+   controls (RS-WRITE-32).
+3. How is the pair's dialog drawn? One dialog of two groups, /The pair/ and
+   /Quoting convention/ (RS-WRITE-09); the pair code is derived and shown as a
+   line, not asked for (RS-WRITE-07); two equal legs are refused before the
+   save, with Add disabled (RS-WRITE-08); the sample rate is a line of help
+   under the convention (RS-WRITE-12); and the dialog says what a failed
+   second write leaves.
+4. What does the currencies list show? Names where the page shows names: the
+   monetary nature and the market tier draw their labels as links to their
+   classification, not their codes (ES-WORDS-06, RS-PAGE-08).
+5. How many members has a desk group? The list and the Details draw the count
+   from the members, which waits on a read by group on the server (the
+   journey's gap); the prototype draws the intended screen.
+
+** The screens and the rules each follows
+
+- *The lists.* Breadcrumb, plural title and one sentence (RS-LIST-01,
+  RS-LIST-02); Refresh with its load time, then Import and Export on the
+  currencies, then Add (RS-LIST-03); a search box with Clear (RS-LIST-04);
+  sortable columns from the kind's column list, the pager with the count first
+  and 15 rows (RS-LIST-17), the state in the address (RS-LIST-20); a click on
+  a row opens the page (RS-LIST-10); codes in monospace with their flags, a
+  pair's flag as its two codes (RS-ICON-03); the nothing-matches state offers
+  /Clear the search/ (RS-LIST-21). Desk groups are in display order with
+  their member count; pairs show their legs as links to the currencies.
+- *The record pages.* The breadcrumb ends at the key and the title is the
+  name with the flag (RS-PAGE-01); the lead reads key and version
+  (RS-PAGE-02); the actions stand in this order: Refresh with its load time,
+  the access mark, Edit, Delete, each titled by the record's name
+  (RS-PAGE-03, RS-FEEDBACK-02). The tabs are Details, the link panels and
+  History: Countries, Calendars and Desk groups on a currency; Members on a
+  desk group; Calendars on a pair (RS-PAGE-09). The details stand in four
+  columns in the field table's order, with the fixed reason under the key, a
+  classification as a link to its list, a sample under the format and the
+  precision, and the last-changed line at the end (RS-PAGE-05 to RS-PAGE-10,
+  ES-REF-01). A pair's Details are two cards, the pair and its convention,
+  each with its own last-changed line, because the convention is a part with
+  its own version.
+- *The links.* Countries, calendars, desk groups and members are link panels:
+  key and name, the name a link to the record's page, Remove on each row and
+  Add under the table (RS-RELATED-01 to RS-RELATED-03). Add picks a record
+  not linked yet; Remove says the linked record itself stays.
+- *The dialogs.* Edit is titled /Edit/ and the record's name and says when
+  the record was loaded (RS-WRITE-20, RS-WRITE-16); the key is fixed with its
+  reason (RS-WRITE-03); the currency's sixteen fields stand in three groups,
+  Identity, Display and Market (RS-WRITE-09); one line of help under a
+  control (RS-WRITE-12); Why and Commentary close the form; the footer holds
+  Cancel then Save or Add (RS-WRITE-14); a create states its reason in a
+  note and lists what is still to fill (RS-WRITE-17, RS-WRITE-13); closing
+  with changes asks first (RS-WRITE-24). Delete confirms, names the record,
+  says what is lost and asks for a reason (RS-WRITE-25); the currency's says
+  that nothing checks whether trades, books or pairs still use it.
+- *Export.* An operation dialog titled /Export/: "Writes currencyconfig.xml,
+  the ORE currency configuration, with the tenant's 14 currencies as they
+  stand now", the note that the server writes and the browser saves, and the
+  button /Export/. The reply is a notice with the file name and the count
+  (RS-ORE-03, RS-ORE-04).
+- *Import.* The steps page titled /Import currencies/, with the rail at the
+  left as the web's journey pages draw it: /Choose the file/, which accepts
+  the =CurrencyConfig= root and refuses another kind naming the root it
+  found; /What the file holds/, the counts the server read; /What the system
+  does not know/, three lists each drawn only when not empty, a value with
+  no row and the choice it needs, an element with no column and why it is
+  dropped, a duplicate and which to keep; and /The difference, and the
+  review/, removed rows first with /Keep it/ as the default, then changed
+  with /Take the file's/, then added, the reach in one line, and Why and
+  Commentary before /Import/ (RS-ORE-05, RS-FEEDBACK-06). Nothing is written
+  before the last step, and the reply is a notice with what was added,
+  changed and kept.
+- *History.* The shared timeline of the Entity screen specification
+  (ES-HIST-01 to 18): the chart, the rail newest first, the reason and the
+  fields that changed, the detail collapsed, Revert on every version but the
+  current one for a writer (RS-HIST-02), and the box of what the history
+  cannot show. A pair's history is the pair's story: its own versions and
+  its convention's, merged and named /Convention/ (RS-HIST-01); the links of
+  every kind are named in the box as unversioned.
+
+** The states
+
+| Address | What it shows |
+|---------+---------------|
+| =?screen=currencies= | The currencies list; =&q=zzz= is the nothing-matches state; =&dialog=add= |
+| =?screen=currencies&dialog=export= | The Export dialog; =&done=exported= the reply |
+| =?screen=import&step=1= | The Import steps; =&file=ok= chosen, =&file=wrong= refused; =&step=2=, =3=, =4=; =&clean=1= a file with no unknowns; =&done=imported= on the list |
+| =?screen=currency&code=EUR= | A currency; =&tab=countries=, =calendars=, =groups=, =history= |
+| =&dialog=edit=, =delete=, =revert&v=1= | The record, remove and revert dialogs |
+| =&tab=countries&dialog=add-link=, =remove-link&link=DE= | A link added or removed |
+| =?screen=groups=, =?screen=group&code=G11= | The desk groups and one group with its members; =&dialog=add= on the list |
+| =?screen=pairs=, =?screen=pair&code=EUR/USD= | The pairs and one pair with its convention and its merged history |
+| =?screen=pairs&dialog=add= | The pair dialog; =&legs=same= the refused legs |
+| =&guard=1= | The closing guard |
+| =&who=reader= | The same screen for a person who may not write: Export stays, Import and every write go |
+
+** What is fake
+
+The history of EUR, XAU, G11 and EUR/USD. The two user currencies' last
+changes. The import's file, its counts, its unknowns and its difference. The
+member counts, which the server cannot read by group yet. The day basis and
+ORE currency type lists. The flags, which are the code in a box. Nothing is
+written: Save, Add, Remove, Delete, Export and Import show a notice and go
+back.
+
+** Where the code lives
+
+=index.html= is the shell, =prototype.css= the look from the web app's tokens
+and the steps rail from the web's journey pages, and =prototype.js= the data
+and the screens. The query string is the state; every link changes it. The
+script =evidence/render_currencies_prototype.mjs= beside the story renders
+every state with Playwright and fails on a script error.
+
+** The verdict
+
+Open. The owner signs it off before the build task starts. The build then
+moves the three web screens to this: the Import and Export pair with its
+three server operations and the shared =OreExchange=, the pair dialog as the
+shared record dialog with two groups, the selects for Day basis and ORE
+currency type with their lists, the labels on the currencies list, the
+History tabs on the shared timeline with the convention in the pair's story,
+and the titled Edit and Delete.
+
+** What it does not settle
+
+- The two writes behind the pair dialog, and the pair code check on the
+  server: the journey's capture carries them.
+- The member count of a desk group, which needs a read by group.
+- The role below the tenant administrator; the reader here is any person
+  who may not write.
+- Whether the Import steps of a configuration kind, which has a target to
+  choose, are the same page with a fifth step; the engine settings topic
+  draws it.
+
+* See also
+
+- [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][User Journey: Add or correct a currency]] — the journey with the Import and Export decision.
+- [[id:250CA101-1540-4A42-97F8-E73AA3400DA0][User Journey: Group currencies for the desk]] — the desk groups and their members.
+- [[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][User Journey: Set up a currency pair]] — the pair and its convention.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the rules the identifiers above name, with the Import and Export section.
+- [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] — the lines a reviewer walks on this prototype.
+- [[id:4EAC99FF-2F49-4D7D-94B8-DCE7DF5A9EB5][Keep a holiday calendar right prototype]] — the first prototype of the pipeline, whose shapes this one reuses.
+- [[file:index.org][Currencies and FX prototypes]] — the group.

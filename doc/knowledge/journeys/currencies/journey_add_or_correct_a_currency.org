@@ -117,8 +117,10 @@ The journey is a CRUD variation of the standard record screen with links, plus t
 
 * Prototype
 
-None yet. The task [[id:958AA2EF-041E-4266-AFE8-A57A6C345F6E][Prototype the screens of the currencies topic]] adds it under =doc/prototypes/currencies/=,
-with a design note that cites the rule identifiers each state follows.
+[[id:E44A471B-E3FB-4B86-8DB3-E00C02C8BADF][Currencies, desk groups and pairs prototype]], under
+=doc/prototypes/currencies/=, draws every state of this journey's screens at
+an address, and its design note cites the rule identifiers each state follows
+and names what it leaves to the server.
 
 * Entities composed
 

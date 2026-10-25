@@ -43,6 +43,8 @@ export interface ReportInstanceWrite {
     trigger_id: string;
     output_message: string;
     output_storage_key: string;
+    priced_at: string | null;
+    price_note: string;
 }
 
 export interface ReportInstanceChange {

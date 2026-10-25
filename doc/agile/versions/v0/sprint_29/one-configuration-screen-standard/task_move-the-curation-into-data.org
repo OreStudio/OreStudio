@@ -75,7 +75,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Curation files | 8 | =ls projects/ores.seeder/datasets/ore_pricing_engines/curation/*.json= | d5223b271e |
+| Curated entries | 296, of which 188 are outside the types | =grep -c '"curator"' projects/ores.seeder/datasets/ore_pricing_engines/curation/*.json= | d5223b271e |
+| Product types | 108, of which 76 have instrument =NONE= | =grep -c '"instrument": "NONE"' projects/ores.seeder/datasets/ore_pricing_engines/curation/types.json= | d5223b271e |
+| Generated SQL files that changed | 0 | =git diff --stat d5223b271e^ d5223b271e -- projects/ores.sql/populate= | d5223b271e |
+| Ore parameter rows that changed | 0 of 1674 | =python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py --check= | d5223b271e |
+| Python lines | 235 added, 813 removed | =git diff --numstat d5223b271e^ d5223b271e -- '*.py'= | d5223b271e |
+| Files, all told | 17, 3042 added, 855 removed | =git diff --stat d5223b271e^ d5223b271e= | d5223b271e |
 
 * Notes
 

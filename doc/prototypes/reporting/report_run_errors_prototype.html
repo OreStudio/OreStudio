@@ -112,7 +112,7 @@
       </select>
       <input id="search" type="search" placeholder="Search message, curve or trade id…" oninput="render()">
       <span class="muted" style="margin-left:auto">View</span>
-      <button class="chip" id="view-b" aria-pressed="true" onclick="setView('b')">Grouped</button>
+      <button class="chip" id="view-b" aria-pressed="true" onclick="setView('b')">Grid</button>
       <button class="chip" id="view-c" aria-pressed="false" onclick="setView('c')">Split</button>
     </div>
     <div class="layout">
@@ -122,7 +122,7 @@
   </section>
 </main>
 
-<div class="switch">Run is the summary. Errors is the work: causes on the left, one error on the right.</div>
+<div class="switch">Grid is the flat list. Split keeps the selected error beside it.</div>
 
 <script>
   const causes = [

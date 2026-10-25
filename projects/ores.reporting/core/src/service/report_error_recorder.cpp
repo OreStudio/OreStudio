@@ -23,6 +23,7 @@
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid_generators.hpp>
+#include <algorithm>
 #include <chrono>
 #include <format>
 #include <stdexcept>
@@ -96,6 +97,21 @@ domain::report_error_event make_error(const utility::uuid::tenant_id& tenant_id,
 
 }
 
+namespace {
+
+/// Whether the run already holds the errors of its analytics. A warning row the
+/// recorder wrote for an unplaceable scope is not one of them, so it never
+/// stands in for a batch that has not been read yet.
+bool run_holds_errors(const ores::database::context& ctx, const std::string& instance_id) {
+    messaging::report_error_events_filter only_errors;
+    only_errors.severity = std::string("error");
+    return !repository::report_error_event_repository()
+                .read_latest_by_report_instance_id(ctx, instance_id, 0, 1, {}, only_errors)
+                .empty();
+}
+
+}
+
 report_error_recorder::report_error_recorder(ores::database::context ctx)
     : ctx_(std::move(ctx)) {}
 
@@ -106,11 +122,9 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
         return {};
 
     try {
-        // The step that reads a run's output runs at least once, so the rows
-        // it writes are keyed by the run and written only once.
-        if (!repository::report_error_event_repository()
-                 .read_latest_by_report_instance_id(ctx_, report_instance_id, 0, 1)
-                 .empty())
+        // The step that reads a run's output runs at least once, so its errors
+        // are written once.
+        if (run_holds_errors(ctx_, report_instance_id))
             return {};
 
         const auto instance_id = parse_instance_id(report_instance_id);
@@ -118,7 +132,7 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
         const auto event_time = std::chrono::system_clock::now();
         std::vector<domain::report_error_event> rows;
         std::vector<std::string> unknown_scopes;
-        rows.reserve(errors.size());
+        rows.reserve(errors.size() + unknown_scopes.capacity());
         for (const auto& error : errors) {
             if (!is_known_scope(error.scope)) {
                 // The scope vocabulary has to grow before these rows can be
@@ -169,11 +183,6 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
 std::string report_error_recorder::record_run_failure(const std::string& report_instance_id,
                                                       const std::string& reason) {
     try {
-        if (!repository::report_error_event_repository()
-                 .read_latest_by_report_instance_id(ctx_, report_instance_id, 0, 1)
-                 .empty())
-            return {};
-
         const auto instance_id = parse_instance_id(report_instance_id);
         const auto party_id = party_of_run(ctx_, report_instance_id);
         const auto event_time = std::chrono::system_clock::now();

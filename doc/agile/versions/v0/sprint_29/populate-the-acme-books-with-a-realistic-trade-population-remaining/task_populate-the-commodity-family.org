@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-25
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ ACME's books hold commodity trades across all twenty-five routed types, which no
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Nothing. Reopened on 2026-10-25. |
+| Now          | Nothing. |
 | Waiting on   | [[id:27FF4AA9-F6B8-460F-8BDD-043F1476C9EB][Seed a commodity catalogue]]. |
-| Next         | Begin once the catalogue names a commodity. |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -59,6 +59,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| The population cases with the commodity planner | 20 cases passed, 423 assertions | =publish/bin/ores.synthetic.core.tests "[trade_population]"= | abe7cbff38 |
+| The whole synthetic core suite | 66 cases passed, 1459 assertions, on a database rebuilt the same day | =publish/bin/ores.synthetic.core.tests= | abe7cbff38 |
+| A commodity population booked through the trading service | 8 planned, 8 written, 0 already present | =synthetic generate-trades --config 11111111-2222-3333-4444-555555555555= | a8c84243a6 |
+| A second run of the same population | 8 planned, 0 written, 8 already present | same | a8c84243a6 |
+| The rows the run wrote | 8 commodity instruments over six catalogue commodities and eight trade types, each with the unit its catalogue row states | =select commodity_code, unit, trade_type from ores_trading_commodity_instruments_tbl ...= | a8c84243a6 |
 |      |       |         |        |
 
 * Notes
@@ -111,6 +116,67 @@ seam task cannot close while holding a family that needs a catalogue it
 does not own, and a task that waits on another belongs in the backlog
 beside it, not inside a refactor.
 
+** Two gaps the proof exposed
+
+Neither is this task's to close, and both are named so the next reader does
+not meet them cold.
+
+The catalogue does not reach the tenant through a bundle. A fresh provision
+gives ACME an empty commodity catalogue, because =refdata.commodities= is not
+in a bundle the =acme_demo= profile opts into, and the planner correctly
+refuses. The proof published the dataset to the tenant directly with
+=ores_refdata_publish_commodities_from_dq_fn=. The real fix is a bundle
+membership, which belongs to whoever owns the profile.
+
+The commodity population is not in the seed profile. The four configs the
+profile states are all bonds, so the proof cloned one into a commodity config
+with SQL, with the same book and the same 453 counterparties. ACME's profile
+should state a cross-asset population; until it does, a provision produces a
+bond book only.
+
+** The size column is `integer` and the C++ is `std::uint32_t`
+
+A real defect found by running the provision, not by reading it. Recording a
+trade generation config fails with:
+
+=value "2167221318" is out of range for type integer=
+
+=trades_per_book= is declared =:type: integer= with =:cpp_type:
+std::uint32_t= in the config model. The SQL column is =int4= and the C++
+type is unsigned, so the value the writer sends does not fit and the insert
+is refused. The neighbouring integer entity fields use =int=, which is what
+the SQL is.
+
+The fix is to declare =int= in the model, regenerate, and carry =int=
+through the scope, the planner and the seed. Until then every tenant
+provision stops at =generate_trades=, so no population of any asset class
+can be booked.
+
+** How the booking proof is run
+
+Recorded so the steps survive an interruption. The environment is brought up
+in this order, and each step is a command rather than a note.
+
+1. =compass services start=. Twenty-three come up; =ores.marketdata.service=
+   fails, and booking does not need it.
+2. =compass shell -l
+   projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+   The rebuild alone provisions no tenant: only =system= and a leftover
+   =synthetic_fomc= test tenant exist before this runs.
+3. Publish =refdata.commodities= to the ACME tenant. The catalogue arrives
+   per tenant through the Librarian bundles, so ACME needs its own copy or
+   the planner refuses for an empty catalogue. If =refdata.commodities= is
+   not in a bundle ACME opts into, it is published to that tenant directly
+   for this proof, and the missing bundle membership is recorded as the gap.
+4. State a commodity generation config for ACME: a config row with
+   =asset_class_code = 'commodity'=, a book scope and a counterparty scope,
+   cloned from one of the four bond configs the profile seeds.
+5. =synthetic generate-trades --config <id>= in the shell. The command exists
+   in =synthetic_commands.cpp= and runs the population service, which is the
+   only caller besides the tests.
+6. Prove the rows: =ores_trading_commodity_instruments_tbl= holds one row per
+   booked trade, and =ores_trading_trades_tbl= counts them against the config.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -133,5 +199,33 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
+
+* Result
+
+A commodity population books through the trading service, which is what this
+task existed to prove.
+
+Eight trades were planned and written in one run, and a second run wrote
+nothing and found all eight already present. The rows carry six of the
+catalogue's commodities — =ICE:B=, =NYMEX:CL=, =NYMEX:CSX=, =NYMEX:NG=,
+=PM:XAUUSD= and =XLME:AH= — across eight trade types spanning the importer's
+shapes, and each row states the unit its catalogue row does: barrels for the
+two crudes, MMBtu for gas, short tons for coal, tonnes for aluminium and
+ounces for gold.
+
+The planner refuses when the catalogue holds nothing, and that refusal is
+what caught the missing bundle: the first run after provisioning failed with
+=nothing can state a commodity=, and that is the right answer to an empty
+catalogue rather than an invented commodity.
+
+The task also found and fixed two defects of its own making: the population
+size was declared unsigned against an =int4= column, which stopped every
+tenant provision at the config insert, and the generated commodity handlers
+were never composed, so the catalogue could not be read at all. Neither was
+visible to any test; both were caught by running the thing.
+
+Not done: the commodity population is not in the ACME seed profile, and the
+catalogue is not in a bundle. Both are recorded above and belong to other
+owners.
 
 * Result

@@ -93,6 +93,26 @@ public:
 };
 
 /**
+ * @brief The planner for a commodity population.
+ *
+ * The catalogue routes twenty-five commodity codes to one table, and the
+ * ORE importer reads eight shapes out of it. The planner draws a shape per
+ * slot and states the fields that shape needs, so every routed code books
+ * and the eight the importer maps are the ones an export can carry back.
+ *
+ * It refuses when the tenant's catalogue names no commodity, because a
+ * population that invented one would name something the engine cannot
+ * resolve.
+ */
+class ORES_SYNTHETIC_CORE_EXPORT commodity_trade_planner final : public trade_planner {
+public:
+    [[nodiscard]] domain::trade_population_plan
+    plan(const domain::trade_generation_scope& scope) const override;
+
+    [[nodiscard]] std::string_view asset_class_code() const override;
+};
+
+/**
  * @brief The planner registered for an asset class.
  *
  * A class with no planner is refused by name rather than falling back to one,

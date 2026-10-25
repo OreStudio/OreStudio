@@ -226,7 +226,7 @@ std::uint64_t{1}
 ** trades_per_book
 :PROPERTIES:
 :type:          integer
-:cpp_type:      std::uint32_t
+:cpp_type:      int
 :nullable:      false
 :default_value: 8
 :END:

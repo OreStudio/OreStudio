@@ -44,6 +44,19 @@ namespace ores::synthetic::domain {
  * =app.current_party_id=, so a caller cannot state it on a row; the planner
  * carries it only so the caller can check it is acting as the right entity.
  */
+/**
+ * @brief One commodity as the tenant's catalogue states it.
+ *
+ * The code is what a trade names and the unit is how the commodity is
+ * quoted, so a population that draws this states both without asking the
+ * catalogue again per trade.
+ */
+struct commodity_reference final {
+    std::string code;
+    std::string unit;
+    std::string quotation_currency;
+};
+
 struct trade_generation_scope final {
     boost::uuids::uuid config_id;
     boost::uuids::uuid party_id;
@@ -62,6 +75,16 @@ struct trade_generation_scope final {
      * book, so a scope over four books states four times this many trades.
      */
     std::uint32_t trades_per_book = 8;
+    /**
+     * @brief The commodities the tenant's catalogue holds.
+     *
+     * A commodity is a fact about the tenant's reference data and not about
+     * this configuration, in the way an issuer is: two configs of one tenant
+     * draw from the same catalogue. The unit travels with the code because it
+     * is the catalogue's fact too, and a population whose catalogue is empty
+     * cannot state a commodity at all.
+     */
+    std::vector<commodity_reference> commodities;
     std::vector<boost::uuids::uuid> book_ids;
     std::vector<boost::uuids::uuid> counterparty_ids;
     /**
@@ -125,13 +148,54 @@ struct bond_terms final {
 };
 
 /**
+ * @brief The facts a commodity slot carries and no other family does.
+ *
+ * A commodity row is wide and flat: the same table holds a forward, an
+ * option, an Asian or a variance swap, and each shape states the fields its
+ * own terms need and leaves the rest empty. This mirrors that shape rather
+ * than inventing a hierarchy the store does not have.
+ */
+struct commodity_terms final {
+    /**
+     * @brief The commodity the trade names, as the catalogue spells it, such
+     * as =NYMEX:CL=.
+     */
+    std::string commodity_code;
+    /// The unit the commodity is quoted in, taken from its catalogue row.
+    std::string unit;
+    /// The quantity in that unit.
+    double quantity = 0.0;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
+    /// The price a forward or a fixed leg states.
+    std::optional<double> fixed_price;
+    /// The option's side, as the catalogue spells it: =Call= or =Put=.
+    std::string option_type;
+    std::optional<double> strike_price;
+    std::string exercise_type;
+    std::string average_type;
+    std::optional<std::chrono::year_month_day> averaging_start_date;
+    std::optional<std::chrono::year_month_day> averaging_end_date;
+    std::string spread_commodity_code;
+    std::optional<double> spread_amount;
+    std::string strip_frequency_code;
+    std::optional<double> variance_strike;
+    std::optional<double> accumulation_amount;
+    std::optional<double> knock_out_barrier;
+    std::string barrier_type;
+    std::optional<double> lower_barrier;
+    std::optional<double> upper_barrier;
+    std::optional<std::chrono::year_month_day> swaption_expiry_date;
+};
+
+/**
  * @brief The terms of one slot, in the shape its asset class states them.
  *
  * The slot carries the keys every family shares and this carries the rest, so
  * a reader of a bond slot sees bond facts and a reader of another family never
  * has to ask what a security is.
  */
-using trade_terms = std::variant<bond_terms>;
+using trade_terms = std::variant<bond_terms, commodity_terms>;
 
 /**
  * @brief One trade the population states, with every reference already

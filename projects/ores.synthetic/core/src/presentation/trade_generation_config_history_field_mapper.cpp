@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.synthetic.api/domain/trade_generation_config.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::synthetic::presentation {
@@ -48,6 +49,7 @@ render_trade_generation_config_fields(const domain::trade_generation_config& v) 
     fields.push_back({.name = "Max Notional", .value = v.max_notional.to_string()});
     fields.push_back({.name = "As Of Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.as_of_date)});
+    fields.push_back({.name = "Trades Per Book", .value = std::to_string(v.trades_per_book)});
     fields.push_back({.name = "Enabled", .value = v.enabled ? "true" : "false"});
     fields.push_back({.name = "Reference Curve ID", .value = v.reference_curve_id});
     using ores::history::domain::provenance_fields;

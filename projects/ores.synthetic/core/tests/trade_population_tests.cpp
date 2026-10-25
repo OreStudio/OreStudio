@@ -158,6 +158,71 @@ TEST_CASE("the_population_size_is_the_configs_and_not_the_generators", tags) {
     REQUIRE(plan.slots.size() < plan_of(bond_scope()).slots.size());
 }
 
+/*
+ * The scene's commodity catalogue. It holds two commodities because a spread
+ * option names a second one, and both carry the unit their catalogue row
+ * states.
+ */
+domain::trade_generation_scope commodity_scope() {
+    auto scope = bond_scope();
+    scope.asset_class_code = "commodity";
+    scope.commodities = {domain::commodity_reference{
+                             .code = "NYMEX:CL", .unit = "bbl", .quotation_currency = "USD"},
+                         domain::commodity_reference{
+                             .code = "NYMEX:NG", .unit = "MMBtu", .quotation_currency = "USD"}};
+    return scope;
+}
+
+TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", tags) {
+    auto wide = commodity_scope();
+    wide.trades_per_book = 25;
+
+    const auto plan = plan_of(wide);
+
+    std::set<std::string> types;
+    for (const auto& slot : plan.slots)
+        types.insert(slot.trade_type_code);
+
+    /*
+     * Twenty-five codes share the one table the catalogue routes them all to.
+     * The planner cycles through them, so a population of one book of
+     * twenty-five reaches every one.
+     */
+    REQUIRE(types.size() == 25u);
+}
+
+TEST_CASE("a_commodity_slot_states_its_own_terms_and_names_a_catalogue_commodity", tags) {
+    const auto plan = plan_of(commodity_scope());
+
+    std::set<std::string> commodities;
+    for (const auto& slot : plan.slots) {
+        REQUIRE(std::holds_alternative<domain::commodity_terms>(slot.terms));
+        const auto& terms = std::get<domain::commodity_terms>(slot.terms);
+        REQUIRE_FALSE(terms.commodity_code.empty());
+        REQUIRE_FALSE(terms.unit.empty());
+        commodities.insert(terms.commodity_code);
+    }
+
+    // Every commodity the scope states is drawn, and no other is invented.
+    REQUIRE(commodities.size() == 2u);
+    for (const auto& code : commodities)
+        REQUIRE((code == "NYMEX:CL" || code == "NYMEX:NG"));
+}
+
+TEST_CASE("a_commodity_population_with_no_catalogue_is_refused", tags) {
+    auto empty = commodity_scope();
+    empty.commodities.clear();
+
+    CHECK_THROWS_WITH(plan_of(empty), Catch::Matchers::ContainsSubstring("catalogue"));
+}
+
+TEST_CASE("a_bond_slot_still_states_bond_terms", tags) {
+    const auto plan = plan_of(bond_scope());
+
+    for (const auto& slot : plan.slots)
+        REQUIRE(std::holds_alternative<domain::bond_terms>(slot.terms));
+}
+
 TEST_CASE("a_bond_scope_states_one_trade_per_slot_across_its_books", tags) {
     const auto plan = plan_of(bond_scope());
 

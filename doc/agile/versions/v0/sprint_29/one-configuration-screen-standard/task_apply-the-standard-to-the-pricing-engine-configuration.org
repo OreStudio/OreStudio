@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/apply-the-standard-to-the-pricing-engine-configuration
-#+pr: 3730
+#+pr: 3761
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -95,6 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3761][#3761]] | [web] Fix the findings from the product pricing QA |
 | [[https://github.com/OreStudio/OreStudio/pull/3730][#3730]] | [web] Apply the configuration screen standard to Product pricing |
 
 * Review

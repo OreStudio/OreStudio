@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/record-the-sourcing-and-curation-methodology
-#+pr:
+#+pr: 3741
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -28,9 +28,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The methodology is written and the PR is open. |
+| Waiting on   | Review.                                |
+| Next         | Address review, then merge and close.  |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3741][#3741]] | [doc] Record the pricing data sourcing and curation methodology |
 
 * Review
 

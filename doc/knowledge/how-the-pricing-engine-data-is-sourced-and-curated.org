@@ -36,7 +36,7 @@ The pricing engine data is extracted from the ORE guide and source by a script, 
 | Serve | =/api/reporting/pricing-engines/vocabulary= | The view a screen reads |
 | Render | The screen | Nothing but the view |
 
-The ORE commit measured for the current seed is recorded beside the data (today =3d75a6908=). A new extraction records the new commit, so a reader knows which source the rows describe.
+The current seed was measured at ORE commit =3d75a6908=. Recording the commit beside the data, on the DQ dataset, is part of the dataset task; a new extraction records the new commit, so a reader knows which source the rows describe.
 
 ** The extraction
 
@@ -75,7 +75,7 @@ A curation entry is reviewed like code: it appears in the diff, names its source
 
 ** Provenance on every row
 
-The ore parameter contract carries, beside the text: =source= (=ore_guide=, =ore_code=, =authored=), =source_ref= (the guide section or the source file and line), =curation_note= (what a person changed), =reviewed_by= and =reviewed_at=. The analytics tables carry the same on the rows that describe an ORE element. A row without a source is a bug, not a default.
+The target is that the ore parameter contract carries, beside the text: =source= (=ore_guide=, =ore_code=, =authored=), =source_ref= (the guide section or the source file and line), =curation_note= (what a person changed), =reviewed_by= and =reviewed_at=, and that the analytics tables carry the same on the rows that describe an ORE element. A row without a source is a bug, not a default.
 
 ** What the DQ framework carries
 

@@ -185,6 +185,29 @@ them to =ores.ore::store= with unit tests is the acceptance bullet still open.
 The run itself still fails because the reference vintage has no quotes for the
 curve tenors the trades need, which is the data gap recorded above.
 
+*The error screen, signed off 2026-10-25.* The throwaway prototype is
+[[file:../../../../prototypes/reporting/report_run_errors_prototype.html][report_run_errors_prototype.html]].
+
+- Two screens: *Run* and *Errors*. They switch, they do not stack.
+- *Run* keeps three lines: a headline, the date it priced at and why, and a link
+  to the errors.
+- *Errors* lists the run's errors as a labelled *grid*: severity, scope,
+  subject, trade, version, message, time. A filter bar sits above it for
+  severity, scope and a search over message, curve or trade id.
+- A *Grid / Split* toggle flips the same rows between the full-width grid and a
+  split view with the selected error in a pane on the right. The filter and the
+  selection survive the flip.
+- *A trade id is a link*, and the version column beside it carries the version
+  and as-of, so the link resolves to the trade row the run read.
+- Message, JSON and trade references are in fixed-width type.
+- Severity stays =error= and =warning=; the "priced at an earlier date" note is
+  a warning.
+
+*To implement it.* Record one error event per engine reason rather than one
+aggregate message, add =subject_version= (integer) and =subject_as_of=
+(timestamptz) to =ores_reporting_report_error_events_tbl= so a trade reference is
+versioned, then build the two screens on top of those rows.
+
 * Test Scenarios
 
 | Scenario | State | Notes |

@@ -186,6 +186,13 @@ The bundle as a feature model:
 | =:rls_party_isolation:= | bool | false | Also emit a =party_id=-scoped =as restrictive= policy (T3) over =ores_iam_visible_party_ids_fn= membership; requires =:rls_tenant_isolation:=. |
 | =:rls_system_tenant_visible:= | bool | false | Emit the *a system-tenant session sees every tenant* widening — =tenant_id = current or current = system=. Requires =:rls_tenant_isolation:=, and every use is listed by =check_rls_system_tenant_widenings.py=; read the ownership classes below before reaching for it. |
 | =:rls_own_or_system_tenant_rows:= | bool | false | Emit the shared-reference and installation-scoped policy shape — =tenant_id = current or tenant_id = system=, with writes confined to the current tenant. Requires =:rls_tenant_isolation:=, and is mutually exclusive with =:rls_system_tenant_visible:=; the guard does not flag it, because it admits only the system tenant's own rows. |
+| =:rls_policy_style:= | enum | =default= | Selects the emitted policy shape. =default= is the shape every tenant-scoped table emits: the =ores.iam= session functions, called once for each row the policy filters. =hot_path= emits the same two policies with the session setting read through a scalar subquery, so the setting is evaluated once for each query: it requires =:rls_tenant_isolation:= and =:rls_party_isolation:=, and refuses =:rls_system_tenant_visible:=, =:rls_own_or_system_tenant_rows:= and =:rls_service_read_role:=, whose clauses the style would not emit. See [[*Which policy style a table takes][below]]. |
+| =:writer_role:= | psql variable | absent | Emit =grant insert on <table> to :<role>;= after the policies, for the one role an ingest writes through. The role is named as a psql variable, because the grant is a =psql= script and the role name is deployment state. The generator checks the name against the same rule =:rls_service_read_role:= uses. What the role is allowed beyond =INSERT= -- =BYPASSRLS=, the ownership of the table, the =SELECT= it does not have -- is stated where the roles are created (=projects/ores.sql/recreate_database.sql=), not here. |
+| =:no_audit_columns:= | bool | false | Drops the =version= column and the audit tail (=modified_by=, =performed_by=, =change_reason_code=, =change_commentary=), which a series table cannot carry at its volume. Keeps =valid_from=/=valid_to=, so the entity keeps its history surface. Mutually exclusive with =:immutable:= and =:current_state:=, which drop the temporal axis as well. |
+| =:hypertable:= | bool | false | Makes the table a TimescaleDB hypertable: emits the =do $$= block that calls =create_hypertable= when the extension is installed and falls back to a plain table when it is not. Suppresses GIST exclusion, because a hypertable has no exclusion constraint, and keeps =tenant_id= out of the primary key, because every unique index of a hypertable must carry the partition column. Requires =:hypertable_partition_column:=; the generator refuses a hypertable without one rather than emit a =create_hypertable= call with no column to partition on. |
+| =:hypertable_partition_column:= | column | required by =:hypertable:= | The column =create_hypertable= partitions on. It is normally the series' own time column, and it joins every unique index and the primary key of a hypertable. |
+| =:hypertable_chunk_interval:= | interval | none | The chunk width =create_hypertable= is given, as the text an =interval= literal carries without the word =interval=: =1 day=, =30 days=. Nothing defaults it, so every hypertable model states one: a model that leaves it out renders =interval ''=, which PostgreSQL refuses. |
+| =:hypertable_retention_interval:= | interval | absent | The age at which a retention policy drops a whole chunk, in the same interval form. Emitted only where the installed licence allows a retention policy; without one the block reports the interval and the service's own job drops the chunks that have aged out. |
 
 *Current-state is a distinct axis from =:no_audit_columns:=.* A
 =:no_audit_columns:= entity (a TimescaleDB hypertable) drops only the
@@ -210,6 +217,69 @@ suppressions), which is how the =iam_login_info= table keeps
 =login_info_locked_idx= and avoids gaining a nil-UUID check it never had.
 The feature is authored in the =* SQL ** Flags= drawer, beside the other SQL
 projection knobs above.
+
+* Time-series tables
+
+A series table holds facts that arrive many times each second, so it takes the
+four =:hypertable*:= knobs together and drops the audit tail:
+
+#+begin_src org
+,* SQL
+,** Flags
+,:PROPERTIES:
+,:tablename: ores_marketdata_ticks_tbl
+,:hypertable: true
+,:hypertable_partition_column: ts
+,:hypertable_chunk_interval: 1 day
+,:hypertable_retention_interval: 7 days
+,:no_audit_columns: true
+,:END:
+#+end_src
+
+The partition column is the series' own time column, and it is what
+=create_hypertable= chunks on. A hypertable that names none is refused when the
+model is read, because the alternative is a =create_hypertable= call with an
+empty column and a primary key built around it, which fails when the schema
+loads rather than when the model is written. =ts= is the column in the example
+above; =observation_datetime= and =fixing_date= are the columns in the two
+market-data tables that carry a series.
+
+The retention interval is optional but a hypertable without one grows without
+bound. Its block is licence-aware: where the installed TimescaleDB reports the
+=timescale= licence the generated =do $$= block sets the policy, and a community
+edition, which has no retention job, reports the interval instead of ignoring
+it. The block that both run is the same, so a table's retention is one statement
+whether or not the licence allows it to run.
+
+A hypertable carries no GIST exclusion and holds =tenant_id= out of its primary
+key, because every unique index of a hypertable must carry the partition column.
+=:no_audit_columns:= is what drops the =version= column and the audit tail from
+it; =:current_state:= would drop the temporal axis as well, which a series keeps.
+
+** Which policy style a table takes
+
+=:rls_policy_style:= names the shape of the two policies the create file ends
+with, and the choice is about what the policy costs:
+
+- =default= differs from nothing: it is the shape every tenant-scoped table
+  already emits, and it calls =ores_iam_current_tenant_id_fn= and
+  =ores_iam_visible_party_ids_fn= for each row the policy filters.
+- =hot_path= emits the same two policies against the session settings directly:
+  =tenant_id = (select nullif(current_setting('app.current_tenant_id', true),
+  '')::uuid)= and =party_id in (select unnest(nullif(current_setting(
+  'app.visible_party_ids', true), '')::uuid[]))=. The scalar subquery is what
+  makes the difference: the planner evaluates it once for each query rather than
+  once for each row, so a table that filters millions of rows pays for the
+  setting once.
+
+The hot-path shape is a pair, so both isolation flags are required. It also
+forces the table's own row-level security and names the party policy =select=
+alone, =restrictive=, with no null passthrough: a session that states no visible
+parties reads no rows, which is the rule an ingest session obeys. It therefore
+refuses =:rls_system_tenant_visible:= and =:rls_own_or_system_tenant_rows:=,
+which name different policies, and =:rls_service_read_role:=, whose
+cross-tenant read lives inside the default body and would otherwise stop
+appearing without a word.
 
 *A soft foreign key states which tenants it may match.* By default the
 insert trigger checks the referenced row in the writer's own tenant, so a

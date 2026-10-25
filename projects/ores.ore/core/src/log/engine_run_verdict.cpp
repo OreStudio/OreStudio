@@ -49,10 +49,10 @@ bool is_analytics(const std::string& file_name) {
  */
 constexpr std::string_view fatal_marker = "Error in ORE analytics";
 
-/** One parsed message per log line, with the line count. */
+/** One parsed message per log line; returns how many lines the log held. */
 template <typename Fn>
-void for_each_message(std::string_view engine_log, std::size_t& total_lines, Fn&& fn) {
-    total_lines = 0;
+std::size_t for_each_message(std::string_view engine_log, Fn&& fn) {
+    std::size_t total_lines = 0;
 
     std::size_t first = 0;
     while (first < engine_log.size()) {
@@ -68,12 +68,14 @@ void for_each_message(std::string_view engine_log, std::size_t& total_lines, Fn&
             break;
         first = end + 1;
     }
+
+    return total_lines;
 }
 
 /** The messages of the engine's ERROR lines, in the order it wrote them. */
 std::vector<std::string> error_messages(std::string_view engine_log, std::size_t& total_lines) {
     std::vector<std::string> errors;
-    for_each_message(engine_log, total_lines, [&](const auto& parsed) {
+    total_lines = for_each_message(engine_log, [&](const auto& parsed) {
         if (parsed.level == "error")
             errors.push_back(parsed.message);
     });
@@ -98,8 +100,7 @@ bool restates(const std::vector<std::string>& failures, const std::string& messa
  */
 std::vector<std::string> fatal_messages(std::string_view engine_log) {
     std::vector<std::string> failures;
-    std::size_t ignored = 0;
-    for_each_message(engine_log, ignored, [&](const auto& parsed) {
+    for_each_message(engine_log, [&](const auto& parsed) {
         if (parsed.message.find(fatal_marker) != std::string::npos &&
             !restates(failures, parsed.message))
             failures.push_back(parsed.message);
@@ -126,17 +127,18 @@ engine_run_outcome judge_engine_run(const std::vector<std::string>& output_file_
                                     std::string_view engine_log) {
     engine_run_outcome outcome;
 
-    if (std::ranges::any_of(output_file_names, is_analytics)) {
-        // The files are not enough on their own. ORE writes its calibration and
-        // timing reports whether or not the analytic it was asked for ran, so a
-        // failed run leaves files behind too. Its own verdict outranks them.
-        const auto failures = fatal_messages(engine_log);
-        if (failures.empty()) {
-            outcome.succeeded = true;
-            return outcome;
-        }
-
+    // The engine's own verdict comes first. ORE writes its calibration and
+    // timing reports whether or not the analytic it was asked for ran, so the
+    // files alone cannot tell a failed run from a working one, and a run that
+    // wrote nothing but its log still states why.
+    const auto failures = fatal_messages(engine_log);
+    if (!failures.empty()) {
         outcome.failure = "The engine's analytic failed." + reported_errors(failures);
+        return outcome;
+    }
+
+    if (std::ranges::any_of(output_file_names, is_analytics)) {
+        outcome.succeeded = true;
         return outcome;
     }
 

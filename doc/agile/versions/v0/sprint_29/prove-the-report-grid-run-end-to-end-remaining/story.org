@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_29:v0:
 #+created: 2026-10-24
-#+updated: 2026-10-24
+#+updated: 2026-10-25
 #+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -26,7 +26,7 @@ The ACME report definition runs to completion against the compute grid from an i
 | Now           | The run is witnessed on a database built from nothing, and the failed-job path now records a failed result. Two tasks of this story remain open on their own records.                       |
 | Waiting on    | Review of the proof task's pull request.                               |
 | Next          | Close the two remaining tasks on what the run showed.            |
-| Last touched  | 2026-10-24                               |
+| Last touched  | 2026-10-25                               |
 
 * Acceptance
 

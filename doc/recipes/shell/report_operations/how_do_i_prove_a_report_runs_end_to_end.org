@@ -28,14 +28,18 @@ reference data, so the trigger answers =no_run_grant= or finds no definition
 until the provision has run.
 
 1. /Pick a definition the session's party owns, and check its scope resolves to books./
-   A session may only run a definition owned by the party it acts for. A
-   definition owned by another party answers =no_run_grant=.
+   A session may only run a definition owned by the party it acts for. That
+   party is the one the shell prints as =Party:= when it signs in. A definition
+   owned by another party answers =no_run_grant=.
 
    #+begin_src sh :results verbatim
-   ./compass.sh sql -- -c "select d.id, d.name, r.name as config,
+   ./compass.sh sql -- -c "select d.id, d.tenant_id, p.short_code as party, d.name,
+     r.name as config,
      (select count(*) from ores_reporting_resolve_book_ids_for_config_fn(
         d.tenant_id, r.id, d.id)) as books_in_scope
    from ores_reporting_report_definitions_tbl d
+   join ores_refdata_parties_tbl p
+     on p.id = d.party_id and p.valid_to > now()
    join ores_reporting_report_configurations_tbl c
      on c.report_definition_id = d.id
     and c.configuration_type_code = 'risk_report_config'
@@ -44,9 +48,13 @@ until the provision has run.
      on r.configuration_id = c.configuration_id
     and r.tenant_id = c.tenant_id
     and r.valid_to > now()
-   where d.valid_to > now() and d.party_id = <the session's party id>
-   order by books_in_scope desc, d.name;"
+   where d.valid_to > now()
+   order by p.short_code, books_in_scope desc, d.name;"
    #+end_src
+
+   Take a row whose =party= is the party the shell signed in as, with
+   =books_in_scope= above zero. Its =id= and =tenant_id= are the two ids
+   step 2 needs.
 
    The join runs through =report_configurations.configuration_id=, which names
    the central =ores_reporting_configurations_tbl= row. The risk configuration
@@ -111,11 +119,12 @@ exit
    cat build/e2e/out/runtimes.csv
    #+end_src
 
-   The archive holds the =Output/= directory the engine wrote. =log.txt= states
-   whether the portfolio built, =runtimes.csv= shows which analytic ran and for
-   how long, and =pricingstats.csv= shows how many pricings each trade took. A
-   trade with zero pricings under an analytic that prices is a gap in the
-   reference data, not a chain failure.
+   The archive holds the contents of the engine's =Output/= directory, so
+   =log.txt= and the reports land at the root of the download directory.
+   =log.txt= states whether the portfolio built, =runtimes.csv= shows which
+   analytic ran and for how long, and =pricingstats.csv= shows how many pricings
+   each trade took. A trade with zero pricings under an analytic that prices is
+   a gap in the reference data, not a chain failure.
 
 * Script
 
@@ -131,7 +140,7 @@ Witnessed on 2026-10-24 against a database recreated from nothing in the
 
 | Definition            | Instance   | States                    | Result             | Analytics |
 |-----------------------+------------+---------------------------+--------------------+-----------|
-| Audit Trail Summary   | 97e9d3c2   | pending, running, running, completed | outcome 1, 5, closed | PORTFOLIO_DETAILS, 10s |
+| Audit Trail Summary   | 97e9d3c2   | pending, running, running, completed | outcome 1, 5, closed | =PORTFOLIO_DETAILS=, 10s |
 | Liquidity Coverage    | 52fc3f8d   | pending, running, running, completed | outcome 1, 5, closed | produced and collected |
 
 Both runs left =reporting/runs/<instance>/output.tar.gz= in storage and a

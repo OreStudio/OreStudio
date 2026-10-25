@@ -165,8 +165,6 @@ if(NOT DEFINED ENV{CI})
             if(_line MATCHES "^ORES_IAM_SERVICE_JWT_PRIVATE_KEY")
                 continue()
             endif()
-            # Tests talk to the same NATS server as any running fleet, so they
-            # must not share its subjects.
             if(_line MATCHES "^ORES_NATS_SUBJECT_PREFIX=(.*)$")
                 set(_line "ORES_NATS_SUBJECT_PREFIX=${CMAKE_MATCH_1}${ORES_TEST_SUBJECT_SUFFIX}")
             endif()

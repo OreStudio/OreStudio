@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
-#+updated: 2026-10-24
+#+updated: 2026-10-25
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ Run the ACME definition against a freshly recreated database, record the instanc
 | Now          | Nothing. |
 | Waiting on   | Review of the pull request.                               |
 | Next         | Nothing. |
-| Last touched | 2026-10-24                               |
+| Last touched | 2026-10-25                               |
 
 * Acceptance
 
@@ -58,18 +58,18 @@ prose steps between the commands: [[id:0A7DA00D-EA4E-4EA6-B597-6186A76A9F9E][How
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at.
+and the commit it was measured at. The data-shape numbers below were measured at =8a7478393e=; the run outcomes and engine time were measured on this branch, and the rows behind them are named under =* Notes=.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| report definitions after provision | 78 | =select count(*) from ores_reporting_report_definitions_tbl where valid_to > now()= | 8a7478393e (base; this branch changes no schema and no seed) |
-| definitions whose config resolves to books | 78 of 78 | =resolve_book_ids_for_config_fn(d.tenant_id, r.id, d.id)= over =risk_report_configs.configuration_id = bindings.configuration_id= | 8a7478393e (base; this branch changes no schema and no seed) |
-| portfolio scope rows | 46 | =select count(*) from ores_reporting_risk_report_config_portfolios_tbl where valid_to > now()= | 8a7478393e (base; this branch changes no schema and no seed) |
-| book scope rows | 0 | =select count(*) from ores_reporting_risk_report_config_books_tbl where valid_to > now()= | 8a7478393e (base; this branch changes no schema and no seed) |
-| books under each Global Portfolio | 20, 8, 8 | =ores_trading_get_book_ids_by_portfolio_fn= | 8a7478393e (base; this branch changes no schema and no seed) |
-| trades owned by the holding party | 8 | =select count(*) from ores_trading_trades_tbl where party_id = ...= | 8a7478393e (base; this branch changes no schema and no seed) |
-| reports run through the grid | 4 completed, 2 failed as designed | instance and result tables | 8a7478393e (base; this branch changes no schema and no seed) |
-| engine time for PORTFOLIO_DETAILS | 10000 ms | =Output/runtimes.csv= of the first run | 8a7478393e (base; this branch changes no schema and no seed) |
+| report definitions after provision | 78 | =select count(*) from ores_reporting_report_definitions_tbl where valid_to > now()= | 8a7478393e |
+| definitions whose config resolves to books | 78 of 78 | =resolve_book_ids_for_config_fn(d.tenant_id, r.id, d.id)= over =risk_report_configs.configuration_id = bindings.configuration_id= | 8a7478393e |
+| portfolio scope rows | 46 | =select count(*) from ores_reporting_risk_report_config_portfolios_tbl where valid_to > now()= | 8a7478393e |
+| book scope rows | 0 | =select count(*) from ores_reporting_risk_report_config_books_tbl where valid_to > now()= | 8a7478393e |
+| books under each Global Portfolio | 20, 8, 8 | =ores_trading_get_book_ids_by_portfolio_fn= | 8a7478393e |
+| trades owned by the holding party | 8 | =select count(*) from ores_trading_trades_tbl where party_id = ...= | 8a7478393e |
+| reports run through the grid | 4 completed, 2 failed as designed | instance and result tables | this branch |
+| engine time for PORTFOLIO_DETAILS | 10000 ms | =Output/runtimes.csv= of the first run | this branch |
 
 * Notes
 
@@ -97,14 +97,27 @@ broken package that returned outcome 1 before the change returns outcome 3 after
 it, carrying ORE's own line:
 
 #+begin_example
-The engine reported a failed analytic. The engine reported:
+The engine's analytic failed. The engine reported:
   Error in ORE analytics: Failed to run analytics PORTFOLIO_DETAILS
 #+end_example
 
-The fix reads the engine's own verdict: a line whose message starts with =Error
-in ORE analytics= fails the run whatever else it wrote, while a run that wrote
+The fix reads the engine's own verdict: a line whose message carries =Error in
+ORE analytics= fails the run whatever else it wrote, while a run that wrote
 analytics and logged no such verdict still succeeds. The file-based rule stays
 for the case where nothing but the log was written.
+
+*The job behind the evidence.* The last run on this branch, after the fix, left
+these rows. They are the ones a reader can look up.
+
+| Field | Working run | Failed-analytic run |
+|-------+-------------+---------------------|
+| instance | =25922e99-e541-44ca-ab22-c6b7ddbc558a= | none, dispatched as a batch |
+| batch | =19027790-54ca-47fd-91e8-72513fc3162a= | =845ef18e-d63f-45e7-a92d-d6ea6b4abe09= |
+| workunit | =93dc76f9-319c-44ef-9612-acc3ef858b5c= | =9b79957b-d61e-45ad-8bbf-2d45111b35ca= |
+| result | =40adfb82-f1d3-4f61-894c-71a3fc73a480= | =f1c44665-6af7-4fd1-859d-5a424dd924c2= |
+| outcome | 1 | 3 |
+| output | =compute/output/40adfb82-f1d3-4f61-894c-71a3fc73a480.tar.gz= | =compute/output/f1c44665-6af7-4fd1-859d-5a424dd924c2.tar.gz= |
+| reporting key | =reporting/runs/25922e99-e541-44ca-ab22-c6b7ddbc558a/output.tar.gz= | none |
 
 *The gap that remains.* Seven of the eight bonds in the run have no reference
 data the engine can build, so the engine warns and prices nothing for them. The
@@ -114,9 +127,15 @@ is recorded here rather than fixed, because it belongs to the instrument export
 rather than to the chain.
 
 *Where it runs.* The proof uses the five local wrapper hosts of this
-environment. The LAN hosts serve other environments and were stale: goedel and
-Newton ran =0.0.28= and the laptop =0.0.27=, against =0.0.29= on main. They are
-not part of this environment's grid, so they are not part of this proof.
+environment. The LAN hosts serve other environments and were a release or two
+behind, so a run there would prove a different tree. They are not part of this
+environment's grid, so they are not part of this proof.
+
+| Host | Wrapper image before the deploy | Environment it serves |
+|------+---------------------------------+-----------------------|
+| goedel (192.168.1.199) | =0.0.28-467fa878e5= | brave_hopper, bright_faraday |
+| Newton (192.168.1.22) | =0.0.28-467fa878e5= | brave_hopper |
+| LAPTOP-9OUEFKO5 (192.168.1.11) | =0.0.27-5418a8db36= | brave_hopper, bright_faraday |
 
 * Test Scenarios
 
@@ -145,6 +164,12 @@ not part of this environment's grid, so they are not part of this proof.
 | 9 | Measurements cite a working tree, not a commit | this task | Accepted | The column names the base commit and says this branch changes no schema and no seed. |
 | 10 | The test suites write into the developer database | =.env= | New finding | Captured in [[id:0CF3B77E-557B-4976-98D8-3E6B5566DA12][Stop the test suites writing into the developer database]]. |
 | 11 | The wrapper log says "produced no analytics" for a failed analytic | ores.compute/wrapper/src/app/application.cpp | Accepted | It now says "Engine run failed for". |
+| 12 | A log-only run that states a failed analytic still says "no analytics" | ores.ore/core/src/log/engine_run_verdict.cpp | Accepted | The engine's verdict is read before the files, whatever they are, and a test covers a log-only failure. |
+| 13 | The evidence names instances but no batch, workunit, result or output location | this task | Accepted | =* Notes= now names every id and both output locations for the working run and the failed one. |
+| 14 | Recipe step 1 cannot supply the ids step 2 needs | the recipe | Accepted | It selects the tenant and the party, and says to take the row whose party the shell signed in as. |
+| 15 | The header still reads as two contradictory statements; a dummy out-parameter; a comment repeated in CMake | verdict and build | Accepted | One statement in the header, the walker returns its line count, and the CMake rationale sits in one place. |
+| 16 | The record contradicts the code, overstates what was run, and carries stale dates | this task, the story, the recipe | Accepted | The quoted message, the scripted-run claim, the measurement provenance and the dates are corrected, and the recipe's table cell is escaped so org does not subscript it. |
+| 17 | The PR-record commit lacks the Environment and Co-Authored-By trailers | git | Noted | =compass pr create= writes that commit itself; the fix belongs in the tool, not in a rewrite of the branch. |
 
 * Result
 
@@ -170,8 +195,8 @@ The run works end to end, and the failure path now reports failure.
   working run still returns outcome 1.
 - *The run is repeatable.* [[id:0A7DA00D-EA4E-4EA6-B597-6186A76A9F9E][How do I prove a report runs end to end?]]
   records the steps and its script tangles into the shell library. The generated
-  script ran an instance to completion, and a fourth run confirmed the working
-  path after the verdict fix.
+  script, with the two ids substituted, ran an instance to completion, and a
+  fourth run confirmed the working path after the verdict fix.
 - *Re-verified after review.* The branch was rebuilt, the database recreated and
   provisioned again. Instance =25922e99= completed in ten seconds with outcome
   1, and the package with no portfolio, dispatched as batch

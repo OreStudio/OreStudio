@@ -68,8 +68,18 @@ TEST_CASE("the engine's own error reaches the refusal", tags) {
 
     CHECK_FALSE(outcome.succeeded);
     CHECK(outcome.failure ==
-          "The engine produced no analytics. The engine reported:\n"
+          "The engine's analytic failed. The engine reported:\n"
           "  Error in ORE analytics: error opening file Input/market_20160205_flat.txt");
+}
+
+TEST_CASE("a run that wrote nothing but its log still states why it failed", tags) {
+    const auto log = line("ALERT", "Error in ORE analytics: Failed to run analytics NPV");
+
+    const auto outcome = judge_engine_run({"log.txt"}, log);
+
+    CHECK_FALSE(outcome.succeeded);
+    CHECK(outcome.failure == "The engine's analytic failed. The engine reported:\n"
+                             "  Error in ORE analytics: Failed to run analytics NPV");
 }
 
 TEST_CASE("an error does not fail a run that still wrote analytics", tags) {

@@ -75,7 +75,7 @@ export const en: SourceCatalogue = {
         },
         account: 'Your account',
         menu: {
-            trades: 'Trades',
+            trading: 'Trading',
             marketdata: 'Market data',
             home: 'Home',
             accounts: 'Accounts',
@@ -516,6 +516,7 @@ export const en: SourceCatalogue = {
             country: 'Country',
             account: 'Account',
             traffic: 'Sent / received',
+            authorisation: 'Authorisation',
             state: 'State',
             day: 'Day',
         },
@@ -1859,6 +1860,7 @@ export const en: SourceCatalogue = {
                     'The run of a report that dispatched a batch: its state, its times and the batch it made.',
                 loading: 'Reading the report run...',
                 run: 'Run',
+                errors: 'Errors',
                 name: 'Name',
                 kind: 'Kind',
                 state: 'State',
@@ -3542,6 +3544,10 @@ export const en: SourceCatalogue = {
     },
 
     trading: {
+        area: {
+            title: 'Trading',
+            lead: 'The trades a desk reads and writes, and the books they sit in.',
+        },
         trades: {
             areaLead: 'The trades and structures you may see, and the books they sit in.',
             title: 'Trades',
@@ -3554,7 +3560,40 @@ export const en: SourceCatalogue = {
             structureHolds: '{count} trades',
             versionPair: 'v{version} · ext {external}',
         },
+        page: {
+            title: 'Trade',
+            lead: 'One trade, its terms, its identifiers, its links and its history.',
+            notFound: 'No trade has that id.',
+            backToList: 'Back to the list',
+            tabs: {
+                label: 'Trade sections',
+                details: 'Details',
+                identifiers: 'Identifiers and roles',
+                links: 'Links',
+                history: 'History',
+            },
+            state: 'State',
+            bookingDate: 'Booking date',
+            execution: 'Executed at',
+            identifiers: 'Identifiers',
+            idType: 'Scheme',
+            idValue: 'Value',
+            noIdentifiers: 'This trade carries no identifier.',
+            roles: 'Roles',
+            role: 'Role',
+            party: 'Party',
+            noRoles: 'No role was recorded with this trade.',
+            linksFrom: 'Links from this trade',
+            linksTo: 'Links to this trade',
+            linkType: 'Link',
+            otherTrade: 'The other trade',
+            noLinks: 'No link on this side.',
+            history: 'Versions',
+            noHistory: 'This trade has no recorded version yet.',
+        },
         fields: {
+            authorisation: 'Authorisation',
+            externalVersion: 'External version',
             identifier: 'Id',
             instrumentType: 'Type',
             counterparty: 'Counterparty',
@@ -3572,6 +3611,34 @@ export const en: SourceCatalogue = {
     },
 
     refdata: {
+        counterparties: {
+            title: 'Counterparty',
+            lead: 'Who the party trades with, how it stands, and the identifiers it is known by.',
+            shortCode: 'Short code',
+            fullName: 'Name',
+            partyType: 'Type',
+            status: 'Status',
+            identifiers: 'Identifiers',
+            id_scheme: 'Scheme',
+            id_value: 'Value',
+            noIdentifiers: 'This counterparty carries no identifier.',
+            notFound: 'No counterparty has that id.',
+            backToRefdata: 'Back to reference data',
+        },
+        books: {
+            title: 'Book',
+            lead: 'Where a trade is recorded, the portfolio it sits in, and what it is for.',
+            name: 'Name',
+            portfolio: 'Portfolio',
+            status: 'Status',
+            purpose: 'Purpose',
+            regulatoryType: 'Regulatory type',
+            currency: 'Currency',
+            costCenter: 'Cost centre',
+            glAccount: 'GL account',
+            notFound: 'No book has that id.',
+            backToRefdata: 'Back to reference data',
+        },
         crumbs: 'Breadcrumb',
         area: {
             title: 'Reference data',
@@ -3722,6 +3789,7 @@ export const en: SourceCatalogue = {
         },
         records: {
             deletePartWarning: 'The row closes. Its history stays.',
+            historyOf: 'History of {name}',
             yes: 'Yes',
             no: 'No',
             cancel: 'Cancel',
@@ -4045,10 +4113,27 @@ export const en: SourceCatalogue = {
             compare: 'Compare with',
             quantlibBaseWarning:
                 '{base} takes its holidays from QuantLib, but the rebuild does not read them. The days below show weekends and these exceptions only.',
-            notBuilt: 'No business days are built for {year}. Rebuild the calendar to build them.',
+            notBuilt: 'No business days are built for {year}.',
+            notBuiltAction: 'Rebuild the calendar to build them.',
+            notBuiltReader: 'Ask a reference data administrator to rebuild the calendar.',
+            unionSummary:
+                'With {other}: {business} business days and {holidays} holidays in the union, which is the definition a pair settles on.',
+            daysNote:
+                'A day in green is a business day an exception opened. A day in italics is a holiday of the compared calendar only.',
+            from: {
+                rule: 'Rule',
+                exception: 'Exception',
+                base: 'Base',
+            },
             summary: '{business} business days and {holidays} weekday holidays in {year}.',
             noHolidays: 'No holidays.',
             rebuildTo: 'Build up to the end of',
+            rebuildLead:
+                'Builds the days of {name} that are not built yet, from its rules and its exceptions.',
+            rebuildLeadDerived:
+                'Builds the days of {name} that are not built yet, from its base and its exceptions.',
+            rebuildAction: 'Rebuild',
+            rebuildYearHint: 'A four-digit year.',
             rebuild: 'Rebuild business days',
             rebuildNote:
                 'A rebuild adds the days not built yet. It does not change a day that is already built, so a change to a rule or an exception does not show in a year already built.',

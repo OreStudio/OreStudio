@@ -57,6 +57,13 @@ export interface CardDef extends Pick<MenuItem, 'permission'> {
 }
 
 export const CARDS = {
+    trades: {
+        titleKey: 'trading.trades.title',
+        bodyKey: 'trading.trades.lead',
+        to: PATHS.trades,
+        icon: 'document',
+        permission: 'trading::trade_summaries:read',
+    },
     parties: {
         titleKey: 'home.tenant.parties',
         bodyKey: 'home.tenant.partiesBody',
@@ -334,6 +341,7 @@ export const AREA_CARDS = {
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
     reporting: ['reports', 'pricingEngines', 'engineSettings'],
     tenants: ['tenants'],
+    trading: ['trades'],
 } as const satisfies Record<string, readonly CardId[]>;
 
 export type CardArea = keyof typeof AREA_CARDS;
@@ -346,6 +354,7 @@ export const AREA_PAGE: Record<CardArea, string> = {
     operations: PATHS.operations,
     reporting: PATHS.reporting,
     tenants: '/tenants',
+    trading: PATHS.trading,
 };
 
 /** The cards of a person's own account, which Home offers beside the areas. */
@@ -388,7 +397,7 @@ export const FOLDERS: readonly FolderDef[] = [
     { to: PATHS.refdata, bodyKey: 'refdata.area.lead', icon: 'database' },
     { to: PATHS.organisation, bodyKey: 'access.hub.lead', icon: 'people' },
     { to: '/market-data', bodyKey: 'home.party.marketdataBody', icon: 'chart' },
-    { to: PATHS.trades, bodyKey: 'trading.trades.areaLead', icon: 'document' },
+    { to: PATHS.trading, bodyKey: 'trading.area.lead', icon: 'document' },
     { to: '/requests', bodyKey: 'inbox.queue.lead', icon: 'document' },
     { to: PATHS.operations, bodyKey: 'operations.hub.description', icon: 'server' },
     { to: PATHS.reporting, bodyKey: 'reporting.area.lead', icon: 'chart' },

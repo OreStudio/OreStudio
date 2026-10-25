@@ -40,6 +40,9 @@ export interface ReportErrorEvent {
     message: string;
     subject: string | null;
     subject_id: string | null;
+    subject_version: number | null;
+    subject_as_of: string | null;
+    cause: string | null;
     detail: string;
     event_time: string;
 }

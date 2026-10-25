@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 2AA1EA54-FE69-44C5-81C5-D9EE18D06051
+:END:
+#+title: Task: Read a run's errors and its job chain from the shell
+#+description: The shell could not read a run's errors at all. The generated report_error_event and report_error_scope command units existed but nothing registered them, so every recipe for a run's reasons aborted with 'Wrong command', and the reporting service subscribed only the counts read, so even a registered command would have reached no responder. The other job and run reads were already reachable: report_instances list and get, batches, workunits by-batch-id and results by-workunit-id.
+
+Register every generated reporting shell unit, not only the two that were missing, and guard the component with the composition check that until now only covered refdata. Serve every error read through the generated registrars instead of the two hand-rolled subscriptions.
+#+type: task
+#+level: s1
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr: 3792
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The run's reasons and its job chain are readable from ores.shell: a person can
+ask for the errors of a run and walk from the run to its batch, its workunit and
+its result without going through the web.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- `report_error_events by-report-instance-id <id>` answers with the run's rows.
+- `report_error_scopes list` answers with the scope catalogue.
+- Every generated reporting shell unit is registered and reachable.
+- The composition check covers ores.reporting, so an unregistered unit fails the gate.
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3792][#3792]] | [shell] Read a run's errors and its job chain |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The shell reads a run's reasons and its whole job chain.
+
+- `report_instances list` and `report_instances get <name>` state the run: its
+  state, times, party, output message and output storage key.
+- `report_error_events list` and `report_error_events
+  by-report-instance-id <id>` return the run's reasons with scope, severity,
+  subject, subject id, detail and time.
+- `report_error_scopes list` returns the catalogue the reasons are grouped by.
+- `batches`, `workunits by-batch-id <id>` and `results by-workunit-id <id>`
+  carry the job chain, down to the result's outcome and error message.
+
+Proven against a triggered Board Risk run. Instance =944fc6e3= recorded 33
+errors; `by-report-instance-id` returned them (scope =Trade=, subject =trade=,
+the missing mandatory id in the message, the exception type in the detail), and
+the chain answered: instance to batch =89c05351=, batch to workunit
+=1d4931f8=, workunit to result =cbc2a3e7= with outcome 3 and the engine's
+message.
+
+Two defects made this impossible before. Nothing registered the generated
+=report_error_event= or =report_error_scope= command units, so every recipe for
+a run's errors aborted with "Wrong command". The reporting service subscribed
+only the counts read, so even a registered command reached no responder. Both
+are fixed, and every reporting unit is registered now: 187 units across refdata
+and reporting, with ores.reporting added to the composition check so an
+unregistered unit fails the gate rather than a person's session.

@@ -36,6 +36,7 @@
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/market_regime_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp"
@@ -794,6 +795,65 @@ std::string folder_body(const std::string& id,
 
 } // namespace
 
+
+void synthetic_commands::process_regime_get(std::ostream& out,
+                                            nats_client& session,
+                                            const std::vector<std::string>& args) {
+    if (!args.empty()) {
+        fail(out) << "synthetic regime get takes no arguments; see help." << std::endl;
+        return;
+    }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    const auto response =
+        do_request(out, session, ores::synthetic::messaging::get_market_regime_request{}, {}, true);
+    if (!response)
+        return;
+    if (!response->success) {
+        fail(out) << response->message << std::endl;
+        return;
+    }
+    out << "state: " << response->state << "\n"
+        << "multiplier: " << response->multiplier << "\n"
+        << "pinned: " << (response->pinned ? "yes" : "no") << std::endl;
+}
+
+void synthetic_commands::process_regime_pin(std::ostream& out,
+                                            nats_client& session,
+                                            const std::vector<std::string>& args) {
+    if (args.size() != 1) {
+        fail(out) << "synthetic regime pin takes one of auto, calm or active; see help."
+                  << std::endl;
+        return;
+    }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    const auto& mode = args.front();
+    if (mode != "auto" && mode != "calm" && mode != "active") {
+        fail(out) << "Unknown mode '" << mode << "'. Use auto, calm or active." << std::endl;
+        return;
+    }
+
+    ores::synthetic::messaging::pin_market_regime_request request;
+    request.mode = mode;
+    const auto response = do_request(out, session, request, {}, true);
+    if (!response)
+        return;
+    if (!response->success) {
+        fail(out) << response->message << std::endl;
+        return;
+    }
+    out << "state: " << response->state << "\n"
+        << "multiplier: " << response->multiplier << "\n"
+        << "pinned: " << (response->pinned ? "yes" : "no") << std::endl;
+}
+
 void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto synthetic_menu = std::make_unique<cli::Menu>("synthetic");
 
@@ -813,6 +873,24 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
                       "running state",
                       {});
     synthetic_menu->Insert(std::move(list_menu));
+
+    // The market-wide arrival factor: one read and one pin for the whole run.
+    auto regime_menu = std::make_unique<cli::Menu>("regime");
+    regime_menu->Insert("get",
+                        [&session](std::ostream& out, std::vector<std::string> args) {
+                            process_regime_get(std::ref(out), std::ref(session), args);
+                        },
+                        "Show the market regime in force: its state, its multiplier and whether "
+                        "a scenario pinned it",
+                        {});
+    regime_menu->Insert("pin",
+                        [&session](std::ostream& out, std::vector<std::string> args) {
+                            process_regime_pin(std::ref(out), std::ref(session), args);
+                        },
+                        "Pin the market regime, or hand it back to the chain",
+                        {"<auto|calm|active>"});
+    synthetic_menu->Insert(std::move(regime_menu));
+
 
     // The three dry-run operations the service already offers, one verb each:
     // a reader asks for one thing at a time, and each one takes a different
@@ -1612,6 +1690,12 @@ synthetic_commands::plan_fx(const std::string& sub_config_id,
     write.enabled = true;
     write.auto_start = false;
     write.folder_id = boost::lexical_cast<boost::uuids::uuid>(folder_id);
+    // The setup flow authors a periodic feed, so it states the arrival
+    // defaults the store would otherwise apply from the domain.
+    write.arrival_mode = "periodic";
+    write.branching_ratio = 0.0;
+    write.decay = 1.0;
+    write.sensitivity = 1.0;
 
     synthetic_ms::put_fx_spot_generation_config_request config_req;
     config_req.change.write = write;
@@ -1679,6 +1763,12 @@ std::vector<synthetic_commands::setup_row> synthetic_commands::plan_ir(
     // Not consulted for Deposit entries, but required and validated, and the
     // Swap entries the resolver builds need it.
     write.fixed_leg_payment_frequency_code = "Annual";
+    // The setup flow authors a periodic feed, so it states the arrival
+    // defaults the store would otherwise apply from the domain.
+    write.arrival_mode = "periodic";
+    write.branching_ratio = 0.0;
+    write.decay = 1.0;
+    write.sensitivity = 1.0;
 
     synthetic_ms::put_ir_curve_generation_config_request config_req;
     config_req.change.write = write;

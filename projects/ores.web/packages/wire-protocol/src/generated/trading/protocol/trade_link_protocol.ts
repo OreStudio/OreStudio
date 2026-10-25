@@ -56,6 +56,13 @@ export interface TradeLinkLookup {
     trade_link: TradeLink | null;
 }
 
+export interface TradeLinksFilter {
+    from_trade_id: string | null;
+    to_trade_id: string | null;
+    from_trade_id_one_of: string[] | null;
+    to_trade_id_one_of: string[] | null;
+}
+
 export interface TradeLinkEvent {
     event_id: string;
     key: TradeLinkKey;
@@ -80,6 +87,7 @@ export interface ListTradeLinksRequest {
     offset: number;
     limit: number;
     order: Order;
+    filter: TradeLinksFilter | null;
     as_of: string | null;
 }
 

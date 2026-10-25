@@ -23,9 +23,13 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
+import { subjects as bookingSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_booking_protocol';
 import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
+import { subjects as linkSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_link_protocol';
+import { subjects as partyRoleSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_party_role_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
+import { notFound } from './errors.js';
 import { input, readAll, refusal, resultSchema, row, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
@@ -100,7 +104,14 @@ const NO_FILTER = {
     search: null,
 } as const;
 
-/** The filter the page is read with: the set, with the screen's choices in the members it names. */
+/**
+ * The filter the page is read with: the set, with the screen's choices in the
+ * members it names.
+ *
+ * Every member is stated, absent ones as null. The service decodes the filter
+ * strictly and refuses a request that leaves a member out, so a filter built
+ * from only the screen's choices would work with no filter and fail with one.
+ */
 function filterOf(query: z.infer<typeof tradeListQuerySchema>) {
     return {
         ...NO_FILTER,
@@ -129,6 +140,8 @@ export function registerTradeRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
+    registerTradePageRoute(server, requireSession);
+
     server.get('/api/trades', async (request) => {
         const session = requireSession(request);
         const query = input(tradeListQuerySchema, request.query);
@@ -156,6 +169,70 @@ export function registerTradeRoutes(
     });
 }
 
+/**
+ * One trade, as its own page reads it.
+ *
+ * Every read is narrowed to the trade: the summary by id, its identifiers, the
+ * roles it was written with, its booking, its links at both ends, and its
+ * version history by key. The page renders what this returns, so a tab never
+ * reaches for a list of its own.
+ */
+function registerTradePageRoute(
+    server: FastifyInstance,
+    requireSession: (request: FastifyRequest) => LiveSession,
+): void {
+    server.get('/api/trades/:id', async (request) => {
+        const session = requireSession(request);
+        const { id } = input(z.object({ id: z.uuid() }), request.params);
+
+        const summaries = await readAll(
+            session,
+            summarySubjects.list_trade_summaries_request,
+            'trade_summaries',
+            { filter: { id_one_of: [id] } },
+        );
+        const summary = summaries[0];
+        if (summary === undefined) {
+            throw notFound('No trade has that id.');
+        }
+
+        const [enriched] = await enrich(session, [summary]);
+        const [identifiers, roles, bookings, fromLinks, toLinks] = await Promise.all([
+            readAll(session, identifierSubjects.list_trade_identifiers_request, 'identifiers', {
+                filter: { trade_id_one_of: [id] },
+            }),
+            readAll(session, partyRoleSubjects.list_trade_party_roles_request, 'roles', {
+                filter: { trade_id_one_of: [id] },
+            }),
+            readAll(session, bookingSubjects.list_trade_bookings_request, 'trade_bookings', {
+                filter: { trade_id_one_of: [id] },
+            }),
+            readAll(session, linkSubjects.list_trade_links_request, 'links', {
+                filter: { from_trade_id_one_of: [id] },
+            }),
+            readAll(session, linkSubjects.list_trade_links_request, 'links', {
+                filter: { to_trade_id_one_of: [id] },
+            }),
+        ]);
+
+        const versions = await readAll(
+            session,
+            tradeSubjects.list_trade_versions_request,
+            'versions',
+            { key: { id }, order: { field: 'version', descending: true } },
+        );
+
+        return {
+            trade: enriched ?? summary,
+            identifiers,
+            roles,
+            booking: bookings[0] ?? null,
+            links: { from: fromLinks, to: toLinks },
+            history: versions,
+        };
+    });
+}
+
 /** One page of summary rows with the names, references and versions of the trades it names. */
 async function enrich(
     session: LiveSession,
@@ -173,11 +250,19 @@ async function enrich(
     const identifiers = await readAll(
         session,
         identifierSubjects.list_trade_identifiers_request,
-        'trade_identifiers',
-        { filter: { trade_id: null, trade_id_one_of: ids } },
+        'identifiers',
+        {
+            filter: { trade_id: null, trade_id_one_of: ids },
+            as_of: null,
+        },
     );
     const books = await readAll(session, bookSubjects.list_books_request, 'books', {
-        filter: { parent_portfolio_id: null, id_one_of: bookIds, parent_portfolio_id_one_of: null },
+        filter: {
+            parent_portfolio_id: null,
+            id_one_of: bookIds,
+            parent_portfolio_id_one_of: null,
+        },
+        as_of: null,
     });
     const counterparties = await readAll(
         session,
@@ -195,7 +280,11 @@ async function enrich(
                       counterparty_scope: null,
                       id_one_of: ids,
                       counterparty_id_one_of: null,
+                      trade_type_one_of: null,
+                      counterparty_scope_one_of: null,
+                      search: null,
                   },
+                  as_of: null,
               });
 
     const identifiersOf = bestIdentifier(identifiers);

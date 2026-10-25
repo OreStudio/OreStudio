@@ -29,6 +29,7 @@ import {
 } from '@ores/wire-protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
 import { subjects as instanceSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_instance_protocol';
+import { subjects as errorSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_error_event_protocol';
 import { invalidRequest, notFound } from './errors.js';
 import { NO_ORDER, refusal, resultSchema, row, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
@@ -183,6 +184,53 @@ export function registerGridReportRunRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
+    server.get(
+        '/api/operations/grid/report-runs/:id/errors',
+        async (request): Promise<{ total: number; errors: readonly unknown[] }> => {
+            const session = requireSession(request);
+            const parsed = idParamsSchema.safeParse(request.params);
+            if (!parsed.success) {
+                throw invalidRequest('The address names an id that is not a uuid.');
+            }
+            const reply = await session.client.callAuthenticated(
+                errorSubjects.list_by_report_instance_id_report_error_events_request,
+                {
+                    report_instance_id: parsed.data.id,
+                    scope: 'direct',
+                    offset: 0,
+                    limit: 500,
+                    order: { field: '', descending: false },
+                    filter: null,
+                },
+                z.looseObject({
+                    result: resultSchema,
+                    errors: z.array(row).default([]),
+                    total: z.number().default(0),
+                }),
+            );
+            if (reply.result.outcome !== 'ok') {
+                throw refusal(reply.result);
+            }
+            return {
+                total: reply.total,
+                errors: reply.errors.map((entry) => ({
+                    id: text(entry['id']),
+                    scope: text(entry['scope_code']),
+                    severity: text(entry['severity']),
+                    message: text(entry['message']),
+                    subject: nullableText(entry['subject']),
+                    subject_id: nullableText(entry['subject_id']),
+                    cause: nullableText(entry['cause']),
+                    subject_version:
+                        typeof entry['subject_version'] === 'number'
+                            ? entry['subject_version']
+                            : null,
+                    subject_as_of: nullableText(entry['subject_as_of']),
+                    time: text(entry['event_time']),
+                })),
+            };
+        },
+    );
     server.get(
         '/api/operations/grid/report-runs/:id',
         async (request): Promise<GridReportRunView> => {

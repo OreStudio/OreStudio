@@ -20,6 +20,7 @@
     "dev": "npm run dev --workspace @ores/bff & npm run dev --workspace @ores/web",
     "dev:bff": "npm run dev --workspace @ores/bff",
     "dev:web": "npm run dev --workspace @ores/web",
+    "harness": "npm run harness --workspace @ores/harness",
     "verify:login": "tsx scripts/verify-login.ts",
     "verify:first-run": "tsx scripts/verify-first-run.ts",
     "ir:protocol": "python3 scripts/emit_protocol_ir.py --all --out .runtime/ir/protocol.ir.json",

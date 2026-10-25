@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 5C0F1D2E-9A7B-4C31-8E52-1F3A6B9D4E70
+:END:
+#+title: market_regime
+#+filetags: :recipe:shell:
+
+The market-wide arrival factor: whether the market is calm or busy, how hard
+every feed is being pushed, and whether a scenario has forced the state instead
+of the chain choosing it.
+
+The factor belongs to the run, not to a row, so there is one of these rather
+than one per feed. A feed's own regime — its rate, its arrival mode and its
+sensitivity to this factor — is a column of its generation config, read with the
+config menus.
+
+The command is shaped like this:
+
+#+begin_example
+synthetic regime get
+#+end_example
+
+It answers with the state in force (=calm= or =active=), the multiplier every
+feed is scaled by now, and whether the state is pinned.
+
+** =get=
+:PROPERTIES:
+:ID: 6D1E2F30-A8B4-4D42-9F63-2A4B7C0E5F81
+:END:
+
+Reads the factor in force. Nothing addresses it: there is one market per run, so
+the read takes no argument and answers for the whole run.
+
+The command is shaped like this:
+
+#+begin_example
+synthetic regime get
+#+end_example
+
+It is addressed at =synthetic.v1.ops.get_market_regime=.
+
+#+name: market_regime-get
+#+begin_src ores-shell :tangle market_regime-get.ores :exports none
+synthetic regime get
+#+end_src
+
+** =pin=
+:PROPERTIES:
+:ID: 7E2F3A41-B9C5-4E53-8A74-3B5C8D1F6A92
+:END:
+
+Forces the state, or hands it back to the chain.
+
+=auto= lets the chain choose again, =calm= and =active= pin that state. A pin
+holds however much time passes, which is what a demonstration or a stress run
+needs: a test that must wait for a random turn is not a test. A pin takes effect
+on the next tick of each feed rather than waiting for a gap already being slept,
+so a feed on a slow arrival can take one long gap to show it.
+
+The command is shaped like this:
+
+#+begin_example
+synthetic regime pin <auto|calm|active>
+#+end_example
+
+It is addressed at =synthetic.v1.ops.pin_market_regime=.
+
+#+name: market_regime-pin
+#+begin_src ores-shell :tangle market_regime-pin.ores :exports none
+synthetic regime pin __none__
+#+end_src

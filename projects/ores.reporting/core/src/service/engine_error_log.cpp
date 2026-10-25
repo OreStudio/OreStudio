@@ -88,6 +88,66 @@ read_subject(const std::string& scope, const json::object& sub_fields, engine_lo
 
 }
 
+namespace {
+
+/**
+ * @brief The curve name inside an engine reference such as
+ * =[IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]=.
+ *
+ * The engine states a curve as the index it is built from and the curve it
+ * names, and a person reads the second. A reference that does not have that
+ * shape is returned as it stands, because a name the engine chose is better
+ * than no name at all.
+ */
+std::string curve_name_of(std::string_view reference) {
+    const auto marker = reference.find("IndexCurve(");
+    if (marker == std::string_view::npos)
+        return std::string(reference);
+    const auto open = marker + std::string_view("IndexCurve(").size();
+    const auto close = reference.find(')', open);
+    if (close == std::string_view::npos)
+        return std::string(reference);
+    const auto inner = reference.substr(open, close - open);
+    const auto comma = inner.find(',');
+    if (comma == std::string_view::npos)
+        return std::string(inner);
+    return std::string(inner.substr(comma + 1));
+}
+
+/**
+ * @brief What the error is about, from the group and the fields it carries.
+ *
+ * Only a trade's curve has to be read from the message: the engine names the
+ * trade's curve nowhere else. Reading it here is the one place that knows the
+ * engine's words, so no client has to.
+ */
+std::string cause_of(const engine_log_error& error, const json::object& sub_fields) {
+    if (error.scope == "Curve")
+        return curve_name_of(error.subject_id);
+    if (error.scope == "Trade") {
+        const auto marker = error.message.find("IndexCurve(");
+        if (marker != std::string::npos) {
+            const auto close = error.message.find(')', marker);
+            if (close != std::string::npos)
+                return curve_name_of(
+                    std::string_view(error.message).substr(marker, close - marker + 1));
+        }
+        return {};
+    }
+    if (error.scope == "Analytics") {
+        if (error.subject == "analytic")
+            return error.subject_id;
+        const auto* analytic = sub_fields.if_contains("analyticType");
+        return analytic != nullptr && analytic->is_string() ? std::string(analytic->as_string()) :
+                                                              std::string{};
+    }
+    if (error.scope == "Configuration")
+        return error.subject_id;
+    return {};
+}
+
+}
+
 std::optional<engine_log_error> parse_engine_log_line(std::string_view line) {
     if (line.find('{') == std::string_view::npos)
         return std::nullopt;
@@ -138,6 +198,8 @@ std::optional<engine_log_error> parse_engine_log_line(std::string_view line) {
     }
     if (!detail.empty())
         error.detail = json::serialize(detail);
+
+    error.cause = cause_of(error, sub_fields);
 
     return error;
 }

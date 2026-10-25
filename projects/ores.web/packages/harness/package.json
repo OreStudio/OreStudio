@@ -1,0 +1,22 @@
+{
+  "name": "@ores/harness",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Drives the running ores.web in a browser and checks each screen against the UX standards by rule identifier. Needs a started environment; it is not part of npm test.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.11.0"
+  },
+  "scripts": {
+    "harness": "playwright test",
+    "harness:headed": "playwright test --headed",
+    "typecheck": "tsc --build --force"
+  },
+  "dependencies": {
+    "@ores/wire-protocol": "*"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "^22.20.0"
+  }
+}

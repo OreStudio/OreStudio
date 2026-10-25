@@ -48,6 +48,8 @@
 #include "ores.reporting.core/messaging/report_definition_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
 #include "ores.reporting.core/messaging/report_error_event_handler.hpp"
+#include "ores.reporting.core/messaging/report_error_event_registrar.hpp"
+#include "ores.reporting.core/messaging/report_error_scope_registrar.hpp"
 #include "ores.reporting.core/messaging/report_execution_handler.hpp"
 #include "ores.reporting.core/messaging/report_instance_handler.hpp"
 #include "ores.reporting.core/messaging/report_instance_trigger_handler.hpp"
@@ -56,6 +58,7 @@
 #include "ores.reporting.core/messaging/run_document_handler.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <string>
@@ -267,15 +270,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                         }));
 
     // ----------------------------------------------------------------
-    // Report error events. The list screen counts a run's problems
-    // through the counts read, so this handler serves that read.
+    // Report error events and the scopes they name. Both reads are the
+    // generated registrars', so the handler's whole surface is served.
     // ----------------------------------------------------------------
     {
-        auto reeh = std::make_shared<report_error_event_handler>(nats, ctx, verifier);
-        subs.push_back(nats.queue_subscribe(
-            get_report_error_counts_request::nats_subject, group, [reeh](ores::nats::message msg) {
-                reeh->get_report_error_counts(std::move(msg));
-            }));
+        auto error_subs = register_report_error_event_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(error_subs.begin()),
+                    std::make_move_iterator(error_subs.end()));
+        auto scope_subs = register_report_error_scope_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(scope_subs.begin()),
+                    std::make_move_iterator(scope_subs.end()));
     }
 
     // ----------------------------------------------------------------

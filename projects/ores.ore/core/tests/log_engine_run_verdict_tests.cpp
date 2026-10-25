@@ -116,6 +116,31 @@ TEST_CASE("the engine's own failed-analytic verdict outranks the files it wrote"
           "The engine's analytic failed. The engine reported:\n  " + std::string(failure));
 }
 
+TEST_CASE("a failed analytic names the quote and the trade it could not build", tags) {
+    // The engine states the failure it stops on, then attributes it to a trade
+    // in its structured message. A reader needs both to act on it.
+    const auto log =
+        line("ALERT",
+             "error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] : "
+             "Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date "
+             "2026-05-05") +
+        line("ALERT",
+             "StructuredMessage { \"message\": \"Cannot build all required curves\", "
+             "\"name\": \"tradeId\", \"value\": \"28e6d1c3\", "
+             "\"name\": \"tradeType\", \"value\": \"Bond\" }") +
+        line("ALERT", "Error in ORE analytics: Failed to run analytics PRICING,PARAMETRIC_VAR");
+
+    const auto outcome = judge_engine_run({"log.txt", "runtimes.csv", "pricingstats.csv"}, log);
+
+    CHECK_FALSE(outcome.succeeded);
+    CHECK(outcome.failure ==
+          "The engine's analytic failed. The engine reported:\n"
+          "  Error in ORE analytics: Failed to run analytics PRICING,PARAMETRIC_VAR\n"
+          "  error while building reduced node [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] : Could not "
+          "find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-05-05\n"
+          "  Cannot build all required curves (trade 28e6d1c3, Bond)");
+}
+
 TEST_CASE("a refusal says how many errors it left out", tags) {
     std::string log;
     for (int i = 1; i <= 7; ++i)

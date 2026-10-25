@@ -55,6 +55,19 @@ public:
      * stream before the first one.
      */
     virtual double next_gap() = 0;
+
+    /**
+     * @brief Scale the baseline rate, without changing the shape of the process.
+     *
+     * This is how a market-wide factor reaches a stream: the baseline is
+     * multiplied, and the branching ratio and the decay are not, because a busy
+     * market raises how often events arrive rather than how strongly they
+     * excite. The multiplier is applied from the next gap onwards.
+     *
+     * @param multiplier finite and strictly positive; one restores the rate the
+     *        process was built with.
+     */
+    virtual void set_baseline_multiplier(double multiplier) = 0;
 };
 
 }

@@ -44,7 +44,10 @@ import { Flag, FlagOf, useFlags, type FlagSource } from '../images/flags.js';
 import { ImageField } from '../images/ImageChooser.js';
 import { imageUrl } from '../ui/Images.js';
 import { RecordPicker, type Choice } from './RecordPicker.js';
-import { HistoryPanel, fieldValue } from './HistoryPanel.js';
+import { fieldValue } from './HistoryPanel.js';
+import { RecordTimeline } from './RecordTimeline.js';
+import { RefreshButton } from '../ui/RefreshButton.js';
+import type { LoadState } from '../events/useEntityChanges.js';
 import { Crumbs, ReasonFields, RowLabel, useLabelCatalogue, useReason } from './shared.js';
 import { refdataStore, useRecordStore, type RecordStore, type WriteIntent } from './store.js';
 
@@ -598,11 +601,14 @@ export function RecordDialog({
     after,
     complete,
     check,
+    loadedAt,
 }: {
     readonly title: string;
     readonly resource: string;
     readonly specs: readonly FieldSpec[];
     readonly row: RecordRow | undefined;
+    /** When the record being edited was loaded; the dialog says so under its title (RS-WRITE-16). */
+    readonly loadedAt?: number | undefined;
     readonly keep?: readonly string[];
     readonly given?: Readonly<Record<string, unknown>>;
     readonly initial?: FieldValues;
@@ -664,6 +670,7 @@ export function RecordDialog({
             title={title}
             onClose={guard.close}
             wide
+            {...(editing && loadedAt !== undefined ? { loadedAt } : {})}
             footer={
                 guard.leaving ? (
                     <LeavingFooter onStay={guard.stay} onLeave={onClose} />
@@ -894,8 +901,16 @@ function DetailValue({
     if (spec.kind.kind === 'bool') {
         return <>{text === 'true' ? t('refdata.records.yes') : t('refdata.records.no')}</>;
     }
-    if (spec.kind.kind === 'record' && spec.flag === undefined) {
-        return <RecordValue kind={spec.kind} code={text} pathOf={spec.pathOf} />;
+    if (spec.kind.kind === 'record') {
+        const value = <RecordValue kind={spec.kind} code={text} pathOf={spec.pathOf} />;
+        return spec.flag === undefined ? (
+            value
+        ) : (
+            <span className="inline-flex items-center gap-2">
+                <FlagOf source={spec.flag} code={text} />
+                {value}
+            </span>
+        );
     }
     if (spec.kind.kind === 'classification') {
         return <ClassifiedValue list={spec.kind.list} code={text} />;
@@ -1493,10 +1508,21 @@ export function RecordHeader({
     access,
     subdued,
     detail,
+    refresh,
 }: {
     readonly crumbs: readonly { readonly label: string; readonly to?: string }[];
     readonly title: string;
     readonly recordKey: string;
+    /**
+     * The page's Refresh with its load time, first among the actions
+     * (ES-REFRESH-06, ES-REFRESH-16). A page gives the load of the reads it
+     * shows and the news about them, as a list does.
+     */
+    readonly refresh?: {
+        readonly onClick: () => void;
+        readonly load: LoadState;
+        readonly news: { readonly stale: boolean; readonly changedAt: string | undefined };
+    };
     /** The record's version, or null for a page that states it in each tab. */
     readonly version: number | null;
     readonly own?: ReactNode;
@@ -1539,7 +1565,14 @@ export function RecordHeader({
                     ...(detail === undefined ? [] : [detail]),
                 ].join(' · ')}
                 actions={
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-start gap-2">
+                        {refresh !== undefined && (
+                            <RefreshButton
+                                onClick={refresh.onClick}
+                                load={refresh.load}
+                                news={refresh.news}
+                            />
+                        )}
                         {access !== null && (
                             <AccessMark canWrite={access ?? onEdit !== undefined} />
                         )}
@@ -1581,6 +1614,8 @@ export function PartsPanel({
     initial,
     lead,
     titles,
+    nameOf,
+    loadedAt,
 }: {
     readonly resource: string;
     readonly entityType: string;
@@ -1589,6 +1624,14 @@ export function PartsPanel({
     readonly parent: string;
     readonly rows: readonly RecordRow[];
     readonly error: string | undefined;
+    /**
+     * One part in words, such as "Last Monday of May", for the title of its
+     * Edit and History dialogs (RS-WRITE-20). Without it the dialogs carry the
+     * kind's name from `titles.one`.
+     */
+    readonly nameOf?: (row: RecordRow) => string;
+    /** When the parts were loaded; the Edit dialog says so under its title (RS-WRITE-16). */
+    readonly loadedAt?: number | undefined;
     readonly columns: readonly {
         readonly header: string;
         readonly cell: (row: RecordRow) => ReactNode;
@@ -1721,19 +1764,34 @@ export function PartsPanel({
             )}
             {open?.view === 'edit' && (
                 <RecordDialog
-                    title={open.row === undefined ? titles.add : titles.one}
+                    title={
+                        open.row === undefined
+                            ? titles.add
+                            : nameOf === undefined
+                              ? titles.one
+                              : t('refdata.records.editTitle', { code: nameOf(open.row) })
+                    }
                     resource={resource}
                     specs={specs}
                     row={open.row}
                     keep={kept}
                     given={{ id: open.id, [parentField]: parent }}
                     {...(open.row === undefined && initial !== undefined ? { initial } : {})}
+                    {...(loadedAt !== undefined ? { loadedAt } : {})}
                     onClose={() => setOpen(null)}
                 />
             )}
             {open?.view === 'history' && open.row !== undefined && (
-                <Dialog title={titles.one} onClose={() => setOpen(null)} wide>
-                    <HistoryPanel
+                <Dialog
+                    title={
+                        nameOf === undefined
+                            ? titles.one
+                            : t('refdata.records.historyOf', { name: nameOf(open.row) })
+                    }
+                    onClose={() => setOpen(null)}
+                    wide
+                >
+                    <RecordTimeline
                         entityType={entityType}
                         entityId={open.id}
                         {...(may.write

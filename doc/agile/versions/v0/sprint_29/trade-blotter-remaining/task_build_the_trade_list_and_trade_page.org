@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-trade-list-and-trade-page
-#+pr: 3734
+#+pr: 3804
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -88,6 +88,15 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3804][#3804]] | [compass] Ignore a lock a killed browser left behind |
+| [[https://github.com/OreStudio/OreStudio/pull/3803][#3803]] | [web] Open a trade's counterparty and its book |
+| [[https://github.com/OreStudio/OreStudio/pull/3801][#3801]] | [web] Draw the authorisation label the list asks for |
+| [[https://github.com/OreStudio/OreStudio/pull/3799][#3799]] | [web] Make Trading the area and Trades its card |
+| [[https://github.com/OreStudio/OreStudio/pull/3793][#3793]] | [web] Show one trade on its own page |
+| [[https://github.com/OreStudio/OreStudio/pull/3789][#3789]] | [refdata] Serve the counterparty business centre lists |
+| [[https://github.com/OreStudio/OreStudio/pull/3788][#3788]] | [web] Complete a list request from the protocol |
+| [[https://github.com/OreStudio/OreStudio/pull/3784][#3784]] | [web] State every list member the service decodes |
+| [[https://github.com/OreStudio/OreStudio/pull/3783][#3783]] | [compass] Show the app page before filling the sign-in form |
 | [[https://github.com/OreStudio/OreStudio/pull/3734][#3734]] | [web] Build the trade list of the blotter |
 | [[https://github.com/OreStudio/OreStudio/pull/3722][#3722]] | [prototype] Settle the trade list's tree, rows and identifiers |
 
@@ -149,3 +158,51 @@ Two rounds have landed. The first settled the prototype: the list draws a portfo
 The second round shipped the list itself. The Trades area reads a page of the trade summary read model through the BFF, which enriches the page with the identifier, the book and counterparty names and the two versions. The screen is the shared record list, so the pager, the column menu, the search, the filters and the states are the standard ones, and the area is offered from the menu and the home folders with messages in the three catalogues.
 
 What is not in it, and why: the portfolio tree waits on a count-per-book read of its own, and the investigation says the two existing lists are enough until a party's tree passes a page; the composite and leg markers wait on the same reads; the type and counterparty filters wait on a catalogue read and a pick list; the trade page is the next task, so a row does not open yet and a structure row states its kind rather than linking to a route that answers nothing. Book a trade is the area's Add once that screen exists.
+
+* The trade page, built
+
+The page is at =/trades/:id=, opened by a row. Five tabs, as the prototype settled them: Details, Instrument, Identifiers and roles, Links and History.
+
+- *Details* shows what the list already knew plus the booking's own terms: the identifier, the instrument type, the state, the authorisation, the trade date, the counterparty, the book, the version pair, the booking date and the execution instant.
+- *Identifiers and roles* reads =trade_identifiers= and =trade_party_roles= by trade.
+- *Links* reads both ends, because a link names the trade it starts at and the trade it ends at and nothing lets one read be either.
+- *History* reads the trade's versions by key.
+- *Instrument* states that the read is not built. The instrument table depends on the trade type, and routing a type to its table is its own piece of work: the prototype carries the same state, so this is the prototype's honesty and not a gap invented here.
+
+The route that feeds it, =GET /api/trades/:id=, makes those six reads and returns one payload, so a tab never reaches for a list of its own.
+
+* What the work needed that did not exist
+
+- =trade_links= had no filter at all, so one trade's links could not be asked for. =from_trade_id= and =to_trade_id= are now =:filterable: true=, and the filter offers both, with a one-of for each.
+- The trading service never registered the =trade_link= handlers: =trading.v1.trade_links.list= had no subscriber at all. Both the link and the link type are now registered beside their siblings.
+- Trading held no =trading::trade_party_roles:read=, because the blotter's grant block was written before the role tab existed. The four blotter roles now hold it.
+
+* Proved
+
+=GET /api/trades/:id= answers 200 for a Trading persona with the identifier, one identifier row, the booking, and five versions. The browser opens the list, clicks the first row, and walks all five tabs; its labels resolve and the tab list is announced. The BFF suite passes 949 tests, including the page route's shape and a 404 for a trade that does not exist.
+
+* The review's points, in this change
+
+- *Trading is the area, Trades is a card in it.* The menu names the area, its page draws the cards, and the trade list is one of them. The list and the trade page now live at =/trading/trades=, and every trail reads Home, Trading, then the screen. Saying "Trades" in the menu named a screen where the person expects a place to work.
+- *State and authorisation are badges.* Both use the standard =Tag=, in the list and on the page, with the state's tone saying how alive the trade is.
+- *External version has its own field*, in the list and on the page. It was folded into one "v5 · ext 0" cell, which hid a field the desk reads on its own.
+- *The Instrument tab does not ship.* The page keeps four tabs and states no promise it cannot keep.
+
+* Still open from the review
+
+- *Counterparty and book as links.* Neither entity has a page of its own: a counterparty is listed inside its party, and a book has only the structure authoring journey. Linking to a journey would be worse than plain text, so the links wait for the pages. That is the next piece after the instrument read.
+
+* The entity links, and the pages they needed
+
+The review asked for the counterparty and the book to be links. Neither had a page to link to, so the change builds both and the link follows:
+
+- =GET /api/counterparties/:id= reads the record and the identifiers it is known by; the page is at =/refdata/counterparties/:id=.
+- =GET /api/books/:id= reads the book and the portfolio it sits in; the page is at =/refdata/books/:id=.
+- The trade list's counterparty and book cells are links, and so are the two facts on the trade page. A row whose id is absent stays plain text, so a structure row keeps its usual rendering.
+- The =Fact= block the trade page had locally is now the shared one in the primitives, because three pages draw facts.
+
+Trading held no =refdata::counterparty_identifiers:read=, which the counterparty page needs for its identifiers table; the four blotter roles hold it now.
+
+* What this leaves
+
+The instrument read is the last piece of the task. The book page shows the book and its portfolio but not the trades booked in it, which is the read a person arrives wanting; that is the same instrument-and-population work.

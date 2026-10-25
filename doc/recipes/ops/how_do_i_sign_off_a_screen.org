@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: BB919630-E0C1-42A6-965D-109EBE52227A
+:END:
+#+title: How do I sign off a screen?
+#+description: Run the harness on one screen, fold the run into the sign off sheet, walk the lines the harness cannot check and record the outcome on the task.
+#+type: recipe
+#+level: cross
+#+filetags: :ops:web:harness:ux:recipe:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+Signing off a screen is the last step of the screen pipeline in
+[[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][Screen pipeline topics]]. It is one procedure for every screen and every
+reviewer: the browser harness of
+[[id:D8BD9068-113A-4324-894C-06D74D34813E][How do I run the browser harness against the environment?]] answers the
+lines of the [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] it has a check for, and a person
+walks the rest. The outcome is one sheet beside the task that owns the screen.
+
+* Question
+
+How do I sign off a screen against the UX language, and where does the outcome
+go?
+
+* Answer
+
+The environment must be up and the Acme tenant provisioned, as
+[[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]] says. The screen must be one the harness
+knows: a record kind in =RECORD_ROUTES= or a classification list, named by the
+describe title the harness gives it, =record currencies= or
+=classification calendar-type=.
+
+1. /Run the harness on the screen alone./ The filter drops every other
+   screen and keeps the setup project, so the sign-in and the check that the
+   harness's Acme facts match the provisioning script still run, and the run
+   takes under a minute:
+
+   #+begin_src sh :results verbatim
+   cd projects/ores.web/packages/harness
+   npx playwright test --grep "record currencies"
+   #+end_src
+
+   Run it twice when a check fails. A failure that moves between the runs is
+   timing, not the screen; read its trace under =.runtime/harness/results=
+   before you count it.
+
+2. /Fold the run into the sheet./ The script reads the JSON report the run
+   wrote and prints every checklist line with the harness's mark where it has
+   one and =walk= where the person judges:
+
+   #+begin_src sh :results verbatim
+   mkdir -p <story>/evidence
+   python3 projects/ores.web/scripts/screen_sign_off.py currencies \
+     > <story>/evidence/sign_off_currencies.org
+   #+end_src
+
+   The Harness column is the run's and is not edited. A line with more than
+   one identifier shows the mark per identifier the harness checks, and the
+   Note names the identifiers it does not. A column name can differ from the
+   baseline table's: a rule the baseline splits by stage, such as
+   =ES-REFRESH-16 list= and =ES-REFRESH-16 record=, keeps its bare name on a
+   screen where only one stage checks it.
+
+3. /Walk the lines marked walk./ Open the screen as the tenant administrator
+   and as a member, with [[id:B3685CBB-277D-4A17-972B-1055D91C504C][How do I open the web as an Acme user?]]. For each
+   line write /Meets/, /Gap/ or /N/A/ in the Person column and what you saw in
+   the Note: the words on the screen, the address, the control. A line you
+   could not try, because the state needs a server fault or a second person,
+   gets /Not checked/ and the reason. The configuration screen section is N/A
+   for a record screen, and the exceptions section is N/A unless the standard
+   names the screen. An agent may walk the lines to find the gaps early, as
+   the worked example did; the sign off that closes a topic is a person's
+   walk, and the sheet says who walked it.
+
+4. /Record the outcome on the task./ Below the table write the verdict in one
+   sentence: /signed off/ only when no harness mark is ✗ and no Person cell is
+   Gap or Not checked; otherwise /not signed off/ with the count of gaps and
+   of lines not checked. Name the sheet in the task's Measurements table with
+   the commit the harness ran at, and in its Result. Each Gap goes where the
+   checklist says: into the story or task that owns the screen, or into a
+   capture when nothing owns it yet, with the identifier it breaks.
+
+5. /Sign off again after the fix./ A later run replaces the sheet. The old
+   sheet stays in the history of the file, which is the before and after the
+   pipeline asks for.
+
+* Script
+
+=projects/ores.web/scripts/screen_sign_off.py= folds the report with the same
+functions as =harness_baseline.py= and reads the checklist's lines by their
+identifiers, so a new line or a new check appears in the sheet without a change
+to the script. A screen the run does not hold is refused with the names of the
+screens it does.
+
+* Tested by
+
+The sheet of the currencies screen in the evidence folder of the task
+[[id:49EEB245-FDF4-410A-99ED-D89F47BE9543][Write the screen sign off recipe]] is the worked example: the run of
+2026-10-25, the walk as the tenant administrator and as a member, and the
+verdict.
+
+* See also
+
+- [[id:10ECDD95-0C8C-4BFF-A94A-FCBFAAC8F25A][The record screen baseline]] — what every screen measured before the pipeline started.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the rules behind the identifiers.
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders the UX cluster.

@@ -45,6 +45,7 @@ here: a link holds nothing and stands alone.
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:filterable:   true
 :END:
 
 The trade the link starts at: the original a close-out ends, the
@@ -59,6 +60,7 @@ ctx.generate_uuid()
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
+:filterable:   true
 :END:
 
 The trade the link ends at: the closing trade, the new counterparty's

@@ -56,12 +56,13 @@
 #include "ores.refdata.core/messaging/calendar_name_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_type_registrar.hpp"
-#include "ores.refdata.core/messaging/commodity_registrar.hpp"
 #include "ores.refdata.core/messaging/cds_convention_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_registrar.hpp"
 #include "ores.refdata.core/messaging/configuration_document_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_registrar.hpp"
 #include "ores.refdata.core/messaging/convention_kind_registrar.hpp"
 #include "ores.refdata.core/messaging/convention_registrar.hpp"
+#include "ores.refdata.core/messaging/counterparty_business_centre_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_change_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_contact_information_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_identifier_change_registrar.hpp"
@@ -376,6 +377,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_convention_kind_handlers(nats, ctx, verifier));
     append(register_counterparty_handlers(nats, ctx, verifier));
     append(register_counterparty_change_handlers(nats, ctx, verifier));
+    append(register_counterparty_business_centre_handlers(nats, ctx, verifier));
     append(register_counterparty_contact_information_handlers(nats, ctx, verifier));
     append(register_counterparty_identifier_handlers(nats, ctx, verifier));
     append(register_counterparty_identifier_change_handlers(nats, ctx, verifier));

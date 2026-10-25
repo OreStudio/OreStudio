@@ -87,12 +87,16 @@ create table if not exists "ores_reporting_report_error_events_tbl" (
     "message" text not null,
     "subject" text null,
     "subject_id" text null,
+    "subject_version" integer null,
+    "subject_as_of" timestamp with time zone null,
+    "cause" text null,
     "detail" jsonb null,
     "event_time" timestamp with time zone not null,
     primary key (tenant_id, id),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check (("subject" is null) = ("subject_id" is null)),
-    check ("severity" in ('error', 'warning'))
+    check ("severity" in ('error', 'warning')),
+    check (("subject" is not null) or ("subject_version" is null and "subject_as_of" is null))
 );
 
 

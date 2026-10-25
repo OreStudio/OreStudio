@@ -76,6 +76,7 @@ domain::report_error_event make_error(const utility::uuid::tenant_id& tenant_id,
                                       std::string message,
                                       std::optional<std::string> subject,
                                       std::optional<std::string> subject_id,
+                                      std::optional<std::string> cause,
                                       std::string detail) {
     domain::report_error_event error;
     error.tenant_id = tenant_id;
@@ -87,6 +88,7 @@ domain::report_error_event make_error(const utility::uuid::tenant_id& tenant_id,
     error.message = std::move(message);
     error.subject = std::move(subject);
     error.subject_id = std::move(subject_id);
+    error.cause = std::move(cause);
     error.detail = std::move(detail);
     error.event_time = event_time;
     return error;
@@ -126,6 +128,7 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
                 error.message,
                 error.subject.empty() ? std::nullopt : std::optional(error.subject),
                 error.subject_id.empty() ? std::nullopt : std::optional(error.subject_id),
+                error.cause.empty() ? std::nullopt : std::optional(error.cause),
                 error.detail));
         }
 
@@ -150,6 +153,7 @@ std::string report_error_recorder::record_run_failure(const std::string& report_
                                                                       std::string(scope_report),
                                                                       "error",
                                                                       reason,
+                                                                      std::nullopt,
                                                                       std::nullopt,
                                                                       std::nullopt,
                                                                       {})});

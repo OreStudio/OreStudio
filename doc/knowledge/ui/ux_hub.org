@@ -119,6 +119,10 @@ entities grouped into eleven topics, each judged as standard or a workflow and
 ordered for the pipeline. Calendars go first. Read it to know which topic is
 next and what it carries.
 
+[[id:10ECDD95-0C8C-4BFF-A94A-FCBFAAC8F25A][The record screen baseline]] — what the
+harness found on every record screen before the pipeline started, rule by rule,
+and the four captures it filed. A later run replaces its table.
+
 # aside
 
 [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]] —

@@ -31,7 +31,7 @@ import { subjects as partyCounterpartySubjects } from '@ores/wire-protocol/gener
 import { subjects as partyIdSchemeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_id_scheme_protocol';
 import { subjects as partyStatusSubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_status_protocol';
 import { subjects as partyTypeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_type_protocol';
-import { invalidRequest } from './errors.js';
+import { invalidRequest, notFound } from './errors.js';
 import {
     idSchema,
     input,
@@ -222,21 +222,52 @@ export function registerCounterpartyRoutes(
         };
     });
 
-    server.get('/api/counterparties/children', async (request) => {
+    /**
+     * One counterparty, as its own page reads it: the record and the identifiers
+     * it is known by. Every judgement about who may see it is the service's, so
+     * a record the caller cannot read is not found rather than refused here.
+     */
+    server.get('/api/counterparties/:id', async (request) => {
         const session = requireSession(request);
-        const { ids } = input(childrenQuerySchema, request.query);
-        const filter = { counterparty_id: null, id_one_of: null, counterparty_id_one_of: ids };
+        const { id } = input(z.object({ id: z.uuid() }), request.params);
+        const found = await readAll(
+            session,
+            counterpartySubjects.list_counterparties_request,
+            'counterparties',
+            { filter: { id_one_of: [id] }, as_of: null },
+        );
+        const counterparty = found[0];
+        if (counterparty === undefined) {
+            throw notFound('No counterparty has that id.');
+        }
         const identifiers = await readAll(
             session,
             identifierSubjects.list_counterparty_identifiers_request,
             'counterparty_identifiers',
-            { filter },
+            { filter: { counterparty_id_one_of: [id] } },
+        );
+        return { counterparty, identifiers };
+    });
+
+    server.get('/api/counterparties/children', async (request) => {
+        const session = requireSession(request);
+        const { ids } = input(childrenQuerySchema, request.query);
+        const filter = {
+            counterparty_id: null,
+            id_one_of: null,
+            counterparty_id_one_of: ids,
+        };
+        const identifiers = await readAll(
+            session,
+            identifierSubjects.list_counterparty_identifiers_request,
+            'counterparty_identifiers',
+            { filter, as_of: null },
         );
         const contacts = await readAll(
             session,
             contactSubjects.list_counterparty_contact_informations_request,
             'counterparty_contact_informations',
-            { filter },
+            { filter, as_of: null },
         );
         const centres = await readAll(
             session,

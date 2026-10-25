@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: FFEED7A4-01D6-4C1D-99CB-9CA01336C945
+:END:
+#+title: Main's local gate is red on three drift checks and one pgTAP test
+#+description: cmake-sources, er-diagram and entity-writes are stale on main, and reporting_ore_parameters_test fails test 3.
+#+type: capture
+#+level: cross
+#+filetags: :gate:drift:bug:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Main's local gate is red on three drift checks and one pgTAP test that belong to no open branch. cmake-sources: projects/ores.analytics/quant/src/component_files.cmake is stale. er-diagram: ores_schema.refdata, dq_staging, synthetic and the index are stale, four diagrams. entity-writes: ores_refdata_publish_commodities_from_dq_fn is a new writer outside the ratchet baseline, from PR 3765. pgtap: reporting_ore_parameters_test fails test 3, the XPath of an ore.xsd parameter. Seen on origin/main b4585bf228 and later while raising the seed fix PR 3772; each needs its owner to regenerate or baseline it.
+
+* Why
+
+A branch that touches the sql or tooling class runs these checks, and the
+gate is red on main's defect, so a clean branch cannot show a clean report
+until each owner regenerates or baselines their file. The entity-writes
+ratchet in particular refuses a new writer it has not seen, which is the
+check doing its job; the baseline needs the row.
+
+* References
+
+- =build/scripts/local_checks.py= — the gate that runs the four checks.
+- =projects/ores.analytics/quant/src/component_files.cmake= — the stale file list.
+- =projects/ores.sql/test/reporting_ore_parameters_test.sql= — the failing pgTAP test.
+
+* See also
+
+- [[id:10F49F97-EBA8-4940-96AA-4AC19937472B][The commodity handler permissions are not seeded]] — the gate defect seen on the same day, fixed by PR 3772.

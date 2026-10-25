@@ -65,6 +65,51 @@ export interface TradePageQuery {
     readonly type: string;
 }
 
+/** One identifier a trade carries. */
+export interface TradeIdentifier {
+    readonly id: string;
+    readonly trade_id: string;
+    readonly id_type: string;
+    readonly id_value: string;
+    readonly issuing_party_id: string;
+}
+
+/** One party role the trade was written with. */
+export interface TradePartyRole {
+    readonly trade_id: string;
+    readonly party_id: string;
+    readonly role_type: string;
+}
+
+/** The trade's booking terms. */
+export interface TradeBooking {
+    readonly trade_id: string;
+    readonly trade_date: string | null;
+    readonly execution_timestamp: string | null;
+}
+
+/** One link, seen from the trade the page is on. */
+export interface TradeLink {
+    readonly from_trade_id: string;
+    readonly to_trade_id: string;
+    readonly link_type: string;
+}
+
+/** One version of the trade, newest first. */
+export interface TradeVersion {
+    readonly version: number;
+}
+
+/** One trade, as its page reads it. */
+export interface TradePageRecord {
+    readonly trade: TradeRow;
+    readonly identifiers: readonly TradeIdentifier[];
+    readonly roles: readonly TradePartyRole[];
+    readonly booking: TradeBooking | null;
+    readonly links: { readonly from: readonly TradeLink[]; readonly to: readonly TradeLink[] };
+    readonly history: readonly TradeVersion[];
+}
+
 /** One page of trades and the total the filter matches. */
 export interface TradePage {
     readonly rows: readonly TradeRow[];
@@ -90,7 +135,59 @@ const tradeRowSchema: z.ZodType<TradeRow> = z.object({
     external_version: z.coerce.number().int().nullable().default(null),
 });
 
+const tradePageRecordSchema = z.object({
+    trade: tradeRowSchema,
+    identifiers: z.array(
+        z.looseObject({
+            id: z.string().default(''),
+            trade_id: z.string().default(''),
+            id_type: z.string().default(''),
+            id_value: z.string().default(''),
+            issuing_party_id: z.string().default(''),
+        }),
+    ),
+    roles: z.array(
+        z.looseObject({
+            trade_id: z.string().default(''),
+            party_id: z.string().default(''),
+            role_type: z.string().default(''),
+        }),
+    ),
+    booking: z
+        .looseObject({
+            trade_date: z.string().nullable().default(null),
+            execution_timestamp: z.string().nullable().default(null),
+        })
+        .nullable()
+        .default(null),
+    links: z.object({
+        from: z.array(
+            z.looseObject({
+                from_trade_id: z.string(),
+                to_trade_id: z.string(),
+                link_type: z.string(),
+            }),
+        ),
+        to: z.array(
+            z.looseObject({
+                from_trade_id: z.string(),
+                to_trade_id: z.string(),
+                link_type: z.string(),
+            }),
+        ),
+    }),
+    history: z.array(z.looseObject({ version: z.coerce.number().int() })),
+});
+
 export const trades = {
+    /** One trade with everything its page shows: identifiers, roles, booking, links and history. */
+    async one(id: string): Promise<TradePageRecord> {
+        const parsed = tradePageRecordSchema.parse(
+            await request(`/api/trades/${encodeURIComponent(id)}`, { method: 'GET' }),
+        );
+        return parsed as TradePageRecord;
+    },
+
     /** One page of trades, searched, filtered and ordered on the server. */
     async page(query: TradePageQuery): Promise<TradePage> {
         const params = new URLSearchParams({

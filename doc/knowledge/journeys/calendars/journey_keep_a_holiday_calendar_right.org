@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:refdata:
 #+created: 2026-10-04
-#+updated: 2026-10-05
+#+updated: 2026-10-25
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A reference data administrator keeps a holiday calendar's rules, exceptions and events correct, and checks the business days they produce.
@@ -105,6 +105,45 @@ reads cause above effect.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/calendars/wireframe_keep_a_holiday_calendar_right.png]]
 
+** Each step, and the shape that serves it
+
+The screen pipeline judges a journey before its prototype: a step is a CRUD
+variation that the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] already draws, or it has
+steps and state of its own and needs a workflow under the Workflows menu.
+Judged on 2026-10-25, against the screen the web draws today, and signed off by the owner the same day.
+
+#+ATTR_HTML: :class hug-leading
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| 1 Find the calendar | The record list: code, name, type, country and what the calendar is made of | Standard list. The filter by name, country or type is the server search and the one filter the list offers |
+| 2 Read the calendar | The record page, with the tabs the shape allows: Details, Rules, Exceptions, Events, Business days, History | Standard record page; the rules, exceptions and events are parts (RS-RELATED-04 to 06), drawn only for the shape that has them |
+| 3 Derive a calendar | /Derive a calendar/ in the header, which opens the record dialog with the base, the type and the country given | CRUD variation: one create with the base given, answered in one reply. An own action by RS-PAGE-03, not a workflow |
+| 4 Correct the calendar row | /Edit/ in the header, the record dialog with the key fixed | Standard amend |
+| 5 Maintain the rules | The Rules tab, a parts panel; the dialog asks the fields the kind needs | Parts panel. The fields that follow the kind are the form's own rule (RS-WRITE-07) |
+| 6 Add an exception | The Exceptions tab, a parts panel | Parts panel |
+| 7 Record diary events | The Events tab, a parts panel | Parts panel |
+| 8 Rebuild the business days | /Rebuild business days/ with the year, on the Business days tab | CRUD variation: one operation, answered in one reply, no state of its own. An own action; RS-PAGE-03 puts own actions in the header, and the owner decided on 2026-10-25 that it moves there from the tab |
+| 9 Check the business days | The Business days tab: one year, one block per month, each holiday with what produced it, and a second calendar for the union | A read-only view on the record page. No rule of the standard draws a derived view yet, so the prototype defines it and the standard gains the rule |
+| 10 Check the history | The History tab for the calendar; a wide dialog with the timeline for one part | Standard history (RS-HIST, RS-RELATED-06) |
+| 11 Export for ORE | Nothing today | A missing server operation, not a screen question; see /What is missing/ |
+| 12 Leave | The breadcrumb | Standard |
+
+The journey is a CRUD variation of the standard record screen with parts, two
+own actions and one derived view. No step keeps state across a reply, so no
+workflow is needed and the Workflows menu stays empty for calendars. The
+calendar types and the diary entry types the pickers offer are kept by
+[[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]], which is its own journey.
+
+* Prototype
+
+[[id:4EAC99FF-2F49-4D7D-94B8-DCE7DF5A9EB5][Keep a holiday calendar right prototype]], under
+=doc/prototypes/calendars/keep-a-holiday-calendar-right/=. It draws the list,
+a calendar of each shape with the tabs the shape allows, Derive and Rebuild as
+own actions in the header, every dialog, the history, the reader's view and the
+Business days view, each at its own address. Its design note cites the rule
+identifiers each state follows and defines the Business days view for the
+standard to take.
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading
@@ -156,44 +195,47 @@ and unions them on the screen; it needs no operation of its own.
 * What is missing
 
 1. *The business days are not rebuilt when their inputs change, and a rebuild
-   never rewrites a built day.* Writing a rule, an exception or a base does not
+   never rewrites a built day.* Captured as [[id:FE482B7E-ED92-4C2D-B9F3-D2D093A2CD66][A calendar rebuild never rewrites a day it already built]] and [[id:C2B69FB1-77F1-4A3F-939D-25BFC5EF3773][Rebuild business days when their inputs change, and read them by date range]]. Writing a rule, an exception or a base does not
    regenerate =calendar_date=, and =refdata.v1.ops.regenerate_calendar_dates= only
    adds days past the last one built: a changed rule or a new exception never
    reaches a year already built. The candidate is a rebuild that rewrites the
    days whose inputs changed. Until then the screen does not rebuild after a
    save, because that would change nothing; it says what a rebuild does, and
    it marks each exception that the built days do not show.
-2. *A QuantLib calendar builds without its holidays.* The rebuild reads only
+2. *A QuantLib calendar builds without its holidays.* Captured as [[id:F68CC5A5-8CBD-4AF1-94AA-7E84BEA3D21B][A QuantLib calendar builds its business days without its holidays]]. The rebuild reads only
    stored rules, and a QuantLib calendar has none: its holidays live in
    QuantLib. Its days, and the days of a calendar derived from it, mark
    weekends only. The candidate is for the rebuild to ask QuantLib for the
    base's holidays. Until then the screen hides the business days of a
    QuantLib calendar and warns on a calendar derived from one.
-3. *The dates cannot be read by year.* The =calendar_dates_filter= takes only
+3. *The dates cannot be read by year.* Captured as [[id:C2B69FB1-77F1-4A3F-939D-25BFC5EF3773][Rebuild business days when their inputs change, and read them by date range]]. The =calendar_dates_filter= takes only
    calendar codes, so showing one year means paging through every materialised
    date in order. The side-by-side view doubles that cost, because it pages
    through every date of both calendars. The candidate is a date range on the
    filter. Until then the screen pages from the first date it holds to the end
    of the year it needs.
-4. *The ORE export is data, not a document.* =calendar_adjustments.export=
+4. *The ORE export is data, not a document.* Captured as [[id:196DC388-7700-4C25-8109-31A4657CE039][Export currencies and calendar adjustments as ORE documents on the server]]. =calendar_adjustments.export=
    returns the adjustments, and the caller is expected to write the
    =CalendarAdjustments= XML. A browser has no ORE writer. The candidate is for
    the operation, or the web back end, to return the document. Until then the
    screen offers no export.
-5. *Externally sourced holidays are not gated.* The administration model
+5. *Externally sourced holidays are not gated.* Captured as [[id:7DF8AC89-159D-4E38-AA49-4E46D9259916][Externally sourced holidays are not gated by authorisation]]. The administration model
    expects a holiday from an untrusted source to wait for authorisation before
    it takes effect. Nothing models a pending holiday or a trusted source. The
    candidate is a status on the exception, or a workflow over imports. Until
    then every written exception takes effect when the dates are rebuilt.
-6. *A holiday has no name.* A rule has no name column, and a materialised date
+6. *A holiday has no name.* Captured as [[id:210F3B2C-A2CC-4F8C-90D7-7FAF675C0111][Holiday rules and business days carry no holiday name]]. A rule has no name column, and a materialised date
    carries only whether it is a business day and how it was produced. The
    screen cannot say "Good Friday"; only exceptions (description) and diary
    events (name) carry words. The candidate is a name on the rule, carried onto
    the materialised date. Until then the screen describes a rule by its shape,
    such as "1st Monday of May".
-7. *Only a tenant administrator can run this journey.* No role below
+7. *Only a tenant administrator can run this journey.* Captured as [[id:BDA029F9-671D-4C08-B816-8CDB8068CDAB][No role below the tenant administrator can maintain reference data]]. No role below
    =TenantAdmin= holds the calendar, rule, exception, event or date
    permissions. The candidate is a reference data role.
+8. *Nothing enforces that a QuantLib calendar is read only.* The screen hides
+   Edit and Delete on it, and the server accepts a write all the same.
+   Captured as [[id:3C7DBF0F-FC83-499F-BEEB-B895A46B5367][Nothing enforces that a QuantLib calendar is read only]].
 
 * Related journeys
 

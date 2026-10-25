@@ -1,0 +1,286 @@
+:PROPERTIES:
+:ID: B0EB5843-1178-4954-A378-BA47303344A3
+:END:
+#+title: Task: A report's package carries no market data for its own as-of date
+#+description: A report run failed with 'Failed to build market: There are no quotes available for date October 23rd, 2026'. The market data the chain gathered and put in the package does not cover the run's as-of date, so PRICING, PARAMETRIC_VAR and SA_CCR all failed on the same missing quotes. The as-of date the run uses and the vintage the gather selects have to agree, or the package has to carry the date it does have and the run must use that.
+#+type: task
+#+level: s1
+#+filetags: :gather-each-trade-set-and-its-market-data-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/a-report-package-carries-no-market-data-for-its-as-of-date
+#+pr: 3775
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:ACFE9144-48DF-4FE5-902D-18C757DC91F4][Gather each trade set and its market data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The market data a run's package carries must cover the date the run prices at.
+When it does not, the engine refuses every analytic with one message, and the
+report fails for a reason that has nothing to do with the report.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:ACFE9144-48DF-4FE5-902D-18C757DC91F4][Gather each trade set and its market data — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | A decision between pricing at the data's date and failing early, or both.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- A run whose configuration says =eod= prices at the date of the market data it
+  gathered, not at the previous weekday of the run's clock.
+- A configuration that names a date keeps pricing at that date, and the gather
+  selects data for the date it names.
+- A run that can price at the data's date does so, and the instance records
+  which date it used and why it moved.
+- A run that cannot price fails with a message that names the date it asked
+  for, the date the market data ends, and the trades the package carries.
+- The "Board Risk Dashboard" run completes its pricing analytics once the
+  package's data covers the date it prices at.
+- A unit test states the rule for an =eod= run with a gathered date, a
+  configuration that names a date, and a gather that reports none.
+
+* Plan
+
+*Where the date is chosen.* =valuation_date_of= in
+=projects/ores.reporting/core/src/service/run_document_generator.cpp=:
+
+#+begin_src cpp
+std::string valuation_date_of(const domain::risk_report_config& risk,
+                              const std::string& run_date) {
+    if (risk.market_data_type == "date")
+        return risk.market_data_date;
+    return risk.market_data_type == "eod" ? previous_weekday(run_date) : run_date;
+}
+#+end_src
+
+=generate_run_document= then forces =market_data_type= to =date= with that value,
+so the run always states an =asofDate=.
+
+*What the rule should be.* The ORE parameter catalogue states it for the
+platform: "Sets the valuation date of the run... Use the date of the market data
+file." For =eod=, the previous weekday of the run's clock is a guess about the
+data, and it is wrong whenever the gathered data is a different vintage.
+
+*Why the package has no data for the date.* The gather does ask for the run's
+date: =gather_market_data= passes =valuation_date_of(...)= in the export's
+=valuation_date=. The export answers with =carried_forward_count= and
+=stale_count=: a datum whose latest value is older than the staleness limit is
+left out of the requested date, and a datum within the limit is carried forward.
+On this database the data tops out at 2026-05-05 and every datum was left out,
+which is why =market.txt= holds no line for 2026-10-23 at all.
+
+*So the question is stale data, not a missing date.* Three ways out:
+
+1. *Price at the date the data has.* The export knows each datum's latest date
+   and already reports how many it dropped. Report an effective date too, and
+   let the run document take it when nothing covers the requested date. A
+   config that names =market_data_date= already does this by hand.
+2. *Carry stale values forward regardless.* That changes the staleness rule and
+   prices October with May data without saying so, which is worse than failing.
+3. *Fail early and say why.* The gather sees the counts, so it can fail with "no
+   market data for 2026-10-23, the latest is 2026-05-05" instead of letting the
+   engine fail each analytic in turn.
+
+*Recommended.* 1 with 3: report the effective date, use it, and fail with a
+clear message when the response says nothing covers the requested date. The
+bundle needs no new column if the effective date rides the step payload; it
+needs one only if later reads must see it.
+
+*Where the decision belongs.*
+=projects/ores.ore/service/src/messaging/report_package_handler.cpp= builds the
+package. It downloads the market data body, builds the run document with
+=export_run(...)= and builds the portfolio from the trades blob, so the dates
+the data carries and the trades are both in hand at one point. The rule:
+
+- read the latest date the market data body carries;
+- if the run document's as-of date has no line there, write the latest date into
+  it, and record on the instance that it moved and why;
+- if the body carries no date at all, fail before submitting, naming the date
+  asked for, the date the body ends, and the trades in the package.
+
+*Naming the trades.* Phase 1 can name every trade the package carries, because a
+missing date affects all of them, and their ids are in the portfolio the
+handler already builds. Saying which trade needs which datum is phase 2. It
+needs an instrument-to-datum map, and none exists: =ores.ore=, =ores.trading=
+and =ores.reporting= hold no trade-to-risk-factor projection, because the
+engine computes it once it has a market. Phase 2 is a mapping task per
+instrument family and is worth its own task rather than hiding here.
+
+*Test plan.* Unit tests on =valuation_date_of= for the three cases, then the
+live re-run of "Board Risk Dashboard" on a recreated and provisioned database,
+asserting that the pricing analytics run instead of failing at market build.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| the failed run's instance | =180f3c3f-72e7-4074-8b01-512a5cee1639= | instance table | 8e18cf885c |
+| its result | =ab955b07-0111-4282-a7d2-bfe347a2f10c=, outcome 3 | result table | 8e18cf885c |
+| the date the package asked for | 2026-10-23 | =Input/ore.xml=, =Setup/asofDate= | 8e18cf885c |
+| the dates the package carried | 2016-01-04 onward | =Input/market.txt= | 8e18cf885c |
+
+* Notes
+
+The engine's own words, from the job's =Output/log.txt=:
+
+#+begin_example
+ALERT ... Failed to build market: There are no quotes available for date October 23rd, 2026
+ALERT ... analyticType=PRICING, exceptionType=Failed Analytic
+ALERT ... analyticType=PARAMETRIC_VAR, exceptionType=Failed Analytic
+#+end_example
+
+The report instance went to =failed= and the result carried that message, which
+is the verdict fix from #3733 working on a real report. The analytics themselves
+were named correctly by the engine, so this is not a wrong switch.
+
+*First run of the fix, 2026-10-25.* The package handler now moves the run's date
+to the data's when the data has no line for the requested one. Instance
+=b5dd684e-bce3-41dd-8900-c154c359cf11= was triggered against the same definition:
+
+- The package it built states =asofDate= =2026-05-05=, the last date the market
+  data carries, where the previous package stated =2026-10-23=. The fallback
+  works.
+- It still failed, for a real reason: =No quote for Mandatory ID
+  IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-05-05= while building
+  =Yield/GBP/GBP1D=.
+- *The engine attributes the failure to trades itself.* Its structured log names
+  the missing mandatory id, the curve, and each trade with its type, for
+  example =tradeId 28e6d1c3-b0aa-55fa-9c14-142e3e34092e, tradeType Bond=. So the
+  per-trade attribution this task thought needed a new map is already in the
+  engine's log.
+- The instance's message still carries only the generic =Error in ORE
+  analytics=, because the verdict reports the alert line and not the structured
+  fields. Surfacing the mandatory id, the curve and the trade ids there is the
+  next step, and it needs no new mapping.
+
+*Second run, 2026-10-25, after the verdict enrichment.* Instance
+=c8436771-ed56-49b3-bbe3-d425c9cdd1ca= failed, and its message now says what
+the engine could not build instead of only that an analytic failed:
+
+#+begin_example
+The engine's analytic failed. The engine reported 20 errors; the last 5 are:
+  yield curve building failed for curve(s) Yield/HKD/HKD1D on date 2026-05-05
+  while processing Yield/HKD/HKD1D: Could not find quote for Mandatory ID
+  IR_SWAP/RATE/HKD/0D/1D/1M with as of date 2026-05-05
+  (curve [IndexCurve(HKD-HONIA,Yield/HKD/HKD1D)])
+#+end_example
+
+Each reason names the mandatory quote, the curve and the date, and the
+structured alerts carry the trade id and type. The report state is now enough to
+diagnose a market data failure without opening the job log.
+
+*Remaining on this task.* The date helpers live in the package handler. Moving
+them to =ores.ore::store= with unit tests is the acceptance bullet still open.
+The run itself still fails because the reference vintage has no quotes for the
+curve tenors the trades need, which is the data gap recorded above.
+
+*The error screen, signed off 2026-10-25.* The throwaway prototype is
+[[file:../../../../prototypes/reporting/report_run_errors_prototype.html][report_run_errors_prototype.html]].
+
+- Two screens: *Run* and *Errors*. They switch, they do not stack.
+- *Run* keeps three lines: a headline, the date it priced at and why, and a link
+  to the errors.
+- *Errors* has two views. *Grouped* puts the causes in cards: one card per
+  missing datum, with its curve, date and the affected trades. *Split* lists the errors
+  as rows in a labelled grid, severity, scope, subject, trade, version, message
+  and time, with the selected error in a pane on the right. A filter bar sits above it for
+  severity, scope and a search over message, curve or trade id.
+- A *Grid / Split* toggle flips the same rows between the full-width grid and a
+  split view with the selected error in a pane on the right. The filter and the
+  selection survive the flip.
+- *A trade id is a link*, and the version column beside it carries the version
+  and as-of, so the link resolves to the trade row the run read.
+- Message, JSON and trade references are in fixed-width type.
+- Severity stays =error= and =warning=; the "priced at an earlier date" note is
+  a warning.
+
+*To implement it.* Record one error event per engine reason rather than one
+aggregate message, add =subject_version= (integer) and =subject_as_of=
+(timestamptz) to =ores_reporting_report_error_events_tbl= so a trade reference is
+versioned, then build the two screens on top of those rows.
+
+*Error rows, 2026-10-25.* A failed job now uploads what the engine wrote, and
+the reporting side reads that archive on the failure path, so a run's errors are
+recorded one reason at a time. Instance =47e0dd4c= recorded 33 rows: 32 name a
+subject, 24 of them a trade, for example scope =Trade=, subject =trade=,
+subject_id =28e6d1c3-…=. One row remains the report-level sentence about the job.
+
+=subject_version= and =subject_as_of= are in the model but still null: the
+engine names the trade id, not the version it read. Filling them means the
+gather recording the trade versions it exported, which is the next piece.
+
+*The screen in the app, 2026-10-25.* Two tabs on the report run page. =Run=
+states the run, then a line naming what is missing, the date the run priced at,
+and a link into the errors. =Errors= carries the filters and the two views:
+=Grouped= one card per curve that failed, with its trades as versioned links,
+and =Split= the distinct reasons as rows with the selected one in a pane.
+
+A browser check walks it: =node tmp/validate_errors.cjs= signs in, reads the run,
+follows the link, and asserts the heading, the cards, the row count and the trade
+links, writing =tmp/run_tab.png=, =tmp/grouped.png= and =tmp/split.png=.
+Against instance =47e0dd4c= it reports four curves, thirty-three recorded
+errors, seventeen distinct reasons, and the GBP card holding eight trades.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3775][#3775]] | [reporting] Record a run's errors one reason at a time and show them |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A failed run now says why it failed, one row per reason.
+
+The wrapper uploads what the engine wrote when its verdict fails, so the run's
+own log reaches the storage the reporting service can read. The failure path
+reads that archive and records the engine's errors, one row per reason, with the
+scope, the subject and the subject id. The reporting service now answers the
+per-instance error list it was never subscribed to. The error event model gained
+=subject_version= and =subject_as_of=, and the generated SQL, the repository and
+the TypeScript entity were regenerated to match.
+
+The run page has the screens that were signed off. =Run= states the run, names
+the curves it could not build, the date it priced at, and links into the errors.
+=Errors= carries the severity and warning counts, a scope filter, a search, and
+switches between =Grouped=, one card per failed curve with its trades as links,
+and =Split=, the distinct reasons as rows beside the selected one. A trade id is
+a link carrying the version the run read, and the reference says so when it does
+not know it. The old output paragraph is gone, except where it is the only
+account a run has.
+
+Proven on instance =47e0dd4c=: 33 error rows, four curves, the GBP card holding
+the eight trades whose messages name it, and seventeen distinct reasons. The
+browser check that proves it is =tmp/validate_errors.cjs=.
+
+The remaining work moved to [[id:49A48E66-09CA-4AE5-85A5-D50E369932F5][Record the
+trade version a run read, and make a run's errors idempotent]]: recording the
+version and as-of at gather time, the rerun duplication, the aggregate row that
+repeats the verdict, the batch lost to one unknown scope, the date move that is
+only logged, and the trades page not reading the link's parameters.
+
+* Promoted from capture
+
+Captured 2026-10-25 in the product backlog; promoted preserving the UUID.

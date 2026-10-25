@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :check_every_record_screen_against_the_ux_language:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/run-playwright-against-the-environment
+#+pr: 3771
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A browser test runs against the environment ores.web with no manual step. The si
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -42,9 +42,15 @@ A browser test runs against the environment ores.web with no manual step. The si
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Reuse what the repository already knows rather than invent it: the web port
+from the checkout's .env, as compass open-as reads it; the seeded people and the
+shared Acme password, as compass_open_as.py holds them; the two autocomplete
+fields the sign-in page marks, as the open-as script fills them. Put the harness
+in a workspace package of its own so npm test does not run it, because it needs
+a started environment, and pin @playwright/test to the CLI version the owner
+installed. Make the first spec touch a list, a server search and a record page,
+naming the rule identifiers it checks, so the harness proves the chain before
+the conformance checks are written.
 
 * Measurements
 
@@ -58,7 +64,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Specs in the harness, tests passed | 1, 1 of 1 in 1.9 s | =npm run harness= in =projects/ores.web= | 7aa9599df2 |
+| Rule identifiers the first spec names | 4 | =grep -o 'RS-[A-Z]*-[0-9]*' packages/harness/tests/sign-in.spec.ts= | 7aa9599df2 |
+| Playwright and browser | @playwright/test 1.64.1, Chromium 1248 | =npm ls @playwright/test=; =ls ~/.cache/ms-playwright= | 7aa9599df2 |
+| Local gate | 8 of 8 passed, web class 82.8 s | =compass check= | 7aa9599df2 |
 
 * Notes
 
@@ -77,12 +86,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3771][#3771]] | [web] Run Playwright against the environment |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: web and docs classes | packages/harness, doc/recipes/ops | Accept | prettier clean, typecheck clean; the comments in the spec name the rule each assertion checks and nothing else |
+| 2 | The port falls back to 8080 against the stated authority | src/env.ts | Accept | A run with neither ORES_WEB_PORT nor ORES_HARNESS_URL stops with a message that names both |
+| 3 | The catch swallows every error of loadEnvFile; no engines field | src/env.ts, package.json | Accept | Only ENOENT is caught; engines names node 22.11 as the workspace does |
+| 4 | The party chooser clicks any button; the signed-in mark is hedged | src/signIn.ts | Accept | The choice is scoped to main; the mark is the Your account button; a comment says why the read does not wait |
+| 5 | The search assertion could pass on a stale row | tests/smoke.spec.ts | Accept | The spec records the first code before searching and asserts that row is gone |
+| 6 | The password is a second copy of compass_open_as.py's | src/acme.ts | Decline for now | Noted in the PR; a check that compares the two is cheap and goes with the sign off recipe task |
+| 7 | The spec is named for sign-in but covers list and page rules | tests | Accept | Renamed smoke.spec.ts; the later specs are named by what they check |
+| 8 | outDir and tsBuildInfoFile are unneeded with noEmit | tsconfig.json | Accept | Dropped |
 
 * Result
+
+=projects/ores.web/packages/harness= drives the environment's web in Chromium.
+=npm run harness= in the web component signs in as the tenant administrator,
+opens the currencies list, searches a code on the server and opens its record
+page, naming RS-LIST-03, RS-LIST-04, RS-LIST-10 and RS-PAGE-01. The config
+reads the port from the checkout's .env, the fixture signs in through the two
+autocomplete fields, and a failing test leaves a screenshot, a snapshot and a
+trace under =.runtime/harness=. The recipe How do I run the browser harness
+against the environment says how, and the local gate's web class is green.

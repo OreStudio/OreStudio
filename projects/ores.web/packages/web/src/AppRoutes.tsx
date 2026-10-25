@@ -92,6 +92,8 @@ import { ClassificationRowPage } from './refdata/ClassificationRowPage.js';
 import { ClassificationsPage } from './refdata/ClassificationsPage.js';
 import { RefdataPage } from './refdata/RefdataPage.js';
 import { CurrenciesPage, CurrencyPage } from './refdata/currencies.js';
+import { TradePage } from './trading/TradePage.js';
+import { TradingPage } from './trading/TradingPage.js';
 import { TradesPage } from './trading/TradesPage.js';
 import { CalendarPage, CalendarsPage } from './refdata/calendars.js';
 import { TenorResolutionPage } from './refdata/TenorResolutionPage.js';
@@ -103,6 +105,8 @@ import { FxFeedPage } from './marketdata/synthetic/fxFeeds.js';
 import { IrFeedPage } from './marketdata/synthetic/irFeeds.js';
 import { SyntheticScreen } from './marketdata/synthetic/SyntheticScreen.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
+import { BookPage } from './refdata/BookPage.js';
+import { CounterpartyPage } from './refdata/CounterpartyPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
 import { ConfigurationPage } from './reporting/ConfigurationPage.js';
 import { EngineSettingsPage } from './engineSettings/EngineSettingsPage.js';
@@ -702,6 +706,30 @@ export function AppRoutes({
                 ))}
             />
             <Route
+                path={`${PATHS.counterparties}/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CounterpartyPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.books}/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <BookPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
                 path={PATHS.parties}
                 element={signedIn(
                     gate.version,
@@ -1011,13 +1039,37 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path="/trades"
+                path={PATHS.trading}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <TradingPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.trades}
                 element={signedIn(
                     gate.version,
                     session,
                     shell,
                     () => (
                         <TradesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.trades}/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <TradePage />
                     ),
                     'workspace',
                 )}

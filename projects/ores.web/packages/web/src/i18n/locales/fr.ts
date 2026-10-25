@@ -69,7 +69,7 @@ const fr: SourceCatalogue = {
         },
         account: 'Votre compte',
         menu: {
-            trades: 'Transactions',
+            trading: 'Trading',
             marketdata: 'Données de marché',
             home: 'Accueil',
             accounts: 'Comptes',
@@ -513,6 +513,7 @@ const fr: SourceCatalogue = {
             country: 'Pays',
             account: 'Compte',
             traffic: 'Envoyé / reçu',
+            authorisation: 'Autorisation',
             state: 'État',
             day: 'Jour',
         },
@@ -1880,6 +1881,7 @@ const fr: SourceCatalogue = {
                     'L’exécution d’un rapport qui a envoyé un lot : son état, ses heures et le lot qu’elle a créé.',
                 loading: 'Lecture de l’exécution de rapport...',
                 run: 'Exécution',
+                errors: 'Erreurs',
                 name: 'Nom',
                 kind: 'Type',
                 state: 'État',
@@ -3584,6 +3586,10 @@ const fr: SourceCatalogue = {
     },
 
     trading: {
+        area: {
+            title: 'Trading',
+            lead: 'Les transactions qu’un desk lit et écrit, et les livres où elles se trouvent.',
+        },
         trades: {
             areaLead:
                 'Les transactions et structures que vous pouvez voir, et les livres où elles se trouvent.',
@@ -3597,7 +3603,40 @@ const fr: SourceCatalogue = {
             structureHolds: '{count} transactions',
             versionPair: 'v{version} · ext {external}',
         },
+        page: {
+            title: 'Transaction',
+            lead: 'Une transaction, ses termes, ses identifiants, ses liens et son historique.',
+            notFound: 'Aucune transaction ne porte cet identifiant.',
+            backToList: 'Retour à la liste',
+            tabs: {
+                label: 'Sections de la transaction',
+                details: 'Détails',
+                identifiers: 'Identifiants et rôles',
+                links: 'Liens',
+                history: 'Historique',
+            },
+            state: 'État',
+            bookingDate: 'Date de réservation',
+            execution: 'Exécutée à',
+            identifiers: 'Identifiants',
+            idType: 'Schéma',
+            idValue: 'Valeur',
+            noIdentifiers: 'Cette transaction ne porte aucun identifiant.',
+            roles: 'Rôles',
+            role: 'Rôle',
+            party: 'Partie',
+            noRoles: 'Aucun rôle enregistré avec cette transaction.',
+            linksFrom: 'Liens depuis cette transaction',
+            linksTo: 'Liens vers cette transaction',
+            linkType: 'Lien',
+            otherTrade: "L'autre transaction",
+            noLinks: 'Aucun lien de ce côté.',
+            history: 'Versions',
+            noHistory: "Cette transaction n'a pas encore de version enregistrée.",
+        },
         fields: {
+            authorisation: 'Autorisation',
+            externalVersion: 'Version externe',
             identifier: 'Id',
             instrumentType: 'Type',
             counterparty: 'Contrepartie',
@@ -3615,6 +3654,34 @@ const fr: SourceCatalogue = {
     },
 
     refdata: {
+        counterparties: {
+            title: 'Contrepartie',
+            lead: 'Avec qui la partie traite, comment elle se situe, et les identifiants qui la désignent.',
+            shortCode: 'Code court',
+            fullName: 'Nom',
+            partyType: 'Type',
+            status: 'Statut',
+            identifiers: 'Identifiants',
+            id_scheme: 'Schéma',
+            id_value: 'Valeur',
+            noIdentifiers: 'Cette contrepartie ne porte aucun identifiant.',
+            notFound: 'Aucune contrepartie ne porte cet identifiant.',
+            backToRefdata: 'Retour aux données de référence',
+        },
+        books: {
+            title: 'Livre',
+            lead: 'Où une transaction est enregistrée, le portefeuille qui la contient, et sa fonction.',
+            name: 'Nom',
+            portfolio: 'Portefeuille',
+            status: 'Statut',
+            purpose: 'Fonction',
+            regulatoryType: 'Type réglementaire',
+            currency: 'Devise',
+            costCenter: 'Centre de coût',
+            glAccount: 'Compte général',
+            notFound: 'Aucun livre ne porte cet identifiant.',
+            backToRefdata: 'Retour aux données de référence',
+        },
         crumbs: "Fil d'Ariane",
         area: {
             title: 'Données de référence',
@@ -3774,6 +3841,7 @@ const fr: SourceCatalogue = {
         },
         records: {
             deletePartWarning: 'La ligne est fermée. Son historique reste.',
+            historyOf: 'Historique de {name}',
             yes: 'Oui',
             no: 'Non',
             cancel: 'Annuler',
@@ -4101,11 +4169,28 @@ const fr: SourceCatalogue = {
             compare: 'Comparer avec',
             quantlibBaseWarning:
                 '{base} prend ses jours fériés de QuantLib, mais la reconstruction ne les lit pas. Les jours ci-dessous montrent seulement les week-ends et ces exceptions.',
-            notBuilt:
-                "Aucun jour ouvré n'est construit pour {year}. Reconstruisez le calendrier pour les construire.",
+            notBuilt: "Aucun jour ouvré n'est construit pour {year}.",
+            notBuiltAction: 'Reconstruisez le calendrier pour les construire.',
+            notBuiltReader:
+                'Demandez à un administrateur des données de référence de reconstruire le calendrier.',
+            unionSummary:
+                "Avec {other} : {business} jours ouvrés et {holidays} jours fériés dans l'union, qui est la définition sur laquelle une paire règle.",
+            daysNote:
+                'Un jour en vert est un jour ouvré ouvert par une exception. Un jour en italique est un jour férié du calendrier comparé seulement.',
+            from: {
+                rule: 'Règle',
+                exception: 'Exception',
+                base: 'Base',
+            },
             summary: '{business} jours ouvrés et {holidays} jours fériés en semaine en {year}.',
             noHolidays: 'Aucun jour férié.',
             rebuildTo: "Construire jusqu'à la fin de",
+            rebuildLead:
+                'Construit les jours de {name} pas encore construits, à partir de ses règles et de ses exceptions.',
+            rebuildLeadDerived:
+                'Construit les jours de {name} pas encore construits, à partir de sa base et de ses exceptions.',
+            rebuildAction: 'Reconstruire',
+            rebuildYearHint: 'Une année à quatre chiffres.',
             rebuild: 'Reconstruire les jours ouvrés',
             rebuildNote:
                 "Une reconstruction ajoute les jours pas encore construits. Elle ne change pas un jour déjà construit : une modification d'une règle ou d'une exception n'apparaît pas dans une année déjà construite.",

@@ -31,11 +31,14 @@
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <optional>
 #include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
+#include <string_view>
 
 namespace ores::ore::service::messaging {
 
@@ -49,6 +52,63 @@ constexpr std::string_view platform_bucket = ores::storage::api::object_keys::or
 
 std::string tarball_storage_key(const std::string& instance_id) {
     return ores::ore::net::ore_storage::package_key(instance_id);
+}
+
+/**
+ * @brief The latest date a market data body carries, as an ISO 8601 date.
+ *
+ * ORE's market data lines begin with the date written as YYYYMMDD, so a body
+ * with no such line carries no date at all and no run can price from it.
+ */
+std::optional<std::string> latest_market_data_date(std::string_view body) {
+    std::string latest;
+    std::size_t first = 0;
+    while (first < body.size()) {
+        const auto end = body.find('\n', first);
+        const auto line = body.substr(
+            first, end == std::string_view::npos ? std::string_view::npos : end - first);
+        if (line.size() >= 9 && line[8] == '\t') {
+            const auto dated = line.substr(0, 8);
+            const auto digits =
+                std::ranges::all_of(dated, [](char c) { return c >= '0' && c <= '9'; });
+            if (digits && std::string(dated) > latest)
+                latest = std::string(dated);
+        }
+        if (end == std::string_view::npos)
+            break;
+        first = end + 1;
+    }
+    if (latest.empty())
+        return std::nullopt;
+    return latest.substr(0, 4) + "-" + latest.substr(4, 2) + "-" + latest.substr(6, 2);
+}
+
+/** The date a run document states as its as-of date, when it states one. */
+std::optional<std::string> asof_date_of(const std::string& ore_xml) {
+    constexpr std::string_view marker = "name=\"asofDate\">";
+    const auto at = ore_xml.find(marker);
+    if (at == std::string::npos)
+        return std::nullopt;
+    const auto from = at + marker.size();
+    const auto to = ore_xml.find('<', from);
+    if (to == std::string::npos || to == from)
+        return std::nullopt;
+    return ore_xml.substr(from, to - from);
+}
+
+/** The run document with its as-of date replaced. */
+std::string with_asof_date(const std::string& ore_xml, const std::string& date) {
+    constexpr std::string_view marker = "name=\"asofDate\">";
+    const auto at = ore_xml.find(marker);
+    if (at == std::string::npos)
+        return ore_xml;
+    const auto from = at + marker.size();
+    const auto to = ore_xml.find('<', from);
+    if (to == std::string::npos)
+        return ore_xml;
+    auto out = ore_xml;
+    out.replace(from, to - from, date);
+    return out;
 }
 
 } // namespace
@@ -126,7 +186,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         // not under a name of the packaging step's own. The run document comes
         // from its owner through the owner's operation, carrying the run token.
         auto owners = service_nats_.with_delegation(run_token);
-        const auto run_input = ores::ore::service::messaging::export_run(owners, req.definition_id);
+        auto run_input = ores::ore::service::messaging::export_run(owners, req.definition_id);
         const auto places = ores::ore::store::declared_data_files(run_input);
 
         BOOST_LOG_SEV(lg(), debug) << "Downloading market data: " << req.market_data_storage_key;
@@ -142,6 +202,27 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             std::filesystem::create_directories(target.parent_path());
             std::ofstream f(target, std::ios::binary | std::ios::trunc);
             f.write(market_data.data(), static_cast<std::streamsize>(market_data.size()));
+        }
+
+        // A run document asks for a date, and the engine can only price a date
+        // the gathered market data carries. When the data carries no line for
+        // the requested date, the run prices at the last date it does carry,
+        // and says so, rather than letting the engine refuse every analytic.
+        const auto document = std::ranges::find_if(run_input, [](const auto& entry) {
+            return entry.first.ends_with(std::string(ores::ore::store::run_document_file));
+        });
+        const auto requested_date = document != run_input.end() ?
+                                        asof_date_of(document->second).value_or("") :
+                                        std::string{};
+        const auto market_date =
+            latest_market_data_date(std::string_view{market_data.data(), market_data.size()});
+        if (market_date && !requested_date.empty() && *market_date < requested_date &&
+            document != run_input.end()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "The gathered market data ends on " << *market_date << " and the run asked for "
+                << requested_date << ". The run prices at the data's date. Instance "
+                << req.report_instance_id;
+            document->second = with_asof_date(document->second, *market_date);
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Downloading fixings: " << req.fixings_storage_key;
@@ -190,6 +271,29 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         if (!rows->success) {
             wf->fail("prepare_ore_package: the gather step stored a failed trade export: " +
                      rows->message);
+            ack.accept();
+            return;
+        }
+
+        if (!market_date) {
+            std::string named;
+            std::size_t shown = 0;
+            for (const auto& item : rows->items) {
+                if (shown == 5) {
+                    named += ", and " + std::to_string(rows->items.size() - shown) + " more";
+                    break;
+                }
+                if (!named.empty())
+                    named += ", ";
+                named += item.ore_id;
+                ++shown;
+            }
+            wf->fail(
+                "prepare_ore_package: the gathered market data carries no dated line, so no run "
+                "can price from it. The run asked for " +
+                (requested_date.empty() ? std::string("no particular date") : requested_date) +
+                ", the package carries " + std::to_string(rows->items.size()) +
+                " trade(s): " + named);
             ack.accept();
             return;
         }

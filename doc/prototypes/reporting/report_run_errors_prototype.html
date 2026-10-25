@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>PROTOTYPE — report run errors</title>
+<!--
+  PROTOTYPE, THROWAWAY. Two screens: the run, and its errors. The errors screen
+  leads with the causes, grouped, and keeps a detail pane for one selected cause
+  or trade. Static, mock data shaped like the real report_error_events rows.
+  Open by double-clicking this file.
+-->
+<style>
+  :root {
+    --bg: #0f1115; --panel: #171a21; --line: #262b36; --text: #e6e9ef;
+    --muted: #9aa3b2; --error: #e5484d; --warn: #f5a524;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 14px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
+  header { padding: 16px 24px; border-bottom: 1px solid var(--line); display: flex;
+           gap: 14px; align-items: center; flex-wrap: wrap; }
+  h1 { font-size: 16px; margin: 0; font-weight: 600; }
+  .badge { padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .b-error { background: #3b1418; color: var(--error); }
+  .b-warn { background: #3a2a10; color: var(--warn); }
+  .counts, .muted { color: var(--muted); }
+  .proto { color: var(--warn); font-size: 12px; }
+  nav { display: flex; gap: 4px; padding: 12px 24px 0; }
+  nav button { background: transparent; border: 0; color: var(--muted); padding: 8px 12px;
+               border-radius: 8px 8px 0 0; cursor: pointer; font: inherit; }
+  nav button[aria-selected="true"] { background: var(--panel); color: var(--text); }
+  main { padding: 16px 24px 80px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+  .mono, .block { font-family: var(--mono); font-size: 12.5px; }
+  .block { background: #0b0d11; border: 1px solid var(--line); border-radius: 6px;
+           padding: 12px; white-space: pre-wrap; overflow-x: auto; }
+  .headline { font-size: 15px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 14px; }
+  .link { color: #7aa2f7; text-decoration: none; background: none; border: 0;
+          font: inherit; cursor: pointer; padding: 0; }
+  .link:hover { text-decoration: underline; }
+  .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip { border: 1px solid var(--line); background: transparent; color: var(--muted);
+          padding: 4px 10px; border-radius: 999px; cursor: pointer; font: inherit; }
+  .chip[aria-pressed="true"] { background: #232833; color: var(--text); }
+  input[type="search"], select { background: #0b0d11; border: 1px solid var(--line);
+          color: var(--text); padding: 6px 10px; border-radius: 6px; font: inherit; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+            gap: 16px; align-items: start; }
+  .cause { border: 1px solid var(--line); border-radius: 8px; padding: 14px;
+           margin-bottom: 12px; cursor: pointer; }
+  .cause:hover { border-color: #33405a; }
+  .cause[aria-selected="true"] { border-color: #46597f; background: #1b2029; }
+  .cause h3 { margin: 0 0 4px; font-family: var(--mono); font-size: 13px; word-break: break-all; }
+  .cause .meta { color: var(--muted); margin: 0; font-size: 13px; }
+  .trades { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .trade { border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px;
+           font-family: var(--mono); font-size: 12px; cursor: pointer; }
+  .trade[aria-pressed="true"] { border-color: #46597f; background: #232a3a; }
+  .detail h3 { margin: 0 0 2px; font-size: 14px; word-break: break-all; }
+  .detail .meta { color: var(--muted); margin: 0 0 12px; font-size: 13px; }
+  .detail h4 { margin: 14px 0 6px; font-size: 12px; text-transform: uppercase;
+               letter-spacing: .04em; color: var(--muted); font-weight: 500; }
+  .empty { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line);
+           vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase;
+       letter-spacing: .04em; white-space: nowrap; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: #1b1f28; }
+  tbody tr[aria-selected="true"] { background: #1d2433; }
+  td.msg { font-family: var(--mono); font-size: 12.5px; min-width: 320px; }
+  .grid-wrap { overflow-x: auto; }
+  tbody tr.group { background: #12151b; cursor: default; }
+  tbody tr.group:hover { background: #12151b; }
+  tbody tr.group td { padding-top: 14px; border-bottom: 1px solid var(--line); }
+  tbody tr.group .count { color: var(--muted); }
+  tbody tr.member td:first-child { padding-left: 24px; }
+  .cause { border: 1px solid var(--line); border-radius: 8px; padding: 14px;
+           margin-bottom: 12px; }
+  .cause h3 { margin: 0 0 4px; font-family: var(--mono); font-size: 13px; word-break: break-all; }
+  .cause .meta { color: var(--muted); margin: 0; font-size: 13px; }
+  .trades { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .trade { border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px;
+           font-family: var(--mono); font-size: 12px; color: var(--text);
+           text-decoration: none; display: inline-block; }
+  .trade:hover { border-color: #46597f; text-decoration: underline; }
+  body[data-view="b"] #errors .layout { display: block; }
+  body[data-view="b"] .layout { grid-template-columns: 1fr; }
+  body[data-view="b"] #detail { display: none; }
+  .inline { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .inline h4 { margin: 10px 0 6px; font-size: 12px; text-transform: uppercase;
+               letter-spacing: .04em; color: var(--muted); font-weight: 500; }
+  .switch { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+            background: #10131a; border: 1px solid var(--line); padding: 6px 12px;
+            border-radius: 999px; color: var(--muted); font-size: 12px; }
+</style>
+
+<header>
+  <h1>Report run <span class="mono">c8436771</span></h1>
+  <span class="badge b-error">Failed</span>
+  <span class="counts mono">20 errors · 1 warning</span>
+  <span class="proto">PROTOTYPE — mock data</span>
+</header>
+
+<nav role="tablist">
+  <button id="tab-run" role="tab" aria-selected="false" onclick="tab('run')">Run</button>
+  <button id="tab-errors" role="tab" aria-selected="true" onclick="tab('errors')">Errors</button>
+</nav>
+
+<main>
+  <section id="run" class="panel" hidden>
+    <p class="headline">Market data is missing for 5 curves</p>
+    <p class="sub">Priced at 2026-05-05, the last date the gathered market data carries.
+      The run asked for 2026-10-23.</p>
+    <button class="link" onclick="tab('errors')">View all 20 errors →</button>
+  </section>
+
+  <section id="errors">
+    <div class="toolbar">
+      <button class="chip" aria-pressed="true" onclick="setSeverity('all')" id="sev-all">All 6</button>
+      <button class="chip" aria-pressed="false" onclick="setSeverity('error')" id="sev-error">Errors 5</button>
+      <button class="chip" aria-pressed="false" onclick="setSeverity('warning')" id="sev-warning">Warnings 1</button>
+      <select id="scope" onchange="render()">
+        <option value="all">All scopes</option><option value="Curve">Curve</option>
+        <option value="Trade">Trade</option><option value="Report">Report</option>
+      </select>
+      <input id="search" type="search" placeholder="Search message, curve or trade id…" oninput="render()">
+      <span class="muted" style="margin-left:auto">View</span>
+      <button class="chip" id="view-b" aria-pressed="true" onclick="setView('b')">Grouped</button>
+      <button class="chip" id="view-c" aria-pressed="false" onclick="setView('c')">Split</button>
+    </div>
+    <div class="layout">
+      <div id="causes"></div>
+      <div id="detail" class="panel detail"></div>
+    </div>
+  </section>
+</main>
+
+<div class="switch">Grouped puts the causes in cards. Split lists the rows with the selected one beside them.</div>
+
+<script>
+  const causes = [
+    { key: 'hk', severity: 'error', scope: 'Curve', subject: 'Yield/HKD/HKD1D',
+      mandatoryId: 'IR_SWAP/RATE/HKD/0D/1D/1M', asOf: '2026-05-05',
+      message: 'Could not find quote for Mandatory ID IR_SWAP/RATE/HKD/0D/1D/1M with as of date 2026-05-05',
+      time: '09:24:45',
+      trades: [ { id: '28e6d1c3-b0aa-55fa-9c14-142e3e34092e', type: 'Bond', version: 3 },
+                { id: '3c205e31-f726-5718-8406-6f0110d57b97', type: 'Bond', version: 3 },
+                { id: '9f1a22d4-1c02-5d8a-9b31-2a7e6f0c4d11', type: 'Bond', version: 1 },
+                { id: 'b7c0e5aa-8f22-5c77-a1b4-9d30e7f21c88', type: 'Bond', version: 2 } ] },
+    { key: 'us', severity: 'error', scope: 'Curve', subject: 'Yield/USD/USD1D',
+      mandatoryId: 'IR_SWAP/RATE/USD/0D/1D/1M', asOf: '2026-05-05',
+      message: 'Could not find quote for Mandatory ID IR_SWAP/RATE/USD/0D/1D/1M with as of date 2026-05-05',
+      time: '09:24:45',
+      trades: [ { id: '5d2b8c71-2e44-58b0-8f01-6c9a2d5e7f30', type: 'Bond', version: 1 },
+                { id: 'ee90a1b3-7d16-5f2a-b3c8-0e41d9a6b27c', type: 'Bond', version: 1 } ] },
+    { key: 'gbp', severity: 'error', scope: 'Curve', subject: 'Yield/GBP/GBP1D',
+      mandatoryId: 'IR_SWAP/RATE/GBP/0D/1D/1M', asOf: '2026-05-05',
+      message: 'Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-05-05',
+      time: '09:24:44', trades: [] },
+    { key: 'jpy', severity: 'error', scope: 'Curve', subject: 'Yield/JPY/JPY1D',
+      mandatoryId: 'IR_SWAP/RATE/JPY/0D/1D/1M', asOf: '2026-05-05',
+      message: 'Could not find quote for Mandatory ID IR_SWAP/RATE/JPY/0D/1D/1M with as of date 2026-05-05',
+      time: '09:24:44', trades: [] },
+    { key: 'eur', severity: 'error', scope: 'Curve', subject: 'Yield/EUR/EUR1D',
+      mandatoryId: 'IR_SWAP/RATE/EUR/0D/1D/1M', asOf: '2026-05-05',
+      message: 'Could not find quote for Mandatory ID IR_SWAP/RATE/EUR/0D/1D/1M with as of date 2026-05-05',
+      time: '09:24:44', trades: [] },
+    { key: 'moved', severity: 'warning', scope: 'Report', subject: '',
+      message: 'The run priced at 2026-05-05 because the gathered data ends there; the run asked for 2026-10-23',
+      time: '09:24:43', trades: [] }
+  ];
+
+  let severity = 'all';
+  let selected = { cause: 'hk', trade: null };
+
+  function tab(name) {
+    document.getElementById('run').hidden = name !== 'run';
+    document.getElementById('errors').hidden = name !== 'errors';
+    document.getElementById('tab-run').setAttribute('aria-selected', String(name === 'run'));
+    document.getElementById('tab-errors').setAttribute('aria-selected', String(name === 'errors'));
+  }
+
+  function setSeverity(value) {
+    severity = value;
+    for (const s of ['all', 'error', 'warning'])
+      document.getElementById('sev-' + s).setAttribute('aria-pressed', String(s === value));
+    render();
+  }
+
+  function visible() {
+    const scope = document.getElementById('scope').value;
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    return causes.filter((c) => {
+      if (severity !== 'all' && c.severity !== severity) return false;
+      if (scope !== 'all' && c.scope !== scope) return false;
+      if (!q) return true;
+      return [c.message, c.subject, c.mandatoryId, ...c.trades.map((t) => t.id)]
+        .join(' ').toLowerCase().includes(q);
+    });
+  }
+
+  let view = 'b';
+
+  function setView(next) {
+    view = next;
+    document.body.dataset.view = next;
+    document.getElementById('view-b').setAttribute('aria-pressed', String(next === 'b'));
+    document.getElementById('view-c').setAttribute('aria-pressed', String(next === 'c'));
+    render();
+  }
+
+  function detailHtml(c, t) {
+    return `
+      <h4>Message</h4>
+      <div class="block">${c.message}</div>
+      <h4>Detail</h4>
+      <div class="block">${JSON.stringify({ scope: c.scope, subject: c.subject || null,
+        mandatoryId: c.mandatoryId || null, asOf: c.asOf || null,
+        trades: c.trades.map((x) => ({ id: x.id, type: x.type, version: x.version })) }, null, 2)}</div>
+      ${t ? `<h4>Trade reference</h4>
+      <div class="block">${t.id}
+version ${t.version} · as of ${c.asOf}</div>
+      <p style="margin:10px 0 0"><a class="link"
+        href="/trades?trade=${t.id}&version=${t.version}">Open the trade at version ${t.version} →</a></p>`
+      : '<h4>Trade reference</h4><p class="empty">Select a trade above to see its reference.</p>'}`;
+  }
+
+  function rowsOf(items) {
+    const rows = [];
+    for (const c of items) {
+      if (c.trades.length === 0) rows.push({ c, t: null });
+      else for (const t of c.trades) rows.push({ c, t });
+    }
+    return rows;
+  }
+
+  function buildCards(items) {
+    return items.length === 0 ? '<p class="empty">No errors match this filter.</p>' :
+      items.map((c) => `
+        <div class="cause">
+          <h3>${c.mandatoryId || c.message}</h3>
+          <p class="meta">${c.severity} · ${c.scope}${c.subject ? ' · ' + c.subject : ''}${c.asOf ? ' · ' + c.asOf : ''}
+            · ${c.trades.length} trade(s)</p>
+          ${c.trades.length ? '<div class="trades">' + c.trades.map((t) => `
+            <a class="trade" href="/trades?trade=${t.id}&version=${t.version}"
+               title="Open ${t.type} ${t.id} at version ${t.version}">${t.id} · ${t.type} · v${t.version} @ ${c.asOf}</a>`).join('') + '</div>' : ''}
+        </div>`).join('');
+  }
+
+  function buildRows(items) {
+    const rows = [];
+    for (const c of items) {
+      if (c.trades.length === 0) rows.push({ c, t: null });
+      else for (const t of c.trades) rows.push({ c, t });
+    }
+    const body = rows.length === 0 ?
+      '<tr><td colspan="7" class="empty">No errors match this filter.</td></tr>' :
+      rows.map(({ c, t }) => `
+        <tr aria-selected="${c.key === selected.cause && (t ? t.id === selected.trade : !selected.trade)}"
+            onclick="select('${c.key}', ${t ? `'${t.id}'` : 'null'})">
+          <td><span class="badge b-${c.severity === 'error' ? 'error' : 'warn'}">${c.severity}</span></td>
+          <td>${c.scope}</td>
+          <td class="mono">${c.subject || '—'}</td>
+          <td class="mono">${t ? `<a class="link" href="/trades?trade=${t.id}&version=${t.version}"
+              onclick="event.stopPropagation()">${t.id}</a>` : '—'}</td>
+          <td class="mono muted">${t ? `v${t.version} @ ${c.asOf}` : '—'}</td>
+          <td class="msg">${c.message}</td>
+          <td class="mono muted">${c.time}</td>
+        </tr>`).join('');
+    return `<div class="grid-wrap"><table>
+      <thead><tr><th>Severity</th><th>Scope</th><th>Subject</th><th>Trade</th>
+        <th>Version</th><th>Message</th><th>Time</th></tr></thead>
+      <tbody>${body}</tbody></table></div>`;
+  }
+
+  function render() {
+    const items = visible();
+    document.getElementById('causes').innerHTML =
+      view === 'b' ? buildCards(items) : buildRows(items);
+
+    if (view === 'b') return;
+
+    const first = items.find((x) => x.key === selected.cause) || items[0];
+    const el = document.getElementById('detail');
+    if (!first) { el.innerHTML = '<p class="empty">Nothing selected.</p>'; return; }
+    const t = first.trades.find((x) => x.id === selected.trade) || null;
+    el.innerHTML = `
+      <h3>${first.mandatoryId || first.subject || 'Report'}</h3>
+      <p class="meta">${first.severity} · ${first.scope}${first.subject ? ' · ' + first.subject : ''} · ${first.time}</p>
+      ${detailHtml(first, t)}`;
+  }
+
+  function select(cause, trade) {
+    selected = { cause, trade };
+    render();
+  }
+
+  setView('b');
+</script>

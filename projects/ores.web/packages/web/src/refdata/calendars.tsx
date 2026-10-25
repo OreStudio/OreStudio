@@ -27,8 +27,10 @@ import { api, type CalendarDay, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { useFlags } from '../images/flags.js';
-import { Button, Field, Input, Notice } from '../ui/Primitives.js';
-import { HistoryPanel } from './HistoryPanel.js';
+import { Button, Dialog, Field, Input, Notice } from '../ui/Primitives.js';
+import { useEntityChanges } from '../events/useEntityChanges.js';
+import { useLoadState } from '../events/useLoadState.js';
+import { RecordTimeline } from './RecordTimeline.js';
 import { RecordList, useRecordSource } from './RecordList.js';
 import { RecordPicker } from './RecordPicker.js';
 import {
@@ -45,6 +47,7 @@ import {
     useRecordPermissions,
     useRecordTabs,
     useRecords,
+    useRegistry,
     type FieldSpec,
 } from './records.js';
 
@@ -284,20 +287,47 @@ export function CalendarPage(): ReactNode {
 }
 
 function CalendarBody({ calendar }: { readonly calendar: RecordRow }): ReactNode {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const navigate = useNavigate();
     const code = show(calendar['code']);
     const shape = shapeOf(calendar);
     const editable = shape !== 'quantlib';
     const may = useRecordPermissions(CALENDARS);
+    const queries = useQueryClient();
+    const registry = useRegistry();
     const { tab, bar } = useRecordTabs({ label: code, tabs: TABS[shape] });
+    const record = useRecord(CALENDARS, code);
     const rules = useRecords(RULES, code);
     const exceptions = useRecords(EXCEPTIONS, code);
     const events = useRecords(EVENTS, code);
     const [editing, setEditing] = useState(false);
     const [deriving, setDeriving] = useState(false);
+    const [rebuilding, setRebuilding] = useState(false);
     const [removing, setRemoving] = useState(false);
     const [reverting, setReverting] = useState<HistoryVersion | null>(null);
+    /*
+     * The page never reloads by itself. It is as fresh as the oldest of the
+     * reads it shows, and a change the server tells of to the calendar or its
+     * parts turns Refresh gold; one Refresh reads them all again.
+     */
+    const pageKeys = [
+        ['records', CALENDARS, 'key', code],
+        ['records', RULES, code],
+        ['records', EXCEPTIONS, code],
+        ['records', EVENTS, code],
+        ['calendar-days', code],
+        ['history', 'ores.refdata.calendar', code],
+    ];
+    const load = useLoadState(pageKeys);
+    const watches = (registry.data ?? [])
+        .filter((entry) => [CALENDARS, RULES, EXCEPTIONS, EVENTS].includes(entry.key))
+        .flatMap((entry) => (entry.events === undefined ? [] : [entry.events]));
+    const news = useEntityChanges(watches, load);
+    const refresh = (): void => {
+        for (const key of pageKeys) {
+            void queries.invalidateQueries({ queryKey: key });
+        }
+    };
     const baseCode = show(calendar['base_calendar_code']);
     const baseRecord = useQuery({
         queryKey: ['records', CALENDARS, 'key', baseCode],
@@ -318,11 +348,19 @@ function CalendarBody({ calendar }: { readonly calendar: RecordRow }): ReactNode
                 recordKey={code}
                 version={calendar.version}
                 flag="calendar"
+                refresh={{ onClick: refresh, load, news }}
                 own={
                     may.write ? (
-                        <Button icon="add" onClick={() => setDeriving(true)}>
-                            {t('refdata.calendars.derive')}
-                        </Button>
+                        <>
+                            <Button icon="add" onClick={() => setDeriving(true)}>
+                                {t('refdata.calendars.derive')}
+                            </Button>
+                            {editable && (
+                                <Button icon="calendar" onClick={() => setRebuilding(true)}>
+                                    {t('refdata.calendars.rebuild')}
+                                </Button>
+                            )}
+                        </>
                     ) : undefined
                 }
                 onEdit={may.write && editable ? () => setEditing(true) : undefined}
@@ -370,6 +408,8 @@ function CalendarBody({ calendar }: { readonly calendar: RecordRow }): ReactNode
                     rows={rules.data ?? []}
                     error={rules.error?.message}
                     initial={{ kind: 'fixed_date', shift: 'none' }}
+                    nameOf={(row) => ruleWords(t, language, row)}
+                    loadedAt={rules.dataUpdatedAt}
                     columns={[
                         {
                             header: t('refdata.calendars.rule'),
@@ -404,6 +444,8 @@ function CalendarBody({ calendar }: { readonly calendar: RecordRow }): ReactNode
                     rows={exceptions.data ?? []}
                     error={exceptions.error?.message}
                     initial={{ is_business_day: 'false' }}
+                    nameOf={(row) => show(row['exception_date'])}
+                    loadedAt={exceptions.dataUpdatedAt}
                     lead={t('refdata.calendars.exceptionsLead')}
                     columns={[
                         {
@@ -441,6 +483,8 @@ function CalendarBody({ calendar }: { readonly calendar: RecordRow }): ReactNode
                     rows={events.data ?? []}
                     error={events.error?.message}
                     keep={['source']}
+                    nameOf={(row) => show(row['name'])}
+                    loadedAt={events.dataUpdatedAt}
                     lead={t('refdata.calendars.eventsLead')}
                     columns={[
                         {
@@ -463,10 +507,15 @@ function CalendarBody({ calendar }: { readonly calendar: RecordRow }): ReactNode
                 />
             )}
             {tab === 'days' && (
-                <DaysPanel calendar={calendar} base={base} exceptions={exceptions.data ?? []} />
+                <DaysPanel
+                    calendar={calendar}
+                    base={base}
+                    exceptions={exceptions.data ?? []}
+                    onRebuild={may.write && editable ? () => setRebuilding(true) : undefined}
+                />
             )}
             {tab === 'history' && (
-                <HistoryPanel
+                <RecordTimeline
                     entityType="ores.refdata.calendar"
                     entityId={code}
                     {...(may.write && editable ? { onRevert: setReverting } : {})}
@@ -474,13 +523,17 @@ function CalendarBody({ calendar }: { readonly calendar: RecordRow }): ReactNode
             )}
             {editing && (
                 <RecordDialog
-                    title={t('refdata.records.editTitle', { code })}
+                    title={t('refdata.records.editTitle', { code: show(calendar['name']) })}
                     resource={CALENDARS}
                     specs={CALENDAR_FIELDS}
                     row={calendar}
                     keep={CALENDAR_KEPT}
+                    loadedAt={record.dataUpdatedAt}
                     onClose={() => setEditing(false)}
                 />
+            )}
+            {rebuilding && (
+                <RebuildDialog calendar={calendar} onClose={() => setRebuilding(false)} />
             )}
             {deriving && (
                 <RecordDialog
@@ -500,7 +553,9 @@ function CalendarBody({ calendar }: { readonly calendar: RecordRow }): ReactNode
             {removing && (
                 <RemoveRecordDialog
                     resource={CALENDARS}
-                    title={t('refdata.records.deleteTitle', { code })}
+                    title={t('refdata.records.deleteTitle', {
+                        code: show(calendar['name']) || code,
+                    })}
                     warning={t('refdata.calendars.removeWarning')}
                     recordKey={{ code }}
                     version={calendar.version}
@@ -547,9 +602,10 @@ function years(rule: RecordRow): string {
     return `${from === '' ? '…' : from} – ${to === '' ? '…' : to}`;
 }
 
+type Translate = ReturnType<typeof useTranslation>['t'];
+
 /** A rule in words, such as "3rd Monday of January"; a rule has no name of its own. */
-function RuleWords({ rule }: { readonly rule: RecordRow }): ReactNode {
-    const { t, language } = useTranslation();
+function ruleWords(t: Translate, language: string, rule: RecordRow): string {
     const month = Number(rule['month']);
     const monthName =
         Number.isInteger(month) && month >= 1
@@ -560,40 +616,32 @@ function RuleWords({ rule }: { readonly rule: RecordRow }): ReactNode {
     const weekday = t(`refdata.choices.weekday.${show(rule['weekday'])}`);
     switch (rule['kind']) {
         case 'fixed_date':
-            return (
-                <>
-                    {t('refdata.calendars.rules.fixed', {
-                        day: show(rule['day']),
-                        month: monthName,
-                    })}
-                </>
-            );
+            return t('refdata.calendars.rules.fixed', { day: show(rule['day']), month: monthName });
         case 'nth_weekday_of_month':
-            return (
-                <>
-                    {t('refdata.calendars.rules.nth', {
-                        occurrence: t(`refdata.choices.occurrence.${show(rule['occurrence'])}`),
-                        weekday,
-                        month: monthName,
-                    })}
-                </>
-            );
+            return t('refdata.calendars.rules.nth', {
+                occurrence: t(`refdata.choices.occurrence.${show(rule['occurrence'])}`),
+                weekday,
+                month: monthName,
+            });
         case 'last_weekday_of_month':
-            return <>{t('refdata.calendars.rules.last', { weekday, month: monthName })}</>;
-        default:
+            return t('refdata.calendars.rules.last', { weekday, month: monthName });
+        default: {
             const offset = Number(rule['day_offset']);
-            return (
-                <>
-                    {t('refdata.calendars.rules.easter', {
-                        offset: offset > 0 ? `+${String(offset)}` : String(offset),
-                    })}
-                </>
-            );
+            return t('refdata.calendars.rules.easter', {
+                offset: offset > 0 ? `+${String(offset)}` : String(offset),
+            });
+        }
     }
+}
+
+function RuleWords({ rule }: { readonly rule: RecordRow }): ReactNode {
+    const { t, language } = useTranslation();
+    return <>{ruleWords(t, language, rule)}</>;
 }
 
 const ENTRY_STYLE = {
     here: '',
+    opened: 'text-up',
     other: 'text-ink-muted italic',
     unbuilt: 'text-warn',
 } as const;
@@ -617,10 +665,13 @@ function DaysPanel({
     calendar,
     base,
     exceptions,
+    onRebuild,
 }: {
     readonly calendar: RecordRow;
     readonly base: RecordRow | undefined;
     readonly exceptions: readonly RecordRow[];
+    /** Opens the rebuild dialog, for a person who may write; the empty state names it. */
+    readonly onRebuild: (() => void) | undefined;
 }): ReactNode {
     const { t, language } = useTranslation();
     const flags = useFlags();
@@ -662,6 +713,13 @@ function DaysPanel({
             ? t('refdata.calendars.cause.rule')
             : t('refdata.calendars.cause.base', { base: show(base['code']) });
     };
+    // What produced a day, beside its words: a rule, an exception or the base.
+    const producer = (day: CalendarDay): string =>
+        byDate.has(day.date)
+            ? t('refdata.calendars.from.exception')
+            : base === undefined
+              ? t('refdata.calendars.from.rule')
+              : t('refdata.calendars.from.base');
     const built = new Map((days.data ?? []).map((day) => [day.date, day.businessDay]));
     const unbuilt = exceptions.filter((row) => {
         const businessDay = built.get(show(row['exception_date']));
@@ -670,17 +728,20 @@ function DaysPanel({
     const entries: readonly {
         readonly date: string;
         readonly words: string;
-        readonly from: 'here' | 'other' | 'unbuilt';
+        readonly from: 'here' | 'opened' | 'other' | 'unbuilt';
+        readonly producer: string;
     }[] = [
         ...notable.map((day) => ({
             date: day.date,
             words: day.businessDay ? t('refdata.calendars.businessDay') : cause(day),
-            from: 'here' as const,
+            from: day.businessDay ? ('opened' as const) : ('here' as const),
+            producer: producer(day),
         })),
         ...onlyOther.map((date) => ({
             date,
             words: t('refdata.calendars.cause.other', { other }),
             from: 'other' as const,
+            producer: other,
         })),
         ...unbuilt.map((row) => ({
             date: show(row['exception_date']),
@@ -688,8 +749,12 @@ function DaysPanel({
                 words: show(row['description']) || t('refdata.calendars.cause.exception'),
             }),
             from: 'unbuilt' as const,
+            producer: t('refdata.calendars.from.exception'),
         })),
     ].sort((a, b) => a.date.localeCompare(b.date));
+    const ownHolidays = holidays.size;
+    const unionHolidays = ownHolidays + onlyOther.length;
+    const ownBusiness = (days.data ?? []).filter((day) => day.businessDay).length;
 
     return (
         <section className="space-y-4">
@@ -740,17 +805,34 @@ function DaysPanel({
             {days.isError && <Notice tone="error">{days.error.message}</Notice>}
             {days.isSuccess && days.data.length === 0 ? (
                 <Notice tone="info">
-                    {t('refdata.calendars.notBuilt', { year: String(year) })}
+                    {t('refdata.calendars.notBuilt', { year: String(year) })}{' '}
+                    {onRebuild !== undefined ? (
+                        <button
+                            type="button"
+                            className="text-accent underline-offset-2 hover:underline"
+                            onClick={onRebuild}
+                        >
+                            {t('refdata.calendars.notBuiltAction')}
+                        </button>
+                    ) : (
+                        t('refdata.calendars.notBuiltReader')
+                    )}
                 </Notice>
             ) : (
                 days.isSuccess && (
                     <>
                         <p className="text-sm text-ink-muted">
                             {t('refdata.calendars.summary', {
-                                business: String(businessDays),
-                                holidays: String(holidays.size + onlyOther.length),
+                                business: String(ownBusiness),
+                                holidays: String(ownHolidays),
                                 year: String(year),
                             })}
+                            {other !== '' &&
+                                ` ${t('refdata.calendars.unionSummary', {
+                                    other,
+                                    business: String(businessDays),
+                                    holidays: String(unionHolidays),
+                                })}`}
                         </p>
                         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                             {Array.from({ length: 12 }, (_, month) => {
@@ -771,13 +853,18 @@ function DaysPanel({
                                                 {inMonth.map((entry) => (
                                                     <li
                                                         key={`${entry.date}-${entry.from}`}
-                                                        className="flex gap-2 text-xs"
+                                                        className="flex items-baseline gap-2 text-xs"
                                                     >
                                                         <span className="font-mono text-ink-muted">
                                                             {entry.date.slice(8)}
                                                         </span>
-                                                        <span className={ENTRY_STYLE[entry.from]}>
+                                                        <span
+                                                            className={`min-w-0 flex-1 ${ENTRY_STYLE[entry.from]}`}
+                                                        >
                                                             {entry.words}
+                                                        </span>
+                                                        <span className="whitespace-nowrap text-[11px] text-ink-faint">
+                                                            {entry.producer}
                                                         </span>
                                                     </li>
                                                 ))}
@@ -790,37 +877,68 @@ function DaysPanel({
                     </>
                 )
             )}
-            <RebuildForm calendar={code} year={year} />
+            <p className="text-xs text-ink-faint">{t('refdata.calendars.daysNote')}</p>
         </section>
     );
 }
 
-/** Builds the calendar's business days up to a year. */
-function RebuildForm({
+/**
+ * The calendar's own action: builds its business days up to a year. One
+ * operation answered in one reply, so it is an operation dialog and not a form
+ * on the page; the header offers it beside Derive (RS-PAGE-03).
+ */
+function RebuildDialog({
     calendar,
-    year,
+    onClose,
 }: {
-    readonly calendar: string;
-    readonly year: number;
+    readonly calendar: RecordRow;
+    readonly onClose: () => void;
 }): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
-    const may = useRecordPermissions(CALENDARS);
-    const [endYear, setEndYear] = useState(String(Math.max(year, new Date().getUTCFullYear() + 1)));
+    const code = show(calendar['code']);
+    const [endYear, setEndYear] = useState(String(new Date().getUTCFullYear() + 1));
     const valid = /^[0-9]{4}$/.test(endYear);
     const rebuild = useMutation({
-        mutationFn: () => api.rebuildCalendar(calendar, Number(endYear)),
+        mutationFn: () => api.rebuildCalendar(code, Number(endYear)),
         onSuccess: async () => {
-            await queries.invalidateQueries({ queryKey: ['calendar-days', calendar] });
+            await queries.invalidateQueries({ queryKey: ['calendar-days', code] });
         },
     });
-    if (!may.write) {
-        return null;
-    }
     return (
-        <div className="space-y-2 rounded-md border border-line p-3">
-            <div className="flex flex-wrap items-end gap-2">
-                <Field label={t('refdata.calendars.rebuildTo')}>
+        <Dialog
+            title={t('refdata.calendars.rebuild')}
+            onClose={onClose}
+            footer={
+                <>
+                    <Button variant="ghost" icon="cancel" onClick={onClose}>
+                        {t('refdata.records.cancel')}
+                    </Button>
+                    <Button
+                        variant="primary"
+                        icon="calendar"
+                        disabled={!valid || rebuild.isSuccess}
+                        pending={rebuild.isPending}
+                        onClick={() => rebuild.mutate()}
+                    >
+                        {t('refdata.calendars.rebuildAction')}
+                    </Button>
+                </>
+            }
+        >
+            <div className="space-y-3">
+                <p className="text-sm text-ink-muted">
+                    {t(
+                        shapeOf(calendar) === 'derived'
+                            ? 'refdata.calendars.rebuildLeadDerived'
+                            : 'refdata.calendars.rebuildLead',
+                        { name: show(calendar['name']) },
+                    )}
+                </p>
+                <Field
+                    label={t('refdata.calendars.rebuildTo')}
+                    hint={t('refdata.calendars.rebuildYearHint')}
+                >
                     <Input
                         value={endYear}
                         inputMode="numeric"
@@ -828,21 +946,14 @@ function RebuildForm({
                         onChange={(event) => setEndYear(event.target.value)}
                     />
                 </Field>
-                <Button
-                    disabled={!valid}
-                    pending={rebuild.isPending}
-                    onClick={() => rebuild.mutate()}
-                >
-                    {t('refdata.calendars.rebuild')}
-                </Button>
+                <p className="text-xs text-ink-faint">{t('refdata.calendars.rebuildNote')}</p>
+                {rebuild.isSuccess && (
+                    <Notice tone="success">
+                        {t('refdata.calendars.rebuilt', { count: String(rebuild.data) })}
+                    </Notice>
+                )}
+                {rebuild.isError && <Notice tone="error">{rebuild.error.message}</Notice>}
             </div>
-            <p className="text-xs text-ink-faint">{t('refdata.calendars.rebuildNote')}</p>
-            {rebuild.isSuccess && (
-                <Notice tone="success">
-                    {t('refdata.calendars.rebuilt', { count: String(rebuild.data) })}
-                </Notice>
-            )}
-            {rebuild.isError && <Notice tone="error">{rebuild.error.message}</Notice>}
-        </div>
+        </Dialog>
     );
 }

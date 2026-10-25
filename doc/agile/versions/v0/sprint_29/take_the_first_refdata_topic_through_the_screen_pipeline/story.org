@@ -8,7 +8,7 @@
 #+filetags: :ux:web:refdata:journeys:prototype:sprint_29:v0:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,11 +21,11 @@ One reference data topic goes end to end through the pipeline, and the pipeline 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
-| Waiting on    | The harness of [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] must exist before the screens are built. The topic is calendars, per [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][The screen pipeline topics]]. |
-| Next          | Extract the journeys of the first topic. |
+| Now           | The calendars screen is built and tested; the sheet waits for the owner's walk and sign off. |
+| Waiting on    | The owner's sign off of the calendars screen. |
+| Next          | Write the screen pipeline runbook. |
 | Last touched  | 2026-10-25                               |
 
 * Acceptance
@@ -41,13 +41,24 @@ One reference data topic goes end to end through the pipeline, and the pipeline 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:DCA8E0F8-1769-458C-83FC-77440252C1DE][Extract the journeys of the first topic]] | BACKLOG | | | Write the user journeys of the first topic in the existing form and judge each as a CRUD variation or as a workflow. |
-| [[id:29F81FF8-6836-439E-8945-3AAB20850A6C][Prototype the screens of the first topic]] | BACKLOG | | | Prototype each screen of the topic to the settled standard, with its design note, and get it signed off before any code. |
-| [[id:E8CE97DD-CB32-4F94-81D6-A0C1B69C54FA][Build the screens of the first topic]] | BACKLOG | | | Build the signed off screens from the shared record parts, with registry entries, field tables and server side work. |
-| [[id:5AC1321A-68CF-4C2B-8815-EF05E6E40BFF][Test and sign off the screens of the first topic]] | BACKLOG | | | Write the test scenario, run it on a fresh environment, run the harness, walk the manual lines, record the sign off. |
+| [[id:DCA8E0F8-1769-458C-83FC-77440252C1DE][Extract the journeys of the first topic]] | DONE | 2026-10-25 | 2026-10-25 | Write the user journeys of the first topic in the existing form and judge each as a CRUD variation or as a workflow. |
+| [[id:29F81FF8-6836-439E-8945-3AAB20850A6C][Prototype the screens of the first topic]] | STARTED | 2026-10-25 | | Prototype each screen of the topic to the settled standard, with its design note, and get it signed off before any code. |
+| [[id:E8CE97DD-CB32-4F94-81D6-A0C1B69C54FA][Build the screens of the first topic]] | DONE | 2026-10-25 | 2026-10-25 | Build the signed off screens from the shared record parts, with registry entries, field tables and server side work. |
+| [[id:5AC1321A-68CF-4C2B-8815-EF05E6E40BFF][Test and sign off the screens of the first topic]] | STARTED | 2026-10-25 | | Write the test scenario, run it on a fresh environment, run the harness, walk the manual lines, record the sign off. |
 | [[id:04113E33-1D67-4C96-9318-0982BD788A48][Write the screen pipeline runbook]] | BACKLOG | | | Write the pipeline as a runbook, from journeys to sign off, and scaffold the next topic story from it. |
 
 * Decisions
+
+- The calendars topic has one journey of its own, judged on 2026-10-25 as a
+  CRUD variation of the standard record screen with parts, two own actions and
+  one derived view; no workflow. Signed off by the owner the same day.
+- /Rebuild business days/ moves from the Business days tab to the header, as
+  RS-PAGE-03 places a kind's own actions (owner, 2026-10-25).
+- The prototype was signed off on 2026-10-25 after one correction: History is
+  the shared timeline of the Entity screen specification, never the two-pane
+  compare of the legacy =HistoryPanel=; a reference to a country is a flag and
+  a link to the country (owner, 2026-10-25). The build moves the live screen
+  to the prototype.
 
 * Out of scope
 

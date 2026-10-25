@@ -51,11 +51,14 @@ set once at the top of the file:
 | =:product:=           | yes      | Top-level C++ namespace (=ores=).                       |
 | =:component:=         | yes      | Component name (=refdata=, =trading=, ...) — drives both the C++ namespace and the =<product>_<component>_...= SQL naming convention. |
 | =:no_primary_key:=    | no       | =true= for a record that carries no key. See [[*Keyless records][Keyless records]] below. |
+| =:sql_only:=          | no       | =true= for a model whose store is the whole of it: only the SQL facets render. See [[*Models the store is the whole of][Models the store is the whole of]] below. |
 | =:has_tenant_id:=     | no       | See [[*Multi-tenancy: =has_tenant_id=][Multi-tenancy]] below.                                  |
 
 =:subcomponent:= is required, and =:no_subcomponent:= is its negation. Both
 belong in the =* C++ ** Flags= drawer, because that is where codegen reads the
-sub-component from. See [[*Records with no sub-component][Records with no sub-component]] below.
+sub-component from. See [[*Records with no sub-component][Records with no sub-component]] below. A model that
+states =:sql_only:= renders no C++ unit, so it is not asked for a sub-component
+at all.
 
 Structural view — the identity properties above, plus the Primary
 key, Natural key, and Column property sets documented further down
@@ -94,6 +97,47 @@ producing a record whose identity nothing agrees on.
 
 A keyless record is never fetched by identity on its own. It is a member of a
 larger payload, such as a byte span inside a history response.
+
+A keyless record that is *stored* is a whole table's shape, and the SQL facet
+reads the flag as exactly that: the table is append-only. The generated create
+emits the columns and the indexes the model declares, and nothing else — no
+primary key, no =valid_from=/=valid_to=, no key-derived checks, no insert
+trigger, no delete rule and no validation function, so a correction is a new row
+and the reader takes the latest. The indexes the facet would otherwise add (the
+id, version, tenant and natural-key indexes) do not render either, because none
+of them names a row that a key identifies. The drop script follows: it drops the
+table and its policies alone.
+
+The flag removes the key-derived part of the table body, so a keyless table
+states no =** Checks= section, no enforced foreign key and no pinned key today.
+A table that needs one has a key.
+
+* Models the store is the whole of
+
+Most entities are modelled so that C++, TypeScript, the shell and the screens
+project from one model. A store that an ingest writes and a hand-written reader
+reads has none of those: it is a table, its indexes, its policies and the grant
+that lets the ingest write. =:sql_only: true= states that, and the resolver then
+renders the facets under =ores.sql= alone.
+
+#+begin_src org
+,* Flags
+,:PROPERTIES:
+,:schema:         public
+,:product:        ores
+,:component:      marketdata
+,:has_tenant_id:  true
+,:no_primary_key: true
+,:sql_only:       true
+,:END:
+#+end_src
+
+The flag is a declaration of what the entity *is*, not a per-run filter. An
+=:ores.*.enabled:= override cannot re-admit a unit for it, for the same reason
+the other hard gates in =resolve_targets= do not: a domain type generated for a
+table no service mentions does not compile against anything, and a screen for it
+reads a store that has no read path. =ores.marketdata.tick= is the model that
+states it.
 
 * Records with no sub-component
 

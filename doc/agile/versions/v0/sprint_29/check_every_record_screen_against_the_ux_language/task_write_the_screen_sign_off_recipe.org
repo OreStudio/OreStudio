@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :check_every_record_screen_against_the_ux_language:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/write-the-screen-sign-off-recipe
+#+pr: 3780
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Signing off a screen is one procedure, the same for every screen and every revie
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -41,9 +41,17 @@ Signing off a screen is one procedure, the same for every screen and every revie
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The checklist has 104 identifiers and the harness asserts 20, so the sign off
+cannot be the harness alone and cannot be a person alone: a script folds one
+screen's run into a sheet of every checklist line, with the harness's mark where
+it has a check and a blank for the person where it does not, so the same sheet
+serves every screen and names what a person still owes. Write the recipe around
+the sheet, point the checklist at it, and use it once on the currencies screen
+so the worked example is real: run the harness on the screen alone, walk the
+lines as the administrator and as a member, and record the verdict beside the
+task. Add the deferred check that the harness's copy of the Acme password
+matches the provisioning script, so a drift names itself instead of failing
+every check as a sign-in error.
 
 * Measurements
 
@@ -57,7 +65,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Checklist lines on the sheet | 110 | =screen_sign_off.py currencies=, rows of the table | 569618a1e9 |
+| Lines the harness marks | 18, 3 with a failure | the sheet's last line | 569618a1e9 |
+| Lines the person walks | 98, 92 with no harness mark | the sheet's last line | 569618a1e9 |
+| The currencies walk | 17 gaps, 31 met, 24 N/A, 26 not checked | =evidence/sign_off_currencies.org=, the verdict | 569618a1e9 |
+| A run on one screen | 22 checks in 35.4 s | =npx playwright test --grep "record currencies"= | 569618a1e9 |
 
 * Notes
 
@@ -76,12 +88,29 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3780][#3780]] | [docs] Write the screen sign off recipe with its sheet and worked example |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: docs and web classes | scripts/screen_sign_off.py, tests/auth.setup.ts, doc/recipes/ops | Accept | typecheck and prettier clean; the first filtered run failed RS-LIST-10 while a screenshot script drove the same web, the second run did not, so the recipe says to run twice and read the trace |
+| 2 | PR 3780 review: argparse for the options, an exact match in the drift check, the setup tests and the column names named in the recipe, a person's walk before a real sign off, prove the drift check's failure path | screen_sign_off.py, auth.setup.ts, the recipe | Accept, one point unchanged | Points 1, 3, 4, 5 and 7 done as asked. Point 6: the password in acme.ts was shortened to Secure-Password-1 and =npx playwright test --project setup= failed naming the provisioning script and the expected pattern; the file was restored. Point 2 unchanged: a kind shared by a record and a classification is refused with both names, which is the safe answer |
 
 * Result
+
+The recipe How do I sign off a screen? states the one procedure: run the
+harness on the screen alone, fold the run into the sheet with
+=projects/ores.web/scripts/screen_sign_off.py=, walk the lines marked walk as
+the administrator and as a member, write the verdict, and record the sheet on
+the task. The screen review checklist points at the recipe, and the ops
+inventory lists it. The sheet of the currencies screen in =evidence/= is the
+worked example: the harness marks 18 of 110 lines, 3 with the baseline's
+failures, and the walk found 17 gaps, met 31 lines, set 24 aside and could not
+check 26, so currencies is not signed off and the gaps go to its topic. One
+finding became a capture: adrian.vance, whom the harness calls a reader, is
+editable on currencies. The harness setup now checks that its copy of the Acme
+password and hostname match the provisioning script. The fixture test for
+=harness_baseline.py= was not written: no runner picks up Python tests under
+=projects/ores.web/scripts=, and the sheet script is exercised by the worked
+example.

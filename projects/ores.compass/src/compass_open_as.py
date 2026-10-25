@@ -309,12 +309,11 @@ class DevTools:
     def send(self, payload, opcode=0x1):
         self.sock.sendall(encode_frame(payload, os.urandom(4), opcode))
 
-    def evaluate(self, expression):
-        """The value of the expression, or None when it threw (see last_error)."""
+    def call(self, method, params=None):
+        """Run a DevTools command. Returns its result, or None when it failed."""
         self.next_id += 1
-        message = json.dumps({"id": self.next_id, "method": "Runtime.evaluate",
-                              "params": {"expression": expression,
-                                         "returnByValue": True}})
+        message = json.dumps({"id": self.next_id, "method": method,
+                              "params": params if params is not None else {}})
         self.send(message.encode())
         deadline = time.time() + EVALUATE_TIMEOUT_SECONDS
         while time.time() < deadline:
@@ -325,14 +324,21 @@ class DevTools:
             if "error" in answer:
                 self.last_error = answer["error"].get("message")
                 return None
-            result = answer.get("result", {})
-            if "exceptionDetails" in result:
-                details = result["exceptionDetails"]
-                self.last_error = (details.get("exception", {}).get("description")
-                                   or details.get("text"))
-                return None
-            return result.get("result", {}).get("value")
-        raise TimeoutError("DevTools did not answer")
+            return answer.get("result", {})
+        raise TimeoutError(f"DevTools did not answer {method}")
+
+    def evaluate(self, expression):
+        """The value of the expression, or None when it threw (see last_error)."""
+        result = self.call("Runtime.evaluate",
+                           {"expression": expression, "returnByValue": True})
+        if result is None:
+            return None
+        if "exceptionDetails" in result:
+            details = result["exceptionDetails"]
+            self.last_error = (details.get("exception", {}).get("description")
+                               or details.get("text"))
+            return None
+        return result.get("result", {}).get("value")
 
     def close(self):
         self.sock.close()
@@ -414,6 +420,56 @@ def page_socket(profile_dir, browser=None, origin=None):
     return None
 
 
+def raise_page(ws_url):
+    """Put a page in front, so the person is looking at what was filled."""
+    try:
+        tools = DevTools(ws_url)
+    except (OSError, TimeoutError):
+        return False
+    try:
+        return tools.call("Page.bringToFront") is not None
+    except (OSError, TimeoutError):
+        return False
+    finally:
+        tools.close()
+
+
+def app_page(profile_dir, url, browser=None, timeout=FILL_TIMEOUT_SECONDS):
+    """The socket of a page on the app's origin, raised to the front.
+
+    A restored session can come back with a new tab in front of the app, or with
+    no app page at all: Chrome records chrome://newtab in the session it saves.
+    Either way the page a person must see is the app's own, so it is navigated to
+    and raised rather than filled where it cannot be seen.
+    """
+    origin = origin_of(url)
+    deadline = time.time() + timeout
+    navigated = set()
+    while time.time() < deadline:
+        if browser_gone(browser, profile_dir):
+            return None
+        pages = devtools_pages(profile_dir)
+        for page in pages:
+            ws_url = page.get("webSocketDebuggerUrl")
+            if ws_url and page.get("url", "").startswith(origin):
+                raise_page(ws_url)
+                return ws_url
+        for page in pages:
+            ws_url = page.get("webSocketDebuggerUrl")
+            if ws_url and ws_url not in navigated:
+                navigated.add(ws_url)
+                try:
+                    tools = DevTools(ws_url)
+                    try:
+                        tools.call("Page.navigate", {"url": url})
+                    finally:
+                        tools.close()
+                except (OSError, TimeoutError):
+                    pass
+        time.sleep(0.3)
+    return None
+
+
 def fill_sign_in(profile_dir, person, browser=None, timeout=FILL_TIMEOUT_SECONDS,
                  origin=None):
     """Fill the form, trying again when the page Chrome showed first goes away.
@@ -434,6 +490,7 @@ def fill_sign_in(profile_dir, person, browser=None, timeout=FILL_TIMEOUT_SECONDS
             tools = DevTools(ws_url)
             try:
                 if tools.evaluate(script):
+                    tools.call("Page.bringToFront")
                     return True
                 last_error = tools.last_error or last_error
             finally:
@@ -468,25 +525,35 @@ def mentions_profile(cmdline, profile_dir):
 
 
 def lock_holder_alive(profile_dir):
-    """Whether the process Chrome recorded in SingletonLock is still running.
+    """Whether a running Chrome holds this data directory, by Chrome's own record.
 
-    The lock is a symlink to "host-pid". Chrome's own record is stronger
-    than a scan of command lines, which a container or a hidden /proc defeats.
+    The lock is a symlink to "host-pid". A pid alone is not enough to decide:
+    a killed Chrome leaves its lock behind, the kernel reuses the number, and
+    the persona is then reported as open for as long as the stranger lives.
+    So the process behind the number must also be Chrome on this very profile.
+    The lock's host is checked too, because a lock copied from another machine
+    names a pid that means nothing here.
     """
     try:
         target = os.readlink(Path(profile_dir) / "SingletonLock")
     except OSError:
         return False
-    pid = target.rpartition("-")[2]
+    host, _, pid = target.rpartition("-")
     if not pid.isdigit():
         return False
-    try:
-        os.kill(int(pid), 0)
-    except ProcessLookupError:
+    if host != socket.gethostname():
         return False
-    except PermissionError:
+    try:
+        cmdline = Path("/proc", pid, "cmdline").read_bytes()
+    except OSError:
+        # The process is gone, or /proc is not ours to read. Fall back to the
+        # number alone: Chrome refuses a second instance on one profile anyway.
+        try:
+            os.kill(int(pid), 0)
+        except ProcessLookupError:
+            return False
         return True
-    return True
+    return mentions_profile(cmdline, profile_dir)
 
 
 def profile_in_use(profile_dir):
@@ -684,9 +751,15 @@ def launch(person, url, profile_dir, fill, headless=False, workspace=None,
             print(f"open-as: could not move the window to workspace {workspace}.",
                   file=sys.stderr)
     if not fill:
+        app_page(profile_dir, url, browser)
         return browser, True, restored
     # A restored session is usually past the form, so the wait is short.
     timeout = RESTORED_FILL_TIMEOUT_SECONDS if restored else FILL_TIMEOUT_SECONDS
+    # A restored session may hold the app behind a new tab, or no app page at all,
+    # so the page is shown first and only then filled.
+    shown = app_page(profile_dir, url, browser, FILL_TIMEOUT_SECONDS)
+    if shown is None:
+        return browser, False, restored
     return browser, fill_sign_in(profile_dir, person, browser, timeout,
                                  origin_of(url)), restored
 
@@ -806,7 +879,10 @@ def open_person(args, person, profile_dir, project_root, env_file):
     if args.no_fill:
         print(f"Opened. Sign in as {principal(person)}.")
     elif restored and not filled:
-        print("Reopened with the pages left open last time.")
+        print(f"Reopened, but the app could not be shown. Open "
+              f"{web_url(project_root, env_file)} and sign in as "
+              f"{principal(person)}.", file=sys.stderr)
+        return 1
     elif filled:
         print("Opened with the form filled. Press Sign in.")
     else:

@@ -1780,6 +1780,10 @@ tangled into the runnable script library
 
 - [[id:980F3F69-0F7B-553A-84F3-8F5962FE5709][How do I run the commodities commands from the shell?]]
 
+* Market Regime
+
+- [[id:5C0F1D2E-9A7B-4C31-8E52-1F3A6B9D4E70][market_regime]]
+
 * Ore Parameter Setting Value Sets
 
 - [[id:2F411DF3-3F0D-5047-844A-C1ABC063816E][How do I run the ore_parameter_setting_value_sets commands from the shell?]]

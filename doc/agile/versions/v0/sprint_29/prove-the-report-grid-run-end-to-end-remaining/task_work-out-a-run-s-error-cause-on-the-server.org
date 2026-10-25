@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 0CFE80F0-8DE6-43F5-BC8D-AB324592F9A4
+:END:
+#+title: Task: Work out a run's error cause on the server
+#+description: The run page decided what an error was about by reading the engine's message in TypeScript: it took the curve name out of IndexCurve(...), matched trades to curves by substring, truncated sentences and chose a label per scope. The shell could not do any of it without a second copy, which is how the duplication showed.
+
+The engine states a trade's curve only inside the message it writes, and the reporting service is where that format belongs. It now reads the cause once, where the log is read, stores it on the row, and both clients render it. The page's parsing is gone: it groups by the row's cause. The pricing date stays unrendered until the instance records it, which the earlier task's result already lists as remaining work.
+#+type: task
+#+level: s1
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr: 3802
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+What an error is about is worked out once, where the engine's log is read, and
+both clients render it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- A run's error rows carry the cause on the server.
+- The web page groups by that cause and parses no engine message.
+- The shell shows the same cause, without a second implementation.
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3802][#3802]] | [reporting] Work out a run's error cause on the server |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The reporting service works out what each error is about, and both clients
+render it.
+
+=engine_log_error= carries a =cause=, worked out where the engine's log is read.
+A curve's cause is its name, taken from the =curveId= the engine states; a
+trade's is the curve its message names; an analytic's is its type; a
+configuration's is its configuration type. Only the trade case reads the
+message, and it does so in one place, with the engine's format written down in
+a comment beside it.
+
+The error event model gained =cause=, nullable, with its SQL, repository, entity
+and TypeScript regenerated. The recorder stores it, and a failure the run
+records for itself stores nothing, because it has no cause.
+
+=ores.web= no longer reads the engine's words: =curveNameOf=, =asOfDateOf=,
+=labelOf=, =firstSentenceOf= and the substring matching that attached trades to
+curves are gone, and the page groups by the row's cause. The "priced at" line
+went with them, because the date is a fact of the run that the instance does not
+record yet; the earlier task's result already carries that.
+
+Proven on a triggered run, instance =b83c3eb5=: the shell returned rows with
+"cause":"Yield/GBP/GBP1D" and no parsing, and the page rendered the same four
+curves, thirty-three errors and seventeen distinct reasons.

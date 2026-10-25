@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 49A48E66-09CA-4AE5-85A5-D50E369932F5
+:END:
+#+title: Task: Record the trade version a run read, and make a run's errors idempotent
+#+description: The error screen links a failed trade to /trades?trade=<id>&version=<n>, and both halves are unfinished. No producer records subject_version or subject_as_of, because the engine names the trade and not the version the run read: the gather must record the versions it exported, and the recorder must write them beside the trade id. The trades page does not read trade or version, so a link lands on the unfiltered blotter.
+
+The error rows also need the defects the review of PR 3775 named. Recording is not idempotent, so a redelivered collect_results stores the same reasons twice. The Report-scope row repeats the verdict's sentences, so Split shows a long duplicate beside the per-reason rows. One unknown engine scope rejects the whole batch, losing every per-reason row. The as-of move is only a log line; the run's acceptance says the instance records which date it used and why it moved.
+#+type: task
+#+level: s1
+#+filetags: :gather-each-trade-set-and-its-market-data-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:ACFE9144-48DF-4FE5-902D-18C757DC91F4][Gather each trade set and its market data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:ACFE9144-48DF-4FE5-902D-18C757DC91F4][Gather each trade set and its market data — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,185 @@
+:PROPERTIES:
+:ID: 2EB79148-75EE-4FB2-A992-2957E0B873C9
+:END:
+#+title: Test Scenario: Verify the holiday calendar screens
+#+description: Walk the calendars list, a calendar page, a derived calendar's create, amend with a stale version, delete, history and revert, and the business days, on a fresh database.
+#+type: test_scenario
+#+level: s1
+#+filetags: :take_the_first_refdata_topic_through_the_screen_pipeline:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: brave_hopper
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:5AC1321A-68CF-4C2B-8815-EF05E6E40BFF][Test and sign off the screens of the first topic]] in [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]]. It walks the holiday calendar screens as the [[id:4EAC99FF-2F49-4D7D-94B8-DCE7DF5A9EB5][signed off prototype]] draws them: the list, a calendar page of each shape, a derived calendar created, amended against a stale version, reverted and deleted, its parts, its business days and its history. Pass means every step's outcome matches what the step states; a step that does not is a gap for the sign off sheet. Record the outcome by hand in =* Results=.
+
+* Before you start
+
+The session did the following. Confirm the system is in this state before you start; do not repeat the work.
+
+- The build is current for =main= at or after the merge of PR 3790, which built the calendars screen to the prototype.
+- The database was recreated with =compass db recreate -y -k= and Acme Corporation was provisioned with =compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=; the run completed with no failed step.
+- All 24 services are active and the web answers on =http://localhost:20402=.
+- You need =tenant_admin@acme_corporation= with the password =Secure-Password-123=.
+- The 61 QuantLib calendars of the seed are present, and no user calendar exists yet; the scenario creates =Acme.Scenario= and deletes it at the end.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:5AC1321A-68CF-4C2B-8815-EF05E6E40BFF][Test and sign off the screens of the first topic]] |
+| Parent story  | [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]]   |
+| Target screen | Reference data → Holiday calendars, =http://localhost:20402/refdata/calendars=, and one calendar's page under it |
+| Clients       |                                          |
+| State         | PASSED                               |
+
+* Steps
+
+** Sign in as the tenant administrator
+
+- Open =http://localhost:20402/sign-in=.
+- Sign in as =tenant_admin@acme_corporation= with =Secure-Password-123=.
+- If the screen asks you to choose a party, choose the first.
+- The landing page opens with *Your account* in the header. If it does not, stop here.
+
+*** Result
+
+PASS. Landed with Your account in the header.
+
+** Open the calendars list
+
+- Open Reference data, then Holiday calendars.
+- The breadcrumb reads Home › Reference data › Holiday calendars; the title is *Holiday calendars* with one sentence under it.
+- At the right stand *Refresh* with the load time under it, then *Add calendar*.
+- The table shows Code, Name, Calendar type, Country and Holidays from; the pager reads *1–15 of 61* and starts at 15 rows.
+- Type =TARGET= in the search box: one row, *TARGET (Euro area)*, and the address carries the search.
+
+*** Result
+
+PASS. Crumbs, Refresh then Add, the load time, the pager 1–15 of 61, the search in the address. Add is drawn about 100 ms after the rows, once the person's access is read.
+
+** Open a QuantLib calendar
+
+- Click the *TARGET* row.
+- The page opens at =/refdata/calendars/TARGET=; the breadcrumb ends at *TARGET* and the title is *TARGET (Euro area)*; the lead reads *TARGET · version 1*.
+- At the right stand Refresh with its load time, the mark *Read only*, and *Derive a calendar*; there is no Edit, no Rebuild and no Delete.
+- The tabs are Details, Diary events and History; there is no Rules, Exceptions or Business days tab.
+- Details end with the notice that QuantLib supplies the holidays, and with the last-changed line.
+
+*** Result
+
+PASS. Refresh and Derive only; Read only; the tabs Details, Diary events, History; the QuantLib notice.
+
+** Derive a calendar from TARGET
+
+- Click *Derive a calendar*.
+- The dialog is titled *Derive a calendar from TARGET*; Calendar type and Country are already filled from TARGET.
+- Enter the code =Acme.Scenario= and the name =Acme scenario calendar=, and click *Add*.
+- The page opens at =/refdata/calendars/Acme.Scenario=, titled *Acme scenario calendar*, with the mark *Editable* and the actions Derive a calendar, Rebuild business days, Edit and Delete in that order.
+- The tabs are Details, Exceptions, Diary events, Business days and History.
+- Details show *Holidays from* as *TARGET, with exceptions*, and the link opens TARGET.
+
+*** Result
+
+PASS. Opened on the new page with Refresh, Derive, Rebuild, Edit, Delete in that order and the five tabs.
+
+** Add an exception and a diary event
+
+- On the Exceptions tab, click *Add an exception*; enter the date =2026-06-12=, keep the effect as a holiday, enter the description =Office closed=, and click *Add*.
+- The dialog closes and *Refresh* turns gold; press it. The row appears with the badge *Holiday*, its date and its description; the lead under the tab explains what an exception is.
+- On the Diary events tab, click *Add a diary event*; enter the date =2026-02-05=, choose a diary entry type, enter the name =MPC decision=, and click *Add*.
+- Press *Refresh*: the row appears with its date, type and name.
+
+*** Result
+
+PASS. Both rows appeared after Refresh, as ES-REFRESH-15 says.
+
+** Edit a part and read its history
+
+- On the Exceptions tab, click *Edit* on the row: the dialog is titled *Edit 2026-06-12* and says under its title when it was loaded.
+- Change the description to =Office closed for the move=, keep the reason, and click *Save*; press *Refresh* and the row shows the new words.
+- Click *History* on the row: the dialog is titled *History of 2026-06-12* and shows the timeline, two entries, the newest marked as the current version, with *Hide system activity* above it and no *Compare* control.
+- Open *Details* on the newest entry: the description's old and new values stand in one table row.
+
+*** Result
+
+PASS. Edit 2026-06-12 with its load time; History of 2026-06-12 is the timeline with two entries and the old and new description in one row.
+
+** Build the business days and read them
+
+- On the Business days tab, the notice says no business days are built for 2026 and offers *Rebuild the calendar to build them*.
+- Click *Rebuild business days* in the header: the dialog says what it builds, asks *Build up to the end of* with next year filled, and says what a rebuild does not change.
+- Click *Rebuild*: the notice says how many days were written, and the Rebuild button is now disabled.
+- Close the dialog: the tab shows one block per month and a sentence with the business days and the weekday holidays of 2026; June shows *12 Office closed for the move* with *Exception* beside it.
+- The warning above the months says TARGET's holidays come from QuantLib and the rebuild does not read them; this is the known gap, not a failure.
+- Choose *TARGET (Euro area)* in *Compare with*: the sentence gains the union's counts and TARGET's holidays appear in italics; the gap keeps them empty on this environment.
+
+*** Result
+
+PASS. Empty state with the action; the dialog wrote 1461 days and its Rebuild then disabled; June shows the exception with its producer; the union sentence with TARGET.
+
+** Amend the calendar against a stale version
+
+- Open a second browser tab on =/refdata/calendars/Acme.Scenario= and click *Edit* there; leave the dialog open.
+- In the first tab, click *Edit*: the dialog is titled *Edit Acme scenario calendar* and says under its title when it was loaded. Change the name to =Acme scenario calendar, renamed=, choose a reason, and click *Save*. The dialog closes and the title reads the new name after Refresh.
+- In the second tab, the dialog still open, change the name to =Acme scenario calendar, stale=, and click *Save*.
+- The save is refused: the dialog says somebody changed the record after you opened it and offers *Reload*; nothing is saved. Click *Reload*: the dialog closes and the page shows the renamed calendar.
+- Back in the first tab, *Refresh* has turned gold once the second tab's page was read; click it and the page is current.
+
+*** Result
+
+PASS. The stale save was refused with the reload offer; Reload closed the dialog. Gap: after the first tab's own save, Refresh did not turn gold within 15 seconds (ES-REFRESH-15); captured.
+
+** Read the calendar's history and revert
+
+- On the History tab, the timeline shows the chart and two entries for the calendar, newest first, each on one line with the kind, *calendar Acme.Scenario v2* or *v1*, the reason, you, and the field that changed; the note stands on its own line.
+- The newest entry carries the current-version emblem in the gutter and offers no Revert; the first offers *Revert*.
+- Click *Revert* on version 1: the dialog says what changes, asks for a reason, and writes a new version; the timeline then shows version 3 with the old name and the title reads *Acme scenario calendar* again after Refresh.
+- *Hide system activity* hides nothing here, because you wrote every entry; the toggle stays drawn.
+
+*** Result
+
+PASS. Two entries, then three after the revert and Refresh; Revert on every version but the newest; the title back to the old name.
+
+** Delete the calendar
+
+- Click *Delete* in the header: the dialog is titled *Delete Acme scenario calendar?*, warns that the rules, exceptions and events go with it, and asks for a reason.
+- Choose a reason and click *Delete*.
+- The list opens; search =Acme=: *No holiday calendars match the search.* with *Clear the search*.
+- Open =/refdata/calendars/Acme.Scenario= by address: the page says there is no such record, or you may not see it, and offers the way back to the list.
+
+*** Result
+
+PASS. Delete Acme scenario calendar? with the warning and the reason; the list opened; the address answers no such record.
+
+** Look as a reader
+
+- Sign out and sign in as =adrian.vance@acme_corporation= with =Secure-Password-123=.
+- Open Holiday calendars, then TARGET.
+- Note what the header offers. On this environment adrian.vance is a writer, so the actions are drawn; record that in the sheet rather than failing the step, and see the capture *A seeded reader is editable on currencies*.
+
+*** Result
+
+PASS. adrian.vance sees Read only and Derive only on TARGET, a QuantLib calendar; a user calendar was not checked as this person, so the step says nothing about a writer.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED, with one gap captured |
+| Completed at  | 2026-10-25 16:05 UTC |
+| Branch        | feature/test-and-sign-off-the-screens-of-the-first-topic |
+| Commit        | aebd19b746, with main at the merge of PR 3790 built and served |
+| Worktree      | brave_hopper |
+
+* Notes
+
+The scenario was driven by the agent with a Playwright script, one function per
+step, on 2026-10-25 against the fresh database; the script's log is the source
+of each step's result. Three runs before it failed on the script's own faults
+and on leftovers of earlier runs, which surfaced two server gaps now captured: a
+deleted calendar leaves its business days behind, and a re-created code
+continues the deleted one's history. A person has not walked the scenario yet;
+the sign off sheet says so.

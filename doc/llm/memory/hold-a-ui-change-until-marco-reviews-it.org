@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 0C236F3A-BB47-4989-BDE6-66F4A12D1FD6
+:END:
+#+title: Hold a UI change until Marco reviews it
+#+description: Do not merge a change that a person sees until Marco has looked at the screen. Open the pull request, show what to open and what to look at, and wait for his word.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :process:ui:review:merge:memory:feedback:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+(One short paragraph stating the rule, fact, or insight to remember.)
+
+*Why:* (The reason the user gave, or the incident this captures. Knowing the why lets a future session judge edge cases instead of blindly applying the rule.)
+
+*How to apply:* (When this memory should kick in — what circumstances, which files, which workflows.)
+
+* What it means in practice
+
+- A pull request that changes a screen is opened and left open. Marco reviews the
+  running screen, then says whether to merge.
+- The pull request states where to look and what to look at, so the review is a
+  glance rather than a hunt: the address, the account to sign in as, and the one
+  thing the change is meant to show.
+- This is not a pause on the work. Build the change, prove it, open it, and move
+  to the next piece while the review waits.
+- A change nobody sees, such as a seed, a service registration or a check, still
+  follows the usual rule: prove it and merge it.
+
+* Why
+
+A screen is judged by looking at it. Two faults in one afternoon looked correct
+in a unit test and wrong on the page: an identifier read from the field that did
+not carry it, and a translation key drawn instead of its value. Neither is
+visible in a diff.

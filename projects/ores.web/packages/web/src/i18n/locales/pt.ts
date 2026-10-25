@@ -74,7 +74,7 @@ const pt: SourceCatalogue = {
         },
         account: 'A sua conta',
         menu: {
-            trades: 'Transações',
+            trading: 'Trading',
             marketdata: 'Dados de mercado',
             home: 'Início',
             accounts: 'Contas',
@@ -512,6 +512,7 @@ const pt: SourceCatalogue = {
             country: 'País',
             account: 'Conta',
             traffic: 'Enviado / recebido',
+            authorisation: 'Autorização',
             state: 'Estado',
             day: 'Dia',
         },
@@ -1871,6 +1872,7 @@ const pt: SourceCatalogue = {
                     'A execução de um relatório que enviou um lote: o seu estado, as suas horas e o lote que criou.',
                 loading: 'A ler a execução de relatório...',
                 run: 'Execução',
+                errors: 'Erros',
                 name: 'Nome',
                 kind: 'Tipo',
                 state: 'Estado',
@@ -3568,6 +3570,10 @@ const pt: SourceCatalogue = {
     },
 
     trading: {
+        area: {
+            title: 'Trading',
+            lead: 'As transações que uma mesa lê e escreve, e os livros onde se encontram.',
+        },
         trades: {
             areaLead: 'As transações e estruturas que pode ver, e os livros onde se encontram.',
             title: 'Transações',
@@ -3580,7 +3586,40 @@ const pt: SourceCatalogue = {
             structureHolds: '{count} transações',
             versionPair: 'v{version} · ext {external}',
         },
+        page: {
+            title: 'Transação',
+            lead: 'Uma transação, os seus termos, identificadores, ligações e histórico.',
+            notFound: 'Nenhuma transação tem esse identificador.',
+            backToList: 'Voltar à lista',
+            tabs: {
+                label: 'Secções da transação',
+                details: 'Detalhes',
+                identifiers: 'Identificadores e papéis',
+                links: 'Ligações',
+                history: 'Histórico',
+            },
+            state: 'Estado',
+            bookingDate: 'Data de registo',
+            execution: 'Executada em',
+            identifiers: 'Identificadores',
+            idType: 'Esquema',
+            idValue: 'Valor',
+            noIdentifiers: 'Esta transação não tem identificador.',
+            roles: 'Papéis',
+            role: 'Papel',
+            party: 'Parte',
+            noRoles: 'Nenhum papel foi registado com esta transação.',
+            linksFrom: 'Ligações a partir desta transação',
+            linksTo: 'Ligações para esta transação',
+            linkType: 'Ligação',
+            otherTrade: 'A outra transação',
+            noLinks: 'Nenhuma ligação deste lado.',
+            history: 'Versões',
+            noHistory: 'Esta transação ainda não tem versão registada.',
+        },
         fields: {
+            authorisation: 'Autorização',
+            externalVersion: 'Versão externa',
             identifier: 'Id',
             instrumentType: 'Tipo',
             counterparty: 'Contraparte',
@@ -3598,6 +3637,34 @@ const pt: SourceCatalogue = {
     },
 
     refdata: {
+        counterparties: {
+            title: 'Contraparte',
+            lead: 'Com quem a parte negoceia, como se posiciona, e os identificadores que a designam.',
+            shortCode: 'Código curto',
+            fullName: 'Nome',
+            partyType: 'Tipo',
+            status: 'Estado',
+            identifiers: 'Identificadores',
+            id_scheme: 'Esquema',
+            id_value: 'Valor',
+            noIdentifiers: 'Esta contraparte não tem identificador.',
+            notFound: 'Nenhuma contraparte tem esse identificador.',
+            backToRefdata: 'Voltar aos dados de referência',
+        },
+        books: {
+            title: 'Livro',
+            lead: 'Onde uma transação é registada, a carteira onde se insere, e a sua função.',
+            name: 'Nome',
+            portfolio: 'Carteira',
+            status: 'Estado',
+            purpose: 'Função',
+            regulatoryType: 'Tipo regulamentar',
+            currency: 'Moeda',
+            costCenter: 'Centro de custo',
+            glAccount: 'Conta geral',
+            notFound: 'Nenhum livro tem esse identificador.',
+            backToRefdata: 'Voltar aos dados de referência',
+        },
         crumbs: 'Caminho',
         area: {
             title: 'Dados de referência',
@@ -3750,6 +3817,7 @@ const pt: SourceCatalogue = {
         },
         records: {
             deletePartWarning: 'A linha é fechada. O histórico fica.',
+            historyOf: 'Histórico de {name}',
             yes: 'Sim',
             no: 'Não',
             cancel: 'Cancelar',
@@ -4077,11 +4145,28 @@ const pt: SourceCatalogue = {
             compare: 'Comparar com',
             quantlibBaseWarning:
                 '{base} obtém os feriados do QuantLib, mas a reconstrução não os lê. Os dias abaixo mostram só os fins de semana e estas exceções.',
-            notBuilt:
-                'Nenhum dia útil está construído para {year}. Reconstrua o calendário para os construir.',
+            notBuilt: 'Nenhum dia útil está construído para {year}.',
+            notBuiltAction: 'Reconstrua o calendário para os construir.',
+            notBuiltReader:
+                'Peça a um administrador de dados de referência que reconstrua o calendário.',
+            unionSummary:
+                'Com {other}: {business} dias úteis e {holidays} feriados na união, que é a definição pela qual um par liquida.',
+            daysNote:
+                'Um dia a verde é um dia útil aberto por uma exceção. Um dia em itálico é um feriado apenas do calendário comparado.',
+            from: {
+                rule: 'Regra',
+                exception: 'Exceção',
+                base: 'Base',
+            },
             summary: '{business} dias úteis e {holidays} feriados em dias de semana em {year}.',
             noHolidays: 'Sem feriados.',
             rebuildTo: 'Construir até ao fim de',
+            rebuildLead:
+                'Constrói os dias de {name} ainda não construídos, a partir das suas regras e exceções.',
+            rebuildLeadDerived:
+                'Constrói os dias de {name} ainda não construídos, a partir da sua base e exceções.',
+            rebuildAction: 'Reconstruir',
+            rebuildYearHint: 'Um ano com quatro dígitos.',
             rebuild: 'Reconstruir os dias úteis',
             rebuildNote:
                 'Uma reconstrução adiciona os dias ainda não construídos. Não muda um dia já construído, por isso uma alteração a uma regra ou exceção não aparece num ano já construído.',

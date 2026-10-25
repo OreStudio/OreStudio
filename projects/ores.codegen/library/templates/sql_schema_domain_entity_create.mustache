@@ -41,7 +41,10 @@ create table if not exists "{{domain_entity.sql_name_base}}_tbl" (
 {{/domain_entity.natural_keys}}
 {{#domain_entity.columns}}
 {{^is_image_id}}
-    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}},
+{{! A keyed table continues the column list with its key, its audit tail and
+    its validity window, so every column carries a comma. A keyless table ends
+    at its last column, so that one does not. }}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{#domain_entity.no_primary_key}}{{^last}},{{/last}}{{/domain_entity.no_primary_key}}{{^domain_entity.no_primary_key}},{{/domain_entity.no_primary_key}}
 {{/is_image_id}}
 {{/domain_entity.columns}}
 {{#domain_entity.has_coding_scheme}}
@@ -60,9 +63,12 @@ create table if not exists "{{domain_entity.sql_name_base}}_tbl" (
     "change_commentary" text not null,
 {{/domain_entity.has_audit_columns}}
 {{^domain_entity.current_state}}
+{{^domain_entity.no_primary_key}}
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
+{{/domain_entity.no_primary_key}}
 {{/domain_entity.current_state}}
+{{^domain_entity.no_primary_key}}
 {{^domain_entity.current_state}}
 {{#domain_entity.has_tenant_in_pk}}
     primary key (tenant_id, {{domain_entity.primary_key.column_list}}, valid_from, valid_to),
@@ -104,6 +110,7 @@ create table if not exists "{{domain_entity.sql_name_base}}_tbl" (
     constraint {{constraint_name}} foreign key ({{#matches_tenant}}"tenant_id", {{/matches_tenant}}"{{column}}") references "{{table}}" ({{#matches_tenant}}"tenant_id", {{/matches_tenant}}"{{target_column}}"){{/domain_entity.enforced_foreign_keys}}{{#domain_entity.enforced_pinned_keys}},
     constraint {{constraint_name}} foreign key ({{{column_list}}}) references "{{table}}" ({{{target_column_list}}}){{/domain_entity.enforced_pinned_keys}}
 {{/domain_entity.current_state}}
+{{/domain_entity.no_primary_key}}
 );
 {{#domain_entity.has_multiple_natural_keys}}
 {{^domain_entity.sql.suppress_nk_index}}
@@ -159,6 +166,10 @@ on "{{domain_entity.sql_name_base}}_tbl" ({{column}})
 {{/domain_entity.has_tenant_in_pk}}
 {{/domain_entity.natural_keys}}
 {{/domain_entity.has_multiple_natural_keys}}
+{{! A keyless table has no active record to keep unique: no id index, no
+    version index, no tenant index and no natural-key index. Only the indexes
+    the model declares render. }}
+{{^domain_entity.no_primary_key}}
 
 {{#domain_entity.has_audit_columns}}
 -- Version uniqueness for optimistic concurrency
@@ -216,6 +227,7 @@ on "{{domain_entity.sql_name_base}}_tbl" ({{column}})
 {{^domain_entity.current_state}}where valid_to = ores_utility_infinity_timestamp_fn(){{/domain_entity.current_state}};
 {{/domain_entity.has_tenant_in_pk}}
 {{/domain_entity.unique_keys}}
+{{/domain_entity.no_primary_key}}
 {{#domain_entity.indexes}}
 
 create{{#unique}} unique{{/unique}} index if not exists {{domain_entity.index_name_prefix}}_{{name}}_idx
@@ -363,6 +375,11 @@ before delete on "{{domain_entity.sql_name_base}}_tbl"
 for each row execute function {{domain_entity.sql_name_base}}_delete_fn();
 {{/domain_entity.sql.bitemporal_soft_update}}
 {{^domain_entity.sql.bitemporal_soft_update}}
+{{! A keyless table is append-only: a correction is a new row, and a reader
+    takes the latest. Nothing is closed and no version is replaced, so there is
+    nothing for an insert trigger, a delete rule or a validation function to
+    do, and the ingest writes through a role that holds INSERT alone. }}
+{{^domain_entity.no_primary_key}}
 create or replace function {{domain_entity.sql_name_base}}_insert_fn()
 returns trigger as $$
 declare
@@ -881,6 +898,7 @@ on delete to "{{domain_entity.sql_name_base}}_tbl" do instead (
 {{/domain_entity.foreign_keys}}
 );
 {{/domain_entity.current_state}}
+{{/domain_entity.no_primary_key}}
 {{/domain_entity.sql.bitemporal_soft_update}}
 {{#domain_entity.has_tenant_id}}
 {{#domain_entity.validation_fn}}
@@ -1119,6 +1137,7 @@ end $$;
 {{/domain_entity.sql.hypertable}}
 <<paste:92432102-d405-46fc-911a-111dfed27358>>
 {{#domain_entity.sql.rls_tenant_isolation}}
+{{^domain_entity.sql.rls_hot_path}}
 
 -- =============================================================================
 -- Row-level security: tenant isolation for {{domain_entity.entity_title}}
@@ -1182,4 +1201,39 @@ with check (
     or party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 {{/domain_entity.sql.rls_party_isolation}}
+{{/domain_entity.sql.rls_hot_path}}
+{{#domain_entity.sql.rls_hot_path}}
+
+-- =============================================================================
+-- Row-level security: tenant and party isolation for the {{domain_entity.entity_plural}}
+-- =============================================================================
+alter table {{domain_entity.sql_name_base}}_tbl enable row level security;
+alter table {{domain_entity.sql_name_base}}_tbl force row level security;
+
+drop policy if exists {{domain_entity.rls_table_base}}_tbl_tenant_isolation_policy on {{domain_entity.sql_name_base}}_tbl;
+
+create policy {{domain_entity.rls_table_base}}_tbl_tenant_isolation_policy
+on {{domain_entity.sql_name_base}}_tbl
+for all using (
+    tenant_id = (select nullif(current_setting('app.current_tenant_id', true), '')::uuid)
+)
+with check (
+    tenant_id = (select nullif(current_setting('app.current_tenant_id', true), '')::uuid)
+);
+
+-- The form party_id = ANY((select ...)) does not compile, because PostgreSQL reads it as a
+-- comparison with a subquery.
+drop policy if exists {{domain_entity.rls_table_base}}_tbl_party_isolation_policy on {{domain_entity.sql_name_base}}_tbl;
+
+create policy {{domain_entity.rls_table_base}}_tbl_party_isolation_policy
+on {{domain_entity.sql_name_base}}_tbl
+as restrictive
+for select using (
+    party_id in (select unnest(nullif(current_setting('app.visible_party_ids', true), '')::uuid[]))
+);
+{{/domain_entity.sql.rls_hot_path}}
 {{/domain_entity.sql.rls_tenant_isolation}}
+{{#domain_entity.sql.writer_role}}
+
+grant insert on {{domain_entity.sql_name_base}}_tbl to :{{domain_entity.sql.writer_role}};
+{{/domain_entity.sql.writer_role}}

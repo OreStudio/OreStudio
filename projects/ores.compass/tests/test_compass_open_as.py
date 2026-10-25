@@ -228,10 +228,30 @@ def test_a_corrupt_preferences_file_is_started_again(tmp_path):
     assert not (tmp_path / "Preferences.tmp").exists()
 
 
-def test_a_lock_held_by_a_live_process_counts_as_in_use(tmp_path):
+def test_a_lock_held_by_chrome_on_the_profile_counts_as_in_use(tmp_path, monkeypatch):
     import os
-    (tmp_path / "SingletonLock").symlink_to(f"host-{os.getpid()}")
+    import socket
+
+    (tmp_path / "SingletonLock").symlink_to(f"{socket.gethostname()}-{os.getpid()}")
+    monkeypatch.setattr(open_as, "mentions_profile", lambda *_: True)
     assert open_as.lock_holder_alive(tmp_path)
+
+
+def test_a_lock_whose_pid_now_belongs_to_something_else_does_not(tmp_path, monkeypatch):
+    """A killed Chrome leaves its lock; the kernel then reuses the number."""
+    import os
+    import socket
+
+    (tmp_path / "SingletonLock").symlink_to(f"{socket.gethostname()}-{os.getpid()}")
+    monkeypatch.setattr(open_as, "mentions_profile", lambda *_: False)
+    assert not open_as.lock_holder_alive(tmp_path)
+
+
+def test_a_lock_from_another_host_does_not(tmp_path):
+    import os
+
+    (tmp_path / "SingletonLock").symlink_to(f"another-machine-{os.getpid()}")
+    assert not open_as.lock_holder_alive(tmp_path)
 
 
 def test_a_lock_left_by_a_dead_process_does_not(tmp_path):
@@ -251,3 +271,63 @@ def test_fresh_refuses_to_delete_outside_the_persona_directory(tmp_path, monkeyp
 def test_a_workspace_below_one_is_refused():
     with pytest.raises(SystemExit):
         open_as.run(["name", "adrian", "--workspace", "0"], ROOT)
+
+
+class RecordingTools:
+    """A DevTools client that records what was asked of it."""
+
+    def __init__(self, pages, calls):
+        self.pages = pages
+        self.calls = calls
+
+    def __call__(self, ws_url):
+        return self
+
+    def call(self, method, params=None):
+        self.calls.append((method, params))
+        if method == "Page.navigate":
+            for page in self.pages:
+                page["url"] = params["url"]
+        return {}
+
+    def evaluate(self, expression):
+        return True
+
+    def close(self):
+        pass
+
+
+def test_a_session_without_the_app_page_is_navigated_to_it(tmp_path, monkeypatch):
+    """Chrome restores chrome://newtab, so no page is on the app's origin."""
+    pages = [{"url": "about:blank", "webSocketDebuggerUrl": "ws://page"}]
+    calls = []
+    monkeypatch.setattr(open_as, "devtools_pages", lambda _: pages)
+    monkeypatch.setattr(open_as, "browser_gone", lambda *_: False)
+    monkeypatch.setattr(open_as, "DevTools", RecordingTools(pages, calls))
+
+    socket_url = open_as.app_page(tmp_path, "http://localhost:20802/", timeout=5)
+
+    assert socket_url == "ws://page"
+    assert ("Page.navigate", {"url": "http://localhost:20802/"}) in calls
+    assert calls[-1] == ("Page.bringToFront", None)
+
+
+def test_a_page_already_on_the_app_is_raised_and_not_navigated(tmp_path, monkeypatch):
+    pages = [{"url": "http://localhost:20802/login",
+              "webSocketDebuggerUrl": "ws://page"}]
+    calls = []
+    monkeypatch.setattr(open_as, "devtools_pages", lambda _: pages)
+    monkeypatch.setattr(open_as, "browser_gone", lambda *_: False)
+    monkeypatch.setattr(open_as, "DevTools", RecordingTools(pages, calls))
+
+    socket_url = open_as.app_page(tmp_path, "http://localhost:20802/", timeout=5)
+
+    assert socket_url == "ws://page"
+    assert calls == [("Page.bringToFront", None)]
+
+
+def test_a_session_with_no_page_at_all_is_given_up_on(tmp_path, monkeypatch):
+    monkeypatch.setattr(open_as, "devtools_pages", lambda _: [])
+    monkeypatch.setattr(open_as, "browser_gone", lambda *_: False)
+
+    assert open_as.app_page(tmp_path, "http://localhost:20802/", timeout=1) is None

@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: D3387BA9-F480-4878-974D-3F2880481EF6
+:END:
+#+title: Calendars prototypes
+#+description: The prototypes that answer to the Calendars journeys: what each argues, and the Gemini review where one exists.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:calendars:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+* Summary
+
+Holiday calendars: their rules, exceptions and diary events, and the business
+days they produce.
+
+One prototype answers to this group. It is a static page under
+=doc/prototypes/=, opens with no build and no session, and reads mock data
+only. The table below opens it and says what it argues. Where a prototype
+carries a Gemini review, the last column opens it: a review is a generated
+alternative kept beside the agreed design, never instead of it.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* The prototypes
+
+#+ATTR_HTML: :class hug-leading
+| Prototype | What it argues | Open it | Review |
+|-----------+----------------+---------+--------|
+| [[file:keep-a-holiday-calendar-right.org][Keep a holiday calendar right]] | The calendars screen as the record screen standard settles it: the list, one calendar with the tabs its shape allows, Derive and Rebuild as own actions in the header, the dialogs with their titles and load times, and the Business days view the standard has no rule for yet. | [[file:keep-a-holiday-calendar-right/][prototype]] | none |
+
+* Adding a prototype
+
+Create =doc/prototypes/calendars/<name>/= with an =index.html=, and a
+=prototype.css= and =prototype.js= when it needs them. Open the page with
+the links table every prototype carries, and leave its review row at
+=none=. Add a row to the table above, with the design note beside the
+prototype when there is one. Stop there: the site build finds every
+prototype under this tree, so no build file names it.
+
+A review goes at =doc/prototypes/calendars/<name>/review/=, with an
+=index.html= that lists its screens. The row names it, and the
+prototype's review row points at it. [[file:../index.org][Prototypes]] states the
+whole method and the rules that hold for every group.
+
+* See also
+
+- [[file:../index.org][Prototypes]] — the top page: the groups, and the one way to add a prototype.
+- [[file:../../knowledge/journeys/calendars/calendars.org][Calendars journeys]] — the journeys these prototypes answer.

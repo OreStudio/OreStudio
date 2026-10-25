@@ -62,6 +62,7 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/arrival_spec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/business_day_calendar_set.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/calendar_rule.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/calendar_ruleset.hpp"
@@ -76,9 +77,12 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/i_arrival_process.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/i_stochastic_process.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/i_yield_curve_process.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/market_link.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/market_regime.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/process_parameter_validation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/rate_snapshot.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/rate_status.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/shared_intensity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/staleness_policy.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/tenor_resolution.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/topology_build_error.hpp"
@@ -130,5 +134,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/risk_recentering.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/tenor_resolution_engine.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/tick_clock.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/tick_scheduler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/topology_builder.hpp"
 )

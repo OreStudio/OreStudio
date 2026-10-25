@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 25C90DA1-CDDC-4685-B9E3-A87101E37154
+:END:
+#+title: Title the Edit dialog with the display field, not the key
+#+description: Twelve dialogs read Edit AED where the page is UAE Dirham; RS-WRITE-20 was decided on 2026-10-25.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:refdata:harness:baseline:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Title the Edit dialog with the display field and not the key. RS-WRITE-20, decided 2026-10-25, says the dialog is titled Edit followed by the title of the page, the display field. The harness baseline finds the currency dialog titled Edit AED where the page is UAE Dirham, and 11 classification row dialogs titled by the code where the page title is the name. 12 dialogs; the 10 that pass are lists whose code is their name.
+
+* Why
+
+The harness measured every record screen before the screen pipeline changed
+any, so each topic starts from a known gap and the sign off has a before and an
+after. This is one of the four rules the baseline found broken.
+
+* References
+
+- [[id:10ECDD95-0C8C-4BFF-A94A-FCBFAAC8F25A][The record screen baseline]] — the run, the table and the judgement.
+- [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] — the rule behind the identifier.
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders the UX cluster.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :prototype:ui:refdata:
 #+created: 2026-10-05
-#+updated: 2026-10-09
+#+updated: 2026-10-25
 
 | Item          | Where                                          |
 |---------------+------------------------------------------------|
@@ -61,6 +61,10 @@ built from it.
   field shows the old value on a red line and the new one on a green line, the
   changed characters marked, as a code review shows a diff. *All fields* or
   *Only changes*, and *Revert* on an older version.
+  /Superseded on 2026-10-25:/ this is the legacy shape of the desktop dialog.
+  The History tab of every screen is the shared timeline the
+  [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] draws in /History and the timeline/, and a
+  later prototype does not copy this one.
 - The bar at the bottom switches between a person who may change reference data
   and one who may only read it; the reader sees no actions and is told why.
 

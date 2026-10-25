@@ -17,6 +17,8 @@
  *
  */
 #include "ores.analytics.quant/domain/i_arrival_process.hpp"
+#include "ores.analytics.quant/domain/market_regime.hpp"
+#include "ores.analytics.quant/domain/shared_intensity.hpp"
 #include "ores.analytics.quant/service/processes/periodic_arrival_process.hpp"
 #include "ores.analytics.quant/service/tick_clock.hpp"
 #include <catch2/catch_approx.hpp>
@@ -41,17 +43,28 @@ public:
         return gap_;
     }
 
+    void set_baseline_multiplier(double multiplier) override {
+        multipliers_.push_back(multiplier);
+    }
+
     [[nodiscard]] std::size_t calls() const {
         return calls_;
+    }
+
+    [[nodiscard]] const std::vector<double>& multipliers() const {
+        return multipliers_;
     }
 
 private:
     double gap_;
     std::size_t calls_ = 0;
+    std::vector<double> multipliers_;
 };
 
 }
 
+using ores::analytics::quant::domain::market_regime;
+using ores::analytics::quant::domain::shared_intensity;
 using ores::analytics::quant::service::periodic_arrival_process;
 using ores::analytics::quant::service::tick_clock;
 
@@ -166,4 +179,83 @@ TEST_CASE("tick_clock hands the body the gap it waited", tags) {
     REQUIRE(gaps.size() == 3);
     for (const double gap : gaps)
         CHECK(gap == Catch::Approx(0.001).epsilon(1e-12));
+}
+
+TEST_CASE("tick_clock scales the arrival rate by the market state and the row's sensitivity",
+          tags) {
+    // An active market is at two, and this row follows the market twice as hard
+    // as the average, so every gap is drawn at four times the rate.
+    market_regime market;
+    market.pin(market_regime::state::active);
+
+    scripted_arrival_process arrivals(0.001);
+    tick_clock clock(
+        arrivals,
+        ores::analytics::quant::domain::market_link{.market = &market, .sensitivity = 2.0});
+    int calls = 0;
+
+    clock.run(
+        [&](double) {
+            ++calls;
+            if (calls == 3)
+                clock.stop();
+            return std::string{};
+        },
+        [](std::uint64_t, const std::string&) {},
+        [](const std::exception&) {});
+
+    // The market is constant across these ticks, so the rate is set once and
+    // left alone: the tick path does no work it does not need to do.
+    REQUIRE(arrivals.multipliers().size() == 1);
+    // The default market is at two while pinned active, and this row follows it
+    // twice as hard as the average.
+    CHECK(arrivals.multipliers().front() == Catch::Approx(4.0));
+}
+
+TEST_CASE("tick_clock leaves the rate alone with no market", tags) {
+    scripted_arrival_process arrivals(0.001);
+    tick_clock clock(arrivals);
+    int calls = 0;
+
+    clock.run(
+        [&](double) {
+            ++calls;
+            if (calls == 2)
+                clock.stop();
+            return std::string{};
+        },
+        [](std::uint64_t, const std::string&) {},
+        [](const std::exception&) {});
+
+    CHECK(arrivals.multipliers().empty());
+}
+
+TEST_CASE("tick_clock reads the shared intensity into the rate", tags) {
+    // The intensity adds heat on top of the market: a mean rate of ten a second
+    // and heat of five is a multiplier of 1.5, and a row that follows the market
+    // twice as hard draws at three times its rate.
+    shared_intensity intensity(0.5, 20.0);
+    for (int i = 0; i < 20; ++i)
+        intensity.record_event(); // twenty jumps of a half is ten of heat
+
+    scripted_arrival_process arrivals(0.001);
+    tick_clock clock(arrivals,
+                     ores::analytics::quant::domain::market_link{
+                         .intensity = &intensity, .sensitivity = 2.0, .mean_rate = 10.0});
+    int calls = 0;
+
+    clock.run(
+        [&](double) {
+            ++calls;
+            if (calls == 2)
+                clock.stop();
+            return std::string{};
+        },
+        [](std::uint64_t, const std::string&) {},
+        [](const std::exception&) {});
+
+    REQUIRE_FALSE(arrivals.multipliers().empty());
+    // sensitivity * (baseline + heat / mean rate) = 2 * (1 + 10 / 10) = 4, and
+    // the baseline stays because heat adds to it rather than replacing it.
+    CHECK(arrivals.multipliers().front() == Catch::Approx(4.0));
 }

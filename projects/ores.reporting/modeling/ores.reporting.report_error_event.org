@@ -182,6 +182,43 @@ database enforces: an absent subject is admitted only under the =Report= scope.
 
 Identifier of the subject, in the kind =subject= states. Absent with =subject=.
 
+** subject_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The version of the subject the run read, when the subject is versioned. A trade
+is one of many rows under one id, so a link to the trade that caused an error
+names the version as well as the id, and resolves to the row the run saw rather
+than to whatever the trade is now.
+
+** subject_as_of
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+The instant the subject was current at, when the subject is versioned. It reads
+beside =subject_version=: the version alone names a row, and the instant says
+when that row was the live one.
+
+** cause
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+What the error is about, said in a person's words rather than the engine's: the
+curve that would not build, or the curve a failed trade needed. It is worked out
+once, where the engine's log is read, because the engine states a trade's curve
+only inside the message it writes. A screen that repeated that reading would be
+a second implementation of the engine's format, and the shell would have none at
+all.
+
 ** detail
 :PROPERTIES:
 :type:     jsonb
@@ -223,9 +260,11 @@ collection, written by the recorder.
 |------------|
 | ("subject" is null) = ("subject_id" is null) |
 | "severity" in ('error', 'warning') |
+| ("subject" is not null) or ("subject_version" is null and "subject_as_of" is null) |
 
 The first is the invariant that matters to a reader: a row names a subject in
-full or names none, and never half of one, so a screen that looks a row up by
+full or names none, and never half of one, and the version and the instant it
+was current at belong to the subject rather than stand alone, so a screen that looks a row up by
 its subject either finds it or is told the row is about the run. That a row
 naming no subject is a row about the run is what the scope says, and the writer
 that reads the engine's log is where the two are kept in step.

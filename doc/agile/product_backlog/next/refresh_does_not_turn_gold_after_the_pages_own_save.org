@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 90EDD651-C6BD-40E2-805F-A1B01AA425AD
+:END:
+#+title: Refresh does not turn gold after the page's own save
+#+description: After the record page's own save the page kept the old values and Refresh stayed plain for fifteen seconds.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:refresh:bug:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Refresh does not turn gold after the page's own save. ES-REFRESH-15 says that after a save the dialog closes, Refresh turns gold and the person presses it. In the sign off scenario of 2026-10-25 on the calendars record page, the Edit dialog saved a new name, the dialog closed, and the page kept the old name and version with Refresh plain for fifteen seconds; a second tab that reloaded showed the new name. After a derive, which navigates to the new page, Refresh was gold at once. Either the entity change the server announces for the page's own write does not reach the stale logic, or the page's load time is taken after the write; either way the person has no sign that the page is behind their own save. Found on calendars with the shared RecordHeader and RecordDialog, so every record page has it.
+
+* Why
+
+ES-REFRESH-15 is the contract between a write and the page: nothing reloads by itself, and
+the gold Refresh is how the person knows the page is behind. Without it a person who just
+saved reads stale values with no sign.
+
+* References
+
+- [[id:2EB79148-75EE-4FB2-A992-2957E0B873C9][Test Scenario: Verify the holiday calendar screens]] — the step that found it.
+- =projects/ores.web/packages/web/src/events/useEntityChanges.ts= — the stale logic.
+
+* See also
+
+- [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — Refresh, ES-REFRESH-15.

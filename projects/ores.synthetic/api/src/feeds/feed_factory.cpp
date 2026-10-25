@@ -53,20 +53,32 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_fx_spot(const feed_build
                                                                 const feed_build_input& input) {
     const auto& in = std::get<fx_spot_feed_build_input>(input);
     return make_fx_spot_feed(
-        ctx.nats, ctx.auth_nats, in.config, in.components, in.adapter, ctx.clock.get());
+        ctx.nats,
+        ctx.auth_nats,
+        in.config,
+        in.components,
+        in.adapter,
+        ctx.clock.get(),
+        ores::analytics::quant::domain::market_link{
+            .market = ctx.market, .intensity = ctx.intensity, .sensitivity = in.config.sensitivity},
+        ctx.scheduler);
 }
 
 std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_build_context& ctx,
                                                                  const feed_build_input& input) {
     const auto& in = std::get<ir_curve_feed_build_input>(input);
-    return make_ir_curve_feed(ctx.nats,
-                              ctx.auth_nats,
-                              in.config,
-                              in.entries,
-                              in.values,
-                              in.definitions,
-                              in.refctx,
-                              ctx.clock.get());
+    return make_ir_curve_feed(
+        ctx.nats,
+        ctx.auth_nats,
+        in.config,
+        in.entries,
+        in.values,
+        in.definitions,
+        in.refctx,
+        ctx.clock.get(),
+        ores::analytics::quant::domain::market_link{
+            .market = ctx.market, .intensity = ctx.intensity, .sensitivity = in.config.sensitivity},
+        ctx.scheduler);
 }
 
 } // namespace

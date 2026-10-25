@@ -32,6 +32,7 @@ import { subjects as portfolioRightSubjects } from '@ores/wire-protocol/generate
 import { subjects as portfolioSubjects } from '@ores/wire-protocol/generated/refdata/protocol/portfolio_protocol';
 import { subjects as purposeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/purpose_type_protocol';
 import { subjects as regulatoryTypeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/regulatory_book_type_protocol';
+import { notFound } from './errors.js';
 import { invalidRequest } from './errors.js';
 import {
     idSchema,
@@ -41,6 +42,7 @@ import {
     readAll,
     resultSchema,
     row,
+    text,
 } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
@@ -129,12 +131,45 @@ export function registerBookRoutes(
                 'portfolios',
                 {
                     filter: null,
+                    as_of: null,
                 },
             ),
             books: await readAll(session, bookSubjects.list_books_request, 'books', {
                 filter: null,
+                as_of: null,
             }),
         };
+    });
+
+    /**
+     * One book, as its own page reads it: the book and the portfolio it sits in.
+     *
+     * A book names a portfolio by id and no more, so the portfolio's name is
+     * read by key here rather than left for the screen to look up.
+     */
+    server.get('/api/books/:id', async (request) => {
+        const session = requireSession(request);
+        const { id } = input(z.object({ id: z.uuid() }), request.params);
+        const found = await readAll(session, bookSubjects.list_books_request, 'books', {
+            filter: { id_one_of: [id] },
+        });
+        const book = found[0];
+        if (book === undefined) {
+            throw notFound('No book has that id.');
+        }
+        const portfolioId = text(book['parent_portfolio_id']);
+        const portfolio =
+            portfolioId === ''
+                ? null
+                : ((
+                      await readAll(
+                          session,
+                          portfolioSubjects.list_portfolios_request,
+                          'portfolios',
+                          { filter: { id_one_of: [portfolioId] } },
+                      )
+                  )[0] ?? null);
+        return { book, portfolio };
     });
 
     server.get('/api/books/pick-lists', async (request) => {
@@ -159,7 +194,7 @@ export function registerBookRoutes(
             session,
             businessUnitSubjects.list_business_units_request,
             'business_units',
-            { filter: null },
+            { filter: null, as_of: null },
         );
         return lists;
     });

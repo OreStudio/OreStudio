@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 8ADE55C7-842D-4665-B4FE-70C7BCAF9CFA
+:END:
+#+title: The reference data screens draw the legacy history panel
+#+description: Eleven files draw HistoryPanel's two-pane compare where the ESS says the History tab is the shared Timeline.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:refdata:history:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The reference data screens draw the legacy history panel, not the shared timeline. refdata/HistoryPanel.tsx is a two-pane compare: a version list at the left and a compare of two versions at the right, with All fields and Only changes. The Entity screen specification's History and the timeline section (ES-HIST-01 to 18) says the History tab is the shared Timeline in timeline/Timeline.tsx: the event chart, then one line per entry with the note below it and the detail on demand, which the person and party pages draw. Eleven files still import HistoryPanel: refdata/currencies.tsx, calendars.tsx, currencyPairs.tsx, deskGroups.tsx, ClassificationRowPage.tsx, records.tsx, pages/TenantPage.tsx and the journeys steps for conventions, books, counterparties and tenors. The calendars prototype copied the compare shape from the classifications prototype note and from the live currencies page before the owner caught it on 2026-10-25. Each screen moves to the Timeline as its topic goes through the pipeline; the harness should assert the rail, no Compare control and a Hide system activity toggle, so the legacy shape cannot pass a sign off.
+
+* Why
+
+A prototype or a test that copies a live screen copies this shape, and the
+legacy design becomes the standard by accident. The owner caught it in the
+calendars prototype on 2026-10-25; the harness has no check for it yet.
+
+* References
+
+- [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — History and the timeline, ES-HIST-01 to 18.
+- =projects/ores.web/packages/web/src/refdata/HistoryPanel.tsx= — the legacy panel.
+- =projects/ores.web/packages/web/src/timeline/Timeline.tsx= — the shared timeline.
+
+* See also
+
+- [[id:4EAC99FF-2F49-4D7D-94B8-DCE7DF5A9EB5][Keep a holiday calendar right prototype]] — the first screen drawn to the timeline.

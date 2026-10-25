@@ -472,7 +472,9 @@ void ensure_package(const fs::path& pkg_cache_dir,
 
     fs::create_directories(pkg_cache_dir.parent_path());
     const fs::path lock_path = pkg_cache_dir.parent_path() / (evt.app_version_id + ".lock");
-    { std::ofstream create_lock(lock_path, std::ios::app); }
+    {
+        std::ofstream create_lock(lock_path, std::ios::app);
+    }
     boost::interprocess::file_lock file_lock(lock_path.string().c_str());
     boost::interprocess::scoped_lock<boost::interprocess::file_lock> guard(file_lock);
 
@@ -713,6 +715,29 @@ void process_assignment(ores::nats::service::client& nats,
                 error_message = verdict.failure;
                 BOOST_LOG_SEV(lg, error)
                     << "Engine run failed for " << evt.result_id << ": " << verdict.failure;
+                // The engine's own log is the account of what went wrong, and
+                // the run's owner can only read it from the output. A failed
+                // job therefore uploads what the engine wrote, so the failure
+                // can be recorded per reason instead of as one message.
+                const fs::path failed_output_dir = job_dir / "Output";
+                try {
+                    if (fs::is_directory(failed_output_dir) &&
+                        fs::directory_iterator(failed_output_dir) != fs::directory_iterator{}) {
+                        const fs::path output_archive = job_dir / "output.tar.gz";
+                        ores::storage::filesystem::archiver::pack(failed_output_dir,
+                                                                  output_archive);
+                        output_bytes = static_cast<std::int64_t>(fs::file_size(output_archive));
+                        ores::storage::net::http_client::put(
+                            make_url(cfg.http_base_url, evt.output_uri),
+                            output_archive,
+                            evt.storage_token);
+                    }
+                } catch (const std::exception& upload) {
+                    // The engine's verdict is the reason the run failed, and a
+                    // failed upload of the log must not replace it.
+                    BOOST_LOG_SEV(lg, warn) << "The log of failed job " << evt.result_id
+                                            << " was not uploaded: " << upload.what();
+                }
                 // ClientError.
                 outcome = 3;
             } else {

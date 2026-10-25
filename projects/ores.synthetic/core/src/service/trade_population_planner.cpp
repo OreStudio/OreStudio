@@ -186,13 +186,15 @@ void validate_scope(const domain::trade_generation_scope& scope) {
 }
 
 std::vector<std::string_view> planned_asset_classes() {
-    static const std::vector<std::string_view> codes{"bond"};
+    static const std::vector<std::string_view> codes{"bond", "commodity"};
     return codes;
 }
 
 const trade_planner& planner_for(const std::string& asset_class_code) {
     static const bond_trade_planner bond;
-    static const std::map<std::string, const trade_planner*> planners{{"bond", &bond}};
+    static const commodity_trade_planner commodity;
+    static const std::map<std::string, const trade_planner*> planners{{"bond", &bond},
+                                                                     {"commodity", &commodity}};
 
     const auto entry = planners.find(asset_class_code);
     if (entry == planners.end()) {
@@ -262,6 +264,204 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         entry.internal_identifier = internal_identifier_for(scope, slot);
         entry.trade_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
         entry.notional = notional_from(scope, draw(name, 1));
+        entry.currency = scope.currency_code;
+        entry.terms = terms;
+
+        for (const auto& pair : scope.netting_sets) {
+            if (pair.first == counterparty_id) {
+                entry.netting_set_id = pair.second;
+                break;
+            }
+        }
+
+        plan.slots.push_back(std::move(entry));
+    }
+
+    return plan;
+}
+
+namespace {
+
+/*
+ * The commodity codes the catalogue routes to commodity_instrument, in the
+ * order the catalogue states them, each with the shape the ORE importer reads
+ * it as. The shape decides which fields a slot states; the other twenty-odd
+ * columns stay empty the way a flat data-oriented row expects.
+ */
+enum class commodity_shape {
+    forward,
+    option,
+    average_price_option,
+    option_strip,
+    barrier_option,
+    accumulator,
+    target_redemption,
+    spread_option,
+    variance_swap,
+    swap,
+    swaption,
+    basket_option
+};
+
+struct commodity_type final {
+    std::string_view code;
+    commodity_shape shape;
+};
+
+constexpr commodity_type commodity_types[] = {
+    {"CommodityForward", commodity_shape::forward},
+    {"IntradayPowerForward", commodity_shape::forward},
+    {"CommodityForwardVolatilityAgreement", commodity_shape::forward},
+    {"CommodityOption", commodity_shape::option},
+    {"CommodityDigitalOption", commodity_shape::option},
+    {"CommodityAsianOption", commodity_shape::option},
+    {"CommodityStrikeResettableOption", commodity_shape::option},
+    {"CommodityPosition", commodity_shape::forward},
+    {"CommodityAveragePriceOption", commodity_shape::average_price_option},
+    {"CommodityDigitalAveragePriceOption", commodity_shape::average_price_option},
+    {"CommodityOptionStrip", commodity_shape::option_strip},
+    {"CommodityWindowBarrierOption", commodity_shape::barrier_option},
+    {"CommodityGenericBarrierOption", commodity_shape::barrier_option},
+    {"CommodityAccumulator", commodity_shape::accumulator},
+    {"CommodityTaRF", commodity_shape::target_redemption},
+    {"CommoditySpreadOption", commodity_shape::spread_option},
+    {"CommodityVarianceSwap", commodity_shape::variance_swap},
+    {"CommodityPairwiseVarianceSwap", commodity_shape::variance_swap},
+    {"CommodityBasketVarianceSwap", commodity_shape::variance_swap},
+    {"CommoditySwap", commodity_shape::swap},
+    {"CommodityWorstOfBasketSwap", commodity_shape::swap},
+    {"CommoditySwaption", commodity_shape::swaption},
+    {"CommodityBasketOption", commodity_shape::basket_option},
+    {"CommodityRainbowOption", commodity_shape::basket_option},
+    {"CommodityBestEntryOption", commodity_shape::basket_option},
+};
+
+constexpr std::size_t commodity_type_count =
+    sizeof(commodity_types) / sizeof(commodity_types[0]);
+
+/*
+ * A price in the band a commodity plausibly trades in, quantised to a
+ * hundredth so the value is one a decimal column holds exactly.
+ */
+double price_from(const std::string& name, std::uint32_t stream, double floor, double span) {
+    const auto value = floor + span * draw(name, stream);
+    return std::round(value * 100.0) / 100.0;
+}
+
+}
+
+std::string_view commodity_trade_planner::asset_class_code() const { return "commodity"; }
+
+domain::trade_population_plan
+commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
+    validate_scope(scope);
+
+    if (scope.commodities.empty())
+        throw trade_population_error(
+            "The tenant's commodity catalogue holds nothing, so no trade can name a commodity. "
+            "Publish the refdata.commodities dataset first.");
+
+    const auto min_years = tenor_years_of(scope.min_tenor_code);
+    const auto max_years = tenor_years_of(scope.max_tenor_code);
+
+    domain::trade_population_plan plan;
+    plan.config_id = scope.config_id;
+    plan.party_id = scope.party_id;
+    plan.as_of_date = scope.as_of_date;
+
+    const auto total = scope.trades_per_book * static_cast<std::uint32_t>(scope.book_ids.size());
+    for (std::uint32_t slot = 0; slot < total; ++slot) {
+        const auto& book_id = scope.book_ids[slot % scope.book_ids.size()];
+        const auto& counterparty_id = scope.counterparty_ids[slot % scope.counterparty_ids.size()];
+        const auto& trader = scope.trader_usernames[slot % scope.trader_usernames.size()];
+        const auto name = slot_name(scope, slot);
+
+        /*
+         * The type cycles through the catalogue rather than being drawn, so a
+         * population long enough to reach a type always states it. A draw
+         * would leave the rare ones out of a small population and the
+         * coverage claim could not be tested.
+         */
+        const auto& type = commodity_types[slot % commodity_type_count];
+        const auto& commodity = scope.commodities[slot % scope.commodities.size()];
+
+        const auto span = max_years - min_years + 1;
+        const auto drawn =
+            min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
+        const auto tenor_years = std::clamp(drawn, min_years, max_years);
+
+        domain::commodity_terms terms;
+        terms.commodity_code = commodity.code;
+        terms.unit = commodity.unit;
+        terms.quantity = price_from(name, 3, 1000.0, 100000.0);
+        terms.start_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
+        terms.maturity_date = add_years(terms.start_date, static_cast<int>(tenor_years));
+
+        const auto price = price_from(name, 4, 40.0, 120.0);
+        const auto strike = std::round(price * (0.9 + 0.2 * draw(name, 5)) * 100.0) / 100.0;
+
+        switch (type.shape) {
+            case commodity_shape::forward:
+                terms.fixed_price = price;
+                break;
+            case commodity_shape::option:
+            case commodity_shape::basket_option:
+                terms.option_type = (draw(name, 6) < 0.5) ? "Call" : "Put";
+                terms.strike_price = strike;
+                terms.exercise_type = "European";
+                break;
+            case commodity_shape::average_price_option:
+            case commodity_shape::option_strip:
+                terms.option_type = (draw(name, 6) < 0.5) ? "Call" : "Put";
+                terms.strike_price = strike;
+                terms.average_type = "Arithmetic";
+                terms.averaging_start_date = terms.start_date;
+                terms.averaging_end_date = terms.maturity_date;
+                if (type.shape == commodity_shape::option_strip)
+                    terms.strip_frequency_code = "1M";
+                break;
+            case commodity_shape::barrier_option:
+                terms.option_type = "Call";
+                terms.strike_price = strike;
+                terms.barrier_type = "DownAndOut";
+                terms.lower_barrier = std::round(price * 0.8 * 100.0) / 100.0;
+                break;
+            case commodity_shape::accumulator:
+            case commodity_shape::target_redemption:
+                terms.option_type = "Call";
+                terms.accumulation_amount = std::round(terms.quantity / 12.0 * 100.0) / 100.0;
+                terms.knock_out_barrier = std::round(price * 1.1 * 100.0) / 100.0;
+                break;
+            case commodity_shape::spread_option:
+                terms.option_type = "Call";
+                terms.strike_price = strike;
+                terms.spread_commodity_code =
+                    scope.commodities[(slot + 1) % scope.commodities.size()].code;
+                terms.spread_amount = price_from(name, 7, 1.0, 20.0);
+                break;
+            case commodity_shape::variance_swap:
+                terms.variance_strike = price_from(name, 8, 0.01, 0.2);
+                break;
+            case commodity_shape::swap:
+                terms.fixed_price = price;
+                break;
+            case commodity_shape::swaption:
+                terms.option_type = "Call";
+                terms.strike_price = strike;
+                terms.swaption_expiry_date = add_months(terms.start_date, 6);
+                break;
+        }
+
+        domain::trade_population_slot entry;
+        entry.slot = slot;
+        entry.book_id = book_id;
+        entry.counterparty_id = counterparty_id;
+        entry.trader_username = trader;
+        entry.trade_type_code = std::string(type.code);
+        entry.trade_id = trade_id_for(scope, slot);
+        entry.internal_identifier = internal_identifier_for(scope, slot);
+        entry.trade_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
+        entry.notional = price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
         entry.currency = scope.currency_code;
         entry.terms = terms;
 

@@ -24,6 +24,7 @@
 #include "ores.iam.api/messaging/role_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/commodity_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/netting_set_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
@@ -176,6 +177,20 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
         }
     }
 
+    /*
+     * The commodity catalogue is the tenant's own, so a population draws the
+     * commodities that tenant holds and the unit each is quoted in. An empty
+     * catalogue is not this call's to refuse: the planner says so, because it
+     * is the planner that cannot state a trade without one.
+     */
+    ores::refdata::messaging::list_commodities_request commodity_req;
+    commodity_req.limit = page;
+    for (const auto& commodity : read(commodity_req).commodities)
+        scope.commodities.push_back(domain::commodity_reference{
+            .code = commodity.code,
+            .unit = commodity.unit_code,
+            .quotation_currency = commodity.quotation_currency_code});
+
     ores::refdata::messaging::list_counterparties_request cp_req;
     cp_req.limit = page;
     const auto counterparties = read(cp_req);
@@ -262,8 +277,8 @@ trading_trade_population_writer::read_trade(const boost::uuids::uuid& trade_id) 
         .external_version = static_cast<std::uint32_t>(decoded->trades.front().external_version)};
 }
 
-void trading_trade_population_writer::ensure_issue(const domain::trade_population_slot& slot) {
-    const auto& terms = std::get<domain::bond_terms>(slot.terms);
+void trading_trade_population_writer::ensure_issue(const domain::trade_population_slot& slot,
+                                                   const domain::bond_terms& terms) {
 
     if (issues_written_.contains(terms.issue_id))
         return;
@@ -397,14 +412,13 @@ void trading_trade_population_writer::ensure_issue(const domain::trade_populatio
 void trading_trade_population_writer::write_trade(const domain::trade_population_slot& slot,
                                                   const domain::trade_generation_scope& scope) {
     const auto& codec = ores::nats::default_wire_codec();
-    const auto& terms = std::get<domain::bond_terms>(slot.terms);
-
     /*
      * The security is in place before the trade is booked. A run cut short in
      * the issue then leaves no trade, so the next run writes the issue again
      * and not a booked trade that no run revisits.
      */
-    ensure_issue(slot);
+    if (const auto* bond = std::get_if<domain::bond_terms>(&slot.terms))
+        ensure_issue(slot, *bond);
 
     ores::trading::messaging::book_trade_request book_req;
     book_req.anchor.id = slot.trade_id;
@@ -442,12 +456,52 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
     identifier.change_commentary = "Generated trade population.";
     book_req.identifiers.push_back(identifier);
 
-    ores::trading::domain::bond_instrument_data bond;
-    bond.instrument.issue_id = terms.issue_id;
-    bond.instrument.notional = ores::utility::decimal::decimal::from_double(slot.notional).value();
-    bond.instrument.audit.change_reason_code = std::string(population_reason);
-    bond.instrument.audit.change_commentary = "Generated trade population.";
-    book_req.instruments.bond_instruments.push_back(bond);
+    if (const auto* bond = std::get_if<domain::bond_terms>(&slot.terms)) {
+        ores::trading::domain::bond_instrument_data row;
+        row.instrument.issue_id = bond->issue_id;
+        row.instrument.notional = ores::utility::decimal::decimal::from_double(slot.notional).value();
+        row.instrument.audit.change_reason_code = std::string(population_reason);
+        row.instrument.audit.change_commentary = "Generated trade population.";
+        book_req.instruments.bond_instruments.push_back(row);
+    } else if (const auto* commodity = std::get_if<domain::commodity_terms>(&slot.terms)) {
+        const auto money = [](std::optional<double> value) {
+            if (!value.has_value())
+                return std::optional<ores::utility::decimal::decimal>();
+            return std::optional<ores::utility::decimal::decimal>(
+                ores::utility::decimal::decimal::from_double(*value).value());
+        };
+
+        ores::trading::domain::commodity_instrument row;
+        row.commodity_code = commodity->commodity_code;
+        row.currency = slot.currency;
+        row.quantity = commodity->quantity;
+        row.unit = commodity->unit;
+        row.start_date = commodity->start_date;
+        row.maturity_date = commodity->maturity_date;
+        row.fixed_price = money(commodity->fixed_price);
+        row.option_type = commodity->option_type;
+        row.strike_price = money(commodity->strike_price);
+        row.exercise_type = commodity->exercise_type;
+        row.average_type = commodity->average_type;
+        row.averaging_start_date = commodity->averaging_start_date;
+        row.averaging_end_date = commodity->averaging_end_date;
+        row.spread_commodity_code = commodity->spread_commodity_code;
+        row.spread_amount = money(commodity->spread_amount);
+        row.strip_frequency_code = commodity->strip_frequency_code;
+        row.variance_strike = commodity->variance_strike;
+        row.accumulation_amount = money(commodity->accumulation_amount);
+        row.knock_out_barrier = money(commodity->knock_out_barrier);
+        row.barrier_type = commodity->barrier_type;
+        row.lower_barrier = money(commodity->lower_barrier);
+        row.upper_barrier = money(commodity->upper_barrier);
+        row.swaption_expiry_date = commodity->swaption_expiry_date;
+        row.audit.change_reason_code = std::string(population_reason);
+        row.audit.change_commentary = "Generated trade population.";
+        book_req.instruments.commodity_instruments.push_back(row);
+    } else {
+        throw trade_population_write_error(
+            "The slot states no terms this writer knows how to book.");
+    }
 
     const auto reply = nats_.authenticated_request(
         ores::trading::messaging::book_trade_request::nats_subject, codec.encode(book_req));

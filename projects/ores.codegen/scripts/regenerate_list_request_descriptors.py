@@ -34,7 +34,9 @@ TARGET = (
 )
 
 STRUCT = re.compile(r"struct\s+(\w+)\s*\{(.*?)\n\};", re.S)
-SUBJECT = re.compile(r'static constexpr std::string_view nats_subject = "([^"]+)";')
+# The subject may be stated on the line after the `=`, which the generator has to
+# read too: a request missed here is a request whose payload goes out incomplete.
+SUBJECT = re.compile(r'static constexpr std::string_view nats_subject\s*=\s*"([^"]+)";')
 
 
 def members_of(body: str) -> tuple[str, ...]:

@@ -141,14 +141,19 @@ function dashboard(){
 function providerScreen(){
   const p = PROVIDERS.find(x => x.name === provider) || PROVIDERS[0];
   const s = serves(p);
-  const classes = [['FX','26'],['Rates','29']];
-  const tree = classes.map(([name,n]) =>
-    '<div class="node' + (name === 'FX' ? ' sel' : '') + '"><span class="ico">▸</span>' + name + '<span class="count">' + (s ? n + '/' + n : '0/' + n) + '</span></div>').join('');
+  const group = P.get('group') || 'class';
   const feeds = FEEDS.filter(f => f.provider === p.name);
-  const rows = (feeds.length ? feeds : FEEDS.slice(0,3).map(f => ({...f, provider:p.name}))).map(f =>
-    '<tr class="row"><td>' + (s ? '<span class="tag ok">Serving</span>' : '<span class="tag">Stopped</span>') + '</td>' +
-    '<td>' + (f.enabled ? '<span class="tag ok">Enabled</span>' : '<span class="tag bad">Disabled</span>') + '</td>' +
-    '<td>' + f.name + '</td><td>' + f.class + '</td><td>' + f.underlying + '</td><td>' + f.engine + '</td><td class="num">' + f.freq + '</td></tr>').join('');
+  const sample = feeds.length ? feeds : FEEDS.slice(0,3).map(f => ({...f, provider:p.name}));
+  const keyOf = f => group === 'engine' ? f.engine : group === 'underlying' ? f.underlying : f.class;
+  const groups = {};
+  sample.forEach(f => { const k = keyOf(f); (groups[k] = groups[k] || []).push(f); });
+  const rows = Object.keys(groups).sort().map(k =>
+    '<tr><td colspan="7" class="faint small" style="background:#1f1f24;text-transform:uppercase;letter-spacing:.06em">' + k + ' · ' + groups[k].length + '</td></tr>' +
+    groups[k].map(f =>
+      '<tr class="row"><td>' + (s ? '<span class="tag ok">Serving</span>' : '<span class="tag">Stopped</span>') + '</td>' +
+      '<td>' + (f.enabled ? '<span class="tag ok">Enabled</span>' : '<span class="tag bad">Disabled</span>') + '</td>' +
+      '<td>' + f.name + '</td><td>' + f.class + '</td><td>' + f.underlying + '</td><td>' + f.engine + '</td><td class="num">' + f.freq + '</td></tr>').join('')
+  ).join('');
   return nav() +
     '<div class="top"><h1>Provider</h1>' +
       '<select class="btn" id="provider-pick">' + PROVIDERS.map(x => '<option ' + (x.name === p.name ? 'selected' : '') + '>' + x.name + '</option>').join('') + '</select>' +
@@ -157,13 +162,19 @@ function providerScreen(){
       '<span style="margin-left:auto"></span>' +
       '<button class="btn" ' + (s ? 'disabled' : '') + '>Start (test)</button><button class="btn" ' + (s ? '' : 'disabled') + '>Stop (test)</button>' +
     '</div>' +
-    '<div class="split"><div class="panel"><h2>Folders</h2><div class="tree">' +
-      '<div class="node sel"><span class="ico">▾</span>' + p.name + '<span class="count">' + (s ? p.feeds + '/' + p.feeds : '0/' + p.feeds) + '</span></div>' + tree +
-      '</div></div><div class="panel"><h2>Feeds</h2>' +
+    '<div class="panel"><h2>Group and filter</h2>' +
+      '<div class="top"><span class="muted small">Group by</span>' +
+        '<select class="btn" id="group-pick">' +
+          [['class','Asset class'],['underlying','Instrument'],['engine','Engine']].map(([v,l]) =>
+            '<option value="' + v + '" ' + (v === group ? 'selected' : '') + '>' + l + '</option>').join('') +
+        '</select>' +
+        '<span class="muted small">Collection</span><select class="btn"><option>' + p.name + ' collection</option></select>' +
+        '<span class="faint small">The sample shows three feeds; the provider holds ' + p.feeds + '.</span>' +
+      '</div>' +
       '<table><thead><tr><th>State</th><th>Enabled</th><th>Name</th><th>Asset class</th><th>Underlying</th><th>Engine</th><th class="num">Frequency</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-      '<div class="notice">The oresmd URI column is gone. The series is reached from the feed\'s page. No feed is selected for a run test.</div></div></div>';
+      '<div class="notice">No folder tree. The collection filters the feeds; the grid groups them by a feed property. The oresmd URI column is gone and the series is reached from the feed page.</div>' +
+    '</div>';
 }
-
 function feedScreen(){
   const p = PROVIDERS.find(x => FEEDS.some(f => f.name === feedName && f.provider === x.name)) || PROVIDERS[0];
   const s = serves(p);
@@ -221,6 +232,8 @@ function render(){
   document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => go({tab: b.dataset.tab})));
   const pick = document.getElementById('provider-pick');
   if (pick) pick.addEventListener('change', () => go({provider: pick.value}));
+  const gp = document.getElementById('group-pick');
+  if (gp) gp.addEventListener('change', () => go({group: gp.value}));
 }
 function go(changes){
   const next = new URLSearchParams(location.search);

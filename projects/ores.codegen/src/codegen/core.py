@@ -62,6 +62,14 @@ _CONVENTION_FAMILY_UNIT_TEMPLATES = {
     "cpp_convention_family_unit.cpp.mustache",
 }
 
+# The policy shapes :rls_policy_style: selects. ``default`` is the shape every
+# tenant-scoped table emits: the session functions of ores.iam, called once for
+# each row the policy filters. ``hot_path`` is the shape a table that filters
+# millions of rows a second emits instead: the same two policies, with the
+# session setting read through a scalar subquery so it is evaluated once for
+# each query.
+_RLS_POLICY_STYLES = ("default", "hot_path")
+
 # Maps #+type: frontmatter values to model-type strings.
 _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.entity":            "domain_entity",
@@ -1782,7 +1790,10 @@ def validate_rls_isolation(model):
             without rls_tenant_isolation, or if rls_own_or_system_tenant_rows
             and rls_system_tenant_visible are both set, or if
             rls_service_read_role is set without rls_tenant_isolation, on a
-            junction, or with a name that is not a psql variable.
+            junction, or with a name that is not a psql variable, or if
+            rls_policy_style names no style, or if the hot-path style is asked
+            for without the pair of policies it emits or beside a widening, or
+            if writer_role is not a psql variable.
     """
     sql_section = model.get('sql', {})
     name = model.get('entity_singular') or model.get('name_singular') or '?'
@@ -1819,10 +1830,76 @@ def validate_rls_isolation(model):
             raise ValueError(
                 f"{name}: rls_service_read_role is emitted for domain entities "
                 f"only")
-        if not re.fullmatch(r'[a-z][a-z0-9_]*', str(role)):
+        if not _is_psql_variable_name(role):
             raise ValueError(
                 f"{name}: rls_service_read_role must name a psql variable, "
                 f"such as marketdata_service_user, not '{role}'")
+    style = sql_section.get('rls_policy_style', 'default')
+    if style not in _RLS_POLICY_STYLES:
+        raise ValueError(
+            f"{name}: rls_policy_style must be one of "
+            f"{', '.join(_RLS_POLICY_STYLES)}, not '{style}'")
+    if style == 'hot_path':
+        missing = [flag for flag in ('rls_tenant_isolation',
+                                     'rls_party_isolation')
+                   if not sql_section.get(flag)]
+        if missing:
+            raise ValueError(
+                f"{name}: rls_policy_style hot_path requires "
+                f"{' and '.join(missing)}, because the style emits exactly "
+                f"that pair of policies and no other")
+        refused = [flag for flag in ('rls_system_tenant_visible',
+                                     'rls_own_or_system_tenant_rows',
+                                     'rls_service_read_role')
+                   if sql_section.get(flag)]
+        if refused:
+            raise ValueError(
+                f"{name}: rls_policy_style hot_path cannot combine with "
+                f"{' or '.join(refused)}: the style emits the pair of policies "
+                f"and nothing else, so the clause that flag asks for would "
+                f"stop appearing without a word")
+    writer = sql_section.get('writer_role')
+    if writer and not model.get('entity_singular'):
+        raise ValueError(
+            f"{name}: writer_role is emitted for domain entities only")
+    if writer and not _is_psql_variable_name(writer):
+        raise ValueError(
+            f"{name}: writer_role must name a psql variable, such as "
+            f"marketdata_writer_user, not '{writer}'")
+
+
+def _is_psql_variable_name(value) -> bool:
+    """Whether ``value`` is a name a psql ``:\\name`` variable can carry."""
+    return bool(re.fullmatch(r'[a-z][a-z0-9_]*', str(value)))
+
+
+def validate_hypertable(model):
+    """
+    Validate the hypertable knobs a model states.
+
+    A hypertable is chunked on a column, and every unique index it carries must
+    name that column. The template emits both from the same flag, so a model
+    that asks for a hypertable and names no partition column would render a
+    ``create_hypertable`` call with an empty name and a primary key built around
+    it. Both fail when the schema is loaded rather than when the model is read,
+    so the model is refused here instead.
+
+    Args:
+        model (dict): a domain_entity dict; not mutated.
+
+    Raises:
+        ValueError: if ``hypertable`` is set and
+            ``hypertable_partition_column`` is not.
+    """
+    sql_section = model.get('sql', {})
+    if not sql_section.get('hypertable', False):
+        return
+    if not sql_section.get('hypertable_partition_column'):
+        name = model.get('entity_singular') or model.get('name_singular') or '?'
+        raise ValueError(
+            f"{name}: :hypertable: needs :hypertable_partition_column:, "
+            f"because create_hypertable chunks the table on that column and "
+            f"the primary key of a hypertable must carry it")
 
 
 def validate_explorer_interface(domain_entity):
@@ -4889,9 +4966,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Hypertable: suppress GIST and version locking; add create_hypertable block.
         if sql_section.get('hypertable', False):
             sql_section['hypertable'] = True
+        validate_hypertable(domain_entity)
         # Bi-temporal soft-update/soft-delete trigger pattern (hypertable entities).
         sql_section['bitemporal_soft_update'] = (
             sql_section.get('bitemporal_trigger', '') == 'soft_update_delete'
+        )
+        # The policy style is an enumerated feature, so the template reads one
+        # named flag rather than comparing strings -- the same shape as
+        # bitemporal_soft_update above.
+        sql_section['rls_hot_path'] = (
+            sql_section.get('rls_policy_style', 'default') == 'hot_path'
         )
         # Compute the base name every SQL identifier for this entity is composed
         # from (table, insert/notify/delete functions, triggers, delete rule).

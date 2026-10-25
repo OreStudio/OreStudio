@@ -338,6 +338,13 @@ _STAGING_ONLY_EVENTING_FACETS = frozenset({
     "ores.cpp.eventing-integration-test",
 })
 
+# The technical space a model renders when it states ``:sql_only: true``: the
+# store is the whole of it -- a table written by an ingest and read through a
+# hand-written repository, with no domain type, service or screen. The set is
+# read from the physical-space graph rather than listed here, so a facet added
+# under ores.sql joins it without a second edit.
+_SQL_TECHNICAL_SPACE = "ores.sql"
+
 # The frontmatter keys a shell menu name is derived from: a domain entity names
 # its menu after ``entity_plural``, a junction after ``name``.
 _PLURAL_KEYWORDS = frozenset({"entity_plural", "name"})
@@ -561,6 +568,20 @@ def resolve_targets(
     model_data = load_model(model_path)
     if model_type in ("domain_entity", "junction"):
         entity = model_data.get(model_type) or {}
+        if entity.get("sql_only"):
+            # Hard gate: the model states that the store is the whole of it,
+            # so only the SQL facets render. It runs before every gate below,
+            # because an :ores.*.enabled: override must not re-admit a C++,
+            # TypeScript, shell or presentation unit for a table that has no
+            # domain type to project.
+            sql_facets = graph.facets_under(_SQL_TECHNICAL_SPACE)
+            dropped = gen_facets - sql_facets
+            if dropped:
+                log.info(
+                    "%s: states :sql_only:, so only the SQL facets render; "
+                    "not rendering %s",
+                    model_path.name, ", ".join(sorted(dropped)))
+            gen_facets = gen_facets & sql_facets
         owner = _operation_protocol_owners(str(model_path.parent)).get(
             (entity.get("component"), _protocol_entity_name(model_data, model_type)))
         owned = (_PROTOCOL_FACETS & gen_facets) if owner else frozenset()

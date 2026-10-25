@@ -52,6 +52,7 @@ _FEATURE_NAMESPACE: dict[str, str] = {
     "has_tenant_id": "",
     "has_parent_id": "",
     "read_only": "",
+    "sql_only": "",
     "system_scope": "sql",
     "nullable_tenant_id": "sql",
     "no_audit_columns": "sql",
@@ -69,6 +70,8 @@ _FEATURE_NAMESPACE: dict[str, str] = {
     "rls_system_tenant_visible": "sql",
     "rls_own_or_system_tenant_rows": "sql",
     "rls_service_read_role": "sql",
+    "rls_policy_style": "sql",
+    "writer_role": "sql",
     "has_pagination": "presentation",
     "has_uuid_primary_key": "presentation",
     "has_change_reason_cache": "presentation",
@@ -2003,6 +2006,11 @@ def validate_model(model: dict[str, Any]) -> list[str]:
         # has no sub-components, and says so rather than naming a directory
         # that does not exist.
         if k == "subcomponent" and de.get("no_subcomponent"):
+            continue
+        # A model that renders the SQL schema alone has no C++ unit to place,
+        # so it has no sub-component to name: :sql_only: says what
+        # :no_subcomponent: would.
+        if k == "subcomponent" and de.get("sql_only"):
             continue
         if k not in de:
             errors.append(f"Missing required flag: {k}")

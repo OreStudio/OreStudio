@@ -25,6 +25,7 @@ import { recordResource } from '@ores/wire-protocol';
 import { subjects as businessDayConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/business_day_convention_type_protocol';
 import { subjects as calendarNameSubjects } from '@ores/wire-protocol/generated/refdata/protocol/calendar_name_protocol';
 import { subjects as conventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/convention_protocol';
+import { subjects as conventionKindSubjects } from '@ores/wire-protocol/generated/refdata/protocol/convention_kind_protocol';
 import { subjects as tenorBasisSwapConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_basis_swap_convention_protocol';
 import { subjects as dayCountSubjects } from '@ores/wire-protocol/generated/refdata/protocol/day_count_fraction_type_protocol';
 import { subjects as floatingIndexSubjects } from '@ores/wire-protocol/generated/refdata/protocol/floating_index_type_protocol';
@@ -44,13 +45,15 @@ import type { LiveSession } from './sessions.js';
  * screen lists that the conventions document does not carry, and which
  * families the screen writes. `writable` marks the two families whose terms the
  * screen draws in full; the rest are listed and read, and are not written until
- * their terms are drawn.
+ * their terms are drawn. `shared` marks a family the tenant holds once and every
+ * party reads, which the registry states as a table with no party.
  */
 export interface ConventionFamily {
     readonly key: string;
     readonly entity: string;
     readonly prefix: string;
     readonly writable: boolean;
+    readonly shared: boolean;
 }
 
 /**
@@ -85,30 +88,38 @@ const COMPOSITE_FAMILIES: Readonly<Record<string, CompositeFamily>> = {
     },
 };
 
-/** Kinds the screen lists that the conventions document does not carry. */
-const SCREEN_ONLY_ENTITIES: readonly (readonly [string, string])[] = [
-    ['tenor', 'tenor_convention'],
-    ['currency-pair', 'currency_pair_convention'],
+/**
+ * Kinds the screen lists that the generated registry does not carry, and whether
+ * each is shared. The tenant holds both once, and every party reads them.
+ */
+const SCREEN_ONLY_ENTITIES: readonly (readonly [string, string, boolean])[] = [
+    ['tenor', 'tenor_convention', true],
+    ['currency-pair', 'currency_pair_convention', true],
 ];
 
 const WRITABLE_FAMILIES: ReadonlySet<string> = new Set(['deposit', 'swap']);
+
+/** The kind code a screen family stands for: tenor-basis-swap is TENOR_BASIS_SWAP. */
+export function kindCodeOf(key: string): string {
+    return key.replaceAll('-', '_').toUpperCase();
+}
 
 export const ABSORBED_REGISTRY_KEYS: ReadonlySet<string> = new Set(
     Object.values(COMPOSITE_FAMILIES).flatMap((composite) => composite.registryKeys),
 );
 
-function screenFamily(key: string, entity: string): ConventionFamily {
-    return { key, entity, prefix: `${entity}s`, writable: WRITABLE_FAMILIES.has(key) };
+function screenFamily(key: string, entity: string, shared: boolean): ConventionFamily {
+    return { key, entity, prefix: `${entity}s`, writable: WRITABLE_FAMILIES.has(key), shared };
 }
 
 export const CONVENTION_FAMILIES: readonly ConventionFamily[] = [
     ...CONVENTION_FAMILY_ENTRIES.filter((entry) => !ABSORBED_REGISTRY_KEYS.has(entry.key)).map(
-        (entry) => screenFamily(entry.key.replaceAll('_', '-'), entry.entity),
+        (entry) => screenFamily(entry.key.replaceAll('_', '-'), entry.entity, !entry.partyScoped),
     ),
     ...Object.entries(COMPOSITE_FAMILIES).map(([key, composite]) =>
-        screenFamily(key, composite.entity),
+        screenFamily(key, composite.entity, false),
     ),
-    ...SCREEN_ONLY_ENTITIES.map(([key, entity]) => screenFamily(key, entity)),
+    ...SCREEN_ONLY_ENTITIES.map(([key, entity, shared]) => screenFamily(key, entity, shared)),
 ].sort((left, right) => (left.key < right.key ? -1 : left.key > right.key ? 1 : 0));
 
 /**
@@ -226,6 +237,25 @@ export function registerConventionRoutes(
 ): void {
     server.get('/api/conventions/families', async (request) => {
         const session = requireSession(request);
+        // The asset class each kind serves is data on the kind. A read that fails
+        // leaves every card without one, and the screen groups them under Other.
+        const assetClassOf = new Map<string, string>();
+        try {
+            const kinds = await readAll(
+                session,
+                conventionKindSubjects.list_convention_kinds_request,
+                'kinds',
+                {
+                    filter: null,
+                    as_of: null,
+                },
+            );
+            for (const kind of kinds) {
+                assetClassOf.set(String(kind['code']), String(kind['asset_class'] ?? ''));
+            }
+        } catch {
+            // No asset class is known; the cards still list every family.
+        }
         const families = [];
         for (const family of CONVENTION_FAMILIES) {
             const composite = COMPOSITE_FAMILIES[family.key];
@@ -259,10 +289,13 @@ export function registerConventionRoutes(
             } catch {
                 count = null;
             }
+            const assetClass = assetClassOf.get(kindCodeOf(family.key)) ?? '';
             families.push({
                 key: family.key,
                 entity: family.entity,
                 writable: family.writable,
+                shared: family.shared,
+                assetClass: assetClass === '' ? null : assetClass,
                 count,
             });
         }

@@ -75,6 +75,10 @@ export interface ConventionFamilyCard {
     readonly key: string;
     readonly entity: string;
     readonly writable: boolean;
+    /** Whether the tenant holds the kind once and every party reads it. */
+    readonly shared: boolean;
+    /** The asset class the kind serves, from the kind's data; null when it is not known. */
+    readonly assetClass: string | null;
     /** Null when the count could not be read. */
     readonly count: number | null;
 }
@@ -131,6 +135,8 @@ export const conventions = {
                         key: z.string(),
                         entity: z.string(),
                         writable: z.boolean(),
+                        shared: z.boolean(),
+                        assetClass: z.string().nullable(),
                         count: z.int().nonnegative().nullable(),
                     }),
                 ),

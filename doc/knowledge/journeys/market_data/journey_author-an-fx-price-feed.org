@@ -35,8 +35,9 @@ that has to change, or a mixture that no longer fits the pair. The journey
 starts at the feed tree the Market Simulator draws and ends when the person
 leaves the saved feed.
 
-A saved config is a candidate. Nothing it describes is produced until the feed
-is enabled and started, and the tick rate it carries is the one a running feed
+A saved config is a candidate. Nothing it describes is produced until a party
+demands it; the demand comes from the subscriptions and the routes. An operator
+can start it as a test, and the tick rate it carries is the one a running feed
 honours. The model calls this record the FX spot generation config, and the
 screen calls it the feed.
 
@@ -82,14 +83,13 @@ screen calls it the feed.
    the price source has what it needs, the mixture holds at least one component
    and the weights sum above zero. The system then writes the config, writes
    the mixture, and replies with the version it wrote. The feed is not started
-   by the save; it stays disabled until the person enables it and a running
-   feed is asked for.
+   by the save. Demand starts it; an operator can start it as a test.
 9. *Check the history.* The person opens the history of the config or of one
    component. The system shows every version with the field-level difference
    from the one before. A revert is a new version, not a deletion.
 10. *Delete a feed that is no longer wanted.* The person chooses *Delete*. The
     system removes the mixture first and the config after it, and asks for a
-    reason. A feed that is running is stopped before it can be removed.
+    reason. A running generator is stopped before the feed can be removed.
 11. *Leave.* The person goes back to the feed tree. Nothing has been published,
     and no tick has been produced.
 
@@ -228,7 +228,7 @@ row.
 
 * Related journeys
 
-- [[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data feeds running]] — the operations journey that starts, stops and watches the feeds this editor authors.
+- [[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data feeds running]] — the operations journey that watches the sources these feeds publish through.
 - [[id:AB04B01E-7EAA-4C98-97A9-681194AB0395][Manage a curve's blueprint]] — the IR equivalent of this feed, and the shape this editor follows.
 - [[id:F55B08E3-0ADA-4267-8CB9-127FF1814549][Bootstrap or refresh a curve]] — where a generated rate becomes a candidate curve, with the provenance marked generated.
 - [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]] — the group that consumes what a feed produces.

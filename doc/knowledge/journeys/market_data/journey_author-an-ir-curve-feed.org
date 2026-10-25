@@ -37,8 +37,9 @@ author. The trigger is a new currency and index to simulate, a new short-rate
 model, a changed parameter set, or a changed ladder. The journey starts at the
 collection in the synthetic tree and ends when the person leaves the saved feed.
 
-A saved feed is a configuration. It produces nothing until the feed is started,
-and starting it is a separate journey. The model calls this record the
+A saved feed is a configuration. It produces nothing until a party demands it;
+demand is computed from the subscriptions and the routes. Starting it as an
+operator test is a separate journey. The model calls this record the
 =ir_curve_generation_config= and the screen calls it the curve feed.
 
 * Steps
@@ -205,10 +206,10 @@ subject above is generated from the component's protocol and exists.
    candidate is a web page and a route. Until then the journey runs only from
    the shell.
 4. *A saved feed is not a running feed.* Save writes the configuration; the feed
-   produces nothing until it is started, and a running feed keeps its old
-   parameters, values and ladder until it is stopped and restarted. The screen
-   says so and offers no restart. The candidate is a restart on save. Until then
-   the person stops and starts the feed.
+   produces nothing until a party demands it. A running generator keeps its old
+   parameters, values and ladder until it is restarted, by demand returning or
+   by the operator test. The screen says so and offers no restart. The candidate
+   is a restart on save.
 5. *The previews take loose inputs, not a saved feed.* Both operations take a
    process type and a parameter vector rather than a config id, so the editor
    assembles the request and the server never reads the stored row. The

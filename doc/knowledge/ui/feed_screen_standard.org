@@ -430,8 +430,8 @@ children are the asset class folders; a provider with several lists its collecti
 - A node has an address, =?tab=tree&node=provider:bloomberg= or
   =?tab=tree&node=folder:<id>=, and the filters are in the address too, so a link opens
   the tree as it was.
-- A feed's page has the trail Home, Market data, Synthetic, Feed tree, the folders down to
-  the feed, then the feed. Each folder opens the tree on it.
+- A feed's page has the trail Home, Market data, Simulator, Synthetic, Feed tree, the folders
+  down to the feed, then the feed. Each folder opens the tree on it.
 
 ** History
 

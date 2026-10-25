@@ -78,8 +78,7 @@ The Process tab is live. Edit a parameter and the shape and the paths follow. Th
 *Reseed* control redraws them from a new step, and the path count takes one to
 eight. The Curve Template tab adds, removes and reorders =[start, end)= rows, and
 every change redraws the shape. The Instrument tab chooses a fixed =r0= or a
-starting rate from a vintage; Provenance shows the binding and the version
-history. Save writes a mock confirmation line.
+starting rate from a vintage; Provenance shows the source and the version history. Save writes a mock confirmation line.
 
 ** What is fake
 

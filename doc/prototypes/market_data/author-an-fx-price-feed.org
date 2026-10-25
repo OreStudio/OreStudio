@@ -183,5 +183,5 @@ feed is bound to, and how that binding is validated, are open.
   document yet; [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]] states where it belongs.
 - [[file:index.org][Market data prototypes]] — the group page, and the row that records what this prototype argues.
 - [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]] — the record this editor writes.
-- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]] — what starts and stops a feed once it exists.
+- [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]] — what demand starts, and the operator test control.
 - [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.

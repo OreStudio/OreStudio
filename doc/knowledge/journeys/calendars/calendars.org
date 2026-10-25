@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:user_journey:refdata:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-25
 
 A holiday calendar decides which days count: every date the system rolls,
 settles or fixes on is checked against one. This group holds the journeys that
@@ -20,6 +20,13 @@ events) and that check the business days those inputs produce.
 | Journey | Actor | Gist |
 |---------+-------+------|
 | [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]] | tenant administrator | A calendar's rules, exceptions and events, and the business days they produce |
+
+The calendar types and the diary entry types the pickers offer are short code
+lists, kept by [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] in the Classifications
+group. The one journey here was judged on 2026-10-25 as a CRUD variation of the
+standard record screen with parts, two own actions and one derived view; no
+workflow is needed. This is the first topic of the
+[[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][screen pipeline]].
 
 * Related
 

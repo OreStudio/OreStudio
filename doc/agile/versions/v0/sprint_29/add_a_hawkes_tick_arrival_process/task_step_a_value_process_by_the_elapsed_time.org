@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :add_a_hawkes_tick_arrival_process:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/step-a-value-process-by-the-elapsed-time
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A value process can take a step longer or shorter than one nominal tick, with th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -41,9 +41,27 @@ A value process can take a step longer or shorter than one nominal tick, with th
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A tick is the arrival process's unit, so a step of two ticks is a step of twice
+the time. The value process needs to hear that number, and the two callers that
+have one need a way to say it.
+
+1. The interface gains =next(elapsed_ticks)= and =supports_variable_step()=. The
+   default answers one tick with =next()= and refuses anything else, so a
+   process with no time-scaled law says so instead of guessing.
+2. The geometric and arithmetic mixtures scale the mean with the elapsed time
+   and the spread with its square root: the variance of a return over a fixed
+   span must not depend on how the span is cut. At one tick the draw is exactly
+   the old draw, so the same seed gives the same prices.
+3. The Ornstein-Uhlenbeck transition is already exact for any step, so the
+   elapsed time replaces the tick length in the same closed form.
+4. The clock hands its body the gap it waited, and each feed turns that gap into
+   ticks. A feed whose arrival gives ticks of different lengths is refused at
+   construction when its process cannot step by elapsed time, so the pairing
+   cannot be built wrong.
+5. Tests: one tick equals the old step on the same seed; the spread over a span
+   survives a different cut; a process with no time-scaled law refuses; the
+   compatibility rule allows periodic for both kinds and a non-periodic mode
+   only for a process that can step.
 
 * Measurements
 
@@ -57,7 +75,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The three affected suites | 3 of 3 pass | =compass test run -- -R "ores.(synthetic.api\|synthetic.service\|analytics.quant).tests"= | fbec022ce0 |
+| New cases for the elapsed step | 11 across five test files | same run | fbec022ce0 |
 
 * Notes
 
@@ -85,3 +104,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A value process now takes a step measured in nominal ticks, and one tick is
+still exactly the old step: the same seed gives the same prices, and the
+existing tests pass unchanged.
+
+The mixtures scale the mean with the time and the spread with its square root,
+so a year of returns has the same variance whether it arrives in many small
+steps or few large ones — the test measures that on 400 paths. The
+Ornstein-Uhlenbeck process needed only its elapsed time in place of the tick
+length, because its transition was already exact.
+
+The clock hands its body the gap it waited, which is the seam that makes an
+irregular arrival usable: a Hawkes feed steps the price by the time that passed,
+not by one nominal tick. A feed that pairs a non-periodic arrival with a
+process that cannot step is refused at construction.

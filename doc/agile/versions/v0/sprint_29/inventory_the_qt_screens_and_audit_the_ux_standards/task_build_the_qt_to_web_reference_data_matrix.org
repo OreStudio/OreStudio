@@ -8,7 +8,7 @@
 #+filetags: :inventory_the_qt_screens_and_audit_the_ux_standards:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-qt-to-web-matrix
-#+pr:
+#+pr: 3748
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3748][#3748]] | [docs] Add the Qt to web reference data matrix |
 
 * Review
 

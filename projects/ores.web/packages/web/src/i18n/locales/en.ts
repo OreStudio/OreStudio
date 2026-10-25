@@ -1683,7 +1683,9 @@ export const en: SourceCatalogue = {
                 loadingWorkunits: 'Reading the workunits...',
                 loadingResults: 'Reading the results...',
                 empty: 'No batch has been recorded yet.',
-                noMatch: 'No batch matches. Clear the filters.',
+                expandAll: 'Expand all',
+            collapseAll: 'Collapse all',
+            noMatch: 'No batch matches. Clear the filters.',
                 download: 'Download the file',
                 runsTitle: 'Runs with the outcome',
                 noRuns: 'No run ended with this outcome.',
@@ -5263,6 +5265,23 @@ export const en: SourceCatalogue = {
         continue: 'Continue',
         retry: 'Retry',
         cancel: 'Cancel',
+    },
+    oreParameter: {
+        documentation: 'Show documentation',
+        hideDocumentation: 'Hide documentation',
+        undocumented: 'No documentation is held for {name}.',
+        defaultIs: 'Default: {text}',
+        schema: {
+            xml: 'ORE XML',
+            format: 'Format',
+            introduced: 'Introduced in',
+            removed: 'Removed in',
+        },
+        filters: {
+            set: 'Set in this configuration',
+            numbers: 'Changes the numbers',
+            shown: '{shown} of {total} settings shown',
+        },
     },
 };
 

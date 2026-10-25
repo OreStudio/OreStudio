@@ -1703,7 +1703,9 @@ const fr: SourceCatalogue = {
                 loadingWorkunits: 'Lecture des unités de travail...',
                 loadingResults: 'Lecture des résultats...',
                 empty: 'Aucun lot n’a encore été enregistré.',
-                noMatch: 'Aucun lot ne correspond. Effacez les filtres.',
+                expandAll: 'Tout développer',
+            collapseAll: 'Tout réduire',
+            noMatch: 'Aucun lot ne correspond. Effacez les filtres.',
                 download: 'Télécharger le fichier',
                 runsTitle: 'Exécutions avec cette issue',
                 noRuns: 'Aucune exécution n’a pris fin avec cette issue.',
@@ -5337,6 +5339,23 @@ const fr: SourceCatalogue = {
         continue: 'Continuer',
         retry: 'Réessayer',
         cancel: 'Annuler',
+    },
+    oreParameter: {
+        documentation: 'Afficher la documentation',
+        hideDocumentation: 'Masquer la documentation',
+        undocumented: "Aucune documentation n'est disponible pour {name}.",
+        defaultIs: 'La valeur par défaut est {text}.',
+        schema: {
+            xml: 'XML ORE',
+            format: 'Format',
+            introduced: 'Introduit dans',
+            removed: 'Retiré dans',
+        },
+        filters: {
+            set: 'Défini dans cette configuration',
+            numbers: 'Modifie les nombres',
+            shown: '{shown} sur {total} affichés',
+        },
     },
 };
 

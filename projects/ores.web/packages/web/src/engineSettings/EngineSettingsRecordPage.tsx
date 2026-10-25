@@ -71,6 +71,7 @@ import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { PATHS, reportPath } from '../shell/paths.js';
 import { EditingModeToggle, useEditingMode, type EditingMode } from '../ui/EditingMode.js';
+import { FilterChip, ParameterDocumentationPanel } from '../ui/OreParameter.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { useTabs } from '../ui/Tabs.js';
 import {
@@ -719,31 +720,6 @@ function GroupTab({
     );
 }
 
-function FilterChip({
-    pressed,
-    onClick,
-    children,
-}: {
-    readonly pressed: boolean;
-    readonly onClick: () => void;
-    readonly children: ReactNode;
-}): ReactNode {
-    return (
-        <button
-            type="button"
-            aria-pressed={pressed}
-            onClick={onClick}
-            className={
-                pressed
-                    ? 'rounded-full border border-accent/60 bg-accent/15 px-3 py-1 text-xs text-ink'
-                    : 'rounded-full border border-line px-3 py-1 text-xs text-ink-muted hover:bg-surface-hover'
-            }
-        >
-            {children}
-        </button>
-    );
-}
-
 /** One setting: its label, its value or its control, and its documentation. */
 export function SettingRow({
     setting,
@@ -837,7 +813,21 @@ export function SettingRow({
             >
                 {open ? t('engineSettings.hideDocumentation') : t('engineSettings.documentation')}
             </button>
-            {open && <Documentation setting={setting} mode={mode} />}
+            {open && (
+                <ParameterDocumentationPanel
+                    doc={{
+                        documented: setting.documented,
+                        name: setting.ore,
+                        description: setting.description,
+                        defaultText: setting.defaultText,
+                        format: setting.format,
+                        introducedIn: setting.introducedIn,
+                        removedIn: setting.removedIn,
+                        xpath: setting.xpath,
+                    }}
+                    mode={mode}
+                />
+            )}
         </li>
     );
 }
@@ -898,44 +888,6 @@ function Control({
                 </option>
             ))}
         </Select>
-    );
-}
-
-/** What a setting means, from its ore parameter, and in Advanced the schema panel. */
-function Documentation({
-    setting,
-    mode,
-}: {
-    readonly setting: EngineSetting;
-    readonly mode: EditingMode;
-}): ReactNode {
-    const { t } = useTranslation();
-    if (!setting.documented) {
-        return (
-            <Notice tone="warn">{t('engineSettings.undocumented', { name: setting.ore })}</Notice>
-        );
-    }
-    return (
-        <div className="space-y-2 rounded-md bg-surface-overlay p-3 text-sm">
-            <p>{setting.description}</p>
-            <p className="text-xs text-ink-faint">
-                {t('engineSettings.defaultIs', { text: setting.defaultText })}
-            </p>
-            {mode === 'advanced' && (
-                <dl className="grid gap-x-6 gap-y-2 border-t border-line-subtle pt-2 sm:grid-cols-2">
-                    <Detail label={t('engineSettings.schema.xml')} value={setting.xpath} mono />
-                    <Detail label={t('engineSettings.schema.format')} value={setting.format} />
-                    <Detail
-                        label={t('engineSettings.schema.introduced')}
-                        value={setting.introducedIn}
-                    />
-                    <Detail
-                        label={t('engineSettings.schema.removed')}
-                        value={setting.removedIn === '' ? '—' : setting.removedIn}
-                    />
-                </dl>
-            )}
-        </div>
     );
 }
 

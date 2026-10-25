@@ -60,6 +60,11 @@ import { Button, Detail, Dialog, Field, Input, Notice, Select, Tag } from '../ui
 import { RelativeTime } from '../ui/Time.js';
 import { useTabs } from '../ui/Tabs.js';
 import { EditingModeToggle, useEditingMode, type EditingMode } from '../ui/EditingMode.js';
+import {
+    ParameterDocuments,
+    ParameterFilters,
+    type ParameterDocumentation,
+} from '../ui/OreParameter.js';
 import { PRICING_ENGINES_EVENTS } from './PricingEnginesPage.js';
 import { ModelEnginePanels, SettingValue } from './parts.js';
 import { SaveDialog } from './SaveDialog.js';
@@ -406,6 +411,7 @@ function ProductsTab({
 }): ReactNode {
     const { t } = useTranslation();
     const [filter, setFilter] = useState('');
+    const [closed, setClosed] = useState<ReadonlySet<string>>(() => new Set());
     const products = [...document.products].sort((a, b) => a.position - b.position);
     const needle = filter.trim().toLowerCase();
     const visible =
@@ -441,6 +447,23 @@ function ProductsTab({
                         className="w-full rounded border border-line bg-surface-base px-2 py-1 text-sm text-ink placeholder:text-ink-faint"
                     />
                 )}
+                {visible.length > 0 && (
+                    <button
+                        type="button"
+                        className="px-1 text-xs text-accent hover:text-accent-bright"
+                        onClick={() =>
+                            setClosed(
+                                classes.every((assetClass) => closed.has(assetClass))
+                                    ? new Set(classes)
+                                    : new Set(),
+                            )
+                        }
+                    >
+                        {classes.every((assetClass) => closed.has(assetClass))
+                            ? t('pricingEngines.workbench.expandAll')
+                            : t('pricingEngines.workbench.collapseAll')}
+                    </button>
+                )}
                 {products.length === 0 ? (
                     <p className="text-sm text-ink-muted">
                         {t('pricingEngines.record.noProducts')}
@@ -455,7 +478,23 @@ function ProductsTab({
                             (product) => assetClassOf(vocabulary, product.typeCode) === assetClass,
                         );
                         return (
-                            <details key={assetClass} open className="group/class">
+                            <details
+                                key={assetClass}
+                                open={!closed.has(assetClass)}
+                                onToggle={(event) => {
+                                    const isOpen = event.currentTarget.open;
+                                    setClosed((before) => {
+                                        const next = new Set(before);
+                                        if (isOpen) {
+                                            next.delete(assetClass);
+                                        } else {
+                                            next.add(assetClass);
+                                        }
+                                        return next;
+                                    });
+                                }}
+                                className="group/class"
+                            >
                                 <summary className="flex cursor-pointer items-baseline justify-between gap-2 px-1 pt-2 text-[10px] tracking-wide text-ink-faint uppercase">
                                     <span>
                                         {assetClassLabel(assetClass) === ''
@@ -581,16 +620,13 @@ function Workbench({
                         </div>
                     )}
                 </header>
-                <details>
-                    <summary className="cursor-pointer text-xs text-ink-faint">
-                        {t('pricingEngines.workbench.documentation')}
-                    </summary>
-                    <p className="pt-1 text-sm text-ink-muted">
+                <Docs>
+                    <p className="text-sm text-ink-muted">
                         {type !== undefined && type.documentation !== ''
                             ? type.documentation
                             : t('pricingEngines.workbench.noDescription')}
                     </p>
-                </details>
+                </Docs>
             </section>
             {editing && vocabulary !== undefined ? (
                 <ProductEditor
@@ -652,6 +688,25 @@ function Workbench({
     );
 }
 
+/** The prose documentation of a product, a model or an engine, opened like a parameter's. */
+function Docs({ children }: { readonly children: ReactNode }): ReactNode {
+    const { t } = useTranslation();
+    const [open, setOpen] = useState(false);
+    return (
+        <>
+            <button
+                type="button"
+                aria-expanded={open}
+                className="text-xs text-accent hover:text-accent-bright"
+                onClick={() => setOpen((before) => !before)}
+            >
+                {open ? t('oreParameter.hideDocumentation') : t('oreParameter.documentation')}
+            </button>
+            {open && <div className="space-y-1 pt-1">{children}</div>}
+        </>
+    );
+}
+
 /** One of the two roles a product's price comes from: the model or the engine. */
 type SettingDoc = PricingVocabulary['settings'][number];
 
@@ -692,6 +747,16 @@ function RoleCard({
     readonly pairKnown?: boolean | undefined;
 }): ReactNode {
     const { t } = useTranslation();
+    const [setOnly, setSetOnly] = useState(false);
+    const [numbersOnly, setNumbersOnly] = useState(false);
+    const [openDocs, setOpenDocs] = useState(false);
+    const shown = parameters.filter((parameter) => {
+        const doc = settingOf(parameter.scope, parameter.name);
+        if (setOnly && (doc?.defaultText ?? '') !== '' && parameter.value === doc?.defaultText) {
+            return false;
+        }
+        return true;
+    });
     return (
         <section className="card space-y-3 p-4">
             <header className="space-y-1">
@@ -718,22 +783,36 @@ function RoleCard({
                 )}
             </div>
             <div>
-                <h4 className="pb-1 text-xs text-ink-faint">
-                    {t('pricingEngines.workbench.parameters')}
-                </h4>
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
+                    <h4 className="text-xs text-ink-faint">
+                        {t('pricingEngines.workbench.parameters')}
+                    </h4>
+                    {parameters.length > 0 && (
+                        <ParameterFilters
+                            set={setOnly}
+                            numbers={numbersOnly}
+                            onSet={() => setSetOnly((before) => !before)}
+                            onNumbers={() => setNumbersOnly((before) => !before)}
+                            shown={shown.length}
+                            total={parameters.length}
+                        />
+                    )}
+                </div>
                 {parameters.length === 0 ? (
                     <p className="text-sm text-ink-faint">
                         {t('pricingEngines.workbench.noParameters')}
                     </p>
                 ) : (
-                    parameters.map((parameter) => (
-                        <ParameterRow
-                            key={parameter.id}
-                            parameter={parameter}
-                            doc={settingOf(parameter.scope, parameter.name)}
-                            mode={mode}
-                        />
-                    ))
+                    <ul className="divide-y divide-line-subtle">
+                        {shown.map((parameter) => (
+                            <ParameterRow
+                                key={parameter.id}
+                                parameter={parameter}
+                                doc={settingOf(parameter.scope, parameter.name)}
+                                mode={mode}
+                            />
+                        ))}
+                    </ul>
                 )}
             </div>
         </section>
@@ -753,61 +832,32 @@ function ParameterRow({
     readonly doc: ParameterDoc | undefined;
     readonly mode: EditingMode;
 }): ReactNode {
-    const { t } = useTranslation();
     const label = doc?.label !== undefined && doc.label !== '' ? doc.label : parameter.name;
-    const help = doc?.help ?? '';
-    const description = doc?.description ?? '';
+    const documentation: ParameterDocumentation = {
+        documented: doc?.description !== undefined && doc.description !== '',
+        name: parameter.name,
+        description: doc?.description ?? '',
+        defaultText: doc?.defaultText ?? '',
+        format: doc?.format ?? '',
+        introducedIn: doc?.introducedIn ?? '',
+        removedIn: doc?.removedIn ?? '',
+        xpath: doc?.xpath ?? '',
+    };
     return (
-        <div className="border-t border-line-subtle py-2">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="text-sm">{label}</span>
-                <span className="font-mono text-xs">{parameter.value}</span>
-            </div>
-            <div className="font-mono text-[10px] text-ink-faint">{parameter.name}</div>
-            {help !== '' && <p className="pt-1 text-xs text-ink-muted">{help}</p>}
-            <details className="mt-1">
-                <summary className="cursor-pointer text-xs text-ink-faint">
-                    {t('pricingEngines.workbench.documentation')}
-                </summary>
-                <div className="space-y-1 pt-1 text-xs text-ink-muted">
-                    {description !== '' && description !== help && <p>{description}</p>}
-                    {doc === undefined ? (
-                        <p>{t('pricingEngines.globals.noDocumentation')}</p>
-                    ) : (
-                        <>
-                            {doc.defaultText !== undefined && doc.defaultText !== '' && (
-                                <p className="text-ink-faint">
-                                    {t('pricingEngines.workbench.default')}:{' '}
-                                    <span className="font-mono">{doc.defaultText}</span>
-                                </p>
-                            )}
-                            {mode === 'advanced' && (
-                                <>
-                            {doc.format !== undefined && doc.format !== '' && (
-                                <p className="text-ink-faint">
-                                    {t('pricingEngines.workbench.format')}: {doc.format}
-                                </p>
-                            )}
-                            {doc.required === true && (
-                                <p className="text-ink-faint">
-                                    {t('pricingEngines.workbench.required')}
-                                </p>
-                            )}
-                            {doc.introducedIn !== undefined && doc.introducedIn !== '' && (
-                                <p className="text-ink-faint">
-                                    {t('pricingEngines.workbench.introduced')}: {doc.introducedIn}
-                                </p>
-                            )}
-                            {doc.xpath !== undefined && doc.xpath !== '' && (
-                                <p className="font-mono text-[10px] text-ink-faint">{doc.xpath}</p>
-                            )}
-                                </>
-                            )}
-                        </>
+        <li className="space-y-2 py-3">
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+                <div className="min-w-0">
+                    <span className="text-sm font-medium">{label}</span>
+                    {doc?.required === true && (
+                        <span className="ml-2 text-[10px] text-ink-faint">required</span>
                     )}
                 </div>
-            </details>
-        </div>
+                <div className="text-sm">
+                    <span className="font-mono text-xs">{parameter.value}</span>
+                </div>
+            </div>
+            <ParameterDocuments doc={documentation} mode={mode} />
+        </li>
     );
 }
 

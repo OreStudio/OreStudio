@@ -1694,7 +1694,9 @@ const pt: SourceCatalogue = {
                 loadingWorkunits: 'A ler as unidades de trabalho...',
                 loadingResults: 'A ler os resultados...',
                 empty: 'Ainda não foi registado nenhum lote.',
-                noMatch: 'Nenhum lote corresponde. Limpe os filtros.',
+                expandAll: 'Expandir tudo',
+            collapseAll: 'Recolher tudo',
+            noMatch: 'Nenhum lote corresponde. Limpe os filtros.',
                 download: 'Descarregar o ficheiro',
                 runsTitle: 'Execuções com o desfecho',
                 noRuns: 'Nenhuma execução terminou com este desfecho.',
@@ -4899,6 +4901,8 @@ const pt: SourceCatalogue = {
             parameters: 'Parâmetros',
             noParameters: 'Sem parâmetros. O modelo ou o motor usa os seus próprios valores.',
             documentation: 'Documentação',
+            filter: 'Filtrar produtos',
+            noMatch: 'Nenhum produto corresponde.',
             format: 'Formato',
             default: 'Valor por omissão',
             introduced: 'Introduzido em',
@@ -5302,6 +5306,23 @@ const pt: SourceCatalogue = {
         continue: 'Continuar',
         retry: 'Tentar novamente',
         cancel: 'Cancelar',
+    },
+    oreParameter: {
+        documentation: 'Mostrar documentação',
+        hideDocumentation: 'Ocultar documentação',
+        undocumented: 'Não há documentação para {name}.',
+        defaultIs: 'O valor por omissão é {text}.',
+        schema: {
+            xml: 'XML ORE',
+            format: 'Formato',
+            introduced: 'Introduzido em',
+            removed: 'Removido em',
+        },
+        filters: {
+            set: 'Definido nesta configuração',
+            numbers: 'Altera os números',
+            shown: '{shown} de {total} apresentados',
+        },
     },
 };
 

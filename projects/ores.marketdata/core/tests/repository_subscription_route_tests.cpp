@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/route.hpp"
 #include "ores.marketdata.api/domain/subscription.hpp"
@@ -219,4 +220,27 @@ TEST_CASE("a_route_cannot_move_to_a_provider_without_a_subscription", route_tags
     current.front().change_reason_code = "system.test";
     CHECK_THROWS_WITH(routes.write(h.context(), current.front()),
                       Catch::Matchers::ContainsSubstring("holds no subscription"));
+}
+
+TEST_CASE("a_system_tenant_session_reads_no_route_of_another_tenant", route_tags) {
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    subscription_repository subscriptions;
+    route_repository routes;
+
+    auto s = subscribed(h, ctx, subscriptions, "ore");
+    auto r = generate_synthetic_route(ctx);
+    r.party_id = s.party_id;
+    r.provider_code = "ore";
+    r.source_id = catalogue::ore_import_source_id();
+    routes.write(h.context(), r);
+    const auto id = boost::uuids::to_string(r.id);
+
+    // The defect of 2026-10-23 was a system-tenant session reading another
+    // tenant's route. The tenant policy must return nothing there, and the
+    // owning tenant must still read its own.
+    const auto system_ctx =
+        ores::database::service::tenant_context::with_system_tenant(h.context());
+    CHECK(routes.read_latest(system_ctx, id).empty());
+    CHECK(routes.read_latest(h.context(), id).size() == 1);
 }

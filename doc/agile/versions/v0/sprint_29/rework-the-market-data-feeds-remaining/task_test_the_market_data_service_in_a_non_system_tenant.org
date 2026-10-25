@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/test-the-market-data-service-in-a-non-system-tenant
+#+pr: 3738
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A test that uses the system tenant for its rows cannot hide a tenant visibility 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -40,9 +40,13 @@ A test that uses the system tenant for its rows cannot hide a tenant visibility 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Make the ingest fixture state, and assert, that its tenant is not the
+   system tenant.
+2. Add a core test that writes a route in the test tenant and reads it from a
+   system-tenant session, which must see nothing, and from the owning tenant,
+   which must see it.
+3. Keep the service-role policy check in the route visibility pgTAP file,
+   which already names the role and refuses a system session of another role.
 
 * Measurements
 
@@ -75,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3738][#3738]] | [marketdata] Test the demand and ingest path outside the system tenant |
 
 * Review
 
@@ -83,4 +87,19 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Ingest suite in a non-system tenant | passed | =ctest --preset linux-clang-release-ninja -R ores.marketdata.service.tests= | cb39a7c254 |
+| Core suite with the visibility test | passed | =ctest --preset linux-clang-release-ninja -R ores.marketdata.core.tests= | cb39a7c254 |
+
 * Result
+
+The tests no longer rely on the system tenant. The ingest fixture asserts its
+tenant is not the system tenant before it writes anything, so a test that falls
+back to the system tenant fails instead of hiding a visibility defect. A new
+core test writes a route in the test tenant and reads it from a system-tenant
+session, which returns nothing, and from the owning tenant, which returns it.
+The service-role read stays covered by the route visibility pgTAP file, which
+names the role and refuses a system session of another role.

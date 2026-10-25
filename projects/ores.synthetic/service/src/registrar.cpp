@@ -27,6 +27,7 @@
 #include "fx_simple_conversion_handler.hpp"
 #include "ir_curve_preview_handler.hpp"
 #include "ir_parameter_conversion_handler.hpp"
+#include "market_regime_handler.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/feed_selection_protocol.hpp"
@@ -82,6 +83,23 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 nats, auth_nats, ctrl, ctx, verifier, registry, market, intensity, scheduler);
             h.list(std::move(msg));
         }));
+
+    // The market-wide arrival factor: one read and one pin, both for the run.
+    subs.push_back(
+        nats.queue_subscribe(std::string(messaging::get_market_regime_request::nats_subject),
+                             queue,
+                             [&nats, market, ctx, verifier](ores::nats::message msg) {
+                                 market_regime_handler h(nats, *market, ctx, verifier);
+                                 h.get(std::move(msg));
+                             }));
+
+    subs.push_back(
+        nats.queue_subscribe(std::string(messaging::pin_market_regime_request::nats_subject),
+                             queue,
+                             [&nats, market, ctx, verifier](ores::nats::message msg) {
+                                 market_regime_handler h(nats, *market, ctx, verifier);
+                                 h.pin(std::move(msg));
+                             }));
 
     subs.push_back(nats.queue_subscribe(std::string(set_faults_request::nats_subject),
                                         queue,

@@ -142,3 +142,19 @@ words; they are service wire fields, so the rename needs a service change. The
 provider a feed page reads is derived on the read from its collection.
 
 * Result
+
+* Prototype for sign-off
+
+Build one prototype with the whole screen set, then delete the legacy ones.
+
+- Screens: the dashboard with its tiles and the provider list; the Provider
+  tab with the combo and the provider-only tree and the grid without the oresmd
+  URI; the feed page with Details, Price behaviour or Process, Ticks and
+  History; the sources board as it stands; subscriptions.
+- Legacy to delete: browse-the-feed-tree, synthetic-market-simulator and the
+  market data group rows and notes that describe the start and stop world. The
+  FX and IR authoring prototypes stay; authoring did not change.
+- Paperwork: one design note with the links table, the screens, the states,
+  what is fake, where the code lives and the verdict; one group row; counts and
+  the inventory check; the related journeys checked and updated where they
+  name a deleted prototype.

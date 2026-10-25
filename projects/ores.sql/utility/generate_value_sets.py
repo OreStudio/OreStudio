@@ -30,6 +30,9 @@ import json
 import os
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import convention_value_sets  # noqa: E402
+
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 GUIDE = os.path.join(ROOT, "projects", "ores.seeder", "datasets", "ore_pricing_engines",
                      "curation", "value-sets.json")
@@ -241,6 +244,31 @@ def validate(data):
     return problems
 
 
+def add_conventions(data):
+    """Add the convention terms' sets after the pricing links are resolved.
+
+    They are added last so the name fallback in resolve never reaches a convention
+    set, and the pricing rows stay what they were. A code or a link that pricing
+    already holds is a clash, not an override.
+    """
+    extra = convention_value_sets.data()
+    problems = [f"{code}: a convention set clashes with an existing set"
+                for code in extra["sets"] if code in data["sets"]
+                and data["sets"][code] != extra["sets"][code]
+                and code not in ("flag", "text", "number")]
+    problems += [f"{key}: a convention link clashes with an existing link"
+                 for key in extra["links"] if key in data["links"]]
+    registry = data["catalogues"]
+    if isinstance(registry, list):
+        registry = {entry["code"]: entry for entry in registry}
+    registry.update(extra["catalogues"])
+    data["catalogues"] = registry
+    for code, entry in extra["sets"].items():
+        data["sets"].setdefault(code, entry)
+    data["links"].update(extra["links"])
+    return problems
+
+
 def render(data):
     catalogues, sets, values, links = rows_of(data)
     return (
@@ -278,6 +306,7 @@ def main():
     args = parser.parse_args()
     data = load()
     problems = resolve(data)
+    problems = problems + add_conventions(data)
     problems = problems + validate(data)
     if problems:
         print("\n".join(problems), file=sys.stderr)

@@ -594,6 +594,23 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Run projects/ores.sql/utility/generate_ore_parameters_dataset.py and commit the seed.",
     ),
     Check(
+        id="ore-parameter-value-sets",
+        title="The ore parameter value sets match their sources",
+        argv=("python3", "projects/ores.sql/utility/generate_value_sets.py", "--check"),
+        classes=("sql",),
+        paths=(
+            "projects/ores.sql/populate/reporting/reporting_ore_parameter_value_sets_populate.sql",
+            "projects/ores.sql/utility/generate_value_sets.py",
+            "projects/ores.sql/utility/convention_value_sets.py",
+            "projects/ores.sql/utility/convention_parameter_rows.py",
+            "projects/ores.sql/utility/convention_terms.json",
+            "projects/ores.sql/utility/convention_term_curation.json",
+            "projects/ores.seeder/datasets/ore_pricing_engines/pricing_vocabulary.json",
+            "projects/ores.seeder/datasets/ore_pricing_engines/curation/*",
+        ),
+        fix="Run projects/ores.sql/utility/generate_value_sets.py and commit the populate script.",
+    ),
+    Check(
         id="marketdata-identity-columns",
         title="The series identity projection matches the codec schema",
         argv=("python3", "build/scripts/check_marketdata_identity_columns.py"),

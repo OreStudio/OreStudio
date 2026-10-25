@@ -9,7 +9,7 @@
 #+target_dialog:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: solid_dirac
 #+todo: PENDING | PASSED FAILED
 #+startup: inlineimages
 
@@ -50,8 +50,8 @@ This page documents a test scenario verifying [[id:86DEC5CB-E1C3-4E34-A223-027D4
 |---------------+------------------------------------------|
 | Verifies task | [[id:86DEC5CB-E1C3-4E34-A223-027D45BFF732][Extract the shared parameter list, control and edit lifecycle]] |
 | Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
-| Target screen | (UI screen under test, if any.)         |
-| Clients       |                                          |
+| Target screen | Reporting → Product pricing, and Reporting → Engine run settings, on http://localhost:21002 |
+| Clients       | Chrome at http://localhost:21002          |
 | State         | PENDING                               |
 
 * Steps
@@ -218,8 +218,8 @@ This page documents a test scenario verifying [[id:86DEC5CB-E1C3-4E34-A223-027D4
 |---------------+------------------------------------------|
 | Verifies task | [[id:86DEC5CB-E1C3-4E34-A223-027D45BFF732][Extract the shared parameter list, control and edit lifecycle]] |
 | Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
-| Target screen | (UI screen under test, if any.)         |
-| Clients       |                                          |
+| Target screen | Reporting → Product pricing, and Reporting → Engine run settings, on http://localhost:21002 |
+| Clients       | Chrome at http://localhost:21002          |
 | State         | PENDING                               |
 
 * Steps

@@ -48,6 +48,7 @@ CFG is the [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen stand
 - [ ] Tabs live in the address. Details is first and History is last. A tab that does not apply is not drawn. (RSS Tabs; ESS Tabs)
 - [ ] A label stands above each value, in sentence case, with no colon. (RSS Fields)
 - [ ] An empty value is a muted dash. (RSS Fields)
+- [ ] The details stand in one, two or four columns by breakpoint, in the field table's order, with the meaning or the fixed reason under a value. (RSS Fields)
 - [ ] A code that names another record is a link to its page, with its flag or photo. (RSS Fields; ESS References are links)
 - [ ] A link that cannot open is plain text. It is never a link that goes nowhere. (ESS References are links)
 - [ ] A person is drawn with the photo and a link to the person. (ESS People are links)
@@ -88,7 +89,13 @@ CFG is the [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen stand
 - [ ] A field that another person owns says who. (ESS Cards)
 - [ ] A field that follows from others is not asked for. The dialog fills it. (RSS The form)
 - [ ] A rule across fields shows before the save. Save waits on it. (RSS The form)
-- [ ] Long text uses a text area. (RSS The form)
+- [ ] Long text uses a text area, asked for with the longtext kind. (RSS The form)
+- [ ] The form is one dialog with no tabs; a kind with more than twelve fields declares groups, drawn as titled sections. (RSS The form's layout)
+- [ ] The fields stand in the field table's order, key first, in two columns from the small breakpoint; a long text spans both. (RSS The form's layout)
+- [ ] Under a control stands one line of help, meaning or why it is fixed, replaced by the message when the field is wrong. (RSS The form's layout)
+- [ ] Nothing marks a required field; an empty one says Required when left. (RSS The form's layout)
+- [ ] The footer holds Cancel, then Add or Save, at the right, each with its icon. Delete is not in the form. (RSS The form's layout)
+- [ ] Escape asks the closing guard; Enter does not save. (RSS The form's layout)
 
 ** Create and delete
 

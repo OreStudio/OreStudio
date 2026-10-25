@@ -28,6 +28,15 @@ seeded. pgtap: the trading trade identifiers and trade links tests fail on
 and ores.web.tests, the last being the pricing engines screen test captured on
 its own. Each is its owner's.
 
+Seen again on 2026-10-25 at 22:00 on a documentation branch with
+origin/main at 176f6ea2e4: five of thirty-five checks red, none the branch's.
+component-drift: the reporting and trading protocol twins lag their models
+(=get_run_health=, =record_run_pricing=, the trade export's
+=trade_versions=). cmake-sources: the synthetic api file list is stale.
+web: prettier on the grid report runs test and page test. er-diagram: the
+same seven schema warnings. protocol-twins: the synthetic market regime
+protocol has no TypeScript twin.
+
 * Why
 
 A branch that touches the sql or tooling class runs these checks, and the

@@ -551,30 +551,6 @@ async function providerOfFeed(
     return z.string().parse(collection['provider_code']);
 }
 
-/**
- * The source names of the feeds the synthetic service is publishing now, of
- * every kind the caller may see. The tick buffers are the only reader: a buffer
- * opens when its feed is published and goes when the service stops it.
- */
-async function publishedSourceNames(session: LiveSession): Promise<readonly string[]> {
-    const reply = await session.client.callAuthenticated(
-        feedSubjects.list_feeds_request,
-        {},
-        z.object({
-            success: z.boolean(),
-            running_source_names: z.array(z.string()).default([]),
-        }),
-    );
-    refuseUnless(
-        {
-            success: reply.success,
-            message: 'The feeds the service publishes could not be read.',
-        },
-        upstreamFailure,
-    );
-    return reply.running_source_names;
-}
-
 /** Why this session cannot write the resource, or undefined when it can. */
 function readOnlyFor(resource: SyntheticResource, session: LiveSession): string | undefined {
     if (resource.writes === undefined) {
@@ -1053,7 +1029,7 @@ export function registerSyntheticRoutes(
         }
         const feed = await readByKey(session, feeds, paramId(request));
         const sourceName = z.string().parse(feed['source_name']);
-        ticks.running(await publishedSourceNames(session));
+        ticks.watch(sourceName);
         return { sourceName, ticks: ticks.ticks(sourceName, limit) };
     });
 

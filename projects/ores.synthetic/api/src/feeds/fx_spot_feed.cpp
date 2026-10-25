@@ -26,6 +26,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include "ores.synthetic.api/feeds/vintage_lookup.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -181,6 +182,7 @@ fx_spot_feed::fx_spot_feed(
     , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
     , intensity_(link.intensity)
     , nats_subject_(std::move(nats_subject))
+    , display_subject_(ores::marketdata::domain::feed_display_subject_for(source_name_))
     , adapter_(std::move(adapter)) {
 
     if (!std::isfinite(link.sensitivity) || link.sensitivity <= 0.0)
@@ -258,6 +260,12 @@ std::string fx_spot_feed::tick(double elapsed_seconds) {
         intensity_->record_event();
     const auto now = std::chrono::system_clock::now();
     const auto& codec = ores::nats::default_wire_codec();
+    ores::marketdata::messaging::market_tick shown;
+    shown.oresmd_uri = quote_uri_;
+    shown.value = value;
+    shown.observation_time = now;
+    shown.source = source_name_;
+    nats_.publish(display_subject_, codec.encode(shown));
     // A quote is perishable, so it goes out on core NATS without a wait for an
     // acknowledgement. A producer that waits limits its own rate to the round
     // trip of the broker.
@@ -274,12 +282,7 @@ std::string fx_spot_feed::tick(double elapsed_seconds) {
             nats_.publish(adapter_->subject, codec.encode(out));
         return value;
     }
-    ores::marketdata::messaging::market_tick tick;
-    tick.oresmd_uri = quote_uri_;
-    tick.value = value;
-    tick.observation_time = now;
-    tick.source = source_name_;
-    nats_.publish(nats_subject_, codec.encode(tick));
+    nats_.publish(nats_subject_, codec.encode(shown));
     return value;
 }
 

@@ -28,6 +28,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include "ores.synthetic.api/feeds/vintage_lookup.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -88,6 +89,8 @@ ir_curve_feed::ir_curve_feed(
         throw std::invalid_argument("ir_curve_feed: ticks_per_hour must be positive");
     if (entries_.empty())
         throw std::invalid_argument("ir_curve_feed: entries must not be empty");
+
+    display_subject_ = ores::marketdata::domain::feed_display_subject_for(source_name_);
 
     // Each pillar is a quote of one series. The keys are built once, here, so a pillar the
     // codec refuses fails when the feed is built and not on the first tick.
@@ -153,7 +156,9 @@ std::string ir_curve_feed::tick(double elapsed_seconds) {
         tick.observation_time = now;
         tick.source = source_name_;
 
-        nats_.publish(nats_subject_, ores::nats::default_wire_codec().encode(tick));
+        const auto encoded = ores::nats::default_wire_codec().encode(tick);
+        nats_.publish(nats_subject_, encoded);
+        nats_.publish(display_subject_, encoded);
     }
     return std::to_string(entries_.size());
 }

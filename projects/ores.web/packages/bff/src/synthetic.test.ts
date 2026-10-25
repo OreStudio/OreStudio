@@ -648,7 +648,7 @@ describe('synthetic operations', () => {
         const { server, sessionId, publish } = buildTestServer(replies);
         await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
 
-        const subject = 'synthetic.v1.ops.tick.live.eurusd';
+        const subject = 'synthetic.v1.ops.feed_tick.live.eurusd';
         publish(subject, { value: '1.1', observation_time: '2026-10-11 09:00:00Z' });
         publish(subject, { value: 'not a price', observation_time: '2026-10-11 09:00:30Z' });
         publish(subject, { value: '1.2', observation_time: '2026-10-11 09:01:00Z' });
@@ -669,7 +669,7 @@ describe('synthetic operations', () => {
         });
     });
 
-    it('forgets a run when its feed stops, so a later run under the name starts empty', async () => {
+    it('keeps the ticks it heard when the service stops publishing the feed', async () => {
         const replies: Record<string, unknown> = {
             'synthetic.v1.feed_configs.list': {
                 success: true,
@@ -681,26 +681,16 @@ describe('synthetic operations', () => {
             },
         };
         const { server, sessionId, publish } = buildTestServer(replies);
-        const subject = 'synthetic.v1.ops.tick.live.eurusd';
+        const subject = 'synthetic.v1.ops.feed_tick.live.eurusd';
         await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
         publish(subject, { value: '1.1', observation_time: '2026-10-11 09:00:00Z' });
 
         replies['synthetic.v1.feed_configs.list'] = { success: true, running_source_names: [] };
-        const stopped = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
-        expect(stopped.json().ticks).toEqual([]);
-        publish(subject, { value: '9.9', observation_time: '2026-10-11 09:03:00Z' });
-
-        replies['synthetic.v1.feed_configs.list'] = {
-            success: true,
-            running_source_names: ['live.eurusd'],
-        };
-        await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
-        publish(subject, { value: '1.5', observation_time: '2026-10-11 09:04:00Z' });
-        const again = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
-        expect(again.json().ticks).toEqual([{ at: '2026-10-11 09:04:00Z', value: 1.5, uri: '' }]);
+        const read = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
+        expect(read.json().ticks).toEqual([{ at: '2026-10-11 09:00:00Z', value: 1.1, uri: '' }]);
     });
 
-    it('starts no listening when the service publishes no feed under the name', async () => {
+    it('watches the source as soon as a read asks for it', async () => {
         const { server, sessionId, publish } = buildTestServer({
             'synthetic.v1.feed_configs.list': { success: true, running_source_names: [] },
             'synthetic.v1.fx_spot_generation_configs.list': {
@@ -709,12 +699,14 @@ describe('synthetic operations', () => {
             },
         });
         await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
-        publish('synthetic.v1.ops.tick.live.eurusd', {
+        publish('synthetic.v1.ops.feed_tick.live.eurusd', {
             value: '1.1',
             observation_time: '2026-10-11 09:00:00Z',
         });
         const response = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
-        expect(response.json().ticks).toEqual([]);
+        expect(response.json().ticks).toEqual([
+            { at: '2026-10-11 09:00:00Z', value: 1.1, uri: '' },
+        ]);
     });
 
     it('answers 404 for the ticks of a feed the session cannot read', async () => {
@@ -749,7 +741,7 @@ describe('synthetic operations', () => {
         const pillar = (end: string): string =>
             `oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=${end}`;
 
-        const subject = 'synthetic.v1.ops.tick.live.usdsofr';
+        const subject = 'synthetic.v1.ops.feed_tick.live.usdsofr';
         publish(subject, {
             value: '0.04',
             observation_time: '2026-10-11 09:00:00Z',

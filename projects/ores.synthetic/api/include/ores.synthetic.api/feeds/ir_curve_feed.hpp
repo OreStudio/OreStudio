@@ -140,6 +140,8 @@ private:
     ores::nats::service::client& nats_;
     std::string source_name_;
     std::string nats_subject_;
+    /// The subject the screen tails this feed's ticks on, beside the ingest subject.
+    std::string display_subject_;
     std::string currency_code_;
     std::string role_;
     std::vector<std::string> series_uris_;

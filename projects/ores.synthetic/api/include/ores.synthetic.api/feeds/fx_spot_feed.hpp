@@ -158,6 +158,8 @@ private:
     /// endogenous factor.
     ores::analytics::quant::domain::shared_intensity* intensity_;
     std::string nats_subject_;
+    /// The subject the screen tails this feed's ticks on, beside the adapter ingress.
+    std::string display_subject_;
     std::optional<adapter_target> adapter_;
     std::optional<ores::marketdata::messaging::adapter_tick> previous_tick_;
 };

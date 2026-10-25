@@ -32,6 +32,9 @@ const AUDIT_COLUMNS = [
 ];
 
 /** The x coordinate of an element, so the order of two controls can be read. */
+/** The kinds that carry the standard Import and Export pair (RS-ORE-01); the currencies are the first. */
+const ORE_DOCUMENT_KINDS: ReadonlySet<string> = new Set(['currencies']);
+
 async function left(page: Page, name: string | RegExp): Promise<number> {
     const box = await page.getByRole('button', { name }).first().boundingBox();
     expect(box, `the button ${name} has a box`).not.toBeNull();
@@ -81,6 +84,36 @@ for (const screen of allScreens()) {
             if (screen.writable) {
                 expect(await left(page, 'Refresh')).toBeLessThan(await left(page, /^Add\b/));
             }
+        });
+
+        test('[RS-ORE-02] a kind with an ORE document draws Import and Export between Refresh and Add', async ({
+            page,
+        }) => {
+            test.skip(!ORE_DOCUMENT_KINDS.has(screen.key), 'the kind has no ORE document');
+            const exportButton = page.getByRole('button', { name: 'Export', exact: true });
+            const importLink = page.getByRole('link', { name: 'Import', exact: true });
+            await expect(exportButton).toBeVisible();
+            await expect(importLink, 'Import is drawn for a writer').toHaveCount(
+                screen.writable ? 1 : 0,
+            );
+            const refreshAt = await left(page, 'Refresh');
+            const exportAt = (await exportButton.boundingBox())?.x ?? 0;
+            expect(refreshAt).toBeLessThan(exportAt);
+            if (screen.writable) {
+                expect(exportAt).toBeLessThan(await left(page, /^Add\b/));
+            }
+        });
+
+        test('[RS-ORE-04] Export opens an operation dialog that names the document', async ({
+            page,
+        }) => {
+            test.skip(!ORE_DOCUMENT_KINDS.has(screen.key), 'the kind has no ORE document');
+            await page.getByRole('button', { name: 'Export', exact: true }).click();
+            const dialog = page.getByRole('dialog');
+            await expect(dialog.getByRole('heading', { level: 2 })).toHaveText('Export');
+            await expect(dialog.getByText(/\.xml/)).toBeVisible();
+            await expect(dialog.getByRole('button', { name: 'Export', exact: true })).toBeVisible();
+            await expect(dialog.getByRole('button', { name: 'Cancel', exact: true })).toBeVisible();
         });
 
         test('[ES-REFRESH-16] the load time stands under Refresh', async ({ page }) => {

@@ -3840,6 +3840,68 @@ const pt: SourceCatalogue = {
             commentaryRequired: 'Este motivo exige um comentário.',
             revertCommentary: 'Revertido para a versão {version}.',
         },
+        ore: {
+            import: 'Importar',
+            export: 'Exportar',
+            close: 'Fechar',
+            next: 'Seguinte',
+            exportLead:
+                'Escreve {file}, o documento ORE, com as {plural} do tenant tal como estão agora.',
+            exportNote: 'O servidor escreve o documento; o seu navegador guarda-o. Nada muda aqui.',
+            exported: '{file} guardado, {count} registos.',
+            importTitle: 'Importar {plural}',
+            importLead:
+                'Trazer um documento ORE. O servidor lê-o, você revê a diferença, e nada é escrito antes do último passo.',
+            fileSize: '{kb} KB',
+            steps: {
+                file: 'Escolher o ficheiro',
+                fileLead:
+                    'Um documento ORE cujo elemento raiz é {root}. Um ficheiro de outro tipo é recusado.',
+                holds: 'O que o ficheiro contém',
+                holdsLead: 'O servidor leu o ficheiro. Nada está escrito ainda.',
+                unknown: 'O que o sistema não conhece',
+                unknownLead:
+                    'Um valor sem linha, um elemento sem coluna, ou um registo nomeado duas vezes. Nada é descartado em silêncio.',
+                review: 'A diferença, e a revisão',
+                reviewLead:
+                    'O que a importação escreve, as linhas removidas primeiro. Um ficheiro que omite um registo esquece-o quase sempre por acidente, por isso Manter é a escolha por omissão.',
+            },
+            counts: {
+                inFile: 'No ficheiro',
+                held: 'Já detidos',
+                changed: 'Alterados',
+                added: 'Novos',
+                removed: 'Ausentes do ficheiro',
+            },
+            countsNote:
+                'Já detido é um registo que o tenant tem com os mesmos valores. Alterado é um que tem com outros valores. Ausente do ficheiro é um que o tenant tem e o ficheiro omite.',
+            nothingUnknown:
+                'Tudo no ficheiro é conhecido: cada valor tem a sua linha, cada elemento a sua coluna, e nenhum registo aparece duas vezes.',
+            issues: {
+                value: 'Valores sem linha',
+                valueLead:
+                    'Um valor que as listas não contêm; a importação escreve a linha como o ficheiro a declara e nomeia o valor aqui.',
+                dropped: 'Elementos sem coluna',
+                droppedLead:
+                    'Descartados, e nomeados aqui para que nada seja descartado em silêncio.',
+                duplicate: 'Duplicados',
+                duplicateLead: 'Um registo nomeado duas vezes no ficheiro; o primeiro é mantido.',
+            },
+            noDifference: 'O ficheiro contém o que o tenant detém. Não há nada a escrever.',
+            change: 'Alteração',
+            what: 'O quê',
+            choice: 'Escolha',
+            changes: { added: 'Adicionado', changed: 'Alterado', removed: 'Removido' },
+            choices: {
+                take: 'Tomar a do ficheiro',
+                keep: 'Manter a nossa',
+                delete: 'Apagá-la',
+                skip: 'Ignorá-la',
+            },
+            reach: 'Os registos escritos são lidos por tudo o que os nomeia. A escrita reclama as versões que o servidor detém agora.',
+            imported:
+                'Importado: {added} adicionados, {changed} alterados, {deleted} apagados, {kept} mantidos. Atualizar mostra as novas versões.',
+        },
         records: {
             deletePartWarning: 'A linha é fechada. O histórico fica.',
             historyOf: 'Histórico de {name}',

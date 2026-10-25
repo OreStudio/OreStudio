@@ -35,6 +35,7 @@ import {
     type RecordResource,
     type WriteOutcome,
 } from '@ores/wire-protocol';
+import { subjects as oreCurrencySubjects } from '@ores/wire-protocol/generated/ore/protocol/currency_config_protocol';
 import type { CalendarWrite } from '@ores/wire-protocol/generated/refdata/protocol/calendar_protocol';
 import type { CalendarEventWrite } from '@ores/wire-protocol/generated/refdata/protocol/calendar_event_protocol';
 import type { CalendarExceptionWrite } from '@ores/wire-protocol/generated/refdata/protocol/calendar_exception_protocol';
@@ -373,6 +374,47 @@ function answer(outcome: WriteOutcome): void {
  * The reference data record routes: a resource's rows, one parent's rows of a
  * junction, and the writes. The registry decides which resources exist.
  */
+const oreDocumentSchema = z.object({
+    success: z.boolean(),
+    message: z.string(),
+    count: z.number().int(),
+    files: z.array(z.object({ name: z.string(), content: z.string() })),
+});
+
+const orePreviewSchema = z.object({
+    success: z.boolean(),
+    message: z.string(),
+    root_element: z.string(),
+    in_file: z.number().int(),
+    held: z.number().int(),
+    changed: z.number().int(),
+    added: z.number().int(),
+    removed: z.number().int(),
+    rows: z.array(
+        z.object({ iso_code: z.string(), name: z.string(), change: z.string(), what: z.string() }),
+    ),
+    issues: z.array(z.object({ kind: z.string(), subject: z.string(), detail: z.string() })),
+});
+
+const oreImportResultSchema = z.object({
+    success: z.boolean(),
+    message: z.string(),
+    added: z.number().int(),
+    changed: z.number().int(),
+    deleted: z.number().int(),
+    kept: z.number().int(),
+    errors: z.array(z.object({ iso_code: z.string(), message: z.string() })),
+});
+
+const oreImportBodySchema = z.object({
+    content: z.string().min(1),
+    choices: z.array(
+        z.object({ iso_code: z.string(), action: z.enum(['take', 'keep', 'delete', 'skip']) }),
+    ),
+    reasonCode: z.string(),
+    commentary: z.string(),
+});
+
 export function registerRecordRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
@@ -470,6 +512,52 @@ export function registerRecordRoutes(
             throw invalidRequest('The days are read one year at a time, between 1900 and 2200.');
         }
         return { days: await readCalendarYear(session.client, calendar, query.data.year) };
+    });
+
+    /**
+     * The standard Import and Export pair of the currencies (RS-ORE-06): the
+     * document the ORE service writes, what a file would change, and the write.
+     * Each answers with the service's own words; a refusal is a 200 with
+     * success false, because the person reads the reason on the step.
+     */
+    server.get('/api/refdata/currencies/ore-document', async (request) => {
+        const session = requireSession(request);
+        return session.client.callAuthenticated(
+            oreCurrencySubjects.export_currency_config_request,
+            { iso_codes: [] },
+            oreDocumentSchema,
+        );
+    });
+
+    server.post('/api/refdata/currencies/ore-import/preview', async (request) => {
+        const session = requireSession(request);
+        const body = z.object({ content: z.string().min(1) }).safeParse(request.body);
+        if (!body.success) {
+            throw invalidRequest('A preview needs the text of the file.');
+        }
+        return session.client.callAuthenticated(
+            oreCurrencySubjects.preview_currency_config_import_request,
+            { content: body.data.content },
+            orePreviewSchema,
+        );
+    });
+
+    server.post('/api/refdata/currencies/ore-import', async (request) => {
+        const session = requireSession(request);
+        const body = oreImportBodySchema.safeParse(request.body);
+        if (!body.success) {
+            throw invalidRequest('An import needs the file, the choices and a reason.');
+        }
+        return session.client.callAuthenticated(
+            oreCurrencySubjects.import_currency_config_request,
+            {
+                content: body.data.content,
+                choices: body.data.choices,
+                reason_code: body.data.reasonCode,
+                commentary: body.data.commentary,
+            },
+            oreImportResultSchema,
+        );
     });
 
     /** Builds the business days of one calendar up to the end of a year. */

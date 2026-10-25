@@ -91,7 +91,7 @@ import { ClassificationListPage } from './refdata/ClassificationListPage.js';
 import { ClassificationRowPage } from './refdata/ClassificationRowPage.js';
 import { ClassificationsPage } from './refdata/ClassificationsPage.js';
 import { RefdataPage } from './refdata/RefdataPage.js';
-import { CurrenciesPage, CurrencyPage } from './refdata/currencies.js';
+import { CurrenciesPage, CurrencyImportPage, CurrencyPage } from './refdata/currencies.js';
 import { TradePage } from './trading/TradePage.js';
 import { TradingPage } from './trading/TradingPage.js';
 import { TradesPage } from './trading/TradesPage.js';
@@ -1082,6 +1082,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <CurrenciesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/refdata/currencies/import"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CurrencyImportPage />
                     ),
                     'workspace',
                 )}

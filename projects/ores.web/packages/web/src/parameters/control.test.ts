@@ -66,7 +66,17 @@ describe('the control a pricing value set calls for', () => {
     });
 
     it('draws a boolean as true and false', () => {
-        expect(controlOfValueSet(fields({ sourceKind: 'boolean' }))).toEqual({ kind: 'boolean' });
+        expect(
+            controlOfValueSet(
+                fields({
+                    sourceKind: 'boolean',
+                    choices: [
+                        { value: 'true', label: 'true' },
+                        { value: 'false', label: 'false' },
+                    ],
+                }),
+            ),
+        ).toEqual({ kind: 'boolean' });
     });
 
     it('bounds a range by the numbers it states, as a number that need not be whole', () => {

@@ -58,6 +58,13 @@ export function controlOfValueSet(fields: ValueSetFields | undefined): ControlMo
     if (fields === undefined) {
         return { kind: 'text', pattern: '' };
     }
+    /*
+     * A flag is a flag even though its set states the two values as choices: the
+     * control for it is the switch, and the choices are what it holds.
+     */
+    if (fields.sourceKind === 'boolean') {
+        return { kind: 'boolean' };
+    }
     if (
         fields.sourceKind === 'enumerated' ||
         fields.sourceKind === 'catalogue' ||
@@ -66,8 +73,6 @@ export function controlOfValueSet(fields: ValueSetFields | undefined): ControlMo
         return { kind: 'choice', choices: fields.choices };
     }
     switch (fields.sourceKind) {
-        case 'boolean':
-            return { kind: 'boolean' };
         case 'integer':
             return {
                 kind: 'number',

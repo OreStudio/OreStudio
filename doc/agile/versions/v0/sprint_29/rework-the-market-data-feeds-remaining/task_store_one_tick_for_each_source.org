@@ -72,12 +72,19 @@ tick or one copy for each party]]. The slices, each verified before the next:
    keeps its classification and gains the key that finds the shared stream.
 2. The ingest writes one row for each tick and stops reading the routes for
    the store. The delivery fan-out still needs to know who consumes the
-   source, so it moves to the demand snapshot the supervisor already builds,
-   or the ingest keeps a routes read for delivery only; the slice decides
-   which and records it.
-3. The history read resolves the party's series to the shared stream and
-   checks the subscription and its rights before it returns a tick.
-4. The ingest loop and quote series pages describe the decided shape, and the
+   source, so the ingest keeps the routes read for delivery only. This slice
+   records that. The tick row becomes stream_id, source_id, ts, coord, value:
+   no tenant and no party.
+3. The coordinate table becomes shared too. It is keyed by stream_id and
+   coord, not by the party's series, so every party of a stream agrees on the
+   coordinate order. The read joins it by stream_id.
+4. The history read resolves the party's series to the shared stream and
+   checks the subscription before it returns a tick. The stream is addressed
+   by a uuid derived from the provider and the series URI, so the ingest and
+   the read compute it without a new table. The check requires the party's
+   subscription for the provider to hold =display= or =non_display=, because
+   the history returns raw values; a =derived= right alone is refused.
+5. The ingest loop and quote series pages describe the decided shape, and the
    provisioning smoke proves the path end to end.
 
 The table was hand-written because it led the generator on row-level security,

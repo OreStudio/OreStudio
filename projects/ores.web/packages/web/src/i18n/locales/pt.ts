@@ -4400,6 +4400,8 @@ const pt: SourceCatalogue = {
             },
             provider: {
                 provider: 'Fornecedor',
+                assetClass: 'Classe de ativo',
+                allAssetClasses: 'Todas as classes de ativo',
                 collection: 'Coleção',
                 allCollections: 'Todas as coleções',
                 groupBy: 'Agrupar por',

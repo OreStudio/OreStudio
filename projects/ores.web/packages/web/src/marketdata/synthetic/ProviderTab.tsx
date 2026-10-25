@@ -20,18 +20,19 @@
  */
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { Fragment, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { api, type FeedFilter, type FolderFeed } from '../../api/client.js';
 import { FlagOf } from '../../images/flags.js';
 import { useTranslation } from '../../i18n/Provider.js';
-import { useLabelCatalogue } from '../../refdata/shared.js';
-import { Label } from '../../ui/Label.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../../ui/Pager.js';
 import { Button, Notice, Select, Tag, cx } from '../../ui/Primitives.js';
 import { AddFeed, useMayAddFeed } from './AddFeed.js';
 import { servesFeeds, useSources } from './adapterStatus.js';
 import { ServingTag, useProviderFacts } from './DashboardTab.js';
+
+/** The asset classes the synthetic feeds are authored in. */
+const ASSET_CLASSES = ['fx', 'interest_rates'] as const;
 import { feedPageOf } from './feedTree.js';
 import { frequencyOf } from './frequency.js';
 import { engineName } from './IrProcessPanel.js';
@@ -39,65 +40,10 @@ import { providerName, providersOf, type ProviderEntry } from './providers.js';
 import { FEEDS_KEY, useSelectionRuns } from './selectionRuns.js';
 import { EVERY_MS, useCollections } from './useCollections.js';
 
-/** The property the grid gathers the feeds under: asset class, instrument or engine. */
-type GroupBy = 'class' | 'underlying' | 'engine';
-
-const GROUPS: readonly GroupBy[] = ['class', 'underlying', 'engine'];
-
-/** The feeds of one group of the grid. */
-interface FeedGroup {
-    readonly key: string;
-    readonly feeds: readonly FolderFeed[];
-}
-
-function groupKeyOf(feed: FolderFeed, group: GroupBy): string {
-    switch (group) {
-        case 'class':
-            return feed.asset_class_code;
-        case 'underlying':
-            return feed.underlying;
-        case 'engine':
-            return feed.engine;
-    }
-}
-
-/** The feeds of one page, gathered under the property chosen, in the order of their keys. */
-function groupsOf(feeds: readonly FolderFeed[], group: GroupBy): readonly FeedGroup[] {
-    const held = new Map<string, FolderFeed[]>();
-    for (const feed of feeds) {
-        const key = groupKeyOf(feed, group);
-        held.set(key, [...(held.get(key) ?? []), feed]);
-    }
-    return [...held.entries()]
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([key, rows]) => ({ key, feeds: rows }));
-}
-
-/** The engine's words, which each kind of feed states in its own block. */
 function engineWord(t: (key: string) => string, feed: FolderFeed): string {
     return feed.kind === 'ir_curve'
         ? engineName(t, feed.engine)
         : t(`refdata.choices.process_type.${feed.engine}`);
-}
-
-/** The words of a group's header, taken from the property it gathers on. */
-function groupWord(
-    t: (key: string) => string,
-    group: GroupBy,
-    feeds: readonly FolderFeed[],
-): string {
-    const first = feeds[0];
-    if (first === undefined) {
-        return '';
-    }
-    switch (group) {
-        case 'class':
-            return t(`marketdata.synthetic.assetClass.${first.asset_class_code}`);
-        case 'underlying':
-            return first.underlying;
-        case 'engine':
-            return engineWord(t, first);
-    }
 }
 
 function Underlying({ feed }: { readonly feed: FolderFeed }): ReactNode {
@@ -127,13 +73,12 @@ export function ProviderTab(): ReactNode {
     const { collections, loaded, error } = useCollections();
     const facts = useProviderFacts();
     const sources = useSources();
-    const labels = useLabelCatalogue();
     const providers = providersOf(collections);
     const chosen = params.get('provider') ?? '';
     const entry: ProviderEntry | undefined =
         providers.find((one) => one.code === chosen) ?? providers[0];
     const collection = params.get('collection') ?? '';
-    const group: GroupBy = GROUPS.find((one) => one === params.get('group')) ?? 'class';
+    const assetClass = params.get('assetClass') ?? '';
     const pageSize = Number(params.get('size')) || DEFAULT_PAGE_SIZE;
     const offset = Math.max(0, Number(params.get('offset')) || 0);
 
@@ -158,6 +103,7 @@ export function ProviderTab(): ReactNode {
     const filter: FeedFilter = {
         ...(entry === undefined ? {} : { provider: entry.code }),
         ...(collection === '' ? {} : { folder: collection }),
+        ...(assetClass === '' ? {} : { assetClass }),
     };
     const filterKey = JSON.stringify(filter);
 
@@ -170,7 +116,6 @@ export function ProviderTab(): ReactNode {
     });
     const feeds = page.data?.feeds ?? [];
     const total = page.data?.total ?? 0;
-    const groups = groupsOf(feeds, group);
 
     const runs = useSelectionRuns();
     const mayAdd = useMayAddFeed();
@@ -242,17 +187,20 @@ export function ProviderTab(): ReactNode {
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-sm">
                         <span className="text-ink-muted">
-                            {t('marketdata.synthetic.provider.groupBy')}
+                            {t('marketdata.synthetic.provider.assetClass')}
                         </span>
-                        <div className="w-40 shrink-0">
+                        <div className="w-48 shrink-0">
                             <Select
-                                aria-label={t('marketdata.synthetic.provider.groupBy')}
-                                value={group}
-                                onChange={(event) => narrow({ group: event.target.value })}
+                                aria-label={t('marketdata.synthetic.provider.assetClass')}
+                                value={assetClass}
+                                onChange={(event) => narrow({ assetClass: event.target.value })}
                             >
-                                {GROUPS.map((one) => (
-                                    <option key={one} value={one}>
-                                        {t(`marketdata.synthetic.provider.group.${one}`)}
+                                <option value="">
+                                    {t('marketdata.synthetic.provider.allAssetClasses')}
+                                </option>
+                                {ASSET_CLASSES.map((code) => (
+                                    <option key={code} value={code}>
+                                        {t(`marketdata.synthetic.assetClass.${code}`)}
                                     </option>
                                 ))}
                             </Select>
@@ -289,11 +237,10 @@ export function ProviderTab(): ReactNode {
                                 <tr className="border-b border-line text-xs text-ink-muted">
                                     {(
                                         [
+                                            'underlying',
                                             'state',
                                             'enabled',
                                             'name',
-                                            'assetClass',
-                                            'underlying',
                                             'engine',
                                             'frequency',
                                         ] as const
@@ -305,89 +252,58 @@ export function ProviderTab(): ReactNode {
                                 </tr>
                             </thead>
                             <tbody>
-                                {groups.map((held) => (
-                                    <Fragment key={held.key}>
-                                        <tr>
-                                            <td
-                                                colSpan={7}
-                                                className="bg-surface-hover px-3 py-2 text-xs uppercase tracking-wide text-ink-muted"
-                                            >
-                                                {t('marketdata.synthetic.provider.groupHeading', {
-                                                    group: groupWord(t, group, held.feeds),
-                                                    count: String(held.feeds.length),
-                                                })}
+                                {feeds.map((feed) => {
+                                    const serving = servesFeeds(sources?.get(feed.provider_code));
+                                    const every = frequencyOf(feed.ticks_per_hour);
+                                    return (
+                                        <tr
+                                            key={feed.id}
+                                            className="cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover"
+                                            onClick={() => void navigate(feedPageOf(feed))}
+                                        >
+                                            <td className="px-3 py-2">
+                                                <Underlying feed={feed} />
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <Tag tone={serving ? 'up' : 'muted'}>
+                                                    {t(
+                                                        serving
+                                                            ? 'marketdata.synthetic.state.running'
+                                                            : 'marketdata.synthetic.state.stopped',
+                                                    )}
+                                                </Tag>
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <Tag tone={feed.enabled ? 'up' : 'down'}>
+                                                    {t(
+                                                        feed.enabled
+                                                            ? 'marketdata.synthetic.provider.enabled'
+                                                            : 'marketdata.synthetic.provider.disabled',
+                                                    )}
+                                                </Tag>
+                                            </td>
+                                            <td className="px-3 py-2 font-medium">
+                                                <Link
+                                                    className="hover:underline"
+                                                    to={feedPageOf(feed)}
+                                                    onClick={(event) => event.stopPropagation()}
+                                                >
+                                                    {feed.label}
+                                                </Link>
+                                            </td>
+                                            <td className="px-3 py-2">{engineWord(t, feed)}</td>
+                                            <td className="px-3 py-2 tabular-nums">
+                                                {t(
+                                                    `marketdata.synthetic.provider.every.${every.unit}`,
+                                                    { n: every.n },
+                                                )}
                                             </td>
                                         </tr>
-                                        {held.feeds.map((feed) => {
-                                            const serving = servesFeeds(
-                                                sources?.get(feed.provider_code),
-                                            );
-                                            const every = frequencyOf(feed.ticks_per_hour);
-                                            return (
-                                                <tr
-                                                    key={feed.id}
-                                                    className="cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover"
-                                                    onClick={() => void navigate(feedPageOf(feed))}
-                                                >
-                                                    <td className="px-3 py-2">
-                                                        <Tag tone={serving ? 'up' : 'muted'}>
-                                                            {t(
-                                                                serving
-                                                                    ? 'marketdata.synthetic.state.running'
-                                                                    : 'marketdata.synthetic.state.stopped',
-                                                            )}
-                                                        </Tag>
-                                                    </td>
-                                                    <td className="px-3 py-2">
-                                                        <Tag tone={feed.enabled ? 'up' : 'down'}>
-                                                            {t(
-                                                                feed.enabled
-                                                                    ? 'marketdata.synthetic.provider.enabled'
-                                                                    : 'marketdata.synthetic.provider.disabled',
-                                                            )}
-                                                        </Tag>
-                                                    </td>
-                                                    <td className="px-3 py-2 font-medium">
-                                                        <Link
-                                                            className="hover:underline"
-                                                            to={feedPageOf(feed)}
-                                                            onClick={(event) =>
-                                                                event.stopPropagation()
-                                                            }
-                                                        >
-                                                            {feed.label}
-                                                        </Link>
-                                                    </td>
-                                                    <td className="px-3 py-2">
-                                                        <Label
-                                                            text={t(
-                                                                `marketdata.synthetic.assetClass.${feed.asset_class_code}`,
-                                                            )}
-                                                            badge={labels.byCode.get(
-                                                                `asset_class_${feed.asset_class_code}`,
-                                                            )}
-                                                        />
-                                                    </td>
-                                                    <td className="px-3 py-2">
-                                                        <Underlying feed={feed} />
-                                                    </td>
-                                                    <td className="px-3 py-2">
-                                                        {engineWord(t, feed)}
-                                                    </td>
-                                                    <td className="px-3 py-2 tabular-nums">
-                                                        {t(
-                                                            `marketdata.synthetic.provider.every.${every.unit}`,
-                                                            { n: every.n },
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </Fragment>
-                                ))}
+                                    );
+                                })}
                                 {feeds.length === 0 && page.isSuccess && (
                                     <tr>
-                                        <td colSpan={7} className="px-3 py-4 text-ink-muted">
+                                        <td colSpan={6} className="px-3 py-4 text-ink-muted">
                                             {t('marketdata.synthetic.provider.none')}
                                         </td>
                                     </tr>

@@ -4430,6 +4430,8 @@ const fr: SourceCatalogue = {
             },
             provider: {
                 provider: 'Fournisseur',
+                assetClass: "Classe d'actif",
+                allAssetClasses: "Toutes les classes d'actif",
                 collection: 'Collection',
                 allCollections: 'Toutes les collections',
                 groupBy: 'Grouper par',

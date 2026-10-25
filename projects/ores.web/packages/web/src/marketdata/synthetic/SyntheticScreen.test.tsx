@@ -371,30 +371,21 @@ describe('the Synthetic Provider screen', () => {
         expect(html).not.toContain('All providers');
     });
 
-    it('groups the feeds by asset class, its default', () => {
+    it('offers the whole list or one asset class', () => {
         const html = render('/market-data/synthetic?tab=provider', (client) =>
             seeded(client, ['synthetic::*']),
         );
-        expect(html).toContain('FX · 2');
-        expect(html).toContain('Interest rate · 1');
+        expect(html).toContain('Asset class');
+        expect(html).toContain('All asset classes');
+        expect(html).not.toContain('Group by');
     });
 
-    it('groups the feeds by instrument when the person asks for it', () => {
-        const html = render('/market-data/synthetic?tab=provider&group=underlying', (client) =>
+    it('lists the underlying first and no asset class separators', () => {
+        const html = render('/market-data/synthetic?tab=provider', (client) =>
             seeded(client, ['synthetic::*']),
         );
-        expect(html).toContain('EUR/USD · 1');
-        expect(html).toContain('GBP/USD · 1');
-        expect(html).toContain('USD · 1');
-        expect(html).not.toContain('FX · 2');
-    });
-
-    it('groups the feeds by engine when the person asks for it', () => {
-        const html = render('/market-data/synthetic?tab=provider&group=engine', (client) =>
-            seeded(client, ['synthetic::*']),
-        );
-        expect(html).toContain('Geometric · 2');
-        expect(html).toContain('Vasicek · 1');
+        const header = html.slice(html.indexOf('<thead>'), html.indexOf('<tbody>'));
+        expect(header.indexOf('Underlying')).toBeLessThan(header.indexOf('State'));
         expect(html).not.toContain('FX · 2');
     });
 

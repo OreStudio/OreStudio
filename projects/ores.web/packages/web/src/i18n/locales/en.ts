@@ -4369,6 +4369,8 @@ export const en: SourceCatalogue = {
             },
             provider: {
                 provider: 'Provider',
+                assetClass: 'Asset class',
+                allAssetClasses: 'All asset classes',
                 collection: 'Collection',
                 allCollections: 'All collections',
                 groupBy: 'Group by',

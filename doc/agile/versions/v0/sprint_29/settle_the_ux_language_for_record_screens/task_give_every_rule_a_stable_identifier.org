@@ -26,11 +26,11 @@ A rule is named by an identifier that survives a section move. The checklist cit
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2][Settle the UX language for record screens]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -41,9 +41,16 @@ A rule is named by an identifier that survives a section move. The checklist cit
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Build the lever first: =build/scripts/check_rule_identifiers.py= names the
+keyed pages and a code for each section whose bullets are rules, gives a bullet
+without an identifier the next free one of its section with =--assign=, and
+refuses a rule without one, a duplicate, and a checklist line that cites an
+unknown one. A rule the page keeps as prose or as a table's lead gets a
+placeholder by hand, =*RS-LIST-??*=, and the script numbers it. The checklist is
+rekeyed in two passes: a script proposes the identifiers each line cites from
+the sections it names and the words it shares with the rules there, and the
+lines it cannot place are cited by hand. The check joins the docs class of the
+local gate and the Doc Lint workflow, and the UX hub states the scheme.
 
 * Measurements
 
@@ -57,7 +64,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Identifiers in the record screen standard | 98 | =grep -c '\*RS-[A-Z]*-[0-9][0-9]\*' doc/knowledge/ui/record_screen_standard.org= | 812d1810e5 |
+| Identifiers in the entity screen specification | 204 | same, =ES= | 812d1810e5 |
+| Checklist lines, and lines that cite an identifier | 110, 90 | =grep -c '^- \[ \]'= and the check script | 812d1810e5 |
+| Lines that cite only a page not keyed yet | 20 | the check script's UNKEYED rule: UXL, UDP, CFG | 812d1810e5 |
 
 * Notes
 
@@ -82,6 +92,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: docs and tooling classes | build/scripts, doc/knowledge/ui, .github/workflows | Accept | compass check green; the check script has no narrating comment and names its three rules in its docstring |
 
 * Result
+
+Every rule in the record screen standard and the entity screen specification
+carries a stable identifier at the start of its bullet or paragraph, 98 and
+204 of them. The Screen review checklist cites identifiers on every line that
+names a keyed page, 90 of 110; the rest cite UX Language, UI design
+principles or the configuration standard, which are not keyed yet. The check
+=build/scripts/check_rule_identifiers.py= refuses a rule without an identifier,
+a duplicate, and a checklist line that cites an unknown one, and runs in the
+docs class of the local gate and in the Doc Lint workflow. The UX hub states the
+scheme and its permanence rule.

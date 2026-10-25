@@ -186,7 +186,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_trade_activity_handlers(nats, ctx, verifier));
     {
         // Trade operations (hand-written handler, not codegen).
-        auto toh = std::make_shared<trade_operations_handler>(nats, ctx, verifier, http_base_url);
+        // Until the service process is given a bus-backed port, the booking
+        // rule cannot ask, and a port that knows nothing keeps it inert rather
+        // than wrong.
+        static const service::unknown_book_status no_book_status;
+        auto toh = std::make_shared<trade_operations_handler>(
+            nats, no_book_status, ctx, verifier, http_base_url);
         subs.push_back(nats.queue_subscribe(
             book_trade_request::nats_subject, queue_group, [toh](ores::nats::message msg) {
                 toh->book_trade(std::move(msg));

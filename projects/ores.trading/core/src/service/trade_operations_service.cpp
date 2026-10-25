@@ -52,8 +52,9 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-trade_operations_service::trade_operations_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+trade_operations_service::trade_operations_service(context ctx, const book_status_port& books)
+    : ctx_(std::move(ctx))
+    , books_(&books) {}
 
 namespace {
 
@@ -186,6 +187,28 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
         response.result.message =
             "Booking writes no instrument yet for: " + join(unsupported) + ".";
         return response;
+    }
+
+    /*
+     * A booking lands in a book, and a book that is not open takes no booking.
+     * The status is reference data, so it is asked for rather than assumed; a
+     * status that cannot be had is logged and does not stop the booking, because
+     * refusing every booking while refdata is busy would be a worse fault.
+     */
+    switch (books_->of(booking.book_id)) {
+        case book_status_port::state::not_open:
+            response.result.outcome = outcome::failed;
+            response.result.code = "book_not_open";
+            response.result.message =
+                "Book " + boost::uuids::to_string(booking.book_id) + " is not open for booking.";
+            return response;
+        case book_status_port::state::unknown:
+            BOOST_LOG_SEV(lg(), warn)
+                << "Could not read the status of book " << boost::uuids::to_string(booking.book_id)
+                << "; booking continues.";
+            break;
+        case book_status_port::state::open:
+            break;
     }
 
     // One transaction writes the anchor, the activity, the booking, the state,

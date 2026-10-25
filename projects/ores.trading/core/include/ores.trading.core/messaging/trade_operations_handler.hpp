@@ -60,10 +60,12 @@ inline auto& trade_operations_handler_lg() {
 class trade_operations_handler {
 public:
     trade_operations_handler(ores::nats::service::client& nats,
+                             const service::book_status_port& books,
                              ores::database::context ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              std::string http_base_url = {})
         : nats_(nats)
+        , books_(books)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier))
         , http_base_url_(std::move(http_base_url)) {}
@@ -107,7 +109,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::trade_operations_service svc(req_ctx);
+        service::trade_operations_service svc(req_ctx, books_);
         try {
             reply(nats_, msg, svc.book_trade(*req));
         } catch (const std::exception& e) {
@@ -151,7 +153,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        service::trade_operations_service svc(req_ctx);
+        service::trade_operations_service svc(req_ctx, books_);
         try {
             reply(nats_, msg, svc.put_bond_issue_composite(*req));
         } catch (const std::exception& e) {
@@ -291,6 +293,7 @@ private:
     }
 
     ores::nats::service::client& nats_;
+    const service::book_status_port& books_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     std::string http_base_url_;

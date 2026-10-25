@@ -1707,6 +1707,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/bond_option_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/bond_repo_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/bond_trs_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/book_status_port.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/booking_nature_type_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/callable_swap_call_date_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/service/callable_swap_instrument_service.hpp"

@@ -7,41 +7,54 @@
 #+level: s1
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/author-the-product-type-documentation
+#+pr: 3766
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Every product type states what the product is when a person opens its
+documentation, not what the ORE guide says about the pairs that price it.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
 
--
+- All 108 product types carry a hand-written description of the instrument.
+- The description states what the product is, its cashflows and when it is used.
+- No description mentions a model, an engine or a pair.
+- A building block says it is a building block, not a standalone product.
+- Each entry records =authored= as its source, the reference and the curator.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Read the current description of each type and the trade type the guide
+   records for it.
+2. Write one paragraph for each of the 108 types, in product terms, from the
+   standard definition of the instrument.
+3. Put each paragraph in =curation/types.json= as =documentation=, with
+   =authored= as the source, the reference and the curator.
+4. Regenerate the ore parameter seed. The Types rows change and nothing else.
+5. Re-provision the environment so the screens read the new rows.
+
+The short description the combo boxes show is not touched: it is the label of
+the type, and naming is the mapping task's work.
 
 * Measurements
 
@@ -55,9 +68,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Product types documented | 108 | =grep -c '"documentation"' projects/ores.seeder/datasets/ore_pricing_engines/curation/types.json= | 5c8ce40f4c |
+| Seed rows whose text changed | 108 of 1674, all Types | =python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py --check= | 5c8ce40f4c |
+| Lines changed | 644 added, 540 removed | =git diff --stat 5c8ce40f4c^ 5c8ce40f4c= | 5c8ce40f4c |
 
 * Notes
+
+- The description is the product, so it names no model, no engine and no pair.
+  The pair text stays on the model and engine cards, where it belongs.
+- The four types the guide does not describe (=BalanceGuaranteedSwap=,
+  =CallableSwap=, =FlexiSwap= and =CPICapFloor=) are written from the same
+  standard definition as the rest.
+- =CPICapFloor= keeps its note about the ORE code not naming the type.
+- Neither the label nor the instrument of a type changes here.
 
 * Test Scenarios
 
@@ -74,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3766][#3766]] | [seeder] Document every product type by hand |
 
 * Review
 
@@ -83,3 +106,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The screen now reads as a product page. Every type states what the instrument
+is, its cashflows and when a person would use it, and a building block says it
+is one. The seed changes only the Types rows, so the other 1566 parameters are
+byte-identical.
+
+The review is on the wording of each paragraph. The text is the deliverable,
+and a domain reader is the right reviewer, not a diff.

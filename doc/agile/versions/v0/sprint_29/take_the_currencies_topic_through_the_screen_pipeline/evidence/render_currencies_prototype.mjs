@@ -1,9 +1,17 @@
 // Render every state of the currencies prototype, report script errors, keep a screenshot of each.
-import { chromium } from 'playwright';
+// Usage, from anywhere: node render_currencies_prototype.mjs [prototype index.html] [screenshot folder]
+// Playwright is resolved from projects/ores.web, where the web workspace installs it.
 import { mkdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const root = 'file:///home/marco/Development/OreStudio/ores_dev_brave_hopper/doc/prototypes/currencies/currencies-desk-groups-and-pairs/index.html';
-const out = '/tmp/claude-1000/-home-marco-Development-OreStudio-ores-dev-brave-hopper/0517118c-2fba-4476-8f19-68c47d846811/scratchpad/shots';
+const here = path.dirname(fileURLToPath(import.meta.url));
+const repo = path.resolve(here, '../../../../../../..');
+const { chromium } = createRequire(path.join(repo, 'projects/ores.web/package.json'))('playwright');
+const index = path.resolve(process.argv[2] || path.join(repo, 'doc/prototypes/currencies/currencies-desk-groups-and-pairs/index.html'));
+const root = pathToFileURL(index).href;
+const out = path.resolve(process.argv[3] || path.join(here, 'shots'));
 mkdirSync(out, { recursive: true });
 const states = [
     ['list', '?screen=currencies'],
@@ -45,6 +53,8 @@ const states = [
     ['import-reader', '?screen=import&who=reader'],
     ['imported', '?screen=currencies&done=imported'],
     ['guard', '?screen=currency&code=EUR&dialog=edit&guard=1'],
+    ['eur-edit-reader', '?screen=currency&code=EUR&dialog=edit&who=reader'],
+    ['list-add-reader', '?screen=currencies&dialog=add&who=reader'],
 ];
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1380, height: 900 } });

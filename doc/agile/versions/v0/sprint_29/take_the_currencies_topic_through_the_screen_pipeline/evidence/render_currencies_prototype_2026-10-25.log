@@ -37,4 +37,6 @@ ok   import-4             ORE Studio Import currencies     Home › Reference da
 ok   import-reader        ORE Studio Import currencies     Only a person who may write currencies can import them. Back to the currencies
 ok   imported             ORE Studio Currencies            Home › Reference data › Currencies Currencies The currencies the tenant works in, with the
 ok   guard                ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
-39 states, 0 with errors
+ok   eur-edit-reader      ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
+ok   list-add-reader      ORE Studio Currencies            Home › Reference data › Currencies Currencies The currencies the tenant works in, with the
+41 states, 0 with errors

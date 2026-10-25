@@ -143,7 +143,7 @@ Five questions the journeys' judgement left to the prototype:
 | =?screen=pairs=, =?screen=pair&code=EUR/USD= | The pairs and one pair with its convention and its merged history |
 | =?screen=pairs&dialog=add= | The pair dialog; =&legs=same= the refused legs |
 | =&guard=1= | The closing guard |
-| =&who=reader= | The same screen for a person who may not write: Export stays, Import and every write go |
+| =&who=reader= | The same screen for a person who may not write: Export stays, Import and every write go, and a write dialog's address draws no dialog (RS-FEEDBACK-01) |
 
 ** What is fake
 

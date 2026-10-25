@@ -2,8 +2,8 @@
 'use strict';
 
 // ---------------------------------------------------------------------------
-// Mock data. The currencies, groups and pairs are the Acme seed as the server
-// holds them on 2026-10-25, a dozen of each; the history and the two user
+// Mock data. The fourteen currencies, six groups and sixteen pairs are the Acme
+// seed as the server holds them on 2026-10-25; the history and the two user
 // changes are invented.
 // ---------------------------------------------------------------------------
 const CURRENCIES = [
@@ -269,7 +269,7 @@ function renderList(kind) {
       </section>`;
     if (state.done) doneToast();
     else if (state.guard) guardBox();
-    else if (state.dialog === 'add') ({ currencies: dialogCurrency, groups: dialogGroup, pairs: dialogPair })[kind](null);
+    else if (admin && state.dialog === 'add') ({ currencies: dialogCurrency, groups: dialogGroup, pairs: dialogPair })[kind](null);
     else if (state.dialog === 'export') dialogExport();
 }
 
@@ -622,7 +622,7 @@ function dialogPair(p, v) {
           ${field('Base currency', select(currencyChoices, base, p ? 'disabled' : ''), p ? 'Set when the pair was made, and never changed here.' : 'The currency one unit of which is priced.')}
           ${field('Quote currency', select(currencyChoices, quote, p ? 'disabled' : ''), p ? '' : 'The currency the price is in.')}
           ${field('Classification', select(choices(CLASSIFICATIONS), p ? p.classification : ''))}
-          <p class="sample">Pair code: <span class="mono">${esc(base && quote ? `${base}/${quote}` : '—')}</span>${same ? '' : ''}</p>
+          <p class="sample">Pair code: <span class="mono">${esc(base && quote ? `${base}/${quote}` : '—')}</span></p>
           ${same ? '<div class="notice warn span">The base and quote currencies must differ.</div>' : ''}
           <h3 class="group-title">Quoting convention</h3>
           ${field('Pip factor', number(v ? v.pip_factor : '0.0001', 'step="any" min="0"'), 'The size of one pip.')}
@@ -664,6 +664,7 @@ function dialogExport() {
 function dialogsCurrency(c, tab) {
     if (state.done) return doneToast();
     if (state.guard) return guardBox();
+    if (!admin) { layer.innerHTML = ''; return; }
     switch (state.dialog) {
         case 'edit': return dialogCurrency(c);
         case 'delete': return dialogDelete({ name: c.name, what: 'This removes the currency and its links to countries, calendars and desk groups. Nothing checks whether trades, books or pairs still use it; a record that still names it fails its next save.', after: 'currencies' });
@@ -683,6 +684,7 @@ function dialogsCurrency(c, tab) {
 function dialogsGroup(g, tab) {
     if (state.done) return doneToast();
     if (state.guard) return guardBox();
+    if (!admin) { layer.innerHTML = ''; return; }
     switch (state.dialog) {
         case 'edit': return dialogGroup(g);
         case 'delete': return dialogDelete({ name: g.name, what: `This removes the group. Its ${(MEMBERS[g.code] ?? []).length} members are taken out of it first; the currencies themselves stay.`, after: 'groups' });
@@ -695,6 +697,7 @@ function dialogsGroup(g, tab) {
 function dialogsPair(p, v, tab) {
     if (state.done) return doneToast();
     if (state.guard) return guardBox();
+    if (!admin) { layer.innerHTML = ''; return; }
     switch (state.dialog) {
         case 'edit': return dialogPair(p, v);
         case 'delete': return dialogDelete({ name: p.pair_code, what: 'This removes the pair and its convention. Nothing checks whether trades still use the pair.', after: 'pairs' });
@@ -710,7 +713,7 @@ function dialogsPair(p, v, tab) {
 // address (RS-ORE-05). A table kind has no target to choose, so four steps.
 // ---------------------------------------------------------------------------
 const STEPS = ['Choose the file', 'What the file holds', 'What the system does not know', 'The difference, and the review'];
-const IMPORTED = { 'In the file': 14, 'Already held': 12, 'New': 1, 'Changed': 2, 'Not in the file': 1 };
+const IMPORTED = { 'In the file': 14, 'Already held': 11, 'Changed': 2, 'New': 1, 'Not in the file': 1 };
 const UNKNOWN = state.clean ? { values: [], dropped: [], duplicates: [] } : {
     values: [['RoundingType', 'Nearest', 'Rounding type', 'Round to nearest is the closest row; the import writes nothing until you choose']],
     dropped: [['<Currency><Decimals>', 'No column holds it; ORE derives it from the rounding precision']],
@@ -751,7 +754,7 @@ function renderImport() {
             <div class="form-grid">${reasonFields(false)}</div>`,
     };
     const next = step < STEPS.length
-        ? `<a class="btn primary" href="${href({ step: step + 1 })}" ${step === 1 && (!state.file || wrong) ? 'aria-disabled="true"' : ''}>Next ${icon('right')}</a>`
+        ? (step === 1 && (!state.file || wrong) ? `<a class="btn primary" aria-disabled="true">Next ${icon('right')}</a>` : `<a class="btn primary" href="${href({ step: step + 1 })}">Next ${icon('right')}</a>`)
         : `<a class="btn primary" href="${href({ screen: 'currencies', step: '', file: '', clean: '', done: 'imported' })}">${icon('import')} Import</a>`;
     main.innerHTML = `
       ${crumbs([...ROOT, { label: 'Currencies', href: href({ screen: 'currencies', step: '', file: '', clean: '' }) }, { label: 'Import' }])}

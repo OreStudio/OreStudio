@@ -128,6 +128,11 @@ struct fixture {
     boost::uuids::uuid party_id;
 
     fixture() {
+        // The rows of a test belong to a tenant of its own, never the system
+        // tenant: a system-tenant test would hide a policy that reads nothing
+        // in a real tenant, which is the defect of 2026-10-23.
+        REQUIRE(h.tenant_id().to_string() !=
+                ores::database::service::tenant_context::system_tenant_id);
         auto party = ores::refdata::generators::generate_synthetic_party(gen);
         const auto existing = party_repository{}.read_latest(h.context());
         if (!existing.empty())

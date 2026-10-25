@@ -23,9 +23,9 @@ A reviewer or a check can point at a rule by its identifier, and the rule has on
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The nine contradictions are decided on the pages. The form layout rules are next. |
+| Now           | The contradictions are decided and the form layout rules are written. The identifiers are next. |
 | Waiting on    | Nothing.                               |
-| Next          | Write the form layout rules. |
+| Next          | Give every rule a stable identifier. |
 | Last touched  | 2026-10-25                               |
 
 * Acceptance
@@ -41,7 +41,7 @@ A reviewer or a check can point at a rule by its identifier, and the rule has on
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:A09CD80D-1980-4136-9164-E637E7C0FCA7][Decide each contradiction between the standards]] | DONE | 2026-10-25 | 2026-10-25 | Decide each contradiction the audit lists, record the decision on the ruling page and point the other page at it. |
-| [[id:3138F4FC-9659-4335-B5A1-B94A95ED42C6][Write the form layout rules]] | BACKLOG | | | Fill the form layout gaps: field grouping and order, widget per field kind, button placement, history layout, refresh. |
+| [[id:3138F4FC-9659-4335-B5A1-B94A95ED42C6][Write the form layout rules]] | DONE | 2026-10-25 | 2026-10-25 | Fill the form layout gaps: field grouping and order, widget per field kind, button placement, history layout, refresh. |
 | [[id:5F39FFBF-234F-4E87-A5EB-D9799536D1FC][Give every rule a stable identifier]] | BACKLOG | | | Give each rule in the two standards a stable identifier and rekey the Screen review checklist by those identifiers. |
 | [[id:6B828FD6-3B7C-4952-89A0-0DCE1D8B3B4D][Write the record screen Allium specification]] | BACKLOG | | | State the record screen behaviour in Allium: Refresh, edit in progress, stale version, revert, create and delete. |
 

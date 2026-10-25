@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :settle_the_ux_language_for_record_screens:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/write-the-form-layout-rules
+#+pr: 3756
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2][Settle the UX language for record screens]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person building a form for an entity knows where every part goes without askin
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2][Settle the UX language for record screens]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -43,9 +43,15 @@ A person building a form for an entity knows where every part goes without askin
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Take the eleven open questions of the audit's form layout section. For each,
+read what the shared dialog, the field input and the details grid do today, and
+write that as the rule where it is right. Where the code has no answer, write the
+smallest rule that settles the question: one dialog with titled groups and no
+tabs, the field table's order with the key first, and a kind the field kinds
+table lacks added before a screen uses it. Put the rules in one new section of
+the record screen standard, add the two field kinds the table lacked, and give
+the checklist a line per rule. Apply every edit by one script whose
+replacements must match exactly once.
 
 * Measurements
 
@@ -59,7 +65,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Open form layout questions | 11 | the table on the Audit of the UX standards | c440ea88cb |
+| Answered from the code as it is | 7 | questions 4 to 6 and 8 to 11 of that table | c440ea88cb |
+| New rules written | 4 | questions 1 to 3 and 7: groups and no tabs, order, buttons, missing field kinds | c440ea88cb |
+| Field kinds added to the table | 2 | =cron= and =longtext=, RSS The form | c440ea88cb |
+| Checklist lines added | 8 | =git show --stat c440ea88cb= | c440ea88cb |
 
 * Notes
 
@@ -78,12 +88,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3756][#3756]] | [docs] Write the form layout rules |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review of the docs class: no findings | doc/knowledge/ui | Accept | compass check green, misspell-fixer clean; each rule names the part that carries it |
+| 2 | The checklist lacks a line for the loaded-at note, the newer-version warning and Tab order | checklist | Accept | Two lines added; the dialog line cites both pages |
+| 3 | The PR body's "eight lines" counts the details grid line | PR body | Accept | Said so in the reply; the body is not edited after review |
+| 4 | Required should be the message of the existing rule | RSS The form's layout | Accept | The rule says so |
+| 5 | The longtext row reads as built | RSS The form | Accept | The row says Not built yet |
+| 6 | The two columns rule contradicts the longtext span | RSS The form's layout | Accept | Reworded: apart from a longtext field |
 
 * Result
+
+The record screen standard has a section The form's layout: one dialog with no
+tabs and titled groups for a kind with many fields, the field table's order with
+the key first, two columns from the small breakpoint, the help or meaning under a
+control, nothing marking a required field, Cancel then the primary button at the
+right, Escape through the guard and Enter never saving, and the refresh rules
+pointed at the entity specification. The record page's details grid is stated
+too. The field kinds table gains cron and longtext, and a kind it lacks is added
+before a screen uses it. The checklist has a line per rule. Every rule names
+the part that carries it, and the longtext control is the capture Add a long
+text field kind.

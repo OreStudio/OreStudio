@@ -67,3 +67,16 @@ A generated write struct whose members lack default initialisers turns an omissi
 The database was recreated clean and ACME provisioned again on the fixed binaries. The run reached staff loading — 25 accounts exist — and then the *shell's own session expired* while it polled the workflow, so the script aborted after five failed polls. What the run left behind: 25 accounts, no trade generation configs, no trades, and no rows at all in =ores_workflow_workflow_steps_tbl=, so the run's fate cannot be read from the record.
 
 So the fix is compile-verified and not yet runtime-verified. The next attempt should avoid the expiry — run the =generate_trades= step on its own rather than the whole bootstrap, or give the shell a session long enough to outlast the poll.
+
+* The second attempt, and the wall in front of it
+
+From scratch again: database recreated, services started, ACME provisioned. The run now stops almost at once:
+
+  [1/1] system_provision: in_progress
+  ⚠ Poll failed (1/5): Session has expired. Please log in again.
+
+The shell's own access token dies within the first minute of the run, five polls fail, and the script aborts. What the database shows afterwards: 25 accounts, no configs, no trades — the workflow does not advance past staff loading once the polling session is gone.
+
+So provisioning is blocked a second time, and by something else: the access lifetime. The IAM default is =access_lifetime_s = 1800= in =token_settings.hpp=, and the token dies far sooner than that, so the value in force is either configured lower or the token is being invalidated — a key rotation when the services restart is the obvious candidate, since the shell logs in before the workflow runs and the token is rejected moments later.
+
+That is the next thing to find, and it is a different bug from the overflow. The overflow fix stands written and compiled; it cannot be proved until a provision completes, and a provision cannot complete until the session outlives the run.

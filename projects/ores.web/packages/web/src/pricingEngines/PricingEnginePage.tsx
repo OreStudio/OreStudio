@@ -69,6 +69,7 @@ import { PRICING_ENGINES_EVENTS } from './PricingEnginesPage.js';
 import { ModelEnginePanels, SettingValue } from './parts.js';
 import { SaveDialog } from './SaveDialog.js';
 import {
+    documentationOf,
     draftOf,
     enginesFor,
     templateInfo,
@@ -228,13 +229,7 @@ export function PricingEnginePage(): ReactNode {
                 onDelete={mayDelete ? () => setDialog({ kind: 'delete' }) : undefined}
             />
             {tabs.bar}
-            {tabs.tab === 'details' && (
-                <DetailsTab
-                    document={document}
-                    mayWrite={mayWrite}
-                    onEdit={() => setDialog({ kind: 'details' })}
-                />
-            )}
+            {tabs.tab === 'details' && <DetailsTab document={document} />}
             {tabs.tab === 'globals' && (
                 <GlobalParametersTab
                     document={document}
@@ -293,25 +288,12 @@ export function PricingEnginePage(): ReactNode {
 }
 
 /** The configuration's own fields, as read. */
-function DetailsTab({
-    document,
-    mayWrite,
-    onEdit,
-}: {
-    readonly document: PricingDocument;
-    readonly mayWrite: boolean;
-    readonly onEdit: () => void;
-}): ReactNode {
+function DetailsTab({ document }: { readonly document: PricingDocument }): ReactNode {
     const { t } = useTranslation();
     return (
         <section className="card space-y-4 p-4">
-            <header className="flex flex-wrap items-baseline justify-between gap-2">
+            <header>
                 <h2 className="text-sm font-medium">{t('pricingEngines.record.details')}</h2>
-                {mayWrite && (
-                    <Button size="sm" icon="edit" onClick={onEdit}>
-                        {t('pricingEngines.actions.change')}
-                    </Button>
-                )}
             </header>
             <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-5">
                 <Detail label={t('pricingEngines.fields.name')} value={document.name} />
@@ -802,11 +784,17 @@ function Workbench({
     const [saving, setSaving] = useState<Draft | null>(null);
     const type = vocabulary?.types.find((candidate) => candidate.code === product.typeCode);
     const parameters = parametersOf(draft, product.id);
-    const settings = vocabulary
-        ? settingsFor(vocabulary, product.typeCode, product.model, product.engine)
-        : [];
     const settingOf = (scope: string, name: string) =>
-        settings.find((setting) => setting.scope === scope && setting.name === name);
+        vocabulary === undefined
+            ? undefined
+            : documentationOf(
+                  vocabulary,
+                  product.typeCode,
+                  product.model,
+                  product.engine,
+                  scope,
+                  name,
+              );
     const model = vocabulary?.models.find((candidate) => candidate.code === product.model);
     const engine = vocabulary?.methods.find((candidate) => candidate.code === product.engine);
     const modelParameters = parameters.filter((parameter) => parameter.scope !== 'engine');
@@ -1292,10 +1280,13 @@ function ProductEditor({
                     {kept
                         .filter((parameter) => parameter.scope !== 'engine')
                         .map((parameter) => {
-                            const doc = vocabulary.settings.find(
-                                (setting) =>
-                                    setting.scope === parameter.scope &&
-                                    setting.name === parameter.name,
+                            const doc = documentationOf(
+                                vocabulary,
+                                product.typeCode,
+                                model,
+                                engine,
+                                parameter.scope,
+                                parameter.name,
                             );
                             return (
                                 <li key={parameter.id} className="space-y-2 py-3">
@@ -1387,10 +1378,13 @@ function ProductEditor({
                     {kept
                         .filter((parameter) => parameter.scope === 'engine')
                         .map((parameter) => {
-                            const doc = vocabulary.settings.find(
-                                (setting) =>
-                                    setting.scope === parameter.scope &&
-                                    setting.name === parameter.name,
+                            const doc = documentationOf(
+                                vocabulary,
+                                product.typeCode,
+                                model,
+                                engine,
+                                parameter.scope,
+                                parameter.name,
                             );
                             return (
                                 <li key={parameter.id} className="space-y-2 py-3">

@@ -1695,9 +1695,6 @@ const pt: SourceCatalogue = {
                 loadingWorkunits: 'A ler as unidades de trabalho...',
                 loadingResults: 'A ler os resultados...',
                 empty: 'Ainda não foi registado nenhum lote.',
-            discardTitle: 'Descartar as alterações?',
-            discardBody: 'Alterou {type} sem guardar. Mudar para outro produto perde essas alterações.',
-            discard: 'Descartar',
             noMatch: 'Nenhum lote corresponde. Limpe os filtros.',
             expandAll: 'Expandir tudo',
             collapseAll: 'Recolher tudo',
@@ -4225,6 +4222,13 @@ const pt: SourceCatalogue = {
             samePair: 'As moedas base e cotada têm de ser diferentes.',
             help: {
                 ticks_per_hour: 'Quantos preços o fluxo produz numa hora. 3600 é um por segundo.',
+                arrival_mode:
+                    'Como os intervalos entre ticks se comportam: iguais, exponenciais ou agrupados. O ritmo acima é a média de longo prazo em todos os modos.',
+                branching_ratio:
+                    'Apenas Hawkes: quantos ticks adicionais um tick provoca, abaixo de um. Um ou mais nunca estabiliza.',
+                decay: 'Apenas Hawkes: a rapidez com que uma rajada se desvanece, em unidades de um sobre um segundo.',
+                sensitivity:
+                    'Quão fortemente um regime de mercado global move este par, onde um é a média. Não faz nada até o regime de mercado chegar.',
                 price_source: {
                     fixed: 'O fluxo parte do preço inicial que indicar.',
                     vintage:
@@ -4343,6 +4347,13 @@ const pt: SourceCatalogue = {
                     projection: 'A curva em que um índice flutuante projeta as suas taxas a prazo.',
                 },
                 ticks_per_hour: 'Quantas curvas o fluxo produz numa hora. 3600 é uma por segundo.',
+                arrival_mode:
+                    'Como os intervalos entre ticks se comportam: iguais, exponenciais ou agrupados. O ritmo acima é a média de longo prazo em todos os modos.',
+                branching_ratio:
+                    'Apenas Hawkes: quantos ticks adicionais um tick provoca, abaixo de um. Um ou mais nunca estabiliza.',
+                decay: 'Apenas Hawkes: a rapidez com que uma rajada se desvanece, em unidades de um sobre um segundo.',
+                sensitivity:
+                    'Quão fortemente um regime de mercado global move este par, onde um é a média. Não faz nada até o regime de mercado chegar.',
                 price_source: {
                     fixed: 'A curva parte da taxa dada no separador Processo.',
                     vintage:
@@ -4936,6 +4947,9 @@ const pt: SourceCatalogue = {
             noParameters: 'Sem parâmetros. O modelo ou o motor usa os seus próprios valores.',
             documentation: 'Documentação',
             filter: 'Filtrar produtos',
+            discardTitle: 'Descartar as alterações?',
+            discardBody: 'Alterou {type} sem guardar. Mudar para outro produto perde essas alterações.',
+            discard: 'Descartar',
             expandAll: 'Expandir tudo',
             collapseAll: 'Recolher tudo',
             noAssetClass: 'Sem classe de ativo',

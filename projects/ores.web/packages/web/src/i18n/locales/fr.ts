@@ -1704,9 +1704,6 @@ const fr: SourceCatalogue = {
                 loadingWorkunits: 'Lecture des unités de travail...',
                 loadingResults: 'Lecture des résultats...',
                 empty: 'Aucun lot n’a encore été enregistré.',
-            discardTitle: 'Abandonner les modifications ?',
-            discardBody: 'Vous avez modifié {type} sans enregistrer. Passer à un autre produit perd ces modifications.',
-            discard: 'Abandonner',
             noMatch: 'Aucun lot ne correspond. Effacez les filtres.',
             expandAll: 'Tout développer',
             collapseAll: 'Tout réduire',
@@ -4253,6 +4250,14 @@ const fr: SourceCatalogue = {
             help: {
                 ticks_per_hour:
                     'Le nombre de prix que le flux produit en une heure. 3600 en fait un par seconde.',
+                arrival_mode:
+                    'Comment les intervalles entre ticks se comportent : égaux, exponentiels ou groupés. Le rythme ci-dessus est la moyenne à long terme dans tous les modes.',
+                branching_ratio:
+                    'Hawkes seulement : combien de ticks supplémentaires un tick provoque, en dessous de un. Un ou plus ne se stabilise jamais.',
+                decay:
+                    'Hawkes seulement : la vitesse à laquelle une salve s’estompe, en unités d’une seconde inverse.',
+                sensitivity:
+                    'À quel point un régime de marché global déplace cette paire, où un est la moyenne. Il ne fait rien tant que le régime de marché n’arrive pas.',
                 price_source: {
                     fixed: 'Le flux part du prix initial que vous donnez.',
                     vintage:
@@ -4374,6 +4379,14 @@ const fr: SourceCatalogue = {
                 },
                 ticks_per_hour:
                     'Combien de courbes le flux produit en une heure. 3600 en fait une par seconde.',
+                arrival_mode:
+                    'Comment les intervalles entre ticks se comportent : égaux, exponentiels ou groupés. Le rythme ci-dessus est la moyenne à long terme dans tous les modes.',
+                branching_ratio:
+                    'Hawkes seulement : combien de ticks supplémentaires un tick provoque, en dessous de un. Un ou plus ne se stabilise jamais.',
+                decay:
+                    'Hawkes seulement : la vitesse à laquelle une salve s’estompe, en unités d’une seconde inverse.',
+                sensitivity:
+                    'À quel point un régime de marché global déplace cette paire, où un est la moyenne. Il ne fait rien tant que le régime de marché n’arrive pas.',
                 price_source: {
                     fixed: "La courbe part du taux donné dans l'onglet Processus.",
                     vintage:
@@ -4969,6 +4982,9 @@ const fr: SourceCatalogue = {
                 'Aucun paramètre. Le modèle ou le moteur utilise ses propres valeurs par défaut.',
             documentation: 'Documentation',
             filter: 'Filtrer les produits',
+            discardTitle: 'Abandonner les modifications ?',
+            discardBody: 'Vous avez modifié {type} sans enregistrer. Passer à un autre produit perd ces modifications.',
+            discard: 'Abandonner',
             expandAll: 'Tout développer',
             collapseAll: 'Tout réduire',
             noAssetClass: "Sans classe d'actif",

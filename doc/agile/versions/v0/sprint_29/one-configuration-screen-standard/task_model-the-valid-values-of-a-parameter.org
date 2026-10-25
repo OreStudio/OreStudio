@@ -1,0 +1,214 @@
+:PROPERTIES:
+:ID: 57DA9BE1-DA44-40C1-AC7E-0B234839F126
+:END:
+#+title: Task: Model the valid values of a parameter
+#+description: Give every ORE parameter a value set: its storage type, its allowed values and, where the values are other ORE Studio data, the catalogue they come from. The screen draws the control from it and the write path enforces it.
+#+type: task
+#+level: s1
+#+filetags: :one-configuration-screen-standard:sprint_29:v0:
+#+owner: marco
+#+branch: feature/model-the-valid-values-of-a-parameter
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A parameter states its value type and its allowed values in the contract, and
+the allowed values may be the current rows of another ORE Studio catalogue, such
+as tenors, currencies, currency pairs, sensitivity templates or instrument
+codes. The screen draws the control from that statement and the write path
+enforces it, so no value list lives in a screen, a CSV on a per-pair row, or a
+code parser read at run time.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
+| Now          | The model is designed; the tables are next. |
+| Waiting on   | Nothing.                               |
+| Next         | Model the four tables and generate them. |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- Every parameter states a value type: text, integer, decimal, boolean, date.
+- Every parameter whose value is not free text states a value set.
+- An enumerated set holds its values as rows, with a label, an order and an
+  active flag, in one place and not in a comma separated column.
+- A catalogue set names a registered catalogue, and its values are the
+  catalogue's current rows. No value is copied into the parameter tables.
+- The setting-to-set link is keyed by the setting, =(scope, name)=, because the
+  allowed values belong to the setting and not to one product type's copy of it.
+- The screen draws a combo for an enumerated set and for a catalogue set, a
+  number field for a range, and a text field only for a free text parameter.
+- The write path refuses a value outside its set, for every client, with the
+  value, the setting and the set named in the refusal.
+- The generator refuses a usual value that is not in its set.
+- =pricing_pair_settings.options= and =kind= are removed once the contract
+  carries the same facts.
+- No value is backfilled from a code parser. A parser may be the evidence a
+  curator reads; it is never the source of the data.
+
+* Plan
+
+** What is wrong today
+
+Three layers answer three different questions and disagree. The contract
+carries a scalar domain and no allowed values. The per-pair settings table
+carries =kind= and =options=, a comma separated string, so the same list repeats
+on every pair that takes the setting, and its only consumer is the web client.
+Nothing enforces it: the analytics service accepts any string. A setting the
+guide does not list has no =kind= at all, which is why a curated setting such as
+=Training.BasisFunction= arrives as free text even though its values are known.
+
+** The tables
+
+** =ores.reporting.ore_parameter_value_set=
+
+| column | holds |
+|--------+-------|
+| =code= | the set's key, such as =polynom_type= |
+| =name= | a person's name for it |
+| =description= | what the values choose |
+| =source_kind= | =enumerated=, =catalogue=, =range=, =regex= or =boolean= |
+| =catalogue_code= | the catalogue, when the kind is =catalogue= |
+| =minimum=, =maximum= | the bounds, when the kind is =range= |
+| =pattern= | the regular expression, when the kind is =regex= |
+| =is_ordered= | whether the order of an enumerated set means something |
+
+** =ores.reporting.ore_parameter_value_set_value=
+
+| column | holds |
+|--------+-------|
+| =set_code= | the set |
+| =value= | the string a configuration holds |
+| =label= | what a person reads |
+| =description= | what the value means |
+| =display_order= | where it sits in the combo |
+| =is_active= | whether it may still be chosen |
+
+The key is =(set_code, value)=. The set is shared by every parameter that names
+it, so =Chebyshev2nd= is written once.
+
+** =ores.reporting.ore_parameter_value_set_catalogue=
+
+| column | holds |
+|--------+-------|
+| =code= | the catalogue's key, such as =refdata.tenor= |
+| =name= | a person's name |
+| =relation= | the view that presents its values |
+| =value_column=, =label_column= | which columns of that view carry the value and the label |
+| =is_active= | whether a set may still name it |
+
+Only a registered relation can be read, and its shape is checked when the
+registry is loaded. A catalogue is data: tenors, currencies, currency pairs,
+sensitivity templates, instrument codes, calendars, day counters, business day
+conventions and the rest. Each gets a view that presents =(value, label)= from
+the table that owns it, generated from the registry, so no hand-written join and
+no run-time table name sits in the read path.
+
+** The link, and why it is a junction
+
+=ores.reporting.ore_parameter_setting_value_set= holds =(scope, name,
+value_set_code)= with the provenance fields. It is a junction between a setting
+and a set. It is keyed by the setting rather than by a parameter row because the
+contract holds one row per product type and the allowed values are the same for
+all of them; keying by the row would repeat the link hundreds of times. A
+setting has one set, so the pair is unique; the table is a junction and not a
+column so a setting may later draw from more than one set without a migration.
+
+** Reading
+
+The contract serves, for each setting, its set and its resolved choices: the
+values rows for an enumerated set, the catalogue view's current rows for a
+catalogue, and the bounds or pattern for a range or a regex. The vocabulary
+reply carries them, and =SettingValue= chooses its control from the set's
+source kind, not from a CSV on a pair row.
+
+** Writing
+
+One enforcement point, in the database, because every client writes through it.
+A trigger on the parameter table resolves =(scope, name)= to its set and refuses
+a value outside it, naming the value, the setting and the set. A catalogue set
+reads its registered view, so a value that has been retired from the catalogue is
+refused for the same reason. A range compares, a regex matches, a boolean takes
+two values. The analytics service and the BFF need no copy of the rules.
+
+** Migration
+
+1. Add the four tables and their generated views.
+2. Curate the sets and their values, starting with the sets the guide already
+   lists as choices, then the settings whose values the code enumerates, then
+   the catalogue references.
+3. Link every setting to its set and carry the usual value across.
+4. Serve the sets in the vocabulary and switch the screen to them.
+5. Add the trigger and prove a bad value is refused from the BFF and from psql.
+6. Remove =options= and =kind= from =pricing_pair_settings= and from the
+   generator, and have the generator check each usual value against its set.
+7. Extend the coverage report: a parameter with no set, a set with no values, a
+   usual value outside its set, a catalogue registered but never used.
+
+The values are curated data with a source, a reference, a curator and a date,
+the same as every other curated fact. The ORE parsers are read to find what the
+values are, and the curated file records the parser as the reference; no script
+copies from the parser into the data.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The scalar domain stays as the storage type. =referenced_entity= on it is
+  unused and is removed; the catalogue reference belongs to the set.
+- =Training.BasisFunction= is the worked example: one enumerated set named by the
+  setting, shared by every pair and every product type that takes it.
+- A catalogue value is the catalogue's own key, such as a tenor code or a
+  currency pair code, so nothing is denormalised into the parameter tables.
+- The web's fallback by setting name stays, because a configuration may hold a
+  pair the guide does not list; the set is keyed the same way, so the control
+  works there too.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

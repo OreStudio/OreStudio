@@ -228,10 +228,30 @@ def test_a_corrupt_preferences_file_is_started_again(tmp_path):
     assert not (tmp_path / "Preferences.tmp").exists()
 
 
-def test_a_lock_held_by_a_live_process_counts_as_in_use(tmp_path):
+def test_a_lock_held_by_chrome_on_the_profile_counts_as_in_use(tmp_path, monkeypatch):
     import os
-    (tmp_path / "SingletonLock").symlink_to(f"host-{os.getpid()}")
+    import socket
+
+    (tmp_path / "SingletonLock").symlink_to(f"{socket.gethostname()}-{os.getpid()}")
+    monkeypatch.setattr(open_as, "mentions_profile", lambda *_: True)
     assert open_as.lock_holder_alive(tmp_path)
+
+
+def test_a_lock_whose_pid_now_belongs_to_something_else_does_not(tmp_path, monkeypatch):
+    """A killed Chrome leaves its lock; the kernel then reuses the number."""
+    import os
+    import socket
+
+    (tmp_path / "SingletonLock").symlink_to(f"{socket.gethostname()}-{os.getpid()}")
+    monkeypatch.setattr(open_as, "mentions_profile", lambda *_: False)
+    assert not open_as.lock_holder_alive(tmp_path)
+
+
+def test_a_lock_from_another_host_does_not(tmp_path):
+    import os
+
+    (tmp_path / "SingletonLock").symlink_to(f"another-machine-{os.getpid()}")
+    assert not open_as.lock_holder_alive(tmp_path)
 
 
 def test_a_lock_left_by_a_dead_process_does_not(tmp_path):

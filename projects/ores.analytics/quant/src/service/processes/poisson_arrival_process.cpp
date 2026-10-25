@@ -16,21 +16,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+// Inspired by the tick library (BSD 3-clause, the tick developers, CMAP); see
+// doc/knowledge/external/tick.org.
 #include "ores.analytics.quant/service/processes/poisson_arrival_process.hpp"
 #include <cmath>
 #include <stdexcept>
 
 namespace ores::analytics::quant::service {
 
-poisson_arrival_process::poisson_arrival_process(double mean_rate, std::uint32_t seed)
-    : mean_rate_(mean_rate)
-    , gap_distribution_(mean_rate)
-    , rng_(seed) {
+namespace {
 
-    if (!std::isfinite(mean_rate_) || mean_rate_ <= 0.0)
+// std::exponential_distribution requires a strictly positive rate, so the check
+// runs before the distribution is built, not after.
+double checked_rate(double mean_rate) {
+    if (!std::isfinite(mean_rate) || mean_rate <= 0.0)
         throw std::invalid_argument(
             "poisson_arrival_process: mean_rate must be finite and strictly positive");
+    return mean_rate;
 }
+
+}
+
+poisson_arrival_process::poisson_arrival_process(double mean_rate, std::uint32_t seed)
+    : mean_rate_(checked_rate(mean_rate))
+    , gap_distribution_(mean_rate_)
+    , rng_(seed) {}
 
 double poisson_arrival_process::next_gap() {
     return gap_distribution_(rng_);

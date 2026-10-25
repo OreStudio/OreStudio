@@ -108,14 +108,18 @@ process_factory::make_arrival_process(const std::string& mode,
 
     // One conversion, here: the config speaks ticks per hour, every arrival
     // process speaks arrivals per second.
-    const double mean_rate = ticks_per_hour / 3600.0;
+    constexpr double seconds_per_hour = 3600.0;
+    const double mean_rate = ticks_per_hour / seconds_per_hour;
 
     if (mode == "periodic")
         return std::make_unique<periodic_arrival_process>(mean_rate);
     if (mode == "poisson")
         return std::make_unique<poisson_arrival_process>(mean_rate, seed);
+    if (mode == "hawkes")
+        return std::make_unique<hawkes_arrival_process>(mean_rate, branching_ratio, decay, seed);
 
-    return std::make_unique<hawkes_arrival_process>(mean_rate, branching_ratio, decay, seed);
+    throw std::invalid_argument("process_factory::make_arrival_process: unrecognised mode '" +
+                                mode + "'");
 }
 
 }

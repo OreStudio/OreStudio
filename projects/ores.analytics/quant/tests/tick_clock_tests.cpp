@@ -19,7 +19,6 @@
 #include "ores.analytics.quant/domain/i_arrival_process.hpp"
 #include "ores.analytics.quant/service/processes/periodic_arrival_process.hpp"
 #include "ores.analytics.quant/service/tick_clock.hpp"
-#include "ores.logging/make_logger.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <stdexcept>
@@ -28,23 +27,17 @@
 
 namespace {
 
-const std::string_view test_suite("ores.analytics.quant.tests");
 const std::string tags("[tick_clock]");
 
-// One tick per millisecond, so a three-tick case is fast but still exercises
-// the real gap/sleep path.
-constexpr double fast = 1000.0;
-
-/// A process with a scripted set of gaps, to prove the clock asks each time.
+/// A process with a scripted gap, to prove the clock asks each time.
 class scripted_arrival_process final : public ores::analytics::quant::domain::i_arrival_process {
 public:
-    explicit scripted_arrival_process(std::vector<double> gaps)
-        : gaps_(std::move(gaps)) {}
+    explicit scripted_arrival_process(double gap)
+        : gap_(gap) {}
 
     double next_gap() override {
         ++calls_;
-        const auto gap = gaps_.empty() ? 0.0 : gaps_[calls_ % gaps_.size()];
-        return gap;
+        return gap_;
     }
 
     [[nodiscard]] std::size_t calls() const {
@@ -52,7 +45,7 @@ public:
     }
 
 private:
-    std::vector<double> gaps_;
+    double gap_;
     std::size_t calls_ = 0;
 };
 
@@ -60,12 +53,11 @@ private:
 
 using ores::analytics::quant::service::periodic_arrival_process;
 using ores::analytics::quant::service::tick_clock;
-using namespace ores::logging;
 
 TEST_CASE("tick_clock runs the body once per gap and counts every batch", tags) {
-    auto lg(make_logger(test_suite));
-
-    periodic_arrival_process arrivals(fast);
+    // One tick per millisecond, so a three-tick case is fast but still
+    // exercises the real gap and sleep path.
+    periodic_arrival_process arrivals(1000.0);
     tick_clock clock(arrivals);
     std::vector<std::uint64_t> counts;
     std::vector<std::string> summaries;
@@ -91,9 +83,7 @@ TEST_CASE("tick_clock runs the body once per gap and counts every batch", tags) 
 }
 
 TEST_CASE("tick_clock asks the arrival process for every gap", tags) {
-    auto lg(make_logger(test_suite));
-
-    scripted_arrival_process arrivals({0.001});
+    scripted_arrival_process arrivals(0.001);
     tick_clock clock(arrivals);
     int calls = 0;
 
@@ -107,13 +97,11 @@ TEST_CASE("tick_clock asks the arrival process for every gap", tags) {
         [](const std::exception&) { FAIL("the tick body did not throw"); });
 
     CHECK(calls == 3);
-    CHECK(arrivals.calls() >= 3);
+    CHECK(arrivals.calls() == 3);
 }
 
 TEST_CASE("tick_clock skips a throwing tick and keeps counting from the next one", tags) {
-    auto lg(make_logger(test_suite));
-
-    periodic_arrival_process arrivals(fast);
+    periodic_arrival_process arrivals(1000.0);
     tick_clock clock(arrivals);
     std::vector<std::uint64_t> counts;
     std::vector<std::string> failures;
@@ -138,9 +126,7 @@ TEST_CASE("tick_clock skips a throwing tick and keeps counting from the next one
 }
 
 TEST_CASE("tick_clock stopped before run emits nothing", tags) {
-    auto lg(make_logger(test_suite));
-
-    periodic_arrival_process arrivals(fast);
+    periodic_arrival_process arrivals(1000.0);
     tick_clock clock(arrivals);
     clock.stop();
 

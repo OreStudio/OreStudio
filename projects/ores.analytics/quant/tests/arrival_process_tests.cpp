@@ -21,7 +21,6 @@
 #include "ores.analytics.quant/service/processes/hawkes_arrival_process.hpp"
 #include "ores.analytics.quant/service/processes/periodic_arrival_process.hpp"
 #include "ores.analytics.quant/service/processes/poisson_arrival_process.hpp"
-#include "ores.logging/make_logger.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
@@ -31,7 +30,6 @@
 
 namespace {
 
-const std::string_view test_suite("ores.analytics.quant.tests");
 const std::string tags("[arrival_process]");
 
 /// The long-run mean of a gap, measured over enough draws to be tight.
@@ -63,81 +61,85 @@ std::vector<double> counts_per_window(ores::analytics::quant::domain::i_arrival_
     return counts;
 }
 
+/// Variance over mean of a count series. It is 1 for a Poisson stream and
+/// 1/(1-n)^2 for a Hawkes stream.
+double fano_factor(const std::vector<double>& counts) {
+    double total = 0.0;
+    for (double c : counts)
+        total += c;
+    const double mean = total / static_cast<double>(counts.size());
+
+    double squared = 0.0;
+    for (double c : counts)
+        squared += (c - mean) * (c - mean);
+    const double variance = squared / static_cast<double>(counts.size() - 1);
+
+    return variance / mean;
+}
+
 }
 
 using ores::analytics::quant::service::hawkes_arrival_process;
 using ores::analytics::quant::service::periodic_arrival_process;
 using ores::analytics::quant::service::poisson_arrival_process;
-using namespace ores::logging;
 
 TEST_CASE("the periodic process returns the gap its mean rate asks for", tags) {
-    auto lg(make_logger(test_suite));
+    periodic_arrival_process per_second(4.0);
+    CHECK(per_second.next_gap() == Catch::Approx(0.25));
+    CHECK(per_second.next_gap() == Catch::Approx(0.25));
 
-    periodic_arrival_process process(4.0);
-
-    CHECK(process.next_gap() == Catch::Approx(0.25));
-    CHECK(process.next_gap() == Catch::Approx(0.25));
+    periodic_arrival_process every_two_seconds(0.5);
+    CHECK(every_two_seconds.next_gap() == Catch::Approx(2.0));
 }
 
 TEST_CASE("the poisson process draws gaps at its mean rate", tags) {
-    auto lg(make_logger(test_suite));
-
     // 1000 arrivals a second, so a gap of one millisecond, and 200k draws put
     // the sample mean within a fraction of a percent of it.
     poisson_arrival_process process(1000.0, 7);
-    const auto mean = mean_gap(process, 200000);
+    CHECK(mean_gap(process, 200000) == Catch::Approx(0.001).epsilon(0.02));
+}
 
-    CHECK(mean == Catch::Approx(0.001).epsilon(0.02));
+TEST_CASE("the poisson counts are independent: the Fano factor is one", tags) {
+    // Gaps that were not exponential would not give a Fano factor of one, so
+    // this rules out a constant gap where the mean alone cannot.
+    poisson_arrival_process process(10.0, 19);
+    const auto counts = counts_per_window(process, 100000, 1.0);
+
+    REQUIRE(counts.size() > 9000);
+    CHECK(fano_factor(counts) == Catch::Approx(1.0).epsilon(0.15));
 }
 
 TEST_CASE("a hawkes stream settles at its long-run mean rate", tags) {
-    auto lg(make_logger(test_suite));
-
     // The long-run rate is the rate the caller asked for, mu / (1 - n), not the
     // baseline, which is half of it here.
     hawkes_arrival_process process(1000.0, 0.5, 10.0, 11);
     CHECK(process.baseline() == Catch::Approx(500.0));
     CHECK(process.jump() == Catch::Approx(5.0));
 
-    const auto mean = mean_gap(process, 200000);
-    CHECK(mean == Catch::Approx(0.001).epsilon(0.03));
+    CHECK(mean_gap(process, 200000) == Catch::Approx(0.001).epsilon(0.03));
 }
 
 TEST_CASE("a hawkes stream clusters: the Fano factor is one over one minus n squared", tags) {
-    auto lg(make_logger(test_suite));
-
     // Windows of a second are ten bursts long (1 / beta = 0.1 s), so the count
     // inside one window sees the clustering. For n = 0.5 the Fano factor is 4.
     hawkes_arrival_process process(10.0, 0.5, 10.0, 13);
     const auto counts = counts_per_window(process, 100000, 1.0);
 
     REQUIRE(counts.size() > 9000);
-    double total = 0.0;
-    for (double c : counts)
-        total += c;
-    const double mean = total / static_cast<double>(counts.size());
-    double squared = 0.0;
-    for (double c : counts)
-        squared += (c - mean) * (c - mean);
-    const double variance = squared / static_cast<double>(counts.size() - 1);
-
-    CHECK(mean == Catch::Approx(10.0).epsilon(0.05));
-    CHECK(variance / mean == Catch::Approx(4.0).epsilon(0.15));
+    CHECK(fano_factor(counts) == Catch::Approx(4.0).epsilon(0.15));
 }
 
 TEST_CASE("the rescaled gaps of a hawkes stream are exponential with mean one", tags) {
-    auto lg(make_logger(test_suite));
-
     // The time-rescaling test: integrate the intensity over each gap. For the
     // exponential kernel that integral is closed form, and the compensated
     // gaps must be Exp(1), whose mean and variance are both one.
-    const double mean_rate = 100.0;
-    const double branching_ratio = 0.5;
-    const double decay = 10.0;
+    constexpr double mean_rate = 100.0;
+    constexpr double branching_ratio = 0.5;
+    constexpr double decay = 10.0;
     hawkes_arrival_process process(mean_rate, branching_ratio, decay, 17);
 
-    const double baseline = mean_rate * (1.0 - branching_ratio);
-    const double jump = branching_ratio * decay;
+    const double baseline = process.baseline();
+    const double jump = process.jump();
 
     constexpr std::size_t draws = 200000;
     double excess = 0.0;
@@ -160,8 +162,6 @@ TEST_CASE("the rescaled gaps of a hawkes stream are exponential with mean one", 
 }
 
 TEST_CASE("a branching ratio of one or more is refused", tags) {
-    auto lg(make_logger(test_suite));
-
     CHECK_THROWS_AS(hawkes_arrival_process(10.0, 1.0, 10.0), std::invalid_argument);
     CHECK_THROWS_AS(hawkes_arrival_process(10.0, 1.5, 10.0), std::invalid_argument);
     CHECK_THROWS_AS(ores::analytics::quant::service::process_factory::make_arrival_process(
@@ -175,8 +175,6 @@ TEST_CASE("a branching ratio of one or more is refused", tags) {
 }
 
 TEST_CASE("the arrival rules refuse what cannot work", tags) {
-    auto lg(make_logger(test_suite));
-
     using ores::analytics::quant::domain::validate_arrival_process_parameters;
 
     CHECK_FALSE(validate_arrival_process_parameters("periodic", 0.0, 0.0, 1.0).valid);
@@ -193,8 +191,6 @@ TEST_CASE("the arrival rules refuse what cannot work", tags) {
 }
 
 TEST_CASE("the factory converts ticks per hour to the process unit and refuses a bad mode", tags) {
-    auto lg(make_logger(test_suite));
-
     const auto hourly =
         ores::analytics::quant::service::process_factory::make_arrival_process("periodic", 3600.0);
     CHECK(hourly->next_gap() == Catch::Approx(1.0));

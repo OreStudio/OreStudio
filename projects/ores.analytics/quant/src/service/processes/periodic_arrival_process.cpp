@@ -16,20 +16,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+// Inspired by the tick library (BSD 3-clause, the tick developers, CMAP); see
+// doc/knowledge/external/tick.org.
 #include "ores.analytics.quant/service/processes/periodic_arrival_process.hpp"
 #include <cmath>
 #include <stdexcept>
 
 namespace ores::analytics::quant::service {
 
-periodic_arrival_process::periodic_arrival_process(double mean_rate)
-    : mean_rate_(mean_rate)
-    , gap_(1.0 / mean_rate) {
+namespace {
 
-    if (!std::isfinite(mean_rate_) || mean_rate_ <= 0.0)
+// The reciprocal needs a positive rate, so the check runs before the member
+// that takes it is built.
+double checked_rate(double mean_rate) {
+    if (!std::isfinite(mean_rate) || mean_rate <= 0.0)
         throw std::invalid_argument(
             "periodic_arrival_process: mean_rate must be finite and strictly positive");
+    return mean_rate;
 }
+
+}
+
+periodic_arrival_process::periodic_arrival_process(double mean_rate)
+    : mean_rate_(checked_rate(mean_rate))
+    , gap_(1.0 / mean_rate_) {}
 
 double periodic_arrival_process::next_gap() {
     return gap_;

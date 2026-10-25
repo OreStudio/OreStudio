@@ -51,7 +51,7 @@ namespace ores::analytics::quant::service {
  * note gives the same law and extends to other kernels.
  *
  * Inspired by the tick library (BSD 3-clause, the tick developers, CMAP); see
- * the external note on tick, and the Hawkes note for the law and the two
+ * =doc/knowledge/external/tick.org=, and the Hawkes note for the law and the two
  * simulation methods.
  */
 class ORES_ANALYTICS_QUANT_EXPORT hawkes_arrival_process final
@@ -73,15 +73,6 @@ public:
 
     double next_gap() override;
 
-    [[nodiscard]] double mean_rate() const {
-        return mean_rate_;
-    }
-    [[nodiscard]] double branching_ratio() const {
-        return branching_ratio_;
-    }
-    [[nodiscard]] double decay() const {
-        return decay_;
-    }
     /// @brief The baseline rate mu, in arrivals per second.
     [[nodiscard]] double baseline() const {
         return baseline_;

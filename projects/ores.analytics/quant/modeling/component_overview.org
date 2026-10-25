@@ -81,9 +81,9 @@ the others in =domain::validate_arrival_process_parameters=.
   from validating raw process parameters before construction.
 - =domain::i_arrival_process= -- the pure interface an arrival process
   implements (=next_gap()= draws the wait to the next arrival, in seconds).
-- =domain::process_parameter_validation_result= from
-  =domain::validate_arrival_process_parameters= -- the arrival rules (mode,
-  positive rate, branching ratio below one, positive decay).
+- =domain::validate_arrival_process_parameters= -- the arrival rules (mode,
+  positive rate, branching ratio below one, positive decay), returning the same
+  ok/error-message pair as the value-process rules.
 
 * Entry points
 

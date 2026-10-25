@@ -23,6 +23,7 @@
 #include "ores.analytics.quant/export.hpp"
 #include <atomic>
 #include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <exception>
 #include <functional>
@@ -46,9 +47,10 @@ namespace ores::analytics::quant::service {
  * thread has no caller to propagate to and an uncaught throw would terminate the
  * service, taking every other feed and NATS handler with it.
  *
- * The clock holds no database, messaging or logging code, only the standard
- * library, so it keeps the rule of ores.analytics.quant. The arrival process is
- * borrowed and must outlive the clock.
+ * The clock holds no database, messaging or logging code, only the arrival
+ * process interface and the standard library, so it keeps the rule of
+ * ores.analytics.quant. The arrival process is borrowed and must outlive the
+ * clock.
  */
 class ORES_ANALYTICS_QUANT_EXPORT tick_clock final {
 public:
@@ -76,9 +78,14 @@ public:
         // A gap of zero is legal: a periodic process at an enormous rate. The
         // loop then ticks without sleeping, which is what the caller asked for.
         while (!stop_flag_.load(std::memory_order_relaxed)) {
+            // A negative or non-finite gap would spin the loop or convert to an
+            // unspecified integer; a zero gap means "tick without waiting",
+            // which a periodic process at a very high rate legitimately asks
+            // for.
             const double gap_seconds = arrivals_.next_gap();
+            const bool usable = std::isfinite(gap_seconds) && gap_seconds > 0.0;
             auto remaining =
-                duration_cast<microseconds>(duration<double>(gap_seconds));
+                duration_cast<microseconds>(duration<double>(usable ? gap_seconds : 0.0));
 
             while (remaining.count() > 0 && !stop_flag_.load(std::memory_order_relaxed)) {
                 const auto nap = remaining < slice ? remaining : duration_cast<microseconds>(slice);

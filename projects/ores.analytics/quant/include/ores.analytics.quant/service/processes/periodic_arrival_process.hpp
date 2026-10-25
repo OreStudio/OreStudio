@@ -32,7 +32,7 @@ namespace ores::analytics::quant::service {
  * three arrival processes take the same argument; the gap is its reciprocal.
  *
  * Inspired by the tick library (BSD 3-clause, the tick developers, CMAP); see
- * the external note on tick.
+ * =doc/knowledge/external/tick.org=.
  */
 class ORES_ANALYTICS_QUANT_EXPORT periodic_arrival_process final
     : public ores::analytics::quant::domain::i_arrival_process {
@@ -41,10 +41,6 @@ public:
     explicit periodic_arrival_process(double mean_rate);
 
     double next_gap() override;
-
-    [[nodiscard]] double mean_rate() const {
-        return mean_rate_;
-    }
 
 private:
     double mean_rate_;

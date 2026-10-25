@@ -34,7 +34,7 @@ namespace ores::analytics::quant::service {
  * argument the other two arrival processes take.
  *
  * Inspired by the tick library (BSD 3-clause, the tick developers, CMAP); see
- * the external note on tick.
+ * =doc/knowledge/external/tick.org=.
  */
 class ORES_ANALYTICS_QUANT_EXPORT poisson_arrival_process final
     : public ores::analytics::quant::domain::i_arrival_process {
@@ -46,10 +46,6 @@ public:
     explicit poisson_arrival_process(double mean_rate, std::uint32_t seed = 42);
 
     double next_gap() override;
-
-    [[nodiscard]] double mean_rate() const {
-        return mean_rate_;
-    }
 
 private:
     double mean_rate_;

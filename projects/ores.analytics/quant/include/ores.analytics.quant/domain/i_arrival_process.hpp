@@ -41,7 +41,7 @@ namespace ores::analytics::quant::domain {
  * every value process.
  *
  * Inspired by the tick library (BSD 3-clause, the tick developers, CMAP); see
- * the external note on tick. This is a reimplementation from the published
+ * =doc/knowledge/external/tick.org=. This is a reimplementation from the published
  * algorithms, not a copy of its source.
  */
 class ORES_ANALYTICS_QUANT_EXPORT i_arrival_process {

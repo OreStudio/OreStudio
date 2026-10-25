@@ -16,6 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+// Inspired by the tick library (BSD 3-clause, the tick developers, CMAP); see
+// doc/knowledge/external/tick.org.
 #include "ores.analytics.quant/service/processes/hawkes_arrival_process.hpp"
 #include <algorithm>
 #include <cmath>
@@ -24,33 +26,49 @@
 
 namespace ores::analytics::quant::service {
 
+namespace {
+
+// The baseline and the jump are derived from these three, so they are checked
+// before the members that need them are built.
+double checked_rate(double mean_rate) {
+    if (!std::isfinite(mean_rate) || mean_rate <= 0.0)
+        throw std::invalid_argument(
+            "hawkes_arrival_process: mean_rate must be finite and strictly positive");
+    return mean_rate;
+}
+
+double checked_ratio(double branching_ratio) {
+    if (!std::isfinite(branching_ratio) || branching_ratio < 0.0 || branching_ratio >= 1.0)
+        throw std::invalid_argument(
+            "hawkes_arrival_process: branching_ratio must be at least zero and strictly below one");
+    return branching_ratio;
+}
+
+double checked_decay(double decay) {
+    if (!std::isfinite(decay) || decay <= 0.0)
+        throw std::invalid_argument(
+            "hawkes_arrival_process: decay must be finite and strictly positive");
+    return decay;
+}
+
+}
+
 hawkes_arrival_process::hawkes_arrival_process(double mean_rate,
                                                double branching_ratio,
                                                double decay,
                                                std::uint32_t seed)
-    : mean_rate_(mean_rate)
-    , branching_ratio_(branching_ratio)
-    , decay_(decay)
-    , baseline_(mean_rate * (1.0 - branching_ratio))
-    , jump_(branching_ratio * decay)
+    : mean_rate_(checked_rate(mean_rate))
+    , branching_ratio_(checked_ratio(branching_ratio))
+    , decay_(checked_decay(decay))
+    , baseline_(mean_rate_ * (1.0 - branching_ratio_))
+    , jump_(branching_ratio_ * decay_)
     , uniform_(std::nextafter(0.0, 1.0), 1.0)
-    , rng_(seed) {
-
-    if (!std::isfinite(mean_rate_) || mean_rate_ <= 0.0)
-        throw std::invalid_argument(
-            "hawkes_arrival_process: mean_rate must be finite and strictly positive");
-    if (!std::isfinite(branching_ratio_) || branching_ratio_ < 0.0 || branching_ratio_ >= 1.0)
-        throw std::invalid_argument(
-            "hawkes_arrival_process: branching_ratio must be at least zero and strictly below one");
-    if (!std::isfinite(decay_) || decay_ <= 0.0)
-        throw std::invalid_argument(
-            "hawkes_arrival_process: decay must be finite and strictly positive");
-}
+    , rng_(seed) {}
 
 double hawkes_arrival_process::next_gap() {
     // The next event is the earlier of a baseline arrival and one from the
-    // fading excess (Dassios and Zhao). uniform_ is drawn on (0, 1], so the
-    // logarithms stay finite.
+    // fading excess (Dassios and Zhao). uniform_ is drawn on [smallest positive
+    // double, 1), so neither logarithm can reach zero.
     const double baseline_gap = -std::log(uniform_(rng_)) / baseline_;
 
     auto excess_gap = std::numeric_limits<double>::infinity();

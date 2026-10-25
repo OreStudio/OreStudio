@@ -38,10 +38,10 @@ hook and the tick is skipped, because a tick-loop thread has no caller to
 receive an exception. The clock is described from the feed's side in
 [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][the FX spot producer]].
 
-The clock holds no database, messaging or logging code. It needs only
-=<chrono>=, =<thread>=, =<atomic>= and =<functional>=, so it keeps the rule of
-=ores.analytics.quant=: =service/tick_clock.hpp=, beside the processes it is
-driven by. The synthetic side holds only the feeds. A feed reads its mode and
+The clock holds no database, messaging or logging code. It needs the arrival
+process interface and the standard library ( =<chrono>=, =<thread>=, =<atomic>=,
+=<functional>= ), so it keeps the rule of =ores.analytics.quant=:
+=service/tick_clock.hpp=, beside the processes it is driven by. The synthetic side holds only the feeds. A feed reads its mode and
 numbers from the generation config, asks the factory for an arrival process,
 builds a clock around it and gives the clock a tick body. Any
 other consumer, such as a calibration tool or =ores.marketdata=, can pace itself
@@ -94,7 +94,8 @@ A feed names its mode and one set of numbers.
 The Hawkes row uses the parametrisation in
 [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]]: the mean rate
 $\bar\lambda$, the branching ratio $n$ and the decay $\beta$. The factory turns
-them into the baseline $\mu = \bar\lambda(1-n)$ and the jump $\alpha = n\beta$.
+them into the baseline $\mu = \bar\lambda(1-n)$ and the jump $\alpha = n\beta$
+inside =hawkes_arrival_process=.
 =ticks_per_hour= keeps its meaning in every mode. A person who switches from
 Periodic to Hawkes keeps the same load on the pipeline, and changes only how
 that load is spread in time. The approach note's $(\mu, \alpha, \beta)$ is the

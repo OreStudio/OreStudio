@@ -84,3 +84,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Finished. The test's second value is derived from the first by moving the number, so both values parse as the first does and ORE would read them. No production code changed and the guard is untouched.
+
+The analytics core suite passes on a freshly recreated database: 76 cases, 496 assertions.

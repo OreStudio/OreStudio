@@ -177,14 +177,19 @@ def _service_text(root: Path, env: dict, start_epoch: float, log_path: Path) -> 
     they write to the journal. The check reads whichever holds the run it
     started, so it works in both shapes.
     """
+    # The launcher's file and the journal do not always carry the same lines:
+    # a unit started under systemd writes the demand replies to the journal,
+    # and the file may hold only part of the run. Read both and let the parser
+    # find the lines.
+    parts = []
     if log_path.is_file():
-        return log_path.read_text(errors="replace")
+        parts.append(log_path.read_text(errors="replace"))
     since = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(start_epoch))
     result = _run(["journalctl", "--user", "-u", _service_unit(env),
                    "--since", since, "--no-pager", "-o", "cat"], root, timeout=120)
-    if result.returncode != 0:
-        return ""
-    return result.stdout
+    if result.returncode == 0:
+        parts.append(result.stdout)
+    return "\n".join(parts)
 
 
 def _provision(root: Path, tenant: str, tenant_name: str, profile: str,
@@ -308,6 +313,12 @@ def ticks(args, root: Path, env_file: Path | None = None) -> int:
               f"{line.rejected} of {line.demanded}")
     print(f"evidence      : {ev.log_file}")
 
+    # The rest of the gate needs NATS up and the services down: the suites
+    # share the bus with a live service. Stop what this check started unless
+    # the caller means to keep it.
+    if args.start_services and not args.leave_running:
+        _run(["./compass.sh", "services", "stop"], root)
+
     reasons = evaluate(ev)
     if reasons:
         print("❌ ticks smoke failed:", file=sys.stderr)
@@ -356,6 +367,8 @@ def run(argv: list[str], project_root: Path, env_file: Path | None = None) -> in
                          help="The bootstrap super administrator password")
     ticks_p.add_argument("--super-admin-email", default=SUPER_ADMIN_EMAIL,
                          help="The bootstrap super administrator email")
+    ticks_p.add_argument("--leave-running", action="store_true",
+                         help="Keep the services running after the check")
     ticks_p.add_argument("--timeout", type=int, default=420,
                          help="Seconds to wait for the first tick (default: 420)")
     ticks_p.add_argument("--startup-timeout", type=int, default=180,

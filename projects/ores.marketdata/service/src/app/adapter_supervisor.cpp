@@ -49,6 +49,9 @@ struct adapter_supervisor::snapshot {
     std::set<std::string> providers;
     /// The vendor ids of the catalogue as provider, scheme, id and field, for the universe check.
     std::set<std::tuple<std::string, std::string, std::string, std::string>> ids;
+    /// The routes that name each source, by source name. A route that names no catalogue
+    /// source is not counted.
+    std::map<std::string, std::uint32_t> routes_by_source;
 };
 
 adapter_supervisor::adapter_supervisor(ores::nats::service::client& nats,
@@ -95,6 +98,13 @@ void adapter_supervisor::refresh() {
     next->catalogue.subscriptions =
         repository::subscription_repository{}.read_latest_all_tenants(ctx_);
 
+    std::map<boost::uuids::uuid, std::string> source_names;
+    for (const auto& source : next->catalogue.sources)
+        source_names.emplace(source.id, source.name);
+    for (const auto& route : next->catalogue.routes)
+        if (const auto found = source_names.find(route.source_id); found != source_names.end())
+            ++next->routes_by_source[found->second];
+
     {
         std::lock_guard lock(mu_);
         snapshot_ = next;
@@ -117,7 +127,17 @@ std::shared_ptr<const adapter_supervisor::snapshot> adapter_supervisor::current(
 }
 
 std::vector<messaging::adapter_status> adapter_supervisor::status() const {
-    return registry_.status();
+    auto adapters = registry_.status();
+    const auto snap = current();
+    for (auto& adapter : adapters)
+        adapter.routes_seen = routes_for(adapter.adapter_id);
+    return adapters;
+}
+
+std::uint32_t adapter_supervisor::routes_for(const std::string& adapter_id) const {
+    const auto snap = current();
+    const auto found = snap->routes_by_source.find(adapter_id);
+    return found != snap->routes_by_source.end() ? found->second : 0;
 }
 
 messaging::adapter_announce_response
@@ -222,6 +242,21 @@ bool adapter_supervisor::send_demand(const std::string& adapter_id) {
                                   << response->accepted.size() << " and rejected "
                                   << response->rejected.size() << " of " << request.ids.size()
                                   << " id(s)";
+        // An adapter that is up, that routes name, and that is sent nothing is the
+        // shape of the 2026-10-23 failure. Say it once, not once a minute.
+        const auto routes = routes_for(adapter_id);
+        bool warned_now = false;
+        {
+            std::lock_guard lock(mu_);
+            if (request.ids.empty() && routes > 0)
+                warned_now = no_demand_warned_.insert(adapter_id).second;
+            else
+                no_demand_warned_.erase(adapter_id);
+        }
+        if (warned_now)
+            BOOST_LOG_SEV(lg(), warn)
+                << "Adapter '" << adapter_id << "' is up with " << routes
+                << " route(s) naming it and no demand: no routed party's ids reached it";
         return true;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to send the demand to '" << adapter_id
@@ -233,11 +268,23 @@ bool adapter_supervisor::send_demand(const std::string& adapter_id) {
 void adapter_supervisor::monitor_loop() {
     using namespace std::chrono;
     constexpr auto slice = milliseconds(200);
+    auto next_refresh = steady_clock::now() + refresh_interval;
     while (!stop_.load(std::memory_order_relaxed)) {
         std::this_thread::sleep_for(slice);
 
         for (const auto& id : registry_.expire(system_clock::now()))
             BOOST_LOG_SEV(lg(), warn) << "Adapter '" << id << "' missed its heartbeat: stale";
+
+        // Re-read the catalogue on a timer as well as on events, so a missed event
+        // delays a demand set by one interval instead of losing it.
+        if (steady_clock::now() >= next_refresh) {
+            next_refresh = steady_clock::now() + refresh_interval;
+            try {
+                refresh();
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn) << "Periodic catalogue refresh failed: " << e.what();
+            }
+        }
 
         std::vector<std::string> due;
         {

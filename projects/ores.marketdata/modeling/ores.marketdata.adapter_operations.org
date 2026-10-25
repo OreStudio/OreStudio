@@ -370,6 +370,32 @@ The ids of the universe that the catalogue does not hold.
 
 The ids in the last demand set.
 
+*** routes_seen
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+The routes that name this adapter's source, across every tenant. A non-zero count with an
+empty demand set is the case the health warning names.
+
+*** ticks_last_minute
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+The ticks the ingest loop received from this adapter in the last minute.
+
+*** last_tick_age_ms
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: -1
+:END:
+
+The age of the last tick the ingest loop received from this adapter, in milliseconds, or
+-1 when it has received none.
+
 *** accepted
 :PROPERTIES:
 :cpp_type: std::vector<vendor_id>

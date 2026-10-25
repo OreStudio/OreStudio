@@ -93,6 +93,14 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Local review of the docs class: no findings | doc/knowledge/ui, product_backlog/next | Accept | compass check 7/7, misspell-fixer clean; the four captures carry a short title, a capped description, their tags and the next bucket |
+| 2 | Rows 1, 2 and 6 give no evidence for the code column | ux_standards_audit.org | Accept | File and line references added to each |
+| 3 | Rows 3 and 5 do not name the sentences to edit | ux_standards_audit.org | Accept | The edits are named in each proposal |
+| 4 | "About two thirds" is a sample, not a measurement | ux_standards_audit.org | Accept | Stated as 17 of the 26 rules sampled, and the summary says so |
+| 5 | The rule counts have no source | ux_standards_audit.org | Accept | The grep commands and the commit are named |
+| 6 | The form layout section should link the matrix where it uses its numbers | ux_standards_audit.org | Accept | Linked |
+| 7 | The identifier scheme does not say what happens when a rule moves | ux_standards_audit.org | Accept | Permanence added: a rule keeps its identifier when it moves |
+| 8 | The captures keep the template placeholders in Why and References | product_backlog/next | Accept | Filled, with a link back to the audit and to the story that decides |
+| 9 | Misspell check clean | | Accept | No action |
 
 * Result
 

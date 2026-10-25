@@ -21,8 +21,8 @@ other page is wrong. The form layout has eleven open questions, from how fields
 group in a dialog to where the buttons stand, and the shared dialog answers
 most of them in code with no rule behind it. No rule has a stable identifier,
 so the checklist cites section titles and a check cannot name what it failed.
-About two thirds of the rules can be checked by a machine. Allium fits the
-behaviour rules and not the look.
+Of the rules sampled here, about two thirds can be checked by a machine. Allium
+fits the behaviour rules and not the look.
 
 The second story takes each finding here as a decision to make, a rule to
 write or an identifier to add. Nothing here changes a standard.
@@ -54,12 +54,12 @@ rule, as a proposal for the second story to accept or change.
 
 | # | Rule | One page says | The other says | The code today | Proposal |
 |---+------+---------------+----------------+----------------+----------|
-| 1 | After a save | RSS Feedback: the dialog closes and the page shows the new values. RSS Paging: after a write the list returns to the first page | ESS Refresh: a save does not reload the page; the save's own event turns Refresh gold and the person presses it | =RecordDialog= marks the queries stale with =refetchType: 'none'= and reloads nothing. ESS wins in code | ESS rules. Rewrite RSS Feedback and RSS Paging |
-| 2 | Save with no change | RSS Amend: when no field changed, only the reason No change in substance is offered, so a save is allowed | ESS The Edit pattern: Save stays disabled until a field differs from the record. The same section then says which reason is offered when nothing changed, which cannot happen if Save is disabled | Save is disabled for an invalid field, a broken rule, a missing commentary or no reason. It is not disabled when nothing changed. RSS wins in code | RSS rules, because a version that records a reason with no field change is a feature of the history model. Delete the ESS sentence |
-| 3 | Where Edit stands | RSS Header: the record page header holds the kind's actions, then Edit, then Delete | ESS Header: the header carries no Edit; Edit is on the card it changes | A record page of one kind draws Edit in =RecordHeader=; the party and person pages draw Edit on each card | Both, by shape. One record kind has one card, so its Edit is in the header. An entity has a card per record, so Edit is on the card. State the rule once as "Edit stands on the thing it changes" and derive both |
+| 1 | After a save | RSS Feedback: the dialog closes and the page shows the new values. RSS Paging: after a write the list returns to the first page | ESS Refresh: a save does not reload the page; the save's own event turns Refresh gold and the person presses it | =RecordDialog= marks the queries stale with =refetchType: 'none'= and reloads nothing (=records.tsx=, =markStale= at line 237, =onSuccess= at line 651). ESS wins in code | ESS rules. Rewrite RSS Feedback and RSS Paging |
+| 2 | Save with no change | RSS Amend: when no field changed, only the reason No change in substance is offered, so a save is allowed | ESS The Edit pattern: Save stays disabled until a field differs from the record. The same section then says which reason is offered when nothing changed, which cannot happen if Save is disabled | Save is disabled for an invalid field, a broken rule, a missing commentary or no reason. It is not disabled when nothing changed (=records.tsx=, the =disabled= expression of the Save button, lines 675 to 680). RSS wins in code | RSS rules, because a version that records a reason with no field change is a feature of the history model. Delete the ESS sentence |
+| 3 | Where Edit stands | RSS Header: the record page header holds the kind's actions, then Edit, then Delete | ESS Header: the header carries no Edit; Edit is on the card it changes | A record page of one kind draws Edit in =RecordHeader=; the party and person pages draw Edit on each card | Both, by shape. One record kind has one card, so its Edit is in the header. An entity has a card per record, so Edit is on the card. State the rule once as "Edit stands on the thing it changes" and derive both. The edits: RSS Header keeps its sentence and adds why, a record of one kind is one card; ESS Header's "The header carries no Edit button" adds why, each card is its own record; the one rule lands in RSS Where this standard applies |
 | 4 | The dialog title | RSS Amend: "Edit <key>" | ESS The Edit pattern: titled for the card. The checklist says "pick one per screen" | The screen passes the title; =titles.one= is per screen | Decide one form: "Edit <display field>" for a record, "Edit <card title>" for a card. The checklist must not offer a choice |
-| 5 | Where the version stands | RSS Header: the lead line reads "<key> · version <n>" | ESS Header: under the title is the identifier and nothing else; the version stands on each card | Both exist, each on its own shape | Same resolution as 3: the version stands beside the thing it versions |
-| 6 | Marking changed rows | RSS Recency: rows whose =recorded_at= is newer than the previous load, for three seconds, and a person can turn the mark off | ESS Rows that changed and CN §4: a row not on the page before or whose content differs, compared with the same page read before, no clock, gold left edge, three pulses, gone after four seconds, no toggle | =useChangedRows= compares content and uses no clock, four seconds | ESS and CN rule. Rewrite RSS Recency, drop the toggle or build it |
+| 5 | Where the version stands | RSS Header: the lead line reads "<key> · version <n>" | ESS Header: under the title is the identifier and nothing else; the version stands on each card | Both exist, each on its own shape | Same resolution as 3: the version stands beside the thing it versions. The edits: RSS Header keeps the lead line, ESS Header keeps the card version, and the one rule lands beside the Edit rule |
+| 6 | Marking changed rows | RSS Recency: rows whose =recorded_at= is newer than the previous load, for three seconds, and a person can turn the mark off | ESS Rows that changed and CN §4: a row not on the page before or whose content differs, compared with the same page read before, no clock, gold left edge, three pulses, gone after four seconds, no toggle | =useChangedRows= in =refdata/changedRows.ts= compares content and uses no clock, four seconds | ESS and CN rule. Rewrite RSS Recency, drop the toggle or build it |
 | 7 | Reading a list whole | ESS Paging and the memory Lists are always paged: no screen reads an entity whole | RSS Exceptions: a classification list is read whole once and paged in the browser. RSS The shared components: a picker's choices are its whole kind | The classification screen reads one page of 1000 rows; =RecordPicker= reads the whole kind | Keep the classification exception, stated in ESS too, and bound it with the 1000 row Load all rule. The picker stays a recorded deviation |
 | 8 | What a journey is | UXL Journey screen anatomy: a journey is one screen organised around a goal, with a rail of steps, and the Journey runtime defines the step | ESS User journeys and screens: a journey is a design document, a screen is never a journey copied step by step, and a wizard is the exception | The remaining journey screens use the rail; the record and entity screens do not | ESS rules, and the owner's decision on the pipeline says the same. Move the UXL section to the Journey runtime page and say there that a rail is a wizard |
 | 9 | Labels | RSS Fields and ESS Cards: a label above each value, in sentence case | UDP Typography hierarchy: labels at 500 weight with positive tracking for uppercase | Labels are sentence case | RSS rules. Rewrite the UDP line or scope it to table headers |
@@ -88,8 +88,8 @@ rule only.
 
 ** What the form layout leaves open
 
-The Qt dialogs show the need. Sixty of the sixty one had one content tab and one
-group box, so grouping was rare, and Currency alone had three tabs. Seven
+The Qt dialogs, as the [[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][matrix]] recorded
+them, show the need. Sixty of the sixty one had one content tab and one group box, so grouping was rare, and Currency alone had three tabs. Seven
 dialogs had eight or more fields. The web dialog today draws every field in a
 two column grid in field table order, with Cancel then Save or Add at the right
 of the footer, and no page states any of that.
@@ -115,8 +115,9 @@ and only needs an identifier.
 ** What a rule needs so a check can name it
 
 The rules are prose bullets under headings. RSS has 84 bullets under 42
-headings, ESS 224 under 60, and the checklist cites them as "RSS The list ›
-Header". A heading moves when a page is edited, a bullet has no name at all,
+headings and ESS 224 under 60, counted with =grep -c '^- '= and
+=grep -c '^\*\+ '= on each page at commit c42c8b58a2, and the checklist cites
+them as "RSS The list › Header". A heading moves when a page is edited, a bullet has no name at all,
 and a check that fails can only quote prose.
 
 A rule needs three things.
@@ -127,6 +128,9 @@ A rule needs three things.
   is never reused.
 - One sentence per identifier. A bullet that holds two rules is two
   identifiers.
+- Permanence. A rule that moves to another page keeps its identifier, so the
+  prefix says where the rule was born and not where it lives, and a reader
+  follows the identifier rather than the page.
 - A place to carry it that org mode can check. A bold code at the start of the
   bullet, such as =*RS-LIST-03*=, is readable and a script can collect it. A
   heading property cannot carry a bullet.
@@ -138,8 +142,9 @@ unknown one keeps the two in step.
 
 ** Which rules a machine can check
 
-Read against a running screen through a browser, about two thirds of the rules
-are structural and a machine can check them. The rest need a person.
+Read against a running screen through a browser, 17 of the 26 rules sampled
+below are structural and a machine can check them. The rest need a person. The
+sample is not a count of the 84 and 224 rules; that count is the identifier work.
 
 | A machine can check | A person must judge |
 |---------------------+---------------------|

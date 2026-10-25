@@ -17,11 +17,15 @@ Move the Journey screen anatomy section of UX Language to the Journey runtime pa
 
 * Why
 
-(Motivation, problem being solved, related context.)
+The audit of the UX standards compared the pages with each other and with
+the shared code, and found this as work rather than as a rule to decide. It is
+filed so the story Settle the UX language for record screens, or the pipeline,
+picks it up with the audit's reasoning behind it.
 
 * References
 
--
+- [[id:F4EF9042-0EC2-4B64-95E7-7DEBF273F2F7][Audit of the UX standards]] — the finding and its evidence.
+- [[id:90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2][Story: Settle the UX language for record screens]] — the story that decides the rule side of it.
 
 * See also
 

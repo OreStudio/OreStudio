@@ -41,9 +41,27 @@ The dashboard, the feed tree and the feed page read the demand state, start and 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+No backwards compatibility. The old run names are deleted, not kept beside the
+new ones.
+
+1. Remove the controller's run surface. =/api/synthetic/running=,
+   =runningFeeds()=, =useRunningFeeds()=, the folder fields =running_feeds=,
+   =idle_auto_feeds= and =running=, and the totals that sum them. The feed page
+   reads the adapter status, as the two tabs do.
+2. The feed page needs its provider. Expose the provider on the feed read in
+   the BFF, from the collection the feed sits under, and use the same
+   provider-level source rule: serving and demanded. The feed status, Start and
+   Stop, the Ticks tab and the process tab's running note follow it.
+3. Names follow the service and the standard. Source and adapter for the market
+   data side, provider for the vendor, demand for what makes a feed run, feed,
+   process and engine for the record. Start and Stop are the operator test
+   control. Delete every "should run", "running feeds" and "auto-start" used to
+   mean demand.
+4. The process tab's recorded gaps: render the engine-change notice that exists
+   in the catalogue, add the missing column tooltips and the engine note, and
+   show the simple-mode reason instead of falling back silently.
+5. Run the BFF, web typecheck and web tests, then the gate. No screen, route or
+   word beyond these.
 
 * Measurements
 

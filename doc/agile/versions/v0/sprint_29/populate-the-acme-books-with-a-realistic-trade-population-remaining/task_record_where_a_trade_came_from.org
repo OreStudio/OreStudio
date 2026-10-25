@@ -39,13 +39,13 @@ The trade anchor holds origin and origin_reference. The booking request carries 
 - The anchor refuses an origin that is not in the lookup.
 - Synthetic and the ORE import state their origin. The reason code no longer marks generated data.
 - The service refuses an origin that the authenticated client may not state.
-  *Deferred, with the reason measured rather than assumed.* The trading
-  service does no in-service authorisation: only the IAM grant service reads
-  =ctx.roles()=, and trading has no permission vocabulary, so its boundary is
-  the NATS subject ACL. That decides who may call =book_trade=, not what they
-  may claim inside it. =ctx.service_account()= is the trading service's own
-  database user, and =ctx.actor()= is the end user whose token the generator
-  forwards, so neither names the caller. The successor is captured as
+  *Deferred, and the reason corrected.* The platform does have in-service
+  RBAC: 9,366 permissions, an =authorise= helper that checks =has_permission=
+  against the verified JWT and replies =forbidden=, and
+  =trading::trades:write= already seeded. What trading does not do is call it
+  — there is no =authorise(= anywhere under =projects/ores.trading= — so
+  =book_trade='s only gate is the NATS subject ACL. The refusal is therefore
+  buildable with the existing machinery, and the successor is captured as
   =book_trade_cannot_validate_an_origin=.
 - A database-backed test proves the refusal.
 

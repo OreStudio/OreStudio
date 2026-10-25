@@ -41,6 +41,10 @@ report fails for a reason that has nothing to do with the report.
   gathered, not at the previous weekday of the run's clock.
 - A configuration that names a date keeps pricing at that date, and the gather
   selects data for the date it names.
+- A run that can price at the data's date does so, and the instance records
+  which date it used and why it moved.
+- A run that cannot price fails with a message that names the date it asked
+  for, the date the market data ends, and the trades the package carries.
 - The "Board Risk Dashboard" run completes its pricing analytics once the
   package's data covers the date it prices at.
 - A unit test states the rule for an =eod= run with a gathered date, a
@@ -92,6 +96,26 @@ which is why =market.txt= holds no line for 2026-10-23 at all.
 clear message when the response says nothing covers the requested date. The
 bundle needs no new column if the effective date rides the step payload; it
 needs one only if later reads must see it.
+
+*Where the decision belongs.*
+=projects/ores.ore/service/src/messaging/report_package_handler.cpp= builds the
+package. It downloads the market data body, builds the run document with
+=export_run(...)= and builds the portfolio from the trades blob, so the dates
+the data carries and the trades are both in hand at one point. The rule:
+
+- read the latest date the market data body carries;
+- if the run document's as-of date has no line there, write the latest date into
+  it, and record on the instance that it moved and why;
+- if the body carries no date at all, fail before submitting, naming the date
+  asked for, the date the body ends, and the trades in the package.
+
+*Naming the trades.* Phase 1 can name every trade the package carries, because a
+missing date affects all of them, and their ids are in the portfolio the
+handler already builds. Saying which trade needs which datum is phase 2. It
+needs an instrument-to-datum map, and none exists: =ores.ore=, =ores.trading=
+and =ores.reporting= hold no trade-to-risk-factor projection, because the
+engine computes it once it has a market. Phase 2 is a mapping task per
+instrument family and is worth its own task rather than hiding here.
 
 *Test plan.* Unit tests on =valuation_date_of= for the three cases, then the
 live re-run of "Board Risk Dashboard" on a recreated and provisioned database,

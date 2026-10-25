@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 26bebfb2-f49b-4d4f-9a26-5fc24281d5b2
+:END:
+#+title: ores.trading.origin_type
+#+description: Codegen entity model for the trading origin_type table: the closed set of origins a trade anchor carries, naming which system first wrote the trade down.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Which system first wrote the trade down.
+#+entity_singular: origin_type
+#+entity_plural: origin_types
+#+entity_title: Origin Type
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+Reference data table holding the systems a trade can come from: =ux= (a
+person at a screen), =api= (an external caller through the API),
+=ore_import= (the ORE XML import) and =synthetic= (the trade population
+generator).
+
+The set is closed and the C++ enum =domain::origin= holds the same values.
+A code with no enum value cannot be read back, so the table is immutable:
+it is seeded once and never changes at run time. Because it is immutable,
+the trade anchor references it with a database foreign key rather than a
+trigger check. The table has no tenant: the set is the same for every
+tenant.
+
+Origin is provenance and not economics. The same trade imported twice is
+one trade, so origin stays out of the economic digest.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:has_tenant_id: false
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique origin code.
+
+Examples: 'ux', 'api', 'synthetic'.
+
+#+begin_src cpp :name generator
+std::string("api")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the code means.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:        ores_trading_origin_types_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: origin_type
+:entity_plural_short:   origin_types
+:entity_singular_words: origin type
+:entity_plural_words:   origin types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ot
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| description | Description |
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/record-where-a-trade-came-from
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-24
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The trade anchor holds origin and origin_reference. The booking request carries 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -43,9 +43,36 @@ The trade anchor holds origin and origin_reference. The booking request carries 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. The lookup. =ores.trading.origin_type= mirrors =entry_channel_type=: a
+   closed set, =:has_tenant_id: false= because it is the same for every
+   tenant, a =code= primary key and a =description=, seeded once and never
+   changed at run time. Codes: =ux=, =api=, =ore_import= and =synthetic=.
+   Because it is immutable the anchor references it with a foreign key and
+   not a trigger check, which is the reason =entry_channel_type= already
+   gives.
+
+2. The anchor. =ores.trading.trade= gains =origin= and
+   =origin_reference=. The origin is not economic. =entry_channel= is
+   marked economic, but it records how a trade was executed, while origin
+   records which system first wrote it down: a re-import of the same trade
+   from ORE must not change its economic identity, so origin stays out of
+   the digest. =origin_reference= is the reference the origin implies: the
+   ORE trade id for an import, the generation config id for a synthetic
+   trade, and nothing for a person at a screen.
+
+3. The refusal. A client may state =ux= or =api=; =synthetic= and
+   =ore_import= are stated only by the services that own those paths. The
+   trading service refuses an origin the authenticated client may not
+   state, and the refusal names the origin.
+
+4. The callers. The synthetic writer states =synthetic= and its config id,
+   and stops marking generated rows with the reason code. The ORE import
+   states =ore_import= and the ORE trade id. The screens state =ux=. The
+   API default is =api=.
+
+5. Verification. A database-backed test proves the refusal for a client
+   that may not state an origin. A run of the commodity population proves
+   the synthetic path states its own origin, and the rows are read back.
 
 * Measurements
 

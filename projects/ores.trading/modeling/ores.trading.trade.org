@@ -164,6 +164,40 @@ How the trade reached the firm's books: =manual=, =stp=, =ecn= or
 ores::trading::domain::entry_channel::manual
 #+end_src
 
+** origin
+:PROPERTIES:
+:type:          text
+:cpp_type:      ores::trading::domain::origin
+:is_enum:       true
+:nullable:      false
+:default_value: ores::trading::domain::origin::api
+:economic:      false
+:END:
+
+Which system first wrote the trade down: =ux=, =api=, =ore_import= or
+=synthetic=. It is provenance and not economics, so it stays out of the
+economic digest: the same trade imported twice is one trade.
+
+#+begin_src cpp :name generator
+ores::trading::domain::origin::api
+#+end_src
+
+** origin_reference
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:economic: false
+:END:
+
+The reference the origin implies: the ORE trade id for an import, the
+generation config id for a synthetic trade, and nothing for a person at a
+screen.
+
+#+begin_src cpp :name generator
+std::string(faker::string::numeric(10))
+#+end_src
+
 ** external_version
 :PROPERTIES:
 :type:          integer
@@ -323,6 +357,7 @@ counterparty to: a database pin can only name a key, and the primary key
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include "ores.trading.api/domain/origin.hpp"
 #+end_src
 
 ** Conventions

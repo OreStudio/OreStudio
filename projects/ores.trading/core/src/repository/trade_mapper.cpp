@@ -28,6 +28,7 @@
 #include "ores.trading.api/domain/booking_nature.hpp"
 #include "ores.trading.api/domain/counterparty_scope.hpp"
 #include "ores.trading.api/domain/entry_channel.hpp"
+#include "ores.trading.api/domain/origin.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/trade_entity.hpp"
@@ -64,6 +65,8 @@ domain::trade trade_mapper::map(const trade_entity& v) {
         rfl::string_to_enum<ores::trading::domain::booking_nature>(v.booking_nature).value();
     r.entry_channel =
         rfl::string_to_enum<ores::trading::domain::entry_channel>(v.entry_channel).value();
+    r.origin = rfl::string_to_enum<ores::trading::domain::origin>(v.origin).value();
+    r.origin_reference = v.origin_reference.value_or("");
     r.external_version = v.external_version;
     r.economic_digest = v.economic_digest.value_or("");
     r.modified_by = v.modified_by;
@@ -91,6 +94,9 @@ trade_entity trade_mapper::map(const domain::trade& v) {
     r.counterparty_scope = rfl::enum_to_string(v.counterparty_scope);
     r.booking_nature = rfl::enum_to_string(v.booking_nature);
     r.entry_channel = rfl::enum_to_string(v.entry_channel);
+    r.origin = rfl::enum_to_string(v.origin);
+    r.origin_reference =
+        v.origin_reference.empty() ? std::nullopt : std::optional(v.origin_reference);
     r.external_version = v.external_version;
     r.economic_digest = v.economic_digest.empty() ? std::nullopt : std::optional(v.economic_digest);
     r.modified_by = v.modified_by;

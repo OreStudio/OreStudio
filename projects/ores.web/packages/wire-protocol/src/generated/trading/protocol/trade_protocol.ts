@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 import type { Trade } from '../domain/trade.js';
+import type { Origin } from '../domain/origin.js';
 import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
@@ -39,6 +40,8 @@ export interface TradeWrite {
     counterparty_scope: string;
     booking_nature: string;
     entry_channel: string;
+    origin: Origin;
+    origin_reference: string;
     external_version: number;
     economic_digest: string;
 }

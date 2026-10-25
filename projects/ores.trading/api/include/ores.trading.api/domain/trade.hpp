@@ -28,6 +28,7 @@
 #include "ores.trading.api/domain/booking_nature.hpp"
 #include "ores.trading.api/domain/counterparty_scope.hpp"
 #include "ores.trading.api/domain/entry_channel.hpp"
+#include "ores.trading.api/domain/origin.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -106,6 +107,19 @@ struct trade final {
      */
     ores::trading::domain::entry_channel entry_channel =
         ores::trading::domain::entry_channel::manual;
+
+    /**
+     * @brief Which system first wrote the trade down: ux, api, ore_import or synthetic. It is
+     * provenance and not economics, so it stays out of the economic digest: the same trade imported
+     * twice is one trade.
+     */
+    ores::trading::domain::origin origin = ores::trading::domain::origin::api;
+
+    /**
+     * @brief The reference the origin implies: the ORE trade id for an import, the generation
+     * config id for a synthetic trade, and nothing for a person at a screen.
+     */
+    std::string origin_reference;
 
     /**
      * @brief The version the customer's records match. It moves when the economics the trade holds

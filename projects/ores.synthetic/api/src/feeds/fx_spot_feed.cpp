@@ -18,12 +18,13 @@
  *
  */
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
-#include "ores.synthetic.api/feeds/feed_factory.hpp"
+#include "ores.analytics.quant/domain/process_parameter_validation.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include "ores.synthetic.api/feeds/vintage_lookup.hpp"
@@ -138,14 +139,19 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                                                                        initial_price,
                                                                        seed);
 
-    return std::make_shared<fx_spot_feed>(
-        nats,
-        cfg.oresmd_uri,
-        cfg.source_name,
-        producer_subject(cfg.source_name),
-        std::move(process),
-        to_arrival_spec(cfg),
-        std::move(adapter));
+    const auto arrival = to_arrival_spec(cfg);
+    const auto compatibility = ores::analytics::quant::domain::validate_step_compatibility(
+        arrival.mode, process->supports_variable_step());
+    if (!compatibility.valid)
+        throw std::invalid_argument("make_fx_spot_feed: " + compatibility.message);
+
+    return std::make_shared<fx_spot_feed>(nats,
+                                          cfg.oresmd_uri,
+                                          cfg.source_name,
+                                          producer_subject(cfg.source_name),
+                                          std::move(process),
+                                          arrival,
+                                          std::move(adapter));
 }
 
 fx_spot_feed::fx_spot_feed(
@@ -162,6 +168,7 @@ fx_spot_feed::fx_spot_feed(
     , process_(std::move(process))
     , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(arrival))
     , clock_(*arrivals_)
+    , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
     , nats_subject_(std::move(nats_subject))
     , adapter_(std::move(adapter)) {
 
@@ -193,8 +200,14 @@ const std::string& fx_spot_feed::role() const {
 
 void fx_spot_feed::start() {
     clock_.run(
-        [this] {
-            const auto value = std::format("{}", process_->next());
+        [this](double elapsed_seconds) {
+            // The same rate the arrival process divides by, so a periodic feed
+            // turns its own gap back into one tick rather than one-ulp-off one.
+            // An unusable gap (the clock's zero) still publishes a tick, so it
+            // advances the process by one nominal tick, as it always did.
+            const auto elapsed_ticks =
+                elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0;
+            const auto value = std::format("{}", process_->next(elapsed_ticks));
             const auto now = std::chrono::system_clock::now();
             const auto& codec = ores::nats::default_wire_codec();
             // A quote is perishable, so it goes out on core NATS without a wait for an

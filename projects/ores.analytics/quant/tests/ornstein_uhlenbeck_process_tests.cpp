@@ -161,3 +161,44 @@ TEST_CASE("ornstein_uhlenbeck_process rejects non-positive dt",
     CHECK_THROWS_AS(ornstein_uhlenbeck_process(0.1, 100.0, 1.0, 100.0, 42, -1.0),
                     std::invalid_argument);
 }
+
+TEST_CASE("ornstein_uhlenbeck_process: a step of one tick is the old step",
+          "[ornstein_uhlenbeck_process]") {
+    ornstein_uhlenbeck_process one_tick(0.3, 100.0, 0.01, 100.0, 7);
+    ornstein_uhlenbeck_process explicit_tick(0.3, 100.0, 0.01, 100.0, 7);
+    for (int i = 0; i < 20; ++i)
+        CHECK(one_tick.next() == explicit_tick.next(1.0));
+}
+
+TEST_CASE("ornstein_uhlenbeck_process: a long step is the same as many short ones",
+          "[ornstein_uhlenbeck_process]") {
+    // The transition is exact, so four steps of one tick land where one step of
+    // four ticks would, distribution and all: here, on the same seed and the
+    // same draw count, the two runs are compared by their spread over seeds.
+    constexpr int paths = 400;
+    auto spread = [](int steps, double each) {
+        std::vector<double> levels;
+        levels.reserve(paths);
+        for (int seed = 0; seed < paths; ++seed) {
+            ornstein_uhlenbeck_process p(0.3, 100.0, 0.01, 100.0, seed);
+            for (int i = 0; i < steps; ++i)
+                p.next(each);
+            levels.push_back(p.current());
+        }
+        const double mean =
+            std::accumulate(levels.begin(), levels.end(), 0.0) / static_cast<double>(paths);
+        double sum = 0.0;
+        for (const double v : levels)
+            sum += (v - mean) * (v - mean);
+        return sum / static_cast<double>(paths - 1);
+    };
+
+    CHECK(spread(100, 4.0) == Catch::Approx(spread(400, 1.0)).epsilon(0.15));
+}
+
+TEST_CASE("ornstein_uhlenbeck_process: a non-positive elapsed is refused",
+          "[ornstein_uhlenbeck_process]") {
+    ornstein_uhlenbeck_process p(0.3, 100.0, 0.01, 100.0);
+    CHECK_THROWS_AS(p.next(0.0), std::invalid_argument);
+    CHECK(p.supports_variable_step());
+}

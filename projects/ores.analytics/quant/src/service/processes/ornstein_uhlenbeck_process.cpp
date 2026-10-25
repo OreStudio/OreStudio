@@ -44,18 +44,30 @@ ornstein_uhlenbeck_process::ornstein_uhlenbeck_process(
 }
 
 double ornstein_uhlenbeck_process::next() {
+    return next(1.0);
+}
+
+double ornstein_uhlenbeck_process::next(double elapsed_ticks) {
+    if (elapsed_ticks <= 0.0)
+        throw std::invalid_argument(
+            "ornstein_uhlenbeck_process: elapsed_ticks must be strictly positive");
     const double z = normal_(rng_);
+    const double step = dt_ * elapsed_ticks;
     if (kappa_ > small_kappa_threshold) {
-        const double decay = std::exp(-kappa_ * dt_);
+        const double decay = std::exp(-kappa_ * step);
         const double var = (1.0 - decay * decay) / (2.0 * kappa_);
         price_ = theta_ + (price_ - theta_) * decay + sigma_ * std::sqrt(var) * z;
     } else {
         // kappa <= 0 (or too small to divide by safely): no mean reversion —
         // the kappa -> 0 limit of the exact discretisation above is a
-        // driftless random walk with variance sigma^2*dt.
-        price_ += sigma_ * std::sqrt(dt_) * z;
+        // driftless random walk with variance sigma^2*step.
+        price_ += sigma_ * std::sqrt(step) * z;
     }
     return price_;
+}
+
+bool ornstein_uhlenbeck_process::supports_variable_step() const {
+    return true;
 }
 
 double ornstein_uhlenbeck_process::current() const {

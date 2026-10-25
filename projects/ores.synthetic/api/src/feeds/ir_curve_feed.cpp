@@ -18,7 +18,7 @@
  *
  */
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
-#include "ores.synthetic.api/feeds/feed_factory.hpp"
+#include "ores.analytics.quant/domain/process_parameter_validation.hpp"
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -27,6 +27,7 @@
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
+#include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include "ores.synthetic.api/feeds/vintage_lookup.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -68,6 +69,7 @@ ir_curve_feed::ir_curve_feed(
     , process_(std::move(process))
     , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(arrival))
     , clock_(*arrivals_)
+    , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
     , entries_(std::move(entries)) {
 
     if (!process_)
@@ -91,8 +93,10 @@ ir_curve_feed::ir_curve_feed(
 
 void ir_curve_feed::start() {
     clock_.run(
-        [this] {
-            process_->next();
+        [this](double elapsed_seconds) {
+            const auto elapsed_ticks =
+                elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0;
+            process_->next(elapsed_ticks);
             const auto now = std::chrono::system_clock::now();
 
             for (std::size_t i = 0; i < entries_.size(); ++i) {
@@ -249,16 +253,21 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     // source_name is a persisted, editable column (see the field's own doc comment) -- the same
     // shape fx_spot_generation_config.source_name already uses, set at publish/save time rather
     // than computed here.
-    return std::make_shared<ir_curve_feed>(
-        nats,
-        cfg.source_name,
-        producer_subject(cfg.source_name),
-        cfg.currency_code,
-        ir_curve_index_tenor(cfg),
-        cfg.role,
-        std::move(process),
-        to_arrival_spec(cfg),
-        std::move(resolved));
+    const auto arrival = to_arrival_spec(cfg);
+    const auto compatibility = ores::analytics::quant::domain::validate_step_compatibility(
+        arrival.mode, process->supports_variable_step());
+    if (!compatibility.valid)
+        throw std::invalid_argument("make_ir_curve_feed: " + compatibility.message);
+
+    return std::make_shared<ir_curve_feed>(nats,
+                                           cfg.source_name,
+                                           producer_subject(cfg.source_name),
+                                           cfg.currency_code,
+                                           ir_curve_index_tenor(cfg),
+                                           cfg.role,
+                                           std::move(process),
+                                           arrival,
+                                           std::move(resolved));
 }
 
 }

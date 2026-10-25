@@ -158,14 +158,18 @@ type that does not support it. The IR curve feed is periodic, and its
 
 ** What validation guards
 
-=validate_process_parameters= is the one rule set that the service and the Qt
-client share. It holds the arrival rules:
+=validate_process_parameters= and its arrival companions
+(=validate_arrival_process_parameters=, =validate_step_compatibility=) hold the
+arrival rules. The service applies them when a feed is built; the editors offer
+only what a process can follow, so the curve screens offer the periodic mode
+alone.
 
 - the rate is positive and finite;
 - the decay is positive and finite;
 - the branching ratio is at least zero and strictly below one;
-- a non-periodic mode is allowed only for a process type that takes a variable
-  step.
+- a non-periodic mode is allowed only for a process whose
+  =supports_variable_step()= answers true, which =validate_step_compatibility=
+  decides;
 
 A branching ratio of one or more gives a stream that does not settle. A ratio
 very close to one gives gaps so short that the pipeline cannot keep up. The

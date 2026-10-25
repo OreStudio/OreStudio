@@ -141,6 +141,9 @@ private:
     std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process_;
     std::unique_ptr<ores::analytics::quant::domain::i_arrival_process> arrivals_;
     ores::analytics::quant::service::tick_clock clock_;
+    /// The arrival rate in ticks per second, the unit a step is counted in and
+    /// the one the arrival process itself divides by.
+    double ticks_per_second_;
     std::vector<ir_curve_resolved_entry> entries_;
 };
 

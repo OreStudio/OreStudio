@@ -48,9 +48,16 @@ public:
                                    std::uint32_t seed = 42);
 
     double next() override;
+    double next(double elapsed_ticks) override;
+    bool supports_variable_step() const override;
     double current() const override;
 
 private:
+    /// One nominal tick: the old step, unchanged.
+    void step_one_tick();
+    /// The fraction of a tick left over after the whole ones.
+    void step_partial_tick(double part);
+
     std::vector<double> means_;
     std::vector<double> stdevs_;
     std::vector<double> weights_;

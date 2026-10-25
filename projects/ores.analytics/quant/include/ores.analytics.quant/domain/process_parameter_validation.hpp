@@ -118,6 +118,20 @@ validate_yield_curve_process_parameters(const std::string& process_type,
 ORES_ANALYTICS_QUANT_EXPORT process_parameter_validation_result validate_arrival_process_parameters(
     const std::string& mode, double ticks_per_hour, double branching_ratio, double decay);
 
+/**
+ * @brief Validate that an arrival mode and a value process can be paired.
+ *
+ * A periodic arrival gives every tick the same length, so any value process can
+ * follow it: each step is one nominal tick. Poisson and Hawkes arrivals give
+ * ticks of different lengths, so the value process must be able to take a step
+ * measured in elapsed ticks, or the pair is meaningless.
+ *
+ * @param mode the arrival mode, as validate_arrival_process_parameters takes it.
+ * @param process_supports_variable_step i_stochastic_process::supports_variable_step().
+ */
+ORES_ANALYTICS_QUANT_EXPORT process_parameter_validation_result
+validate_step_compatibility(const std::string& mode, bool process_supports_variable_step);
+
 }
 
 #endif

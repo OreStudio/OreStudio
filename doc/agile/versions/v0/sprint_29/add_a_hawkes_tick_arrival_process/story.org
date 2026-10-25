@@ -21,12 +21,12 @@ Know what the tick library does, what the port into ores.analytics.quant needs, 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-23                               |
+| Next          | The market-wide regime, its own story. |
+| Last touched  | 2026-10-25                             |
 
 * Acceptance
 
@@ -44,7 +44,7 @@ Know what the tick library does, what the port into ores.analytics.quant needs, 
 | [[id:A2410300-BDDC-4738-8B02-3554BC7A5755][Rename the process and feed interfaces to snake_case]] | DONE | 2026-10-24 | 2026-10-24 | IStochasticProcess, IYieldCurveProcess and IFeed use CamelCase where the rest of the source uses snake_case. Rename them and the documents that name them. |
 | [[id:3CF5D3C2-454C-4F27-B891-BFD4920144EC][Implement the periodic, Poisson and Hawkes arrival processes]] | DONE | 2026-10-24 | 2026-10-24 | Add i_arrival_process, three implementations, the factory entry and the parameter rules to ores.analytics.quant, inspired by the tick library. |
 | [[id:9CB20FCF-F732-4742-BC53-2F3C1E12E365][Pace a synthetic feed by an arrival process]] | DONE | 2026-10-25 | 2026-10-25 | Let tick_clock draw each gap from an arrival process, and carry the mode and its parameters on the generation config and in the clients. |
-| [[id:5A6DF017-BE2A-41A0-BC59-E343BD157564][Step a value process by the elapsed time]] | BACKLOG | | | Add next(elapsed) to the value process interface, counted in nominal ticks, and implement it for the geometric and arithmetic mixtures and the Ornstein-Uhlenbeck process. |
+| [[id:5A6DF017-BE2A-41A0-BC59-E343BD157564][Step a value process by the elapsed time]] | DONE | 2026-10-25 | 2026-10-25 | Add next(elapsed) to the value process interface, counted in nominal ticks, and implement it for the geometric and arithmetic mixtures and the Ornstein-Uhlenbeck process. |
 
 * Decisions
 
@@ -67,6 +67,13 @@ Know what the tick library does, what the port into ores.analytics.quant needs, 
 - /One stream, no cross-excitation:/ a pair does not excite another pair. The
   multivariate form is described in the Hawkes note and is out of scope.
 
+- /A tick is the unit of time, not a constant:/ a value process steps by the
+  elapsed number of nominal ticks, so an irregular arrival and a long gap both
+  advance it by the time that passed. One tick remains exactly the old step.
+- /A process that cannot scale says so:/ the interface refuses a step other
+  than one rather than pretending, and a feed refuses to pair a non-periodic
+  arrival with such a process.
+
 * Out of scope
 
 - A market-wide arrival regime, so every series can speed up together in a fast
@@ -74,3 +81,21 @@ Know what the tick library does, what the port into ores.analytics.quant needs, 
   =doc/agile/product_backlog/inbox/market_wide_arrival_regime_for_fast_markets.org=;
   per-stream regimes come first.
 -
+
+* Result
+
+analytics.quant can draw ticks from a periodic timer, a Poisson process or a
+Hawkes process, and a feed picks its regime from its own config row. The clock
+handed a feed the gap it waited, so an irregular arrival steps the value process
+by the time that passed rather than by a nominal tick.
+
+Three things made the work honest. The initial arrival processes refused a
+branching ratio of one because a stream that does not settle has no long-run
+rate to check against. The config gained four columns and the codegen facets,
+the staging defaults and the web editor followed, after a review found that the
+columns had stopped at the domain type. And the value process gained a step
+measured in ticks, with the processes that cannot scale refusing it rather than
+guessing.
+
+The market-wide factor is the next step, and it is designed in
+=doc/knowledge/domain/market_arrival_regime.org=.

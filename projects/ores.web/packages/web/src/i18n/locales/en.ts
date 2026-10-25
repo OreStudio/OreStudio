@@ -4316,10 +4316,10 @@ export const en: SourceCatalogue = {
                 },
                 ticks_per_hour: 'How many curves the feed makes in an hour. 3600 is one a second.',
                 arrival_mode:
-                    'How the gaps between ticks behave: equal, exponential, or clustered. The rate above is the long-run mean in every mode.',
+                    'Curve engines take steps fixed by their own construction, so a curve feed ticks periodically. An irregular arrival would step them by lengths they cannot take.',
                 branching_ratio:
-                    'Hawkes only: how many further ticks one tick causes, below one. One or more never settles.',
-                decay: 'Hawkes only: how fast a burst fades, in units of one over a second.',
+                    'Only a clustered arrival uses it: how many further ticks one tick causes, below one.',
+                decay: 'Only a clustered arrival uses it: how fast a burst fades, in units of one over a second.',
                 sensitivity:
                     'How strongly a market-wide regime moves this curve, where one is the average. It does nothing until the market regime lands.',
                 price_source: {

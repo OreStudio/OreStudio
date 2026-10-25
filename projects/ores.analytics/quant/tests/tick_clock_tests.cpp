@@ -19,6 +19,7 @@
 #include "ores.analytics.quant/domain/i_arrival_process.hpp"
 #include "ores.analytics.quant/service/processes/periodic_arrival_process.hpp"
 #include "ores.analytics.quant/service/tick_clock.hpp"
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <stdexcept>
@@ -64,7 +65,7 @@ TEST_CASE("tick_clock runs the body once per gap and counts every batch", tags) 
     int calls = 0;
 
     clock.run(
-        [&] {
+        [&](double) {
             ++calls;
             if (calls == 3)
                 clock.stop();
@@ -88,7 +89,7 @@ TEST_CASE("tick_clock asks the arrival process for every gap", tags) {
     int calls = 0;
 
     clock.run(
-        [&] {
+        [&](double) {
             if (++calls == 3)
                 clock.stop();
             return std::string{};
@@ -108,7 +109,7 @@ TEST_CASE("tick_clock skips a throwing tick and keeps counting from the next one
     int calls = 0;
 
     clock.run(
-        [&] {
+        [&](double) {
             ++calls;
             if (calls == 1)
                 throw std::runtime_error("first tick failed");
@@ -132,7 +133,7 @@ TEST_CASE("tick_clock stopped before run emits nothing", tags) {
 
     int calls = 0;
     clock.run(
-        [&] {
+        [&](double) {
             ++calls;
             return std::string{};
         },
@@ -141,4 +142,28 @@ TEST_CASE("tick_clock stopped before run emits nothing", tags) {
 
     CHECK(calls == 0);
     CHECK(clock.publish_count() == 0);
+}
+
+TEST_CASE("tick_clock hands the body the gap it waited", tags) {
+    // One tick per millisecond, so the gap the body sees is a millisecond in
+    // seconds. A producer needs it to step a value process by elapsed time.
+    periodic_arrival_process arrivals(1000.0);
+    tick_clock clock(arrivals);
+    std::vector<double> gaps;
+    int calls = 0;
+
+    clock.run(
+        [&](double elapsed_seconds) {
+            gaps.push_back(elapsed_seconds);
+            ++calls;
+            if (calls == 3)
+                clock.stop();
+            return std::string{};
+        },
+        [](std::uint64_t, const std::string&) {},
+        [](const std::exception&) {});
+
+    REQUIRE(gaps.size() == 3);
+    for (const double gap : gaps)
+        CHECK(gap == Catch::Approx(0.001).epsilon(1e-12));
 }

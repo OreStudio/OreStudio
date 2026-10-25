@@ -58,8 +58,14 @@ public:
     explicit tick_clock(ores::analytics::quant::domain::i_arrival_process& arrivals)
         : arrivals_(arrivals) {}
 
-    /// @brief Emits one tick and returns a short summary of it for the log line.
-    using tick_body = std::function<std::string()>;
+    /**
+     * @brief Emits one tick and returns a short summary of it for the log line.
+     *
+     * The argument is the gap the clock just waited, in seconds. A producer
+     * turns it into nominal ticks and steps its value process by that much, so
+     * an irregular arrival still advances the price by the elapsed time.
+     */
+    using tick_body = std::function<std::string(double elapsed_seconds)>;
     using published_hook = std::function<void(std::uint64_t, const std::string&)>;
     using failure_hook = std::function<void(const std::exception&)>;
 
@@ -97,7 +103,7 @@ public:
                 break;
 
             try {
-                const auto summary = body();
+                const auto summary = body(usable ? gap_seconds : 0.0);
                 const auto n = publish_count_.fetch_add(1, std::memory_order_relaxed) + 1;
                 on_published(n, summary);
             } catch (const std::exception& ex) {

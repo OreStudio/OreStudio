@@ -160,3 +160,17 @@ TEST_CASE("cox_ingersoll_ross accepts a zero initial rate", "[process_parameter_
     CHECK(validate_yield_curve_process_parameters("cox_ingersoll_ross", 0.3, {0.03}, 0.01, 0.0)
               .valid);
 }
+
+TEST_CASE("a non-periodic arrival needs a value process that can step by elapsed time",
+          "[process_parameter_validation]") {
+
+    CHECK(ores::analytics::quant::domain::validate_step_compatibility("periodic", false).valid);
+    CHECK(ores::analytics::quant::domain::validate_step_compatibility("periodic", true).valid);
+    CHECK(ores::analytics::quant::domain::validate_step_compatibility("poisson", true).valid);
+    CHECK(ores::analytics::quant::domain::validate_step_compatibility("hawkes", true).valid);
+
+    const auto refused =
+        ores::analytics::quant::domain::validate_step_compatibility("poisson", false);
+    CHECK_FALSE(refused.valid);
+    CHECK(refused.message.contains("periodic"));
+}

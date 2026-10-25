@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.quant/service/processes/arithmetic_gaussian_mixture_model_process.hpp"
+#include <cmath>
 #include <stdexcept>
 
 namespace ores::analytics::quant::service {
@@ -47,6 +48,27 @@ arithmetic_gaussian_mixture_model_process::arithmetic_gaussian_mixture_model_pro
 }
 
 double arithmetic_gaussian_mixture_model_process::next() {
+    return next(1.0);
+}
+
+double arithmetic_gaussian_mixture_model_process::next(double elapsed_ticks) {
+    if (elapsed_ticks <= 0.0)
+        throw std::invalid_argument(
+            "arithmetic_gaussian_mixture_model_process: elapsed_ticks must be strictly positive");
+
+    // One draw per tick, because the component is drawn per tick: scaling one
+    // component over the whole step would grow the between-component variance
+    // with the square of the step, and the spread of a span would then depend on
+    // how the span was cut. A whole step of one tick is exactly the old draw.
+    const auto whole = static_cast<long long>(std::floor(elapsed_ticks));
+    for (long long i = 0; i < whole; ++i)
+        step_one_tick();
+    if (const double part = elapsed_ticks - static_cast<double>(whole); part > 0.0)
+        step_partial_tick(part);
+    return price_;
+}
+
+void arithmetic_gaussian_mixture_model_process::step_one_tick() {
     const int k = component_dist_(rng_);
     // std::normal_distribution requires stddev > 0 (a libstdc++ assertion aborts
     // the process on σ <= 0 in debug builds). A zero-variance component is
@@ -55,7 +77,19 @@ double arithmetic_gaussian_mixture_model_process::next() {
     const double increment =
         sd > 0.0 ? std::normal_distribution<double>(means_[k], sd)(rng_) : means_[k];
     price_ += increment;
-    return price_;
+}
+
+void arithmetic_gaussian_mixture_model_process::step_partial_tick(double part) {
+    const int k = component_dist_(rng_);
+    const double sd = stdevs_[k] * std::sqrt(part);
+    const double mean = means_[k] * part;
+    const double increment =
+        sd > 0.0 ? std::normal_distribution<double>(mean, sd)(rng_) : mean;
+    price_ += increment;
+}
+
+bool arithmetic_gaussian_mixture_model_process::supports_variable_step() const {
+    return true;
 }
 
 double arithmetic_gaussian_mixture_model_process::current() const {

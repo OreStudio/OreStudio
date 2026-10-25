@@ -103,6 +103,24 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:A6472918-1412-4456-B80A-922EEA6795C9][Validate a curve pillar's tenor codes]] | BACKLOG | | | ir_curve_bootstrap_pillar.start_tenor_code and end_tenor_code are undeclared soft references to refdata_tenors. The only database check validates curve_role_code, so a typo in a tenor code saves and then throws at bootstrap time inside curve_republish_resolver, where the end tenor doubles as the quote point id. |
 | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] | STARTED | | | A synthetic feed can draw the times of its ticks from a self-exciting Hawkes point process, ported from the tick library (BSD 3-clause, the tick developers, CMAP), so bursts of ticks follow bursts of ticks as they do in a live market. |
 
+*** Epic: One UX language for every screen
+
+Every screen in ores.web speaks one UX language, and a reviewer or a check can
+tell whether a screen fits it. The arc starts from the reference data screens
+the Qt client had: inventory them against the web, settle the standards so
+each rule has one answer and one identifier, build the checks before the
+screens change, then take each Qt topic through one pipeline: journeys,
+prototype, build, test scenario and sign off. Later topics and the other areas
+of the application join as their own stories under this heading.
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------|
+| [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] | STARTED | 2026-10-25 | | Build the Qt-to-web matrix of the reference data screens, audit the UX standards for gaps, and order the topics. |
+| [[id:90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2][Settle the UX language for record screens]] | BACKLOG | | | Decide every contradiction between the standards, write the form layout rules, name each rule, and specify it in Allium. |
+| [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] | BACKLOG | | | Build a Playwright harness that checks every record screen by rule identifier, and write the sign off recipe. |
+| [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] | BACKLOG | | | Run the first Qt topic through journeys, prototype, build, test scenario and sign off; the pipeline is the deliverable. |
+
 ** Hotfixes
 
 #+ATTR_HTML: :class hug-leading

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:refdata:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-25
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A reference data administrator sets up a currency pair with its quoting convention, settlement calendars and classification on one screen.
@@ -77,6 +77,33 @@ list, because no operation reads their history.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/currencies/wireframe_set_up_a_currency_pair.png]]
 
+** Each step, and the shape that serves it
+
+The screen pipeline judges a journey before its prototype: a step is a CRUD
+variation that the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] already draws, a kind's own action, a view no rule
+draws yet, a missing server operation, or a step that keeps state across a
+reply and needs a workflow under the Workflows menu. Judged on 2026-10-25,
+against the screen the web draws today, by the
+[[id:61C6B0A5-03A5-4424-8EA3-EE7E587629FD][screen pipeline runbook]].
+
+#+ATTR_HTML: :class hug-leading
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| 1 Find the pair | The record list: pair code, base, quote, classification | Standard list; the filter by currency or classification is a server gap |
+| 2 Name the pair | The create dialog: base and quote pickers, the code derived, the swap offered, the classification picker | A create with a derived key (RS-WRITE-07) and a rule across fields (RS-WRITE-08); standard once the dialog is the shared record dialog |
+| 3 Set the convention | The same dialog, the convention's fields with a sample rate | The pair and its convention are one form of two groups (RS-WRITE-09), the sample rate as a line of help (RS-WRITE-12). Today the screen builds a dialog of its own, against RS-WRITE-31; the prototype draws it as the shared dialog |
+| 4 Save the pair | Add in the footer; two writes | Standard create; the two writes are the server's gap, not the screen's shape |
+| 5 Set the settlement calendars | The Calendars tab, a link panel | Standard links |
+| 6 Check the history | The History tab, the pair and its convention | Standard history: the convention is a part of the pair, so RS-HIST-01 carries it in the pair's story, named Convention |
+| 7 Leave | The breadcrumb | Standard |
+
+The journey is a CRUD variation of the standard record screen whose create dialog has two groups and a derived key; no own action, no workflow.
+
+* Prototype
+
+None yet. The task [[id:958AA2EF-041E-4266-AFE8-A57A6C345F6E][Prototype the screens of the currencies topic]] adds it under =doc/prototypes/currencies/=,
+with a design note that cites the rule identifiers each state follows.
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading
@@ -116,7 +143,7 @@ register a history provider.
 
 * What is missing
 
-1. *The pair and its convention are not written together.* They are two writes,
+1. *The pair and its convention are not written together.* Captured as [[id:56C6A5CA-1A0D-435A-9AC5-1263CBB29485][Write a currency pair and its convention together, and check the pair code]]. They are two writes,
    and the convention refers to the pair. If the second write fails, the pair
    exists without the convention it is meant to have one of. The candidate is
    one operation that writes both in one transaction. Until then the screen
@@ -125,7 +152,7 @@ register a history provider.
    without a convention opens with an empty convention form and a notice that
    the convention is missing, so the half-written pair can be completed from
    *Find the pair*.
-2. *The pair code is not checked against its legs.* The insert validates that
+2. *The pair code is not checked against its legs.* Captured with the write above. The insert validates that
    the base, the quote and the classification exist, but not that the pair code
    is =BASE/QUOTE=, that the legs differ, or that they are in base-precedence
    order. The candidate is to derive the pair code on the server, or to check
@@ -138,7 +165,7 @@ register a history provider.
    note on the convention model says it refers to a trading table; the insert
    validates against the refdata =business_day_convention_type= list. The model
    text is out of date; the behaviour is right.
-5. *Only a tenant administrator can run this journey.* =Operations= holds the
+5. *Only a tenant administrator can run this journey.* Captured as [[id:BDA029F9-671D-4C08-B816-8CDB8068CDAB][No role below the tenant administrator can maintain reference data]]. =Operations= holds the
    convention calendar permissions but not the pair or convention ones, and no
    read on the lists the pickers need.
 

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:refdata:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-25
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A reference data administrator adds a currency or corrects one, with its countries, calendars and desk groups on one screen.
@@ -86,6 +86,36 @@ to. The history is a panel on the same screen, not a separate dialog.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/currencies/wireframe_add_or_correct_a_currency.png]]
 
+** Each step, and the shape that serves it
+
+The screen pipeline judges a journey before its prototype: a step is a CRUD
+variation that the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] already draws, a kind's own action, a view no rule
+draws yet, a missing server operation, or a step that keeps state across a
+reply and needs a workflow under the Workflows menu. Judged on 2026-10-25,
+against the screen the web draws today, by the
+[[id:61C6B0A5-03A5-4424-8EA3-EE7E587629FD][screen pipeline runbook]].
+
+#+ATTR_HTML: :class hug-leading
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| 1 Find the currency | The record list: ISO code, name, symbol, monetary nature, market tier; search on the server | Standard list. The baseline's sheet found the list showing codes where the page shows names (ES-WORDS-06), for the prototype |
+| 2 Read the currency | The record page with Details, Countries, Calendars, Desk groups and History | Standard record page; the three link tabs are link panels (RS-RELATED-01 to 03) |
+| 3 Correct the currency | Edit in the header, the record dialog | Standard amend. Day basis and ORE currency type are free text where the standard asks a select for a classification (RS-WRITE-01), and the numbers are text inputs (RS-WRITE-32); the prototype decides their kinds |
+| 4 Set the countries | The Countries tab, a link panel with Add and Remove | Standard links; a country's name opens its page once the parties topic builds one (ES-REF-04 until then) |
+| 5 Set the calendars | The Calendars tab, a link panel | Standard links; a calendar's name opens the calendar page |
+| 6 Set the desk groups | The Desk groups tab, a link panel | Standard links |
+| 7 Check the history | The History tab | Standard history, drawn by the shared timeline once the build moves this screen off the legacy panel (RS-HIST-01); the links have no history |
+| 8 Revert a change | Revert on an older version | Standard (RS-HIST-02) |
+| 9 Exchange with ORE | Nothing today; the Details end with a notice that the export needs a server operation | Two decisions for the owner. Export: an own action of the list, /Export for ORE/, by RS-PAGE-03 and RS-LIST-03, once the server returns the document; not a workflow, one reply. Import: not an action of this screen; the ORE import area owns it, and the Qt import of one file is dropped. The notice that explains an absent export goes (ES-WORDS-07) |
+| 10 Leave | The breadcrumb | Standard |
+
+The journey is a CRUD variation of the standard record screen with links; the one own action, the ORE export, waits on the server; no step keeps state across a reply, so no workflow is needed.
+
+* Prototype
+
+None yet. The task [[id:958AA2EF-041E-4266-AFE8-A57A6C345F6E][Prototype the screens of the currencies topic]] adds it under =doc/prototypes/currencies/=,
+with a design note that cites the rule identifiers each state follows.
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading
@@ -144,7 +174,7 @@ as it stood on a date.
 
 * What is missing
 
-1. *No server export of currencies as ORE XML.* The Qt client wrote
+1. *No server export of currencies as ORE XML.* Captured as [[id:196DC388-7700-4C25-8109-31A4657CE039][Export currencies and calendar adjustments as ORE documents on the server]]. The Qt client wrote
    =currencyconfig.xml= itself, with =ore::xml::exporter::export_currency_config=
    linked into the desktop binary. A browser cannot do that. The candidate is a
    =refdata.v1.currencies.export= operation that returns the document, in the
@@ -155,14 +185,14 @@ as it stood on a date.
    one part of it. The candidate is to let the import take a currency
    configuration on its own. Until then, the screen links to the ORE import
    instead of offering its own.
-3. *The =Operations= role cannot fill its own pickers.* It holds read, write and
+3. *The =Operations= role cannot fill its own pickers.* Captured as [[id:BDA029F9-671D-4C08-B816-8CDB8068CDAB][No role below the tenant administrator can maintain reference data]]. It holds read, write and
    delete on currencies and the three junctions, but no read on countries,
    calendars, currency groups, rounding types, monetary natures or market tiers.
    An =Operations= member can change a currency but cannot see the values it
    must pick from. The candidate is to grant those reads to =Operations=, or to
    introduce a reference data role. Until then, only a tenant administrator can
    run this journey end to end.
-4. *Reverting is a client convention, not an operation.* There is no revert
+4. *Reverting is a client convention, not an operation.* Done as described: the revert dialog writes with =common.rectification= and names the version in the commentary. There is no revert
    subject; the screen writes the old values with =put=. This is enough, and it
    keeps history append-only. The seeded change reasons have no code for a
    revert. The candidate is =common.revert=. Until it exists, the screen uses

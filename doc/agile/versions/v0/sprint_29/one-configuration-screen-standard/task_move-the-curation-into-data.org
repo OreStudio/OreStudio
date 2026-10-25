@@ -28,11 +28,11 @@ the files and write the same SQL as before.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Code and data changed; the review is open. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR and run the checks.        |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -131,3 +131,22 @@ via its "Verifies task" field.
 | 11 | The commit body ran past 72 columns, and the PR record commit had no trailers. | git history | Fixed | One commit, 72 columns, with the story, task, environment and co-author trailers. |
 
 * Result
+
+The curation is data. Eight JSON files under =curation/= hold the 296 curated facts,
+each with a reason, a source, a source reference, a curator and a date. The loader
+rejects an entry that lacks one or names a category outside the four. The
+extractor, the vocabulary generator and the parameter rows read the files, and
+=descriptions.py= is gone.
+
+The generated SQL did not move: 108 types, 194 pairs, 834 settings, 25 models,
+74 engines, 19 templates and 1674 ore parameter rows. That is the proof that the
+files say what the literals said.
+
+The review changed the shape of the provenance. A single =source= string became a
+category plus a reference, because 104 type entries claimed the guide as their
+source while their values came from the seeded table. All 108 now say =seed= and
+name the file.
+
+The release floor is still measured, not curated, and the methodology says so.
+Two checks fail on =main= before this branch, the ER diagram and the
+=analytics.quant= file list. Neither is in this change.

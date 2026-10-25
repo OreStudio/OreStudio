@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/grant-the-blotter-its-reads-and-writes
-#+pr: 3740
+#+pr: 3763
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -128,6 +128,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3763][#3763]] | [agile] Prove the blotter grants at runtime |
 | [[https://github.com/OreStudio/OreStudio/pull/3740][#3740]] | [agile] Track the blotter's permissioning as one task |
 
 * Review

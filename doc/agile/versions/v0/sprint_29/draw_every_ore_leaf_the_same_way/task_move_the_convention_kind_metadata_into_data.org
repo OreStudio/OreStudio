@@ -7,57 +7,66 @@
 #+level: s1
 #+filetags: :draw_every_ore_leaf_the_same_way:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-the-convention-kind-metadata-into-data
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+State what a convention kind is in data, as the engine run settings state their groups: the asset class a kind serves and the element that writes it in ORE's conventions document on the kind, and each of its terms as a row that ties a column to the leaf of the ORE parameter contract. The screen then reads the kind's class and holder from the server and restates nothing about a kind.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
 
--
+- Every convention kind carries its asset class and the ORE element that writes it, and every tenant gets them when it is provisioned.
+- Every column a convention entity stores that ORE's conventions parser reads as a leaf is a term row naming its entity, its column, and the schema and XPath of its contract entry.
+- The first term rows are generated from the mapper that reads and writes the conventions document, and a gate fails when they differ.
+- The screen reads a kind's asset class and holder from the families route, and no table in the screen maps a kind to either.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The owner chose the engine run settings shape on 2026-10-25: =convention_kinds= is the group, and a new =convention_kind_term= is the setting. The term names its leaf by schema and XPath rather than by name, because a name such as =Calendar= repeats across conventions; the value set comes from the contract's links, not from a copy on the row.
+
+1. Add =asset_class= and =ore_element= to the =convention_kind= model; add the =convention_kind_term= model in the =simple-lookup= shape of =engine_settings_group_setting=; regenerate both.
+2. Wire the term entity where the engine settings entity is wired: the registrars, the event registrar, the shell, the create and drop roll-ups, the permissions and the role grants.
+3. Generate the term rows from the =ores.ore= mapper: a read such as =r.fixed_calendar = text_of(v, "FixedCalendar")= is a term, a child reader gives its path, and the XPath must be one the ORE parser reads.
+4. Serve the class and the holder on the family card; move the screen's grouping order into the page and delete its kind tables.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Kinds with an asset class; with an ORE element | 26; 25 (TENOR has none) | the kinds seed | b406706b47 |
+| Term rows; kinds with terms | 270; 25 | =python3 -I projects/ores.sql/utility/generate_convention_kind_terms.py --check= | b406706b47 |
+| ORE leaves the extractor reads, before and after the look-ahead fix | 296, 301 | =python3 -I projects/ores.sql/utility/extract_convention_terms.py= | b406706b47 |
+| Parameter seed; value set links | 2025; 494 | the two generators | b406706b47 |
 
 * Notes
+
+- *ORE misspells a term it reads.* ORE's =BMABasisSwapConvention::fromXML= reads =OvernightLockouDays= and its =toXML= writes =OvernightLockoutDays=. The mapper uses the written spelling, so a document ORE Studio exports carries a lockout ORE does not read. The term names the leaf ORE reads; the generator records the exception with its reason.
+- *The provisioner copies the kinds column by column.* Without the two new columns in that copy, a tenant's provisioning would fail on the =not null= asset class.
+- *Some columns hold a structure, not a leaf.* The commodity future's prohibited expiries and continuation mappings, the inflation swap's publication schedule and the intraday power load's load rules are stored as structured values; the publication schedule is a block =ScheduleData::fromXML= reads. They take no term.
+- *Two kinds have no terms.* =TENOR= is not in ORE's document. =CURRENCY_PAIR= has five terms through the FX mapper, which writes the pair and its convention from one FX element; the spot days and the advance calendars sit on the projection, not on a column.
+- *The look-ahead of the extractor was too short.* A node read as =if (getChildNode(node, "X")) { ... getNodeValue(n) }= with checks between was missed; it now reads to the next assignment of the variable, which added five option expiry terms and =ShortPayTenor=.
+- *No write is checked yet.* The column map is the input the write check needs; the check itself is not in this task.
+- The value sets are from [[id:47D039AC-300C-4FE9-86EA-7FB473F07692][Give the convention terms their value sets]].
 
 * Test Scenarios
 
@@ -83,3 +92,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A convention kind is now data, in the shape the engine run settings use. Each of the 26 kinds carries the asset class it serves, and 25 carry the element that writes them in ORE's conventions document. A new =convention_kind_term= entity holds 270 terms of 25 kinds, each tying a column of a convention entity to the schema and XPath of its entry in the ORE parameter contract.
+
+- The terms are generated from the =ores.ore= mapper, so the column and the element are the ones the import and the export use; the gate =convention-kind-terms= fails when the seed and the mapper differ. ORE's own misspelling of =OvernightLockouDays= is a stated exception.
+- The families route reads the kinds and puts each one's asset class on its card, with its holder from the registry; =conventionKinds.ts= and its test are gone, and the screen keeps only the order it draws the classes in.
+- The tenant provisioner copies the two new columns, and members and operations hold the new read permission.
+
+The local gate passes the build, the database, the ticks smoke test, the seed and value set checks and the refdata suites, the new entity's generated tests among them. It fails where this change does not reach: =ores.analytics.core.tests= on the value set trigger, pgTAP on the XPath test and the trading anchors, =er-diagram= on the strict validator, =protocol-twins= on synthetic's =market_regime=, and =web= on two files of the grid report runs that Prettier would reformat. The write check is the next task, [[id:3CB96E53-1EF3-486D-B644-7E26D34C7BAD][Check a convention value against its term's set on write]].

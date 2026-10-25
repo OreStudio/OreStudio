@@ -328,6 +328,74 @@ describe('the FX feed screens', () => {
         expect(html).not.toContain('>Add</button>');
     });
 
+    it('says why a mixture has no simple form, and leaves the table in place', () => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=behaviour`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(
+                ['records', 'gmm-components', FEED_ID],
+                [component(0, 0.5), component(1, 0.5)],
+            );
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+            client.setQueryData(
+                [
+                    'fx-reading',
+                    {
+                        process_type: 'geometric',
+                        to_simple: true,
+                        initial_price: 1.08,
+                        ticks_per_hour: 3600,
+                        gmm_means: [0, 0],
+                        gmm_stdevs: [0.01, 0.02],
+                        gmm_weights: [0.5, 0.5],
+                    },
+                ],
+                {
+                    has_simple_form: false,
+                    message: 'A reversion speed of zero has no simple form.',
+                    trend_pct_per_hour: 0,
+                    volatility_pct_per_hour: 0,
+                    jump_share_pct: 0,
+                    half_life_minutes: 0,
+                    gmm_means: [],
+                    gmm_stdevs: [],
+                    gmm_weights: [],
+                },
+            );
+        });
+        expect(html).toContain(
+            'These components have no simple form, so only Advanced can show them. A reversion speed of zero has no simple form.',
+        );
+        expect(html).toContain('>Share</th>');
+    });
+
+    it('explains each column of the mixture table in the engine’s terms', () => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=behaviour`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['records', 'gmm-components', FEED_ID], [component(0, 1)]);
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain(
+            'title="The position the engine reads the component in. A mixture draws every component in turn; the mean reverting engine reads the first one only."',
+        );
+        expect(html).toContain(
+            'title="The name and the note a person gave this component. The engine reads the numbers beside it, not this line."',
+        );
+        expect(html).toContain('>#</th>');
+        expect(html).toContain('>Description</th>');
+    });
+
+    it('says under the previews what the engine does with the numbers', () => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=behaviour`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['records', 'gmm-components', FEED_ID], [component(0, 1)]);
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain(
+            '<span aria-hidden="true">ⓘ </span>Geometric: each update draws a log-return from the mixture, so the price stays positive.',
+        );
+        expect(html.lastIndexOf('ⓘ </span>')).toBeGreaterThan(html.indexOf('Sample paths'));
+    });
+
     it('runs the trail of a feed through the feed tree, down to the folder that holds it', () => {
         const html = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], {

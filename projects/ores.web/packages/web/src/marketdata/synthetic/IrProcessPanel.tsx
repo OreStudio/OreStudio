@@ -223,6 +223,14 @@ export function IrProcessPanel({
                     </p>
                 )}
                 {refusal !== '' && <Notice tone="warn">{refusal}</Notice>}
+                {engineChanged && (
+                    <Notice tone="info">
+                        {t('marketdata.irProcess.engineChanged', {
+                            from: engineName(t, savedEngine),
+                            to: engineName(t, engine),
+                        })}
+                    </Notice>
+                )}
                 {mode === 'simple' && reading.view === undefined && reading.reason !== '' && (
                     <Notice tone="info">
                         {t('marketdata.irSimple.byHand', { reason: reading.reason })}

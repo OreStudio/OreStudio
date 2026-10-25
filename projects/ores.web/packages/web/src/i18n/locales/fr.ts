@@ -4550,6 +4550,7 @@ const fr: SourceCatalogue = {
                 reverting:
                     'Passage en Simple. Le moteur à retour à la moyenne lit une composante, donc {removed} autres ont été retirées. Rien n’est enregistré avant Enregistrer. Annuler les rétablit.',
             },
+            byHand: 'Ces composantes n’ont pas de forme simple, donc seul le mode Avancé peut les montrer. {reason}',
         },
         irSimple: {
             lead: 'Répondez à quatre questions. Le serveur transforme les réponses en nombres que le moteur lit. Passez en Avancé pour les voir.',
@@ -4734,6 +4735,10 @@ const fr: SourceCatalogue = {
                 ornstein_uhlenbeck:
                     "Une composante à retour à la moyenne : son poids est κ et son σ la volatilité. La bande où le prix se stabilise a une largeur d'environ σ/√(2κ) : un petit κ avec un σ plus grand donne une bande plus large.",
             },
+            indexHelp:
+                'La position à laquelle le moteur lit la composante. Un mélange tire chaque composante à son tour ; le moteur à retour à la moyenne ne lit que la première.',
+            descriptionHelp:
+                'Le nom et la note donnés à cette composante par une personne. Le moteur lit les nombres à côté, pas cette ligne.',
             profile: 'Profil',
             profileHelp:
                 'Un préréglage qui fixe la volatilité (σ). Personnalisé garde la valeur saisie.',

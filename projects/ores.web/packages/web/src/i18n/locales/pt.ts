@@ -4518,6 +4518,7 @@ const pt: SourceCatalogue = {
                 reverting:
                     'Passou para Simples. O motor de reversão à média lê um componente, por isso {removed} outros foram removidos. Nada é guardado até carregar em Guardar. Descartar repõe-nos.',
             },
+            byHand: 'Estes componentes não têm forma simples, por isso só o modo Avançado os pode mostrar. {reason}',
         },
         irSimple: {
             lead: 'Responda a quatro perguntas. O servidor transforma as respostas nos números que o motor lê. Passe para Avançado para vê-los.',
@@ -4700,6 +4701,10 @@ const pt: SourceCatalogue = {
                 ornstein_uhlenbeck:
                     'Uma componente de reversão à média: o seu peso é κ e o seu σ a volatilidade. A banda onde o preço assenta tem cerca de σ/√(2κ) de largura: um κ pequeno com um σ maior dá uma banda mais larga.',
             },
+            indexHelp:
+                'A posição em que o motor lê a componente. Uma mistura sorteia cada componente por sua vez; o motor de reversão à média lê apenas a primeira.',
+            descriptionHelp:
+                'O nome e a nota que uma pessoa deu a esta componente. O motor lê os números ao lado, não esta linha.',
             profile: 'Perfil',
             profileHelp:
                 'Uma predefinição que fixa a volatilidade (σ). Personalizado mantém o valor escrito.',

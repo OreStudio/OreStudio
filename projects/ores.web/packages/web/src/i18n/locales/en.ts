@@ -4484,6 +4484,7 @@ export const en: SourceCatalogue = {
                 reverting:
                     'Switched to Simple. The mean-reverting engine reads one component, so {removed} others were removed. Nothing is saved until you press Save. Discard brings them back.',
             },
+            byHand: 'These components have no simple form, so only Advanced can show them. {reason}',
         },
         irSimple: {
             lead: 'Answer four questions. The server turns the answers into the numbers the engine reads. Switch to Advanced to see them.',
@@ -4664,6 +4665,10 @@ export const en: SourceCatalogue = {
                 ornstein_uhlenbeck:
                     'A mean reverting component: its weight is κ and its σ the volatility. The band the price settles in is about σ/√(2κ) wide: a small κ with a larger σ gives a wider band.',
             },
+            indexHelp:
+                'The position the engine reads the component in. A mixture draws every component in turn; the mean reverting engine reads the first one only.',
+            descriptionHelp:
+                'The name and the note a person gave this component. The engine reads the numbers beside it, not this line.',
             profile: 'Profile',
             profileHelp: 'A preset that sets the volatility (σ). Custom keeps the value you typed.',
             profiles: {

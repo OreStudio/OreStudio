@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: C0D1A833-3E57-489A-A4D3-8C44266D3D6D
+:END:
+#+title: The screen pipeline topics
+#+description: The Qt reference data entities grouped into topics, each judged as standard CRUD or a workflow, ordered for the pipeline.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:ui:ux:web:refdata:pipeline:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+* Summary
+
+The 63 Qt reference data entities of the
+[[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]] fall
+into eleven topics. A topic is the unit the screen pipeline takes: its journeys
+are written, its screens are prototyped and signed off, built, tested and signed
+off, and then the next topic starts. Calendars go first, by the owner's choice,
+because the family has parts, a derive action, real field gaps and a missing
+dates view, so it exercises the whole shape of the pipeline. Each later topic is
+a capture in the next bucket, tagged =pipeline=, and becomes a story when its
+turn comes. The curve bootstrap configuration leaves the reference data pipeline
+for the market data area.
+
+A topic is judged before its journeys are written. Most are standard: the
+record screen standard covers them with its list, record page and dialogs. A
+few need a workflow beside the standard screens, where the goal has steps and
+several writes, such as onboarding a party. The judgement here is a first
+reading, and the journeys of each topic confirm or change it.
+
+* Detail
+
+** The topics in order
+
+| # | Topic | Qt entities | Journeys that exist | Shape | Why here |
+|---+-------+-------------+---------------------+-------+----------|
+| 1 | Calendars | Calendar, calendar rule, calendar exception, calendar event, calendar date, calendar type | Keep a holiday calendar right | Standard record screen with parts, two own actions (Derive a calendar, Rebuild business days) and a dates view | The owner's choice. Parts, actions, three field gaps and a missing view exercise every step of the pipeline on one family |
+| 2 | Currencies and pairs | Currency, currency group, currency pair, currency pair convention, monetary nature, market tier, pair classification, rounding type | Add or correct a currency; Group currencies for the desk; Set up a currency pair | Standard. The Qt import and export of currencies needs a decision: a workflow or dropped | The reference record screen. Richest web coverage, so the pipeline runs fast on a screen that already conforms, and proves the harness |
+| 3 | Parties and organisation | Party, party identifier, party contact, party id scheme, party type, party status, contact type, business unit, business unit type | Keep a party's details current; New party; Onboard a party and verify its conventions | An entity screen, plus the onboarding workflow. The Qt hierarchy tab is the gap | The entity shape, so the entity specification is exercised after the record standard |
+| 4 | Counterparties | Counterparty, counterparty identifier, counterparty contact | Onboard a counterparty | An entity screen over the composite write, plus the onboarding workflow. The Qt hierarchy tab is the gap | Follows parties because it shares their shape and their parts |
+| 5 | Conventions | CDS, deposit, FRA, IBOR index, OIS, overnight index, swap and zero conventions; day count fraction, business day convention, floating index, payment frequency, leg type, curve role | Author a convention for a kind; Change the convention a party uses; Find a convention by its terms; Retire a convention; Name a convention set; See the conventions a party uses; Decide a convention change; Publish conventions from data quality | Standard screens per kind, plus the import and the decision workflows. Seven kinds list ids only, as the matrix's section The gaps, judged records | The largest gap in the matrix, and the richest journey set. It comes after the standard and entity shapes are proven |
+| 6 | Tenors | Tenor, tenor convention, tenor schedule, tenor kind, tenor unit, tenor anchor, tenor resolution algorithm | Define how tenors resolve | Standard record screens beside the resolution page that exists. The tenor schedule has no web surface | Depends on calendars and conventions, so it follows both |
+| 7 | Countries and business centres | Country, business centre | None | Small standard screens, read only for countries | Pickers and tabs today with no screen of their own. Small, and the earlier topics decide how a read only record screen looks |
+| 8 | Books and portfolios | Book, portfolio, book status, book purpose type, purpose type, regulatory book type, ledger feed type | Shape the book structure | A tree workflow exists in the trading area; standard record screens for the book and the portfolio beside it | The trading area owns the journey, so the reference data pipeline adds the record screens only |
+| 9 | Instrument and asset codes | Instrument code, asset class code, diary entry type | None | Classification shaped screens. Instrument codes have no web surface | No journey names them yet; the pipeline writes the first |
+| 10 | Currency risk configurations | CRM driver pair, CRM enabled derived pair, CRM topology config | None | A configuration, so the configuration screen standard would rule, if the configurations are still wanted | A decision before a screen |
+| 11 | Curve bootstrap configuration | IR curve bootstrap config | Manage a curve's blueprint; Check a curve's fit | Leaves the pipeline. Its web surface is the synthetic IR feeds, under the feed screen standard | Not reference data in the web, whatever the Qt plugin held |
+
+** How a topic was judged
+
+- /Standard./ The goal is to find, read, add, amend or delete records of one
+  kind, or of one kind with its parts. The record screen standard covers it, and
+  the entity screen specification where the subject is several kinds of record.
+- /Workflow./ The goal has steps, several writes and a decision a person reads
+  first, such as onboarding a party or deciding a convention change. The screen
+  offers it under Workflows, as the standard says, beside the standard screens
+  of the same records.
+- /Decision first./ The entity's place in the product is open, as for the
+  currency risk configurations, so a decision precedes any screen.
+- /Elsewhere./ The web already serves the goal in another area under another
+  standard, as for the curve bootstrap configuration.
+
+The judgement names the shape the pipeline starts from. The journeys of a topic
+are written first, and they confirm or change it. A journey that turns out to be
+a CRUD variation stays a standard screen; a journey that turns out to have steps
+becomes a workflow.
+
+** What each topic produces
+
+The pipeline runbook of the fourth story states the steps. Each topic produces
+its user journey documents, a prototype per screen with its design note, the
+screens built from the shared parts with any server side extension, a test
+scenario, and a sign off recorded on the task that owns the screen. The matrix
+page is re-read at the start of each topic for the gaps it carries, and the
+audit page for the rules its screens must follow.
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders this cluster.
+- [[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]] — the entities and the gaps each topic carries.
+- [[id:F4EF9042-0EC2-4B64-95E7-7DEBF273F2F7][Audit of the UX standards]] — the rules each topic's screens must follow once settled.
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the journeys the table names.
+- [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Story: Take the first reference data topic through the screen pipeline]] — the calendars topic.
+- [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Story: Inventory the Qt reference data screens and audit the UX standards]] — the story this page answers.

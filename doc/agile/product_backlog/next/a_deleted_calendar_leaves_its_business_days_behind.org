@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 8C253D82-3C14-4A58-A27C-5FEFF437769E
+:END:
+#+title: A deleted calendar leaves its business days behind
+#+description: A calendar derived again under a deleted code shows the old calendar's built days before any rebuild.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:calendars:server:bug:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A deleted calendar leaves its materialised business days behind. In the sign off scenario of 2026-10-25, Acme.Scenario was derived from TARGET, rebuilt for 2026, deleted, and derived again under the same code: the new calendar's Business days tab showed 260 business days before any rebuild, because the calendar_date rows of the deleted calendar were still there and are keyed by code. Deleting a calendar should remove, or close, its materialised days with it, or a rebuild should start from nothing for a calendar whose first version is newer than the days. Found while running the scenario Verify the holiday calendar screens; the screen shows what the server holds.
+
+* Why
+
+The Business days view tells the person what the calendar produces; days that belong to a deleted calendar
+make it lie, and a rebuild never rewrites them.
+
+* References
+
+- [[id:2EB79148-75EE-4FB2-A992-2957E0B873C9][Test Scenario: Verify the holiday calendar screens]] — the run that found it.
+
+* See also
+
+- [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][User Journey: Keep a holiday calendar right]] — the journey and its other gaps.

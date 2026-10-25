@@ -553,7 +553,7 @@ function CalendarBody({ calendar }: { readonly calendar: RecordRow }): ReactNode
             {removing && (
                 <RemoveRecordDialog
                     resource={CALENDARS}
-                    title={t('refdata.records.deleteTitle', { code })}
+                    title={t('refdata.records.deleteTitle', { code: show(calendar['name']) })}
                     warning={t('refdata.calendars.removeWarning')}
                     recordKey={{ code }}
                     version={calendar.version}

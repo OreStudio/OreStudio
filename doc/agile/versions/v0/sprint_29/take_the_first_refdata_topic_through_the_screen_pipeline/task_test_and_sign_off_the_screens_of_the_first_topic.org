@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :take_the_first_refdata_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/test-and-sign-off-the-screens-of-the-first-topic
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The screens are proved on a running system and signed off by the procedure the t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The scenario passed, the sheet is filled by the agent, the gaps are captured; the PR is raised. |
+| Waiting on   | The owner's walk of the sheet and sign off of the calendars screen. |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -41,9 +41,15 @@ The screens are proved on a running system and signed off by the procedure the t
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Follow the sign off recipe on a fresh database. Recreate the database and
+provision Acme, write the test scenario over list, page, create, amend with a
+stale version, parts, business days, history, revert, delete and the reader,
+and drive it with a script, one function per step, so the run is repeatable
+and its log is the evidence. Run the harness on the calendars screen alone,
+fold the run into the sheet with =screen_sign_off.py=, fill the person's lines
+from the scenario and its screenshots, and record the verdict. File every gap
+the walk finds as a capture, or fix it when it is the screen's and small. The
+sign off that closes the topic is the owner's walk, so the task waits on it.
 
 * Measurements
 
@@ -57,7 +63,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Scenario steps | 12 passed on the fourth run; the three before failed on the script's own faults and on leftovers of earlier runs | =evidence/scenario_runner.mjs=, log in =evidence/scenario_run_2026-10-25.log= | aebd19b746 |
+| Harness on calendars, nothing else driving the web | 18 passed, 0 failed, 6 skipped (the first row is QuantLib and has no Edit) | =npx playwright test --grep "record calendars"= | aebd19b746 |
+| Sheet | 19 lines marked by the harness, 0 failing; 9 gaps, 54 met, 21 N/A, 14 not checked by the agent | =evidence/sign_off_calendars.org= | aebd19b746 |
+| Gaps captured | 3 server and refresh gaps: days left behind, history continued, no gold after an own save | =compass list --type capture= | aebd19b746 |
+| Fixed before the sheet | 1: Delete is titled by the name | =calendars.tsx= | this branch |
+| Business days written by the rebuild | 1461, 2026 to 2029 | the scenario's step 7 | aebd19b746 |
 
 * Notes
 
@@ -70,7 +81,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:2EB79148-75EE-4FB2-A992-2957E0B873C9][Verify the holiday calendar screens]] | PENDING | Twelve steps over list, page, derive, parts, business days, stale amend, history, revert, delete and the reader |
 
 * PRs
 
@@ -82,6 +93,21 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: web and docs classes | the scenario, the sheet, calendars.tsx | Accept | The runner's first failures were its own: it looked for a new row before pressing Refresh, which ES-REFRESH-15 says the person does; it clicked the header's Edit instead of the row's; a regex literal did not interpolate. Each is fixed in the runner and the scenario's words say Refresh |
 
 * Result
+
+On a database recreated and provisioned on 2026-10-25, the scenario Verify the
+holiday calendar screens passed its twelve steps, driven by a script kept in
+=evidence/=: list, QuantLib page, derive, parts, part history, business days,
+the stale amend, history and revert, delete, and the reader. The harness on the
+calendars screen passed 18 checks and skipped the 6 dialog checks on the
+read-only first row; the three checks the baseline found broken on this screen
+now pass. The sheet =evidence/sign_off_calendars.org= has no harness failure
+and the agent's walk found nine gaps: Refresh does not turn gold after the
+page's own save, the open dialog does not warn of a newer version, Escape
+closes without the guard, the list shows the calendar type as a code, and the
+type badge's title case and colour; three are captured with the two server
+gaps the runs found, a deleted calendar's days left behind and a re-created
+code's continued history. Delete is now titled by the name. The owner's walk
+and sign off close the topic; the task waits on it.

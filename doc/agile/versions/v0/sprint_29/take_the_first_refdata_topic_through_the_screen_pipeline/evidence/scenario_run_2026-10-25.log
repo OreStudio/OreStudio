@@ -1,0 +1,12 @@
+PASS Sign in as the tenant administrator 
+removed a leftover http://localhost:20402/refdata/calendars
+PASS Open the calendars list crumbs, Refresh then Add (Add drawn 94 ms after the rows), load time, pager 1–15 of 61, search in the address
+PASS Open a QuantLib calendar buttons Refresh,Derive a calendar; tabs Details,Diary events,History
+PASS Derive a calendar from TARGET buttons Refresh,Derive a calendar,Rebuild business days,Edit,Delete; tabs Details,Exceptions,Diary events,Business days,History
+PASS Add an exception and a diary event dialogs: "Add an exception", "Add a diary event"
+PASS Edit a part and read its history "Edit 2026-06-12", "History of 2026-06-12", timeline with two entries, old and new values
+PASS Build the business days and read them 1461 days written; union sentence shown
+PASS Amend the calendar against a stale version stale save refused; Reload closed the dialog; Refresh gold in the first tab after its own save: not within 15 s
+PASS Read the calendar's history and revert 2 entries then 3; Revert on every version but the newest; title back to the old name
+PASS Delete the calendar "Delete Acme scenario calendar?"; list opened; address answers no such record
+PASS Look as a reader buttons Refresh,Derive a calendar; mark Read only

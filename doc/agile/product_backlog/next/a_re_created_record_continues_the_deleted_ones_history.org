@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 525A196C-5103-4A23-9671-41CC1F2D6782
+:END:
+#+title: A re-created record continues the deleted one's history
+#+description: A key derived again after a delete shows the old versions as Changed and no Deleted entry; the version disagrees.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:history:timeline:server:bug:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A re-created record continues the deleted one's history, and the deletion itself is not an entry. In the sign off scenario of 2026-10-25, Acme.Scenario was derived, deleted and derived again three times under the same code; the History tab of the last one showed five entries, v1 Created and v2 to v4 as Changed with the reason system.new_record and No changes, one per re-creation, and no entry for any deletion. The page's lead said version 1 while the history said v4, so the record read and the history disagree on the version. Either the deletion is a version of its own that the timeline draws as Deleted, or a re-created key starts its history again; and the version the page shows must be the one the history counts. Found on calendars; the generic history read serves every record kind, so every record screen has it.
+
+* Why
+
+The timeline is the record's story; a deletion that leaves no entry and a re-creation drawn as a change
+with no changes mislead the reader, and the version the page shows must be the one the history counts.
+
+* References
+
+- [[id:2EB79148-75EE-4FB2-A992-2957E0B873C9][Test Scenario: Verify the holiday calendar screens]] — the run that found it.
+
+* See also
+
+- [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][User Journey: Keep a holiday calendar right]] — the journey and its other gaps.

@@ -29,4 +29,4 @@ each topic are on The screen pipeline topics.
 
 * See also
 
--
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders the UX cluster.

@@ -2,7 +2,7 @@
 :ID: 7522335D-4170-44BF-B8BE-59C3B2481C61
 :END:
 #+title: Take the conventions topic through the screen pipeline
-#+description: Nine convention kinds and six lists; eight journeys exist; seven kinds list ids only, the largest gap. Fifth topic.
+#+description: Eight convention kinds and six lists; eight journeys exist; seven kinds list ids only, the largest gap. Fifth topic.
 #+type: capture
 #+level: cross
 #+filetags: :ux:web:refdata:pipeline:capture:next:
@@ -13,7 +13,7 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next
 
 * What
 
-Take the conventions topic through the screen pipeline. The nine Qt convention kinds and the lists they draw on: day count fraction, business day convention, floating index, payment frequency, leg type and curve role. Eight journeys exist, from Author a convention for a kind to Publish conventions from data quality. Standard screens per kind plus the import and decision workflows; seven kinds list ids only today, the largest gap in the matrix. Fifth topic in the order the inventory story set.
+Take the conventions topic through the screen pipeline. The eight Qt convention kinds other than the tenor convention, which belongs to the tenors topic, and the lists they draw on: day count fraction, business day convention, floating index, payment frequency, leg type and curve role. Eight journeys exist, from Author a convention for a kind to Publish conventions from data quality. Standard screens per kind plus the import and decision workflows; seven kinds list ids only today, the largest gap in the matrix. Fifth topic in the order the inventory story set.
 
 * Why
 
@@ -29,4 +29,4 @@ each topic are on The screen pipeline topics.
 
 * See also
 
--
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders the UX cluster.

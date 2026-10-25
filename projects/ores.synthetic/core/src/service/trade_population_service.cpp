@@ -51,12 +51,7 @@ trade_population_run trade_population_service::run(const boost::uuids::uuid& con
             continue;
         }
 
-        trade_population_write write;
-        write.slot = slot;
-        write.security_id = slot.security_id;
-        write.issue_id = slot.issue_id;
-
-        writer_.write_trade(write, scope);
+        writer_.write_trade(slot, scope);
 
         ++run.written;
         run.outcomes.push_back(

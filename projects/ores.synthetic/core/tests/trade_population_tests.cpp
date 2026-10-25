@@ -29,6 +29,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <variant>
 
 // The generator's whole point is that a second provision states the same
 // population: no trade duplicated and no version advanced. These cases drive
@@ -50,6 +51,14 @@ using namespace ores::synthetic::service;
  */
 domain::trade_population_plan plan_of(const domain::trade_generation_scope& scope) {
     return planner_for(scope.asset_class_code).plan(scope);
+}
+
+/*
+ * The bond facts a slot carries. The slot states the keys every family shares
+ * and its own family's terms, so a case that reads a bond fact says so.
+ */
+const domain::bond_terms& bond_of(const domain::trade_population_slot& slot) {
+    return std::get<domain::bond_terms>(slot.terms);
 }
 
 const boost::uuids::uuid config_id =
@@ -111,10 +120,10 @@ struct recording_writer final : trade_population_writer {
         return trade_population_stored{.version = found->second, .external_version = 0};
     }
 
-    void write_trade(const trade_population_write& write,
+    void write_trade(const domain::trade_population_slot& slot,
                      const domain::trade_generation_scope&) override {
         ++bookings;
-        versions[write.slot.trade_id] = 1;
+        versions[slot.trade_id] = 1;
     }
 };
 
@@ -149,10 +158,10 @@ TEST_CASE("the_same_scope_states_the_same_population_twice", tags) {
     for (std::size_t i = 0; i < once.slots.size(); ++i) {
         REQUIRE(once.slots[i].trade_id == twice.slots[i].trade_id);
         REQUIRE(once.slots[i].internal_identifier == twice.slots[i].internal_identifier);
-        REQUIRE(once.slots[i].security_id == twice.slots[i].security_id);
+        REQUIRE(bond_of(once.slots[i]).security_id == bond_of(twice.slots[i]).security_id);
         REQUIRE(once.slots[i].notional == twice.slots[i].notional);
         REQUIRE(once.slots[i].trade_date == twice.slots[i].trade_date);
-        REQUIRE(once.slots[i].maturity_date == twice.slots[i].maturity_date);
+        REQUIRE(bond_of(once.slots[i]).maturity_date == bond_of(twice.slots[i]).maturity_date);
     }
 }
 
@@ -177,7 +186,7 @@ TEST_CASE("every_trade_date_derives_from_the_as_of_anchor", tags) {
 
     REQUIRE(first.slots.front().trade_date < second.slots.front().trade_date);
 
-    REQUIRE(first.slots.front().maturity_date < second.slots.front().maturity_date);
+    REQUIRE(bond_of(first.slots.front()).maturity_date < bond_of(second.slots.front()).maturity_date);
 }
 
 TEST_CASE("a_tenor_or_notional_band_that_does_not_order_is_refused", tags) {
@@ -224,8 +233,8 @@ TEST_CASE("the_notional_of_every_slot_sits_in_the_band", tags) {
     for (const auto& slot : plan.slots) {
         REQUIRE(slot.notional >= scope.min_notional);
         REQUIRE(slot.notional <= scope.max_notional);
-        REQUIRE(slot.tenor_years >= 1);
-        REQUIRE(slot.tenor_years <= 10);
+        REQUIRE(bond_of(slot).tenor_years >= 1);
+        REQUIRE(bond_of(slot).tenor_years <= 10);
     }
 }
 
@@ -234,14 +243,14 @@ TEST_CASE("every_trade_of_a_security_states_the_terms_of_that_security", tags) {
 
     std::map<std::string, domain::trade_population_slot> first_of;
     for (const auto& slot : plan.slots) {
-        const auto [found, inserted] = first_of.emplace(slot.security_id, slot);
+        const auto [found, inserted] = first_of.emplace(bond_of(slot).security_id, slot);
         if (inserted)
             continue;
-        REQUIRE(slot.issue_id == found->second.issue_id);
-        REQUIRE(slot.issuer_id == found->second.issuer_id);
-        REQUIRE(slot.issue_date == found->second.issue_date);
-        REQUIRE(slot.maturity_date == found->second.maturity_date);
-        REQUIRE(slot.tenor_years == found->second.tenor_years);
+        REQUIRE(bond_of(slot).issue_id == bond_of(found->second).issue_id);
+        REQUIRE(bond_of(slot).issuer_id == bond_of(found->second).issuer_id);
+        REQUIRE(bond_of(slot).issue_date == bond_of(found->second).issue_date);
+        REQUIRE(bond_of(slot).maturity_date == bond_of(found->second).maturity_date);
+        REQUIRE(bond_of(slot).tenor_years == bond_of(found->second).tenor_years);
     }
 }
 
@@ -249,10 +258,10 @@ TEST_CASE("a_securitys_maturity_is_its_issue_date_plus_its_term", tags) {
     const auto plan = plan_of(bond_scope());
 
     for (const auto& slot : plan.slots) {
-        REQUIRE(slot.maturity_date ==
-                slot.issue_date + std::chrono::years{static_cast<int>(slot.tenor_years)});
-        REQUIRE(slot.trade_date >= slot.issue_date);
-        REQUIRE(slot.trade_date < slot.maturity_date);
+        REQUIRE(bond_of(slot).maturity_date ==
+                bond_of(slot).issue_date + std::chrono::years{static_cast<int>(bond_of(slot).tenor_years)});
+        REQUIRE(slot.trade_date >= bond_of(slot).issue_date);
+        REQUIRE(slot.trade_date < bond_of(slot).maturity_date);
     }
 }
 
@@ -262,8 +271,8 @@ TEST_CASE("the_tenor_band_reaches_the_maturities_of_the_securities", tags) {
     std::set<std::string> securities;
     std::set<std::uint32_t> terms;
     for (const auto& slot : plan.slots) {
-        securities.insert(slot.security_id);
-        terms.insert(slot.tenor_years);
+        securities.insert(bond_of(slot).security_id);
+        terms.insert(bond_of(slot).tenor_years);
     }
 
     REQUIRE(securities.size() == terms.size());
@@ -285,7 +294,7 @@ TEST_CASE("a_security_is_not_tied_to_a_book", tags) {
 
     std::map<std::string, std::set<boost::uuids::uuid>> books_of;
     for (const auto& slot : plan.slots)
-        books_of[slot.security_id].insert(slot.book_id);
+        books_of[bond_of(slot).security_id].insert(slot.book_id);
 
     const auto shared =
         std::ranges::any_of(books_of, [](const auto& entry) { return entry.second.size() > 1; });
@@ -334,11 +343,11 @@ TEST_CASE("a_security_has_the_same_issuer_whatever_counterparties_a_config_scope
 
     std::map<std::string, boost::uuids::uuid> issuer_of;
     for (const auto& slot : plan_of(wide).slots)
-        issuer_of.emplace(slot.security_id, slot.issuer_id);
+        issuer_of.emplace(bond_of(slot).security_id, bond_of(slot).issuer_id);
 
     for (const auto& slot : plan_of(narrow).slots) {
-        const auto found = issuer_of.find(slot.security_id);
+        const auto found = issuer_of.find(bond_of(slot).security_id);
         if (found != issuer_of.end())
-            REQUIRE(slot.issuer_id == found->second);
+            REQUIRE(bond_of(slot).issuer_id == found->second);
     }
 }

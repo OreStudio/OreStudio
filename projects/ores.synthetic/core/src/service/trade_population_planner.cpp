@@ -233,18 +233,12 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         const auto drawn =
             min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
 
-        domain::trade_population_slot entry;
-        entry.slot = slot;
-        entry.book_id = book_id;
-        entry.counterparty_id = counterparty_id;
-        entry.trader_username = trader;
-        entry.trade_type_code = std::string(bond_trade_type_code);
-        entry.trade_id = trade_id_for(scope, slot);
-        entry.internal_identifier = internal_identifier_for(scope, slot);
-        entry.tenor_years = std::clamp(drawn, min_years, max_years);
-        entry.security_id = security_id_for(scope, entry.tenor_years);
-        entry.issue_id = issue_id_for_security(entry.security_id);
-        entry.issuer_id = issuer_id_for(scope, entry.tenor_years);
+        domain::bond_terms terms;
+        terms.tenor_years = std::clamp(drawn, min_years, max_years);
+        terms.security_id = security_id_for(scope, terms.tenor_years);
+        terms.issue_id = issue_id_for_security(terms.security_id);
+        terms.issuer_id = issuer_id_for(scope, terms.tenor_years);
+        terms.reference_curve_id = scope.reference_curve_id;
 
         /*
          * The anchor is the config's as-of and never the clock, so a
@@ -253,13 +247,21 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
          * anchor and its original term alone, so every trade of it states the
          * same ones; the trade date is the only date that belongs to the trade.
          */
-        entry.trade_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
-        entry.issue_date = add_months(scope.as_of_date, -security_age_months);
-        entry.maturity_date = add_years(entry.issue_date, static_cast<int>(entry.tenor_years));
+        terms.issue_date = add_months(scope.as_of_date, -security_age_months);
+        terms.maturity_date = add_years(terms.issue_date, static_cast<int>(terms.tenor_years));
 
+        domain::trade_population_slot entry;
+        entry.slot = slot;
+        entry.book_id = book_id;
+        entry.counterparty_id = counterparty_id;
+        entry.trader_username = trader;
+        entry.trade_type_code = std::string(bond_trade_type_code);
+        entry.trade_id = trade_id_for(scope, slot);
+        entry.internal_identifier = internal_identifier_for(scope, slot);
+        entry.trade_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
         entry.notional = notional_from(scope, draw(name, 1));
         entry.currency = scope.currency_code;
-        entry.reference_curve_id = scope.reference_curve_id;
+        entry.terms = terms;
 
         for (const auto& pair : scope.netting_sets) {
             if (pair.first == counterparty_id) {

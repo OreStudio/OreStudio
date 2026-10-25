@@ -38,7 +38,7 @@ PARSERS = ("OREData/ored/utilities/parsers.cpp",
            "OREData/ored/utilities/parsers.hpp")
 
 CALL = re.compile(
-    r'(parse[A-Za-z0-9_]+)\s*(?:<[^>]*>)?\s*\((.{0,200}?)(?:engine|model)Parameter\("([A-Za-z0-9_.]+)"',
+    r'(parse[A-Za-z0-9_]+)\s*(?:<[^>]*>)?\s*\((.{0,200}?)(engine|model)Parameter\("([A-Za-z0-9_.]+)"',
     re.S)
 INNER = re.compile(r'&(parse[A-Za-z0-9_]+)')
 DEF = re.compile(r'^\s*[A-Za-z_:<>0-9]+\s+(parse[A-Za-z0-9_]+)\s*\(\s*const\s+std::string&')
@@ -86,7 +86,8 @@ def types(ore):
                 path = os.path.join(dirpath, filename)
                 text = open(path, encoding="utf-8", errors="replace").read()
                 for match in CALL.finditer(text):
-                    parser, between, name = match.group(1), match.group(2), match.group(3)
+                    parser, between = match.group(1), match.group(2)
+                    scope, name = match.group(3), match.group(4)
                     if parser == "parseListOfValues":
                         inner = INNER.search(between)
                         if inner:
@@ -97,6 +98,7 @@ def types(ore):
                     number = text.count("\n", 0, match.start()) + 1
                     found.setdefault(name, {
                         "kind": kind,
+                        "scope": scope,
                         "parser": parser,
                         "values": values,
                         "source_ref": f"{os.path.relpath(path, ore)}:{number}",
@@ -120,6 +122,83 @@ def classify(parser, enums):
     return None, []
 
 
+def slug(name):
+    return re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+
+
+def sets_of(found):
+    """The value sets the code states: a flag for a boolean, the enum for an enum.
+
+    Every setting the code types gets one set, and every set is named by the
+    setting in its scope, so the curation is complete by construction and a
+    person reviews labels rather than hunting for gaps.
+    """
+    sets = {}
+    links = {}
+    flags = 0
+    for name in sorted(found):
+        entry = found[name]
+        kind = entry["kind"]
+        scope = "ModelParameters" if entry["scope"] == "model" else "EngineParameters"
+        if kind == "boolean":
+            set_code = "flag"
+            if set_code not in sets:
+                sets[set_code] = {
+                    "name": "Flag",
+                    "description": "A switch that is either on or off.",
+                    "source_kind": "boolean",
+                    "is_ordered": False,
+                }
+            flags += 1
+        elif kind == "enum":
+            set_code = slug(name)
+            values = [
+                {
+                    "value": value,
+                    "label": value,
+                    "description": f"{value} is one of the values the ORE code accepts for {name}.",
+                    "order": index,
+                }
+                for index, value in enumerate(entry["values"])
+            ]
+            sets[set_code] = {
+                "name": name.replace("_", " ").replace(".", " ").strip().capitalize(),
+                "description": f"The values the {name} setting accepts.",
+                "source_kind": "enumerated",
+                "is_ordered": False,
+                "values": values,
+            }
+        else:
+            continue
+        links[f"{scope}|{name}"] = set_code
+    return sets, links, flags
+
+
+def merge(curation_path, sets, links):
+    """Merge the code's sets into the curation and report what changed.
+
+    The code is authoritative for a setting's type, so a code set replaces the
+    guide's set of the same name. A set no setting names is pruned: it cannot be
+    seeded, and its link now points at the set the code states.
+    """
+    with open(curation_path, encoding="utf-8") as handle:
+        curation = json.load(handle)
+    before = set(curation["sets"])
+    curation["sets"].update(sets)
+    curation["links"].update(links)
+    named = set(curation["links"].values())
+    pruned = sorted(code for code in curation["sets"] if code not in named)
+    for code in pruned:
+        del curation["sets"][code]
+    with open(curation_path, "w", encoding="utf-8") as handle:
+        json.dump(curation, handle, indent=2, ensure_ascii=False)
+        handle.write("\n")
+    added = sorted(set(sets) - before)
+    print(f"{len(added)} sets added, {len(pruned)} pruned, {len(curation['sets'])} total")
+    for code in pruned:
+        print(f"  pruned {code}: the code types its setting differently")
+
+
 def main():
     if len(sys.argv) < 3:
         print(__doc__.strip().splitlines()[3], file=sys.stderr)
@@ -128,6 +207,17 @@ def main():
     with open(sys.argv[2], "w", encoding="utf-8") as handle:
         json.dump(found, handle, indent=2, sort_keys=True)
         handle.write("\n")
+    if "--sets" in sys.argv:
+        path = sys.argv[sys.argv.index("--sets") + 1]
+        sets, links, flags = sets_of(found)
+        with open(path, "w", encoding="utf-8") as handle:
+            json.dump({"sets": sets, "links": links}, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+        print(f"{len(sets)} sets ({flags} flag links) and {len(links)} links written to {path}")
+    if "--merge" in sys.argv:
+        path = sys.argv[sys.argv.index("--merge") + 1]
+        sets, links, _flags = sets_of(found)
+        merge(path, sets, links)
     by_kind = {}
     for entry in found.values():
         by_kind[entry["kind"]] = by_kind.get(entry["kind"], 0) + 1

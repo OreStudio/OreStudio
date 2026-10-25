@@ -44,6 +44,12 @@ and =tab= for the detail.
 - Sources. The operations board as it stands.
 - Subscriptions. A party's rights and the source its route picks.
 
+The Synthetic screen has two tabs, Dashboard and Provider. A feed is a
+drill-down page, not a tab. The sources board is Operations, market data
+sources. Subscriptions is Market data, Subscriptions. The prototype's bottom
+bar switches between the screens for sign-off; it is not the product's tab
+strip.
+
 * States
 
 A provider is serving or stopped. A feed is serving or stopped by the same

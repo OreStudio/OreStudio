@@ -105,13 +105,14 @@ const demandedIds = PROVIDERS.filter(serves).reduce((n,p) => n + p.demanded, 0);
 
 function bar(){
   return '<span class="label faint">screen</span>' +
-    [['dashboard','Dashboard'],['provider','Provider'],['feed','Feed'],['sources','Sources'],['subscriptions','Subscriptions']].map(([v,l]) =>
+    [['dashboard','Dashboard (Synthetic)'],['provider','Provider (Synthetic)'],['feed','Feed page'],['sources','Sources (Operations)'],['subscriptions','Subscriptions (Market data)']].map(([v,l]) =>
       '<button data-screen="' + v + '" class="' + (v === screen ? 'on' : '') + '">' + l + '</button>').join('');
 }
 function nav(){
   return '<div class="top"><h1>ORE Studio — Market data / Synthetic</h1><span class="muted">The feeds the platform generates.</span>' +
     '<a style="margin-left:auto" href="../../../knowledge/journeys/market_data/market_data.html">the journeys →</a></div>' +
-    '<div class="tabs"><button class="tab on">Dashboard</button><button class="tab" data-screen="provider">Provider</button></div>';
+    '<div class="tabs"><button class="tab on">Dashboard</button><button class="tab" data-screen="provider">Provider</button></div>' +
+    '<p class="faint small">Synthetic has two tabs and a feed page. The sources board lives under Operations, subscriptions under Market data. The bar below switches the prototype, not the product.</p>';
 }
 
 function dashboard(){

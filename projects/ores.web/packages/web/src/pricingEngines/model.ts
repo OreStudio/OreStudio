@@ -18,7 +18,9 @@
  *
  */
 
+import { wireTimestamp, type TimelineEvent } from '@ores/wire-protocol/browser';
 import type {
+    DocumentVersion,
     PricingDocument,
     PricingParameter,
     PricingProduct,
@@ -160,6 +162,51 @@ export function pairNote(
 /** Whether a new product starts with the setting: ORE needs it and the vocabulary knows a value. */
 export function startsWith(setting: KnownSetting): boolean {
     return setting.required && setting.usual !== '';
+}
+
+/** The provenance fields every version carries, which the fields of the change leave out. */
+const PROVENANCE_FIELDS = new Set([
+    'Modified By',
+    'Performed By',
+    'Change Reason Code',
+    'Change Commentary',
+    'Recorded At',
+]);
+
+/**
+ * Every version of a document as the shared timeline draws it.
+ *
+ * A save writes the configuration, its products and its parameters, so the
+ * versions of three kinds of entity arrive together. Each event keeps its
+ * entity, and the fields are what the version changed when the server states a
+ * difference, or the version's own fields when it is the first one.
+ */
+export function historyEventsOf(versions: readonly DocumentVersion[]): readonly TimelineEvent[] {
+    return versions.map((version) => ({
+        entityType: version.entityType,
+        entityId: version.entityId,
+        kind: version.version === 1 ? 'raised' : 'changed',
+        at: wireTimestamp(version.recordedAt),
+        actor: version.modifiedBy,
+        version: version.version,
+        reasonCode:
+            version.fields.find((field) => field.name === 'Change Reason Code')?.value ?? '',
+        commentary: version.fields.find((field) => field.name === 'Change Commentary')?.value ?? '',
+        fields:
+            version.changes.length > 0
+                ? version.changes.map((change) => ({ name: change.field, value: change.after }))
+                : version.fields.filter((field) => !PROVENANCE_FIELDS.has(field.name)),
+    }));
+}
+
+/** The label of the entity a version came from, keyed by its type and its id. */
+export function historyNameOf(versions: readonly DocumentVersion[]): ReadonlyMap<string, string> {
+    return new Map(
+        versions.map((version) => [
+            `${version.entityType}|${version.entityId}`,
+            version.entityName,
+        ]),
+    );
 }
 
 /** The settings a pair is known to take for a product type. */

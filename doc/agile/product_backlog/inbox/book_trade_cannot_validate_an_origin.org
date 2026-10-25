@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 36762B46-718F-45C9-A838-818C9CA73CF5
+:END:
+#+title: book_trade cannot validate a trade's origin. The trading ser…
+#+description: book_trade cannot validate a trade's origin. The trading service does no in-service authorisation: only ores.iam.core run_grant_operations_service reads ctx.roles(), and trading has no permission vocabulary, so the boundary is the NATS subject ACL, which decides who may call book_trade and not what they may claim inside it. ctx.service_account() is the trading service's own database user, so a check on it judges the host rather than the caller and refuses the population writer and ORE import, which both arrive through that service. ctx.actor() comes from the verified JWT, but the synthetic service forwards the party's end-user token, so actor is the user and not the generator. A real check needs either a permission model for trading operations or an origin the server derives instead of a client field.
+#+type: capture
+#+level: cross
+#+filetags: :trading:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

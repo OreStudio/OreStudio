@@ -112,6 +112,23 @@ bool run_holds_errors(const ores::database::context& ctx, const std::string& ins
 
 }
 
+namespace {
+
+/**
+ * @brief The reason a run failed, said in one sentence.
+ *
+ * A failed compute job hands over the engine's own account, which repeats the
+ * reasons the run's rows already carry. The row that says the run failed says
+ * that, and leaves the reasons to the rows beside it.
+ */
+std::string one_sentence_of(const std::string& reason) {
+    const auto end = reason.find(". ");
+    const auto sentence = end == std::string::npos ? reason : reason.substr(0, end + 1);
+    return sentence.size() <= 200 ? sentence : sentence.substr(0, 197) + "...";
+}
+
+}
+
 report_error_recorder::report_error_recorder(ores::database::context ctx)
     : ctx_(std::move(ctx)) {}
 
@@ -193,7 +210,7 @@ std::string report_error_recorder::record_run_failure(const std::string& report_
                                                                       event_time,
                                                                       std::string(scope_report),
                                                                       "error",
-                                                                      reason,
+                                                                      one_sentence_of(reason),
                                                                       std::nullopt,
                                                                       std::nullopt,
                                                                       std::nullopt,

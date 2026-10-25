@@ -240,6 +240,30 @@ TEST_CASE("an error whose scope the vocabulary does not hold costs its own row o
     CHECK(warning->message.find("Something the engine grew") != std::string::npos);
 }
 
+TEST_CASE("the run's failure row says one sentence, not the engine's whole account", tags) {
+    scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto instance_id = write_instance(ctx, h.db_user(), gen);
+
+    ores::reporting::service::report_error_recorder recorder(ctx);
+    CHECK(recorder
+              .record_run_failure(
+                  instance_id,
+                  "The run's compute job failed with outcome 3: The engine's analytic failed. "
+                  "The engine reported 20 errors; the last 5 are:\n"
+                  "  yield curve building failed for curve(s) Yield/GBP/GBP1D\n"
+                  "  Portfolio does not contain any built trades")
+              .empty());
+
+    const auto rows = errors_of(ctx, instance_id);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().scope_code == "Report");
+    CHECK(rows.front().message ==
+          "The run's compute job failed with outcome 3: The engine's analytic failed.");
+    CHECK(rows.front().message.find("Portfolio does not contain") == std::string::npos);
+}
+
 TEST_CASE("the run-level failure is stored beside the engine's own errors", tags) {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);

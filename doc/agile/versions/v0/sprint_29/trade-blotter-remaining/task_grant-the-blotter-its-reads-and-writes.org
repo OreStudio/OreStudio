@@ -159,3 +159,27 @@ The two on =ReportRun= were already there. So the block added to =iam_roles_popu
 It is not the function. Calling =ores_iam_role_permissions_assign_fn= by hand for =Trading= and =trading::trade_summaries:read= creates the row at once and the count becomes 1. So the fault is in the seed file: the block's position, a guard around it, or a later statement that clears it.
 
 The next step is to read the file around the block and the populate that includes it, and then the same count is the proof.
+
+* The fix, and what the proof now says
+
+The block was pasted after the =END $$;= that closes the PL/pgSQL body the whole file's grants live in. =PERFORM= is PL/pgSQL, not SQL, so at top level it is a syntax error, and psql carried on past it: the populate exited 0 with the grants silently absent. The block now sits inside that body, before its =END $$;=.
+
+Applied to the running database, the count is:
+
+| Role | Trading grants | Inbox grants |
+|---|---|---|
+| =Trading= | 13 | 0 |
+| =Operations= | 10 | 2 |
+| =ReportRun= | 12 | 0 |
+| =Viewer= | 8 | 0 |
+| =Member= | 0 | 0 |
+
+=Member= holds none of them, which is the split as intended, and =Operations= holds the two approval-request codes.
+
+* A second defect the proof found
+
+=ores_iam_role_permissions_assign_fn= is **not idempotent**. The count showed =trading::trade_summaries:read= twice for =Trading=, because I had called it by hand while diagnosing and the file then called it again. The file's own header says it is idempotent, so a populate run twice duplicates every assignment it makes. This is not caused by the blotter block — every grant in the file has it — and it wants its own fix: the function should upsert on (role, permission) the way the role upsert does on its name.
+
+* What is still owed
+
+The seed is proved: the rows are in the database and =Member= has none. Not yet proved is the runtime refusal and acceptance: sign in as a =Trading= user, call the list and see rows; sign in as a =Member= and see a refusal. That is the last step before this task is done.

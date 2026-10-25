@@ -775,9 +775,6 @@ BEGIN
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'ComputeWrapperService', 'Compute Wrapper worker service — processes compute grid jobs', false);
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ComputeWrapperService', 'compute::*');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ComputeWrapperService', 'iam::tenants:read');
-END $$;
-
-
 
 -- =============================================================================
 -- The trade blotter
@@ -852,6 +849,9 @@ END $$;
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::books:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::portfolios:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::counterparties:read');
+END $$;
+
+
 
 -- Show summary
 select 'Roles:' as summary, count(*) as count from ores_iam_roles_tbl

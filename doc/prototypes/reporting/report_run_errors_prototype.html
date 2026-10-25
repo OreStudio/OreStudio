@@ -76,6 +76,14 @@
   tbody tr.group td { padding-top: 14px; border-bottom: 1px solid var(--line); }
   tbody tr.group .count { color: var(--muted); }
   tbody tr.member td:first-child { padding-left: 24px; }
+  .cause { border: 1px solid var(--line); border-radius: 8px; padding: 14px;
+           margin-bottom: 12px; }
+  .cause h3 { margin: 0 0 4px; font-family: var(--mono); font-size: 13px; word-break: break-all; }
+  .cause .meta { color: var(--muted); margin: 0; font-size: 13px; }
+  .trades { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .trade { border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px;
+           font-family: var(--mono); font-size: 12px; }
+  body[data-view="b"] #errors .layout { display: block; }
   body[data-view="b"] .layout { grid-template-columns: 1fr; }
   body[data-view="b"] #detail { display: none; }
   .inline { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
@@ -117,7 +125,7 @@
       </select>
       <input id="search" type="search" placeholder="Search message, curve or trade id…" oninput="render()">
       <span class="muted" style="margin-left:auto">View</span>
-      <button class="chip" id="view-b" aria-pressed="true" onclick="setView('b')">Grid</button>
+      <button class="chip" id="view-b" aria-pressed="true" onclick="setView('b')">Cards</button>
       <button class="chip" id="view-c" aria-pressed="false" onclick="setView('c')">Split</button>
     </div>
     <div class="layout">
@@ -127,7 +135,7 @@
   </section>
 </main>
 
-<div class="switch">Grid is the flat list. Split keeps the selected error beside it.</div>
+<div class="switch">Cards groups by cause. Split lists the rows with the selected one beside them.</div>
 
 <script>
   const causes = [
@@ -225,41 +233,49 @@ version ${t.version} · as of ${c.asOf}</div>
     return rows;
   }
 
-  function render() {
-    const items = visible();
-    const body = items.length === 0 ?
-      '<tr><td colspan="7" class="empty">No errors match this filter.</td></tr>' :
-      items.map((c) => {
-        const header = `
-          <tr class="group">
-            <td colspan="7">
-              <span class="mono">${c.mandatoryId || c.message}</span>
-              <span class="count">${c.subject ? ' · ' + c.subject : ''}${c.asOf ? ' · ' + c.asOf : ''}
-                · ${c.trades.length} trade(s)</span>
-            </td>
-          </tr>`;
-        const rows = c.trades.length === 0 ? [`
-          <tr class="member" aria-selected="${c.key === selected.cause && !selected.trade}"
-              onclick="select('${c.key}', null)">
-            <td><span class="badge b-${c.severity === 'error' ? 'error' : 'warn'}">${c.severity}</span></td>
-            <td>${c.scope}</td><td class="mono">${c.subject || '—'}</td>
-            <td class="mono muted">—</td><td class="mono muted">—</td>
-            <td class="msg">${c.message}</td><td class="mono muted">${c.time}</td>
-          </tr>`] : c.trades.map((t) => `
-          <tr class="member" aria-selected="${c.key === selected.cause && t.id === selected.trade}"
-              onclick="select('${c.key}', '${t.id}')">
-            <td><span class="badge b-${c.severity === 'error' ? 'error' : 'warn'}">${c.severity}</span></td>
-            <td>${c.scope}</td><td class="mono">${t.type}</td>
-            <td class="mono">${t.id}</td><td class="mono muted">v${t.version} @ ${c.asOf}</td>
-            <td class="msg">${c.message}</td><td class="mono muted">${c.time}</td>
-          </tr>`);
-        return header + rows.join('');
-      }).join('');
+  function buildCards(items) {
+    return items.length === 0 ? '<p class="empty">No errors match this filter.</p>' :
+      items.map((c) => `
+        <div class="cause">
+          <h3>${c.mandatoryId || c.message}</h3>
+          <p class="meta">${c.severity} · ${c.scope}${c.subject ? ' · ' + c.subject : ''}${c.asOf ? ' · ' + c.asOf : ''}
+            · ${c.trades.length} trade(s)</p>
+          ${c.trades.length ? '<div class="trades">' + c.trades.map((t) => `
+            <span class="trade">${t.id} · ${t.type} · v${t.version} @ ${c.asOf}</span>`).join('') + '</div>' : ''}
+        </div>`).join('');
+  }
 
-    document.getElementById('causes').innerHTML = `<div class="grid-wrap"><table>
+  function buildRows(items) {
+    const rows = [];
+    for (const c of items) {
+      if (c.trades.length === 0) rows.push({ c, t: null });
+      else for (const t of c.trades) rows.push({ c, t });
+    }
+    const body = rows.length === 0 ?
+      '<tr><td colspan="7" class="empty">No errors match this filter.</td></tr>' :
+      rows.map(({ c, t }) => `
+        <tr aria-selected="${c.key === selected.cause && (t ? t.id === selected.trade : !selected.trade)}"
+            onclick="select('${c.key}', ${t ? `'${t.id}'` : 'null'})">
+          <td><span class="badge b-${c.severity === 'error' ? 'error' : 'warn'}">${c.severity}</span></td>
+          <td>${c.scope}</td>
+          <td class="mono">${c.subject || '—'}</td>
+          <td class="mono">${t ? t.id : '—'}</td>
+          <td class="mono muted">${t ? `v${t.version} @ ${c.asOf}` : '—'}</td>
+          <td class="msg">${c.message}</td>
+          <td class="mono muted">${c.time}</td>
+        </tr>`).join('');
+    return `<div class="grid-wrap"><table>
       <thead><tr><th>Severity</th><th>Scope</th><th>Subject</th><th>Trade</th>
         <th>Version</th><th>Message</th><th>Time</th></tr></thead>
       <tbody>${body}</tbody></table></div>`;
+  }
+
+  function render() {
+    const items = visible();
+    document.getElementById('causes').innerHTML =
+      view === 'b' ? buildCards(items) : buildRows(items);
+
+    if (view === 'b') return;
 
     const first = items.find((x) => x.key === selected.cause) || items[0];
     const el = document.getElementById('detail');

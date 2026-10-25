@@ -29,6 +29,7 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.trading.api/domain/origin.hpp"
 #include "ores.trading.api/generators/bond_issue_call_date_generator.hpp"
 #include "ores.trading.api/generators/bond_issue_conversion_target_generator.hpp"
 #include "ores.trading.api/generators/bond_issue_generator.hpp"
@@ -53,7 +54,6 @@
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
-#include "ores.trading.api/domain/origin.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -69,8 +69,28 @@ const std::string tags("[service]");
 
 using ores::trading::messaging::book_trade_request;
 using ores::trading::messaging::put_bond_issue_composite_request;
+using ores::trading::service::book_status_port;
 using ores::trading::service::trade_operations_service;
 using ores::utility::domain::outcome;
+
+namespace {
+
+/** A port that answers the same way for every book, so a case states its rule. */
+class stated_book_status final : public book_status_port {
+public:
+    explicit stated_book_status(state answer)
+        : answer_(answer) {}
+    [[nodiscard]] state of(const boost::uuids::uuid&) const override {
+        return answer_;
+    }
+
+private:
+    state answer_;
+};
+
+const stated_book_status every_book_open{book_status_port::state::open};
+
+}
 
 /**
  * @brief A tenant with a party in session and a real book of that party.
@@ -198,7 +218,7 @@ struct fixture final {
 
     boost::uuids::uuid stored_issue() {
         const auto issue = issue_request();
-        trade_operations_service(ctx).put_bond_issue_composite(issue);
+        trade_operations_service(ctx, every_book_open).put_bond_issue_composite(issue);
         return issue.issue.issue_id;
     }
 
@@ -223,7 +243,7 @@ TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", tags) {
     req.booking.execution_timestamp = executed_at;
     const auto id = boost::uuids::to_string(req.anchor.id);
 
-    const auto response = trade_operations_service(f.ctx).book_trade(req);
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req);
 
     REQUIRE(response.result.outcome == outcome::ok);
     REQUIRE(ores::trading::repository::trade_repository().read_latest(f.ctx, id).size() == 1);
@@ -240,12 +260,22 @@ TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", tags) {
     CHECK(states.front().trade_activity_id == *response.activity_id);
 }
 
+TEST_CASE("a_booking_into_a_book_that_is_not_open_is_refused", tags) {
+    fixture f;
+    const stated_book_status frozen{book_status_port::state::not_open};
+    auto request = f.request();
+    const auto response = trade_operations_service(f.ctx, frozen).book_trade(request);
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "book_not_open");
+}
+
 TEST_CASE("a_second_booking_of_the_same_trade_is_a_conflict", tags) {
     fixture f;
     const auto req = f.request();
-    REQUIRE(trade_operations_service(f.ctx).book_trade(req).result.outcome == outcome::ok);
+    REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(req).result.outcome ==
+            outcome::ok);
 
-    const auto response = trade_operations_service(f.ctx).book_trade(req);
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req);
 
     CHECK(response.result.outcome == outcome::conflict);
     CHECK(response.result.code == "already_exists");
@@ -260,7 +290,7 @@ TEST_CASE("a_booking_that_fails_writes_no_anchor", tags) {
     auto req = f.request();
     req.booking.book_id = f.gen.generate_uuid();
 
-    CHECK_THROWS(trade_operations_service(f.ctx).book_trade(req));
+    CHECK_THROWS(trade_operations_service(f.ctx, every_book_open).book_trade(req));
 
     CHECK(ores::trading::repository::trade_repository()
               .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
@@ -271,7 +301,8 @@ TEST_CASE("put_bond_issue_composite_writes_the_issue_and_its_children", tags) {
     fixture f;
     const auto req = f.issue_request();
 
-    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+    const auto response =
+        trade_operations_service(f.ctx, every_book_open).put_bond_issue_composite(req);
 
     REQUIRE(response.result.outcome == outcome::ok);
     CHECK(ores::trading::repository::bond_issue_repository()
@@ -282,10 +313,12 @@ TEST_CASE("put_bond_issue_composite_writes_the_issue_and_its_children", tags) {
 TEST_CASE("a_second_write_of_the_same_issue_is_already_exists", tags) {
     fixture f;
     const auto req = f.issue_request();
-    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
-            outcome::ok);
+    REQUIRE(trade_operations_service(f.ctx, every_book_open)
+                .put_bond_issue_composite(req)
+                .result.outcome == outcome::ok);
 
-    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+    const auto response =
+        trade_operations_service(f.ctx, every_book_open).put_bond_issue_composite(req);
 
     CHECK(response.result.outcome == outcome::conflict);
     CHECK(response.result.code == "already_exists");
@@ -294,11 +327,13 @@ TEST_CASE("a_second_write_of_the_same_issue_is_already_exists", tags) {
 TEST_CASE("a_second_write_with_other_terms_is_content_differs", tags) {
     fixture f;
     auto req = f.issue_request();
-    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
-            outcome::ok);
+    REQUIRE(trade_operations_service(f.ctx, every_book_open)
+                .put_bond_issue_composite(req)
+                .result.outcome == outcome::ok);
     req.issue.issuer = req.issue.issuer + "-other";
 
-    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+    const auto response =
+        trade_operations_service(f.ctx, every_book_open).put_bond_issue_composite(req);
 
     CHECK(response.result.outcome == outcome::conflict);
     CHECK(response.result.code == "content_differs");
@@ -313,7 +348,7 @@ TEST_CASE("a_refused_child_write_leaves_no_issue", tags) {
     auto req = f.issue_request();
     req.amounts.front().sequence_number = 0;
 
-    CHECK_THROWS(trade_operations_service(f.ctx).put_bond_issue_composite(req));
+    CHECK_THROWS(trade_operations_service(f.ctx, every_book_open).put_bond_issue_composite(req));
 
     CHECK(ores::trading::repository::bond_issue_repository()
               .read_latest(f.ctx, boost::uuids::to_string(req.issue.issue_id))
@@ -323,10 +358,12 @@ TEST_CASE("a_refused_child_write_leaves_no_issue", tags) {
 TEST_CASE("a_second_write_of_an_issue_with_every_child_type_is_already_exists", tags) {
     fixture f;
     const auto req = f.full_issue_request();
-    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
-            outcome::ok);
+    REQUIRE(trade_operations_service(f.ctx, every_book_open)
+                .put_bond_issue_composite(req)
+                .result.outcome == outcome::ok);
 
-    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+    const auto response =
+        trade_operations_service(f.ctx, every_book_open).put_bond_issue_composite(req);
 
     CHECK(response.result.outcome == outcome::conflict);
     CHECK(response.result.code == "already_exists");
@@ -336,8 +373,9 @@ TEST_CASE("a_change_in_any_optional_child_is_content_differs", tags) {
     const auto change = GENERATE(0, 1, 2, 3);
     fixture f;
     auto req = f.full_issue_request();
-    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
-            outcome::ok);
+    REQUIRE(trade_operations_service(f.ctx, every_book_open)
+                .put_bond_issue_composite(req)
+                .result.outcome == outcome::ok);
 
     switch (change) {
         case 0:
@@ -354,7 +392,8 @@ TEST_CASE("a_change_in_any_optional_child_is_content_differs", tags) {
             break;
     }
 
-    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+    const auto response =
+        trade_operations_service(f.ctx, every_book_open).put_bond_issue_composite(req);
 
     CHECK(response.result.outcome == outcome::conflict);
     CHECK(response.result.code == "content_differs");
@@ -363,11 +402,13 @@ TEST_CASE("a_change_in_any_optional_child_is_content_differs", tags) {
 TEST_CASE("a_write_with_a_child_less_than_the_stored_issue_is_content_differs", tags) {
     fixture f;
     auto req = f.full_issue_request();
-    REQUIRE(trade_operations_service(f.ctx).put_bond_issue_composite(req).result.outcome ==
-            outcome::ok);
+    REQUIRE(trade_operations_service(f.ctx, every_book_open)
+                .put_bond_issue_composite(req)
+                .result.outcome == outcome::ok);
     req.call_dates.clear();
 
-    const auto response = trade_operations_service(f.ctx).put_bond_issue_composite(req);
+    const auto response =
+        trade_operations_service(f.ctx, every_book_open).put_bond_issue_composite(req);
 
     CHECK(response.result.outcome == outcome::conflict);
     CHECK(response.result.code == "content_differs");
@@ -397,7 +438,8 @@ TEST_CASE("an_actual_trade_booked_live_raises_one_authorisation_request", tags) 
     auto req = f.request();
     req.anchor.booking_nature = ores::trading::domain::booking_nature::actual;
 
-    REQUIRE(trade_operations_service(f.ctx).book_trade(req).result.outcome == outcome::ok);
+    REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(req).result.outcome ==
+            outcome::ok);
 
     const auto raised = requests_for(f.ctx, req.anchor.id);
     REQUIRE(raised.size() == 1);
@@ -409,7 +451,8 @@ TEST_CASE("a_test_trade_booked_live_raises_no_authorisation_request", tags) {
     auto req = f.request();
     req.anchor.booking_nature = ores::trading::domain::booking_nature::test;
 
-    REQUIRE(trade_operations_service(f.ctx).book_trade(req).result.outcome == outcome::ok);
+    REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(req).result.outcome ==
+            outcome::ok);
 
     CHECK(requests_for(f.ctx, req.anchor.id).empty());
 }
@@ -418,7 +461,8 @@ TEST_CASE("the_summary_of_a_booked_actual_trade_names_its_state_book_and_waiting
     fixture f;
     auto req = f.request();
     req.anchor.booking_nature = ores::trading::domain::booking_nature::actual;
-    REQUIRE(trade_operations_service(f.ctx).book_trade(req).result.outcome == outcome::ok);
+    REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(req).result.outcome ==
+            outcome::ok);
 
     const auto rows = ores::trading::repository::trade_summary_repository().read_latest(
         f.ctx, boost::uuids::to_string(req.anchor.id));
@@ -434,7 +478,8 @@ TEST_CASE("the_summary_of_a_booked_test_trade_needs_no_authorisation", tags) {
     fixture f;
     auto req = f.request();
     req.anchor.booking_nature = ores::trading::domain::booking_nature::test;
-    REQUIRE(trade_operations_service(f.ctx).book_trade(req).result.outcome == outcome::ok);
+    REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(req).result.outcome ==
+            outcome::ok);
 
     const auto rows = ores::trading::repository::trade_summary_repository().read_latest(
         f.ctx, boost::uuids::to_string(req.anchor.id));
@@ -449,7 +494,7 @@ TEST_CASE("a_bond_trade_is_booked_with_its_identifier_and_instrument", tags) {
     const auto req = f.bond_request(issue_id);
     const auto id = boost::uuids::to_string(req.anchor.id);
 
-    const auto response = trade_operations_service(f.ctx).book_trade(req);
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req);
 
     REQUIRE(response.result.outcome == outcome::ok);
     REQUIRE(response.activity_id.has_value());
@@ -470,7 +515,7 @@ TEST_CASE("a_bond_trade_of_an_unknown_issue_leaves_no_trade", tags) {
     fixture f;
     const auto req = f.bond_request(f.gen.generate_uuid());
 
-    CHECK_THROWS(trade_operations_service(f.ctx).book_trade(req));
+    CHECK_THROWS(trade_operations_service(f.ctx, every_book_open).book_trade(req));
 
     const auto id = boost::uuids::to_string(req.anchor.id);
     CHECK(ores::trading::repository::trade_repository().read_latest(f.ctx, id).empty());
@@ -484,7 +529,7 @@ TEST_CASE("an_array_the_trade_type_does_not_hold_is_refused_by_name", tags) {
     auto req = f.bond_request(f.stored_issue());
     req.instruments.fx_forward_instruments.emplace_back();
 
-    const auto response = trade_operations_service(f.ctx).book_trade(req);
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req);
 
     CHECK(response.result.outcome == outcome::failed);
     CHECK(response.result.code == "instrument_not_routed");
@@ -502,7 +547,7 @@ TEST_CASE("an_fx_forward_trade_is_booked_with_its_instrument", tags) {
         ores::trading::generators::generate_synthetic_fx_forward_instrument(f.gen));
     const auto id = boost::uuids::to_string(req.anchor.id);
 
-    const auto response = trade_operations_service(f.ctx).book_trade(req);
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req);
 
     REQUIRE(response.result.outcome == outcome::ok);
     const auto stored =
@@ -525,7 +570,7 @@ TEST_CASE("a_swap_trade_is_booked_with_its_header_and_its_legs", tags) {
     }
     const auto id = boost::uuids::to_string(req.anchor.id);
 
-    const auto response = trade_operations_service(f.ctx).book_trade(req);
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req);
 
     REQUIRE(response.result.outcome == outcome::ok);
     CHECK(ores::trading::repository::rate_instrument_repository().read_latest(f.ctx, id).size() ==
@@ -541,7 +586,7 @@ TEST_CASE("a_bond_row_with_a_fact_row_is_refused_by_name", tags) {
     auto req = f.bond_request(f.stored_issue());
     req.instruments.bond_instruments.front().option.emplace();
 
-    const auto response = trade_operations_service(f.ctx).book_trade(req);
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req);
 
     CHECK(response.result.outcome == outcome::failed);
     CHECK(response.result.code == "instrument_not_supported");
@@ -553,7 +598,7 @@ TEST_CASE("a_bond_row_with_any_optional_member_is_refused_by_the_name_of_the_mem
     auto req = f.bond_request(f.stored_issue());
     req.instruments.bond_instruments.front().option_data.emplace();
 
-    const auto response = trade_operations_service(f.ctx).book_trade(req);
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req);
 
     CHECK(response.result.outcome == outcome::failed);
     CHECK(response.result.code == "instrument_not_supported");
@@ -565,7 +610,7 @@ TEST_CASE("a_bond_row_on_a_trade_of_another_type_is_refused_by_name", tags) {
     auto req = f.bond_request(f.stored_issue());
     req.anchor.trade_type = "Swap";
 
-    const auto response = trade_operations_service(f.ctx).book_trade(req);
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req);
 
     CHECK(response.result.outcome == outcome::failed);
     CHECK(response.result.code == "instrument_not_routed");
@@ -586,7 +631,8 @@ TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", tags) {
         leg.identity.leg_number = leg_number;
         first.instruments.swap_legs.push_back(leg);
     }
-    REQUIRE(trade_operations_service(f.ctx).book_trade(first).result.outcome == outcome::ok);
+    REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(first).result.outcome ==
+            outcome::ok);
 
     ores::trading::domain::instrument_batch exported;
     ores::trading::service::trade_export_service(f.ctx).export_books(
@@ -600,7 +646,8 @@ TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", tags) {
     second.instruments.swap_legs =
         ores::trading::domain::find_all(exported.swap_legs, first.anchor.id);
     REQUIRE(second.instruments.swap_legs.size() == 2);
-    REQUIRE(trade_operations_service(f.ctx).book_trade(second).result.outcome == outcome::ok);
+    REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(second).result.outcome ==
+            outcome::ok);
 
     ores::trading::domain::instrument_batch again;
     ores::trading::service::trade_export_service(f.ctx).export_books(
@@ -624,7 +671,7 @@ TEST_CASE("a_child_array_with_no_header_is_refused_by_name", tags) {
     req.instruments.swap_legs.push_back(
         ores::trading::generators::generate_synthetic_swap_leg(f.gen));
 
-    const auto response = trade_operations_service(f.ctx).book_trade(req);
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req);
 
     CHECK(response.result.outcome == outcome::failed);
     CHECK(response.result.code == "instrument_child_without_header");
@@ -640,7 +687,7 @@ TEST_CASE("every_array_the_trade_type_does_not_hold_is_named_once", tags) {
     req.instruments.fx_forward_instruments.emplace_back();
     req.instruments.rate_instruments.emplace_back();
 
-    const auto response = trade_operations_service(f.ctx).book_trade(req);
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req);
 
     CHECK(response.result.code == "instrument_not_routed");
     CHECK(response.result.message.contains("fx_forward_instruments"));

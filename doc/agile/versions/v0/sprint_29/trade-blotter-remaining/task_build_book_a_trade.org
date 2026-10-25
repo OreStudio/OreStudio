@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-book-a-trade
+#+pr: 3822
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-24
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Build Book a trade from doc/prototypes/trades/book-a-trade. Settle two open item
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The write and its refusals are mapped; the open-book rule is missing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Decide the open-book rule, then build the form. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -44,6 +44,54 @@ Build Book a trade from doc/prototypes/trades/book-a-trade. Settle two open item
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+* Plan
+
+*Analysis before the screen, so the two open items and the acceptance criteria are decided rather than discovered.*
+
+** The write exists, and it is one operation
+
+=trading.v1.ops.book_trade= takes the trade's anchor, its booking, the =activity_type_code= that starts its state (=new_booking= for a live trade, =draft_capture= for a draft), its identifiers, and one batch of instrument rows. The service already refuses four things by name: an instrument array that does not belong to the trade type, a child row with no header, a bond part no writer handles, and a trade id that is already booked. The screen therefore states a request and reads the refusal; it does not decide whether a booking is legal.
+
+** The open-book rule does not exist yet, and it is not a screen's job
+
+No code in the trading component names a book status: =grep -rn book_status projects/ores.trading= finds nothing outside tests. So "a trade books into an open book and refuses a Frozen or Closed book" cannot be met by the screen alone. Two decisions to take, and the task should take one rather than both:
+
+- *Trading reads the book from refdata by id* at booking time and refuses a book that is not open. That makes trading depend on a refdata read inside its transaction, and the status is current at the moment of the booking.
+- *Booking copies the status* onto the booking row. That is cheaper and keeps trading self-contained, but a book frozen after the copy is not honoured, which is the case the rule exists for.
+
+The first is the honest one. I would rather the service ask than keep a stale answer.
+
+** A structure leg
+
+The anchor, the activity and the instruments are the same. What differs is the member row that names the structure, the leg's role, and the ordering. =structure_members:write= is already held by =Trading=, so the screen needs no new grant.
+
+** The two open items of the audit
+
+- *A change reason that requires commentary.* The rule is data: a change reason states whether it requires commentary. The service is the only place that can enforce it for every caller, and the screen should surface the same flag rather than invent it. Decision: enforce in the service against the reason's own flag, and let the screen mark the field as required when the chosen reason says so.
+- *A screen to add a Hedge or UserDefined link.* A small form rather than a page: the trade, the other trade, and the link type. =trade_links:write= is held by =Trading=. It belongs on the trade page, beside Links, not in the booking screen.
+
+
+** Where a cross-service rule can live, now that I have looked
+
+=trade_operations_service= is a database service: it takes a =context= and nothing else. It holds no NATS client, and the handler that owns one is written to decide nothing — "the adapter decides nothing: it proves the request, checks the permission, decodes it, calls the service and replies with the service's answer". So a refdata read inside the booking cannot go into the service as it stands, and putting it in the adapter would break the rule the handler's own documentation states.
+
+Three places it could go, with what each costs:
+
+- *The service gains a port* — an interface it calls to ask a book's status, implemented by the service process with the NATS client. The service stays testable and the adapter decides nothing. This is the largest change and the only one that keeps the existing layering intact.
+- *The handler checks before it calls* — small, and wrong by the file's own doctrine; it also means any other caller of the operation skips the rule.
+- *The caller states a precondition* — the request already carries =precondition=, which the service enforces, so the BFF could read the book and state "this book is open". That is a client-side rule dressed as a precondition: a caller that lies is believed, and the acceptance criterion says the service refuses, not that the screen does.
+
+I would take the first. It is not a screen change and should not be bundled with one.
+
+** What the port's implementation needs
+
+=projects/ores.refdata/client= holds a cache and no typed read for a book, so the port's implementation cannot call a ready-made client method. It has to make the request itself, in the shape =trading_trade_population_writer= already uses when it calls other services over NATS: encode the list request, read the reply, and treat a refusal as "unknown" rather than as "open".
+
+That makes the change a half-window one rather than a small edit: an interface, its implementation, the wiring in two places, and a test that a frozen book is refused. It is worth starting a fresh window with, not finishing at the end of one.
+** What the form needs to read
+
+The books the party may book into, the counterparties it may trade with, the trade types with their product type (which decides the instrument table), the identifier schemes, and the instrument's terms for the chosen type. All of these are reads that exist; the books read needs the open rule above to be useful.
 
 * Measurements
 
@@ -76,7 +124,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3822][#3822]] | [agile] Map the booking write before the screen |
 
 * Review
 
@@ -85,3 +133,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* The rule, landed
+
+The booking service now asks a =book_status_port= whether the book is open and refuses a book that is not, with =book_not_open=. The port is required by the constructor rather than defaulted, so a caller cannot forget it and apply the rule to some bookings and not others. The service stays a database service: it holds an interface, not a bus.
+
+The service registrar passes a port that knows nothing until the service process is given a bus-backed one, and the rule logs and carries on when the answer is =unknown=. That is deliberate: refusing every booking while refdata is busy would be a worse fault than the one the rule prevents. Wiring the bus-backed port is the next step, and it is the only reason the rule is inert today.
+
+Proved by =a_booking_into_a_book_that_is_not_open_is_refused=: a fake port that says =not_open= produces =failed= with =book_not_open=, and the 31 existing cases pass through a port that says =open=.

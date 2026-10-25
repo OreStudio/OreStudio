@@ -44,7 +44,7 @@ import { servesFeeds, useSources } from './adapterStatus.js';
 import { FeedStatus, RunOutcomeText, useFeedRuns } from './feedRuns.js';
 import { FeedHistory, type FeedPart } from './FeedHistory.js';
 import type { FeedKind } from './feedKind.js';
-import { folderChain, folderKey } from './feedTree.js';
+import { folderChain } from './feedTree.js';
 import { useSyntheticStep } from './syntheticTrail.js';
 
 /**
@@ -58,7 +58,7 @@ export function FeedPage({ kind }: { readonly kind: FeedKind }): ReactNode {
             <RecordGate
                 resource={kind.resource}
                 recordKey={id ?? ''}
-                listPath={`${PATHS.synthetic}?tab=tree`}
+                listPath={`${PATHS.synthetic}?tab=provider`}
             >
                 {(feed) => (
                     <FeedBody
@@ -138,13 +138,10 @@ function FeedBody({
                 crumbs={[
                     ...root,
                     {
-                        label: t('marketdata.synthetic.tabs.tree'),
-                        to: `${PATHS.synthetic}?tab=tree`,
+                        label: t('marketdata.synthetic.tabs.provider'),
+                        to: `${PATHS.synthetic}?tab=provider`,
                     },
-                    ...chain.map((row) => ({
-                        label: row.name,
-                        to: `${PATHS.synthetic}?tab=tree&node=${encodeURIComponent(folderKey(row.id))}`,
-                    })),
+                    ...chain.map((row) => ({ label: row.name })),
                     { label: name },
                 ]}
                 title={show(feed['source_name'])}
@@ -254,7 +251,7 @@ function FeedBody({
                         }
                     }}
                     onClose={() => setRemoving(false)}
-                    onRemoved={() => void navigate(`${PATHS.synthetic}?tab=tree`)}
+                    onRemoved={() => void navigate(`${PATHS.synthetic}?tab=provider`)}
                 />
             )}
         </div>

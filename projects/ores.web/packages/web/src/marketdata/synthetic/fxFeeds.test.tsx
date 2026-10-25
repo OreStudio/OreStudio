@@ -396,7 +396,7 @@ describe('the FX feed screens', () => {
         expect(html.lastIndexOf('ⓘ </span>')).toBeGreaterThan(html.indexOf('Sample paths'));
     });
 
-    it('runs the trail of a feed through the feed tree, down to the folder that holds it', () => {
+    it('runs the trail of a feed down to the provider that holds it', () => {
         const html = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], {
                 ...feed,
@@ -413,9 +413,9 @@ describe('the FX feed screens', () => {
             );
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
-        expect(html).toContain('href="/market-data/synthetic?tab=tree"');
-        expect(html).toContain('href="/market-data/synthetic?tab=tree&amp;node=folder%3Ab"');
-        expect(html).toContain('href="/market-data/synthetic?tab=tree&amp;node=folder%3Ai"');
+        expect(html).toContain('href="/market-data/synthetic?tab=provider"');
+        expect(html).toContain('Bloomberg');
+        expect(html).not.toContain('tab=tree');
         expect(html.indexOf('>Bloomberg<')).toBeLessThan(html.indexOf('>Spot<'));
     });
 

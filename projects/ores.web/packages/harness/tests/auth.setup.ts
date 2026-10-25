@@ -39,11 +39,12 @@ const PROVISIONING = resolve(
  */
 setup('the Acme facts match the provisioning script', async () => {
     const script = readFileSync(PROVISIONING, 'utf8');
-    expect(script, `${PROVISIONING} sets the tenant administrator password`).toContain(
-        `--tenant-admin-password ${PASSWORD}`,
+    const word = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    expect(script, `${PROVISIONING} sets the tenant administrator password acme.ts holds`).toMatch(
+        new RegExp(`--tenant-admin-password ${word(PASSWORD)}(\\s|$)`, 'm'),
     );
-    expect(script, `${PROVISIONING} names the tenant hostname`).toContain(
-        `--tenant-hostname ${TENANT_HOSTNAME}`,
+    expect(script, `${PROVISIONING} names the tenant hostname acme.ts holds`).toMatch(
+        new RegExp(`--tenant-hostname ${word(TENANT_HOSTNAME)}(\\s|$)`, 'm'),
     );
 });
 

@@ -29,8 +29,10 @@ knows: a record kind in =RECORD_ROUTES= or a classification list, named by the
 describe title the harness gives it, =record currencies= or
 =classification calendar-type=.
 
-1. /Run the harness on the screen alone./ The filter keeps the sign-in step
-   and drops every other screen, so the run takes under a minute:
+1. /Run the harness on the screen alone./ The filter drops every other
+   screen and keeps the setup project, so the sign-in and the check that the
+   harness's Acme facts match the provisioning script still run, and the run
+   takes under a minute:
 
    #+begin_src sh :results verbatim
    cd projects/ores.web/packages/harness
@@ -53,7 +55,10 @@ describe title the harness gives it, =record currencies= or
 
    The Harness column is the run's and is not edited. A line with more than
    one identifier shows the mark per identifier the harness checks, and the
-   Note names the identifiers it does not.
+   Note names the identifiers it does not. A column name can differ from the
+   baseline table's: a rule the baseline splits by stage, such as
+   =ES-REFRESH-16 list= and =ES-REFRESH-16 record=, keeps its bare name on a
+   screen where only one stage checks it.
 
 3. /Walk the lines marked walk./ Open the screen as the tenant administrator
    and as a member, with [[id:B3685CBB-277D-4A17-972B-1055D91C504C][How do I open the web as an Acme user?]]. For each
@@ -62,7 +67,9 @@ describe title the harness gives it, =record currencies= or
    could not try, because the state needs a server fault or a second person,
    gets /Not checked/ and the reason. The configuration screen section is N/A
    for a record screen, and the exceptions section is N/A unless the standard
-   names the screen.
+   names the screen. An agent may walk the lines to find the gaps early, as
+   the worked example did; the sign off that closes a topic is a person's
+   walk, and the sheet says who walked it.
 
 4. /Record the outcome on the task./ Below the table write the verdict in one
    sentence: /signed off/ only when no harness mark is ✗ and no Person cell is

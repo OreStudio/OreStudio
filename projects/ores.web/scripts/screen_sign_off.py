@@ -15,6 +15,7 @@ Usage: screen_sign_off.py <screen> [results.json] [--checklist <path>]
 or "classification calendar-type"; the kind alone also matches. Prints the org
 sheet the sign off recipe records beside the task.
 """
+import argparse
 import json
 import pathlib
 import re
@@ -89,17 +90,14 @@ def judge(rules, marks):
 
 
 def main() -> int:
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    if not args:
-        print(__doc__.strip(), file=sys.stderr)
-        return 2
-    checklist = DEFAULT_CHECKLIST
-    if "--checklist" in sys.argv:
-        checklist = pathlib.Path(sys.argv[sys.argv.index("--checklist") + 1])
-        args = [a for a in args if a != str(checklist)]
-    results = pathlib.Path(args[1]) if len(args) > 1 else DEFAULT_RESULTS
-    report = json.loads(results.read_text(encoding="utf-8"))
-    screen, marks = screen_marks(report, args[0])
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("screen", help="the harness's describe title of the screen, or its kind alone")
+    parser.add_argument("results", nargs="?", type=pathlib.Path, default=DEFAULT_RESULTS, help="the JSON report of the run")
+    parser.add_argument("--checklist", type=pathlib.Path, default=DEFAULT_CHECKLIST, help="the screen review checklist")
+    args = parser.parse_args()
+    checklist = args.checklist
+    report = json.loads(args.results.read_text(encoding="utf-8"))
+    screen, marks = screen_marks(report, args.screen)
     started = report.get("stats", {}).get("startTime", "an unknown time")
 
     print(f"Sign off sheet for ={screen}=, from the harness run of {started}.")

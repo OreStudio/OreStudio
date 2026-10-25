@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A person holding a seeded role opens every Trade Blotter screen, and every code 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -81,6 +81,22 @@ The gap is not per screen. The trade list is the first screen to read trading re
 
 The proof is a run, not a reading of the seed: a person in the chosen role opens the list, the page, Book a trade, the structure page, the import and the queue, and each answers. A second person in a role that should not, such as =Viewer=, is refused on each.
 
+
+* The split
+
+Judgement call, taken so the screens can open; a later task may move a code from one role to another without touching the screens.
+
+| Role | Reads | Writes | Why |
+|---|---|---|---|
+| =Trading= | the whole blotter: the summary, identifiers, links, activities, trades, bookings, structures, structure members, and refdata books, portfolios and counterparties | =trading::trades:write=, =structures:write=, =structure_members:write=, =trade_authorisation_requests:write= | A desk role fronts the book: it sees the blotter and owns booking, amending, grouping and the request that follows a write |
+| =Operations= | the whole blotter | =trade_authorisation_requests:read/write= and =inbox::approval_requests:read/write= | It works the queue a trade raises, and reads the blotter it is asked about |
+| =ReportRun= | the blotter's parts it assembles a report from, plus books | none | A run reads and never writes |
+| =Viewer= | the whole blotter | none | Read-only, and the negative case the proof needs |
+
+=Member= is deliberately left out: a blotter is a desk screen, not one every party member holds.
+
+Two choices worth naming. =Operations= does not hold =trades:write=, because working a queue is not amending a trade. =ReportRun= holds no write at all, so a report can never change the book it reads.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -121,3 +137,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The split is written into =iam_roles_populate.sql=. Every code in the matrix is now held by at least one human role, =Trading= and =Operations= hold the arc's reads, and only =Trading= holds the trade and structure writes.
+
+What is not proved: the run. No database and no build tree exist in this worktree, so the positive and negative cases are stated and not exercised, and the gate ran without its build, database and ctest phases. That proof is the next thing this task owes.

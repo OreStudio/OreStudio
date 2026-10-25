@@ -19,6 +19,24 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 (Motivation, problem being solved, related context.)
 
+* What is already ruled out
+
+Read on 2026-10-25, after the failure while provisioning ACME with the =acme_demo= profile.
+
+- *The profile.* =iam_seed_profiles_populate.sql= states =seed: 42= and =trades_per_book: 8=, with notionals between 100000 and 10000000. Nothing near 2167221318.
+- *The parser.* =provision_step_arguments.hpp= reads a trade generation assignment with no =trades_per_book= member at all: the fields end at =seed=, a =std::uint64_t=. So the parser cannot put a value there either.
+- *The schema.* =synthetic_trade_generation_configs_create.sql= has =seed bigint=, =trades_per_book integer= and both notionals as =numeric(38, 12)=. The types match the model.
+
+So the value is not in the file being read, and not in a column of the wrong type on the config. It arrives from the code that assembles the row, or from a sibling insert the same step makes — the message names the config while the failing statement may belong to the book or counterparty table, both of which the step writes in the same breath.
+
+* The next diagnostic
+
+The failing statement's column, not the value, is what is missing. Two ways to it: read the synthetic service's debug log for the rejected statement, or record one config directly through the shell's =trade_generation_configs put= with the profile's own numbers — if that succeeds, the config path is innocent and the fault is in a sibling table the step writes.
+
+* Why it matters
+
+Until it is fixed, a provisioned tenant has no trades: the blotter, the reports that read a trade population, and every synthetic test that expects rows are all blocked behind this one overflow.
+
 * References
 
 -

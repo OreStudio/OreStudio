@@ -386,6 +386,29 @@ const folderFeedSchema = z.object({
 /** A feed as the feed table lists it: what names it, what it prices and how it runs. */
 export type FolderFeed = z.infer<typeof folderFeedSchema>;
 
+/**
+ * The state of one adapter of the market data service. The state is announced,
+ * ready, serving, stale or rejected, and the counts say how the universe and
+ * the last demand compared.
+ */
+const adapterStatusSchema = z.object({
+    adapter_id: z.string(),
+    provider_code: z.string(),
+    state: z.string(),
+    last_heartbeat_at: z.string(),
+    heartbeat_counter: z.number(),
+    served_count: z.number(),
+    unknown_count: z.number(),
+    demanded_count: z.number(),
+    routes_seen: z.number(),
+    ticks_last_minute: z.number(),
+    last_tick_age_ms: z.number(),
+    accepted: z.array(z.unknown()),
+    rejected: z.array(z.unknown()),
+});
+
+export type AdapterStatus = z.infer<typeof adapterStatusSchema>;
+
 /** What narrows the feeds a screen lists; every part is optional. */
 export interface FeedFilter {
     /** A folder, with the folders under it. */
@@ -1733,6 +1756,16 @@ export const api = {
         return z
             .object({ sourceNames: z.array(z.string()) })
             .parse(await request('/api/synthetic/running', { method: 'GET' })).sourceNames;
+    },
+
+    /**
+     * The state of every adapter the market data service tracks: which provider
+     * each serves, whether it serves, and how many ids it was demanded.
+     */
+    async adapterStatuses(): Promise<readonly AdapterStatus[]> {
+        return z
+            .object({ adapters: z.array(adapterStatusSchema) })
+            .parse(await request('/api/marketdata/adapters', { method: 'GET' })).adapters;
     },
 
     /**

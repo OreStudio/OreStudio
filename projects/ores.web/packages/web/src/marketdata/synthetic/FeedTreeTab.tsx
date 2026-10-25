@@ -33,7 +33,8 @@ import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../../ui/Pager.js';
 import { Label } from '../../ui/Label.js';
 import { Button, Input, Notice, Select, Tag, cx } from '../../ui/Primitives.js';
 import { AddFeed, useMayAddFeed } from './AddFeed.js';
-import { StateTag, useProviderFacts } from './DashboardTab.js';
+import { servesFeeds, servedTotals, useSources } from './adapterStatus.js';
+import { useProviderFacts } from './DashboardTab.js';
 import { frequencyOf } from './frequency.js';
 import {
     ASSET_CLASSES,
@@ -90,24 +91,36 @@ function useChildren(
     return made ?? (loaded.data ?? []).map(folderNode);
 }
 
-function Roll({ totals }: { readonly totals: Totals }): ReactNode {
+/** The provider a node stands for, as the adapter of that provider is named. */
+function providerOfNode(node: TreeNode): string | undefined {
+    return node.role === 'provider' ? node.providerCode : node.folder?.provider_code;
+}
+
+function Roll({
+    totals,
+    providerCode,
+}: {
+    readonly totals: Totals;
+    readonly providerCode: string | undefined;
+}): ReactNode {
     const { t } = useTranslation();
-    const all = totalOf(totals);
+    const served = servedTotals(totals, useSources()?.get(providerCode ?? ''));
+    const all = totalOf(served);
     return (
         <span
             className="flex items-center gap-2 text-xs text-ink-muted"
             title={t('marketdata.synthetic.tree.roll', {
-                running: String(totals.running),
+                running: String(served.running),
                 total: String(all),
             })}
         >
             <span className="tabular-nums">
-                {totals.running}/{all}
+                {served.running}/{all}
             </span>
             <span className="h-1.5 w-10 overflow-hidden rounded-full bg-line">
                 <span
                     className="block h-full bg-up"
-                    style={{ width: `${all === 0 ? 0 : (100 * totals.running) / all}%` }}
+                    style={{ width: `${all === 0 ? 0 : (100 * served.running) / all}%` }}
                 />
             </span>
         </span>
@@ -160,7 +173,7 @@ function Branch({
                     onClick={() => onChoose(node)}
                 >
                     <span className="truncate">{label(node)}</span>
-                    <Roll totals={node.totals} />
+                    <Roll totals={node.totals} providerCode={providerOfNode(node)} />
                 </button>
             </div>
             {open && kids.length > 0 && (
@@ -226,6 +239,7 @@ export function FeedTreeTab(): ReactNode {
     const [params, setParams] = useSearchParams();
     const { collections, loaded, error } = useCollections();
     const facts = useProviderFacts();
+    const sources = useSources();
     const labels = useLabelCatalogue();
     const folderRows = useRecords('folders');
     const rows: readonly FolderRow[] = (folderRows.data ?? []).map((row) => ({
@@ -592,6 +606,9 @@ export function FeedTreeTab(): ReactNode {
                                 <tbody>
                                     {feeds.map((feed) => {
                                         const every = frequencyOf(feed.ticks_per_hour);
+                                        const serving = servesFeeds(
+                                            sources?.get(feed.provider_code),
+                                        );
                                         return (
                                             <tr
                                                 key={feed.id}
@@ -628,9 +645,9 @@ export function FeedTreeTab(): ReactNode {
                                                     )}
                                                 </td>
                                                 <td className="px-3 py-2">
-                                                    <Tag tone={feed.running ? 'up' : 'muted'}>
+                                                    <Tag tone={serving ? 'up' : 'muted'}>
                                                         {t(
-                                                            feed.running
+                                                            serving
                                                                 ? 'marketdata.synthetic.state.running'
                                                                 : 'marketdata.synthetic.state.stopped',
                                                         )}

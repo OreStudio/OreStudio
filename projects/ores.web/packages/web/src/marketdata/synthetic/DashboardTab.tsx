@@ -27,6 +27,14 @@ import { useTranslation } from '../../i18n/Provider.js';
 import { show, useRecords } from '../../refdata/records.js';
 import { PATHS } from '../../shell/paths.js';
 import { Button, Notice, Tag, cx } from '../../ui/Primitives.js';
+import {
+    demandedNotRunning,
+    demandedNotRunningAll,
+    servedTotals,
+    servesFeeds,
+    useSources,
+    type Source,
+} from './adapterStatus.js';
 import { folderKey, providerKey } from './feedTree.js';
 import { providerName, providersOf, type ProviderEntry, type ProviderFacts } from './providers.js';
 import { useSelectionRuns } from './selectionRuns.js';
@@ -67,6 +75,26 @@ function Holds({ totals }: { readonly totals: Totals }): ReactNode {
     );
 }
 
+/**
+ * The state of a node whose feeds one provider's source serves: nothing while
+ * the service has not yet said what that source serves, because a tag either
+ * way would be a guess.
+ */
+function SourceStateTag({
+    totals,
+    providerCode,
+    sources,
+}: {
+    readonly totals: Totals;
+    readonly providerCode: string;
+    readonly sources: ReadonlyMap<string, Source> | undefined;
+}): ReactNode {
+    if (sources === undefined) {
+        return null;
+    }
+    return <StateTag totals={servedTotals(totals, sources.get(providerCode))} />;
+}
+
 /** The providers the catalogue names, with what each one says it simulates. */
 export function useProviderFacts(): ReadonlyMap<string, ProviderFacts> {
     const catalogue = useRecords('providers');
@@ -84,17 +112,20 @@ export function useProviderFacts(): ReadonlyMap<string, ProviderFacts> {
 
 /**
  * The dashboard: what runs, by provider. Each provider says what it simulates and
- * how much of it runs; one banner counts the feeds that should run and do not,
- * which is what a restart of the synthetic service leaves behind. A provider can
- * be started or stopped as a whole, and its asset classes open in the feed tree.
+ * how much of it runs, read from the adapter the market data service demands its
+ * feeds from; one banner counts what the service demands and does not get, which
+ * is what a generator that failed to start leaves behind. A provider can be
+ * started or stopped as a whole, as an operator test, and its asset classes open
+ * in the feed tree.
  */
 export function DashboardTab(): ReactNode {
     const { t } = useTranslation();
     const runs = useSelectionRuns();
     const { collections, loaded, error } = useCollections();
     const facts = useProviderFacts();
+    const sources = useSources();
     const providers = providersOf(collections);
-    const everything = totalsOf(collections);
+    const demanded = demandedNotRunningAll(sources ?? new Map<string, Source>());
     const [chosen, setChosen] = useState<string | undefined>();
     const provider: ProviderEntry | undefined =
         providers.find((entry) => entry.code === chosen) ?? providers[0];
@@ -127,13 +158,13 @@ export function DashboardTab(): ReactNode {
             {loaded && collections.length === 0 && (
                 <Notice tone="info">{t('marketdata.synthetic.dashboard.none')}</Notice>
             )}
-            {everything.idle > 0 && (
+            {demanded > 0 && (
                 <Notice tone="warn">
                     <div className="flex flex-wrap items-center gap-3">
                         <span className="min-w-60 flex-1">
                             <strong>
                                 {t('marketdata.synthetic.dashboard.idle', {
-                                    count: everything.idle.toLocaleString(),
+                                    count: demanded.toLocaleString(),
                                 })}
                             </strong>{' '}
                             {t('marketdata.synthetic.dashboard.idleBody')}
@@ -188,74 +219,82 @@ export function DashboardTab(): ReactNode {
                             </tr>
                         </thead>
                         <tbody>
-                            {providers.map((entry) => (
-                                <tr
-                                    key={entry.code}
-                                    aria-selected={provider?.code === entry.code}
-                                    className={cx(
-                                        'cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover',
-                                        provider?.code === entry.code && 'bg-accent/10',
-                                    )}
-                                    onClick={() => setChosen(entry.code)}
-                                >
-                                    <td className="px-4 py-2">
-                                        <span className="font-medium">
-                                            {providerName(entry.code, facts)}
-                                        </span>{' '}
-                                        {facts.has(entry.code) && (
-                                            <Tag tone="muted">
-                                                {t(
-                                                    `marketdata.synthetic.providerKind.${facts.get(entry.code)?.kind ?? ''}`,
-                                                )}
-                                            </Tag>
+                            {providers.map((entry) => {
+                                const served = sources?.get(entry.code);
+                                const stopped = demandedNotRunning(served);
+                                return (
+                                    <tr
+                                        key={entry.code}
+                                        aria-selected={provider?.code === entry.code}
+                                        className={cx(
+                                            'cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover',
+                                            provider?.code === entry.code && 'bg-accent/10',
                                         )}
-                                    </td>
-                                    <td className="max-w-md px-4 py-2 text-ink-muted">
-                                        {facts.get(entry.code)?.description ?? ''}
-                                    </td>
-                                    <td className="px-4 py-2 text-ink-muted">
-                                        <Holds totals={entry.totals} />
-                                    </td>
-                                    <td className="px-4 py-2 text-right tabular-nums">
-                                        {totalOf(entry.totals).toLocaleString()}
-                                    </td>
-                                    <td className="px-4 py-2">
-                                        <StateTag totals={entry.totals} />
-                                    </td>
-                                    <td className="px-4 py-2 text-right">
-                                        {entry.totals.idle > 0 && (
-                                            <Tag tone="warn">
-                                                {t('marketdata.synthetic.dashboard.stoppedCount', {
-                                                    count: entry.totals.idle.toLocaleString(),
-                                                })}
-                                            </Tag>
-                                        )}
-                                    </td>
-                                    <td className="px-4 py-2 text-right">
-                                        {runs.mayRun && (
-                                            <span className="flex justify-end gap-2">
-                                                <Button
-                                                    size="sm"
-                                                    disabled={
-                                                        entry.totals.running >=
-                                                        totalOf(entry.totals)
-                                                    }
-                                                    onClick={() => ask('start', entry)}
-                                                >
-                                                    {t('marketdata.synthetic.runs.start')}
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    disabled={entry.totals.running === 0}
-                                                    onClick={() => ask('stop', entry)}
-                                                >
-                                                    {t('marketdata.synthetic.runs.stop')}
-                                                </Button>
-                                            </span>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
+                                        onClick={() => setChosen(entry.code)}
+                                    >
+                                        <td className="px-4 py-2">
+                                            <span className="font-medium">
+                                                {providerName(entry.code, facts)}
+                                            </span>{' '}
+                                            {facts.has(entry.code) && (
+                                                <Tag tone="muted">
+                                                    {t(
+                                                        `marketdata.synthetic.providerKind.${facts.get(entry.code)?.kind ?? ''}`,
+                                                    )}
+                                                </Tag>
+                                            )}
+                                        </td>
+                                        <td className="max-w-md px-4 py-2 text-ink-muted">
+                                            {facts.get(entry.code)?.description ?? ''}
+                                        </td>
+                                        <td className="px-4 py-2 text-ink-muted">
+                                            <Holds totals={entry.totals} />
+                                        </td>
+                                        <td className="px-4 py-2 text-right tabular-nums">
+                                            {totalOf(entry.totals).toLocaleString()}
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            <SourceStateTag
+                                                totals={entry.totals}
+                                                providerCode={entry.code}
+                                                sources={sources}
+                                            />
+                                        </td>
+                                        <td className="px-4 py-2 text-right">
+                                            {stopped > 0 && (
+                                                <Tag tone="warn">
+                                                    {t(
+                                                        'marketdata.synthetic.dashboard.stoppedCount',
+                                                        {
+                                                            count: stopped.toLocaleString(),
+                                                        },
+                                                    )}
+                                                </Tag>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-2 text-right">
+                                            {runs.mayRun && (
+                                                <span className="flex justify-end gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        disabled={servesFeeds(served)}
+                                                        onClick={() => ask('start', entry)}
+                                                    >
+                                                        {t('marketdata.synthetic.runs.start')}
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        disabled={!servesFeeds(served)}
+                                                        onClick={() => ask('stop', entry)}
+                                                    >
+                                                        {t('marketdata.synthetic.runs.stop')}
+                                                    </Button>
+                                                </span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -266,7 +305,11 @@ export function DashboardTab(): ReactNode {
                         <h2 className="text-lg font-semibold">
                             {providerName(provider.code, facts)}
                         </h2>
-                        <StateTag totals={provider.totals} />
+                        <SourceStateTag
+                            totals={provider.totals}
+                            providerCode={provider.code}
+                            sources={sources}
+                        />
                         <Link
                             className="text-sm text-accent hover:text-accent-bright"
                             to={`${PATHS.synthetic}?tab=tree&node=${encodeURIComponent(providerKey(provider.code))}`}
@@ -306,7 +349,11 @@ export function DashboardTab(): ReactNode {
                                                     {totalOf(totals).toLocaleString()}
                                                 </td>
                                                 <td className="px-4 py-2">
-                                                    <StateTag totals={totals} />
+                                                    <SourceStateTag
+                                                        totals={totals}
+                                                        providerCode={provider.code}
+                                                        sources={sources}
+                                                    />
                                                 </td>
                                                 <td className="px-4 py-2 text-right">
                                                     <Link

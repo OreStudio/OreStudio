@@ -4392,7 +4392,7 @@ const fr: SourceCatalogue = {
                 none: "Il n'y a pas encore de flux. Un jeu de données de flux synthétiques publié pour votre partie remplit cet écran.",
                 idle: '{count} flux devraient tourner et sont arrêtés.',
                 idleBody:
-                    'Ils sont activés et démarrent seuls. Un redémarrage du service synthétique arrête tous les flux, et rien ne les redémarre.',
+                    "Le service de données de marché les demande : un redémarrage ne demande aucune action, et un nombre au-dessus de zéro signifie qu'un générateur n'a pas démarré.",
                 idleName: 'les flux qui devraient tourner',
                 startThem: 'Les démarrer',
                 showThem: "Les voir dans l'arbre des flux",

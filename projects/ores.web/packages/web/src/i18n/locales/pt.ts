@@ -4362,7 +4362,7 @@ const pt: SourceCatalogue = {
                 none: 'Ainda não há feeds. Um conjunto de dados de feeds sintéticos publicado para a sua parte preenche este ecrã.',
                 idle: '{count} feeds deviam estar a correr e estão parados.',
                 idleBody:
-                    'Estão ativados e iniciam sozinhos. Um reinício do serviço sintético para todos os feeds, e nada os volta a iniciar.',
+                    'O serviço de dados de mercado pede-os, por isso um reinício não exige ação: um número acima de zero significa que um gerador não arrancou.',
                 idleName: 'os feeds que deviam correr',
                 startThem: 'Iniciá-los',
                 showThem: 'Vê-los na árvore de feeds',

@@ -4331,7 +4331,7 @@ export const en: SourceCatalogue = {
                 none: 'There are no feeds yet. A synthetic feeds dataset published for your party fills this screen.',
                 idle: '{count} feeds should be running and are stopped.',
                 idleBody:
-                    'They are enabled and start on their own. A restart of the synthetic service stops every feed, and nothing starts them again.',
+                    'The market data service demands them, so a restart needs no action: a count above zero means a generator did not start.',
                 idleName: 'the feeds that should run',
                 startThem: 'Start them',
                 showThem: 'Show them in the feed tree',

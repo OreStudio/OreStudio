@@ -37,4 +37,4 @@ clean report until this is fixed.
 
 * See also
 
--
+- [[id:FFEED7A4-01D6-4C1D-99CB-9CA01336C945][Main's local gate is red on three drift checks and one pgTAP test]] — the other gate defects seen the same day, still open.

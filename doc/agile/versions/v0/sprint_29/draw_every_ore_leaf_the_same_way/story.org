@@ -40,7 +40,7 @@ One standard says how every screen draws a leaf of an ORE document and the eleme
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8AEFCFB3-0296-4773-B00F-C8B23226326B][Scaffold story: Draw every ORE leaf the same way, starting with conventions]] | STARTED | 2026-10-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8AEFCFB3-0296-4773-B00F-C8B23226326B][Scaffold story: Draw every ORE leaf the same way, starting with conventions]] | DONE | 2026-10-25 | 2026-10-25 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:1F866583-D7B9-42A4-9D3A-6E26B151A9FA][Write the ORE element and leaf screen standard and its specification]] | BACKLOG | | | Initial task for: Draw every ORE leaf the same way, starting with conventions |
 
 * Decisions

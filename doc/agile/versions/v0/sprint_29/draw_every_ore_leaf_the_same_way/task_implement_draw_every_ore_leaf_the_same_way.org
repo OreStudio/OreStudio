@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :draw_every_ore_leaf_the_same_way:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/draw-every-ore-leaf-the-same-way
 #+pr:
 #+blocked_on:
 #+blocked_since:

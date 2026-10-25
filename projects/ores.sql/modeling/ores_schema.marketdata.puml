@@ -815,36 +815,39 @@ package "marketdata" #E3F2FD {
     end note
 
     entity ores_marketdata_tick_coords_tbl  #F7E5FF {
-        * series_id : uuid <<PK, FK>>
+        * stream_id : uuid <<PK, FK>>
         * coord : smallint <<PK>>
         --
-        * tenant_id : uuid <<FK>>
-        * party_id : uuid <<FK>>
         * oresmd_uri : text
     }
 
     note right of ores_marketdata_tick_coords_tbl
-    Tick Coordinate Dictionary
-    A tick row stores its datum as a small number, not as the URI text. This table says which
-    datum each number means within one series. A series without coordinates has one datum, and
-    so one row. The numbers of a series start at 1 and stay for as long as the series exists,
-    because a tick row refers to them. The URI is the one the feed sent, which is the URI of the
-    observation rows too.
-    The ingest assigns a number the first time it sees a datum, so the table is small and cold:
-    one row for each distinct datum of a series. The ingest context names no party, so the
-    table has the tenant policy only, as the observation table has, and a reader states the
-    party in its query.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tick Coordinate Table
+    A tick row stores its datum as a small number, not as the URI text. This table
+    says which datum each number means within one stream. A series without
+    coordinates has one datum, and so one row. The numbers of a stream start at 1 and
+    stay for as long as the stream exists, because a tick row refers to them. The URI
+    is the one the feed sent, which is the URI of the observation rows too.
+    The stream is shared by every party, so this table is shared too: one row for each
+    distinct datum of a stream, not one for each party of it. Every party of the
+    stream therefore agrees on the coordinate order, and the read joins the table by
+    the stream id alone.
+    The ingest assigns a number the first time it sees a datum. The table belongs to
+    no tenant and no party and carries no row-level security, as the tick table
+    does.
+    Variables: :marketdata_writer_user
     end note
 
     entity ores_marketdata_ticks_tbl  #F7E5FF {
         --
-        * tenant_id : uuid <<FK>>
-        * party_id : uuid <<FK>>
-        * series_id : uuid <<FK>>
+        * stream_id : uuid <<FK>>
+        * source_id : uuid <<FK>>
         * ts : timestamptz
         * coord : smallint
         * value : double
-        * source_id : uuid <<FK>>
     }
 
     note right of ores_marketdata_ticks_tbl
@@ -852,22 +855,24 @@ package "marketdata" #E3F2FD {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Tick Table
-    A tick is a value of a series at a time, and the series has one owner, a tenant and a
-    party, so each row carries the owner of its series. The ingest copies the owner from the
-    series that it resolved.
-    The table has no trigger, no valid_to and one index on the series and the time. A
-    correction is a new row, and the reader takes the latest. There is no notification trigger:
-    the live path publishes the tick, and the table is the history.
-    Row-level security uses the policies of the other tables, in the scalar subquery form. The
-    session functions that the other tables call cost about 8 to 10 microseconds for each
-    filtered row, because the planner calls them again for every row, and a subquery around the
-    setting makes it evaluate the setting once for each query. FORCE makes the policies apply
-    to the owner too.
-    The marketdata tick writer role has BYPASSRLS and INSERT only. PostgreSQL refuses COPY into
-    a table with row-level security for a role that the policies apply to, and this role is
-    exempt. It does not own the table and has no SELECT.
-    The table is not compressed, because row-level security is not supported on compressed
-    chunks. Retention drops whole chunks. See doc/knowledge/architecture/tick_ingest_pipeline.org.
+    A tick is a value of a coordinate of a stream at an instant. The stream is one
+    series of one provider, and its id is derived from the provider code and the
+    series URI, so the ingest writes the ticks of a source once and every party
+    reads the same rows. The ingest and the history read compute the id with
+    datum::stream_id.
+    The table has no trigger, no valid_to and one index on the stream, the
+    coordinate and the time. A correction is a new row, and the reader takes the
+    latest. There is no notification trigger: the live path publishes the tick, and
+    the table is the history.
+    The table belongs to no tenant and no party. Market data is an observation
+    about a source, so the row carries no owner and no row-level security policy
+    filters it. The history read checks the party's subscription to the provider of
+    the series before it reads a row, and that check is the only door to the ticks.
+    The tables are created by the schema owner and written by the ingest role.
+    The marketdata tick writer role has INSERT only. It does not own the table and
+    has no SELECT.
+    Retention drops whole chunks, so the store holds seven days of ticks. The table
+    is not compressed. See doc/knowledge/architecture/tick_ingest_pipeline.org.
     Variables: :marketdata_writer_user
     end note
 

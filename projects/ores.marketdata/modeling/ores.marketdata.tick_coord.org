@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: C5C0838A-C474-445C-9252-219AD562A15D
+:END:
+#+title: ores.marketdata.tick_coord
+#+description: Codegen entity model for the marketdata tick coordinate dictionary; the number each datum URI has within one stream.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: tick_coord
+#+entity_plural: tick_coords
+#+entity_title: Tick Coordinate
+#+brief: The number a datum URI has within one tick stream, and the URI it means.
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+A tick row stores its datum as a small number, not as the URI text. This table
+says which datum each number means within one stream. A series without
+coordinates has one datum, and so one row. The numbers of a stream start at 1 and
+stay for as long as the stream exists, because a tick row refers to them. The URI
+is the one the feed sent, which is the URI of the observation rows too.
+
+The stream is shared by every party, so this table is shared too: one row for each
+distinct datum of a stream, not one for each party of it. Every party of the
+stream therefore agrees on the coordinate order, and the read joins the table by
+the stream id alone.
+
+The ingest assigns a number the first time it sees a datum. The table belongs to
+no tenant and no party and carries no row-level security, as the tick table
+does.
+
+Variables: :marketdata_writer_user
+
+* Flags
+:PROPERTIES:
+:schema:         public
+:product:        ores
+:component:      marketdata
+:has_tenant_id:  false
+:sql_only:       true
+:END:
+
+* Columns
+
+** stream_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+The stream this datum belongs to, derived from the provider code and the series
+URI.
+
+** coord
+:PROPERTIES:
+:type:        smallint
+:cpp_type:    std::int16_t
+:primary_key: true
+:END:
+
+The number of the datum within its stream, counted from 1.
+
+** oresmd_uri
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The datum URI as the feed sent it. No datum gets a second number in one stream.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_marketdata_tick_coords_tbl
+:current_state:        true
+:no_audit_columns:     true
+:index_prefix:         marketdata_tick_coords
+:writer_role:          marketdata_writer_user
+:END:
+
+The table is a current state: a number never changes while its stream exists,
+and nothing corrects one.
+
+** Indexes
+
+| name       | columns               | unique | current_only | where_extra |
+|------------+-----------------------+--------+--------------+-------------|
+| stream_uri | stream_id, oresmd_uri | true   | false        |             |
+
+The key finds a number from its stream and URI. The unique index keeps one
+number for each datum of a stream, so the ingest cannot add a second one while
+another writer adds the first.
+
+* Physical space
+
+No facet beyond the SQL schema renders: the model states =:sql_only: true=.
+
+The table sends no notification: it changes once for each new datum of a stream
+and no reader waits on it.
+
+| Address                             | Enabled |
+|-------------------------------------+---------|
+| ores.sql.schema.notify_trigger      | false   |
+| ores.sql.schema.notify_trigger_drop | false   |

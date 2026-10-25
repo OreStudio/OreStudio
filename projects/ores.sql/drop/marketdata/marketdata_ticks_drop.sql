@@ -23,6 +23,4 @@
  * To modify, update the template and regenerate.
  */
 
-drop policy if exists ticks_tbl_party_isolation_policy on "ores_marketdata_ticks_tbl";
-drop policy if exists ticks_tbl_tenant_isolation_policy on "ores_marketdata_ticks_tbl";
 drop table if exists "ores_marketdata_ticks_tbl";

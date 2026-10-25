@@ -24,42 +24,42 @@
  *
  * Tick Table
  *
- * A tick is a value of a series at a time, and the series has one owner, a tenant and a
- * party, so each row carries the owner of its series. The ingest copies the owner from the
- * series that it resolved.
+ * A tick is a value of a coordinate of a stream at an instant. The stream is one
+ * series of one provider, and its id is derived from the provider code and the
+ * series URI, so the ingest writes the ticks of a source once and every party
+ * reads the same rows. The ingest and the history read compute the id with
+ * datum::stream_id.
  *
- * The table has no trigger, no valid_to and one index on the series and the time. A
- * correction is a new row, and the reader takes the latest. There is no notification trigger:
- * the live path publishes the tick, and the table is the history.
+ * The table has no trigger, no valid_to and one index on the stream, the
+ * coordinate and the time. A correction is a new row, and the reader takes the
+ * latest. There is no notification trigger: the live path publishes the tick, and
+ * the table is the history.
  *
- * Row-level security uses the policies of the other tables, in the scalar subquery form. The
- * session functions that the other tables call cost about 8 to 10 microseconds for each
- * filtered row, because the planner calls them again for every row, and a subquery around the
- * setting makes it evaluate the setting once for each query. FORCE makes the policies apply
- * to the owner too.
+ * The table belongs to no tenant and no party. Market data is an observation
+ * about a source, so the row carries no owner and no row-level security policy
+ * filters it. The history read checks the party's subscription to the provider of
+ * the series before it reads a row, and that check is the only door to the ticks.
+ * The tables are created by the schema owner and written by the ingest role.
  *
- * The marketdata tick writer role has BYPASSRLS and INSERT only. PostgreSQL refuses COPY into
- * a table with row-level security for a role that the policies apply to, and this role is
- * exempt. It does not own the table and has no SELECT.
+ * The marketdata tick writer role has INSERT only. It does not own the table and
+ * has no SELECT.
  *
- * The table is not compressed, because row-level security is not supported on compressed
- * chunks. Retention drops whole chunks. See doc/knowledge/architecture/tick_ingest_pipeline.org.
+ * Retention drops whole chunks, so the store holds seven days of ticks. The table
+ * is not compressed. See doc/knowledge/architecture/tick_ingest_pipeline.org.
  *
  * Variables: :marketdata_writer_user
  */
 
 create table if not exists "ores_marketdata_ticks_tbl" (
-    "tenant_id" uuid not null,
-    "party_id" uuid not null,
-    "series_id" uuid not null,
+    "stream_id" uuid not null,
+    "source_id" uuid not null,
     "ts" timestamp with time zone not null,
     "coord" smallint not null,
-    "value" double precision not null,
-    "source_id" uuid not null
+    "value" double precision not null
 );
 
-create index if not exists marketdata_ticks_series_ts_idx
-on "ores_marketdata_ticks_tbl" (series_id, ts desc);
+create index if not exists marketdata_ticks_stream_coord_ts_idx
+on "ores_marketdata_ticks_tbl" (stream_id, coord, ts desc);
 
 do $$
 declare
@@ -100,33 +100,5 @@ begin
         raise notice 'TimescaleDB not available - using regular table (manual cleanup required)';
     end if;
 end $$;
-
--- =============================================================================
--- Row-level security: tenant and party isolation for the ticks
--- =============================================================================
-alter table ores_marketdata_ticks_tbl enable row level security;
-alter table ores_marketdata_ticks_tbl force row level security;
-
-drop policy if exists ticks_tbl_tenant_isolation_policy on ores_marketdata_ticks_tbl;
-
-create policy ticks_tbl_tenant_isolation_policy
-on ores_marketdata_ticks_tbl
-for all using (
-    tenant_id = (select nullif(current_setting('app.current_tenant_id', true), '')::uuid)
-)
-with check (
-    tenant_id = (select nullif(current_setting('app.current_tenant_id', true), '')::uuid)
-);
-
--- The form party_id = ANY((select ...)) does not compile, because PostgreSQL reads it as a
--- comparison with a subquery.
-drop policy if exists ticks_tbl_party_isolation_policy on ores_marketdata_ticks_tbl;
-
-create policy ticks_tbl_party_isolation_policy
-on ores_marketdata_ticks_tbl
-as restrictive
-for select using (
-    party_id in (select unnest(nullif(current_setting('app.visible_party_ids', true), '')::uuid[]))
-);
 
 grant insert on ores_marketdata_ticks_tbl to :marketdata_writer_user;

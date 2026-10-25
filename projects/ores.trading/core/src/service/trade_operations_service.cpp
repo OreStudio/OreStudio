@@ -150,7 +150,8 @@ std::string join(const std::vector<std::string>& names) {
 }
 
 messaging::book_trade_response
-trade_operations_service::book_trade(const messaging::book_trade_request& request) {
+trade_operations_service::book_trade(const messaging::book_trade_request& request,
+                                     std::string_view actor_token) {
     using ores::database::repository::unit_of_work;
     using ores::service::messaging::stamp;
     using ores::utility::domain::outcome;
@@ -195,7 +196,7 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
      * status that cannot be had is logged and does not stop the booking, because
      * refusing every booking while refdata is busy would be a worse fault.
      */
-    switch (books_->of(booking.book_id)) {
+    switch (books_->of(booking.book_id, actor_token)) {
         case book_status_port::state::not_open:
             response.result.outcome = outcome::failed;
             response.result.code = "book_not_open";

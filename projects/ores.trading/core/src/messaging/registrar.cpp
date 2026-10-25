@@ -120,6 +120,7 @@
 #include "ores.trading.core/messaging/trade_state_registrar.hpp"
 #include "ores.trading.core/messaging/trade_summary_registrar.hpp"
 #include "ores.trading.core/messaging/trade_type_history_provider_registrar.hpp"
+#include "ores.trading.core/service/bus_book_status.hpp"
 #include <memory>
 
 namespace ores::trading::messaging {
@@ -186,12 +187,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_trade_activity_handlers(nats, ctx, verifier));
     {
         // Trade operations (hand-written handler, not codegen).
-        // Until the service process is given a bus-backed port, the booking
-        // rule cannot ask, and a port that knows nothing keeps it inert rather
-        // than wrong.
-        static const service::unknown_book_status no_book_status;
-        auto toh = std::make_shared<trade_operations_handler>(
-            nats, no_book_status, ctx, verifier, http_base_url);
+        // The booking rule asks refdata for the book over the bus this process
+        // already holds, as the caller, so the service itself stays a database
+        // service. The port has static lifetime because the handler keeps a
+        // reference to it.
+        static const service::bus_book_status books(nats);
+        auto toh =
+            std::make_shared<trade_operations_handler>(nats, books, ctx, verifier, http_base_url);
         subs.push_back(nats.queue_subscribe(
             book_trade_request::nats_subject, queue_group, [toh](ores::nats::message msg) {
                 toh->book_trade(std::move(msg));

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ ACME's books hold interest rate trades: vanilla and overnight index swaps, swapt
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -43,9 +43,75 @@ ACME's books hold interest rate trades: vanilla and overnight index swaps, swapt
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** What the tree already holds
+
+The work is smaller than the family's size suggests, because three layers are
+already in place.
+
+- *The routing.* =trade_type_routing.hpp= sends ten types to
+  =rate_instrument=: Swap, CrossCurrencySwap, ForwardRateAgreement, CapFloor,
+  Swaption, FlexiSwap, BalanceGuaranteedSwap, CallableSwap, KnockOutSwap and
+  InflationSwap. Routing decides which array a trade type may carry, so those
+  ten can book a rate instrument today.
+- *The writer, service side.* =write_instrument_batch= already writes
+  =rate_instruments=, =swap_legs=, =swap_leg_amounts= and =swap_leg_rates=.
+  No trading service change is needed to store a swap.
+- *The vocabulary.* The legs draw on codes that are seeded: twelve day count
+  fractions, seven business day conventions, nine payment frequencies, 33
+  benchmark rates and the currency set.
+
+What is missing is the synthetic side: a rate payload, a planner and a writer
+arm. It has neither.
+
+** Decisions
+
+- *D1 — the ten.* They are the routed ten, and InflationSwap is among them.
+  Booking it here as a rate-shaped swap keeps the count true and stops this
+  task and the inflation task from both claiming it; the inflation task adds
+  =inflation_swap_instruments= and the inflation market data on top.
+- *D2 — the leg shape.* Every routed type books a =rate_instruments= header
+  with two =swap_legs=, and each leg one =swap_leg_amount= and one
+  =swap_leg_rate=. A vanilla fixed-float swap is the shape all ten reduce to,
+  and the specialised arrays (=vanilla_swap_instruments=, =cap_floor_instruments=
+  and the rest) stay empty until a pricing need justifies them. The leg type is
+  data, so one model carries the variety.
+- *D3 — the unrouted types.* RateDigitalOption, SwaptionStraddle and
+  ForwardVolatilityAgreement appear in the routing table not at all, so a
+  request carrying any instrument array for them is refused as misrouted. Two
+  are rate products whose option data the =instrument_option= arrays already
+  hold, so routing them to =rate_instrument= is a table change; the third is
+  named out of scope here, and the reason is recorded.
+- *D4 — CashPosition.* The weights page gives it 1.5% of the class, and the
+  catalogue holds the trade type, but no instrument table routes it and it is
+  not a rate derivative. It is named out of scope, and the weight it carries
+  leaves the class share this task can meet. That has to be stated rather than
+  silently absorbed.
+
+** Steps
+
+Each step ends in a state that can be checked on its own.
+
+1. *The payload.* Add =rate_terms= to =trade_population_plan.hpp=: the
+   currency, both legs' convention codes and economics, the notional, and the
+   start and maturity dates. Add it to the =trade_terms= variant. It carries
+   codes and numbers only, so nothing is invented downstream.
+2. *The scope.* The plan needs the currencies and the floating indices to draw
+   from, resolved from refdata by the caller, as =commodities= already are.
+   Add them to =trade_generation_scope=.
+3. *The planner.* =rate_trade_planner= in the registry under
+   =interest_rates=, cycling the routed types over the scope's currencies and
+   indices, and banding notional and tenor from the scope.
+4. *The writer.* Fill =rate_instruments=, =swap_legs=, =swap_leg_amounts= and
+   =swap_leg_rates= from =rate_terms= in the population writer.
+5. *The routing.* Route RateDigitalOption and SwaptionStraddle to
+   =rate_instrument=, and record ForwardVolatilityAgreement and CashPosition as
+   out of scope with their reasons.
+6. *The profile.* Give ACME's seed profile a rate population, so a provisioning
+   run produces the family without a hand edit.
+7. *The proof.* Run a generation, then measure: every routed type present at
+   least once, every trade with two legs and their economics, the class share
+   against the weight, and the export and reverse map.
+8. *The record.* Measurements, Result, and the gaps this task cannot close.
 
 * Measurements
 

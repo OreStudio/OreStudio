@@ -222,6 +222,33 @@ export const documentVersionSchema = z.object({
 /** Every version of every entity of the document. */
 export type DocumentVersion = z.infer<typeof documentVersionSchema>;
 
+/** One reason the service refused a document, as the BFF states it beside the message. */
+const refusalSchema = z.object({
+    code: z.string(),
+    productId: z.string().default(''),
+    parameterScope: z.string().default(''),
+    parameterName: z.string().default(''),
+    message: z.string().default(''),
+});
+
+const refusalBodySchema = z.object({
+    problems: z.array(refusalSchema).default([]),
+});
+
+/** One reason a save was refused, with the identity a screen acts on. */
+export type PricingRefusal = z.infer<typeof refusalSchema>;
+
+/**
+ * The problems a refused save stated, when it stated any.
+ *
+ * A refusal that carries no problems is one only the service can word, so it
+ * reads as the empty list and the screen shows the message it came with.
+ */
+export function refusalsIn(payload: unknown): readonly PricingRefusal[] {
+    const body = refusalBodySchema.safeParse(payload);
+    return body.success ? body.data.problems : [];
+}
+
 /** Why a write is made. */
 export interface PricingIntent {
     readonly reason_code: string;

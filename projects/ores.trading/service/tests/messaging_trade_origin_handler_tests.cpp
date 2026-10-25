@@ -34,6 +34,7 @@
 #include "ores.trading.api/generators/trade_booking_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.core/messaging/trade_operations_handler.hpp"
+#include "ores.trading.core/service/book_status_port.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -78,6 +79,14 @@ struct handler_fixture {
     std::optional<ores::nats::service::subscription> sub;
     boost::uuids::uuid party_id{};
     boost::uuids::uuid book_id{};
+    /**
+     * @brief The book state the handler asks for.
+     *
+     * The handler refuses a booking into a book that is known to be shut, and
+     * carries on when it cannot tell. A test asks nothing, so it says so
+     * rather than pretending the book is open.
+     */
+    ores::trading::service::unknown_book_status books;
     std::string actor;
 
     handler_fixture()
@@ -123,7 +132,7 @@ struct handler_fixture {
         sub = nats.queue_subscribe(
             test_subject, "ores.trading.service", [this](ores::nats::message msg) {
                 ores::trading::messaging::trade_operations_handler h(
-                    nats, db.context(), verifier);
+                    nats, books, db.context(), verifier);
                 h.book_trade(std::move(msg));
             });
     }

@@ -36,6 +36,70 @@ export interface TriggerReportInstanceResponse {
     report_instance_id: string;
 }
 
+/**
+ * @brief Reads one run's health word and the state it was derived from.
+ *
+ * The run is named rather than scoped to the caller's party: the answer is
+ * scoped by row-level security on the tables, as the web's read of the same
+ * runs is.
+ */
+export interface GetRunHealthRequest {
+    /** @brief The run to state the health of. */
+    report_instance_id: string;
+}
+
+export interface GetRunHealthResponse {
+    result: Result;
+    /**
+     * @brief The name of the run's lifecycle state, as the store holds it.
+     *
+     * Empty when the run has no state, or when the session cannot read the
+     * state. The word is then empty too, so a caller is told what the word was
+     * derived from rather than left guessing.
+     */
+    state_name: string;
+    /**
+     * @brief One of =failed=, =completed with errors=, =running= or
+     * =completed clean=, or empty when the state has no word.
+     *
+     * =never run= is not a word here: a run that never started has no run to
+     * ask about.
+     */
+    health: string;
+}
+
+/**
+ * @brief Records the date a run priced at, and why it moved when it did.
+ *
+ * The packaging step is the only place that knows both dates: the run document
+ * asks for one, and the gathered market data carries another. The step states
+ * the date it used on the run itself, so the screen that shows the run can say
+ * which date it priced at without parsing a message. The run is named rather
+ * than scoped to the caller's party: the write is scoped by row-level security
+ * on the table, as the run reads are.
+ */
+export interface RecordRunPricingRequest {
+    /** @brief The run the date was priced for. */
+    report_instance_id: string;
+    /**
+     * @brief The date the run priced at, as an ISO 8601 date (YYYY-MM-DD).
+     *
+     * A date and not a timestamp: the engine prices one day, and the time of
+     * day the packaging step ran is not part of the answer.
+     */
+    priced_at: string;
+    /**
+     * @brief Why the run priced at that date, in the step's own words.
+     *
+     * Empty when the run priced at the date it asked for.
+     */
+    price_note: string;
+}
+
+export interface RecordRunPricingResponse {
+    result: Result;
+}
+
 export interface ScheduleReportDefinitionsRequest {
     ids: string[];
 }
@@ -116,6 +180,16 @@ export interface GatherTradesResult {
     message: string;
     trade_count: number;
     storage_key: string;
+    /**
+     * @brief The version of each trade the export wrote, as a JSON object keyed by
+     * trade id. Empty when the export wrote none.
+     *
+     * The trades themselves stay in object storage, so only this manifest travels
+     * with the run. A command line cannot fill a map, and the run carries the
+     * manifest to the bundle unchanged, so the JSON text is what both messages
+     * state.
+     */
+    trade_versions: string;
 }
 
 export interface GatherMarketDataRequest {
@@ -156,6 +230,14 @@ export interface AssembleBundleRequest {
      */
     fixings_storage_key: string;
     trade_count: number;
+    /**
+     * @brief The version of each trade the run read, as the JSON object the gather
+     * step received. Empty when the run read no trades.
+     *
+     * The bundle stores it in its own column, because an error the engine raises for
+     * a trade names the version of the trade the engine was given.
+     */
+    trade_versions: string;
     series_count: number;
 }
 
@@ -281,6 +363,8 @@ export interface GetNextFireResponse {
 
 export const subjects = {
     trigger_report_instance_request: 'reporting.v1.ops.trigger_report_instance',
+    get_run_health_request: 'reporting.v1.ops.get_run_health',
+    record_run_pricing_request: 'reporting.v1.ops.record_run_pricing',
     schedule_report_definitions_request: 'reporting.v1.ops.schedule_report_definitions',
     unschedule_report_definitions_request: 'reporting.v1.ops.unschedule_report_definitions',
     publish_report_definitions_from_dq_request:
@@ -310,6 +394,8 @@ export const subjects = {
  */
 export const requiresSession = {
     trigger_report_instance_request: true,
+    get_run_health_request: true,
+    record_run_pricing_request: true,
     schedule_report_definitions_request: true,
     unschedule_report_definitions_request: true,
     publish_report_definitions_from_dq_request: true,

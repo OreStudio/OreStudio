@@ -50,6 +50,8 @@ struct report_instance_write {
     boost::uuids::uuid trigger_id;
     std::string output_message;
     std::string output_storage_key;
+    std::optional<std::chrono::system_clock::time_point> priced_at;
+    std::string price_note;
 };
 
 struct report_instance_change {

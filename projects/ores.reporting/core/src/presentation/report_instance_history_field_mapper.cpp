@@ -61,6 +61,11 @@ render_report_instance_fields(const domain::report_instance& v) {
                       .value = v.completed_at ?
                                    ores::platform::time::datetime::to_iso8601_utc(*v.completed_at) :
                                    std::string{}});
+    fields.push_back({.name = "Priced At",
+                      .value = v.priced_at ?
+                                   ores::platform::time::datetime::to_iso8601_utc(*v.priced_at) :
+                                   std::string{}});
+    fields.push_back({.name = "Price Note", .value = v.price_note});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

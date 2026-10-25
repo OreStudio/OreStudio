@@ -268,6 +268,15 @@ export interface ExportTradesToStorageResponse {
      * @brief The key written, echoed from the request.
      */
     storage_key: string;
+    /**
+     * @brief The version of each trade written, keyed by trade id.
+     *
+     * The blob holds the trades, so a reader of it needs no manifest to read them.
+     * This is for the caller that holds a trade id and has to say which version of
+     * that trade the export read: a report run writes the errors its engine raises,
+     * and an error about a trade names the version the engine was given.
+     */
+    trade_versions: Record<string, number>;
 }
 
 export const subjects = {

@@ -116,6 +116,8 @@ domain::report_instance to_domain(const messaging::report_instance_write& write)
     v.trigger_id = write.trigger_id;
     v.output_message = write.output_message;
     v.output_storage_key = write.output_storage_key;
+    v.priced_at = write.priced_at;
+    v.price_note = write.price_note;
     return v;
 }
 

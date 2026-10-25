@@ -44,9 +44,15 @@ namespace ores::synthetic::service {
  *
  * @c make builds the generator when the demand asks for it. It may throw, and the runner turns the
  * throw into a rejection of that id.
+ *
+ * @c group names the feed the id belongs to. A feed that quotes one instrument leaves it empty and
+ * the id stands alone. A curve quotes one id for each of its pillars and every one of them names
+ * the curve, so the curve runs once however many of its pillars the demand names. Every offer of
+ * one group builds the same generator, whichever of its ids started it.
  */
 struct generator_offer final {
     ores::marketdata::messaging::vendor_id id;
+    std::string group;
     std::function<std::shared_ptr<ores::marketdata::domain::i_feed>()> make;
 };
 
@@ -59,14 +65,15 @@ struct demand_outcome final {
 };
 
 /**
- * @brief Runs one generator for each vendor instrument in the demand set.
+ * @brief Runs one generator for each feed in the demand set.
  *
  * The demand set is the whole set and it replaces the last one: the runner starts the generators
- * that the set adds, keeps the ones it still names and stops the ones it drops. A vendor
- * instrument has at most one generator. When two offers name the same instrument the first offer
- * wins and the second is not built, so two generators never publish one instrument. An id with no
- * offer is rejected as @c unknown_id, and an id whose generator cannot be built is rejected as
- * @c generator_failed.
+ * that the set adds, keeps the ones it still names and stops the ones it drops. A feed has at most
+ * one generator, and a feed whose group holds several ids runs while any of them is demanded. A
+ * vendor instrument has at most one generator. When two offers name the same instrument the first
+ * offer wins and the second is not built, so two generators never publish one instrument. An id
+ * with no offer is rejected as @c unknown_id, and an id whose generator cannot be built is
+ * rejected as @c generator_failed, as is every other id of the same feed.
  *
  * The runner knows nothing of NATS or of the database. The offers come from a function the caller
  * gives, and the runner reads it on each demand, so a changed config takes effect at the next set.
@@ -95,8 +102,11 @@ public:
     /** The ids the runner can serve now, each once. */
     [[nodiscard]] std::vector<ores::marketdata::messaging::vendor_id> universe() const {
         std::vector<ores::marketdata::messaging::vendor_id> ids;
-        for (const auto& [_, offer] : first_offers())
-            ids.push_back(offer.id);
+        for (const auto& offer : offers_()) {
+            const auto k = key_of(offer.id);
+            if (std::ranges::find(ids, k, key_of) == ids.end())
+                ids.push_back(offer.id);
+        }
         return ids;
     }
 
@@ -105,39 +115,50 @@ public:
         using ores::marketdata::messaging::rejected_id;
         using ores::marketdata::messaging::vendor_id;
 
-        const auto offers = first_offers();
+        const auto offers = index_offers();
         demand_outcome out;
         std::vector<running_generator> dropped;
         std::unique_lock lock(mu_);
         std::set<key> wanted;
+        std::set<std::string> wanted_feeds;
+        // A feed that cannot be built is not built again for its other ids in this set.
+        std::set<std::string> failed;
         for (const auto& id : demand) {
             const auto k = key_of(id);
             if (!wanted.insert(k).second)
                 continue;
-            if (running_.contains(k)) {
-                out.accepted.push_back(id);
-                continue;
-            }
-            const auto offer = offers.find(k);
-            if (offer == offers.end()) {
+            const auto offer = offers.a_feed_of.find(k);
+            if (offer == offers.a_feed_of.end()) {
                 out.rejected.push_back(rejected_id{id, "unknown_id"});
                 continue;
             }
+            const auto& feed = offer->second;
+            wanted_feeds.insert(feed);
+            if (running_.contains(feed)) {
+                out.accepted.push_back(id);
+                continue;
+            }
+            if (failed.contains(feed)) {
+                out.rejected.push_back(rejected_id{id, "generator_failed"});
+                continue;
+            }
             try {
-                auto feed = offer->second.make();
-                if (!feed)
+                const auto& make = offers.feeds.at(feed).offer.make;
+                auto generator = make();
+                if (!generator)
                     throw std::runtime_error("The generator is not built.");
-                running_.emplace(k, launch(std::move(feed)));
+                running_.emplace(feed, launch(std::move(generator)));
                 out.accepted.push_back(id);
                 ++out.started;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), ores::logging::warn)
                     << "The generator of " << id.external_id << " cannot start: " << e.what();
+                failed.insert(feed);
                 out.rejected.push_back(rejected_id{id, "generator_failed"});
             }
         }
         for (auto it = running_.begin(); it != running_.end();) {
-            if (wanted.contains(it->first)) {
+            if (wanted_feeds.contains(it->first)) {
                 ++it;
                 continue;
             }
@@ -181,15 +202,43 @@ private:
         return {id.id_scheme, id.external_id, id.field};
     }
 
-    // One offer for each instrument. The first one in the order the function gave wins.
-    std::map<key, generator_offer> first_offers() const {
-        std::map<key, generator_offer> out;
-        for (auto& offer : offers_()) {
+    /** One feed's offers: the generator it builds and the ids it publishes. */
+    struct feed_offers {
+        generator_offer offer;
+        std::vector<key> ids;
+    };
+
+    /** The offers read one way: which feed serves an id, and what each feed serves. */
+    struct offer_index {
+        std::map<key, std::string> a_feed_of;
+        std::map<std::string, feed_offers> feeds;
+    };
+
+    // The feed an offer belongs to. An offer that names none stands alone.
+    static std::string feed_of(const generator_offer& offer) {
+        if (!offer.group.empty())
+            return offer.group;
+        return "id:" + std::get<0>(key_of(offer.id)) + "/" + std::get<1>(key_of(offer.id)) + "/" +
+               std::get<2>(key_of(offer.id));
+    }
+
+    // One offer for each instrument. The first one in the order the function gave wins, and it
+    // decides the feed the instrument belongs to.
+    offer_index index_offers() const {
+        offer_index out;
+        for (const auto& offer : offers_()) {
             const auto k = key_of(offer.id);
-            if (!out.emplace(k, offer).second)
+            const auto feed = feed_of(offer);
+            if (!out.a_feed_of.emplace(k, feed).second) {
                 BOOST_LOG_SEV(lg(), ores::logging::warn)
                     << "A second generator is offered for " << offer.id.external_id
                     << ". It is not used.";
+                continue;
+            }
+            auto& group = out.feeds[feed];
+            if (group.ids.empty())
+                group.offer = offer;
+            group.ids.push_back(k);
         }
         return out;
     }
@@ -218,7 +267,8 @@ private:
 
     offers_fn offers_;
     mutable std::mutex mu_;
-    std::map<key, running_generator> running_;
+    /// The running generator of each feed, by the feed's own name.
+    std::map<std::string, running_generator> running_;
 };
 
 }

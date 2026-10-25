@@ -20,13 +20,13 @@
 #include "../src/generator_runner.hpp"
 #include "../src/simulator_adapter.hpp"
 #include "../src/simulator_offers.hpp"
+#include "ores.analytics.quant/domain/arrival_spec.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.analytics.quant/domain/arrival_spec.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
@@ -153,6 +153,31 @@ generator_offer idle_offer(const std::string& pair, std::shared_ptr<generator_co
             }};
 }
 
+// A pillar id of the fictional provider Demo, written the way its notation writes it.
+messaging::vendor_id demo_pillar_id(const std::string& currency,
+                                    const std::string& family,
+                                    const std::string& instrument,
+                                    const std::string& start,
+                                    const std::string& end) {
+    return {.id_scheme = "demo_key",
+            .external_id = currency + "/" + family + "/" + instrument + "/" + start + "/" + end,
+            .field = "value"};
+}
+
+// The offers of one curve: one for each of its pillars, all of them of one group and all of them
+// building the one generator the curve is.
+std::vector<generator_offer> curve_offers(const std::string& group,
+                                          const std::vector<messaging::vendor_id>& ids,
+                                          std::shared_ptr<generator_counters> counters) {
+    std::vector<generator_offer> out;
+    for (const auto& id : ids)
+        out.push_back({.id = id, .group = group, .make = [counters] {
+                           ++counters->built;
+                           return std::make_shared<idle_generator>(counters);
+                       }});
+    return out;
+}
+
 bool eventually(const std::function<bool()>& done) {
     for (int i = 0; i < 400; ++i) {
         if (done())
@@ -171,6 +196,43 @@ public:
         return 1.25;
     }
 };
+
+// A curve whose discount factors fall at one flat rate, so every pillar prices from one state.
+class flat_curve_process final : public ores::analytics::quant::domain::i_yield_curve_process {
+public:
+    double next() override {
+        return rate;
+    }
+    double current() const override {
+        return rate;
+    }
+    double discount_factor(std::size_t ticks_ahead) const override {
+        return std::exp(-rate * static_cast<double>(ticks_ahead) / 365.0);
+    }
+
+private:
+    static constexpr double rate = 0.03;
+};
+
+// One pillar of a curve, resolved as the resolver leaves it: the tenors it starts and ends at, the
+// dates those tenors resolve to, and the count of days the feed steps by.
+ores::synthetic::feed::ir_curve_resolved_entry resolved_pillar(const std::string& start_tenor,
+                                                               const std::string& end_tenor,
+                                                               const std::string& curve_role,
+                                                               std::size_t ticks_ahead_start,
+                                                               std::size_t ticks_ahead_end) {
+    ores::synthetic::feed::ir_curve_resolved_entry e;
+    e.start_tenor_code = start_tenor;
+    e.point_id = end_tenor;
+    e.curve_role = curve_role;
+    e.ticks_ahead_start = ticks_ahead_start;
+    e.ticks_ahead_end = ticks_ahead_end;
+    e.year_fraction = static_cast<double>(ticks_ahead_end - ticks_ahead_start) / 365.0;
+    const auto spot = std::chrono::sys_days{std::chrono::year{2026} / 1 / 28};
+    e.start_date = std::chrono::year_month_day{spot + std::chrono::days(ticks_ahead_start)};
+    e.end_date = std::chrono::year_month_day{spot + std::chrono::days(ticks_ahead_end)};
+    return e;
+}
 
 // What an observer on a subject saw.
 template <typename T>
@@ -254,6 +316,111 @@ TEST_CASE("the runner stops a generator that the next demand drops", tags + "[ru
     CHECK(counters->stopped == 2);
 }
 
+TEST_CASE("one generator serves every id of a curve, whichever of them is demanded",
+          tags + "[runner][curve]") {
+    auto counters = std::make_shared<generator_counters>();
+    const auto short_end = demo_pillar_id("USD", "sofr", "DEPO", "SPOT", "3M");
+    const auto long_end = demo_pillar_id("USD", "sofr", "IRS", "SPOT", "2Y");
+    generator_runner runner(
+        [&] { return curve_offers("usd-sofr", {short_end, long_end}, counters); });
+
+    // The curve announces both of its pillars and it is still one feed.
+    CHECK(runner.universe().size() == 2);
+
+    SECTION("one id of the curve starts one generator") {
+        const auto out = runner.apply({short_end});
+
+        CHECK(out.accepted.size() == 1);
+        CHECK(out.started == 1);
+        CHECK(counters->built == 1);
+        CHECK(runner.running_count() == 1);
+        CHECK(eventually([&] { return counters->started == 1; }));
+    }
+
+    SECTION("both ids of the curve keep the one generator it started") {
+        runner.apply({short_end});
+        const auto out = runner.apply({short_end, long_end});
+
+        CHECK(out.accepted.size() == 2);
+        CHECK(out.started == 0);
+        CHECK(counters->built == 1);
+        CHECK(runner.running_count() == 1);
+    }
+
+    SECTION("dropping one id of the curve keeps the generator for the other") {
+        runner.apply({short_end, long_end});
+        const auto out = runner.apply({long_end});
+
+        CHECK(out.accepted.size() == 1);
+        CHECK(out.stopped == 0);
+        CHECK(counters->stopped == 0);
+        CHECK(runner.running_count() == 1);
+    }
+
+    SECTION("dropping both ids of the curve stops the generator") {
+        runner.apply({short_end, long_end});
+        const auto out = runner.apply({});
+
+        CHECK(out.stopped == 1);
+        CHECK(runner.running_count() == 0);
+        CHECK(counters->stopped == 1);
+    }
+}
+
+TEST_CASE("a curve and a one-id feed of the same demand run one generator each",
+          tags + "[runner][curve]") {
+    auto curve_counters = std::make_shared<generator_counters>();
+    auto fx_counters = std::make_shared<generator_counters>();
+    const auto short_end = demo_pillar_id("USD", "sofr", "DEPO", "SPOT", "3M");
+    const auto long_end = demo_pillar_id("USD", "sofr", "IRS", "SPOT", "2Y");
+    generator_runner runner([&] {
+        auto offers = curve_offers("usd-sofr", {short_end, long_end}, curve_counters);
+        auto fx = idle_offer("EUR/USD", fx_counters);
+        offers.push_back(std::move(fx));
+        return offers;
+    });
+
+    const auto out = runner.apply({short_end, bbg_id("EUR/USD")});
+
+    CHECK(out.accepted.size() == 2);
+    CHECK(out.started == 2);
+    CHECK(curve_counters->built == 1);
+    CHECK(fx_counters->built == 1);
+    CHECK(runner.running_count() == 2);
+
+    // The one-id feed stops when its own id goes, and the curve stays with the pillar that is
+    // still demanded.
+    const auto next = runner.apply({long_end});
+    CHECK(next.stopped == 1);
+    CHECK(runner.running_count() == 1);
+    CHECK(curve_counters->stopped == 0);
+    CHECK(eventually([&] { return fx_counters->stopped == 1; }));
+}
+
+TEST_CASE("a curve whose generator cannot be built rejects every id of the curve",
+          tags + "[runner][curve]") {
+    const auto short_end = demo_pillar_id("USD", "sofr", "DEPO", "SPOT", "3M");
+    const auto long_end = demo_pillar_id("USD", "sofr", "IRS", "SPOT", "2Y");
+    std::atomic<int> built{0};
+    generator_runner runner([&] {
+        const auto failing = [&built]() -> std::shared_ptr<domain::i_feed> {
+            ++built;
+            throw std::runtime_error("no parameters");
+        };
+        return std::vector{generator_offer{.id = short_end, .group = "usd-sofr", .make = failing},
+                           generator_offer{.id = long_end, .group = "usd-sofr", .make = failing}};
+    });
+
+    const auto out = runner.apply({short_end, long_end});
+
+    CHECK(out.accepted.empty());
+    REQUIRE(out.rejected.size() == 2);
+    CHECK(out.rejected.front().reason == "generator_failed");
+    CHECK(out.rejected.back().reason == "generator_failed");
+    CHECK(built == 1);
+    CHECK(runner.running_count() == 0);
+}
+
 TEST_CASE("the runner rejects an id with no generator and still serves the others",
           tags + "[runner]") {
     auto counters = std::make_shared<generator_counters>();
@@ -313,9 +480,8 @@ TEST_CASE("the runner rejects an id whose generator cannot be built", tags + "[r
 
 TEST_CASE("the runner survives a generator whose start throws", tags + "[runner]") {
     generator_runner runner([] {
-        return std::vector{generator_offer{.id = bbg_id("EUR/USD"), .make = [] {
-                                               return std::make_shared<failing_generator>();
-                                           }}};
+        return std::vector{generator_offer{
+            .id = bbg_id("EUR/USD"), .make = [] { return std::make_shared<failing_generator>(); }}};
     });
 
     const auto out = runner.apply({bbg_id("EUR/USD")});
@@ -363,8 +529,8 @@ TEST_CASE("the adapter announces, answers the demand and sends ticks and heartbe
                     "test.eur_usd",
                     "unused",
                     std::make_unique<flat_process>(),
-                    ores::analytics::quant::domain::arrival_spec{
-                        .mode = "periodic", .ticks_per_hour = 36000000.0},
+                    ores::analytics::quant::domain::arrival_spec{.mode = "periodic",
+                                                                 .ticks_per_hour = 36000000.0},
                     ores::synthetic::feed::adapter_target{
                         .id = target,
                         .subject =
@@ -543,10 +709,7 @@ TEST_CASE("the offers are the startable system configs of the provider that have
             [](const auto&, const auto&) {
                 return std::optional<ores::synthetic::domain::market_data_generation_config>{};
             },
-        .containers =
-            [containers](const auto&) {
-                return containers();
-            }});
+        .containers = [containers](const auto&) { return containers(); }});
 
     svc::feed_kind kind;
     kind.kind = std::string(ores::synthetic::feed::fx_spot_feed_kind);
@@ -594,4 +757,235 @@ TEST_CASE("the offers are the startable system configs of the provider that have
     REQUIRE(built.size() == 1);
     CHECK(built.front().id.external_id == "EURUSD Curncy");
     CHECK(built.front().subject == domain::adapter_ingress_subject("bloomberg-a", "EURUSD Curncy"));
+}
+
+namespace {
+
+// The container lookup every offers test gives the registry: one system collection of the
+// provider the adapter serves.
+svc::feed_kind_registry::deps
+system_collection_deps(const ores::synthetic::feed::feed_factory& factory,
+                       const boost::uuids::uuid& container,
+                       const std::string& provider_code) {
+    return svc::feed_kind_registry::deps{
+        .factory = &factory,
+        .folder_subtree = [](const auto&, const auto&) { return std::set<boost::uuids::uuid>{}; },
+        .container_by_id =
+            [](const auto&, const auto&) {
+                return std::optional<ores::synthetic::domain::market_data_generation_config>{};
+            },
+        .containers =
+            [container, provider_code](const auto&) {
+                ores::synthetic::domain::market_data_generation_config system;
+                system.id = container;
+                system.enabled = true;
+                system.provider_code = provider_code;
+                return std::vector{system};
+            }};
+}
+
+svc::feed_kind ir_curve_kind(std::vector<svc::feed_kind_candidate> candidates) {
+    svc::feed_kind kind;
+    kind.kind = std::string(ores::synthetic::feed::ir_curve_feed_kind);
+    kind.config_permission = "synthetic::ir_curve_generation_configs:read";
+    kind.candidates = [candidates](const auto&, const std::string&) {
+        return candidates;
+    };
+    kind.simulate_subject = "ores.test.ir.simulate";
+    kind.decode_simulate = [](const auto&) {
+        return std::optional<svc::feed_simulate_envelope>{};
+    };
+    kind.reply_simulate = [](auto&, const auto&, const auto&) {
+    };
+    return kind;
+}
+
+svc::feed_kind_candidate
+curve_candidate(const std::string& id,
+                const boost::uuids::uuid& container,
+                std::vector<ores::marketdata::vendor::ir_curve_pillar> pillars,
+                std::function<svc::feed_build_outcome()> build_input) {
+    svc::feed_kind_candidate c;
+    c.feed_config_id = id;
+    c.container_id = container;
+    c.source_name = "test." + id;
+    c.display_name = pillars.empty() ? id : pillars.front().currency;
+    c.enabled = true;
+    c.pillars = std::move(pillars);
+    c.build_input = std::move(build_input);
+    return c;
+}
+
+}
+
+TEST_CASE("a curve that serves an adapter publishes a tick under each pillar's own id",
+          tags + "[adapter][curve]") {
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    nats.connect();
+    const auto adapter_id =
+        "test-curve-" + boost::uuids::to_string(boost::uuids::random_generator()());
+
+    const auto deposit_id = demo_pillar_id("USD", "sofr", "DEPO", "SPOT", "3M");
+    const auto fra_id = demo_pillar_id("USD", "sofr", "FRA", "3M", "6M");
+    inbox<messaging::adapter_tick> deposit_ticks(
+        nats, domain::adapter_ingress_subject(adapter_id, deposit_id.external_id));
+    inbox<messaging::adapter_tick> fra_ticks(
+        nats, domain::adapter_ingress_subject(adapter_id, fra_id.external_id));
+
+    std::vector<ores::synthetic::feed::ir_pillar_quote_target> targets{
+        {.start_tenor_code = "SPOT",
+         .end_tenor_code = "3M",
+         .target = {.id = deposit_id,
+                    .subject =
+                        domain::adapter_ingress_subject(adapter_id, deposit_id.external_id)}},
+        {.start_tenor_code = "3M",
+         .end_tenor_code = "6M",
+         .target = {.id = fra_id,
+                    .subject = domain::adapter_ingress_subject(adapter_id, fra_id.external_id)}}};
+
+    ores::synthetic::feed::ir_curve_feed feed(
+        nats,
+        "test.usd.sofr",
+        "test.usd.sofr.market",
+        "USD",
+        "1D",
+        "discount",
+        std::make_unique<flat_curve_process>(),
+        // One tick a second, so one second of elapsed time is the one step the process takes.
+        ores::analytics::quant::domain::arrival_spec{.mode = "periodic", .ticks_per_hour = 3600},
+        {resolved_pillar("SPOT", "3M", "DEPOSIT", 0, 90),
+         resolved_pillar("3M", "6M", "FRA", 90, 180)},
+        {},
+        nullptr,
+        std::move(targets));
+
+    feed.tick(1.0);
+
+    REQUIRE(deposit_ticks.wait_for_count(1));
+    REQUIRE(fra_ticks.wait_for_count(1));
+    const auto deposit = deposit_ticks.first();
+    CHECK(deposit.id_scheme == "demo_key");
+    CHECK(deposit.external_id == "USD/sofr/DEPO/SPOT/3M");
+    CHECK(deposit.field == "value");
+    // One curve, one state: the deposit prices from spot and the FRA from three months out, so
+    // the two rates differ while the model that made them is one.
+    CHECK(std::stod(deposit.value) > 0.0);
+    const auto fra = fra_ticks.first();
+    CHECK(fra.external_id == "USD/sofr/FRA/3M/6M");
+    CHECK(std::stod(fra.value) > 0.0);
+}
+
+TEST_CASE("a curve is offered once for each of its pillars, all under the curve's own group",
+          tags + "[offers][curve]") {
+    using ores::synthetic::feed::ir_curve_feed_build_input;
+    namespace vendor = ores::marketdata::vendor;
+
+    std::vector<ir_curve_feed_build_input> built;
+    ores::synthetic::feed::feed_factory factory;
+    factory.register_kind(
+        std::string(ores::synthetic::feed::ir_curve_feed_kind),
+        [&built](const auto&, const auto& input) -> std::shared_ptr<domain::i_feed> {
+            built.push_back(std::get<ir_curve_feed_build_input>(input));
+            return std::make_shared<idle_generator>(std::make_shared<generator_counters>());
+        });
+
+    const auto build_input = [] {
+        return svc::feed_build_outcome{
+            .input = ores::synthetic::feed::feed_build_input{ir_curve_feed_build_input{}},
+            .skip_reason = {}};
+    };
+    const auto deps = system_collection_deps(factory, system_container, "demo");
+    svc::feed_kind_registry registry(deps);
+    registry.register_kind(ir_curve_kind(
+        {curve_candidate("curve-1",
+                         system_container,
+                         {vendor::ir_curve_pillar{"USD", "sofr", "DEPO", "SPOT", "3M"},
+                          vendor::ir_curve_pillar{"USD", "sofr", "FRA", "3M", "6M"},
+                          vendor::ir_curve_pillar{"USD", "sofr", "IRS", "SPOT", "2Y"}},
+                         build_input)}));
+
+    const auto opts = ores::testing::test_database_manager::make_database_options();
+    const auto ctx = ores::database::context_factory::make_context(
+        ores::database::context_factory::configuration{.database_options = opts,
+                                                       .pool_size = 1,
+                                                       .num_attempts = 1,
+                                                       .wait_time_in_seconds = 1,
+                                                       .service_account = opts.user});
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string(); });
+    const ores::synthetic::feed::feed_build_context build{nats, auth_nats};
+
+    const auto offers = svc::system_generator_offers(registry, ctx, build, "demo-a", "demo");
+
+    REQUIRE(offers.size() == 3);
+    CHECK(offers[0].id.external_id == "USD/sofr/DEPO/SPOT/3M");
+    CHECK(offers[1].id.external_id == "USD/sofr/FRA/3M/6M");
+    CHECK(offers[2].id.external_id == "USD/sofr/IRS/SPOT/2Y");
+    for (const auto& offer : offers) {
+        CHECK(offer.id.id_scheme == "demo_key");
+        CHECK(offer.id.field == "value");
+        CHECK(offer.group == "curve-1");
+    }
+
+    // The adapter of another provider is offered nothing: the curve quotes Demo's ids.
+    CHECK(svc::system_generator_offers(registry, ctx, build, "bloomberg-a", "bloomberg").empty());
+
+    // Whichever pillar the demand names, the one generator it starts carries every pillar's id.
+    generator_runner runner(
+        [&] { return svc::system_generator_offers(registry, ctx, build, "demo-a", "demo"); });
+    CHECK(runner.universe().size() == 3);
+    const auto out = runner.apply({offers[1].id});
+    CHECK(out.accepted.size() == 1);
+    CHECK(out.started == 1);
+
+    REQUIRE(built.size() == 1);
+    const auto& targets = built.front().adapter_targets;
+    REQUIRE(targets.size() == 3);
+    CHECK(targets[0].start_tenor_code == "SPOT");
+    CHECK(targets[0].end_tenor_code == "3M");
+    CHECK(targets[0].target.id.external_id == "USD/sofr/DEPO/SPOT/3M");
+    CHECK(targets[0].target.subject ==
+          domain::adapter_ingress_subject("demo-a", "USD/sofr/DEPO/SPOT/3M"));
+    CHECK(targets[1].start_tenor_code == "3M");
+    CHECK(targets[1].end_tenor_code == "6M");
+    CHECK(targets[2].target.id.external_id == "USD/sofr/IRS/SPOT/2Y");
+}
+
+TEST_CASE("a curve that is not enabled is offered nothing", tags + "[offers][curve]") {
+    using ores::synthetic::feed::ir_curve_feed_build_input;
+    namespace vendor = ores::marketdata::vendor;
+
+    ores::synthetic::feed::feed_factory factory;
+    factory.register_kind(std::string(ores::synthetic::feed::ir_curve_feed_kind),
+                          [](const auto&, const auto&) -> std::shared_ptr<domain::i_feed> {
+                              return std::make_shared<idle_generator>(
+                                  std::make_shared<generator_counters>());
+                          });
+    auto candidate = curve_candidate(
+        "curve-1",
+        system_container,
+        {vendor::ir_curve_pillar{"USD", "sofr", "DEPO", "SPOT", "3M"}},
+        [] {
+            return svc::feed_build_outcome{
+                .input = ores::synthetic::feed::feed_build_input{ir_curve_feed_build_input{}},
+                .skip_reason = {}};
+        });
+    candidate.enabled = false;
+
+    const auto deps = system_collection_deps(factory, system_container, "demo");
+    svc::feed_kind_registry registry(deps);
+    registry.register_kind(ir_curve_kind({candidate}));
+
+    const auto opts = ores::testing::test_database_manager::make_database_options();
+    const auto ctx = ores::database::context_factory::make_context(
+        ores::database::context_factory::configuration{.database_options = opts,
+                                                       .pool_size = 1,
+                                                       .num_attempts = 1,
+                                                       .wait_time_in_seconds = 1,
+                                                       .service_account = opts.user});
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string(); });
+    const ores::synthetic::feed::feed_build_context build{nats, auth_nats};
+
+    CHECK(svc::system_generator_offers(registry, ctx, build, "demo-a", "demo").empty());
 }

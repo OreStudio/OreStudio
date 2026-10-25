@@ -56,7 +56,8 @@ public:
                       ores::database::context ctx,
                       std::optional<ores::security::jwt::jwt_authenticator> verifier,
                       const feed_kind_registry& registry,
-                      ores::analytics::quant::domain::market_regime* market = nullptr);
+                      ores::analytics::quant::domain::market_regime* market = nullptr,
+                      ores::analytics::quant::domain::shared_intensity* intensity = nullptr);
 };
 
 }

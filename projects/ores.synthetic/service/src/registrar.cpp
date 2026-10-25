@@ -44,7 +44,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              ores::database::context ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              const feed_kind_registry& registry,
-                             ores::analytics::quant::domain::market_regime* market) {
+                             ores::analytics::quant::domain::market_regime* market,
+                             ores::analytics::quant::domain::shared_intensity* intensity) {
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto queue = "ores.synthetic.service";
 
@@ -54,24 +55,30 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         std::string(start_feed_request::nats_subject),
         queue,
-        [&nats, &auth_nats, ctrl, ctx, verifier, &registry, market](ores::nats::message msg) {
-            feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier, registry, market);
+        [&nats, &auth_nats, ctrl, ctx, verifier, &registry, market, intensity](
+            ores::nats::message msg) {
+            feed_config_handler h(
+                nats, auth_nats, ctrl, ctx, verifier, registry, market, intensity);
             h.start(std::move(msg));
         }));
 
     subs.push_back(nats.queue_subscribe(
         std::string(stop_feed_request::nats_subject),
         queue,
-        [&nats, &auth_nats, ctrl, ctx, verifier, &registry, market](ores::nats::message msg) {
-            feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier, registry, market);
+        [&nats, &auth_nats, ctrl, ctx, verifier, &registry, market, intensity](
+            ores::nats::message msg) {
+            feed_config_handler h(
+                nats, auth_nats, ctrl, ctx, verifier, registry, market, intensity);
             h.stop(std::move(msg));
         }));
 
     subs.push_back(nats.queue_subscribe(
         std::string(list_feeds_request::nats_subject),
         queue,
-        [&nats, &auth_nats, ctrl, ctx, verifier, &registry, market](ores::nats::message msg) {
-            feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier, registry, market);
+        [&nats, &auth_nats, ctrl, ctx, verifier, &registry, market, intensity](
+            ores::nats::message msg) {
+            feed_config_handler h(
+                nats, auth_nats, ctrl, ctx, verifier, registry, market, intensity);
             h.list(std::move(msg));
         }));
 
@@ -98,16 +105,20 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         std::string(start_feeds_under_folder_request::nats_subject),
         queue,
-        [&nats, &auth_nats, ctrl, ctx, verifier, &registry, market](ores::nats::message msg) {
-            folder_feed_control_handler h(nats, ctrl, auth_nats, ctx, verifier, registry, market);
+        [&nats, &auth_nats, ctrl, ctx, verifier, &registry, market, intensity](
+            ores::nats::message msg) {
+            folder_feed_control_handler h(
+                nats, ctrl, auth_nats, ctx, verifier, registry, market, intensity);
             h.start(std::move(msg));
         }));
 
     subs.push_back(nats.queue_subscribe(
         std::string(stop_feeds_under_folder_request::nats_subject),
         queue,
-        [&nats, &auth_nats, ctrl, ctx, verifier, &registry, market](ores::nats::message msg) {
-            folder_feed_control_handler h(nats, ctrl, auth_nats, ctx, verifier, registry, market);
+        [&nats, &auth_nats, ctrl, ctx, verifier, &registry, market, intensity](
+            ores::nats::message msg) {
+            folder_feed_control_handler h(
+                nats, ctrl, auth_nats, ctx, verifier, registry, market, intensity);
             h.stop(std::move(msg));
         }));
 
@@ -175,16 +186,20 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         std::string(ores::synthetic::messaging::start_selected_feeds_request::nats_subject),
         queue,
-        [&nats, &auth_nats, ctrl, ctx, verifier, &registry, market](ores::nats::message msg) {
-            feed_selection_handler h(nats, ctrl, auth_nats, ctx, verifier, registry, market);
+        [&nats, &auth_nats, ctrl, ctx, verifier, &registry, market, intensity](
+            ores::nats::message msg) {
+            feed_selection_handler h(
+                nats, ctrl, auth_nats, ctx, verifier, registry, market, intensity);
             h.start(std::move(msg));
         }));
 
     subs.push_back(nats.queue_subscribe(
         std::string(ores::synthetic::messaging::stop_selected_feeds_request::nats_subject),
         queue,
-        [&nats, &auth_nats, ctrl, ctx, verifier, &registry, market](ores::nats::message msg) {
-            feed_selection_handler h(nats, ctrl, auth_nats, ctx, verifier, registry, market);
+        [&nats, &auth_nats, ctrl, ctx, verifier, &registry, market, intensity](
+            ores::nats::message msg) {
+            feed_selection_handler h(
+                nats, ctrl, auth_nats, ctx, verifier, registry, market, intensity);
             h.stop(std::move(msg));
         }));
 

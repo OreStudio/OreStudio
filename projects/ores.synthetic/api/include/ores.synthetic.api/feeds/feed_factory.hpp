@@ -58,6 +58,9 @@ struct feed_build_context final {
     /// with no market. One run, one market: a state that fed only one feed
     /// would not be a market.
     ores::analytics::quant::domain::market_regime* market = nullptr;
+    /// The heat every event in the run feeds, or null for a run with no
+    /// endogenous factor.
+    ores::analytics::quant::domain::shared_intensity* intensity = nullptr;
 };
 
 /**

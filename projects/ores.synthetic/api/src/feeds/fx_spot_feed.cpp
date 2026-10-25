@@ -91,8 +91,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   std::optional<adapter_target> adapter,
                   const ores::marketdata::domain::market_clock* clock,
-                  ores::analytics::quant::domain::market_regime* market,
-                  double sensitivity) {
+                  ores::analytics::quant::domain::market_link link) {
     // The config states the pair twice, as two currencies and as a URI. They must agree.
     const auto expected =
         "oresmd://fx/" + cfg.base_currency_code +
@@ -154,8 +153,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                                           std::move(process),
                                           arrival,
                                           std::move(adapter),
-                                          market,
-                                          sensitivity);
+                                          link);
 }
 
 fx_spot_feed::fx_spot_feed(
@@ -166,20 +164,21 @@ fx_spot_feed::fx_spot_feed(
     std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process,
     const ores::analytics::quant::domain::arrival_spec& arrival,
     std::optional<adapter_target> adapter,
-    ores::analytics::quant::domain::market_regime* market,
-    double sensitivity)
+    ores::analytics::quant::domain::market_link link)
     : nats_(nats)
     , quote_uri_(std::move(quote_uri))
     , source_name_(std::move(source_name))
     , process_(std::move(process))
     , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(arrival))
-    , clock_(*arrivals_, market, sensitivity)
+    , clock_(*arrivals_,
+             ores::analytics::quant::domain::with_mean_rate(link, arrival.ticks_per_hour))
     , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
     , nats_subject_(std::move(nats_subject))
     , adapter_(std::move(adapter)) {
 
-    if (!std::isfinite(sensitivity) || sensitivity <= 0.0)
-        throw std::invalid_argument("fx_spot_feed: sensitivity must be finite and strictly positive");
+    if (!std::isfinite(link.sensitivity) || link.sensitivity <= 0.0)
+        throw std::invalid_argument(
+            "fx_spot_feed: sensitivity must be finite and strictly positive");
     if (!process_)
         throw std::invalid_argument("fx_spot_feed: process must not be null");
     namespace datum = ores::marketdata::datum;

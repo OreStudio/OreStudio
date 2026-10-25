@@ -24,6 +24,7 @@
 #include "feed_kind_registry.hpp"
 #include "feed_run_control.hpp"
 #include "ores.analytics.quant/domain/market_regime.hpp"
+#include "ores.analytics.quant/domain/shared_intensity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -73,20 +74,23 @@ using namespace ores::logging;
  */
 class folder_feed_control_handler {
 public:
-    folder_feed_control_handler(ores::nats::service::client& nats,
-                                std::shared_ptr<feed_controller> ctrl,
-                                ores::nats::service::nats_client& auth_nats,
-                                ores::database::context ctx,
-                                std::optional<ores::security::jwt::jwt_authenticator> verifier,
-                                const feed_kind_registry& registry,
-                                ores::analytics::quant::domain::market_regime* market = nullptr)
+    folder_feed_control_handler(
+        ores::nats::service::client& nats,
+        std::shared_ptr<feed_controller> ctrl,
+        ores::nats::service::nats_client& auth_nats,
+        ores::database::context ctx,
+        std::optional<ores::security::jwt::jwt_authenticator> verifier,
+        const feed_kind_registry& registry,
+        ores::analytics::quant::domain::market_regime* market = nullptr,
+        ores::analytics::quant::domain::shared_intensity* intensity = nullptr)
         : nats_(nats)
         , ctrl_(std::move(ctrl))
         , auth_nats_(auth_nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier))
         , registry_(registry)
-        , market_(market) {}
+        , market_(market)
+        , intensity_(intensity) {}
 
     void start(ores::nats::message msg) {
         using namespace ores::marketdata::messaging;
@@ -115,7 +119,7 @@ public:
             const auto folder_ids = registry_.folder_subtree(ctx, folder_id);
 
             const ores::synthetic::feed::feed_build_context bctx{
-                .nats = nats_, .auth_nats = auth_nats_, .market = market_};
+                .nats = nats_, .auth_nats = auth_nats_, .market = market_, .intensity = intensity_};
 
             const auto outcome = start_feeds(
                 registry_,
@@ -236,6 +240,7 @@ private:
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     const feed_kind_registry& registry_;
     ores::analytics::quant::domain::market_regime* market_;
+    ores::analytics::quant::domain::shared_intensity* intensity_;
 };
 
 }

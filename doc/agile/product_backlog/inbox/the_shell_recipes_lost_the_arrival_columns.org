@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: AE579B6D-7BE5-45C5-AE31-4DF84E09725D
+:END:
+#+title: The shell recipes do not carry the arrival columns
+#+description: The fx_spot_generation_config and ir_curve_generation_config entities gained arrival_mode, branching_ratio, decay and sensitivity, but the shell recipes and their generated scripts still pass the old column set, so the CLI cannot author or show a feed's regime. The recipes are tangles of doc/recipes/shell/... and are regenerated with compass build --direct tangle_shell_scripts. They are also the files eager_maxwell has in flight, so this belongs to whoever lands that work rather than being fixed underneath it.
+#+type: capture
+#+level: cross
+#+filetags: :shell:recipes:synthetic:codegen:coordination:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

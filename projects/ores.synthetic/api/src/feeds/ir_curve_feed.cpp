@@ -61,8 +61,8 @@ ir_curve_feed::ir_curve_feed(
     std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
     const ores::analytics::quant::domain::arrival_spec& arrival,
     std::vector<ir_curve_resolved_entry> entries,
-    ores::analytics::quant::domain::market_regime* market,
-    double sensitivity)
+    ores::analytics::quant::domain::market_link link,
+    ores::analytics::quant::service::tick_scheduler* scheduler)
     : nats_(nats)
     , source_name_(std::move(source_name))
     , nats_subject_(std::move(nats_subject))
@@ -70,12 +70,18 @@ ir_curve_feed::ir_curve_feed(
     , role_(std::move(role))
     , process_(std::move(process))
     , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(arrival))
-    , clock_(*arrivals_, market, sensitivity)
+    , clock_(*arrivals_,
+             ores::analytics::quant::domain::with_mean_rate(link, arrival.ticks_per_hour))
     , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
+    , intensity_(link.intensity)
+    , arrival_(arrival)
+    , link_(link)
+    , scheduler_(scheduler)
     , entries_(std::move(entries)) {
 
-    if (!std::isfinite(sensitivity) || sensitivity <= 0.0)
-        throw std::invalid_argument("ir_curve_feed: sensitivity must be finite and strictly positive");
+    if (!std::isfinite(link.sensitivity) || link.sensitivity <= 0.0)
+        throw std::invalid_argument(
+            "ir_curve_feed: sensitivity must be finite and strictly positive");
     if (!process_)
         throw std::invalid_argument("ir_curve_feed: process must not be null");
     if (arrival.ticks_per_hour <= 0.0)
@@ -96,29 +102,22 @@ ir_curve_feed::ir_curve_feed(
 }
 
 void ir_curve_feed::start() {
+    const auto body = [this](double elapsed_seconds) {
+        return tick(elapsed_seconds);
+    };
+
+    // A scheduler, when the run has one, decides when this feed ticks: it holds
+    // every series' next gap, so registering is all start() does.
+    if (scheduler_ != nullptr) {
+        handle_ = scheduler_->add(
+            *arrivals_,
+            ores::analytics::quant::domain::with_mean_rate(link_, arrival_.ticks_per_hour),
+            body);
+        return;
+    }
+
     clock_.run(
-        [this](double elapsed_seconds) {
-            const auto elapsed_ticks =
-                elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0;
-            process_->next(elapsed_ticks);
-            const auto now = std::chrono::system_clock::now();
-
-            for (std::size_t i = 0; i < entries_.size(); ++i) {
-                const auto& e = entries_[i];
-                // Each tick names one pillar: the datum built at construction from the
-                // entry's own dates and the index tenor, so the series it lands in
-                // carries the instrument's identity rather than the pipeline's
-                // vocabulary.
-                ores::marketdata::messaging::market_tick tick;
-                tick.oresmd_uri = datum_uris_[i];
-                tick.value = std::format("{}", price_ir_curve_entry(*process_, e));
-                tick.observation_time = now;
-                tick.source = source_name_;
-
-                nats_.publish(nats_subject_, ores::nats::default_wire_codec().encode(tick));
-            }
-            return std::to_string(entries_.size());
-        },
+        body,
         [this](std::uint64_t n, const std::string& points) {
             if (n == 1 || n % 100 == 0) {
                 BOOST_LOG_SEV(lg(), info)
@@ -133,7 +132,37 @@ void ir_curve_feed::start() {
         });
 }
 
+std::string ir_curve_feed::tick(double elapsed_seconds) {
+    published_.fetch_add(1, std::memory_order_relaxed);
+
+    const auto elapsed_ticks = elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0;
+    process_->next(elapsed_ticks);
+    if (intensity_ != nullptr)
+        intensity_->record_event();
+    const auto now = std::chrono::system_clock::now();
+
+    for (std::size_t i = 0; i < entries_.size(); ++i) {
+        const auto& e = entries_[i];
+        // Each tick names one pillar: the datum built at construction from the
+        // entry's own dates and the index tenor, so the series it lands in
+        // carries the instrument's identity rather than the pipeline's
+        // vocabulary.
+        ores::marketdata::messaging::market_tick tick;
+        tick.oresmd_uri = datum_uris_[i];
+        tick.value = std::format("{}", price_ir_curve_entry(*process_, e));
+        tick.observation_time = now;
+        tick.source = source_name_;
+
+        nats_.publish(nats_subject_, ores::nats::default_wire_codec().encode(tick));
+    }
+    return std::to_string(entries_.size());
+}
+
 void ir_curve_feed::stop() {
+    if (scheduler_ != nullptr && handle_) {
+        scheduler_->remove(*handle_);
+        handle_.reset();
+    }
     clock_.stop();
 }
 
@@ -223,8 +252,8 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
         definitions,
     const ir_curve_refdata_context& refctx,
     const ores::marketdata::domain::market_clock* clock,
-    ores::analytics::quant::domain::market_regime* market,
-    double sensitivity) {
+    ores::analytics::quant::domain::market_link link,
+    ores::analytics::quant::service::tick_scheduler* scheduler) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
 
     // "vintage" resolves the initial_rate parameter from a real market_observation, overriding
@@ -274,8 +303,8 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                            std::move(process),
                                            arrival,
                                            std::move(resolved),
-                                           market,
-                                           sensitivity);
+                                           link,
+                                           scheduler);
 }
 
 }

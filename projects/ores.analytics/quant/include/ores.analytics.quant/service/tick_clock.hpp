@@ -20,7 +20,7 @@
 #define ORES_ANALYTICS_QUANT_SERVICE_TICK_CLOCK_HPP
 
 #include "ores.analytics.quant/domain/i_arrival_process.hpp"
-#include "ores.analytics.quant/domain/market_regime.hpp"
+#include "ores.analytics.quant/domain/market_link.hpp"
 #include "ores.analytics.quant/export.hpp"
 #include <atomic>
 #include <chrono>
@@ -60,17 +60,13 @@ class tick_clock final {
 public:
     /**
      * @param arrivals The process that draws each gap, in seconds.
-     * @param market The market-wide factor, or null for a run with no market.
-     *        One run shares one market, so every feed follows the same state.
-     * @param sensitivity How strongly this feed follows the market, one being the
-     *        average series.
+     * @param link The market factors this feed follows and how hard. Empty for a
+     *        run with no market, which leaves the process at its own rate.
      */
     explicit tick_clock(ores::analytics::quant::domain::i_arrival_process& arrivals,
-                        ores::analytics::quant::domain::market_regime* market = nullptr,
-                        double sensitivity = 1.0)
+                        ores::analytics::quant::domain::market_link link = {})
         : arrivals_(arrivals)
-        , market_(market)
-        , sensitivity_(sensitivity) {}
+        , link_(link) {}
 
     /**
      * @brief Emits one tick and returns a short summary of it for the log line.
@@ -104,16 +100,14 @@ public:
             // for.
             double gap_seconds = 0.0;
             try {
-                // The market has one owner, which advances it; a feed only reads
-                // the published multiplier, one atomic load, and re-rates its
-                // process when that value changes. The row's sensitivity says how
-                // much of the market this feed takes.
-                if (market_) {
-                    const double wanted = market_->multiplier() * sensitivity_;
-                    if (wanted != multiplier_in_force_) {
-                        arrivals_.set_baseline_multiplier(wanted);
-                        multiplier_in_force_ = wanted;
-                    }
+                // The factors have owners of their own; a feed only reads their
+                // published values, two atomic loads, and re-rates its process
+                // when the result changes. The row's sensitivity says how much of
+                // the market this feed takes.
+                const double wanted = link_.rate_multiplier();
+                if (wanted != multiplier_in_force_) {
+                    arrivals_.set_baseline_multiplier(wanted);
+                    multiplier_in_force_ = wanted;
                 }
                 gap_seconds = arrivals_.next_gap();
             } catch (const std::exception& ex) {
@@ -155,8 +149,7 @@ public:
 
 private:
     ores::analytics::quant::domain::i_arrival_process& arrivals_;
-    ores::analytics::quant::domain::market_regime* market_;
-    double sensitivity_;
+    ores::analytics::quant::domain::market_link link_;
     /// The rate scale the process was last rated at, market multiplier times the
     /// row's sensitivity, so an unchanged market costs one comparison and no
     /// re-rating.

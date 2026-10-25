@@ -55,8 +55,8 @@ document's string to a C++ enum, so its map is the enum's own list of values.
 =extract_parameter_types.py= reads that in one pass over the ORE source. It
 records, for every parameter name, the scope, the parser, the source file and
 line, and for an enumerated parser the strings its map lists, in the map's
-order. It types 151 parameters today: 51 boolean, 39 integer, 46 real, 3 period
-and 12 enumerated.
+order. It types 226 parameters today: 50 boolean, 43 integer, 56 real, 4 period,
+13 enumerated and 60 text.
 
 The rules, all mechanical:
 

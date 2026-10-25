@@ -21,12 +21,12 @@ Know what the tick library does, what the port into ores.analytics.quant needs, 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-23                               |
+| Next          | The market-wide regime, its own story. |
+| Last touched  | 2026-10-25                             |
 
 * Acceptance
 
@@ -81,3 +81,21 @@ Know what the tick library does, what the port into ores.analytics.quant needs, 
   =doc/agile/product_backlog/inbox/market_wide_arrival_regime_for_fast_markets.org=;
   per-stream regimes come first.
 -
+
+* Result
+
+analytics.quant can draw ticks from a periodic timer, a Poisson process or a
+Hawkes process, and a feed picks its regime from its own config row. The clock
+handed a feed the gap it waited, so an irregular arrival steps the value process
+by the time that passed rather than by a nominal tick.
+
+Three things made the work honest. The initial arrival processes refused a
+branching ratio of one because a stream that does not settle has no long-run
+rate to check against. The config gained four columns and the codegen facets,
+the staging defaults and the web editor followed, after a review found that the
+columns had stopped at the domain type. And the value process gained a step
+measured in ticks, with the processes that cannot scale refusing it rather than
+guessing.
+
+The market-wide factor is the next step, and it is designed in
+=doc/knowledge/domain/market_arrival_regime.org=.

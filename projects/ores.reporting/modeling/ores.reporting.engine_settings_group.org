@@ -75,6 +75,7 @@ Where the group sits in the screen, counting from zero.
 
 ** Flags
 :PROPERTIES:
+:rls_tenant_isolation: true
 :tablename: ores_reporting_engine_settings_groups_tbl
 :END:
 

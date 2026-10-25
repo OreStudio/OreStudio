@@ -143,6 +143,7 @@ Where the setting sits in its group, counting from zero.
 
 ** Flags
 :PROPERTIES:
+:rls_tenant_isolation: true
 :tablename: ores_reporting_engine_settings_group_settings_tbl
 :END:
 

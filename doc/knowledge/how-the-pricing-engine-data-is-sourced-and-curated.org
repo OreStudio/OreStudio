@@ -77,6 +77,25 @@ A curation entry is reviewed like code: it appears in the diff, names its source
 
 The ore parameter contract carries, beside the text: =source= (=ore_guide=, =ore_code=, =authored=), =source_ref= (the guide section or the source file and line), =curation_note= (what a person changed), =reviewed_by= and =reviewed_at=. The analytics tables carry the same on the rows that describe an ORE element. A row without a source is a bug, not a default.
 
+** What the DQ framework carries
+
+The DQ framework already stages and publishes the data: a dataset, an artefact
+table, an artefact type, a bundle and a publication, with its own provenance
+fields for who changed a row, when and why. The methodology uses that pipeline
+and adds what DQ does not hold:
+
+- The *source commit*, the *curation file version* and a link to this page go on
+  the DQ dataset as its metadata, next to the licence and the description.
+- The *coverage report* (types mapped, types exempt, settings documented,
+  globals documented, rows authored) is written by the generator and recorded on
+  the dataset, so a consumer reads coverage without rerunning the generator.
+- The *value rules* (domain, enumerated values, range, required) stay in the data
+  model and are enforced on the write path. They are not a DQ feature: DQ has no
+  rule engine today, and its quality metrics are still a concept.
+
+What DQ gives us for free: publication to each tenant, dataset identity and
+versioning, and the change provenance of the rows themselves.
+
 ** The gates
 
 The generator fails, rather than writing a guess, when:

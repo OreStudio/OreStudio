@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: 10F49F97-EBA8-4940-96AA-4AC19937472B
 :END:
-#+title: The codegen handler permission test fails on main: the commo…
-#+description: The codegen handler permission test fails on main: the commodity handler's permissions are not seeded. test_every_handler_permission_is_seeded and test_a_code_missing_from_the_seeds_is_reported in projects/ores.codegen/tests/test_handler_permissions.py fail on a clean checkout of origin/main b4585bf228, naming refdata::commodities:delete and two more codes that commodity_handler.hpp needs and iam_permissions_populate.sql lacks. Every branch that touches build/scripts now fails the tooling class of the local gate on main's defect. Found while raising the identifier PR of the UX epic.
+#+title: The commodity handler permissions are not seeded
+#+description: Two codegen tests fail on main because commodity_handler.hpp needs permission codes iam_permissions_populate.sql lacks.
 #+type: capture
 #+level: cross
-#+filetags: :capture:
+#+filetags: :codegen:gate:bug:capture:inbox:
 #+created: 2026-10-25
 #+updated: 2026-10-25
 
@@ -13,15 +13,22 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+The codegen handler permission test fails on main: the commodity handler's permissions are not seeded. test_every_handler_permission_is_seeded and test_a_code_missing_from_the_seeds_is_reported in projects/ores.codegen/tests/test_handler_permissions.py fail on a clean checkout of origin/main b4585bf228, naming refdata::commodities:delete and two more codes that commodity_handler.hpp needs and iam_permissions_populate.sql lacks. Every branch that touches build/scripts now fails the tooling class of the local gate on main's defect. Found while raising the identifier PR of the UX epic.
+
+The codes test_every_handler_permission_is_seeded names start with
+refdata::commodities:delete; run the test for the other two. The fix is most
+likely the three codes added to iam_permissions_populate.sql.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+Every branch that touches build/scripts runs the tooling class of the local
+gate, and the gate is red on main's defect, so a clean branch cannot show a
+clean report until this is fixed.
 
 * References
 
--
+- =projects/ores.codegen/tests/test_handler_permissions.py= — the two failing tests.
+- =projects/ores.refdata/core/include/ores.refdata.core/messaging/commodity_handler.hpp= — the handler that needs the codes.
 
 * See also
 

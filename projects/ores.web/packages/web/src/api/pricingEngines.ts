@@ -102,6 +102,7 @@ const vocabularySchema = z.object({
             description: z.string(),
             instrumentTypeCode: z.string(),
             assetClass: z.string(),
+            documentation: z.string().default(''),
         }),
     ),
     pairs: z.array(

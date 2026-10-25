@@ -4612,7 +4612,7 @@ export const en: SourceCatalogue = {
         reporting: {
             party: 'Party',
             allParties: 'All parties',
-            noParty: 'Works in no party',
+                noParty: 'Works in no party',
             outside: 'Reports to someone you cannot see',
             outsideManager: 'Someone outside your view',
             zoomIn: 'Zoom in',
@@ -4839,6 +4839,7 @@ export const en: SourceCatalogue = {
         },
         title: 'Product pricing',
         lead: 'How each product type is priced for the party you work in: the model, the engine and their parameters.',
+        allParties: 'All parties',
         tabs: {
             label: 'Configuration sections',
             details: 'Details',
@@ -4858,6 +4859,8 @@ export const en: SourceCatalogue = {
             parameters: 'Parameters',
             noParameters: 'No parameters. The model or the engine uses its own defaults.',
             documentation: 'Documentation',
+            filter: 'Filter products',
+            noMatch: 'No product matches.',
             format: 'Format',
             default: 'Default',
             introduced: 'Introduced in',
@@ -4891,6 +4894,7 @@ export const en: SourceCatalogue = {
             noDescription: 'No description',
         },
         actions: {
+            edit: 'Edit',
             addProduct: 'Add product',
             change: 'Change',
             remove: 'Remove',
@@ -4929,6 +4933,8 @@ export const en: SourceCatalogue = {
                 'The models and engines could not be read, so products cannot be changed: {message}',
         },
         change: {
+            reviewHint:
+                'The change is shown in the difference and the checks. Give a reason to save it.',
             detailsTitle: 'Change {name}',
             productTitle: 'Change how {type} is priced',
             addTitle: 'Add a product to {name}',

@@ -59,6 +59,7 @@ import { RefreshButton } from '../ui/RefreshButton.js';
 import { Button, Detail, Dialog, Field, Input, Notice, Select, Tag } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
 import { useTabs } from '../ui/Tabs.js';
+import { EditingModeToggle, useEditingMode, type EditingMode } from '../ui/EditingMode.js';
 import { PRICING_ENGINES_EVENTS } from './PricingEnginesPage.js';
 import { ModelEnginePanels, SettingValue } from './parts.js';
 import { SaveDialog } from './SaveDialog.js';
@@ -125,9 +126,9 @@ export function PricingEnginePage(): ReactNode {
     const mayWrite = holds(PERMISSION.pricingEnginesWrite);
     const mayDelete = holds(PERMISSION.pricingEnginesDelete);
     const [selected, setSelected] = useState<string | null>(null);
+    const [mode, setMode] = useEditingMode();
     const [dialog, setDialog] = useState<
         | { readonly kind: 'details' }
-        | { readonly kind: 'product'; readonly productId: string }
         | { readonly kind: 'add' }
         | { readonly kind: 'remove'; readonly productId: string }
         | { readonly kind: 'delete' }
@@ -211,7 +212,12 @@ export function PricingEnginePage(): ReactNode {
                 version={document.version}
                 subdued
                 access={mayWrite}
-                own={<RefreshButton onClick={reload} load={load} news={news} />}
+                own={
+                    <div className="flex items-center gap-2">
+                        <EditingModeToggle mode={mode} onChange={setMode} />
+                        <RefreshButton onClick={reload} load={load} news={news} />
+                    </div>
+                }
                 onEdit={mayWrite ? () => setDialog({ kind: 'details' }) : undefined}
                 onDelete={mayDelete ? () => setDialog({ kind: 'delete' }) : undefined}
             />
@@ -224,7 +230,7 @@ export function PricingEnginePage(): ReactNode {
                 />
             )}
             {tabs.tab === 'globals' && (
-                <GlobalParametersTab document={document} vocabulary={known} />
+                <GlobalParametersTab document={document} vocabulary={known} mode={mode} />
             )}
             {tabs.tab === 'products' && (
                 <ProductsTab
@@ -232,9 +238,9 @@ export function PricingEnginePage(): ReactNode {
                     draft={draft}
                     vocabulary={known}
                     mayWrite={mayWrite && known !== undefined}
+                    mode={mode}
                     chosen={chosen}
                     onSelect={setSelected}
-                    onChange={(productId) => setDialog({ kind: 'product', productId })}
                     onRemove={(productId) => setDialog({ kind: 'remove', productId })}
                     onAdd={() => setDialog({ kind: 'add' })}
                 />
@@ -252,14 +258,6 @@ export function PricingEnginePage(): ReactNode {
             )}
             {dialog?.kind === 'details' && (
                 <DetailsDialog document={document} vocabulary={known} onClose={close} />
-            )}
-            {dialog?.kind === 'product' && known !== undefined && (
-                <ProductDialog
-                    document={document}
-                    vocabulary={known}
-                    productId={dialog.productId}
-                    onClose={close}
-                />
             )}
             {dialog?.kind === 'add' && known !== undefined && (
                 <AddProductDialog document={document} vocabulary={known} onClose={close} />
@@ -350,9 +348,11 @@ function DetailsTab({
 function GlobalParametersTab({
     document,
     vocabulary,
+    mode,
 }: {
     readonly document: PricingDocument;
     readonly vocabulary: PricingVocabulary | undefined;
+    readonly mode: EditingMode;
 }): ReactNode {
     const { t } = useTranslation();
     const globals = document.parameters.filter((parameter) => parameter.productId === null);
@@ -373,6 +373,7 @@ function GlobalParametersTab({
                             doc={(vocabulary?.globals ?? []).find(
                                 (entry) => entry.name === parameter.name,
                             )}
+                            mode={mode}
                         />
                     ))}
                 </div>
@@ -387,9 +388,9 @@ function ProductsTab({
     draft,
     vocabulary,
     mayWrite,
+    mode,
     chosen,
     onSelect,
-    onChange,
     onRemove,
     onAdd,
 }: {
@@ -397,16 +398,28 @@ function ProductsTab({
     readonly draft: Draft;
     readonly vocabulary: PricingVocabulary | undefined;
     readonly mayWrite: boolean;
+    readonly mode: EditingMode;
     readonly chosen: PricingProduct | undefined;
     readonly onSelect: (id: string) => void;
-    readonly onChange: (id: string) => void;
     readonly onRemove: (id: string) => void;
     readonly onAdd: () => void;
 }): ReactNode {
     const { t } = useTranslation();
+    const [filter, setFilter] = useState('');
     const products = [...document.products].sort((a, b) => a.position - b.position);
+    const needle = filter.trim().toLowerCase();
+    const visible =
+        needle === ''
+            ? products
+            : products.filter(
+                  (product) =>
+                      product.typeCode.toLowerCase().includes(needle) ||
+                      assetClassLabel(assetClassOf(vocabulary, product.typeCode))
+                          .toLowerCase()
+                          .includes(needle),
+              );
     const classes = [
-        ...new Set(products.map((product) => assetClassOf(vocabulary, product.typeCode))),
+        ...new Set(visible.map((product) => assetClassOf(vocabulary, product.typeCode))),
     ];
     return (
         <div className="grid gap-4 lg:grid-cols-[15rem_minmax(0,1fr)]">
@@ -419,39 +432,58 @@ function ProductsTab({
                         })}
                     </p>
                 </div>
+                {products.length > 0 && (
+                    <input
+                        value={filter}
+                        onChange={(event) => setFilter(event.target.value)}
+                        placeholder={t('pricingEngines.workbench.filter')}
+                        aria-label={t('pricingEngines.workbench.filter')}
+                        className="w-full rounded border border-line bg-surface-base px-2 py-1 text-sm text-ink placeholder:text-ink-faint"
+                    />
+                )}
                 {products.length === 0 ? (
                     <p className="text-sm text-ink-muted">
                         {t('pricingEngines.record.noProducts')}
                     </p>
+                ) : visible.length === 0 ? (
+                    <p className="text-sm text-ink-muted">
+                        {t('pricingEngines.workbench.noMatch')}
+                    </p>
                 ) : (
-                    classes.map((assetClass) => (
-                        <div key={assetClass} className="space-y-1">
-                            <div className="px-1 pt-2 text-[10px] tracking-wide text-ink-faint uppercase">
-                                {assetClassLabel(assetClass) === ''
-                                    ? t('pricingEngines.workbench.assetClass')
-                                    : assetClassLabel(assetClass)}
-                            </div>
-                            {products
-                                .filter(
-                                    (product) =>
-                                        assetClassOf(vocabulary, product.typeCode) === assetClass,
-                                )
-                                .map((product) => (
-                                    <button
-                                        key={product.id}
-                                        type="button"
-                                        onClick={() => onSelect(product.id)}
-                                        className={
-                                            product.id === chosen?.id
-                                                ? 'block w-full rounded border-l-2 border-accent bg-panel-2 px-2 py-1 text-left text-sm text-ink'
-                                                : 'block w-full rounded border-l-2 border-transparent px-2 py-1 text-left text-sm text-ink-muted hover:text-ink'
-                                        }
-                                    >
-                                        {product.typeCode}
-                                    </button>
-                                ))}
-                        </div>
-                    ))
+                    classes.map((assetClass) => {
+                        const inside = visible.filter(
+                            (product) => assetClassOf(vocabulary, product.typeCode) === assetClass,
+                        );
+                        return (
+                            <details key={assetClass} open className="group/class">
+                                <summary className="flex cursor-pointer items-baseline justify-between gap-2 px-1 pt-2 text-[10px] tracking-wide text-ink-faint uppercase">
+                                    <span>
+                                        {assetClassLabel(assetClass) === ''
+                                            ? t('pricingEngines.workbench.assetClass')
+                                            : assetClassLabel(assetClass)}
+                                    </span>
+                                    <span>{inside.length}</span>
+                                </summary>
+                                <div className="space-y-1 pt-1">
+                                    {inside.map((product) => (
+                                        <button
+                                            key={product.id}
+                                            type="button"
+                                            title={product.typeCode}
+                                            onClick={() => onSelect(product.id)}
+                                            className={
+                                                product.id === chosen?.id
+                                                    ? 'block w-full rounded border-l-2 border-accent bg-panel-2 px-2 py-1 text-left text-sm break-words text-ink [overflow-wrap:anywhere]'
+                                                    : 'block w-full rounded border-l-2 border-transparent px-2 py-1 text-left text-sm break-words text-ink-muted hover:text-ink [overflow-wrap:anywhere]'
+                                            }
+                                        >
+                                            {product.typeCode}
+                                        </button>
+                                    ))}
+                                </div>
+                            </details>
+                        );
+                    })
                 )}
                 {mayWrite && (
                     <Button size="sm" icon="add" onClick={onAdd}>
@@ -477,11 +509,12 @@ function ProductsTab({
                     </section>
                 ) : (
                     <Workbench
+                        document={document}
                         draft={draft}
                         vocabulary={vocabulary}
                         product={chosen}
                         mayWrite={mayWrite}
-                        onChange={() => onChange(chosen.id)}
+                        mode={mode}
                         onRemove={() => onRemove(chosen.id)}
                     />
                 )}
@@ -492,21 +525,25 @@ function ProductsTab({
 
 /** The selected product: what it is, its model and its engine. */
 function Workbench({
+    document,
     draft,
     vocabulary,
     product,
     mayWrite,
-    onChange,
+    mode,
     onRemove,
 }: {
+    readonly document: PricingDocument;
     readonly draft: Draft;
     readonly vocabulary: PricingVocabulary | undefined;
     readonly product: PricingProduct;
     readonly mayWrite: boolean;
-    readonly onChange: () => void;
+    readonly mode: EditingMode;
     readonly onRemove: () => void;
 }): ReactNode {
     const { t } = useTranslation();
+    const [editing, setEditing] = useState(false);
+    const [saving, setSaving] = useState<Draft | null>(null);
     const type = vocabulary?.types.find((candidate) => candidate.code === product.typeCode);
     const parameters = parametersOf(draft, product.id);
     const settings = vocabulary
@@ -533,10 +570,10 @@ function Workbench({
                                 .join(' · ')}
                         </p>
                     </div>
-                    {mayWrite && (
+                    {mayWrite && !editing && (
                         <div className="flex gap-2">
-                            <Button size="sm" icon="edit" onClick={onChange}>
-                                {t('pricingEngines.actions.change')}
+                            <Button size="sm" icon="edit" onClick={() => setEditing(true)}>
+                                {t('pricingEngines.actions.edit')}
                             </Button>
                             <Button size="sm" variant="danger" icon="delete" onClick={onRemove}>
                                 {t('pricingEngines.actions.remove')}
@@ -544,11 +581,29 @@ function Workbench({
                         </div>
                     )}
                 </header>
-                {type !== undefined && type.description !== '' && (
-                    <p className="text-sm text-ink-muted">{type.description}</p>
-                )}
+                <details>
+                    <summary className="cursor-pointer text-xs text-ink-faint">
+                        {t('pricingEngines.workbench.documentation')}
+                    </summary>
+                    <p className="pt-1 text-sm text-ink-muted">
+                        {type !== undefined && type.documentation !== ''
+                            ? type.documentation
+                            : t('pricingEngines.workbench.noDescription')}
+                    </p>
+                </details>
             </section>
+            {editing && vocabulary !== undefined ? (
+                <ProductEditor
+                    document={document}
+                    vocabulary={vocabulary}
+                    productId={product.id}
+                    onCancel={() => setEditing(false)}
+                    onSave={(after) => setSaving(after)}
+                />
+            ) : (
+                <>
             <RoleCard
+                mode={mode}
                 title={t('pricingEngines.fields.model')}
                 definition={t('pricingEngines.workbench.definitionModel')}
                 code={product.model}
@@ -559,6 +614,7 @@ function Workbench({
                 settingOf={settingOf}
             />
             <RoleCard
+                mode={mode}
                 title={t('pricingEngines.fields.engine')}
                 definition={t('pricingEngines.workbench.definitionEngine')}
                 code={product.engine}
@@ -573,6 +629,25 @@ function Workbench({
                         : isKnownPair(vocabulary, product.typeCode, product.model, product.engine)
                 }
             />
+                </>
+            )}
+            {saving !== null && vocabulary !== undefined && (
+                <SaveDialog
+                    title={t('pricingEngines.change.productTitle', { type: product.typeCode })}
+                    document={document}
+                    after={saving}
+                    vocabulary={vocabulary}
+                    onClose={() => setSaving(null)}
+                    onSaved={() => {
+                        setSaving(null);
+                        setEditing(false);
+                    }}
+                >
+                    <p className="text-sm text-ink-muted">
+                        {t('pricingEngines.change.reviewHint')}
+                    </p>
+                </SaveDialog>
+            )}
         </div>
     );
 }
@@ -602,6 +677,7 @@ function RoleCard({
     source,
     parameters,
     settingOf,
+    mode,
     pairKnown,
 }: {
     readonly title: string;
@@ -612,6 +688,7 @@ function RoleCard({
     readonly source: string;
     readonly parameters: readonly PricingParameter[];
     readonly settingOf: (scope: string, name: string) => SettingDoc | undefined;
+    readonly mode: EditingMode;
     readonly pairKnown?: boolean | undefined;
 }): ReactNode {
     const { t } = useTranslation();
@@ -654,6 +731,7 @@ function RoleCard({
                             key={parameter.id}
                             parameter={parameter}
                             doc={settingOf(parameter.scope, parameter.name)}
+                            mode={mode}
                         />
                     ))
                 )}
@@ -669,9 +747,11 @@ function RoleCard({
 function ParameterRow({
     parameter,
     doc,
+    mode,
 }: {
     readonly parameter: PricingParameter;
     readonly doc: ParameterDoc | undefined;
+    readonly mode: EditingMode;
 }): ReactNode {
     const { t } = useTranslation();
     const label = doc?.label !== undefined && doc.label !== '' ? doc.label : parameter.name;
@@ -695,15 +775,17 @@ function ParameterRow({
                         <p>{t('pricingEngines.globals.noDocumentation')}</p>
                     ) : (
                         <>
-                            {doc.format !== undefined && doc.format !== '' && (
-                                <p className="text-ink-faint">
-                                    {t('pricingEngines.workbench.format')}: {doc.format}
-                                </p>
-                            )}
                             {doc.defaultText !== undefined && doc.defaultText !== '' && (
                                 <p className="text-ink-faint">
                                     {t('pricingEngines.workbench.default')}:{' '}
                                     <span className="font-mono">{doc.defaultText}</span>
+                                </p>
+                            )}
+                            {mode === 'advanced' && (
+                                <>
+                            {doc.format !== undefined && doc.format !== '' && (
+                                <p className="text-ink-faint">
+                                    {t('pricingEngines.workbench.format')}: {doc.format}
                                 </p>
                             )}
                             {doc.required === true && (
@@ -718,6 +800,8 @@ function ParameterRow({
                             )}
                             {doc.xpath !== undefined && doc.xpath !== '' && (
                                 <p className="font-mono text-[10px] text-ink-faint">{doc.xpath}</p>
+                            )}
+                                </>
                             )}
                         </>
                     )}
@@ -806,22 +890,24 @@ function DetailsDialog({
 }
 
 /**
- * Changes how one product is priced: the model, the engine and the values of
- * its settings. A setting the new pair does not take is offered for dropping and
- * a setting it usually needs is offered for adding. Nothing is dropped or added
- * until the person ticks it, and a pair not known to work is marked and never
- * refused.
+ * Changes how one product is priced, in place: the model, the engine and the
+ * values of its settings. A setting the new pair does not take is offered for
+ * dropping and a setting it usually needs is offered for adding. Nothing is
+ * dropped or added until the person ticks it, and a pair not known to work is
+ * marked and never refused.
  */
-function ProductDialog({
+function ProductEditor({
     document,
     vocabulary,
     productId,
-    onClose,
+    onCancel,
+    onSave,
 }: {
     readonly document: PricingDocument;
     readonly vocabulary: PricingVocabulary;
     readonly productId: string;
-    readonly onClose: () => void;
+    readonly onCancel: () => void;
+    readonly onSave: (after: Draft) => void;
 }): ReactNode {
     const { t } = useTranslation();
     const product = document.products.find((candidate) => candidate.id === productId);
@@ -856,15 +942,13 @@ function ProductDialog({
     const kept = parametersOf(after, productId);
 
     return (
-        <SaveDialog
-            title={t('pricingEngines.change.productTitle', { type: product.typeCode })}
-            document={document}
-            after={after}
-            vocabulary={vocabulary}
-            onClose={onClose}
-        >
+        <section className="card space-y-4 p-4">
+            <header className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="text-sm font-medium">
+                    {t('pricingEngines.change.productTitle', { type: product.typeCode })}
+                </h2>
+            </header>
             <div className="space-y-4">
-                <p className="text-xs text-ink-faint">{t('pricingEngines.record.reachUnknown')}</p>
                 <ModelEnginePanels
                     vocabulary={vocabulary}
                     typeCode={product.typeCode}
@@ -969,7 +1053,15 @@ function ProductDialog({
                     </fieldset>
                 )}
             </div>
-        </SaveDialog>
+            <div className="flex justify-end gap-2 border-t border-line-subtle pt-2">
+                <Button variant="ghost" onClick={onCancel}>
+                    {t('common.cancel')}
+                </Button>
+                <Button variant="primary" icon="save" onClick={() => onSave(after)}>
+                    {t('pricingEngines.save.save')}
+                </Button>
+            </div>
+        </section>
     );
 }
 

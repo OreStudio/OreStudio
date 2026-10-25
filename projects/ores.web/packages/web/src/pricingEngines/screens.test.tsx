@@ -25,6 +25,7 @@ import type { PricingDocument, PricingSummary, PricingVocabulary } from '../api/
 import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
 import { accessOf, renderRecords } from '../refdata/testSupport.js';
 import { textOf } from '../textOf.js';
+import { MY_PARTIES_QUERY_KEY } from '../refdata/partyScope.js';
 import { PricingEnginePage, VOCABULARY_KEY, pricingEngineKey } from './PricingEnginePage.js';
 import { PricingEngineJourney, HELD_KEY } from './PricingEngineJourney.js';
 import { ModelEnginePanels, SettingValue } from './parts.js';
@@ -156,6 +157,11 @@ const VOCABULARY: PricingVocabulary = {
             required: false,
             help: 'The sensitivity template of the product.',
             description: 'The sensitivity template of the product.',
+            label: 'Sensitivity template',
+            defaultText: 'IR_FD',
+            format: 'The code of a sensitivity template.',
+            introducedIn: '1.8.0.7 or earlier',
+            xpath: "/PricingEngines/Product[@type='BermudanSwaption']/EngineParameters/Parameter[@name='SensitivityTemplate']",
         },
         {
             typeCode: 'BermudanSwaption',
@@ -210,13 +216,35 @@ const VOCABULARY: PricingVocabulary = {
 const WRITE = ['analytics::pricing_model_configs:read', 'analytics::pricing_model_configs:write'];
 const READ = ['analytics::pricing_model_configs:read'];
 
-function list(codes: string[]): string {
+const party = (partyId: string, name: string) => ({
+    partyId,
+    name,
+    shortCode: name.slice(0, 3).toUpperCase(),
+    partyCategory: 'Operational',
+    businessCenterCode: 'GBLO',
+});
+
+const ONE_PARTY = { defaultPartyId: 'p-london', parties: [party('p-london', 'ACME Corporation UK')] };
+const TWO_PARTIES = {
+    defaultPartyId: 'p-london',
+    parties: [
+        party('p-london', 'ACME Corporation UK'),
+        party('p-newyork', 'ACME Corporation US'),
+    ],
+};
+
+function list(
+    codes: string[],
+    parties = TWO_PARTIES,
+    query = '',
+): string {
     return renderRecords(
-        '/reporting/pricing-engines',
+        `/reporting/pricing-engines${query}`,
         [],
         <Route path="/reporting/pricing-engines" element={<PricingEnginesPage />} />,
         (client: QueryClient) => {
             client.setQueryData(['my-access'], accessOf(codes));
+            client.setQueryData(MY_PARTIES_QUERY_KEY, parties);
             client.setQueryData(pageKey({ key: 'pricing-engines' }, FIRST_PAGE), {
                 rows: ROWS,
                 total: ROWS.length,
@@ -302,6 +330,20 @@ describe('the list of pricing engine configurations', () => {
         expect(html).toContain(`href="/reporting/pricing-engines/${INTRADAY}"`);
     });
 
+    it('offers the party filter only when the account works in more than one party', () => {
+        expect(textOf(list(READ, TWO_PARTIES))).toContain('All parties');
+        expect(textOf(list(READ, ONE_PARTY))).not.toContain('All parties');
+    });
+
+    it('narrows the rows to the chosen party', () => {
+        const page = { offset: 0, limit: 15, sort: 'name', descending: false, search: '' };
+        const text = pageOf(ROWS, { ...page, filters: { party: 'p-london' } });
+        expect(text.rows.map((row) => row.name)).toEqual(['EOD pricing']);
+        expect(pageOf(ROWS, { ...page, filters: { party: 'p-newyork' } }).rows).toEqual([
+            ROWS[1],
+        ]);
+    });
+
     it('lists the workflows only to a person who may write', () => {
         expect(textOf(list(WRITE))).toContain('Define a pricing engine configuration');
         expect(textOf(list(READ))).not.toContain('Define a pricing engine configuration');
@@ -330,6 +372,12 @@ describe('one pricing engine configuration', () => {
         expect(text).toContain('Interest Rates');
     });
 
+    it('offers the Simple and Advanced switch', () => {
+        const text = textOf(record(READ, VOCABULARY, 'products'));
+        expect(text).toContain('Simple');
+        expect(text).toContain('Advanced');
+    });
+
     it('states the reach of a change', () => {
         const text = textOf(record(READ, VOCABULARY, 'reports'));
         expect(text).toContain('EOD risk');
@@ -343,9 +391,9 @@ describe('one pricing engine configuration', () => {
         expect(text).toContain('TARGET');
     });
 
-    it('offers Change, Remove and Add product to a person who may write', () => {
+    it('offers Edit, Remove and Add product to a person who may write', () => {
         const text = textOf(record(WRITE, VOCABULARY, 'products'));
-        expect(text).toContain('Change');
+        expect(text).toContain('Edit');
         expect(text).toContain('Remove');
         expect(text).toContain('Add product');
     });

@@ -421,12 +421,16 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
         source: text(row['source']),
     });
     return {
-        types: types.map((row) => ({
-            code: text(row['code']),
-            description: text(row['description']),
-            instrumentTypeCode: text(row['instrument_type_code']),
-            assetClass: assetClassOf.get(text(row['instrument_type_code'])) ?? '',
-        })),
+        types: types.map((row) => {
+            const doc = docOf('Types', '', text(row['code']));
+            return {
+                code: text(row['code']),
+                description: text(row['description']),
+                instrumentTypeCode: text(row['instrument_type_code']),
+                assetClass: assetClassOf.get(text(row['instrument_type_code'])) ?? '',
+                documentation: text(doc?.['description']),
+            };
+        }),
         pairs: pairs.map((row) => {
             const typeCode = text(row['pricing_engine_type_code']);
             const model = text(row['model']);

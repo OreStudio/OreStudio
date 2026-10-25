@@ -4910,6 +4910,7 @@ const fr: SourceCatalogue = {
         },
         title: 'Tarification des produits',
         lead: 'Les configurations de moteur de valorisation de la partie dans laquelle vous travaillez, avec les produits et les paramètres de chacune.',
+        allParties: 'Toutes les parties',
         tabs: {
             label: 'Sections de la configuration',
             details: 'Détails',
@@ -4930,6 +4931,8 @@ const fr: SourceCatalogue = {
             noParameters:
                 'Aucun paramètre. Le modèle ou le moteur utilise ses propres valeurs par défaut.',
             documentation: 'Documentation',
+            filter: 'Filtrer les produits',
+            noMatch: 'Aucun produit ne correspond.',
             format: 'Format',
             default: 'Valeur par défaut',
             introduced: 'Introduit dans',
@@ -4963,6 +4966,7 @@ const fr: SourceCatalogue = {
             noDescription: 'Aucune description',
         },
         actions: {
+            edit: 'Modifier',
             addProduct: 'Ajouter un produit',
             change: 'Modifier',
             remove: 'Retirer',
@@ -5001,6 +5005,8 @@ const fr: SourceCatalogue = {
                 'Les modèles et les moteurs n’ont pas pu être lus, donc les produits ne peuvent pas être modifiés : {message}',
         },
         change: {
+            reviewHint:
+                "Le changement apparaît dans la différence et les contrôles. Donnez une raison pour l'enregistrer.",
             detailsTitle: 'Modifier {name}',
             productTitle: 'Modifier la valorisation de {type}',
             addTitle: 'Ajouter un produit à {name}',

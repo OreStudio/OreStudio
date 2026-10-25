@@ -416,10 +416,43 @@ def pair_rows():
     return rows
 
 
+def type_rows():
+    with open(VOCABULARY) as f:
+        vocabulary = json.load(f)
+    rows = []
+    for code, entry in sorted(vocabulary.items()):
+        pairs = entry.get("pairs", [])
+        usual = next((p for p in pairs if p.get("usual")), pairs[0] if pairs else None)
+        used = (entry.get("used_by") or "").strip()
+        text = f"The {humanise(code)} product type."
+        if used:
+            text += f" ORE uses it for the trade type {used.rstrip('.')}."
+        if usual is not None:
+            text += (f" {len(pairs)} model and engine pair"
+                     f"{'s' if len(pairs) != 1 else ''} price it; the usual pair is "
+                     f"{usual['model']} with {usual['engine']}.")
+        rows.append({
+            "scope": "Types",
+            "subtype": "",
+            "name": code,
+            "domain": "string",
+            "required": False,
+            "label": humanise(code),
+            "help": f"Used by {used.rstrip('.')}." if used else f"The {humanise(code)} product type.",
+            "description": text,
+            "default_text": "The product type code.",
+            "format": "The product type code of an ORE pricing engine.",
+            "introduced_in": "1.8.0.7 or earlier",
+            "removed_in": None,
+            "xpath": f"/PricingEngines/Product[@type='{code}']",
+        })
+    return rows
+
+
 def rows():
     out = []
     for position, row in enumerate(
-        setting_rows() + global_rows() + model_rows() + pair_rows(), start=1
+        setting_rows() + global_rows() + model_rows() + pair_rows() + type_rows(), start=1
     ):
         out.append({**row, "position": position})
     return out

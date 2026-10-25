@@ -4879,6 +4879,7 @@ const pt: SourceCatalogue = {
         },
         title: 'Preços por produto',
         lead: 'As configurações de motor de avaliação da parte em que trabalha, com os produtos e as definições de cada uma.',
+        allParties: 'Todas as partes',
         tabs: {
             label: 'Secções da configuração',
             details: 'Detalhes',
@@ -4931,6 +4932,7 @@ const pt: SourceCatalogue = {
             noDescription: 'Sem descrição',
         },
         actions: {
+            edit: 'Editar',
             addProduct: 'Adicionar produto',
             change: 'Alterar',
             remove: 'Remover',
@@ -4969,6 +4971,8 @@ const pt: SourceCatalogue = {
                 'Os modelos e os motores não puderam ser lidos, por isso os produtos não podem ser alterados: {message}',
         },
         change: {
+            reviewHint:
+                'A alteração aparece na diferença e nas verificações. Indique uma razão para a guardar.',
             detailsTitle: 'Alterar {name}',
             productTitle: 'Alterar a avaliação de {type}',
             addTitle: 'Adicionar um produto a {name}',

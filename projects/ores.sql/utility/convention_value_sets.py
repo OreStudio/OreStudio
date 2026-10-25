@@ -21,8 +21,8 @@ A term's set follows from the type the ORE parser gives its value, as
 convention_terms.json records it:
 
 - a business day convention, a day counter or a currency draws on the refdata
-  catalogue of that kind, which holds every value the seeded conventions use but two
-  currency fund codes;
+  catalogue of that kind, which holds every value the seeded conventions use except
+  two currency fund codes, MXV and CLF;
 - a frequency, a compounding rule, a date generation rule, a month, a weekday or
   another value a parser maps is the list that parser's own map accepts, each string
   with the word it means;
@@ -33,6 +33,11 @@ convention_terms.json records it:
 - an index and any other term is text.
 
 Only a term the contract documents is linked, because the link names a row of it.
+
+A term whose parser states no list falls back to text only when its type says why: a
+calendar, an index, a number and the like. Any other parser with no list stops the
+generator, because a parser that gained a list, or a list the extractor failed to
+read, would otherwise leave the term free text with no one told.
 """
 
 import json
@@ -68,6 +73,12 @@ CATALOGUE_OF = {
     "day_counter": "refdata.day_counter",
     "currency": "refdata.currency",
 }
+
+# The kinds whose parser states no list, and the set each takes instead.
+WITHOUT_LIST = {"calendar": "text", "index": "text", "text": "text"}
+
+# A kind whose value one parser lists, whichever parser the term names.
+LIST_OF = {"frequency": "parseFrequency"}
 
 TYPE_SETS = {
     "boolean": "flag",
@@ -105,11 +116,17 @@ def parser_set_code(parser):
 
 def parser_set(parser, entry):
     """The set of one parser's map: every string it accepts, labelled with what it means."""
-    seen, values = set(), []
+    if len(entry["values"]) < 2:
+        raise ValueError(f"{parser} lists {len(entry['values'])} value at {entry['source_ref']}; "
+                         "the extractor likely misread it")
+    meaning_of, values = {}, []
     for item in entry["values"]:
-        if item["value"] in seen:
+        if item["value"] in meaning_of:
+            if meaning_of[item["value"]] != item["means"]:
+                raise ValueError(f"{parser} maps {item['value']} to both "
+                                 f"{meaning_of[item['value']]} and {item['means']}")
             continue
-        seen.add(item["value"])
+        meaning_of[item["value"]] = item["means"]
         meaning = words(item["means"])
         values.append({
             "value": item["value"],
@@ -130,14 +147,19 @@ def parser_set(parser, entry):
 
 
 def set_of(term, parsers):
+    """The set code of one term, and the parser whose list it is, if any."""
     kind = term["type"]
     if kind in CATALOGUE_OF:
-        return "convention." + kind
+        return "convention." + kind, None
     if kind in TYPE_SETS:
-        return TYPE_SETS[kind]
-    if term["parser"] and term["parser"] in parsers and kind != "calendar":
-        return parser_set_code(term["parser"])
-    return "text"
+        return TYPE_SETS[kind], None
+    parser = LIST_OF.get(kind, term["parser"])
+    if parser and parser in parsers:
+        return parser_set_code(parser), parser
+    if kind in WITHOUT_LIST:
+        return WITHOUT_LIST[kind], None
+    raise ValueError(f"{term['source_ref']}: {term['name']} is read by {term['parser']}, "
+                     f"which states no list, and its kind {kind} names no set")
 
 
 def data():
@@ -150,8 +172,8 @@ def data():
     for kind, catalogue in CATALOGUE_OF.items():
         sets["convention." + kind] = {
             "name": CATALOGUES[catalogue]["name"],
-            "description": f"A value from the {CATALOGUES[catalogue]['name'].lower()} "
-                           "reference data holds.",
+            "description": f"One of the {CATALOGUES[catalogue]['name'].lower()} "
+                           "that reference data holds.",
             "source_kind": "catalogue",
             "catalogue_code": catalogue,
             "is_ordered": False,
@@ -161,9 +183,9 @@ def data():
         for term in convention["terms"]:
             if (element, term["name"]) not in documented:
                 continue
-            code = set_of(term, parsers)
-            if code.startswith("convention.") and code not in sets:
-                sets[code] = parser_set(term["parser"], parsers[term["parser"]])
+            code, parser = set_of(term, parsers)
+            if parser and code not in sets:
+                sets[code] = parser_set(parser, parsers[parser])
             key = f"{element}|{term['name']}"
             if links.get(key, code) != code:
                 raise ValueError(f"{key} would take two sets, {links[key]} and {code}")

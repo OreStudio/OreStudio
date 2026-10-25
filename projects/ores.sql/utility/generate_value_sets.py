@@ -253,9 +253,10 @@ def add_conventions(data):
     """
     extra = convention_value_sets.data()
     problems = [f"{code}: a convention set clashes with an existing set"
-                for code in extra["sets"] if code in data["sets"]
-                and data["sets"][code] != extra["sets"][code]
-                and code not in ("flag", "text", "number")]
+                for code in extra["sets"] if code in data["sets"]]
+    problems += [f"{key}: names {code}, which no set holds"
+                 for key, code in extra["links"].items()
+                 if code not in extra["sets"] and code not in data["sets"]]
     problems += [f"{key}: a convention link clashes with an existing link"
                  for key in extra["links"] if key in data["links"]]
     registry = data["catalogues"]

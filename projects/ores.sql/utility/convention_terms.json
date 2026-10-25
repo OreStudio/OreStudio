@@ -1251,7 +1251,7 @@
           ],
           "read": "getChildValue",
           "source_ref": "OREData/ored/configuration/conventions.cpp:2066",
-          "type": "text"
+          "type": "frequency"
         },
         {
           "conditional": false,
@@ -1268,7 +1268,7 @@
           ],
           "read": "getChildValue",
           "source_ref": "OREData/ored/configuration/conventions.cpp:2067",
-          "type": "text"
+          "type": "frequency"
         },
         {
           "conditional": true,
@@ -5274,6 +5274,19 @@
         }
       ]
     },
+    "parseAveragingDataPeriod": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:1212",
+      "values": [
+        {
+          "means": "PreviousMonth",
+          "value": "PreviousMonth"
+        },
+        {
+          "means": "ExpiryToExpiry",
+          "value": "ExpiryToExpiry"
+        }
+      ]
+    },
     "parseBondPriceType": {
       "source_ref": "OREData/ored/utilities/parsers.cpp:405",
       "values": [
@@ -5761,6 +5774,58 @@
         {
           "means": "OneDayCounter",
           "value": "1/1"
+        },
+        {
+          "means": "Business252",
+          "value": "BUS/252"
+        },
+        {
+          "means": "Business252",
+          "value": "Business/252"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "Actual/365 (No Leap)"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "Act/365 (NL)"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "NL/365"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "Actual/365 (JGB)"
+        },
+        {
+          "means": "SimpleDayCounter",
+          "value": "Simple"
+        },
+        {
+          "means": "YearCounter",
+          "value": "Year"
+        },
+        {
+          "means": "Actual364",
+          "value": "A364"
+        },
+        {
+          "means": "Actual364",
+          "value": "Actual/364"
+        },
+        {
+          "means": "Actual364",
+          "value": "Act/364"
+        },
+        {
+          "means": "Actual364",
+          "value": "ACT/364"
+        },
+        {
+          "means": "MonthCounter",
+          "value": "Month"
         }
       ]
     },
@@ -5859,6 +5924,23 @@
         {
           "means": "Daily",
           "value": "Daily"
+        }
+      ]
+    },
+    "parseInflationSwapPublicationRoll": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:1099",
+      "values": [
+        {
+          "means": "None",
+          "value": "None"
+        },
+        {
+          "means": "OnPublicationDate",
+          "value": "OnPublicationDate"
+        },
+        {
+          "means": "AfterPublicationDate",
+          "value": "AfterPublicationDate"
         }
       ]
     },
@@ -5973,6 +6055,19 @@
         {
           "means": "Call",
           "value": "Call"
+        }
+      ]
+    },
+    "parseSubPeriodsCouponType": {
+      "source_ref": "OREData/ored/configuration/conventions.cpp:46",
+      "values": [
+        {
+          "means": "Compounding",
+          "value": "Compounding"
+        },
+        {
+          "means": "Averaging",
+          "value": "Averaging"
         }
       ]
     },

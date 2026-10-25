@@ -26,11 +26,11 @@ Build the two screens from doc/prototypes/trades/trade-page. Settle the open ite
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | The list has shipped. The trade page is next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build the trade page, then the portfolio tree once its count read lands. |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -229,3 +229,15 @@ The tab reads the terms from the table the trade's product type is stored in. Bo
 - The prototype's bond card also carries a *Legs* card. The tab does not show legs, and no capture said so until now: [[id:6C1D7A90-2B58-4E13-A9F4-58B0C2E7D316][The bond's legs are not on the instrument tab]].
 - The prototype draws the issue as a reference and every card with a record version and a read-only marker. The tab shows the issue inline and no version.
 - The instrument terms and the issue are still =Record<string, unknown>= on both sides. A typed shape would remove the casts, and it is the right next step before a second instrument table is routed.
+
+* Result
+
+The list and the page ship, and the arc around them closed more gaps than the task named.
+
+The list is at =/trading/trades=, under a Trading area whose page draws it as a card: identifier, type, counterparty, book, state and authorisation as badges, trade date, and the two versions in their own columns. The page is at =/trading/trades/:id= with five tabs — Details, Instrument, Identifiers and roles, Links, History — fed by one route so no tab reaches for a list of its own.
+
+Three reads did not exist and were built: a filter on both ends of =trade_links=, the registration of the =trade_link= handlers (the subject had no subscriber at all), and six permissions the screens need that no role held.
+
+Two classes of fault were found by using the screens rather than by reading them, and both were closed by construction rather than one site at a time: a list request must state every member its protocol decodes, now completed from a table generated out of the C++, with a check that holds hand-written payloads to it; and the check itself had an off-by-one that made it pass for the wrong reason, which is now fixed and proved by putting a wrong field name back.
+
+What the task deliberately does not cover, each recorded where it belongs: the prototype's Legs card, the record version and read-only markers, the untyped instrument shape, the empty issuer (a party id written into a text field), the issue's missing link in the seed, and every instrument type except Bond, which states that it is unrouted.

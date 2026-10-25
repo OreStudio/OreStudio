@@ -65,6 +65,8 @@ tick or one copy for each party]]. The slices, each verified before the next:
    template otherwise emits a broken key and create_hypertable call.
    Model the tick table with =:no_audit_columns:=, the hypertable knobs and the
    new traits, and prove the generated SQL matches the hand-written choices.
+   Delivered in PR #3769 with a baseline repair for the arrival change that
+   main left stale. The store reshape (1b) follows in its own PR.
 1b. Model the shared point store: a tick belongs to a source and a datum, not a
    party, and every row sits under the system tenant. The per-party series
    keeps its classification and gains the key that finds the shared stream.

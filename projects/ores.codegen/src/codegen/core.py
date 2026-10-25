@@ -1786,8 +1786,9 @@ def validate_rls_isolation(model):
         ValueError: if rls_tenant_isolation is set on an entity with no
             tenant_id, if rls_party_isolation is set on a domain entity that
             declares no party_id, if rls_party_isolation is set without
-            rls_tenant_isolation, if rls_own_or_system_tenant_rows is set
-            without rls_tenant_isolation, or if rls_own_or_system_tenant_rows
+            rls_tenant_isolation, if rls_account_party_isolation is set
+            without rls_party_isolation, if rls_own_or_system_tenant_rows is
+            set without rls_tenant_isolation, or if rls_own_or_system_tenant_rows
             and rls_system_tenant_visible are both set, or if
             rls_service_read_role is set without rls_tenant_isolation, on a
             junction, or with a name that is not a psql variable, or if
@@ -1811,6 +1812,11 @@ def validate_rls_isolation(model):
         raise ValueError(
             f"{name}: rls_party_isolation requires "
             f"rls_tenant_isolation")
+    if (sql_section.get('rls_account_party_isolation')
+            and not sql_section.get('rls_party_isolation')):
+        raise ValueError(
+            f"{name}: rls_account_party_isolation requires "
+            f"rls_party_isolation, because it widens the party policy")
     if (sql_section.get('rls_own_or_system_tenant_rows')
             and not sql_section.get('rls_tenant_isolation')):
         raise ValueError(
@@ -1850,7 +1856,8 @@ def validate_rls_isolation(model):
                 f"that pair of policies and no other")
         refused = [flag for flag in ('rls_system_tenant_visible',
                                      'rls_own_or_system_tenant_rows',
-                                     'rls_service_read_role')
+                                     'rls_service_read_role',
+                                     'rls_account_party_isolation')
                    if sql_section.get(flag)]
         if refused:
             raise ValueError(

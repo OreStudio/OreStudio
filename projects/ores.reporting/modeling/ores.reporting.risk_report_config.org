@@ -216,6 +216,7 @@ Whether the portfolio is read from sub directories, as ORE spells it: true or fa
 :index_prefix: risk_report_configs
 :rls_tenant_isolation: true
 :rls_party_isolation: true
+:rls_account_party_isolation: true
 :END:
 
 ** Checks

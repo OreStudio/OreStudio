@@ -152,6 +152,7 @@ and the order cannot be recovered by sorting. It is carried here instead.
 :tablename: ores_analytics_pricing_model_product_parameters_tbl
 :rls_tenant_isolation: true
 :rls_party_isolation: true
+:rls_account_party_isolation: true
 :END:
 
 * C++

@@ -110,6 +110,7 @@ ctx.generate_uuid()
 :index_prefix: engine_settings
 :rls_tenant_isolation: true
 :rls_party_isolation: true
+:rls_account_party_isolation: true
 :END:
 
 

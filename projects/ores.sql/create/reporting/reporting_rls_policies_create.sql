@@ -46,6 +46,11 @@ with check (
 -- When no party context is set (visible_party_ids is NULL), the policy
 -- passes through, preserving backward compatibility with service contexts
 -- that set only tenant context (e.g. report populators, test helpers).
+--
+-- A definition is named by the configurations an account reads, whichever of
+-- its parties holds them, so the actor's own parties are admitted beside the
+-- session's party set. They are the parties the account works in, and nothing
+-- else.
 drop policy if exists report_definitions_party_isolation_policy
     on ores_reporting_report_definitions_tbl;
 
@@ -55,6 +60,7 @@ as restrictive
 for select using (
     ores_iam_visible_party_ids_fn() is null
     or party_id = ANY(ores_iam_visible_party_ids_fn())
+    or party_id = ANY(ores_iam_actor_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------

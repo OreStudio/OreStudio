@@ -87,6 +87,8 @@ declare
     v_dataset_id uuid;
     v_tenant_id uuid := ores_utility_system_tenant_id_fn();
     v_count integer := 0;
+    v_flags_dataset_id uuid;
+    v_eu_image_id uuid;
 begin
     select id into v_dataset_id
     from ores_dq_datasets_tbl
@@ -179,8 +181,36 @@ begin
         -- ORE-native calendars: the FOMC meeting calendar, whose meeting
         -- dates the refdata.calendar_events dataset publishes
         (v_dataset_id, v_tenant_id, 'US.FOMC', 0, 'US Federal Reserve (FOMC meeting calendar)', 'central_bank_meeting', 'US');
-
     get diagnostics v_count = row_count;
+
+
+    -- A supranational calendar has no country to take a flag from, so the
+    -- publish reads the image stored here. TARGET carries the European Union
+    -- flag, the one the euro carries; the national calendars take their
+    -- country's flag on the screen and carry none here.
+    select id into v_flags_dataset_id
+    from ores_dq_datasets_tbl
+    where name = 'Country Flag Images'
+      and subject_area_name = 'Country Flags'
+      and domain_name = 'Reference Data'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_flags_dataset_id is not null then
+        select image_id into v_eu_image_id
+        from ores_dq_images_artefact_tbl
+        where dataset_id = v_flags_dataset_id
+          and key = 'eu';
+    end if;
+
+    if v_eu_image_id is null then
+        raise warning 'Flag image (eu) not found - TARGET will have no flag';
+    else
+        update ores_dq_calendars_artefact_tbl
+        set image_id = v_eu_image_id
+        where dataset_id = v_dataset_id
+          and code = 'TARGET';
+    end if;
+
 
     raise debug 'Successfully populated % calendars for dataset: refdata.calendars', v_count;
 end $$;

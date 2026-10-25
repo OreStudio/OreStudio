@@ -535,7 +535,7 @@ function CalendarBody({ calendar }: { readonly calendar: RecordRow }): ReactNode
                             entityType: 'ores.refdata.calendar_event',
                             rows: events.data ?? [],
                             name: (row) =>
-                                `${t('refdata.calendars.editPart.calendar-events')} ${show(row['name'])}`,
+                                `${t('refdata.calendars.editPart.calendar-events')} ${show(row['event_date'])} ${show(row['name'])}`,
                         },
                     ]}
                     {...(may.write && editable ? { onRevert: setReverting } : {})}

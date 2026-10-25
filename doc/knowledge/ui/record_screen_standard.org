@@ -459,9 +459,12 @@ two things:
   part it holds now, merged newest first and each entry named by its part, read
   through the generic history request (=GET /api/history=,
   =refdata.v1.history.get=) once per record and per part. A part deleted from
-  the record is not read, and the stream states that gap in words (decided
-  2026-10-25, when the owner's run of the calendars scenario looked for an
-  exception's change in the calendar's history).
+  the record is not read, and the stream states that gap in words, on every
+  record that has parts, as a standing caveat. A record's parts are few by
+  design, dozens and not thousands, so the screen reads each part's history
+  once; a kind whose parts are many needs a read by parent before it takes
+  this rule (decided 2026-10-25, when the owner's run of the calendars
+  scenario looked for an exception's change in the calendar's history).
 - *RS-HIST-02* /Revert/ is offered on any version but the current one, to a person who may write.
   It opens the revert dialog, which says that the values of version /n/ are written
   back as a new version and that no version is lost. It asks for a reason, and

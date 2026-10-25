@@ -75,11 +75,13 @@ export function RecordTimeline({
     const reads = [
         { entityType, entityId, name: undefined as string | undefined },
         ...parts.flatMap((part) =>
-            part.rows.map((row) => ({
-                entityType: part.entityType,
-                entityId: show(row['id']),
-                name: part.name(row),
-            })),
+            part.rows
+                .filter((row) => show(row['id']) !== '')
+                .map((row) => ({
+                    entityType: part.entityType,
+                    entityId: show(row['id']),
+                    name: part.name(row),
+                })),
         ),
     ];
     const results = useQueries({
@@ -89,14 +91,16 @@ export function RecordTimeline({
         })),
     });
 
-    if (results.some((result) => result.isPending)) {
+    const ownRead = results[0];
+    if (ownRead === undefined || ownRead.isPending) {
         return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
     }
-    const failed = results.find((result) => result.error !== null);
-    if (failed?.error) {
-        return <Notice tone="error">{failed.error.message}</Notice>;
+    if (ownRead.error) {
+        return <Notice tone="error">{ownRead.error.message}</Notice>;
     }
-    const own = results[0]?.data ?? [];
+    const own = ownRead.data ?? [];
+    // A part whose read failed is left out and named in the gaps; the record's own story stays.
+    const unread = reads.filter((read, index) => index > 0 && results[index]?.error);
     const newest = own[0]?.version ?? 0;
     const names = new Map<string, string>();
     const events: TimelineEvent[] = [];
@@ -112,7 +116,13 @@ export function RecordTimeline({
                 subject: 'record',
                 id: entityId,
                 events: orderTimeline(events),
-                gaps: parts.length === 0 ? [] : [{ entity: 'record_parts_removed', reason: '' }],
+                gaps: [
+                    ...(parts.length === 0 ? [] : [{ entity: 'record_parts_removed', reason: '' }]),
+                    ...unread.map((read) => ({
+                        entity: read.name ?? read.entityType,
+                        reason: results[reads.indexOf(read)]?.error?.message ?? '',
+                    })),
+                ],
             }}
             actorPath={actorPathFor(holds('iam::accounts:read'))}
             actorPicture={actorPicture}

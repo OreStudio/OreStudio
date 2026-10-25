@@ -57,6 +57,7 @@ PASS. Landed with Your account in the header.
 
 - Open Reference data, then Holiday calendars.
 - The breadcrumb reads Home › Reference data › Holiday calendars; the title is *Holiday calendars* with one sentence under it.
+- Each row shows its country's flag before its code; TARGET shows the European Union's, because it has no country and the seed gives it the euro's flag.
 - At the right stand *Refresh* with the load time under it, then *Add calendar*.
 - The table shows Code, Name, Calendar type, Country and Holidays from; the pager reads *1–15 of 61* and starts at 15 rows.
 - Type =TARGET= in the search box: one row, *TARGET (Euro area)*, and the address carries the search.
@@ -76,7 +77,7 @@ PASS. Crumbs, Refresh then Add, the load time, the pager 1–15 of 61, the searc
 - Click the *TARGET* row.
 - The page opens at =/refdata/calendars/TARGET=; the breadcrumb ends at *TARGET* and the title is *TARGET (Euro area)*; the lead reads *TARGET · version 1*.
 - At the right stand Refresh with its load time, the mark *Read only*, and *Derive a calendar*; there is no Edit, no Rebuild and no Delete.
-- The tabs are Details, Diary events and History; there is no Rules, Exceptions or Business days tab.
+- The tabs are Details, Diary events and History, and no more: a QuantLib calendar holds no rules and takes no exceptions, because QuantLib supplies its holidays, and its business days are not built here (a captured gap), so those three tabs are not drawn. The owner decided on 2026-10-25 that this stays.
 - Details end with the notice that QuantLib supplies the holidays, and with the last-changed line.
 
 *** Result

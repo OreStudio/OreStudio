@@ -164,8 +164,10 @@ every state with Playwright and fails on a script error.
 
 ** The verdict
 
-Open. The owner signs it off before the build task starts. The build then
-moves the three web screens to this: the Import and Export pair with its
+Signed off by the owner on 2026-10-25, with one note: the live currencies
+screens are not modernised yet, and their History is still the legacy
+=HistoryPanel=; the build moves them. The build moves the three web screens
+to this: the Import and Export pair with its
 three server operations and the shared =OreExchange=, the pair dialog as the
 shared record dialog with two groups, the selects for Day basis and ORE
 currency type with their lists, the labels on the currencies list, the

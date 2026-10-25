@@ -131,6 +131,13 @@ public:
  */
 class synthetic_commands {
 private:
+    static void process_regime_get(std::ostream& out,
+                                   ores::nats::service::nats_client& session,
+                                   const std::vector<std::string>& args);
+    static void process_regime_pin(std::ostream& out,
+                                   ores::nats::service::nats_client& session,
+                                   const std::vector<std::string>& args);
+
     inline static std::string_view logger_name = "ores.shell.app.commands.synthetic_commands";
 
     static auto& lg() {

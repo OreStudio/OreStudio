@@ -1,0 +1,60 @@
+#+title: The tests the record screen specification requires
+#+description: The obligations propagated from record-screen-behaviour.allium, derived by hand because the Allium CLI is not installed, for the harness story to take.
+
+The Allium CLI is not installed in this environment, so =allium plan= could not
+produce the obligation list. This table derives it by hand from the test
+generation taxonomy, one row per construct of
+=doc/llm/specs/record-screen-behaviour.allium=. The third story, Check every
+record screen against the UX language, takes each row as a test of its harness.
+A row that needs a seam the code lacks says so.
+
+| # | Kind | Construct | The test | Identifiers | Seam |
+|---+------+-----------+----------+-------------+------|
+| 1 | rule success | NewsMakesScreenStale | A change of the screen's kind after the load began turns Refresh gold and the screen stale | ES-REFRESH-05, 07 | the change stream, or a second browser that saves |
+| 2 | rule failure | NewsMakesScreenStale | A change that arrived before the load began changes nothing | ES-REFRESH-05 | a controllable clock, or ordering through the stream |
+| 3 | rule edge | NewsMakesScreenStale | On a record page, news that names another record does not turn Refresh gold; news that names none does | ES-REFRESH-04 | the change stream |
+| 4 | invariant | GoldMeansStale | After any sequence of news and Refresh, the button is gold exactly when news arrived after the load began | ES-REFRESH-07, 08 | property test over sequences |
+| 5 | rule success | PersonPressesRefresh | Refresh reads again, clears the gold and moves the loaded time | ES-REFRESH-10 | none |
+| 6 | rule success | PersonPressesRefresh | A row that changed on the server is marked after Refresh; an unchanged row is not | ES-REFRESH-21, 22 | a second browser that saves |
+| 7 | temporal | RowMarksExpire | The mark goes after four seconds | ES-REFRESH-21 | a controllable clock, or a wait of four seconds |
+| 8 | guarantee | RefreshIsTheOnlyReload | After a save, after news, after focus and after the network returns, the page's loaded time has not moved | ES-REFRESH-11, 12, 15 | none |
+| 9 | rule success | PersonOpensEdit | Edit opens the dialog on the current values, with the loaded time under its title | RS-WRITE-20, ES-EDIT-02, ES-REFRESH-28 | none |
+| 10 | rule failure | PersonOpensEdit | A person who may not write sees no Edit | RS-FEEDBACK-01 | a member account |
+| 11 | rule success | NewerVersionWarnsTheDialog | A save by another browser while the dialog is open raises the warning, and the form's values stay | ES-REFRESH-24, 25 | a second browser |
+| 12 | rule success | PersonKeepsTheirEdit | Keep my edit moves the base to the newest version and the next save is accepted | ES-REFRESH-27 | a second browser |
+| 13 | rule success | PersonTakesTheNewValues | Take the new values replaces the form's values and clears the warning | ES-REFRESH-25 | a second browser |
+| 14 | invariant | ReasonsFollowTheChange | With a changed field the non material reason is not offered; with no change only it is | RS-WRITE-22 | none |
+| 15 | derived | Dialog.can_save | Save is disabled with an invalid field, a broken rule, a missing commentary or no reason, and enabled with no field change | RS-WRITE-21, ES-EDIT-03 | none |
+| 16 | rule success | SaveAccepted | A save at the base version writes a new version and closes the dialog | RS-WRITE-23, ES-EDIT-04 | none |
+| 17 | rule failure | SaveRefusedAsStale | A save after another browser saved is refused, the dialog stays open and offers to reload | RS-WRITE-23, ES-REFRESH-26 | a second browser |
+| 18 | rule success | SaveRefusedWithWords | A refusal shows the server's own words and the dialog stays open | RS-FEEDBACK-07 | a write the server refuses |
+| 19 | transition | Dialog.state | Closing with changes asks; Stay returns to open; Leave closes; closing without changes closes at once | RS-WRITE-24, ES-EDIT-05 | none |
+| 20 | transition graph | Dialog.state | Every declared edge is reachable and closed has no exit | | none |
+| 21 | rule success | PersonOpensAdd | Add opens the dialog with the one reason stated, not asked | RS-WRITE-17, 18 | none |
+| 22 | rule success | CreateAccepted | A free key creates the record at version one and opens its page | RS-WRITE-18, 19 | none |
+| 23 | rule failure | CreateRefusedAsDuplicate | A key that exists is refused and the refusal names the key | RS-WRITE-18 | none |
+| 24 | rule success | DeleteAccepted | Delete confirms, names the record, takes a reason, deletes own parts first and returns to the list | RS-WRITE-25 to 30, RS-FEEDBACK-04 | a record with parts |
+| 25 | rule failure | DeleteRefusedAsStale | A delete after another browser saved is refused | RS-WRITE-27 | a second browser |
+| 26 | rule edge | DeleteStopsWhenAPartFails | When a part's delete fails the record stays and a retry finishes | RS-WRITE-29 | a part the server refuses to delete |
+| 27 | rule success | RevertAccepted | Revert on an older version writes a new version with the old values and a reason | RS-HIST-02, RS-FEEDBACK-05 | none |
+| 28 | invariant | NoRevertOnTheCurrentVersion | The current version offers no Revert; every older one does to a writer | ES-HIST-11, RS-HIST-02 | none |
+| 29 | invariant | NoVersionIsLost | After a revert the versions are numbered without a gap | RS-FEEDBACK-05 | none |
+| 30 | rule success | LinkRemoved | A link is removed with Remove and the linked record stays | RS-RELATED-03 | a record with links |
+| 31 | invariant | LinksHaveNoHistory | A link has no history panel | RS-RELATED-03 | none |
+| 32 | invariant | PartsKeepTheirHistory | A deleted part's versions stay readable in the parent's history | RS-RELATED-05, 06 | a record with parts |
+| 33 | invariant | ActionsNotDrawnWithoutPermission | A member sees no Add, Edit or Delete; an administrator sees them | RS-FEEDBACK-01, 03 | two accounts |
+| 34 | invariant | NoSilentWrite | Every version in a history carries a reason | RS-FEEDBACK-06 | none |
+| 35 | surface exposure | RecordPage | The key, the version, the gold, the loaded time and each version's number, reason and current mark are visible | | none |
+| 36 | surface provides | RecordPage | Edit and Delete appear only when drawn and the record exists; Revert only on older versions to a writer | RS-FEEDBACK-01, RS-HIST-02 | two accounts |
+| 37 | surface exposure | RecordList | The gold, the loaded time and the marked rows are visible | | none |
+| 38 | surface provides | RecordList | Add appears only when drawn | RS-FEEDBACK-01 | two accounts |
+| 40 | rule success | FirstVersionWritten | A new record's history shows version one with the new record reason | RS-WRITE-18, RS-FEEDBACK-06 | none |
+| 41 | rule success | ReloadMarksTheRowsThatChanged | The rows the reload returns as changed are the ones marked, and no other | ES-REFRESH-21, 22 | a second browser that saves |
+| 42 | rule success | FieldEditedFollowsTheReasons | Editing a field back to its value clears a reason picked while it was changed | RS-WRITE-22 | none |
+| 43 | rule failure | RevertRefusedAsStale | A revert after another browser saved is refused and the page says so | RS-WRITE-23, RS-HIST-02 | a second browser |
+| 44 | invariant | NoSilentDelete | A deleted record carries the reason of its delete; a removed link carries none | RS-FEEDBACK-06, RS-RELATED-03 | a record with links |
+| 39 | open question | the first page after a write | Decide before the test: does Refresh after a write return to page one always, or only when the sort could move the record | RS Paging | the owner |
+
+Thirty nine obligations. Thirteen need a second browser or a second account,
+two need a controllable clock, and one is an open question for the owner. The
+rest need nothing the running environment lacks.

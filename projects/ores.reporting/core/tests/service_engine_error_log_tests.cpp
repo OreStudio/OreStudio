@@ -136,6 +136,7 @@ TEST_CASE("an analytic error that names a trade is about the trade and not the a
     CHECK(parsed->scope == "Analytics");
     CHECK(parsed->subject == "trade");
     CHECK(parsed->subject_id == "51957396-e970-5419-9e0b-b80373a4e30e");
+    CHECK(parsed->cause == "SA-CCR");
 }
 
 TEST_CASE("a curve error names the curve and a configuration warning names the input", tags) {
@@ -149,6 +150,7 @@ TEST_CASE("a curve error names the curve and a configuration warning names the i
     CHECK(curve->severity == "error");
     CHECK(curve->subject == "curve");
     CHECK(curve->subject_id == "[IndexCurve(EUR-ESTER,Yield/EUR/EUR1D)]");
+    CHECK(curve->cause == "Yield/EUR/EUR1D");
     const auto curve_detail = boost::json::parse(curve->detail).as_object();
     CHECK(curve_detail.at("exceptionType") == "Failed to Build Curve");
 
@@ -160,6 +162,19 @@ TEST_CASE("a curve error names the curve and a configuration warning names the i
     CHECK(configuration->severity == "warning");
     CHECK(configuration->subject == "configuration");
     CHECK(configuration->subject_id == "Netting set definitions");
+    CHECK(configuration->cause == "Netting set definitions");
+}
+
+TEST_CASE("a failed trade is placed on the curve its message names", tags) {
+    using ores::reporting::service::parse_engine_log_line;
+
+    const auto trade = parse_engine_log_line(
+        R"ORELOG({"category": "Error", "group": "Trade", "message": "Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-05-05 while processing Yield/GBP/GBP1D: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-05-05); ", "sub_fields": [{"name": "tradeId", "value": "28e6d1c3-b0aa-55fa-9c14-142e3e34092e"}, {"name": "exceptionType", "value": "Error building trade for context 'analytic/PRICING'"}]})ORELOG");
+
+    REQUIRE(trade.has_value());
+    CHECK(trade->scope == "Trade");
+    CHECK(trade->subject == "trade");
+    CHECK(trade->cause == "Yield/GBP/GBP1D");
 }
 
 TEST_CASE("a run whose analytics all ran records no error", tags) {

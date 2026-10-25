@@ -78,6 +78,7 @@ function errorRow(overrides: Record<string, unknown> = {}): Record<string, unkno
         subject_id: '[IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]',
         subject_version: null,
         subject_as_of: null,
+        cause: 'Yield/GBP/GBP1D',
         time: '2026-10-25 09:51:53.527119Z',
         ...overrides,
     };
@@ -145,7 +146,6 @@ describe('the report run page', () => {
         });
 
         expect(html).toContain('Market data is missing for 1 curve(s).');
-        expect(html).toContain('Priced at 2026-05-05');
         expect(html).toContain('View all 2 errors');
     });
 

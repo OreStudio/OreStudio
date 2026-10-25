@@ -60,6 +60,7 @@ domain::report_error_event report_error_event_mapper::map(const report_error_eve
     r.subject_as_of = v.subject_as_of.has_value() ?
                           std::optional(timestamp_to_timepoint(*v.subject_as_of)) :
                           std::nullopt;
+    r.cause = v.cause;
     r.detail = v.detail.value_or("");
     r.event_time = timestamp_to_timepoint(std::string_view{v.event_time});
 
@@ -85,6 +86,7 @@ report_error_event_entity report_error_event_mapper::map(const domain::report_er
         v.subject_as_of.has_value() ?
             std::optional(ores::platform::time::datetime::to_db_string(*v.subject_as_of)) :
             std::nullopt;
+    r.cause = v.cause;
     r.detail = v.detail.empty() ? std::nullopt : std::optional(v.detail);
     r.event_time = ores::platform::time::datetime::to_iso8601_utc(v.event_time);
 

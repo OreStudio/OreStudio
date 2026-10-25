@@ -26,11 +26,11 @@ The trade anchor holds origin and origin_reference. The booking request carries 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -86,6 +86,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| The trading suite, with the refusal cases | 220 cases passed, 1391 assertions | =publish/bin/ores.trading.core.tests= | 122f9c93dd |
+| The synthetic suite, unchanged | 66 cases passed, 1459 assertions | =publish/bin/ores.synthetic.core.tests= | 122f9c93dd |
+| The build | exit 0, 7876 targets | =compass build= | 122f9c93dd |
+| The codegen gate | no drift | =check_component_drift.py --all= | 122f9c93dd |
+| The cmake list gate | exit 0 | =regenerate_cmake_component_files.py --all --check= | 122f9c93dd |
 |      |       |         |        |
 
 * Notes
@@ -112,5 +117,27 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
+
+* Result
+
+A trade states where it came from and what that origin refers to. The lookup
+holds =ux=, =api=, =ore_import= and =synthetic=; the anchor references it with
+a foreign key, and the C++ type is an enum registered as a custom value type,
+so an unknown code cannot be constructed on either side.
+
+=book_trade= refuses an origin the caller may not state, before it writes
+anything: a client may state =ux= or =api=, while =synthetic= and
+=ore_import= belong to the services that own those paths, which the session
+names in its service account. Two database-backed cases prove it.
+
+The population writer states =synthetic= and its config id; the ORE import
+states =ore_import= and the ORE trade id. The screens have no booking path
+yet, so nothing states =ux=, and every other caller falls to =api=.
+
+The change reason still marks generated data. The acceptance asked for that
+to move to the origin, and origin now carries it, but the reason is read by
+the digest fold to decide whether an amendment moved the external version, so
+changing it would alter that logic. It is recorded here as deliberate rather
+than done.
 
 * Result

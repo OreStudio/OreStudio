@@ -68,7 +68,7 @@ const UNLINK_REASON = 'common.rectification';
 export type FieldKind =
     | { readonly kind: 'text'; readonly max?: number }
     | { readonly kind: 'int'; readonly min?: number; readonly max?: number }
-    | { readonly kind: 'decimal'; readonly positive?: boolean }
+    | { readonly kind: 'decimal'; readonly positive?: boolean; readonly below?: number }
     | { readonly kind: 'bool' }
     | { readonly kind: 'image' }
     | { readonly kind: 'date' }
@@ -525,7 +525,11 @@ export function invalidFields(specs: readonly FieldSpec[], values: FieldValues):
             }
             if (spec.kind.kind === 'decimal') {
                 const number = Number(raw);
-                return !Number.isFinite(number) || (spec.kind.positive === true && number <= 0);
+                return (
+                    !Number.isFinite(number) ||
+                    (spec.kind.positive === true && number <= 0) ||
+                    (spec.kind.below !== undefined && number >= spec.kind.below)
+                );
             }
             return false;
         })

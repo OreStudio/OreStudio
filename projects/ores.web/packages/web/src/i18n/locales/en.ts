@@ -4194,6 +4194,13 @@ export const en: SourceCatalogue = {
             samePair: 'The base and quote currencies must differ.',
             help: {
                 ticks_per_hour: 'How many prices the feed makes in an hour. 3600 is one a second.',
+                arrival_mode:
+                    'How the gaps between ticks behave: equal, exponential, or clustered. The rate above is the long-run mean in every mode.',
+                branching_ratio:
+                    'Hawkes only: how many further ticks one tick causes, below one. One or more never settles.',
+                decay: 'Hawkes only: how fast a burst fades, in units of one over a second.',
+                sensitivity:
+                    'How strongly a market-wide regime moves this pair, where one is the average. It does nothing until the market regime lands.',
                 price_source: {
                     fixed: 'The feed starts from the initial price you give.',
                     vintage:
@@ -4311,6 +4318,13 @@ export const en: SourceCatalogue = {
                     projection: 'The curve a floating index projects its forward rates on.',
                 },
                 ticks_per_hour: 'How many curves the feed makes in an hour. 3600 is one a second.',
+                arrival_mode:
+                    'How the gaps between ticks behave: equal, exponential, or clustered. The rate above is the long-run mean in every mode.',
+                branching_ratio:
+                    'Hawkes only: how many further ticks one tick causes, below one. One or more never settles.',
+                decay: 'Hawkes only: how fast a burst fades, in units of one over a second.',
+                sensitivity:
+                    'How strongly a market-wide regime moves this curve, where one is the average. It does nothing until the market regime lands.',
                 price_source: {
                     fixed: 'The curve starts from the rate you give on the Process tab.',
                     vintage:

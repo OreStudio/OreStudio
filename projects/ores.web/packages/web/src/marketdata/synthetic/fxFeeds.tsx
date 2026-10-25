@@ -34,6 +34,8 @@ import { TicksPanel } from './TicksPanel.js';
 const FEEDS = 'fx-feeds';
 
 const PROCESS_TYPES = ['geometric', 'arithmetic', 'ornstein_uhlenbeck'];
+const ARRIVAL_MODES = ['periodic', 'poisson', 'hawkes'] as const;
+
 const PRICE_SOURCES = ['fixed', 'vintage'];
 
 /**
@@ -85,6 +87,30 @@ const FEED_FIELDS: readonly FieldSpec[] = [
         history: 'Ticks Per Hour',
         kind: { kind: 'int', min: 1, max: 360000 },
         help: 'marketdata.fxFeeds.help.ticks_per_hour',
+    },
+    {
+        field: 'arrival_mode',
+        history: 'Arrival Mode',
+        kind: { kind: 'choice', options: ARRIVAL_MODES },
+        help: 'marketdata.fxFeeds.help.arrival_mode',
+    },
+    {
+        field: 'branching_ratio',
+        history: 'Branching Ratio',
+        kind: { kind: 'decimal', below: 1 },
+        help: 'marketdata.fxFeeds.help.branching_ratio',
+    },
+    {
+        field: 'decay',
+        history: 'Decay',
+        kind: { kind: 'decimal', positive: true },
+        help: 'marketdata.fxFeeds.help.decay',
+    },
+    {
+        field: 'sensitivity',
+        history: 'Sensitivity',
+        kind: { kind: 'decimal', positive: true },
+        help: 'marketdata.fxFeeds.help.sensitivity',
     },
     {
         field: 'price_source',

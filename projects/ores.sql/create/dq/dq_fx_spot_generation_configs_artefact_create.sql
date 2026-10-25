@@ -44,7 +44,11 @@ create table if not exists "ores_dq_fx_spot_generation_configs_artefact_tbl" (
     "price_source" text not null default 'vintage',
     "vintage_source" text null,
     "vintage_date" text null,
-    "provider_code" text null
+    "provider_code" text null,
+    "arrival_mode" text not null default 'periodic',
+    "branching_ratio" double precision not null default 0.0,
+    "decay" double precision not null default 1.0,
+    "sensitivity" double precision not null default 1.0
 );
 
 create index if not exists dq_fx_spot_generation_configs_artefact_dataset_idx

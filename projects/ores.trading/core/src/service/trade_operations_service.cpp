@@ -46,6 +46,7 @@
 #include <optional>
 #include <rfl.hpp>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::service {
 

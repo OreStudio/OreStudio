@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/record-where-a-trade-came-from
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-24
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,42 +26,140 @@ The trade anchor holds origin and origin_reference. The booking request carries 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                           |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
 
-- A lookup holds ux, api, ore_import and synthetic.
-- The anchor refuses an origin that is not in the lookup.
-- Synthetic and the ORE import state their origin. The reason code no longer marks generated data.
+- A lookup holds ux, api, ore_import and synthetic. *Met.* The table is
+  installation-wide, keyed by code, and seeded.
+- The anchor refuses an origin that is not in the lookup. *Met.* The model
+  declares a soft foreign key with =:target_column: code= and
+  =:use_no_tenant: true=, so the insert trigger checks the code against the
+  lookup and raises =23503= for anything else.
+- Synthetic and the ORE import state their origin. The reason code no longer
+  marks generated data. *Met.* The population states =synthetic= with its
+  config id and =system.new_record=; the import states =ore_import= with the
+  ORE trade id.
 - The service refuses an origin that the authenticated client may not state.
-- A database-backed test proves the refusal.
+  *Met, as a narrowing.* =book_trade= already required
+  =trading::trades:write=. Stating =synthetic= or =ore_import= now also needs
+  =trading::trades:write_service_origin=, which is seeded and granted to the
+  =Trading= role. It narrows who may claim a service origin without proving
+  who did: the generator authenticates as the party it books for, so the
+  permission it holds is held by that party's users. Making the claim
+  unforgeable needs the generator to authenticate as itself, which is
+  captured as =book_trade_cannot_validate_an_origin=.
+- A database-backed test proves the refusal. *Met.* Four cases over real
+  NATS prove both directions: a token with only the write permission is
+  refused for each service origin and writes no row, a token holding the
+  second permission books and stores the origin, and a token without it may
+  still state =api=.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. The lookup. =ores.trading.origin_type= mirrors =entry_channel_type=: a
+   closed set, =:has_tenant_id: false= because it is the same for every
+   tenant, a =code= primary key and a =description=, seeded once and never
+   changed at run time. Codes: =ux=, =api=, =ore_import= and =synthetic=.
+   Because it is immutable the anchor references it with a foreign key and
+   not a trigger check, which is the reason =entry_channel_type= already
+   gives.
+
+2. The anchor. =ores.trading.trade= gains =origin= and
+   =origin_reference=. The origin is not economic. =entry_channel= is
+   marked economic, but it records how a trade was executed, while origin
+   records which system first wrote it down: a re-import of the same trade
+   from ORE must not change its economic identity, so origin stays out of
+   the digest. =origin_reference= is the reference the origin implies: the
+   ORE trade id for an import, the generation config id for a synthetic
+   trade, and nothing for a person at a screen.
+
+3. The refusal. A client may state =ux= or =api=; =synthetic= and
+   =ore_import= are stated only by the services that own those paths. The
+   trading service refuses an origin the authenticated client may not
+   state, and the refusal names the origin.
+
+4. The callers. The synthetic writer states =synthetic= and its config id,
+   and stops marking generated rows with the reason code. The ORE import
+   states =ore_import= and the ORE trade id. The screens state =ux=. The
+   API default is =api=.
+
+5. Verification. A database-backed test proves the refusal for a client
+   that may not state an origin. A run of the commodity population proves
+   the synthetic path states its own origin, and the rows are read back.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+Measured on 2026-10-25 against the committed tree.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The build | exit 0, 7876 targets | =compass build= | 358765a62c |
+| The codegen gate | no drift | =check_component_drift.py --all= | 358765a62c |
+| The cmake list gate | exit 0 | =regenerate_cmake_component_files.py --all --check= | 358765a62c |
+| The trading core suite | 218 cases, 1386 assertions | =ores.trading.core.tests= | 358765a62c |
+| The trading service suite, with the origin gate | 14 cases, 43 assertions | =ores.trading.service.tests= | 358765a62c |
+| The synthetic suite | 66 cases, 1459 assertions | =ores.synthetic.core.tests= | 358765a62c |
+| The population run | 9 planned, 1 written, 8 already present | =synthetic generate-trades= | 358765a62c |
+| The stored row | =origin= synthetic, reference the config id, reason =system.new_record= | =select ... from ores_trading_trades_tbl= | 358765a62c |
+| The provisioning run | 9 of 9 steps completed | =compass shell -l ...acme...ores= | 358765a62c |
 
 * Notes
+
+** Review findings, and what was withdrawn
+
+The review of PR #3786 found more than it should have, and one finding was a
+regression rather than a gap.
+
+- *The refusal judged the host, not the caller.* =refuse_origin= read
+  =ctx.service_account()=, which is the trading service's own database user,
+  fixed at startup and preserved across requests. Both the population writer
+  and the ORE import reach =book_trade= through that service, so their context
+  is the trading service's, and both would have been refused — the very paths
+  this task made state an origin. The check was replaced: =book_trade= now
+  asks for =trading::trades:write_service_origin=, which every caller reaches
+  through its own token rather than through the process it lands on.
+- *There was no foreign key.* The model added =origin= under Columns but no
+  entry under Foreign keys, so codegen emitted neither a constraint nor the
+  trigger check =entry_channel= and =booking_nature= get, and the Result of
+  the time claimed one existed. The entry is declared now, with the target
+  column and the installation scope, and a live provisioning run failing on
+  the generated check is what proved the earlier claim wrong.
+- *Origin is a server-owned field in a client payload.* =trade_write= carries
+  it, so a client states its own provenance. The service could derive it from
+  the session, which would remove the refusal problem entirely.
+- *The reason code.* It is =system.new_record= now, so the origin marks
+  generated data. Nothing states =ux=, because no screen books a trade.
+
+** The token check is not a database check
+
+=ores::service::messaging::has_permission= reads the token's =roles= claim and
+allows when the context carries no role list at all. That allowance is for the
+service's own context, not a caller's, and it is documented in
+=doc/knowledge/security/authorised-reads.org=: "No permission list -- allows:
+the context is the service's own, not a caller's."
+
+A caller cannot reach it. Every JWT path calls =with_roles(claims->roles)=, so
+an authenticated request always carries a list; an empty list denies, because
+=grants= returns false for an empty span. A request with no =Authorization=
+header is refused as =unauthorized= whenever a verifier exists. Every running
+service has one: the verifier is created by value from the JWKS key fetched
+from IAM, and a service that cannot fetch the key shuts down. An unconfigured
+authenticator returns =invalid_token= rather than passing.
+
+The real caveats, both documented, are different from a bypass. The token's
+list is a snapshot taken at sign-in, so a role revoked mid-session still
+passes until the token is reissued. That is why the access reads use the
+database-backed =authorization_service::has_permission= instead, which denies
+on an empty list and has no pass-through.
+
+The origin check uses the token form, so it inherits the snapshot caveat and
+none of the pass-through.
 
 * Test Scenarios
 
@@ -87,3 +185,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A trade states where it came from and what that origin refers to. The lookup
+holds =ux=, =api=, =ore_import= and =synthetic=; the anchor references it with
+a soft foreign key that the insert trigger enforces, and the C++ type is an
+enum registered as a custom value type, so an unknown code cannot be built on
+either side.
+
+=book_trade= requires =trading::trades:write_service_origin= before it writes
+anything that states a service origin. The population writer states
+=synthetic= and its config id, the ORE import states =ore_import= and the ORE
+trade id, and the reason the population stamps is =system.new_record= so that
+origin, not the reason, marks generated data.
+
+Four cases over real NATS prove both directions of the gate. A provisioning run
+completes all nine steps, and a population run against one config writes a
+trade that the database reports as =synthetic= with that config as its
+reference.
+
+What this is not: the origin is unforgeable only up to the permission. The
+generator authenticates as the party it books for, so a holder of the =Trading=
+role can state a service origin on their own trade. Closing that needs the
+generator to authenticate as itself, which is captured rather than pretended.

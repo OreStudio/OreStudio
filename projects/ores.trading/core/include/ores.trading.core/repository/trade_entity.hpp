@@ -51,6 +51,8 @@ struct trade_entity {
     std::string counterparty_scope;
     std::string booking_nature;
     std::string entry_channel;
+    std::string origin;
+    std::optional<std::string> origin_reference;
     int external_version = 0;
     std::optional<std::string> economic_digest;
     std::string modified_by;

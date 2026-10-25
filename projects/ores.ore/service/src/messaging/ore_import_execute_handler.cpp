@@ -618,6 +618,12 @@ std::string book_imported_trade(Nats& nats,
     // so a trade imported into a sandbox is a test, not an actual deal.
     book_req.anchor.booking_nature = into_sandbox ? booking_nature::test : booking_nature::actual;
     book_req.anchor.entry_channel = entry_channel::stp;
+    /*
+     * The trade names the ORE id it was imported from, so a rollback or a
+     * report can trace it back to the document it came out of.
+     */
+    book_req.anchor.origin = origin::ore_import;
+    book_req.anchor.origin_reference = item.ore_id;
     book_req.booking = item.booking;
     book_req.booking.netting_set_id = resolved.netting_set_id;
     book_req.booking.counterparty_identifier_id = resolved.counterparty_identifier_id;

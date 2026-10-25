@@ -50,6 +50,8 @@ create table if not exists "ores_trading_trades_tbl" (
     "counterparty_scope" text not null,
     "booking_nature" text not null,
     "entry_channel" text not null,
+    "origin" text not null,
+    "origin_reference" text null,
     "external_version" integer not null,
     "economic_digest" text null,
     "modified_by" text not null,
@@ -175,6 +177,16 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate origin (soft FK to ores_trading_origin_types_tbl)
+    if not exists (
+        select 1 from ores_trading_origin_types_tbl
+        where code = NEW.origin
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid origin: %. No active origin type found with this code.', NEW.origin
+            using errcode = '23503';
+    end if;
 
     -- Validate party_id (soft FK to ores_refdata_parties_tbl)
     if not exists (

@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 36762B46-718F-45C9-A838-818C9CA73CF5
+:END:
+#+title: book_trade cannot validate a trade's origin. The trading ser…
+#+description: book_trade cannot validate a trade's origin. The trading service does no in-service authorisation: only ores.iam.core run_grant_operations_service reads ctx.roles(), and trading has no permission vocabulary, so the boundary is the NATS subject ACL, which decides who may call book_trade and not what they may claim inside it. ctx.service_account() is the trading service's own database user, so a check on it judges the host rather than the caller and refuses the population writer and ORE import, which both arrive through that service. ctx.actor() comes from the verified JWT, but the synthetic service forwards the party's end-user token, so actor is the user and not the generator. A real check needs either a permission model for trading operations or an origin the server derives instead of a client field.
+#+type: capture
+#+level: cross
+#+filetags: :trading:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make `book_trade` check the permission that a trade's origin requires.
+
+RBAC is in place and is the right instrument: 9,366 permissions named
+`<component>::<entity>:<action>`, an `authorise(nats, base, msg, verifier,
+permission)` helper that builds the context from the verified JWT and replies
+`forbidden` when `has_permission` fails, and permissions for the trade tables
+already seeded, including `trading::trades:write`.
+
+What trading does not do is call it. There is no `authorise(` anywhere under
+`projects/ores.trading`, and `book_trade` is registered straight onto its
+subject with no permission argument, so the only gate on that operation is
+the NATS subject ACL. Analytics does call it, passing permissions such as
+`analytics::pricing_model_configs:write`, which shows the pattern to copy.
+
+Two things follow. Stating a service origin needs a permission of its own,
+granted to the generator's and the import's roles and to nobody else, and the
+handler must check it with `authorise`. Then the claim is verified against the
+token rather than trusted from the payload, and it is unforgeable for the same
+reason every other permission is.
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-
+
+* Known limitation of the first cut
+
+The generator authenticates as the party it books for, so any permission it
+holds is held by that party's users too. Granting
+=trading::trades:write_service_origin= to the =Trading= role makes the
+population work and narrows who may claim a service origin to that role's
+holders, but it does not make the claim unforgeable: a trader can still state
+=synthetic= on their own trade.
+
+Closing that needs the generator to authenticate as itself and to carry the
+party it acts for as a claim, rather than borrowing the party's user token.
+Until then the check is a narrowing, not a proof, and the task records it as
+such.

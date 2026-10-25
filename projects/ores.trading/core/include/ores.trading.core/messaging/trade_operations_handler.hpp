@@ -31,6 +31,7 @@
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
+#include "ores.trading.api/domain/origin.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include <cstdint>
 #include <optional>
@@ -92,6 +93,17 @@ public:
             BOOST_LOG_SEV(trade_operations_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        /*
+         * A service origin is a claim that the generator or the import wrote
+         * the trade, so it needs the permission only they hold. The ordinary
+         * trade permission is not enough: anyone who books at all holds it.
+         */
+        if ((req->anchor.origin == ores::trading::domain::origin::synthetic ||
+             req->anchor.origin == ores::trading::domain::origin::ore_import) &&
+            !has_permission(req_ctx, "trading::trades:write_service_origin")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
         service::trade_operations_service svc(req_ctx);

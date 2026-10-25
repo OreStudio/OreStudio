@@ -332,6 +332,8 @@
 
 \ir ./trading_entry_channel_types_notify_trigger_drop.sql
 \ir ./trading_entry_channel_types_drop.sql
+\ir ./trading_origin_types_notify_trigger_drop.sql
+\ir ./trading_origin_types_drop.sql
 
 \ir ./trading_counterparty_scope_types_notify_trigger_drop.sql
 \ir ./trading_counterparty_scope_types_drop.sql

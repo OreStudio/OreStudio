@@ -22,4 +22,5 @@
 set(files
     "config_parser_tests.cpp"
     "main.cpp"
+    "messaging_trade_origin_handler_tests.cpp"
 )

@@ -161,7 +161,7 @@ struct trade_generation_config final {
      * It is a count per book and not a total, so a configuration scoped to four books states four
      * times this many trades.
      */
-    std::uint32_t trades_per_book = 8;
+    int trades_per_book = 8;
 
     /**
      * @brief Whether the configuration is active and eligible for generation.

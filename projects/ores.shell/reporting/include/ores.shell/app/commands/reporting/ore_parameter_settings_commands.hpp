@@ -15,8 +15,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#ifndef ORES_SHELL_APP_COMMANDS_REPORTING_PARAMETER_COMMANDS_HPP
-#define ORES_SHELL_APP_COMMANDS_REPORTING_PARAMETER_COMMANDS_HPP
+#ifndef ORES_SHELL_APP_COMMANDS_REPORTING_ORE_PARAMETER_SETTINGS_COMMANDS_HPP
+#define ORES_SHELL_APP_COMMANDS_REPORTING_ORE_PARAMETER_SETTINGS_COMMANDS_HPP
 
 #include "ores.nats/service/nats_client.hpp"
 #include <cli/cli.h>
@@ -32,7 +32,7 @@ namespace ores::shell::app::commands {
  * completeness gate: it fails when a parameter has no set or a set has no
  * values.
  */
-class parameter_commands {
+class ore_parameter_settings_commands {
 public:
     static void register_commands(cli::Menu& root_menu,
                                   ores::nats::service::nats_client& session);

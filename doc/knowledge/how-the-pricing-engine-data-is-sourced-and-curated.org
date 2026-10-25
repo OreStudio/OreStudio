@@ -165,7 +165,7 @@ Some gates are live. The parameter generator fails on a parameter without a text
 - a setting's usual value is not in its set;
 - =--check= finds the committed SQL differs from the generated SQL.
 
-=ores.shell parameter check= reads the contract and the four value set tables over the reporting subjects and prints the count with a set, the links outside the contract and any enumerated set with no values, then OK or FAIL. =parameter list= prints every parameter with its type and choices, and =parameter show <name>= prints one. The command is the live gate a person runs against an environment; the SQL view is the same facts for a query.
+=ores.shell ore_parameter_settings check= reads the contract and the four value set tables over the reporting subjects and prints the count with a set, the links outside the contract and any enumerated set with no values, then OK or FAIL. =ore_parameter_settings list= prints every parameter with its type and choices, and =ore_parameter_settings show <name>= prints one. The command is the live gate a person runs against an environment; the SQL view is the same facts for a query.
 
 The coverage report prints, per run: types mapped, types unmapped, settings documented, globals documented, and the rows whose text is authored rather than extracted. A reviewer reads the report before the diff.
 

@@ -15,7 +15,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#include "ores.shell/app/commands/reporting/parameter_commands.hpp"
+#include "ores.shell/app/commands/reporting/ore_parameter_settings_commands.hpp"
 #include "ores.reporting.api/messaging/ore_parameter_protocol.hpp"
 #include "ores.reporting.api/messaging/ore_parameter_setting_value_set_protocol.hpp"
 #include "ores.reporting.api/messaging/ore_parameter_value_set_protocol.hpp"
@@ -218,8 +218,8 @@ void print_one(std::ostream& out, const row& entry) {
 
 }
 
-void parameter_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
-    auto menu = std::make_unique<cli::Menu>("parameter");
+void ore_parameter_settings_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
+    auto menu = std::make_unique<cli::Menu>("ore_parameter_settings");
 
     menu->Insert(
         "list",

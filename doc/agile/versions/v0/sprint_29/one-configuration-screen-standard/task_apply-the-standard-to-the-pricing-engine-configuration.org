@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/apply-the-standard-to-the-pricing-engine-configuration
+#+pr: 3730
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,22 +26,33 @@ The pricing engine configuration screens follow the configuration screen standar
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The page is built, the tests pass and it is live on 21002. |
+| Waiting on   | The owner's test of the screen.        |
+| Next         | Work through the scenario on 21002.    |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
 
-- The record page has Details, Products, Parameters, Used by and History, in that order.
-- Every model, engine, pair and parameter description comes from the documentation contract, not from a screen literal.
-- Used by lists the reports that bind the configuration and states the reach rule.
-- History is the shared timeline, with Revert.
-- The product and parameter dialogs show the documentation, without and with the schema panel under the Simple and Advanced switch.
-- The page states the other configurations the same report binds, with links.
+- The record page has Details, Global parameters, Products, Reports and History, in that order.
+- Products is a tree of the configuration's product types by asset class beside the product, and the product takes the rest of the width.
+- The product states what it is, its asset class and its instrument, then a Model group and an Engine group. Each group states what a model or an engine is, names the choice, gives its description and lists its parameters.
+- Every model, engine and parameter description comes from the server's vocabulary, not from a screen literal. A description the server does not hold says so.
+- Global parameters lists the parameters that apply to the whole document, each with its documentation collapsed under it.
+- Reports lists the reports that bind the configuration and states the reach rule.
+- History is the shared timeline, served by the history read.
+- The page is read-only. Edit and the product Edit open the save dialog, which states the difference and asks for a change reason.
 - The import follows the standard: the parse on the server, the findings, the difference and the review.
+
+* Plan
+
+The work sits on one branch and goes out as one PR.
+
+1. The BFF joins the product type to its instrument code to carry the asset class, adds the reach to the document read, and allows the configuration's history type.
+2. The page draws five tabs through =useTabs=, so the address holds the tab.
+3. The Products tab draws the tree by asset class and the workbench, with the model and engine groups and the parameter documentation from the vocabulary.
+4. The tests cover the details, the product workbench, the reach, the global parameters and the write actions.
 
 * Plan
 
@@ -61,7 +72,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web tests | 1972 pass | =npx vitest run= in =packages/web= | see the branch head |
+| BFF tests | 941 pass | =npx vitest run= in =packages/bff= | see the branch head |
+| Configurations, HK party | 6 | =GET /api/reporting/pricing-engines= | see the branch head |
+| Product types with an asset class | 108 | =GET /api/reporting/pricing-engines/vocabulary= | see the branch head |
+| Reports bound to one configuration | 3 | =GET /api/reporting/pricing-engines/{id}= | see the branch head |
 
 * Notes
 
@@ -74,13 +89,13 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[file:scenario_verify_the_product_pricing_screen.org][Verify the Product pricing screen]] | PENDING | The five tabs, the tree, the workbench, the reach and the history |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3730][#3730]] | [web] Apply the configuration screen standard to Product pricing |
 
 * Review
 

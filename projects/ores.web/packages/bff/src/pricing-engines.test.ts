@@ -177,6 +177,7 @@ const reads = {
     'analytics.v1.pricing_model_configs.list': { result: ok, configs: [header] },
     'analytics.v1.pricing_model_products.list': { result: ok, products: [product, stranger] },
     'analytics.v1.pricing_model_product_parameters.list': { result: ok, parameters: [parameter] },
+    'reporting.v1.report_configurations.list': { result: ok, report_configurations: [] },
 };
 
 const INTENT = { reason_code: 'common.correction', commentary: 'Fix the grid' };
@@ -221,6 +222,57 @@ function vocabularyReads(): Record<string, unknown> {
                 },
             ],
         },
+        'refdata.v1.instrument_codes.list': {
+            result: ok,
+            instruments: [{ code: 'SWPTN', asset_class: 'interest_rates' }],
+        },
+        'reporting.v1.ore_parameters.list': {
+            result: ok,
+            parameters: [
+                {
+                    schema_name: 'ore.xsd',
+                    scope: 'Models',
+                    subtype: '',
+                    name: 'LGM',
+                    label: 'LGM',
+                    help: 'Linear Gauss Markov model',
+                    description: 'A one-factor Gaussian rates model.',
+                    default_text: 'The name of a pricing model.',
+                    format: 'The name of a pricing model.',
+                    introduced_in: '1.8.7.0',
+                    removed_in: '',
+                    xpath: "/PricingEngines/Product/Model[@name='LGM']",
+                },
+                {
+                    schema_name: 'ore.xsd',
+                    scope: 'Engines',
+                    subtype: '',
+                    name: 'Grid',
+                    label: 'Grid',
+                    help: 'Convolution grid engine',
+                    description: 'Rolls the value back on a grid.',
+                    default_text: 'The name of a pricing engine.',
+                    format: 'The name of a pricing engine.',
+                    introduced_in: '1.8.7.0',
+                    removed_in: '',
+                    xpath: "/PricingEngines/Product/Engine[@name='Grid']",
+                },
+                {
+                    schema_name: 'ore.xsd',
+                    scope: 'EngineParameters',
+                    subtype: 'BermudanSwaption',
+                    name: 'SensitivityTemplate',
+                    label: 'Sensitivity template',
+                    help: 'The sensitivity template of the product.',
+                    description: 'The sensitivity template of the product.',
+                    default_text: 'IR_FD',
+                    format: 'The code of a sensitivity template.',
+                    introduced_in: '1.8.0.7 or earlier',
+                    removed_in: '',
+                    xpath: "/PricingEngines/Product[@type='BermudanSwaption']/EngineParameters/Parameter[@name='SensitivityTemplate']",
+                },
+            ],
+        },
         'analytics.v1.pricing_model_engine_pairs.list': {
             result: ok,
             pairs: [
@@ -247,6 +299,18 @@ function vocabularyReads(): Record<string, unknown> {
                     options: 'Bootstrap,BestFit,None',
                     is_required: true,
                     note: 'How the model is fitted.',
+                },
+                {
+                    pricing_engine_type_code: 'BermudanSwaption',
+                    model: 'LGM',
+                    engine: 'Grid',
+                    scope: 'engine',
+                    name: 'SensitivityTemplate',
+                    kind: 'reference',
+                    usual_value: 'IR_FD',
+                    options: '',
+                    is_required: false,
+                    note: 'The sensitivity template of the product.',
                 },
             ],
         },
@@ -401,6 +465,7 @@ describe('pricing engine routes', () => {
             code: 'BermudanSwaption',
             description: 'Bermudan',
             instrumentTypeCode: 'SWPTN',
+            assetClass: 'interest_rates',
         });
         expect(response.json().pairs[0]).toMatchObject({
             model: 'LGM',
@@ -409,6 +474,18 @@ describe('pricing engine routes', () => {
         });
         expect(response.json().settings[0].options).toEqual(['Bootstrap', 'BestFit', 'None']);
         expect(response.json().settings[0].required).toBe(true);
+        const documented = response
+            .json()
+            .settings.find((setting: { name: string }) => setting.name === 'SensitivityTemplate');
+        expect(documented).toMatchObject({
+            documented: true,
+            label: 'Sensitivity template',
+            help: 'The sensitivity template of the product.',
+            defaultText: 'IR_FD',
+            format: 'The code of a sensitivity template.',
+            xpath: "/PricingEngines/Product[@type='BermudanSwaption']/EngineParameters/Parameter[@name='SensitivityTemplate']",
+        });
+        expect(response.json().globals).toEqual([]);
     });
 
     it('describes each model, engine and sensitivity template', async () => {

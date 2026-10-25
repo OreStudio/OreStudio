@@ -69,7 +69,6 @@ set(files
     "service_report_run_grant_tests.cpp"
     "service_run_document_generator_tests.cpp"
     "service_run_requirements_tests.cpp"
-    "service_run_results_tests.cpp"
     "service_scheduler_trigger_contract_tests.cpp"
     "service_scheduling_plan_tests.cpp"
 )

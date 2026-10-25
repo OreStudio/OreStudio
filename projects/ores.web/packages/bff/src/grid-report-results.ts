@@ -22,6 +22,8 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { gunzipSync } from 'node:zlib';
 import { z } from 'zod';
+import { subjects as instanceSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_instance_protocol';
+import { NO_ORDER, resultSchema, row } from './refdata-calls.js';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import { storagePath } from './grid-downloads.js';
 import { readRun } from './grid-report-runs.js';
@@ -53,7 +55,7 @@ interface ResultsAnswer {
 }
 
 /** The entries of a tar archive, by name. */
-function entriesOf(archive: Buffer): Map<string, Buffer> {
+export function entriesOf(archive: Buffer): Map<string, Buffer> {
     const entries = new Map<string, Buffer>();
     let offset = 0;
     while (offset + 512 <= archive.length) {
@@ -117,17 +119,26 @@ const COLUMNS = {
     counterparty: 'CounterParty',
 } as const;
 
-function rowsOf(csv: string): readonly RunResultRow[] | null {
+export function rowsOf(rawCsv: string): {
+    rows: readonly RunResultRow[] | null;
+    header: string;
+} {
+    // The engine's file can start with a byte-order mark, which would otherwise
+    // hide the first column's name.
+    const csv = rawCsv.replace(/^\uFEFF/, '');
     const lines = csv.split('\n').filter((line) => line.trim() !== '');
     if (lines.length === 0) {
-        return [];
+        return { rows: [], header: '' };
     }
-    const header = splitCsv(lines[0] ?? '');
+    // The engine prefixes its header with a hash, which would otherwise be part
+    // of the first column's name.
+    const headerLine = (lines[0] ?? '').replace(/^#/, '');
+    const header = splitCsv(headerLine);
     const index = (name: string): number => header.indexOf(name);
     if (index(COLUMNS.trade_id) < 0 || index(COLUMNS.npv) < 0) {
-        return null;
+        return { rows: null, header: headerLine.slice(0, 160) };
     }
-    return lines
+    const rows = lines
         .slice(1)
         .map((line) => {
             const fields = splitCsv(line);
@@ -142,10 +153,25 @@ function rowsOf(csv: string): readonly RunResultRow[] | null {
             };
         })
         .filter((row) => row.trade_id !== '');
+    return { rows, header: headerLine };
+}
+
+/**
+ * The address of a stored object from the key a row carries.
+ *
+ * A run's output key is a bare object key under the platform's bucket, while the
+ * storage service answers for a path under its prefix, so the bucket is supplied
+ * here rather than stored twice on the row.
+ */
+const STORAGE_PREFIX = '/api/v1/storage/';
+const PLATFORM_BUCKET = 'ores';
+
+function objectAddressOf(key: string): string {
+    return key.startsWith(STORAGE_PREFIX) ? key : `${STORAGE_PREFIX}${PLATFORM_BUCKET}/${key}`;
 }
 
 async function storedBytes(session: LiveSession, key: string): Promise<Buffer> {
-    const path = storagePath(key);
+    const path = storagePath(objectAddressOf(key));
     if (path === null) {
         throw notFound('The run names no stored output.');
     }
@@ -173,6 +199,47 @@ async function storedBytes(session: LiveSession, key: string): Promise<Buffer> {
     return body[0] === 0x1f && body[1] === 0x8b ? gunzipSync(body) : body;
 }
 
+async function resultsOf(
+    session: LiveSession,
+    run: Record<string, unknown>,
+): Promise<ResultsAnswer> {
+    const key = typeof run['output_storage_key'] === 'string' ? run['output_storage_key'] : '';
+    if (key === '') {
+        return { rows: [], message: 'This run produced no output.' };
+    }
+    const files = entriesOf(await storedBytes(session, key));
+    const results = [...files.entries()].find(
+        ([name]) => name.split('/').pop()?.toLowerCase() === 'npv.csv',
+    );
+    if (results === undefined) {
+        return { rows: [], message: "The run's output holds no npv.csv." };
+    }
+    const parsed = rowsOf(results[1].toString('utf8'));
+    if (parsed.rows === null) {
+        return {
+            rows: [],
+            message: "The run's npv.csv carries no TradeId and NPV columns.",
+        };
+    }
+    return { rows: parsed.rows, message: '' };
+}
+
+/** The latest run of a report, so the report screen reads its own results. */
+async function latestRunOf(
+    session: LiveSession,
+    definitionId: string,
+): Promise<Record<string, unknown> | null> {
+    const reply = await session.client.callAuthenticated(
+        instanceSubjects.get_latest_report_instances_by_definition_request,
+        { definition_ids: [definitionId] },
+        z.looseObject({ result: resultSchema, instances: z.array(row).default([]) }),
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw notFound('The report could not be read.');
+    }
+    return reply.instances[0] ?? null;
+}
+
 export function registerGridReportResultsRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
@@ -189,27 +256,81 @@ export function registerGridReportResultsRoutes(
             if (run === null) {
                 throw notFound('No report run has this id.');
             }
-            const key =
-                typeof run['output_storage_key'] === 'string' ? run['output_storage_key'] : '';
-            if (key === '') {
-                return { rows: [], message: 'This run produced no output.' };
-            }
-
-            const files = entriesOf(await storedBytes(session, key));
-            const results = [...files.entries()].find(
-                ([name]) => name.split('/').pop()?.toLowerCase() === 'npv.csv',
-            );
-            if (results === undefined) {
-                return { rows: [], message: "The run's output holds no npv.csv." };
-            }
-            const rows = rowsOf(results[1].toString('utf8'));
-            if (rows === null) {
-                return {
-                    rows: [],
-                    message: "The run's npv.csv carries no TradeId and NPV columns.",
-                };
-            }
-            return { rows, message: '' };
+            return resultsOf(session, run);
         },
     );
+
+    server.get(
+        '/api/reporting/reports/:id/runs',
+        async (request): Promise<{ runs: readonly unknown[] }> => {
+            const session = requireSession(request);
+            const parsed = runParamsSchema.safeParse(request.params);
+            if (!parsed.success) {
+                throw invalidRequest('The address names an id that is not a uuid.');
+            }
+            const reply = await session.client.callAuthenticated(
+                instanceSubjects.list_report_instances_request,
+                {
+                    filter: {
+                        definition_id: parsed.data.id,
+                        kind: null,
+                        id_one_of: null,
+                        definition_id_one_of: null,
+                        kind_one_of: null,
+                    },
+                    as_of: null,
+                    offset: 0,
+                    limit: 50,
+                    order: NO_ORDER,
+                },
+                z.looseObject({ result: resultSchema, instances: z.array(row).default([]) }),
+            );
+            if (reply.result.outcome !== 'ok') {
+                throw notFound('The report could not be read.');
+            }
+            const textOf = (value: unknown): string => (typeof value === 'string' ? value : '');
+            const ids = reply.instances.map((run) => textOf(run['id']));
+            const states = new Map<string, string>();
+            if (ids.length > 0) {
+                const health = await session.client.callAuthenticated(
+                    instanceSubjects.get_report_instance_health_request,
+                    { instance_ids: ids },
+                    z.looseObject({ result: resultSchema, health: z.array(row).default([]) }),
+                );
+                if (health.result.outcome === 'ok') {
+                    for (const entry of health.health) {
+                        states.set(
+                            textOf(entry['report_instance_id']),
+                            textOf(entry['state_name']),
+                        );
+                    }
+                }
+            }
+            const runs = reply.instances
+                .map((run) => ({
+                    id: textOf(run['id']),
+                    name: textOf(run['name']),
+                    state_name: states.get(textOf(run['id'])) ?? '',
+                    started_at: textOf(run['started_at']) || null,
+                    completed_at: textOf(run['completed_at']) || null,
+                }))
+                .sort((left, right) =>
+                    (right.started_at ?? '').localeCompare(left.started_at ?? ''),
+                );
+            return { runs };
+        },
+    );
+
+    server.get('/api/reporting/reports/:id/results', async (request): Promise<ResultsAnswer> => {
+        const session = requireSession(request);
+        const parsed = runParamsSchema.safeParse(request.params);
+        if (!parsed.success) {
+            throw invalidRequest('The address names an id that is not a uuid.');
+        }
+        const run = await latestRunOf(session, parsed.data.id);
+        if (run === null) {
+            return { rows: [], message: 'This report has no runs yet.' };
+        }
+        return resultsOf(session, run);
+    });
 }

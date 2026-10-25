@@ -5205,6 +5205,19 @@ const pt: SourceCatalogue = {
         false: 'falso',
     },
     reporting: {
+        tabs: {
+            definition: 'Definição',
+            runs: 'Execuções',
+            results: 'Resultados',
+        },
+        runs: {
+            title: 'Execuções',
+            empty: 'Este relatório ainda não foi executado.',
+            name: 'Execução',
+            state: 'Estado',
+            started: 'Início',
+            completed: 'Fim',
+        },
         area: {
             title: 'Relatórios',
             lead: 'Os relatórios que uma parte executa, e como correu a última execução de cada um.',

@@ -553,7 +553,9 @@ describe('one report definition', () => {
     });
 
     it('draws no History tab, because the versions cannot be read by id yet', () => {
-        expect(detail()).not.toContain('role="tab"');
+        const page = detail();
+        expect(page).toContain('role="tab"');
+        expect(page).not.toContain('>History<');
     });
 
     it('says a run it could not read was not checked, not that it never ran', () => {

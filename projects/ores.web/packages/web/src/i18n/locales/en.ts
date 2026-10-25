@@ -5164,6 +5164,19 @@ export const en: SourceCatalogue = {
         false: 'false',
     },
     reporting: {
+        tabs: {
+            definition: 'Definition',
+            runs: 'Runs',
+            results: 'Results',
+        },
+        runs: {
+            title: 'Runs',
+            empty: 'This report has not run yet.',
+            name: 'Run',
+            state: 'State',
+            started: 'Started',
+            completed: 'Completed',
+        },
         area: {
             title: 'Reporting',
             lead: 'The reports a party runs, and how the latest run of each one went.',

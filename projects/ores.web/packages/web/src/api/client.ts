@@ -2436,6 +2436,22 @@ export const api = {
         return { rows: reply.rows ?? [], message: reply.message ?? '' };
     },
 
+    /** The runs of one report, newest first. */
+    async reportRuns(id: string): Promise<readonly unknown[]> {
+        const reply = (await request(`/api/reporting/reports/${id}/runs`, {
+            method: 'GET',
+        })) as { runs?: readonly unknown[] };
+        return reply.runs ?? [];
+    },
+
+    /** The results of a report's latest run, or why it produced none. */
+    async reportResults(id: string): Promise<{ rows: readonly unknown[]; message: string }> {
+        const reply = (await request(`/api/reporting/reports/${id}/results`, {
+            method: 'GET',
+        })) as { rows?: readonly unknown[]; message?: string };
+        return { rows: reply.rows ?? [], message: reply.message ?? '' };
+    },
+
     /** The errors a report run recorded. */
     async gridReportRunErrors(id: string): Promise<readonly unknown[]> {
         const reply = (await request(`/api/operations/grid/report-runs/${id}/errors`, {

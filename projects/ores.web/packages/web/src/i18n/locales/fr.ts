@@ -5240,6 +5240,19 @@ const fr: SourceCatalogue = {
         false: 'faux',
     },
     reporting: {
+        tabs: {
+            definition: 'Définition',
+            runs: 'Exécutions',
+            results: 'Résultats',
+        },
+        runs: {
+            title: 'Exécutions',
+            empty: "Ce rapport n'a pas encore été exécuté.",
+            name: 'Exécution',
+            state: 'État',
+            started: 'Début',
+            completed: 'Fin',
+        },
         area: {
             title: 'Rapports',
             lead: "Les rapports qu'une partie exécute, et comment s'est déroulée la dernière exécution de chacun.",

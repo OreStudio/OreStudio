@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-25
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ ACME's books hold commodity trades across all twenty-five routed types, which no
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
 | Now          | Nothing. Reopened on 2026-10-25. |
 | Waiting on   | [[id:27FF4AA9-F6B8-460F-8BDD-043F1476C9EB][Seed a commodity catalogue]]. |
-| Next         | Begin once the catalogue names a commodity. |
+| Next         | Book a commodity population through the trading service and prove the rows. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -59,6 +59,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| The population cases with the commodity planner | 20 cases passed, 423 assertions | =publish/bin/ores.synthetic.core.tests "[trade_population]"= | abe7cbff38 |
+| The whole synthetic core suite | 66 cases passed, 1459 assertions, on a database rebuilt the same day | =publish/bin/ores.synthetic.core.tests= | abe7cbff38 |
 |      |       |         |        |
 
 * Notes

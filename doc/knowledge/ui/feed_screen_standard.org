@@ -372,71 +372,47 @@ is not drawn.
 
 ** The Synthetic screen
 
-Synthetic (=marketdata/synthetic/SyntheticScreen.tsx=) is one screen with two tabs, the
-dashboard and the feed tree. It lists no feed list of its own per asset class: the feed
-table lists every kind. Everything on it is synthetic, so no label says so. The
+Synthetic (=marketdata/synthetic/SyntheticScreen.tsx=) is one screen with two tabs,
+Dashboard and Provider. Everything on it is synthetic, so no label says so. The
 [[id:4F8C2A1D-6B3E-49F7-8A52-1C9E7D0B3A64][Synthetic feeds prototype]] shows it.
+
+One rule drives every number. A feed serves when its provider's source serves
+and the source is demanded at least one id. A provider is serving when one of
+its sources serves. No other count is added beside it: the rolls, the tags, the
+tiles and the demand all derive from that state.
 
 *** The dashboard
 
-The dashboard (=DashboardTab.tsx=) has one row for each provider. A provider is a row of
-the provider catalogue, with a description of what it simulates, and every collection
-names one, so every feed has a provider. The ORE examples are the provider /ORE/.
+The dashboard (=DashboardTab.tsx=) has five tiles and then one row for each
+provider.
 
-- A row shows what the provider simulates, its FX and IR counts, one of Running, Stopped,
-  "n of m running" or Empty, and how many of its generators are demanded and do not run.
-  Demand starts a generator. Start and Stop on a row are operator controls for a test and
-  act on every generator of the provider.
-- A banner counts the generators that are enabled, are demanded, and are not running. A
-  restart of the simulator needs no action, because the service sends the demand set
-  again, so a count above zero means a generator failed to start. /Show them in the feed
-  tree/ opens the tree on them.
-- The chosen provider has a panel with its asset classes and a link into the tree.
-- Every collection belongs to the system tenant, so the screen draws no scope tag. Only
-  the system tenant writes a generator or starts and stops one, and any tenant may read
-  them.
-- The server counts. =synthetic.v1.ops.list_feed_folders= returns the children of one
-  folder, or the roots, each with the feeds under it at any depth, how many run and how
-  many are idle. The screen asks again every five seconds.
+- The tiles count the providers, the feeds serving, the feeds stopped, the ids
+  demanded and the ticks per minute.
+- A provider row shows what it simulates, its FX and IR counts, its feeds, its
+  state, and the ids demanded of it that are not served. Demand starts a
+  generator; Start and Stop on the row are the operator's test control.
+- A banner counts the ids that are demanded and not served. /Show them in the
+  feed tree/ is gone; the row opens the Provider tab on that provider.
 
-*** The feed tree
+*** The Provider tab
 
-The feed tree (=FeedTreeTab.tsx=) has the providers and their folders on the left and a
-table of feeds on the right. A provider with one collection stands for it, so its
-children are the asset class folders; a provider with several lists its collections.
+The Provider tab (=ProviderTab.tsx=) is the feeds of one provider.
 
-- The table lists the feeds under the chosen node, with the folders below it, a page at a
-  time, with the standard pager. Its columns are state, enabled, name, asset class,
-  underlying (a currency pair or a currency, with flags), engine, frequency and the
-  oresmd URI. A row opens the feed's page.
-- The oresmd URI column is the same reference the feed's Details tab draws: a link to
-  the page of the series when the party has that series, and plain text when it does not,
-  with Inspect beside it. The column decides the pages of a whole page of rows in one read
-  of the codec and one read of the party's series list, so a grid does not ask about a URI
-  a row (=oresmd/useSeriesTargets.ts=).
-- The filters are the state (All, Started, Stopped), the asset class, and the search
-  words. The search reaches every provider. All of them run on the server
-  (=synthetic.v1.ops.list_folder_feeds=), so the counts and the pages are right.
-- A row has no Start or Stop. A person ticks rows, or the whole page, and a link then
-  offers every feed that matches the filter. A bar shows how many are picked and has
-  Start and Stop for the pick. The request carries the filter and the ids picked or left
-  out (=synthetic.v1.ops.start_selected_feeds= and =stop_selected_feeds=); the server
-  resolves the feeds with the same filter that pages the table, so a set of thousands
-  costs one small request and the screen never holds the ids. A toast says what started,
-  what was already running and what was skipped.
-- /Add feed/ asks for the kind, FX or IR, and opens its form with the collection the person
-  is looking at. The database places the feed in the folder of its kind under that
-  collection, and makes the folders that are missing, so the feed shows in the tree at once.
-  The feed's page opens when it is saved.
-- Starting and stopping a feed needs the permission =synthetic::feeds:run=, beside the read
-  of the feed configs the verb touches. The screen draws Start and Stop only for a person
-  who holds it, on the dashboard, in the feed table and on a feed's page. Every verb that
-  starts or stops, one feed, a folder or a selection, checks it in the service.
-- A node has an address, =?tab=tree&node=provider:bloomberg= or
-  =?tab=tree&node=folder:<id>=, and the filters are in the address too, so a link opens
-  the tree as it was.
-- A feed's page has the trail Home, Market data, Simulator, Synthetic, Feed tree, the folders
-  down to the feed, then the feed. Each folder opens the tree on it.
+- A provider combo at the top, then the provider's state, its feed count and
+  Start and Stop, which act on the provider's feeds as the test control.
+- A collection filter, drawn only when the provider holds more than one
+  collection.
+- A group-by control: asset class, instrument or engine. The grid gathers under
+  a header for each group. The group header counts the feeds on the page, not
+  the provider's total, because the grid pages.
+- The grid columns are state, enabled, name, asset class, underlying, engine and
+  frequency. A feed's state is Running or Stopped. The oresmd URI column is
+  gone; the series is reached from the feed's page.
+- There is no folder tree, no pick bar and no oresmd URI column. The lower
+  folders were derived containers for asset class and instrument, and the grid
+  groups by the same properties.
+- A feed's page opens from a row. Its trail is Home, Market data, Synthetic,
+  Provider, the provider and the folders, then the feed.
 
 ** History
 

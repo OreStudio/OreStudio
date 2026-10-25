@@ -204,7 +204,7 @@ and unions them on the screen; it needs no operation of its own.
    weekends only. The candidate is for the rebuild to ask QuantLib for the
    base's holidays. Until then the screen hides the business days of a
    QuantLib calendar and warns on a calendar derived from one.
-3. *The dates cannot be read by year.* Captured with the rebuild, above. The =calendar_dates_filter= takes only
+3. *The dates cannot be read by year.* Captured as [[id:C2B69FB1-77F1-4A3F-939D-25BFC5EF3773][Rebuild business days when their inputs change, and read them by date range]]. The =calendar_dates_filter= takes only
    calendar codes, so showing one year means paging through every materialised
    date in order. The side-by-side view doubles that cost, because it pages
    through every date of both calendars. The candidate is a date range on the
@@ -229,7 +229,6 @@ and unions them on the screen; it needs no operation of its own.
 7. *Only a tenant administrator can run this journey.* Captured as [[id:BDA029F9-671D-4C08-B816-8CDB8068CDAB][No role below the tenant administrator can maintain reference data]]. No role below
    =TenantAdmin= holds the calendar, rule, exception, event or date
    permissions. The candidate is a reference data role.
-
 8. *Nothing enforces that a QuantLib calendar is read only.* The screen hides
    Edit and Delete on it, and the server accepts a write all the same.
    Captured as [[id:3C7DBF0F-FC83-499F-BEEB-B895A46B5367][Nothing enforces that a QuantLib calendar is read only]].

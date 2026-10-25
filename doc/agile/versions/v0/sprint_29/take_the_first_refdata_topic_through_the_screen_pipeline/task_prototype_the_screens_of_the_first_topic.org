@@ -61,6 +61,15 @@ task and name that file in the Command column.
 
 * Notes
 
+Two placements the journey judgement left open for this task, on the journey
+page under /Each step, and the shape that serves it/:
+
+- /Rebuild business days/ stands on the Business days tab today; RS-PAGE-03
+  puts a kind's own actions in the header, beside /Derive a calendar/.
+- The Business days tab is a derived, read-only view that no rule of the
+  Record screen standard draws yet; the prototype defines it and the standard
+  gains the rule.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

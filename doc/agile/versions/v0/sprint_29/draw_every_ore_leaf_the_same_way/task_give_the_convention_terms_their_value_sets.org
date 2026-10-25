@@ -52,9 +52,9 @@ Give every convention term the contract documents a value set, so a convention s
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Distinct convention values a catalogue refuses | business day convention 0 of 5; day counter 0 of 6; currency 2 of 18 (MXV, CLF); calendar 226 of 254 | a query over every =*_conventions_tbl= column named for the kind, against the four catalogue views, on a database recreated from this branch | 4b186d9b51 |
-| Convention terms linked | 238, to 16 sets | =convention_value_sets.data()= | 4b186d9b51 |
-| Sets added; their values; catalogues registered | 13; 72; 3 | the same | 4b186d9b51 |
-| Value set rows before and after; rows lost | 520, 846; 0 | the populate script on =origin/main= against this branch, row by row | 4b186d9b51 |
+| Convention terms linked | 238, to 19 sets | =convention_value_sets.data()= | 3e780825b0 |
+| Sets added; their values; catalogues registered | 16; 79; 3 | the same | 3e780825b0 |
+| Value set rows before and after; rows lost | 520, 856; 0 | the populate script on =origin/main= against this branch, row by row | 3e780825b0 |
 
 * Notes
 
@@ -63,6 +63,7 @@ Give every convention term the contract documents a value set, so a convention s
 - *The pricing type extractor misses these parsers.* =extract_parameter_types.py= looks for =const std::string&=, and =parsers.cpp= writes =const string&=, so it reads no map of =parseFrequency=, =parseCompounding= or the rest. The convention extractor reads both. The pricing extractor is unchanged, because a fix would change the pricing sets.
 - *No write is checked yet.* The value check guards only the pricing parameters. Refusing a bad value in a convention needs the map from a refdata column to its term, which is [[id:F8CA3B52-F299-4A92-84A0-CF4F9A2694F0][Move the convention kind metadata into data]].
 - *An index is text.* No catalogue holds ORE's index names.
+- *A fixed window cut a parser short.* The first map reader scanned 60 lines past a parser's head and read 59 of the 72 day counters =parseDayCounter= accepts. It now reads the body to its closing brace, and the chained comparison form, so =parseAveragingDataPeriod=, =parseInflationSwapPublicationRoll= and =parseSubPeriodsCouponType= have lists too. The pricing type extractor still scans a fixed window.
 
 * Test Scenarios
 
@@ -85,11 +86,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The clash check's exclusion is dead | generate_value_sets.py | Accept | The exclusion is gone, and a convention link that names a set no one holds is a problem; validate also refuses a link to an unknown set. |
+| 2 | A parser with no map falls back to text silently | convention_value_sets.py | Accept | Only a calendar, an index or text may take text with no list; any other parser with none stops the generator and names the term and its source line. |
+| 3 | The map scan depends on ORE's formatting | extract_convention_terms.py | Accept | The reader takes the parser's body to its closing brace, not a fixed window, and reads the comparison chain form as well; a list of fewer than two values stops the generator. The old window had cut parseDayCounter from 72 values to 59. |
+| 4 | A conflicting duplicate wins by first place | convention_value_sets.py | Accept | A string the parser maps to two meanings stops the generator. |
+| 5 | Does rows_of take the registry as a dict | generate_value_sets.py | No change | rows_of converts a list and reads a dict; the script renders five catalogues, two of pricing and three of conventions. |
+| 6 | The docstring and the catalogue descriptions read oddly | convention_value_sets.py | Accept | Reworded, naming MXV and CLF. |
+| 7 | Confirm the failing checks on main | none | Accept | No file they read changes in this branch; the same four failed on the previous PR's branch. Shown from the content, not by a run on a main checkout. |
 
 * Result
 
-Every convention term the contract documents now has a value set. 238 terms are linked to 16 sets, and the populate script grew from 520 to 846 rows with no pricing row changed.
+Every convention term the contract documents now has a value set. 238 terms are linked to 19 sets, and the populate script grew from 520 to 856 rows with no pricing row changed.
 
 - =convention_value_sets.py= chooses each set from the type the ORE parser gives the term: a business day convention, a day counter and a currency draw on refdata catalogues, which the conventions' values were measured against; a frequency, a compounding rule, a date generation rule, a month, a weekday and the option enums take the parser's own map, each string labelled with the word it means; a flag, a whole number, a number and a period take their type's set; a calendar, an index and any other term are text.
 - The extractor now reads each parser's map and the enumerator each string means; the generator merges the convention sets after the pricing links are resolved, and refuses a code or a link that pricing holds.

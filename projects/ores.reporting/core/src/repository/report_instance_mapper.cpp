@@ -69,6 +69,9 @@ domain::report_instance report_instance_mapper::map(const report_instance_entity
     r.completed_at = v.completed_at.has_value() ?
                          std::optional(timestamp_to_timepoint(*v.completed_at)) :
                          std::nullopt;
+    r.priced_at = v.priced_at.has_value() ? std::optional(timestamp_to_timepoint(*v.priced_at)) :
+                                            std::nullopt;
+    r.price_note = v.price_note.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -110,6 +113,10 @@ report_instance_entity report_instance_mapper::map(const domain::report_instance
         v.completed_at.has_value() ?
             std::optional(ores::platform::time::datetime::to_db_string(*v.completed_at)) :
             std::nullopt;
+    r.priced_at = v.priced_at.has_value() ?
+                      std::optional(ores::platform::time::datetime::to_db_string(*v.priced_at)) :
+                      std::nullopt;
+    r.price_note = v.price_note.empty() ? std::nullopt : std::optional(v.price_note);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

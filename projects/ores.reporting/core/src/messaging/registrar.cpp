@@ -56,6 +56,7 @@
 #include "ores.reporting.core/messaging/report_instance_handler.hpp"
 #include "ores.reporting.core/messaging/report_instance_trigger_handler.hpp"
 #include "ores.reporting.core/messaging/report_run_health_handler.hpp"
+#include "ores.reporting.core/messaging/report_run_pricing_handler.hpp"
 #include "ores.reporting.core/messaging/report_scheduling_handler.hpp"
 #include "ores.reporting.core/messaging/report_type_handler.hpp"
 #include "ores.reporting.core/messaging/run_document_handler.hpp"
@@ -308,6 +309,20 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.push_back(nats.queue_subscribe(
             get_run_health_request::nats_subject, group, [rrhh](ores::nats::message msg) {
                 rrhh->get_run_health(std::move(msg));
+            }));
+    }
+
+    // ----------------------------------------------------------------
+    // The date a run priced at, as the packaging step states it
+    // (hand-crafted handler — not codegen). The step is the only place
+    // that knows both the date the run asked for and the date the
+    // gathered data carries, so the run records what it used.
+    // ----------------------------------------------------------------
+    {
+        auto rrp = std::make_shared<report_run_pricing_handler>(nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            record_run_pricing_request::nats_subject, group, [rrp](ores::nats::message msg) {
+                rrp->record_run_pricing(std::move(msg));
             }));
     }
 

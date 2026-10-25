@@ -227,6 +227,37 @@ drives the run writes it, so a caller editing the instance never states it.
 std::nullopt
 #+end_src
 
+** priced_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+The date the run actually priced at. It is set once the packaging step has
+chosen the date, which is the date the run document asked for when the gathered
+market data carries it, and the last date that data carries when it does not.
+NULL until then, and NULL for a run that never reached the packaging step.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** price_note
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Why the run priced at the date it did, in the words the packaging step wrote.
+It is empty when the run priced at the date it asked for, and states the date
+it asked for and the date the gathered data ends at when the two differ.
+
+#+begin_src cpp :name generator
+std::string{}
+#+end_src
+
 * SQL
 
 ** Flags

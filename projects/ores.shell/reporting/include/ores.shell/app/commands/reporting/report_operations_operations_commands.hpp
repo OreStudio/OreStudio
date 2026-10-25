@@ -78,6 +78,13 @@ public:
                                        const std::vector<std::string>& args);
 
     /**
+     * @brief record-run-pricing <report_instance_id> <priced_at> <price_note>
+     */
+    static void process_record_run_pricing(std::ostream& out,
+                                           ores::nats::service::nats_client& session,
+                                           const std::vector<std::string>& args);
+
+    /**
      * @brief schedule-report-definitions <ids>
      */
     static void process_schedule_report_definitions(std::ostream& out,

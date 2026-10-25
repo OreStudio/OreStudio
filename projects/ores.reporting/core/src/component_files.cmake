@@ -340,6 +340,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/messaging/report_instance_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/messaging/report_instance_trigger_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/messaging/report_run_health_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/messaging/report_run_pricing_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/messaging/report_scheduling_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/messaging/report_trigger_type_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/messaging/report_trigger_type_history_provider_registrar.hpp"

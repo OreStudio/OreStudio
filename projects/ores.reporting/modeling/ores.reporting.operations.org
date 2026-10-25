@@ -33,6 +33,13 @@ lifecycle state it was derived from. The web asks the same read, so the shell
 answers what the web answers. The word is the server's to state, which is why
 this operation declares no mapping of its own.
 
+=record_run_pricing= states the date a run priced at, once the packaging step
+has settled it. The run document asks for a date and the gathered market data
+carries the dates it can price; when the two differ the step prices at the
+data's last date, and the run records both the date it used and why it moved.
+The fact belongs on the run, so a screen that shows the run does not read it
+out of an error message.
+
 * Includes
 
 #+begin_src cpp :name includes
@@ -170,6 +177,68 @@ a =package= instance reads it to find the instance and the packages it stores.
      * ask about.
      */
 #+end_src
+
+** record_run_pricing_request
+:PROPERTIES:
+:subject: reporting.v1.ops.record_run_pricing
+:response: record_run_pricing_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Records the date a run priced at, and why it moved when it did.
+ *
+ * The packaging step is the only place that knows both dates: the run document
+ * asks for one, and the gathered market data carries another. The step states
+ * the date it used on the run itself, so the screen that shows the run can say
+ * which date it priced at without parsing a message. The run is named rather
+ * than scoped to the caller's party: the write is scoped by row-level security
+ * on the table, as the run reads are.
+ */
+#+end_src
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief The run the date was priced for. */
+#+end_src
+
+*** priced_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+    /**
+     * @brief The date the run priced at, as an ISO 8601 date (YYYY-MM-DD).
+     *
+     * A date and not a timestamp: the engine prices one day, and the time of
+     * day the packaging step ran is not part of the answer.
+     */
+#+end_src
+
+*** price_note
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+    /**
+     * @brief Why the run priced at that date, in the step's own words.
+     *
+     * Empty when the run priced at the date it asked for.
+     */
+#+end_src
+
+** record_run_pricing_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
 
 ** schedule_report_definitions_request
 :PROPERTIES:

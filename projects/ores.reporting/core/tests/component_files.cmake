@@ -60,6 +60,7 @@ set(files
     "service_get_run_health_tests.cpp"
     "service_next_fire_tests.cpp"
     "service_publish_subject_plan_tests.cpp"
+    "service_record_run_pricing_tests.cpp"
     "service_report_error_counts_tests.cpp"
     "service_report_error_recorder_tests.cpp"
     "service_report_instance_health_tests.cpp"

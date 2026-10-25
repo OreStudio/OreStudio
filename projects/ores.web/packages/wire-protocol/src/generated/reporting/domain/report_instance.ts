@@ -46,6 +46,8 @@ export interface ReportInstance {
     output_storage_key: string;
     started_at: string | null;
     completed_at: string | null;
+    priced_at: string | null;
+    price_note: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

@@ -22,6 +22,7 @@
 #include "ores.ore.api/net/ore_storage.hpp"
 #include "ores.ore.core/store/run_store.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
+#include "ores.ore.service/messaging/nats_call.hpp"
 #include "ores.ore.service/messaging/run_configuration_operations.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
@@ -29,6 +30,7 @@
 #include "ores.storage.api/net/storage_paths.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -216,6 +218,9 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
                                         std::string{};
         const auto market_date =
             latest_market_data_date(std::string_view{market_data.data(), market_data.size()});
+        // The date the package prices at, which is the run's own when the data
+        // carries it, and what the run records on itself below.
+        auto priced_date = requested_date;
         if (market_date && !requested_date.empty() && *market_date < requested_date &&
             document != run_input.end()) {
             BOOST_LOG_SEV(lg(), warn)
@@ -223,6 +228,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
                 << requested_date << ". The run prices at the data's date. Instance "
                 << req.report_instance_id;
             document->second = with_asof_date(document->second, *market_date);
+            priced_date = *market_date;
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Downloading fixings: " << req.fixings_storage_key;
@@ -327,6 +333,36 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
 
         // ── Clean up staging directory ────────────────────────────────
         std::filesystem::remove_all(stage_dir);
+
+        // The run records on itself the date it prices at, and why it moved
+        // when it did. The packaging step is the only place that knows both
+        // dates, so it states them here, once the package is written, and it
+        // speaks through the run token the rest of the step already carries.
+        // A run document that names no date leaves the record unset: there is
+        // no date to state.
+        if (!priced_date.empty()) {
+            record_run_pricing_request pricing;
+            pricing.report_instance_id = boost::uuids::string_generator()(req.report_instance_id);
+            pricing.priced_at = priced_date;
+            if (priced_date != requested_date) {
+                pricing.price_note =
+                    "The run asked for " + requested_date +
+                    " and the gathered market data ends at " + priced_date +
+                    ", so the run priced at the data's date.";
+            }
+            std::string pricing_error;
+            if (const auto priced = nats_call(owners, pricing, pricing_error);
+                !priced || !pricing_error.empty()) {
+                // The package is written and the run can price from it, so a
+                // record that did not land is reported and does not undo the
+                // step. The run page then says nothing about the date rather
+                // than saying something false.
+                BOOST_LOG_SEV(lg(), warn)
+                    << "The run did not record the date it priced at: "
+                    << (pricing_error.empty() ? "the service did not answer" : pricing_error)
+                    << " Instance " << req.report_instance_id;
+            }
+        }
 
         // The downstream compute step hands this URI to a worker, which fetches
         // it over the storage HTTP interface, so it has to be a path and not

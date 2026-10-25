@@ -36,9 +36,9 @@
 #include <format>
 #include <fstream>
 #include <optional>
-#include <string_view>
 #include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
+#include <string_view>
 
 namespace ores::ore::service::messaging {
 
@@ -69,9 +69,8 @@ std::optional<std::string> latest_market_data_date(std::string_view body) {
             first, end == std::string_view::npos ? std::string_view::npos : end - first);
         if (line.size() >= 9 && line[8] == '\t') {
             const auto dated = line.substr(0, 8);
-            const auto digits = std::ranges::all_of(dated, [](char c) {
-                return c >= '0' && c <= '9';
-            });
+            const auto digits =
+                std::ranges::all_of(dated, [](char c) { return c >= '0' && c <= '9'; });
             if (digits && std::string(dated) > latest)
                 latest = std::string(dated);
         }

@@ -126,7 +126,8 @@ std::vector<std::string> explanations(std::string_view engine_log) {
             if (!message)
                 return;
             text = *message;
-            if (const auto trade = quoted_field(parsed.message, "\"name\": \"tradeId\", \"value\": \"")) {
+            if (const auto trade =
+                    quoted_field(parsed.message, "\"name\": \"tradeId\", \"value\": \"")) {
                 detail = " (trade " + *trade;
                 if (const auto type =
                         quoted_field(parsed.message, "\"name\": \"tradeType\", \"value\": \""))

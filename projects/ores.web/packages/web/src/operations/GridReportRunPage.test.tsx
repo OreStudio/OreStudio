@@ -25,7 +25,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { GridReportRunView } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { GridReportRunPage, REPORT_RUN_QUERY_KEY } from './GridReportRunPage.js';
+import {
+    GridReportRunPage,
+    REPORT_RUN_ERRORS_QUERY_KEY,
+    REPORT_RUN_QUERY_KEY,
+} from './GridReportRunPage.js';
 
 /**
  * The report run page, as a reader sees it.
@@ -62,13 +66,50 @@ function runView(overrides: Partial<GridReportRunView> = {}): GridReportRunView 
     };
 }
 
-function render(view: GridReportRunView): string {
+/** One error row, as the error read returns it. */
+function errorRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+        id: 'e0000000-0000-4000-8000-000000000001',
+        scope: 'Curve',
+        severity: 'error',
+        message:
+            'yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-05-05: Could not find quote for Mandatory ID IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-05-05',
+        subject: 'curve',
+        subject_id: '[IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]',
+        subject_version: null,
+        subject_as_of: null,
+        time: '2026-10-25 09:51:53.527119Z',
+        ...overrides,
+    };
+}
+
+function tradeRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return errorRow({
+        id: 'e0000000-0000-4000-8000-000000000002',
+        scope: 'Trade',
+        subject: 'trade',
+        subject_id: '28e6d1c3-b0aa-55fa-9c14-142e3e34092e',
+        message:
+            'Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)])',
+        ...overrides,
+    });
+}
+
+function render(
+    view: GridReportRunView,
+    options: { readonly errors?: readonly unknown[]; readonly tab?: string } = {},
+): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData([REPORT_RUN_QUERY_KEY, RUN_ID], view);
+    client.setQueryData([REPORT_RUN_ERRORS_QUERY_KEY, RUN_ID], options.errors ?? []);
+    const address =
+        options.tab === undefined
+            ? `/operations/grid/report-runs/${RUN_ID}`
+            : `/operations/grid/report-runs/${RUN_ID}?tab=${options.tab}`;
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
-                <MemoryRouter initialEntries={[`/operations/grid/report-runs/${RUN_ID}`]}>
+                <MemoryRouter initialEntries={[address]}>
                     <Routes>
                         <Route
                             path="/operations/grid/report-runs/:id"
@@ -82,13 +123,42 @@ function render(view: GridReportRunView): string {
 }
 
 describe('the report run page', () => {
-    it('states the run, its message and the instants it has', () => {
+    it('states the run and the instants it has', () => {
         const html = render(runView());
 
         expect(html).toContain('nightly_instance');
-        expect(html).toContain('All trades priced');
         expect(html).toContain('Running');
         expect(html).toContain('not yet known');
+    });
+
+    it('offers the run and its errors as two screens', () => {
+        const html = render(runView());
+
+        expect(html).toContain('role="tab"');
+        expect(html).toContain('>Run<');
+        expect(html).toContain('>Errors<');
+    });
+
+    it('says what is missing by curve and links into the errors', () => {
+        const html = render(runView({ health: 'failed' }), {
+            errors: [errorRow(), tradeRow()],
+        });
+
+        expect(html).toContain('Market data is missing for 1 curve(s).');
+        expect(html).toContain('Priced at 2026-05-05');
+        expect(html).toContain('View all 2 errors');
+    });
+
+    it('groups a failure by the curve, with the trades that named it as links', () => {
+        const html = render(runView({ health: 'failed' }), {
+            errors: [errorRow(), tradeRow()],
+            tab: 'errors',
+        });
+
+        expect(html).toContain('Yield/GBP/GBP1D');
+        expect(html).toContain('/trades?trade=28e6d1c3-b0aa-55fa-9c14-142e3e34092e');
+        expect(html).toContain('Grouped');
+        expect(html).toContain('Split');
     });
 
     it('links to the report and to the batch', () => {

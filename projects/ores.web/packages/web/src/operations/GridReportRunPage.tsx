@@ -185,9 +185,15 @@ function RunSummary({
     readonly rows: readonly RunError[];
     readonly onShowErrors: () => void;
 }) {
-    const curves = [...new Set(rows
-        .filter((error) => error.scope === 'Curve')
-        .map((error) => curveNameOf(error.subjectId !== '' ? error.subjectId : error.message)))];
+    const curves = [
+        ...new Set(
+            rows
+                .filter((error) => error.scope === 'Curve')
+                .map((error) =>
+                    curveNameOf(error.subjectId !== '' ? error.subjectId : error.message),
+                ),
+        ),
+    ];
     const priced = asOfDateOf(rows);
     if (rows.length === 0) return null;
 
@@ -246,9 +252,7 @@ function RunErrors({ id }: { readonly id: string }) {
         });
     }, [shown]);
 
-    const others = shown.filter(
-        (error) => error.scope !== 'Curve' && error.scope !== 'Trade',
-    );
+    const others = shown.filter((error) => error.scope !== 'Curve' && error.scope !== 'Trade');
 
     if (query.isPending) return null;
     if (query.isError) {
@@ -345,7 +349,10 @@ function RunErrors({ id }: { readonly id: string }) {
                             <ul className="space-y-1">
                                 {others.map((other) => (
                                     <li key={other.id} className="flex gap-2 font-mono text-xs">
-                                        <Tag tone={other.severity === 'error' ? 'down' : 'warn'} small>
+                                        <Tag
+                                            tone={other.severity === 'error' ? 'down' : 'warn'}
+                                            small
+                                        >
                                             {other.severity}
                                         </Tag>
                                         <span className="text-ink-muted">
@@ -392,47 +399,52 @@ function RunErrors({ id }: { readonly id: string }) {
                                         return rank(left) - rank(right);
                                     })
                                     .map((error) => (
-                                    <tr
-                                        key={error.id}
-                                        onClick={() => setSelected(error.id)}
-                                        className={cx(
-                                            'cursor-pointer border-t border-line-subtle',
-                                            current?.id === error.id && 'bg-ink/5',
-                                        )}
-                                    >
-                                        <td className="px-2 py-1">
-                                            <Tag
-                                                tone={error.severity === 'error' ? 'down' : 'warn'}
-                                                small
-                                            >
-                                                {error.severity}
-                                            </Tag>
-                                        </td>
-                                        <td className="px-2 py-1">{error.scope}</td>
-                                        <td className="px-2 py-1 font-mono">{labelOf(error)}</td>
-                                        <td className="px-2 py-1 font-mono">
-                                            {error.scope !== 'Trade' || error.subjectId === '' ? (
-                                                '—'
-                                            ) : (
-                                                <a
-                                                    href={tradeHref(error)}
-                                                    onClick={(event) => event.stopPropagation()}
-                                                    className="underline"
-                                                >
-                                                    {error.subjectId}
-                                                </a>
+                                        <tr
+                                            key={error.id}
+                                            onClick={() => setSelected(error.id)}
+                                            className={cx(
+                                                'cursor-pointer border-t border-line-subtle',
+                                                current?.id === error.id && 'bg-ink/5',
                                             )}
-                                        </td>
-                                        <td className="px-2 py-1 font-mono text-xs">
-                                            {error.version === null
-                                                ? '—'
-                                                : `v${error.version}${error.asOf === '' ? '' : ` @ ${error.asOf}`}`}
-                                        </td>
-                                        <td className="whitespace-nowrap px-2 py-1 font-mono text-xs">
-                                            {formatDateTime(error.time, language)}
-                                        </td>
-                                    </tr>
-                                ))}
+                                        >
+                                            <td className="px-2 py-1">
+                                                <Tag
+                                                    tone={
+                                                        error.severity === 'error' ? 'down' : 'warn'
+                                                    }
+                                                    small
+                                                >
+                                                    {error.severity}
+                                                </Tag>
+                                            </td>
+                                            <td className="px-2 py-1">{error.scope}</td>
+                                            <td className="px-2 py-1 font-mono">
+                                                {labelOf(error)}
+                                            </td>
+                                            <td className="px-2 py-1 font-mono">
+                                                {error.scope !== 'Trade' ||
+                                                error.subjectId === '' ? (
+                                                    '—'
+                                                ) : (
+                                                    <a
+                                                        href={tradeHref(error)}
+                                                        onClick={(event) => event.stopPropagation()}
+                                                        className="underline"
+                                                    >
+                                                        {error.subjectId}
+                                                    </a>
+                                                )}
+                                            </td>
+                                            <td className="px-2 py-1 font-mono text-xs">
+                                                {error.version === null
+                                                    ? '—'
+                                                    : `v${error.version}${error.asOf === '' ? '' : ` @ ${error.asOf}`}`}
+                                            </td>
+                                            <td className="whitespace-nowrap px-2 py-1 font-mono text-xs">
+                                                {formatDateTime(error.time, language)}
+                                            </td>
+                                        </tr>
+                                    ))}
                             </tbody>
                         </table>
                     </div>
@@ -552,8 +564,7 @@ export function GridReportRunPage(): ReactNode {
     const { tab, bar } = useTabs({
         label: t(`${FIELD}.title`),
         tabs: TABS,
-        titleOf: (candidate) =>
-            candidate === 'errors' ? t(`${FIELD}.errors`) : t(`${FIELD}.run`),
+        titleOf: (candidate) => (candidate === 'errors' ? t(`${FIELD}.errors`) : t(`${FIELD}.run`)),
     });
     const run = useQuery({
         queryKey: [REPORT_RUN_QUERY_KEY, id],

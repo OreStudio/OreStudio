@@ -724,7 +724,8 @@ void process_assignment(ores::nats::service::client& nats,
                     ores::storage::filesystem::archiver::pack(failed_output_dir, output_archive);
                     output_bytes = static_cast<std::int64_t>(fs::file_size(output_archive));
                     ores::storage::net::http_client::put(
-                        make_url(cfg.http_base_url, evt.output_uri), output_archive,
+                        make_url(cfg.http_base_url, evt.output_uri),
+                        output_archive,
                         evt.storage_token);
                 }
                 // ClientError.

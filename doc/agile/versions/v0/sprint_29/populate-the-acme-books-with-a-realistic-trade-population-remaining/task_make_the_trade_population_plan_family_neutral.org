@@ -161,6 +161,41 @@ writes them. They are =CommodityForwardVolatilityAgreement=,
 =CommodityRainbowOption=, =CommodityStrikeResettableOption= and
 =CommodityPosition=.
 
+** There is no commodity catalogue, and no commodity curve
+
+Measured on a database rebuilt on 2026-10-24, and on the tree.
+
+=commodity_instrument.commodity_code= is free text with no foreign key. No
+commodity lookup table exists: =information_schema.tables= holds no
+=ores_refdata_commodities_tbl=, only the curve, convention, price-segment
+and volatility-config tables, and every one of those is empty.
+
+| Table | Rows |
+|---|---|
+| =ores_refdata_commodity_curve_configs_tbl= | 0 |
+| =ores_refdata_commodity_forward_conventions_tbl= | 0 |
+| =ores_refdata_commodity_volatility_configs_tbl= | 0 |
+| =ores_trading_commodity_instruments_tbl= | 0 |
+
+The conventions import stages commodity rows and publishes none of them:
+=ores_dq_commodity_future_conventions_artefact_tbl= holds 790 rows over 32
+distinct =index_name= values, and 756 of the 790 state no index name at
+all. =ores_dq_commodity_forward_conventions_artefact_tbl= holds 4 rows. The
+published tables above hold none, so nothing in refdata names a commodity a
+population could draw.
+
+The engine's own corpus names commodities as exchange-prefixed indices:
+=NYMEX:CL=, =NYMEX:NG=, =XLME:AH=, =PM:XAUUSD=, =NYMEX:CSX= and =NYMEX:A7Q=
+across =external/ore/examples/Products/Example_Trades/Commodity_*.xml=.
+That is the vocabulary a population has to speak for the engine to resolve
+anything.
+
+Two consequences follow, and neither is this task's to fix by writing a
+planner. A planner with no catalogue must invent a commodity name, which is
+the one thing the generator is not allowed to do. And a population on no
+curve books, exports and then fails at pricing, which the market data
+stories own.
+
 That decides what this task can claim. The planner books all twenty-five,
 because the table takes them, but the export-and-reverse-map proof covers
 the eight shapes the importer maps. The seventeen are a gap in the

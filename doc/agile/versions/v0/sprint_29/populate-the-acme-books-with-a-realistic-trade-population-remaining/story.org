@@ -71,6 +71,7 @@ The investigation this story commissioned is
 | [[id:31F6526B-7E6E-4BA0-907F-71A361F0030D][Populate the scripted family]] | BACKLOG | | | Book the four routed scripted trade types, in the 3% share the weights page sets. The refdata catalogue has no scripted asset class, so the mapping must be declared. |
 | [[id:29DAA209-E62B-47C4-9220-51CA6622EC0C][Populate the commodity family]] | ABANDONED | | | Folded into the seam task, which delivers the commodity planner whole because it is the only class every type of which routes. |
 | [[id:2CD53957-A19B-493B-BB81-662B6308BF07][Extend the generator across the instruments]] | ABANDONED | | | Replaced by one task per asset class, because a family cannot land as a single verifiable unit. |
+| [[id:27FF4AA9-F6B8-460F-8BDD-043F1476C9EB][Seed a commodity catalogue]] | BACKLOG | | | Give the platform a commodity vocabulary it can validate: an entity for the commodities a population draws from, seeded with the exchange-prefixed indices the engine resolves, each with its unit and quotation currency. |
 
 * Decisions
 

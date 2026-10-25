@@ -23,6 +23,7 @@
 #include "ores.iam.api/messaging/account_role_protocol.hpp"
 #include "ores.iam.api/messaging/role_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.refdata.api/messaging/benchmark_rate_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/commodity_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
@@ -192,6 +193,17 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
             .code = commodity.code,
             .unit = commodity.unit_code,
             .quotation_currency = commodity.quotation_currency_code});
+
+    /*
+     * The benchmark catalogue is the tenant's own too, and a floating leg names
+     * an index from it. As with commodities, an empty set is the planner's to
+     * refuse, because a leg that named an index the store cannot resolve would
+     * book and then fail to price.
+     */
+    ores::refdata::messaging::list_benchmark_rates_request rate_req;
+    rate_req.limit = page;
+    for (const auto& benchmark : read(rate_req).rates)
+        scope.floating_index_codes.push_back(benchmark.code);
 
     ores::refdata::messaging::list_counterparties_request cp_req;
     cp_req.limit = page;
@@ -507,6 +519,86 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
         row.audit.change_reason_code = std::string(population_reason);
         row.audit.change_commentary = "Generated trade population.";
         book_req.instruments.commodity_instruments.push_back(row);
+    } else if (const auto* rate = std::get_if<domain::rate_terms>(&slot.terms)) {
+        const auto money = [](double value) {
+            return ores::utility::decimal::decimal::from_double(value).value();
+        };
+
+        ores::trading::domain::rate_instrument header;
+        header.start_date = rate->start_date;
+        header.maturity_date = rate->maturity_date;
+        header.description = "Generated interest rate trade.";
+        header.audit.change_reason_code = std::string(population_reason);
+        header.audit.change_commentary = "Generated trade population.";
+        book_req.instruments.rate_instruments.push_back(header);
+
+        /*
+         * One fixed leg against one floating leg, which is the shape every
+         * routed rate type reduces to. The leg's economics are rows beside it
+         * and not columns on it: its notional is an amount and its rate or
+         * spread is a rate.
+         */
+        const auto write_leg = [&](int number,
+                                   std::string_view type_code,
+                                   const std::string& day_count,
+                                   const std::string& business_day,
+                                   const std::string& frequency,
+                                   const std::string& index,
+                                   std::string_view rate_role,
+                                   double value,
+                                   bool payer) {
+            ores::trading::domain::swap_leg leg;
+            leg.identity.leg_number = number;
+            leg.payer = payer;
+            leg.leg_type_code = std::string(type_code);
+            leg.day_count_fraction_code = day_count;
+            leg.business_day_convention_code = business_day;
+            leg.payment_frequency_code = frequency;
+            leg.floating_index_code = index;
+            leg.currency = rate->currency;
+            leg.leg_group = std::string("main");
+            leg.audit.change_reason_code = std::string(population_reason);
+            leg.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.swap_legs.push_back(leg);
+
+            ores::trading::domain::swap_leg_amount amount;
+            amount.leg_number = number;
+            amount.sequence_number = 1;
+            amount.start_date = rate->start_date;
+            amount.amount = money(rate->notional);
+            amount.change_reason_code = std::string(population_reason);
+            amount.change_commentary = "Generated trade population.";
+            book_req.instruments.swap_leg_amounts.push_back(amount);
+
+            ores::trading::domain::swap_leg_rate leg_rate;
+            leg_rate.leg_number = number;
+            leg_rate.rate_role = std::string(rate_role);
+            leg_rate.sequence_number = 1;
+            leg_rate.start_date = rate->start_date;
+            leg_rate.value = money(value);
+            leg_rate.change_reason_code = std::string(population_reason);
+            leg_rate.change_commentary = "Generated trade population.";
+            book_req.instruments.swap_leg_rates.push_back(leg_rate);
+        };
+
+        write_leg(1,
+                  "Fixed",
+                  rate->fixed_day_count_fraction_code,
+                  rate->fixed_business_day_convention_code,
+                  rate->fixed_payment_frequency_code,
+                  std::string(),
+                  "fixed",
+                  rate->fixed_rate,
+                  true);
+        write_leg(2,
+                  "Floating",
+                  rate->floating_day_count_fraction_code,
+                  rate->floating_business_day_convention_code,
+                  rate->floating_payment_frequency_code,
+                  rate->floating_index_code,
+                  "spread",
+                  rate->spread,
+                  false);
     } else {
         throw trade_population_write_error(
             "The slot states no terms this writer knows how to book.");

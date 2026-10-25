@@ -85,6 +85,16 @@ struct trade_generation_scope final {
      * cannot state a commodity at all.
      */
     std::vector<commodity_reference> commodities;
+    /**
+     * @brief The benchmark rates the tenant holds, from which a floating leg's
+     * index is drawn.
+     *
+     * A benchmark rate is the tenant's reference data and not this
+     * configuration's, in the way the commodity catalogue is. A population
+     * whose set is empty cannot state a floating leg at all, so the planner
+     * refuses rather than naming an index the store does not hold.
+     */
+    std::vector<std::string> floating_index_codes;
     std::vector<boost::uuids::uuid> book_ids;
     std::vector<boost::uuids::uuid> counterparty_ids;
     /**
@@ -195,7 +205,41 @@ struct commodity_terms final {
  * a reader of a bond slot sees bond facts and a reader of another family never
  * has to ask what a security is.
  */
-using trade_terms = std::variant<bond_terms, commodity_terms>;
+/**
+ * @brief The facts a rate slot carries and no other family does.
+ *
+ * An interest rate trade reduces to one fixed leg against one floating leg,
+ * whatever its trade type: the type decides the exercise and payment features
+ * the specialised tables would hold, and this states the legs every routed
+ * type has. Every code here is the reference data's own, so the generator
+ * invents no vocabulary of its own.
+ */
+struct rate_terms final {
+    /// The currency both legs are denominated in.
+    std::string currency;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day maturity_date;
+    /// The notional both legs state, in the currency above.
+    double notional = 0.0;
+    /// What the fixed leg pays, as a decimal: 0.05 is five per cent, which is
+    /// the unit the store holds the rate in.
+    double fixed_rate = 0.0;
+    std::string fixed_day_count_fraction_code;
+    std::string fixed_business_day_convention_code;
+    std::string fixed_payment_frequency_code;
+    /**
+     * @brief The index the floating leg resets on, as the benchmark catalogue
+     * spells it, such as =SOFR= or =SONIA=.
+     */
+    std::string floating_index_code;
+    /// What the floating leg pays over that index, as a decimal.
+    double spread = 0.0;
+    std::string floating_day_count_fraction_code;
+    std::string floating_business_day_convention_code;
+    std::string floating_payment_frequency_code;
+};
+
+using trade_terms = std::variant<bond_terms, commodity_terms, rate_terms>;
 
 /**
  * @brief One trade the population states, with every reference already

@@ -207,7 +207,12 @@ cross join (values
          "description": "The bonds ACME HK Ltd books, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8}
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8},
+        {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK rates population",
+         "description": "The interest rate trades ACME UK plc books, generated from its own books, counterparties, staff and benchmark catalogue. Twelve a book so every routed type appears at least once and four appear twice.",
+         "asset_class_code": "interest_rates", "book": "GBP Vanilla Swaps",
+         "min_tenor_code": "1Y", "max_tenor_code": "10Y",
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 43, "trades_per_book": 12}
     ]}'::jsonb),
     -- Northwind Traders: the second demonstration tenant. Lighter than ACME --
     -- one legal entity, one party, nine staff and seven books -- and its party

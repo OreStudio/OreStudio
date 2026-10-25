@@ -51,6 +51,9 @@ Three questions the journey judgement left to the prototype:
 3. What does a reader see? A person who may not write sees the mark /Read
    only/ and no action, on the page and in every panel (RS-FEEDBACK-01,
    RS-FEEDBACK-02).
+4. Where does a reference lead? The country of a calendar is a link to the
+   country's page with its flag, on the list and on the Details (RS-PAGE-08,
+   ES-REF-01); the calendar type is a link to its classification page.
 
 ** The screens and the rules each follows
 
@@ -72,8 +75,9 @@ Three questions the journey judgement left to the prototype:
   (RS-WRITE-33). The tabs follow the shape: Details, Rules, Exceptions, Diary
   events, Business days, History; a tab that does not apply is not drawn
   (RS-PAGE-09). The details stand in four columns in the field table's order,
-  with the fixed reason under the code and /Holidays from/ as a link to the
-  base (RS-PAGE-05, RS-PAGE-06, RS-PAGE-08); the last-changed line ends them
+  with the fixed reason under the code, the country as a link to its page
+  with its flag, and /Holidays from/ as a link to the base (RS-PAGE-05,
+  RS-PAGE-06, RS-PAGE-08, ES-REF-01); the last-changed line ends them
   (RS-PAGE-10).
 - *The parts.* Rules, exceptions and events are parts panels: the columns the
   kind declares, History, Edit and Delete on each row, Add under the table
@@ -102,10 +106,22 @@ Three questions the journey judgement left to the prototype:
   one dialog that is not a record, remove or revert dialog, and the standard's
   RS-WRITE-31 gains the operation dialog as a fourth shared shape, or names
   the exception.
-- *History.* The timeline of versions at the left with the current emblem on
-  the newest, the compare at the right with the old value on a red line and
-  the new on a green line, and Revert on an older version (ES-HIST-11,
-  ES-HIST-18, RS-HIST-02).
+- *History.* The shared timeline of the Entity screen specification: the
+  event chart with one bar per day split by kind and a legend with counts
+  (ES-HIST-01 to 06); then the rail, newest first, under a day divider, with
+  the time and the current-version emblem in the left gutter (ES-HIST-11); one
+  line per entry with the kind, the record and its version, the reason, the
+  author and the fields that changed (ES-HIST-07); the note on its own line
+  (ES-HIST-08); the detail collapsed, a table of what was and what is now, or
+  the whole record for a first version (ES-HIST-09); /No changes/ for a
+  version that moved no field (ES-HIST-10); /Hide system activity/ at the top
+  right (ES-HIST-13 to 18); Revert on every version but the current one, for
+  a writer (RS-HIST-02); and, for a QuantLib calendar, the box /What this
+  history cannot show/ (ES-HIST-39). A part's history is the same rail in a
+  wide dialog (RS-RELATED-06). The first draft of this prototype copied the
+  two-pane compare of the live reference data screens and of the
+  classifications prototype; the owner caught it on 2026-10-25, both sources
+  are marked legacy, and this page carries the timeline.
 
 ** The Business days view
 
@@ -142,7 +158,7 @@ Add. It:
 | =?screen=calendar&code=TARGET= | A QuantLib calendar: Read only, Derive only, the notice |
 | =&tab=rules=, =exceptions=, =events= | The parts panels |
 | =&tab=days= | The Business days view; =&year=2027=, =&compare=TARGET=, =&built=none= |
-| =&tab=history= | The timeline; =&v=2= selects a version |
+| =&tab=history= | The timeline; =&sys=hide= hides system activity; =TARGET= shows the gap box |
 | =&dialog=edit=, =derive=, =rebuild=, =delete= | The header's dialogs |
 | =&tab=rules&dialog=add-part= | Add a rule; =&dialog=edit-part&part=r5=, =remove-part=, =part-history= |
 | =&guard=1= | The closing guard |

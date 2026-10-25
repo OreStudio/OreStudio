@@ -28,9 +28,9 @@ A commodity trade names its commodity in free text, and nothing holds the set of
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | The plan is written. The model comes next. |
+| Now          | The entity, its DQ artefact, the publish function and the seed all work. The publish is reachable from psql but not yet from a workflow step. |
 | Waiting on   | Nothing.                               |
-| Next         | Declare the entity, then generate the artefact and the publish. |
+| Next         | The publish operation message and its handler wiring, so a tenant can apply the bundle. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -117,11 +117,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Commodity artefact rows after a rebuild | 6 | =select count(*) from ores_dq_commodities_artefact_tbl= | e2b2b9c0de |
-| First publish, =upsert= | inserted 6, and the catalogue reads back with each commodity's unit and quotation currency | =select * from ores_refdata_publish_commodities_from_dq_fn(...)= | e2b2b9c0de |
-| Second publish, =upsert= | updated 6: every row is replaced and re-versioned | same | e2b2b9c0de |
-| Third publish, =insert_only= | skipped 6: nothing written | same, with mode =insert_only= | e2b2b9c0de |
-| Current rows after the three publishes | 6 current rows, 12 version rows in all: no duplicate current row | =select count(*), max(version), count(*) from ores_refdata_commodities_tbl= | e2b2b9c0de |
+| Commodity artefact rows after a rebuild | 6 | =select count(*) from ores_dq_commodities_artefact_tbl= | 6af57fef68 |
+| First publish, =upsert= | inserted 6, and the catalogue reads back with each commodity's unit and quotation currency | =select * from ores_refdata_publish_commodities_from_dq_fn(...)= | 6af57fef68 |
+| Second publish, =upsert= | updated 6: every row is replaced and re-versioned | same | 6af57fef68 |
+| Third publish, =insert_only= | skipped 6: nothing written | same, with mode =insert_only= | 6af57fef68 |
+| Current rows after the three publishes | 6 current rows, 12 version rows in all: no duplicate current row | =select count(*), max(version), count(*) from ores_refdata_commodities_tbl= | 6af57fef68 |
 |      |       |         |        |
 
 * Notes

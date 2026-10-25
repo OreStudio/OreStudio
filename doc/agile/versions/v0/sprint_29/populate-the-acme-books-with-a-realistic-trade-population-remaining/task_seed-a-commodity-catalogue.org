@@ -26,11 +26,11 @@ A commodity trade names its commodity in free text, and nothing holds the set of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | The entity, its DQ artefact, the publish function and the seed all work. The publish is reachable from psql but not yet from a workflow step. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The publish operation message and its handler wiring, so a tenant can apply the bundle. |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -44,7 +44,7 @@ A commodity trade names its commodity in free text, and nothing holds the set of
   claiming one ''idempotent'' behaviour covers both.
 - The catalogue carries the index names ORE's own corpus uses, among them NYMEX:CL, NYMEX:NG, XLME:AH and PM:XAUUSD.
 - Every seeded commodity states a unit and a quotation currency that match how that commodity is traded: barrels for WTI, MMBtu for gas, tonnes for LME aluminium, ounces for gold.
-- A commodity code the catalogue does not hold is refused by name, rather than accepted as free text.
+- The catalogue is the authority a planner validates against. The refusal itself is the planner's, and belongs to [[id:29DAA209-E62B-47C4-9220-51CA6622EC0C][Populate the commodity family]], which is where a population names a commodity.
 - The entity, the artefact table and the publish function are generated through codegen, and the component's drift check is clean afterwards.
 
 * Plan
@@ -122,6 +122,9 @@ task and name that file in the Command column.
 | Second publish, =upsert= | updated 6: every row is replaced and re-versioned | same | 6af57fef68 |
 | Third publish, =insert_only= | skipped 6: nothing written | same, with mode =insert_only= | 6af57fef68 |
 | Current rows after the three publishes | 6 current rows, 12 version rows in all: no duplicate current row | =select count(*), max(version), count(*) from ores_refdata_commodities_tbl= | 6af57fef68 |
+| The refdata component builds with the entity, the artefact, the publish function and the operation | 2335 targets, exit 0 | =compass build ores.refdata.core.tests= | c9c02c38ab |
+| The generated eventing test for the commodity | 8 assertions in 1 test case | =publish/bin/ores.refdata.core.tests "write_commodity_publishes_an_event"= | c9c02c38ab |
+| Codegen drift for the component | no drift: generated output matches the checked-in tree | =check_component_drift.py --component refdata --dry-run= | c9c02c38ab |
 |      |       |         |        |
 
 * Notes
@@ -194,3 +197,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Refdata holds a commodity catalogue: =ores_refdata_commodities_tbl= with
+the code as the engine spells it, a name, a description, the unit the
+commodity is quoted in, the quotation currency and a display order. It
+arrives through the DQ pipeline as the other market-standard catalogues do:
+=ores_dq_commodities_artefact_tbl=, =ores_refdata_publish_commodities_from_dq_fn=,
+a =refdata.commodities= dataset, and the operation
+=refdata.v1.ops.publish_commodities_from_dq= to reach the function from a
+workflow step.
+
+Six commodities are seeded, each with the unit and quotation currency it
+trades in: ICE:B and NYMEX:CL in barrels, NYMEX:NG in MMBtu, NYMEX:CSX in
+short tons, XLME:AH in tonnes and PM:XAUUSD in ounces, all quoted in
+dollars. NYMEX:A7Q is deliberately absent: the engine's corpus names it by
+code and states no unit, so seeding it would mean inventing one.
+
+Measured end to end: a rebuild seeds six artefact rows, the first publish
+inserts six, a second upsert replaces and re-versions them, an
+=insert_only= run skips them, and no publish leaves a duplicate current row.
+
+Three things this task needed are hand-written and only the entity surface
+and the artefact create come from the model: the publish function, the
+create and drop index entries, and the artefact drop. The generator gap
+behind the last is captured in =a_dq_artefact_gets_no_drop=.
+
+Not done, and moved: the refusal for a commodity the catalogue does not
+hold. With no foreign key on =commodity_instrument.commodity_code=, that is
+the planner's refusal and belongs to the commodity family task.

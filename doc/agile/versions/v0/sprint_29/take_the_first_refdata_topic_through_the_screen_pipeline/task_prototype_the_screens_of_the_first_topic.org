@@ -8,7 +8,7 @@
 #+filetags: :take_the_first_refdata_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
 #+branch: feature/prototype-the-screens-of-the-first-topic
-#+pr: 3785
+#+pr: 3787
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -98,6 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3787][#3787]] | [docs] Draw the prototype's history as the shared timeline, mark the legacy panel |
 | [[https://github.com/OreStudio/OreStudio/pull/3785][#3785]] | [docs] Prototype the calendars screens to the record screen standard |
 
 * Review

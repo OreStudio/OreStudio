@@ -552,9 +552,12 @@ describe('one report definition', () => {
         expect(page).toContain('common.non_material_update');
     });
 
-    it('draws no History tab, because the versions cannot be read by id yet', () => {
+    it('draws the definition, the runs and the results as three tabs, and no History', () => {
         const page = detail();
         expect(page).toContain('role="tab"');
+        expect(page).toContain('>Definition<');
+        expect(page).toContain('>Runs<');
+        expect(page).toContain('>Results<');
         expect(page).not.toContain('>History<');
     });
 

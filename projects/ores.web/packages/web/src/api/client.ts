@@ -465,6 +465,22 @@ export type ReportOpen =
           readonly choices: readonly ReportNameChoice[];
       };
 
+/** Why a report shows no rows, as the server stated it. */
+export type ResultReason = '' | 'no-run' | 'no-output' | 'no-result-file' | 'no-figures';
+
+const RESULT_REASONS: readonly ResultReason[] = [
+    'no-run',
+    'no-output',
+    'no-result-file',
+    'no-figures',
+];
+
+/** The reason the server named, or nothing when it named one this client does not know. */
+function resultReasonOf(value: string | undefined): ResultReason {
+    const found = RESULT_REASONS.find((candidate) => candidate === value);
+    return found ?? '';
+}
+
 export const api = {
     /**
      * Whether the deployment still needs its first administrator.
@@ -2428,14 +2444,6 @@ export const api = {
         return reply.trade ?? null;
     },
 
-    /** The per-trade results a run produced, or why it produced none. */
-    async gridReportRunResults(id: string): Promise<{ rows: readonly unknown[]; message: string }> {
-        const reply = (await request(`/api/operations/grid/report-runs/${id}/results`, {
-            method: 'GET',
-        })) as { rows?: readonly unknown[]; message?: string };
-        return { rows: reply.rows ?? [], message: reply.message ?? '' };
-    },
-
     /** The runs of one report, newest first. */
     async reportRuns(id: string): Promise<readonly unknown[]> {
         const reply = (await request(`/api/reporting/reports/${id}/runs`, {
@@ -2444,12 +2452,12 @@ export const api = {
         return reply.runs ?? [];
     },
 
-    /** The results of a report's latest run, or why it produced none. */
-    async reportResults(id: string): Promise<{ rows: readonly unknown[]; message: string }> {
+    /** The results of a report's latest run, and why it has none. */
+    async reportResults(id: string): Promise<{ rows: readonly unknown[]; reason: ResultReason }> {
         const reply = (await request(`/api/reporting/reports/${id}/results`, {
             method: 'GET',
-        })) as { rows?: readonly unknown[]; message?: string };
-        return { rows: reply.rows ?? [], message: reply.message ?? '' };
+        })) as { rows?: readonly unknown[]; reason?: string };
+        return { rows: reply.rows ?? [], reason: resultReasonOf(reply.reason) };
     },
 
     /** The errors a report run recorded. */

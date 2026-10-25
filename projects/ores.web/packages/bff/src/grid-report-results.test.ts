@@ -22,7 +22,7 @@
 import { describe, expect, it } from 'vitest';
 import { entriesOf, rowsOf } from './grid-report-results.js';
 
-/**
+/*
  * The run result file: the engine's npv.csv, read by column name.
  *
  * The header the engine writes starts with a hash, and a counterparty name can
@@ -53,37 +53,31 @@ function tarOf(name: string, content: string): Buffer {
 
 describe('rowsOf', () => {
     it('reads the figures by name, past the hash the engine writes first', () => {
-        const read = rowsOf(CSV);
+        const rows = rowsOf(CSV);
 
-        expect(read.rows).toHaveLength(2);
-        expect(read.rows?.[0]).toEqual({
+        expect(rows).toHaveLength(2);
+        expect(rows?.[0]).toEqual({
             trade_id: '247917c2-b008-5482-930e-8e776fb73aa8',
             trade_type: 'Bond',
             npv: '7076092.454615',
+            npv_currency: 'GBP',
             npv_base: '7076092.454615',
             notional: '7087413.92',
             counterparty: 'Northwind Capital, Ltd',
         });
-        expect(read.rows?.[1]?.npv).toBe('1142973.707486');
+        expect(rows?.[1]?.npv).toBe('1142973.707486');
     });
 
     it('reads a file that starts with a byte-order mark', () => {
-        const read = rowsOf(`\uFEFF${CSV}`);
-
-        expect(read.rows).toHaveLength(2);
+        expect(rowsOf(`\uFEFF${CSV}`)).toHaveLength(2);
     });
 
-    it('states the header it found when the figures are not in it', () => {
-        const read = rowsOf('TradeType,Notional\nBond,1000');
-
-        expect(read.rows).toBeNull();
-        expect(read.header).toBe('TradeType,Notional');
+    it('reports nothing when the figures are not named in the header', () => {
+        expect(rowsOf('TradeType,Notional\nBond,1000')).toBeNull();
     });
 
     it('reads a file with a header and no rows as no result, not as a failure', () => {
-        const read = rowsOf('#TradeId,NPV\n');
-
-        expect(read.rows).toEqual([]);
+        expect(rowsOf('#TradeId,NPV\n')).toEqual([]);
     });
 });
 

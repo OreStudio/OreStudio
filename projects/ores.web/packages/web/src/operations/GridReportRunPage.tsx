@@ -33,7 +33,6 @@ import { Detail, LinkButton, Notice, PageHeader, Tag, cx } from '../ui/Primitive
 import { useTabs } from '../ui/Tabs.js';
 import { formatDate, formatDateTime } from '../ui/Time.js';
 import { ReadFailure } from './GridJobs.js';
-import { RunResultsPanel } from '../reporting/RunResultsPanel.js';
 
 /**
  * The report run page: the run of a report that dispatched a batch, and the
@@ -605,10 +604,6 @@ export function GridReportRunPage(): ReactNode {
                             <RunSummary
                                 rows={rows}
                                 onShowErrors={() => setSearchParams({ tab: 'errors' })}
-                            />
-                            <RunResultsPanel
-                                queryKey={['report-run-results', run.data.id]}
-                                load={() => api.gridReportRunResults(run.data.id)}
                             />
                             <Run run={run.data} />
                             <Links run={run.data} />

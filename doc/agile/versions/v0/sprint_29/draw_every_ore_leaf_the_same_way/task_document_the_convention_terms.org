@@ -8,7 +8,7 @@
 #+filetags: :draw_every_ore_leaf_the_same_way:sprint_29:v0:
 #+owner: marco
 #+branch: feature/document-the-convention-terms
-#+pr:
+#+pr: 3828
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3828][#3828]] | [sql] Document the convention terms in the ORE parameter contract |
 
 * Review
 

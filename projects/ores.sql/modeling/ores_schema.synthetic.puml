@@ -145,6 +145,10 @@ package "synthetic" #F9FBE7 {
         * vintage_date : text
           folder_id : uuid <<FK>>
         * asset_class_code : text
+        * arrival_mode : text
+        * branching_ratio : double
+        * decay : double
+        * sensitivity : double
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -220,6 +224,10 @@ package "synthetic" #F9FBE7 {
         * source_name : text
           folder_id : uuid <<FK>>
         * asset_class_code : text
+        * arrival_mode : text
+        * branching_ratio : double
+        * decay : double
+        * sensitivity : double
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

@@ -164,6 +164,27 @@ to the data's when the data has no line for the requested one. Instance
   fields. Surfacing the mandatory id, the curve and the trade ids there is the
   next step, and it needs no new mapping.
 
+*Second run, 2026-10-25, after the verdict enrichment.* Instance
+=c8436771-ed56-49b3-bbe3-d425c9cdd1ca= failed, and its message now says what
+the engine could not build instead of only that an analytic failed:
+
+#+begin_example
+The engine's analytic failed. The engine reported 20 errors; the last 5 are:
+  yield curve building failed for curve(s) Yield/HKD/HKD1D on date 2026-05-05
+  while processing Yield/HKD/HKD1D: Could not find quote for Mandatory ID
+  IR_SWAP/RATE/HKD/0D/1D/1M with as of date 2026-05-05
+  (curve [IndexCurve(HKD-HONIA,Yield/HKD/HKD1D)])
+#+end_example
+
+Each reason names the mandatory quote, the curve and the date, and the
+structured alerts carry the trade id and type. The report state is now enough to
+diagnose a market data failure without opening the job log.
+
+*Remaining on this task.* The date helpers live in the package handler. Moving
+them to =ores.ore::store= with unit tests is the acceptance bullet still open.
+The run itself still fails because the reference vintage has no quotes for the
+curve tenors the trades need, which is the data gap recorded above.
+
 * Test Scenarios
 
 | Scenario | State | Notes |

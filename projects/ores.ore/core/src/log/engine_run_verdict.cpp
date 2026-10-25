@@ -22,6 +22,8 @@
 #include <algorithm>
 #include <cstddef>
 #include <format>
+#include <optional>
+#include <string_view>
 
 namespace ores::ore::log {
 
@@ -90,6 +92,58 @@ bool restates(const std::vector<std::string>& failures, const std::string& messa
     });
 }
 
+/** The value of a quoted field in a structured message, when it carries one. */
+std::optional<std::string> quoted_field(std::string_view line, std::string_view marker) {
+    const auto at = line.find(marker);
+    if (at == std::string_view::npos)
+        return std::nullopt;
+    const auto from = at + marker.size();
+    const auto to = line.find('"', from);
+    if (to == std::string_view::npos || to == from)
+        return std::nullopt;
+    return std::string(line.substr(from, to - from));
+}
+
+/**
+ * @brief What the engine says it could not do, one line per reason.
+ *
+ * The engine writes the useful detail before the verdict that names the
+ * analytic: the mandatory quote it could not find, the curve it failed to
+ * build, and the trade it was building when it stopped. A structured message
+ * carries those as fields, so its own sentence is reported with the trade or
+ * the curve that explains it.
+ */
+std::vector<std::string> explanations(std::string_view engine_log) {
+    std::vector<std::string> reasons;
+    for_each_message(engine_log, [&](const auto& parsed) {
+        if (parsed.level != "alert" && parsed.level != "error")
+            return;
+
+        auto text = parsed.message;
+        std::string detail;
+        if (text.starts_with("StructuredMessage")) {
+            const auto message = quoted_field(text, "\"message\": \"");
+            if (!message)
+                return;
+            text = *message;
+            if (const auto trade = quoted_field(parsed.message, "\"name\": \"tradeId\", \"value\": \"")) {
+                detail = " (trade " + *trade;
+                if (const auto type =
+                        quoted_field(parsed.message, "\"name\": \"tradeType\", \"value\": \""))
+                    detail += ", " + *type;
+                detail += ")";
+            } else if (const auto curve =
+                           quoted_field(parsed.message, "\"name\": \"curveId\", \"value\": \"")) {
+                detail = " (curve " + *curve + ")";
+            }
+        }
+        text += detail;
+        if (!restates(reasons, text))
+            reasons.push_back(std::move(text));
+    });
+    return reasons;
+}
+
 /**
  * @brief The engine's own verdicts that the analytics failed, one per distinct
  * message.
@@ -133,7 +187,12 @@ engine_run_outcome judge_engine_run(const std::vector<std::string>& output_file_
     // wrote nothing but its log still states why.
     const auto failures = fatal_messages(engine_log);
     if (!failures.empty()) {
-        outcome.failure = "The engine's analytic failed." + reported_errors(failures);
+        auto reasons = failures;
+        for (const auto& reason : explanations(engine_log)) {
+            if (!restates(reasons, reason))
+                reasons.push_back(reason);
+        }
+        outcome.failure = "The engine's analytic failed." + reported_errors(reasons);
         return outcome;
     }
 

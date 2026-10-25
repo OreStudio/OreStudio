@@ -84,8 +84,8 @@ struct consumer final {
 };
 
 /**
- * @brief One consumer of a tick: the route it is stored under, and the
- * subject it is republished on.
+ * @brief One consumer of a tick: the party the tick is delivered to, the subject it is
+ * republished on, and the route that makes the party a consumer of the source.
  */
 struct tick_target final {
     consumer owner;
@@ -103,14 +103,16 @@ struct tick_target final {
  * subject for that consumer's tenant and party.
  *
  * The targets depend on the consumers and the datum alone, so the loop builds them once for each
- * source and datum and shares them.
+ * source and datum and shares them. They are a delivery plan: the store writes one row for each
+ * tick, whatever the number of targets.
  */
 ORES_MARKETDATA_SERVICE_EXPORT std::shared_ptr<const std::vector<tick_target>>
 make_targets(const std::vector<consumer>& consumers, const named_datum& named);
 
 /**
  * @brief What the ingest loop does with a tick it accepts: the datum it names,
- * its value, and one target per consumer of its source.
+ * its value, and one target per consumer of its source, which is whom to
+ * deliver it to. The store writes the tick once, not once for each target.
  */
 struct tick_plan final {
     std::shared_ptr<const named_datum> named;

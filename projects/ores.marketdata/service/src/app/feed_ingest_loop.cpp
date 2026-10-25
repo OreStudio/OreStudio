@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
+#include "ores.marketdata.api/datum/series_stream.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_source_repository.hpp"
@@ -68,14 +69,14 @@ struct feed_ingest_loop::item {
 /// A batch between its two stages. The first stage fills it and the second reads it, so the
 /// second can copy this batch while the first prepares the next. The items point into @c plans,
 /// whose elements stay where they are when the batch is handed on, and the rows view the text of
-/// the targets and of @c series_text.
+/// the targets and of @c stream_text.
 struct feed_ingest_loop::prepared_batch {
     std::vector<messaging::market_tick> ticks;
     std::vector<std::optional<tick_plan>> plans;
     std::vector<item> items;
     std::map<std::string, ores::database::context> tenant_ctxs;
     std::unordered_map<boost::uuids::uuid, std::string, boost::hash<boost::uuids::uuid>>
-        series_text;
+        stream_text;
     std::vector<tick_row> rows;
     /// Why the rows could not be prepared, or empty when they could.
     std::string failure;
@@ -175,7 +176,9 @@ void feed_ingest_loop::refresh() {
     auto wanted = std::make_shared<consumers_snapshot>();
 
     // The catalogue belongs to the system tenant, and the routes to each party. A route makes
-    // its party a consumer of the source it names.
+    // its party a consumer of the source it names. The tick store no longer reads the routes: a
+    // tick is written once for its source. The routes say whom to deliver the source's ticks to,
+    // and the meter and the stats count deliveries.
     const auto system_ctx = ores::database::service::tenant_context::with_system_tenant(ctx_);
     auto sources = repository::market_data_source_repository{}.read_latest(system_ctx);
     auto instruments =
@@ -461,8 +464,10 @@ feed_ingest_loop::prepare(std::vector<messaging::market_tick> received,
         batch->plans[i] = std::move(*plan);
     }
 
-    // Resolve the series of every consumer. The tenant context is made once for each tenant,
-    // and the series is read once for each series, so a batch pays neither for each tick.
+    // Resolve the series of every consumer, which is the metadata the party's history read
+    // starts from. The tenant context is made once for each tenant, and the series is read once
+    // for each series, so a batch pays neither for each tick. The tick store does not use the
+    // series: it writes one row for each stream.
     boost::uuids::random_generator uuid_gen;
     auto& tenant_ctxs = batch->tenant_ctxs;
     auto& items = batch->items;
@@ -656,9 +661,11 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
 
 namespace {
 
-/// The key of a row of the tick table: two ticks of one datum and time are one row.
+/// The key of a row of the tick table: two ticks of one coordinate of one stream at one time
+/// are one row. Every consumer of a source gives a tick the same stream, so the key collapses
+/// the consumers' copies into the one row the source's tick gets.
 struct row_key {
-    boost::uuids::uuid series;
+    boost::uuids::uuid stream;
     std::int16_t coord;
     std::int64_t ts;
     bool operator==(const row_key&) const = default;
@@ -666,7 +673,7 @@ struct row_key {
 
 struct row_key_hash {
     std::size_t operator()(const row_key& k) const {
-        std::size_t h = boost::hash<boost::uuids::uuid>{}(k.series);
+        std::size_t h = boost::hash<boost::uuids::uuid>{}(k.stream);
         boost::hash_combine(h, k.coord);
         boost::hash_combine(h, k.ts);
         return h;
@@ -681,21 +688,22 @@ void feed_ingest_loop::prepare_rows(prepared_batch& batch) {
     if (items.empty())
         return;
 
-    // The datum of a tick has a number within its series, which the table stores in place of
-    // the URI. The loop assigns the numbers it does not know yet for the whole batch, with a
-    // few statements for each tenant, so a start with many new datums does not open a
-    // connection for each. A number that cannot be assigned means the database does not
-    // answer, so the whole batch is left unstored.
+    // The stream of a tick is the provider and the series URI of the datum, and it is shared by
+    // every consumer of the source. The number of the datum within the stream is what the table
+    // stores in place of the URI, and the loop assigns the numbers it does not know yet for the
+    // whole batch in a few statements, whatever the number of consumers. The dictionary names
+    // no tenant and no party, so the loop writes it as itself and not under a tenant.
+    std::vector<boost::uuids::uuid> streams(items.size());
     std::vector<std::int16_t> coord_of(items.size(), 0);
     std::vector<bool> numbered(items.size(), false);
-    std::map<std::string, std::vector<repository::tick_datum>> unknown;
-    const auto cached_number = [&](const boost::uuids::uuid& series,
+    std::vector<repository::tick_datum> unknown;
+    const auto cached_number = [&](const boost::uuids::uuid& stream,
                                    const std::string& uri) -> std::optional<std::int16_t> {
         const auto found = coords_.find(uri);
         if (found == coords_.end())
             return std::nullopt;
         for (const auto& [id, number] : found->second)
-            if (id == series)
+            if (id == stream)
                 return number;
         return std::nullopt;
     };
@@ -705,37 +713,36 @@ void feed_ingest_loop::prepare_rows(prepared_batch& batch) {
         for (std::size_t i = 0; i < items.size(); ++i) {
             const auto& it = items[i];
             const auto& uri = ticks[it.tick_index].oresmd_uri;
-            if (const auto number = cached_number(it.series_id, uri)) {
+            streams[i] =
+                datum::stream_id(it.target->owner.provider_code, it.plan->named->series_uri);
+            if (const auto number = cached_number(streams[i], uri)) {
                 coord_of[i] = *number;
                 numbered[i] = true;
-            } else if (queued.insert({it.series_id, uri}).second) {
-                unknown[it.target->tenant_text].push_back(
-                    {it.target->owner.party_id, it.series_id, uri});
+            } else if (queued.insert({streams[i], uri}).second) {
+                unknown.push_back({streams[i], uri});
             }
         }
     }
-    for (const auto& [tenant, wanted] : unknown) {
+    if (!unknown.empty()) {
         try {
-            const auto numbers = repository::tick_coords_repository{}.resolve_all(
-                batch.tenant_ctxs.at(tenant), wanted);
+            const auto numbers = repository::tick_coords_repository{}.resolve_all(ctx_, unknown);
             std::lock_guard lock(mu_);
             for (std::size_t j = 0; j < numbers.size(); ++j)
-                coords_[wanted[j].oresmd_uri].emplace_back(wanted[j].series_id, numbers[j]);
+                coords_[unknown[j].oresmd_uri].emplace_back(unknown[j].stream_id, numbers[j]);
         } catch (const std::exception& e) {
             batch.failure = e.what();
             return;
         }
     }
 
-    // A tick of the same datum and time as an earlier one in the batch replaces it, so a
-    // reader finds one row for each. The rows view the text of the targets, and of the series
-    // ids written here once for each series.
+    // A tick of the same coordinate and time as an earlier one in the batch replaces it, so a
+    // reader finds one row for each. The rows view the text of the targets, and of the stream
+    // ids written here once for each stream.
     {
         std::lock_guard lock(mu_);
         for (std::size_t i = 0; i < items.size(); ++i)
             if (!numbered[i])
-                coord_of[i] =
-                    *cached_number(items[i].series_id, ticks[items[i].tick_index].oresmd_uri);
+                coord_of[i] = *cached_number(streams[i], ticks[items[i].tick_index].oresmd_uri);
     }
     batch.rows.reserve(items.size());
     std::unordered_map<row_key, std::size_t, row_key_hash> row_at;
@@ -743,19 +750,17 @@ void feed_ingest_loop::prepare_rows(prepared_batch& batch) {
     for (std::size_t i = 0; i < items.size(); ++i) {
         const auto& it = items[i];
         const auto& tick = ticks[it.tick_index];
-        auto& text = batch.series_text[it.series_id];
+        auto& text = batch.stream_text[streams[i]];
         if (text.empty())
-            text = boost::uuids::to_string(it.series_id);
+            text = boost::uuids::to_string(streams[i]);
         tick_row row;
-        row.tenant_id = it.target->tenant_text;
-        row.party_id = it.target->party_text;
-        row.series_id = text;
+        row.stream_id = text;
+        row.source_id = it.target->source_text;
         row.ts = tick.observation_time;
         row.coord = coord_of[i];
         row.value = it.plan->value;
-        row.source_id = it.target->source_text;
         const auto at = row_at.try_emplace(
-            row_key{it.series_id, coord_of[i], row.ts.time_since_epoch().count()},
+            row_key{streams[i], coord_of[i], row.ts.time_since_epoch().count()},
             batch.rows.size());
         if (at.second)
             batch.rows.push_back(row);

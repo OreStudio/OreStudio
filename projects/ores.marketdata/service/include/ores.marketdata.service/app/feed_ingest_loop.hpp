@@ -80,16 +80,18 @@ make_feed_series(const consumer& owner,
  * A producer publishes a market_tick on "synthetic.v1.ops.tick.<source>". The tick
  * names its datum by its oresmd quote URI and its producer by its source; it
  * carries no owner. refresh() caches the routes by source, and each route of
- * the tick's source is one consumer: the tick is stored as a row of the tick
- * table under that route's tenant and party, and republished
- * on market_tick_subject() for that consumer and the datum's canonical oresmd
- * URI. A tick from a source that no route names is dropped, with one
- * warning per source, and so is a tick whose URI names no datum or whose
- * value is not a number.
+ * the tick's source is one consumer. The tick is stored once, as one row of the
+ * tick table on the stream its provider and series URI name, and republished on
+ * market_tick_subject() for each consumer and the datum's canonical oresmd URI.
+ * A tick from a source that no route names is dropped, with one warning per
+ * source, and so is a tick whose URI names no datum or whose value is not a
+ * number. The routes say whom to deliver the ticks to; the store does not read
+ * them.
  *
- * A series a tick lands in for the first time is created and classified the
- * way the file import classifies it, from the datum. An FX spot tick is also
- * offered to the CRM bridge.
+ * A series a tick lands in for the first time is created for the party that
+ * reads it and classified the way the file import classifies it, from the datum.
+ * The history read starts from that series and finds the shared stream. An FX
+ * spot tick is also offered to the CRM bridge.
  *
  * The subscription only decodes a tick and queues it. A worker thread takes
  * every tick that has arrived and prepares them as one batch: it plans each tick, finds
@@ -242,8 +244,8 @@ private:
     /// Runs the second and the third stage in the calling thread, one after the other.
     void complete(prepared_batch& batch);
 
-    /// Numbers the datums of @p batch and builds its rows. A number that cannot be assigned sets
-    /// the failure of the batch.
+    /// Numbers the datums of @p batch within their streams and builds one row for each tick of
+    /// each stream. A number that cannot be assigned sets the failure of the batch.
     void prepare_rows(prepared_batch& batch);
 
     /// Copies the rows of @p batch, and marks each item stored or unavailable.
@@ -255,9 +257,10 @@ private:
     /// The thread of the third stage. It ends when its handoff is closed and empty.
     void announce_loop();
 
-    /// The id of the series that @p tick_datum belongs to for @p owner's party,
-    /// created and classified on the first tick that lands in it. Read once for
-    /// each series and then cached until refresh().
+    /// The id of the series that @p named belongs to for @p owner's party, created and
+    /// classified on the first tick that lands in it. The history read resolves the series and
+    /// finds the shared stream from it. Read once for each series and then cached until
+    /// refresh().
     boost::uuids::uuid series_id_for(const ores::database::context& tenant_ctx,
                                      const consumer& owner,
                                      const named_datum& named,
@@ -370,8 +373,8 @@ private:
     /// The datums that the URIs of ticks name. A URI names the same datum for as long as the
     /// loop runs, so refresh() keeps them.
     std::unordered_map<std::string, std::shared_ptr<const named_datum>> named_;
-    /// Coordinate numbers by datum URI, then by series. A number never changes while its series
-    /// exists, so refresh() keeps them.
+    /// The coordinate numbers by datum URI, then by stream. A number never changes while its
+    /// stream exists, so refresh() keeps them.
     std::unordered_map<std::string, std::vector<std::pair<boost::uuids::uuid, std::int16_t>>>
         coords_;
 

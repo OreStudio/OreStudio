@@ -31,20 +31,22 @@
 namespace ores::marketdata::repository {
 
 /**
- * @brief A datum of a series that needs a number in the dictionary.
+ * @brief A datum of a stream that needs a number in the dictionary.
  */
 struct tick_datum final {
-    boost::uuids::uuid party_id;
-    boost::uuids::uuid series_id;
+    boost::uuids::uuid stream_id;
     std::string oresmd_uri;
 };
 
 /**
  * @brief The dictionary that turns a datum URI into the small number that a tick row stores.
  *
- * A datum gets the next number of its series the first time the ingest sees it, and keeps that
- * number, because every tick row of the series refers to it. A series without coordinates has
+ * A datum gets the next number of its stream the first time the ingest sees it, and keeps that
+ * number, because every tick row of the stream refers to it. A series without coordinates has
  * one datum and so one number.
+ *
+ * The dictionary belongs to the stream, not to a party, so every party of a stream reads the
+ * same numbers. The table carries no tenant and no party, so any context writes it.
  */
 class ORES_MARKETDATA_CORE_EXPORT tick_coords_repository {
 private:
@@ -65,19 +67,17 @@ public:
      *
      * One read finds the numbers that exist, and one statement assigns all the others, so a
      * batch of datums costs a few statements however many it holds. Two writers may race for
-     * the same number, so a lost race reads again. The tenant is the tenant of @p ctx.
+     * the same number, so a lost race reads again.
      *
      * @throws std::runtime_error if a number can be neither assigned nor read.
      */
     std::vector<std::int16_t> resolve_all(context ctx, const std::vector<tick_datum>& wanted);
 
     /**
-     * @brief The number of one datum within its series, assigned when the datum has none.
+     * @brief The number of one datum within its stream, assigned when the datum has none.
      */
-    std::int16_t resolve(context ctx,
-                         const boost::uuids::uuid& party_id,
-                         const boost::uuids::uuid& series_id,
-                         const std::string& oresmd_uri);
+    std::int16_t
+    resolve(context ctx, const boost::uuids::uuid& stream_id, const std::string& oresmd_uri);
 };
 
 }

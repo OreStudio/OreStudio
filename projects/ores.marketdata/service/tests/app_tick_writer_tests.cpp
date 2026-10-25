@@ -36,12 +36,10 @@ using ores::marketdata::service::app::tick_writer_options;
 tick_row sample_row() {
     using namespace std::chrono;
     tick_row row;
-    row.tenant_id = "11111111-1111-1111-1111-111111111111";
-    row.party_id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
-    row.series_id = "cccccccc-cccc-cccc-cccc-cccccccccccc";
+    row.stream_id = "cccccccc-cccc-cccc-cccc-cccccccccccc";
+    row.source_id = "dddddddd-dddd-dddd-dddd-dddddddddddd";
     row.ts = sys_days{2026y / October / 21} + 10h + 30min + 5s + 123456us;
     row.value = 1.0845;
-    row.source_id = "dddddddd-dddd-dddd-dddd-dddddddddddd";
     return row;
 }
 
@@ -49,9 +47,8 @@ tick_row sample_row() {
 
 TEST_CASE("a_tick_row_is_one_csv_line_in_the_column_order_of_the_table", tags) {
     CHECK(tick_copy_line(sample_row()) ==
-          "11111111-1111-1111-1111-111111111111,aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa,"
-          "cccccccc-cccc-cccc-cccc-cccccccccccc,2026-10-21 10:30:05.123456+00,0,1.0845,"
-          "dddddddd-dddd-dddd-dddd-dddddddddddd\n");
+          "cccccccc-cccc-cccc-cccc-cccccccccccc,dddddddd-dddd-dddd-dddd-dddddddddddd,"
+          "2026-10-21 10:30:05.123456+00,0,1.0845\n");
 }
 
 TEST_CASE("a_tick_time_keeps_microseconds_and_drops_finer_digits", tags) {
@@ -64,7 +61,7 @@ TEST_CASE("a_tick_time_keeps_microseconds_and_drops_finer_digits", tags) {
 TEST_CASE("a_value_that_does_not_round_trip_in_fewer_digits_is_written_in_full", tags) {
     auto row = sample_row();
     row.value = 0.1 + 0.2;
-    CHECK(tick_copy_line(row).find(",0.30000000000000004,") != std::string::npos);
+    CHECK(tick_copy_line(row).find(",0.30000000000000004\n") != std::string::npos);
 }
 
 TEST_CASE("a_write_to_a_database_that_is_not_there_throws_and_the_writer_stays_usable", tags) {

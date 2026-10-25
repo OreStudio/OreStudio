@@ -26,11 +26,11 @@ A synthetic feed can run in periodic, Poisson or Hawkes mode, set from its confi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
-| Now          | The four columns, their generators and every facet are in; the feeds read the row. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The web editor, then the seed. |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -86,7 +86,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The three affected suites | 3 of 3 pass | =compass test run -- -R "ores.(synthetic.api\|synthetic.service\|analytics.quant).tests"= | 5c42808ed3 |
+| Seeded FX configs | 54 rows, 1 on hawkes (GBP/USD, n 0.5, decay 10), 53 periodic | =compass sql -t -c "select arrival_mode, count(*) ... group by 1"= | 5c42808ed3 |
+| Web tests for the feed screens and the record form | 154 plus 3 new | =npx --workspace @ores/web vitest run= | 5c42808ed3 |
+| Codegen facets regenerated per entity | 9 of 14 addresses apply; the rest have no artefact for these models | =codegen.sh regenerate --component synthetic --entity ...= | 5c42808ed3 |
 
 * Notes
 
@@ -123,3 +126,18 @@ via its "Verifies task" field.
 | 10 | The component =.puml= still shows the old constructor | =ores.synthetic.api.puml= | Declined | Regenerating it drags in the parser's unrelated drift; recorded instead |
 
 * Result
+
+A feed's arrival regime is a property of its config row, and it now travels
+end to end: the four columns on both entities, every generated facet, the
+staging table's defaults, the feed constructing its process from the row, the
+web editor offering the four fields and refusing a branching ratio of one or
+more, and a seed with one clustering pair beside 53 periodic ones.
+
+Two things had to be right and were not at first. The columns stopped at the
+domain type: the repository, service and generator facets were stale, so a row
+could not carry a regime and every save reset it. And the staging table had the
+columns without defaults, so every populate script but the one edited failed on
+a null mode.
+
+The market-wide factor is not here. It is designed in
+=doc/knowledge/domain/market_arrival_regime.org= and filed as its own story.

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ One planner states its family's facts and nothing the families share. Every plan
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -59,6 +59,16 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 |      |       |         |        |
 
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The build | exit 0, 7638 targets | =compass build= | 18486173db |
+| The synthetic suite | 1581 assertions in 70 cases | =ores.synthetic.core.tests= | 18486173db |
+| The codegen gate | no drift | =check_component_drift.py --all= | 18486173db |
+| The planner, net | 40 lines added, 65 removed | =git show d971d92493 -- ...trade_population_planner.cpp= | 18486173db |
+| The netting set scan | 1 occurrence, down from 3 | =grep -c netting_sets ...trade_population_planner.cpp= | 18486173db |
+
 * Notes
 
 * Test Scenarios
@@ -85,3 +95,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The bond, commodity and interest rate planners state the envelope of a slot
+once. =common_slot= sets the book, the counterparty, the trader, the two
+identifiers, the trade date and the netting set, and =slot_count= states how
+many slots a scope holds, so each planner now says only what its family adds:
+the trade type, the notional and the terms. The netting set scan exists once
+instead of three times, and the planner file is twenty-five lines shorter.
+
+The extraction is known to be inert by measurement. A digest of a bond plan's
+envelope, hashed, was recorded from the planner as it stood before the change;
+the refactored planner produces the same value and a case asserts it. That case
+also pins the determinism the interface promises, so a later edit that moves a
+slot field fails a test rather than quietly changing a population.
+
+What this does not do: the dispatch on =trade_type_code= still appears in the
+planner, in the writer and in the routing table. Collapsing it needs the payload
+to state the product, which touches both sides of the rate family, so it stays
+its own change.
+

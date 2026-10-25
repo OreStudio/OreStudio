@@ -8,7 +8,7 @@
 #+filetags: :settle_the_ux_language_for_record_screens:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-every-rule-a-stable-identifier
-#+pr:
+#+pr: 3758
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3758][#3758]] | [docs] Give every UX rule a stable identifier |
 
 * Review
 

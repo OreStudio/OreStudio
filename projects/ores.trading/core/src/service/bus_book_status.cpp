@@ -62,7 +62,7 @@ book_status_port::state bus_book_status::of(const boost::uuids::uuid& book_id,
 
     ores::nats::message reply;
     try {
-        reply = nats_.request_sync(list_books_request::nats_subject, bytes, headers);
+        reply = nats_.request_sync(subject_, bytes, headers);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), ores::logging::warn)
             << "Asking the book's status failed for " << boost::uuids::to_string(book_id) << ": "

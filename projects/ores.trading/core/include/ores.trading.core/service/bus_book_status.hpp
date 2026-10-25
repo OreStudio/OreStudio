@@ -22,9 +22,14 @@
 #define ORES_TRADING_CORE_SERVICE_BUS_BOOK_STATUS_HPP
 
 #include "ores.nats/service/client.hpp"
+#include "ores.trading.core/export.hpp"
 #include "ores.trading.core/service/book_status_port.hpp"
+#include <string>
 
 namespace ores::trading::service {
+
+/** The subject that answers a book's status. */
+inline constexpr std::string_view refdata_books_subject = "refdata.v1.books.list";
 
 /**
  * @brief A book's status, asked of the service that owns it, as the caller.
@@ -34,16 +39,19 @@ namespace ores::trading::service {
  * book they cannot see comes back `unknown` rather than open. Every failure
  * answers `unknown`: a booking must not be refused for a fault in the asking.
  */
-class bus_book_status final : public book_status_port {
+class ORES_TRADING_CORE_EXPORT bus_book_status final : public book_status_port {
 public:
-    explicit bus_book_status(ores::nats::service::client& nats)
-        : nats_(nats) {}
+    explicit bus_book_status(ores::nats::service::client& nats,
+                             std::string subject = std::string(refdata_books_subject))
+        : nats_(nats)
+        , subject_(std::move(subject)) {}
 
     [[nodiscard]] state of(const boost::uuids::uuid& book_id,
                            std::string_view actor_token) const override;
 
 private:
     ores::nats::service::client& nats_;
+    std::string subject_;
 };
 
 }

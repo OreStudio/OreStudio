@@ -101,6 +101,23 @@ Three attempts at the bus-backed port each fell one layer lower, and the last on
 So the port's signature is wrong, not its body. It needs the caller's session token, which means either the port takes one and the booking service's signature carries it, or the read happens in the adapter that already holds the request context. That is a design decision I am not going to take in the last minutes of a window, having already reverted three times.
 
 The dependency and the rfl registration stay: they are correct and were missing, and the next attempt starts from them rather than rediscovering them.
+
+** The rule, proved end to end
+
+Two tests now hold it, and between them they cover the whole path.
+
+The service's own case, =a_booking_into_a_book_that_is_not_open_is_refused=, states a port that says =not_open= and gets =failed= with =book_not_open=.
+
+=the port asks as the caller and maps the book's status= covers what the service case cannot: the port over a real bus. It answers on a subject of its own and holds the port to four things — the question names the book asked about, the header is =X-Delegated-Authorization: Bearer <the caller's token>=, =Active= maps to open, and =Frozen= and =Closed= map to not open. That is the encoding, the delegation and the mapping in one place.
+
+The whole trading suite is green on a freshly created database: 221 cases, 1416 assertions.
+
+* What the earlier failures taught, recorded so they are not paid for twice
+
+- A cross-component dependency is declared in the component's =component_overview.org=, not in the generated CMake.
+- A request carrying a uuid needs =ores.utility/rfl/reflectors.hpp=.
+- =ores::nats::service::client= is the raw connection: it has =request_sync=, and the helper that reads a caller's token lives in =ores::nats::service=.
+- A class a test binary must link needs the component's export macro, because visibility is hidden by default.
 ** What the form needs to read
 
 The books the party may book into, the counterparties it may trade with, the trade types with their product type (which decides the instrument table), the identifier schemes, and the instrument's terms for the chosen type. All of these are reads that exist; the books read needs the open rule above to be useful.

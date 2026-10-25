@@ -20,7 +20,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The currencies, desk groups and currency pairs screens draw what the signed
+off prototype draws, through the shared parts, in three languages, with a
+harness check for every rule the build relies on: the shared timeline for
+History, the page's Refresh, the titled dialogs, the pair dialog of two
+groups, and the standard Import and Export pair with its three server
+operations.
 
 * Status
 
@@ -28,9 +33,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]] |
-| Now          | Not yet started.                       |
+| Now          | Step 1 is built and proven on the running web: the three screens on the shared timeline, the page refresh, the titled dialogs and the pair dialog of two groups. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Step 2: the server's three ORE operations, the BFF routes, the shared =OreExchange= and the two icons; then step 3, the two classification lists and the harness checks. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -39,9 +44,27 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Step 3 of the screen pipeline runbook, in three steps, each a PR on this
+task:
+
+1. /The screens./ Move the three screens off the legacy =HistoryPanel= to
+   =RecordTimeline=, the pair's convention as a part of the pair's story;
+   give each page the Refresh with its load time and the news that turns it
+   gold; title Edit and Delete by the record's name and say when the record
+   was loaded; make the pair dialog the shared =RecordDialog=, which gains
+   groups, a note under the fields and the typed values for the write that
+   belongs with the record's; drop the export notice. Prove it with the
+   unit tests, the harness on the four screens and screenshots of the
+   running web.
+2. /The pair's server side./ The first triple in the ORE service,
+   =ore.v1.ops.export_currency_config=, =preview_currency_config_import= and
+   =import_currency_config=, reading and writing currencies through refdata's
+   messages with the exporter and the import planner =ores.ore.core= has; the
+   three BFF routes; the shared =OreExchange= with the two buttons, the Export
+   dialog and the Import steps; the two icons registered.
+3. /The lists and the checks./ The =day-basis= and =ore-currency-type=
+   classification lists the prototype's selects need; the harness checks for
+   RS-ORE-02 to RS-ORE-04; the strings in French and Portuguese.
 
 * Measurements
 
@@ -55,9 +78,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web unit tests | 2028 passed in 162 files | =npx vitest run --root packages/web= in =projects/ores.web= | 65c6dd6e8f |
+| Harness on currencies, desk groups, pairs and calendars | 84 passed, 6 skipped, 0 failed; one run had two flakes, RS-LIST-10 on calendars and RS-PAGE-01 on currencies, both green alone | =npx playwright test --grep "record currencies\|record currency-groups\|record currency-pairs\|record calendars"= in =packages/harness= | 65c6dd6e8f |
+| Screens still on the legacy history panel | 7 of 10: four journey steps, the classification row page, the tenant page, =records.tsx= | =grep -rln HistoryPanel packages/web/src --include=*.tsx= | 65c6dd6e8f |
 
 * Notes
+
+Found while building step 1:
+
+- The harness's RS-WRITE-24 check typed into the first text input, which on
+  the pair dialog is a number; a number field drops nothing, but the error
+  it showed on blur pushed Cancel down between mousedown and mouseup, so
+  the click was lost, for a person as much as for the script. A field's
+  error now takes the hint's line, so a message never moves the form, and
+  the check types into a field that takes words.
+- The pair's classification shows its code, =major=, where the prototype
+  shows the label; the pair classification list is a read-only
+  classification and its labels need a look in the test step.
+- The closing guard watched the write, not what was typed, so a half-typed
+  value did not count as a change; it watches the typed values now.
 
 From the journeys' judgement, for this task:
 

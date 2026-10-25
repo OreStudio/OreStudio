@@ -80,3 +80,22 @@ The shell's own access token dies within the first minute of the run, five polls
 So provisioning is blocked a second time, and by something else: the access lifetime. The IAM default is =access_lifetime_s = 1800= in =token_settings.hpp=, and the token dies far sooner than that, so the value in force is either configured lower or the token is being invalidated — a key rotation when the services restart is the obvious candidate, since the shell logs in before the workflow runs and the token is rejected moments later.
 
 That is the next thing to find, and it is a different bug from the overflow. The overflow fix stands written and compiled; it cannot be proved until a provision completes, and a provision cannot complete until the session outlives the run.
+
+* Proved
+
+The third attempt provisioned from scratch and completed: all 9 steps, =generate_trades: completed=, script exit 0, and the two ORE packages published. The rows are what the profile states:
+
+| name | seed | trades_per_book | min_notional |
+|---|---|---|---|
+| ACME ACCOHK bond population | 42 | 8 | 100000.000000000000 |
+| ACME ACCOUK bond population | 42 | 8 | 100000.000000000000 |
+| ACME ACCOUS bond population | 42 | 8 | 100000.000000000000 |
+| ACME ACMCOR bond population | 42 | 8 | 100000.000000000000 |
+
+And the population behind them is 160 trades, 8 per book across the four parties' books. The overflow is gone, and the profile's value is what reaches the column.
+
+* The second blocker, which was real
+
+The two failed attempts were not the overflow. The shell's access token expired mid-run, and the IAM default is 1800 seconds: =iam.token.access_lifetime_seconds= in =variability_system_settings_populate.sql=. A provision from scratch takes longer than half an hour here, so the session died while the workflow ran and the script aborted.
+
+Raising that setting to 7200 in the running database before provisioning made the run complete. Whether the seed should ship a longer lifetime for provisioning, or whether the provisioning script should refresh its own token, is an open question for the IAM owner; this capture records the workaround, not a recommendation.

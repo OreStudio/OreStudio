@@ -89,6 +89,17 @@ begin
           from ores_reporting_ore_parameter_value_sets_tbl s
          where s.code = v_set_code
            and s.valid_to = ores_utility_infinity_timestamp_fn();
+    elsif v_kind = 'integer' then
+        v_ok := NEW.parameter_value ~ '^\s*-?[0-9]+\s*$';
+    elsif v_kind = 'number' then
+        begin
+            perform NEW.parameter_value::numeric;
+            v_ok := true;
+        exception when others then
+            v_ok := false;
+        end;
+    elsif v_kind in ('period', 'text') then
+        v_ok := true;
     elsif v_kind = 'catalogue' then
         if v_relation is null or to_regclass(v_relation) is null then
             raise exception 'The value set % names no readable catalogue relation. Rename it or fix the registry.', v_set_code;

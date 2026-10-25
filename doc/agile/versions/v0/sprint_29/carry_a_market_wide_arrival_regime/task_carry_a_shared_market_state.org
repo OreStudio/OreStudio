@@ -26,11 +26,11 @@ The market has a calm/active state that moves every feed's rate by its sensitivi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -54,9 +54,16 @@ Three slices, each verifiable on its own.
    mean rate: the chain scales it, the row's sensitivity scales it again. The
    multiplier touches the baseline and not the branching ratio, because a busy
    market raises how often events arrive, not how strongly they excite.
-3. *The clock.* The clock consults the market factor before each gap, so one run
-   has one market and every feed follows it. This is the ownership change: a feed
-   no longer decides the market, it reports what a tick did.
+3. *The clock.* The clock consults the market before each gap, so every feed
+   follows it.
+
+   One correction to what this plan first said: a single clock thread is *not*
+   needed for the exogenous state. A state that is a function of time can be
+   shared by several clocks, provided it advances with wall time rather than once
+   per caller — so the market synchronises against the wall clock under a mutex,
+   and whichever feed asks first moves it on. The strictly single clock becomes
+   necessary only for the endogenous factor, where an event in one series must
+   reach another, and that is the next task.
 
 Tests follow the slices: the chain's occupancy against its own ratio, a pin that
 holds however much time passes, the multiplier reaching the rate, and the clock
@@ -77,6 +84,8 @@ task and name that file in the Command column.
 | The three affected suites | 3 of 3 pass | =ctest -R "ores.(synthetic.api\|synthetic.service\|analytics.quant).tests"= | 4ca777568c |
 | New cases | 8 across three test files | same run | 4ca777568c |
 | Long-run active share, measured over 200,000 one-second slices | 0.83 against the ratio's 0.83 | the market regime case | 2d47eb3458 |
+| Wall time two callers advance one market by, over 100 ms of spinning | 0.1 s, not 0.2 s | =market_regime moves with wall time= | 7586a121d2 |
+| The three affected suites | 3 of 3 pass | =ctest -R "ores.(synthetic.api\|synthetic.service\|analytics.quant).tests"= | 7586a121d2 |
 
 * Notes
 
@@ -104,3 +113,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The market is one per run and every feed follows it. The application creates it
+and hands it to the adapter fleet and to every handler that builds a feed, so a
+config handler, the folder verbs and the selection verbs all produce feeds that
+consult the same state.
+
+The state itself is a two-state chain whose active share follows the ratio of its
+two rates, measured at 0.83 against 0.83 over 200,000 one-second slices. A
+scenario pins either state, so a demonstration or a test does not wait for a draw.
+
+One thing this task planned and then argued out of: the single clock thread. The
+exogenous state needs a shared *market*, not a shared *thread* — a function of
+time can be shared by several clocks if it advances with wall time, which it now
+does, under a mutex, with a test that two callers advance it by the wall time they
+spend rather than twice it. The single clock is required by the endogenous factor,
+where an event in one series must reach another, and it belongs to the next task.

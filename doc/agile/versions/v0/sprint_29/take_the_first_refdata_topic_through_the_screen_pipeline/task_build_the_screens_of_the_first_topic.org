@@ -8,7 +8,7 @@
 #+filetags: :take_the_first_refdata_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-screens-of-the-first-topic
-#+pr:
+#+pr: 3790
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3790][#3790]] | [web] Build the calendars screen to the signed off prototype |
 
 * Review
 

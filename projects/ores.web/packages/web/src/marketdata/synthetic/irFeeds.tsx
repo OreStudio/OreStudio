@@ -44,6 +44,8 @@ export const PARAMETER_VALUES = 'ir-parameter-values';
 export const TEMPLATE_ENTRIES = 'ir-template-entries';
 
 const ROLES = ['self_discounting', 'discount', 'projection'];
+const ARRIVAL_MODES = ['periodic', 'poisson', 'hawkes'] as const;
+
 const PRICE_SOURCES = ['fixed', 'vintage'];
 
 /** Whether the family chosen in the form is an index with a term. */
@@ -137,6 +139,30 @@ const IR_FIELDS: readonly FieldSpec[] = [
         history: 'Ticks Per Hour',
         kind: { kind: 'int', min: 1, max: 360000 },
         help: 'marketdata.irFeeds.help.ticks_per_hour',
+    },
+    {
+        field: 'arrival_mode',
+        history: 'Arrival Mode',
+        kind: { kind: 'choice', options: ARRIVAL_MODES },
+        help: 'marketdata.irFeeds.help.arrival_mode',
+    },
+    {
+        field: 'branching_ratio',
+        history: 'Branching Ratio',
+        kind: { kind: 'decimal', below: 1 },
+        help: 'marketdata.irFeeds.help.branching_ratio',
+    },
+    {
+        field: 'decay',
+        history: 'Decay',
+        kind: { kind: 'decimal', positive: true },
+        help: 'marketdata.irFeeds.help.decay',
+    },
+    {
+        field: 'sensitivity',
+        history: 'Sensitivity',
+        kind: { kind: 'decimal', positive: true },
+        help: 'marketdata.irFeeds.help.sensitivity',
     },
     {
         field: 'price_source',

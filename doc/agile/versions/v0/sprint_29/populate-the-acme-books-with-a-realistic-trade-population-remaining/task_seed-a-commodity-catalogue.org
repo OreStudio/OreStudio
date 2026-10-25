@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A commodity trade names its commodity in free text, and nothing holds the set of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -45,9 +45,54 @@ A commodity trade names its commodity in free text, and nothing holds the set of
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. The entity. =ores.refdata.commodity=, an =ores.codegen.entity= bound to
+   the =simple-lookup= profile, carrying the code as the engine spells it,
+   a name, a description, the unit it is quoted in, the currency it is
+   quoted in and a display order. The profile brings the version, the
+   audit tail and the tenant isolation the neighbouring catalogues have.
+
+2. The DQ side comes from the model. =refdata.calendar_type= turns its
+   artefact on with one property in the file drawer,
+   =:ores.sql.schema.domain_entity_artefact_create.enabled: true=, and the
+   generator then emits the artefact table's create script and
+   =ores_refdata_publish_<entity>_from_dq_fn=. Commodity takes the same
+   property, so the artefact table, the publish function and its contract
+   are generated rather than written.
+
+3. The dataset and its rows are seeded the way calendar types are, in
+   =refdata_calendar_types_seed_populate.sql=: register a catalog, register
+   a dataset =refdata.commodities=, then delete and insert the artefact
+   rows so a second run converges. That file is hand-written and states
+   that it is kept in lockstep with the generated populate by hand. This
+   task does the same and says so, rather than pretending the two are one
+   source.
+
+4. The vocabulary is what the engine resolves, not what reads well.
+   =external/ore/catalogue/index_corpus.jsonl= carries 25 commodity futures
+   indices over five underlyings: =ICE:B=, =NYMEX:A7Q=, =NYMEX:CL=,
+   =NYMEX:CSX= and =NYMEX:NG=. The shipped example trades add
+   =XLME:AH= and =PM:XAUUSD=. Those seven are the seed. Each states the
+   unit and quotation currency it is actually traded in: barrels for the
+   two crudes, MMBtu for gas, tonnes for coal and aluminium, ounces for
+   gold, dollars for all of them.
+
+5. Every human name is confirmed against the engine's own convention files
+   before it is written down. =NYMEX:A7Q= is the one that needs checking;
+   the other six are named in the example trades or the corpus.
+
+6. The refusal. A commodity code the catalogue does not hold is refused by
+   name. =commodity_instrument.commodity_code= has no foreign key today, so
+   the task decides between adding one and refusing in the planner, and
+   records which and why.
+
+7. Verification, each one run before the task closes: the component's drift
+   check is clean; a fresh provision publishes the catalogue; a second
+   publish changes no row and reports nothing inserted; a query over
+   =ores_refdata_commodities_tbl= shows the seven.
+
+8. Not this task: the forward curves a commodity prices on. A commodity
+   with no curve books, exports and then fails at pricing, and the market
+   data stories own that.
 
 * Measurements
 

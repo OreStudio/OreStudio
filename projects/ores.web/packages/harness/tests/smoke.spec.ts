@@ -31,8 +31,13 @@ test('signs in as the tenant administrator and opens the currencies', async ({ a
     // RS-LIST-03: Refresh, then Add, stand in the header for a person who may write.
     await expect(page.getByRole('button', { name: 'Refresh', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Add currency', exact: true })).toBeVisible();
-    // RS-LIST-04: the search goes to the server, so a code on a later page is found.
+    // RS-LIST-04: the search goes to the server, so a code on a later page is found and
+    // the first page's rows are gone.
+    const firstRow = page.locator('table tbody tr').first().getByRole('cell').first();
+    const firstCode = (await firstRow.innerText()).trim();
+    expect(firstCode).not.toBe('EUR');
     await page.getByRole('searchbox').fill('EUR');
+    await expect(page.getByRole('cell', { name: firstCode, exact: true })).toHaveCount(0);
     const row = page
         .getByRole('row')
         .filter({ has: page.getByRole('cell', { name: 'EUR', exact: true }) });

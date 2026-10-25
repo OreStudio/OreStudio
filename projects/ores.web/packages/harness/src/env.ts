@@ -31,8 +31,10 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '
  */
 try {
     process.loadEnvFile(resolve(REPO_ROOT, '.env'));
-} catch {
-    // A checkout without one falls back to the defaults below.
+} catch (error) {
+    if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) {
+        throw error;
+    }
 }
 
 export function setting(name: string): string | undefined {
@@ -40,7 +42,21 @@ export function setting(name: string): string | undefined {
     return value === undefined || value === '' ? undefined : value;
 }
 
-/** The address the harness drives, http://localhost:<ORES_WEB_PORT>/ by default. */
+/**
+ * The address the harness drives: ORES_HARNESS_URL, or the checkout's web on
+ * localhost. A run with neither stops here, because a guessed port drives the
+ * wrong environment and fails in a way that hides the cause.
+ */
 export function webUrl(): string {
-    return setting('ORES_HARNESS_URL') ?? `http://localhost:${setting('ORES_WEB_PORT') ?? '8080'}/`;
+    const url = setting('ORES_HARNESS_URL');
+    if (url !== undefined) {
+        return url;
+    }
+    const port = setting('ORES_WEB_PORT');
+    if (port === undefined) {
+        throw new Error(
+            'ORES_WEB_PORT is not set and ORES_HARNESS_URL is not set: nothing names the web to drive',
+        );
+    }
+    return `http://localhost:${port}/`;
 }

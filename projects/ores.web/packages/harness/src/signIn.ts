@@ -33,12 +33,12 @@ export async function signIn(page: Page, person: Person): Promise<void> {
     await page.locator('input[autocomplete="current-password"]').fill(PASSWORD);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     const chooser = page.getByRole('heading', { name: 'Choose a party' });
-    const signedIn = page
-        .getByRole('link', { name: 'Sign out' })
-        .or(page.getByRole('button', { name: 'Sign out' }));
+    const signedIn = page.getByRole('button', { name: 'Your account' });
     await expect(chooser.or(signedIn).first()).toBeVisible({ timeout: 15_000 });
+    // The expectation above has resolved, so this read does not wait.
     if (await chooser.isVisible()) {
-        await page.getByRole('button').filter({ hasNotText: 'Sign out' }).first().click();
+        const choices = page.getByRole('main').getByRole('button');
+        await choices.first().click();
     }
     await expect(page).not.toHaveURL(/sign-in/);
 }

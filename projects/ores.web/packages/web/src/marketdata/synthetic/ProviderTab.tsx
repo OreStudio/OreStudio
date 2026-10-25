@@ -333,7 +333,7 @@ export function ProviderTab(): ReactNode {
                                                         <Tag tone={serving ? 'up' : 'muted'}>
                                                             {t(
                                                                 serving
-                                                                    ? 'marketdata.synthetic.state.serving'
+                                                                    ? 'marketdata.synthetic.state.running'
                                                                     : 'marketdata.synthetic.state.stopped',
                                                             )}
                                                         </Tag>

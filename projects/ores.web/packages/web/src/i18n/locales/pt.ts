@@ -4352,7 +4352,7 @@ const pt: SourceCatalogue = {
             title: 'Sintético',
             lead: 'Os dados de mercado que a plataforma gera em vez de receber: o que corre por fornecedor, e os feeds de um fornecedor.',
             tabs: { dashboard: 'Painel', provider: 'Fornecedor' },
-            state: { serving: 'A servir', stopped: 'Parado' },
+            state: { serving: 'A servir', running: 'A correr', stopped: 'Parado' },
             dashboard: {
                 none: 'Ainda não há feeds. Um conjunto de dados de feeds sintéticos publicado para a sua parte preenche este ecrã.',
                 idle: '{count} ids exigidos não estão a ser servidos.',
@@ -4369,7 +4369,7 @@ const pt: SourceCatalogue = {
                 open: 'Abrir',
                 tiles: {
                     providers: 'Fornecedores',
-                    serving: 'Feeds a servir',
+                    running: 'Feeds a correr',
                     stopped: 'Feeds parados',
                     demanded: 'Ids exigidos',
                     ticks: 'Ticks por minuto',

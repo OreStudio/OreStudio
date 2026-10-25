@@ -4321,7 +4321,7 @@ export const en: SourceCatalogue = {
             title: 'Synthetic',
             lead: 'The market data the platform generates rather than receives: what runs by provider, and the feeds of one provider.',
             tabs: { dashboard: 'Dashboard', provider: 'Provider' },
-            state: { serving: 'Serving', stopped: 'Stopped' },
+            state: { serving: 'Serving', running: 'Running', stopped: 'Stopped' },
             dashboard: {
                 none: 'There are no feeds yet. A synthetic feeds dataset published for your party fills this screen.',
                 idle: '{count} demanded ids are not being served.',
@@ -4338,7 +4338,7 @@ export const en: SourceCatalogue = {
                 open: 'Open',
                 tiles: {
                     providers: 'Providers',
-                    serving: 'Feeds serving',
+                    running: 'Feeds running',
                     stopped: 'Feeds stopped',
                     demanded: 'Ids demanded',
                     ticks: 'Ticks per minute',

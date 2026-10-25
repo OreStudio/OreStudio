@@ -4382,7 +4382,7 @@ const fr: SourceCatalogue = {
             title: 'Synthétique',
             lead: "Les données de marché que la plateforme génère au lieu de les recevoir : ce qui tourne par fournisseur, et les flux d'un fournisseur.",
             tabs: { dashboard: 'Tableau de bord', provider: 'Fournisseur' },
-            state: { serving: 'En service', stopped: 'Arrêté' },
+            state: { serving: 'En service', running: 'En cours', stopped: 'Arrêté' },
             dashboard: {
                 none: "Il n'y a pas encore de flux. Un jeu de données de flux synthétiques publié pour votre partie remplit cet écran.",
                 idle: '{count} identifiants demandés ne sont pas servis.',
@@ -4399,7 +4399,7 @@ const fr: SourceCatalogue = {
                 open: 'Ouvrir',
                 tiles: {
                     providers: 'Fournisseurs',
-                    serving: 'Flux en service',
+                    running: 'Flux en cours',
                     stopped: 'Flux arrêtés',
                     demanded: 'Identifiants demandés',
                     ticks: 'Ticks par minute',

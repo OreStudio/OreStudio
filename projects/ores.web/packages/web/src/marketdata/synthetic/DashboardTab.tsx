@@ -66,11 +66,20 @@ export function ServingTag({ source }: { readonly source: Source | undefined }):
 }
 
 /** One figure of the dashboard. */
-function Tile({ label, value }: { readonly label: string; readonly value: string }): ReactNode {
+function Tile({
+    label,
+    value,
+    tone = 'plain',
+}: {
+    readonly label: string;
+    readonly value: string;
+    readonly tone?: 'plain' | 'up' | 'warn';
+}): ReactNode {
+    const colour = tone === 'up' ? 'text-up' : tone === 'warn' ? 'text-warn' : '';
     return (
         <div className="rounded-md border border-line p-3">
             <div className="text-xs uppercase tracking-wide text-ink-faint">{label}</div>
-            <div className="font-mono text-2xl tabular-nums">{value}</div>
+            <div className={`font-mono text-2xl tabular-nums ${colour}`}>{value}</div>
         </div>
     );
 }
@@ -163,8 +172,9 @@ export function DashboardTab(): ReactNode {
                             value={providers.length.toLocaleString()}
                         />
                         <Tile
-                            label={t('marketdata.synthetic.dashboard.tiles.serving')}
+                            label={t('marketdata.synthetic.dashboard.tiles.running')}
                             value={figures.serving.toLocaleString()}
+                            tone="up"
                         />
                         <Tile
                             label={t('marketdata.synthetic.dashboard.tiles.stopped')}
@@ -177,6 +187,7 @@ export function DashboardTab(): ReactNode {
                         <Tile
                             label={t('marketdata.synthetic.dashboard.tiles.ticks')}
                             value={figures.ticksPerMinute.toLocaleString()}
+                            tone={figures.ticksPerMinute > 0 ? 'up' : 'plain'}
                         />
                     </div>
                     <div className="overflow-x-auto rounded-md border border-line">

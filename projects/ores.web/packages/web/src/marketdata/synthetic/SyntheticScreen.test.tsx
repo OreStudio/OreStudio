@@ -236,7 +236,7 @@ describe('the Synthetic dashboard', () => {
         });
         const text = textOf(html);
         expect(text).toContain('Providers 2');
-        expect(text).toContain('Feeds serving 13');
+        expect(text).toContain('Feeds running 13');
         expect(text).toContain('Feeds stopped 17');
         expect(text).toContain('Ids demanded 30');
         expect(text).toContain('Ticks per minute 120');
@@ -252,7 +252,7 @@ describe('the Synthetic dashboard', () => {
             client.setQueryData([...HELD_KEY, ['bloomberg', 'ore']], HELD);
         });
         const text = textOf(html);
-        expect(text).toContain('Feeds serving 13');
+        expect(text).toContain('Feeds running 13');
         expect(text).toContain('Feeds stopped 17');
         expect(html).toContain('>Stopped<');
         expect(html).not.toContain('demanded ids are not being served');
@@ -267,7 +267,7 @@ describe('the Synthetic dashboard', () => {
             ]);
         });
         const text = textOf(html);
-        expect(text).toContain('Feeds serving 0');
+        expect(text).toContain('Feeds running 0');
         expect(text).toContain('Feeds stopped 30');
         expect(text).toContain('30 demanded ids are not being served.');
     });
@@ -281,7 +281,7 @@ describe('the Synthetic dashboard', () => {
             ]);
         });
         const text = textOf(html);
-        expect(text).toContain('Feeds serving 30');
+        expect(text).toContain('Feeds running 30');
         expect(text).toContain('Feeds stopped 0');
         expect(html).not.toContain('demanded ids are not being served');
     });
@@ -418,16 +418,18 @@ describe('the Synthetic Provider screen', () => {
         expect(two).toContain('Bloomberg Extra');
     });
 
-    it('reads each feed as serving from its provider source', () => {
+    it('reads each feed as running from its provider source', () => {
         const serving = render('/market-data/synthetic?tab=provider', (client) =>
             seeded(client, ['synthetic::*']),
         );
+        expect(serving).toContain('>Running<');
         expect(serving).toContain('>Serving<');
         const stopped = render('/market-data/synthetic?tab=provider', (client) => {
             seeded(client, ['synthetic::*']);
             client.setQueryData(ADAPTERS_KEY, [adapter('bloomberg', 'ready', 13)]);
         });
         expect(stopped).toContain('>Stopped<');
+        expect(stopped).not.toContain('>Running<');
         expect(stopped).not.toContain('>Serving<');
     });
 

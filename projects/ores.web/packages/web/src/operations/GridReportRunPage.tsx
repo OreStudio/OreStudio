@@ -217,7 +217,7 @@ function RunSummary({
 }
 
 /** The run's errors: grouped by the curve that failed, or as rows. */
-function RunErrors({ id }: { readonly id: string }) {
+function RunErrors({ id, outputMessage }: { readonly id: string; readonly outputMessage: string }) {
     const { language } = useTranslation();
     const { query, rows } = useRunErrors(id);
     const [view, setView] = useState<'grouped' | 'split'>('grouped');
@@ -230,16 +230,20 @@ function RunErrors({ id }: { readonly id: string }) {
     const warnings = rows.filter((row) => row.severity === 'warning').length;
     const scopes = [...new Set(rows.map((row) => row.scope))];
 
-    const shown = rows.filter((error) => {
-        if (severity !== 'all' && error.severity !== severity) return false;
-        if (scope !== 'all' && error.scope !== scope) return false;
-        const needle = search.trim().toLowerCase();
-        if (needle === '') return true;
-        return [error.message, error.subjectId, error.subject]
-            .join(' ')
-            .toLowerCase()
-            .includes(needle);
-    });
+    const shown = useMemo(
+        () =>
+            rows.filter((error) => {
+                if (severity !== 'all' && error.severity !== severity) return false;
+                if (scope !== 'all' && error.scope !== scope) return false;
+                const needle = search.trim().toLowerCase();
+                if (needle === '') return true;
+                return [error.message, error.subjectId, error.subject]
+                    .join(' ')
+                    .toLowerCase()
+                    .includes(needle);
+            }),
+        [rows, severity, scope, search],
+    );
 
     const groups = useMemo(() => {
         const curves = shown.filter((error) => error.scope === 'Curve');
@@ -259,7 +263,16 @@ function RunErrors({ id }: { readonly id: string }) {
         return <ReadFailure error={query.error} onRetry={() => void query.refetch()} />;
     }
     if (rows.length === 0) {
-        return <Notice tone="success">This run recorded no errors.</Notice>;
+        return (
+            <section className="space-y-2">
+                <Notice tone="success">This run recorded no errors.</Notice>
+                {outputMessage !== '' && (
+                    <pre className="whitespace-pre-wrap font-mono text-xs text-ink-muted">
+                        {outputMessage}
+                    </pre>
+                )}
+            </section>
+        );
     }
 
     const distinct = [
@@ -296,6 +309,7 @@ function RunErrors({ id }: { readonly id: string }) {
                 </select>
                 <input
                     type="search"
+                    aria-label="Search the run's errors"
                     placeholder="Search message, curve or trade id"
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
@@ -314,7 +328,7 @@ function RunErrors({ id }: { readonly id: string }) {
             {view === 'grouped' && (
                 <ul className="space-y-3">
                     {groups.map((group) => (
-                        <li key={group.name} className="card space-y-2 p-4">
+                        <li key={group.curve.id} className="card space-y-2 p-4">
                             <div className="flex flex-wrap items-center gap-2">
                                 <Tag tone={group.curve.severity === 'error' ? 'down' : 'warn'}>
                                     {group.curve.severity}
@@ -602,7 +616,7 @@ export function GridReportRunPage(): ReactNode {
                         </Notice>
                     )}
                     {tab === 'errors' ? (
-                        <RunErrors id={run.data.id} />
+                        <RunErrors id={run.data.id} outputMessage={run.data.output_message} />
                     ) : (
                         <>
                             <RunSummary

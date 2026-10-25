@@ -209,7 +209,7 @@ export function registerGridReportRunRoutes(
                 }),
             );
             if (reply.result.outcome !== 'ok') {
-                throw invalidRequest(reply.result.message || 'The run errors could not be read.');
+                throw refusal(reply.result);
             }
             return {
                 total: reply.total,

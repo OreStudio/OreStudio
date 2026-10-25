@@ -184,6 +184,7 @@ async function get(mode: SessionMode, url: string, answers: Answers = ANSWERS) {
 }
 
 const URL_OF_RUN = `/api/operations/grid/report-runs/${RUN}`;
+const URL_OF_ERRORS = `${URL_OF_RUN}/errors`;
 
 describe('GET /api/operations/grid/report-runs/:id', () => {
     it('serves the run with its health word and the batch that names it', async () => {
@@ -254,5 +255,62 @@ describe('GET /api/operations/grid/report-runs/:id', () => {
 
         expect(response.statusCode).toBe(400);
         expect(calls).toHaveLength(0);
+    });
+});
+
+describe('GET /api/operations/grid/report-runs/:id/errors', () => {
+    const ERROR = 'e0000000-0000-4000-8000-000000000001';
+
+    it('serves the errors the run recorded, with the subject a screen links by', async () => {
+        const { response, calls } = await get('application', URL_OF_ERRORS, {
+            ...ANSWERS,
+            'reporting.v1.report_error_events.list_by_report_instance_id': {
+                result: OK,
+                total: 1,
+                errors: [
+                    {
+                        id: ERROR,
+                        scope_code: 'Trade',
+                        severity: 'error',
+                        message: 'Cannot build all required curves!',
+                        subject: 'trade',
+                        subject_id: '28e6d1c3-b0aa-55fa-9c14-142e3e34092e',
+                        subject_version: 3,
+                        subject_as_of: '2026-05-05 00:00:00.000000Z',
+                        event_time: '2026-10-25 09:51:53.527119Z',
+                    },
+                ],
+            },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({
+            total: 1,
+            errors: [
+                {
+                    id: ERROR,
+                    scope: 'Trade',
+                    severity: 'error',
+                    subject: 'trade',
+                    subject_id: '28e6d1c3-b0aa-55fa-9c14-142e3e34092e',
+                    subject_version: 3,
+                    subject_as_of: '2026-05-05 00:00:00.000000Z',
+                },
+            ],
+        });
+        expect(calls[0]?.body).toMatchObject({ report_instance_id: RUN, limit: 500 });
+    });
+
+    it('passes a refusal through rather than calling it a bad request', async () => {
+        const { response } = await get('application', URL_OF_ERRORS, {
+            ...ANSWERS,
+            'reporting.v1.report_error_events.list_by_report_instance_id': {
+                result: { ...OK, outcome: 'denied' },
+                errors: [],
+                total: 0,
+            },
+        });
+
+        expect(response.statusCode).toBe(403);
     });
 });

@@ -346,7 +346,7 @@ not checked it.
 | OL-DOC-01: the leaf's documentation | Meets, with its own button | Meets | Gap: none |
 | OL-DOC-03: the section's documentation | Gap: the words are *Show documentation* and *Hide documentation* | Gap: no section button | Gap |
 | OL-DOC-04: one panel | Meets: the shared panel | Meets: the shared panel | Gap |
-| OL-DOC-05: no ORE text in the screen | Meets | Meets | Gap: the contract holds no entry for =conventions.xsd= |
+| OL-DOC-05: no ORE text in the screen | Meets | Meets | Gap: the contract holds 238 of the 296 terms the ORE parser reads, and no screen reads them yet |
 | OL-DOC-07: focus opens the documentation | Meets | Gap | Gap |
 | OL-ELEMENT-04: metadata in data | Gap: the groups are a constant in code | Meets | Gap: the asset class and the holder are in =conventionKinds.ts= |
 | OL-SOURCE-01: the source tag | Gap: none | Partial: a tag in the journey, a line of text on the page; no word for the seed | Gap |

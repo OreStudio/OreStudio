@@ -30,7 +30,10 @@
  */
 
 create or replace function ores_reporting_validate_parameter_value_fn()
-returns trigger as $$
+returns trigger
+security definer
+set search_path = public, pg_temp
+as $$
 declare
     v_scope text;
     v_set_code text;

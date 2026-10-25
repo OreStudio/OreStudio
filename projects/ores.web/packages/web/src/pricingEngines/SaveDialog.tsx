@@ -95,12 +95,17 @@ export function SaveDialog({
                 document.version,
                 writeOf(after, { reason_code: reason.code, commentary: commentary.trim() }),
             ),
-        onSuccess: async () => {
+        onSuccess: () => {
             setConflict(false);
-            await queries.invalidateQueries({ queryKey: ['pricing-engine'] });
-            await queries.invalidateQueries({ queryKey: ['records', 'pricing-engines'] });
             onSaved?.();
+            /*
+             * Close before the refetch. A dialog left open after a save invites a
+             * second save from the same, now stale, document, and the service
+             * refuses that with a duplicate name rather than a conflict.
+             */
             onClose();
+            void queries.invalidateQueries({ queryKey: ['pricing-engine'] });
+            void queries.invalidateQueries({ queryKey: ['records', 'pricing-engines'] });
         },
         onError: (error) => {
             setConflict(error instanceof ApiFailure && error.status === 409);

@@ -1082,7 +1082,11 @@ export function registerPricingEngineRoutes(
             throw failure;
         }
         void reply.code(201);
-        return documentOf(await readStored(session, id), await readPartyNames(session));
+        const created = documentOf(await readStored(session, id), await readPartyNames(session));
+        return {
+            ...created,
+            reports: await readBoundReports(session, text(created['configurationId'])),
+        };
     });
 
     server.put('/api/reporting/pricing-engines/:id', async (request) => {
@@ -1100,7 +1104,11 @@ export function registerPricingEngineRoutes(
                 session.tenantId,
             ),
         );
-        return documentOf(await readStored(session, id), await readPartyNames(session));
+        const updated = documentOf(await readStored(session, id), await readPartyNames(session));
+        return {
+            ...updated,
+            reports: await readBoundReports(session, text(updated['configurationId'])),
+        };
     });
 
     server.delete('/api/reporting/pricing-engines/:id', async (request, reply) => {

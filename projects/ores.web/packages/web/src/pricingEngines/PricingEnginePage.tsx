@@ -1651,7 +1651,7 @@ function AddProductDialog({
                     <Select value={typeCode} onChange={(event) => setTypeCode(event.target.value)}>
                         {free.map((type) => (
                             <option key={type.code} value={type.code}>
-                                {type.code}
+                                {type.description !== '' ? type.description : type.code}
                             </option>
                         ))}
                     </Select>

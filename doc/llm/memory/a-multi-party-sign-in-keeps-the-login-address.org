@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 191056A5-FF87-4797-8EED-15CDD8D64E54
+:END:
+#+title: A multi-party sign-in keeps the sign-in address
+#+description: Signing in to the web with an account that works in several parties shows a Choose a party screen while the address stays on /login, so a UI test must wait for the chooser and must not assert on the URL.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :web:sign-in:ui-tests:memory:feedback:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+(One short paragraph stating the rule, fact, or insight to remember.)
+
+*Why:* (The reason the user gave, or the incident this captures. Knowing the why lets a future session judge edge cases instead of blindly applying the rule.)
+
+*How to apply:* (When this memory should kick in — what circumstances, which files, which workflows.)
+
+* What the API says
+
+=POST /api/session= answers =outcome: active= when the account works in one
+party, and =outcome: party-required= with =availableParties= when it works in
+several. The second case completes with =POST /api/session/party= and a
+=partyId=.
+
+* Why it matters to a test
+
+The chooser renders in place, at =/login=, so a UI test that signs in and then
+navigates to a route sends the person back to sign in and looks like a client
+defect. Wait for the heading =Choose a party=, or sign in as a persona in one
+party, which needs no choice.
+

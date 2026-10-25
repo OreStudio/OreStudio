@@ -91,8 +91,8 @@ via its "Verifies task" field.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Ingest suite in a non-system tenant | passed | =ctest --preset linux-clang-release-ninja -R ores.marketdata.service.tests= | pending |
-| Core suite with the visibility test | passed | =ctest --preset linux-clang-release-ninja -R ores.marketdata.core.tests= | pending |
+| Ingest suite in a non-system tenant | passed | =ctest --preset linux-clang-release-ninja -R ores.marketdata.service.tests= | cb39a7c254 |
+| Core suite with the visibility test | passed | =ctest --preset linux-clang-release-ninja -R ores.marketdata.core.tests= | cb39a7c254 |
 
 * Result
 

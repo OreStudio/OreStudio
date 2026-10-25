@@ -106,12 +106,6 @@ function Run({ run }: { readonly run: GridReportRunView }): ReactNode {
                 />
             </dl>
             {run.description !== '' && <p className="text-sm">{run.description}</p>}
-            {run.output_message !== '' && (
-                <div>
-                    <p className="text-xs text-ink-faint">{t(`${FIELD}.output`)}</p>
-                    <p className="whitespace-pre-wrap text-sm">{run.output_message}</p>
-                </div>
-            )}
         </section>
     );
 }
@@ -176,6 +170,13 @@ const toError = (raw: unknown): RunError => {
     };
 };
 
+/** A curve's name, from the id the engine states for it. */
+const curveNameOf = (value: string): string => {
+    const stated = /IndexCurve\([^,]*,\s*([^)]*)\)/.exec(value)?.[1];
+    if (stated !== undefined) return stated.trim();
+    return value.replace(/^\[/, '').replace(/\]$/, '');
+};
+
 const tradeHref = (error: RunError): string =>
     `/trades?trade=${error.subjectId}${error.version === null ? '' : `&version=${error.version}`}`;
 
@@ -211,14 +212,23 @@ function RunErrors({ id }: { id: string }): ReactNode {
         [rows, severity, search],
     );
 
-    const causes = useMemo(() => {
-        const byCause = new Map<string, RunError[]>();
-        for (const error of shown) {
-            const key = `${error.scope}|${error.subject}|${error.message}`;
-            byCause.set(key, [...(byCause.get(key) ?? []), error]);
-        }
-        return [...byCause.values()];
+    const groups = useMemo(() => {
+        const curves = shown.filter((error) => error.scope === 'Curve');
+        const trades = shown.filter((error) => error.scope === 'Trade');
+        return curves.map((curve) => {
+            const name = curveNameOf(curve.subjectId !== '' ? curve.subjectId : curve.message);
+            return {
+                name,
+                curve,
+                trades: trades.filter((trade) => trade.message.includes(name)),
+            };
+        });
     }, [shown]);
+
+    const others = useMemo(
+        () => shown.filter((error) => error.scope !== 'Curve' && error.scope !== 'Trade'),
+        [shown],
+    );
 
     if (errors.isPending) return null;
     if (errors.isError) {
@@ -253,27 +263,38 @@ function RunErrors({ id }: { id: string }): ReactNode {
             </div>
             {view === 'grouped' && (
                 <ul className="space-y-3">
-                    {causes.map((cause) => {
-                        const first = cause[0];
-                        if (first === undefined) return null;
-                        return (
-                            <li key={`${first.scope}-${first.message}`}
-                                className="space-y-2 rounded border border-line p-3">
-                                <p className="font-mono text-sm">{first.subject || first.message}</p>
-                                <p className="text-xs text-ink-muted">
-                                    {`${first.severity} · ${first.scope} · ${cause.length} trade(s)`}
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                    {cause.filter((error) => error.subjectId !== '').map((error) => (
-                                        <a key={error.id} className="font-mono text-xs underline"
-                                            href={tradeHref(error)}>
-                                            {`${error.subjectId.slice(0, 8)}… ${error.subject} · v${error.version ?? '?'}${error.asOf === '' ? '' : ` @ ${error.asOf}`}`}
-                                        </a>
-                                    ))}
-                                </div>
-                            </li>
-                        );
-                    })}
+                    {groups.map((group) => (
+                        <li key={group.name} className="space-y-2 rounded border border-line p-3">
+                            <p className="font-mono text-sm">{group.name}</p>
+                            <p className="text-xs text-ink-muted">
+                                {`${group.curve.severity} · ${group.curve.scope} · ${group.trades.length} trade(s)`}
+                            </p>
+                            <pre className="whitespace-pre-wrap font-mono text-xs">
+                                {group.curve.message}
+                            </pre>
+                            <div className="flex flex-wrap gap-2">
+                                {group.trades.map((trade) => (
+                                    <a key={trade.id} className="font-mono text-xs underline"
+                                        href={tradeHref(trade)}>
+                                        {`${trade.subjectId.slice(0, 8)}… · v${trade.version ?? '?'}${trade.asOf === '' ? '' : ` @ ${trade.asOf}`}`}
+                                    </a>
+                                ))}
+                            </div>
+                        </li>
+                    ))}
+                    {others.length > 0 && (
+                        <li className="space-y-2 rounded border border-line p-3">
+                            <p className="text-sm">Analytic and report failures</p>
+                            <p className="text-xs text-ink-muted">{`${others.length} reason(s)`}</p>
+                            <ul className="space-y-1">
+                                {others.map((other) => (
+                                    <li key={other.id} className="font-mono text-xs">
+                                        {`${other.severity}: ${other.message}`}
+                                    </li>
+                                ))}
+                            </ul>
+                        </li>
+                    )}
                 </ul>
             )}
             {view === 'split' && (

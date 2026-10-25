@@ -56,6 +56,7 @@
 #include "ores.refdata.core/messaging/calendar_name_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_type_registrar.hpp"
+#include "ores.refdata.core/messaging/commodity_registrar.hpp"
 #include "ores.refdata.core/messaging/cds_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/configuration_document_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_registrar.hpp"
@@ -368,6 +369,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_calendar_event_handlers(nats, ctx, verifier));
     append(register_calendar_name_handlers(nats, ctx, verifier));
     append(register_calendar_type_handlers(nats, ctx, verifier));
+    append(register_commodity_handlers(nats, ctx, verifier));
     append(register_cds_convention_handlers(nats, ctx, verifier));
     append(register_contact_type_handlers(nats, ctx, verifier));
     append(register_convention_handlers(nats, ctx, verifier));

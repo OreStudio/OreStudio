@@ -17,12 +17,15 @@ record screen of their own, 24 are rows of the one classification screen, and
 9 are kinds of the one convention screen. Six more are reached from another
 area, such as books in the trading journey. Five exist in the record registry
 but have no screen, and seven are not in the web at all. The field tables
-agree on most entities. The real gaps are the calendar's source and base
-calendar, the event's source, and the terms of seven convention kinds, which
-the web lists by id only. The web is richer than Qt on currencies, parties and
-every classification.
+agree on most entities. The largest gaps are the calendar's source, editability
+and base calendar, the event's source, and the terms of seven convention kinds,
+which the web lists by id only. The section The gaps, judged lists every gap,
+including the calendar dates browser, the party hierarchy tab and the currency
+import and export. The web is richer than Qt on currencies, parties and every
+classification.
 
-This page is a measurement. The script that produced it is
+This page is a measurement, taken on 2026-10-25 against the Qt vault, which is
+not versioned, and against this checkout. The script that produced it is
 =doc/agile/versions/v0/sprint_29/inventory_the_qt_screens_and_audit_the_ux_standards/evidence/qt_web_matrix.py=,
 and a reviewer reruns it against the Qt sources and this checkout. The
 judgements, which fields are not a gap and why, are in the script too, so the
@@ -178,7 +181,10 @@ all fields and only the changes, and the difference as text.
 - The party carries =transliterated_name=, =codename=, =party_category= and
   =is_registration_default=. The contact carries =is_primary=.
 - The currency carries =ore_currency_type=, =spot_days=, =day_basis= and
-  =base_precedence=.
+  =base_precedence=. The calendar carries an =image_id=.
+- The convention screen knows 26 kinds, and Qt had dialogs for 9. Tenor basis
+  swap, which is one of the three kinds with editable terms, had no Qt dialog
+  at all; nor did the FX, inflation, commodity and bond kinds.
 - Workflows on the list header, and the change notification that turns Refresh
   gold, which Qt did not have.
 

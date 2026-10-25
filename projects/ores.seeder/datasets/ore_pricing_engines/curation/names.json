@@ -1,0 +1,100 @@
+{
+  "types": {
+    "CurrencySwap": {
+      "value": "CrossCurrencySwap",
+      "reason": "The guide writes 'CurrencySwap'; the ORE code and the type table name the type 'CrossCurrencySwap'.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the Product Type subsection titles",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "AmericanSwaption NonStandard": {
+      "value": "AmericanSwaption_NonStandard",
+      "reason": "The guide writes 'AmericanSwaption NonStandard'; the ORE code and the type table name the type 'AmericanSwaption_NonStandard'.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the Product Type subsection titles",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "CappedFlooredYYLeg": {
+      "value": "CapFlooredYYLeg",
+      "reason": "The guide writes 'CappedFlooredYYLeg'; the ORE code and the type table name the type 'CapFlooredYYLeg'.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the Product Type subsection titles",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "CappedFlooredNonStdYYLeg": {
+      "value": "CapFlooredNonStdYYLeg",
+      "reason": "The guide writes 'CappedFlooredNonStdYYLeg'; the ORE code and the type table name the type 'CapFlooredNonStdYYLeg'.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the Product Type subsection titles",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "CapFlooredAverageBMAIndexedCouponLeg": {
+      "value": "CapFlooredAverageBMACouponLeg",
+      "reason": "The guide writes 'CapFlooredAverageBMAIndexedCouponLeg'; the ORE code and the type table name the type 'CapFlooredAverageBMACouponLeg'.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the Product Type subsection titles",
+      "curator": "marco",
+      "date": "2026-10-25"
+    }
+  },
+  "models": {
+    "CapFlooredYNonStdYYModel": {
+      "value": "CapFlooredNonStdYYModel",
+      "reason": "The guide misspells the model; the ORE code names it 'CapFlooredNonStdYYModel'.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the Engine description blocks",
+      "curator": "marco",
+      "date": "2026-10-25"
+    }
+  },
+  "engines": {
+    "AnalyticEuroepanForwardEngine": {
+      "value": "AnalyticEuropeanForwardEngine",
+      "reason": "The guide misspells the engine; the ORE code names it 'AnalyticEuropeanForwardEngine'.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the Engine description blocks",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "FdGarmanKohlhagenVanillaEngine": {
+      "value": "FdBlackScholesVanillaEngine",
+      "reason": "The guide misspells the engine; the ORE code names it 'FdBlackScholesVanillaEngine'.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the Engine description blocks",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "BlackAverageBMAIndexedCouponPricer": {
+      "value": "BlackAverageBMACouponPricer",
+      "reason": "The guide misspells the engine; the ORE code names it 'BlackAverageBMACouponPricer'.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the Engine description blocks",
+      "curator": "marco",
+      "date": "2026-10-25"
+    }
+  },
+  "settings": {
+    "Bootstrp.CalibrationGrid": {
+      "value": "Bootstrap.CalibrationGrid",
+      "reason": "The guide misspells the setting; the ORE parser reads it as 'Bootstrap.CalibrationGrid'.",
+      "source": "ore_code",
+      "source_ref": "OREData/ored/portfolio/builders/convertiblebond.cpp",
+      "curator": "marco",
+      "date": "2026-10-25"
+    }
+  },
+  "label_words": {
+    "PseudoCurrency": {
+      "value": "Pseudo-currency",
+      "reason": "The name is one word; a label reads it as two, with a hyphen.",
+      "source": "authored",
+      "source_ref": "the screen label of the pseudo-currency settings",
+      "curator": "marco",
+      "date": "2026-10-25"
+    }
+  }
+}

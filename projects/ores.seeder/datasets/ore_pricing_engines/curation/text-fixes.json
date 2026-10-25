@@ -1,0 +1,66 @@
+{
+  "traning": {
+    "value": "training",
+    "reason": "A misspelling in the guide text.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the prose of the product type sections",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "incoroporated": {
+    "value": "incorporated",
+    "reason": "A misspelling in the guide text.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the prose of the product type sections",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "determinisitc": {
+    "value": "deterministic",
+    "reason": "A misspelling in the guide text.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the prose of the product type sections",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "depneding": {
+    "value": "depending",
+    "reason": "A misspelling in the guide text.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the prose of the product type sections",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "HulWhite": {
+    "value": "Hull-White",
+    "reason": "A misspelling in the guide text.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the prose of the product type sections",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Antithetc": {
+    "value": "Antithetic",
+    "reason": "A misspelling in the guide text.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the prose of the product type sections",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Chbyshev": {
+    "value": "Chebyshev",
+    "reason": "A misspelling in the guide text.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the prose of the product type sections",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Option,": {
+    "value": "Optional,",
+    "reason": "A misspelling in the guide text.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the prose of the product type sections",
+    "curator": "marco",
+    "date": "2026-10-25"
+  }
+}

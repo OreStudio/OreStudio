@@ -1,0 +1,978 @@
+{
+  "Swap": {
+    "description": "Interest Rate Swap",
+    "instrument": "IRS",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CrossCurrencySwap": {
+    "description": "Cross Currency Swap",
+    "instrument": "XCCY",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EuropeanSwaption": {
+    "description": "European-style Swaption",
+    "instrument": "SWPTN",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BermudanSwaption": {
+    "description": "Bermudan-style Swaption",
+    "instrument": "SWPTN",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AmericanSwaption": {
+    "description": "American-style Swaption",
+    "instrument": "SWPTN",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CapFloor": {
+    "description": "Cap or Floor",
+    "instrument": "CAPFLR",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FlexiSwap": {
+    "description": "Flexi Swap",
+    "instrument": "FLEXSWP",
+    "documentation": "A swap with flexible notional or schedule terms. Use it when the standard swap conventions do not describe the trade.",
+    "reason": "The guide chapter does not describe the type. The description and the documentation are written from the ORE code and the standard meaning of the name; the instrument is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BalanceGuaranteedSwap": {
+    "description": "Balance Guaranteed Swap",
+    "instrument": "BGS",
+    "documentation": "A swap whose notional is guaranteed to a scheduled balance. Use it when the amortisation follows the guaranteed balance rather than the actual one.",
+    "reason": "The guide chapter does not describe the type. The description and the documentation are written from the ORE code and the standard meaning of the name; the instrument is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CallableSwap": {
+    "description": "Callable Swap",
+    "instrument": "CALLSWP",
+    "documentation": "A swap that one side may cancel on a set of dates. Its price includes the value of the cancellation right as well as the swap.",
+    "reason": "The guide chapter does not describe the type. The description and the documentation are written from the ORE code and the standard meaning of the name; the instrument is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "YYCapFloor": {
+    "description": "Year-on-Year Inflation Cap/Floor",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CpiCapFloor": {
+    "description": "CPI Cap/Floor",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CPICapFloor": {
+    "description": "CPI Cap/Floor (alternative)",
+    "instrument": "NONE",
+    "documentation": "A cap or a floor on a consumer price index. It pays when the index fixes above or below the strike, and it needs the inflation curve and the index fixings.",
+    "reason": "The ORE code in this checkout names no such type. The seeded table carried it as an alternative spelling of CPI cap and floor; the reclassification task decides whether it stays. No instrument is mapped yet; the mapping task decides it.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CappedFlooredCpiLegCoupons": {
+    "description": "Capped/Floored CPI Leg Coupons",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CappedFlooredCpiLegCashFlows": {
+    "description": "Capped/Floored CPI Leg Cash Flows",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CapFlooredIborLeg": {
+    "description": "Cap/Floored IBOR Leg Pricer",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CapFlooredOvernightIndexedCouponLeg": {
+    "description": "Cap/Floored Overnight Indexed Coupon Leg",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CapFlooredAverageONIndexedCouponLeg": {
+    "description": "Cap/Floored Average ON Indexed Coupon Leg",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CapFlooredYYLeg": {
+    "description": "Capped/Floored YY Inflation Leg",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CMS": {
+    "description": "Constant Maturity Swap Coupon Pricer",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CMSSpread": {
+    "description": "CMS Spread Coupon Pricer",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FormulaBasedCoupon": {
+    "description": "Formula-Based Coupon Pricer",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxForward": {
+    "description": "FX Forward",
+    "instrument": "FXFWD",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxOption": {
+    "description": "FX Option (European)",
+    "instrument": "FXOPT",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxOptionAmerican": {
+    "description": "FX Option (American)",
+    "instrument": "FXOPT",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityOption": {
+    "description": "Equity Option (European)",
+    "instrument": "EQOPT",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityOptionAmerican": {
+    "description": "Equity Option (American)",
+    "instrument": "EQOPT",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityForward": {
+    "description": "Equity Forward",
+    "instrument": "EQFWD",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityBarrierOption": {
+    "description": "Equity Barrier Option",
+    "instrument": "EQBAR",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityFutureOption": {
+    "description": "Equity Future Option",
+    "instrument": "EQFUTOPT",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Bond": {
+    "description": "Fixed Income Bond",
+    "instrument": "BOND",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ForwardBond": {
+    "description": "Forward Bond",
+    "instrument": "FWDBOND",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BondOption": {
+    "description": "Bond Option",
+    "instrument": "BONDOPT",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BondTRS": {
+    "description": "Bond Total Return Swap",
+    "instrument": "BONDTRS",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CreditDefaultSwap": {
+    "description": "Credit Default Swap",
+    "instrument": "CDS",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "IndexCreditDefaultSwap": {
+    "description": "Index Credit Default Swap",
+    "instrument": "CDX",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CreditDefaultSwapOption": {
+    "description": "CDS Option",
+    "instrument": "CDSOPT",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "IndexCreditDefaultSwapOption": {
+    "description": "Index CDS Option",
+    "instrument": "CDXOPT",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "SyntheticCDO": {
+    "description": "Synthetic CDO",
+    "instrument": "CDO",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommodityForward": {
+    "description": "Commodity Forward",
+    "instrument": "COMMFWD",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommoditySwap": {
+    "description": "Commodity Swap",
+    "instrument": "COMMSWP",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommodityOption": {
+    "description": "Commodity Option",
+    "instrument": "COMMOPT",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommodityAveragePriceOption": {
+    "description": "Commodity Average Price Option",
+    "instrument": "COMMAPO",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommoditySwaption": {
+    "description": "Commodity Swaption",
+    "instrument": "COMMSWPTN",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ScriptedTrade": {
+    "description": "Scripted Trade (ORE generic payoff engine)",
+    "instrument": "SCRIPT",
+    "reason": "The description and the instrument are the values the seeded type table carried. The mapping task reviews every mapping.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Ascot": {
+    "description": "Ascot",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CallableBond": {
+    "description": "Callable Bond",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ConvertibleBond": {
+    "description": "Convertible Bond",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CreditLinkedSwap": {
+    "description": "Credit Linked Swap",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EuropeanSwaption_XCcy": {
+    "description": "European Swaption X Ccy",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EuropeanSwaption_NonStandard": {
+    "description": "European Swaption Non Standard",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BermudanSwaption_XCcy": {
+    "description": "Bermudan Swaption X Ccy",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BermudanSwaption_NonStandard": {
+    "description": "Bermudan Swaption Non Standard",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AmericanSwaption_XCcy": {
+    "description": "American Swaption X Ccy",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AmericanSwaption_NonStandard": {
+    "description": "American Swaption Non Standard",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BondRepo": {
+    "description": "Bond Repo",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "IborRangeAccrualLeg": {
+    "description": "Ibor Range Accrual Leg",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CapFlooredInterpolatedIborLeg": {
+    "description": "Cap Floored Interpolated Ibor Leg",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CapFlooredAverageBMACouponLeg": {
+    "description": "Cap Floored Average BMA Coupon Leg",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommodityAveragePriceBarrierOption": {
+    "description": "Commodity Average Price Barrier Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CapFlooredNonStdYYLeg": {
+    "description": "Cap Floored Non Std YY Leg",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CBO": {
+    "description": "CBO",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DurationAdjustedCMS": {
+    "description": "Duration Adjusted CMS",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommodityAsianOptionArithmeticPrice": {
+    "description": "Commodity Asian Option Arithmetic Price",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommodityAsianOptionArithmeticStrike": {
+    "description": "Commodity Asian Option Arithmetic Strike",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommodityAsianOptionGeometricPrice": {
+    "description": "Commodity Asian Option Geometric Price",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommodityAsianOptionGeometricStrike": {
+    "description": "Commodity Asian Option Geometric Strike",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommoditySpreadOption": {
+    "description": "Commodity Spread Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommodityCalendarSpreadOption": {
+    "description": "Commodity Calendar Spread Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommodityOptionForward": {
+    "description": "Commodity Option Forward",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommodityOptionEuropeanCS": {
+    "description": "Commodity Option European CS",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommodityOptionAmerican": {
+    "description": "Commodity Option American",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityAsianOptionArithmeticPrice": {
+    "description": "Equity Asian Option Arithmetic Price",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityAsianOptionArithmeticStrike": {
+    "description": "Equity Asian Option Arithmetic Strike",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityAsianOptionGeometricPrice": {
+    "description": "Equity Asian Option Geometric Price",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityAsianOptionGeometricStrike": {
+    "description": "Equity Asian Option Geometric Strike",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxBarrierOption": {
+    "description": "FX Barrier Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityDoubleBarrierOption": {
+    "description": "Equity Double Barrier Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxDoubleBarrierOption": {
+    "description": "FX Double Barrier Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxEuropeanBarrierOption": {
+    "description": "FX European Barrier Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityDigitalOption": {
+    "description": "Equity Digital Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxDigitalOption": {
+    "description": "FX Digital Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityEuropeanCompositeOption": {
+    "description": "Equity European Composite Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityLeg": {
+    "description": "Equity Leg",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityCliquetOption": {
+    "description": "Equity Cliquet Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "QuantoEquityOption": {
+    "description": "Quanto Equity Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityOptionEuropeanCS": {
+    "description": "Equity Option European CS",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "QuantoEquityOptionAmerican": {
+    "description": "Quanto Equity Option American",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityTouchOption": {
+    "description": "Equity Touch Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxTouchOption": {
+    "description": "FX Touch Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BondFuture": {
+    "description": "Bond Future",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BondFutureOption": {
+    "description": "Bond Future Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BondFutureOptionAmerican": {
+    "description": "Bond Future Option American",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityVarianceSwap": {
+    "description": "Equity Variance Swap",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommodityVarianceSwap": {
+    "description": "Commodity Variance Swap",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxVarianceSwap": {
+    "description": "FX Variance Swap",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxAsianOptionArithmeticPrice": {
+    "description": "FX Asian Option Arithmetic Price",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxAsianOptionArithmeticStrike": {
+    "description": "FX Asian Option Arithmetic Strike",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxAsianOptionGeometricPrice": {
+    "description": "FX Asian Option Geometric Price",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxAsianOptionGeometricStrike": {
+    "description": "FX Asian Option Geometric Strike",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxDigitalBarrierOption": {
+    "description": "FX Digital Barrier Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "RateDigitalOption": {
+    "description": "Rate Digital Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxOptionEuropeanCS": {
+    "description": "FX Option European CS",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxOptionForward": {
+    "description": "FX Option Forward",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxDoubleTouchOption": {
+    "description": "FX Double Touch Option",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "RiskParticipationAgreement_Vanilla": {
+    "description": "Risk Participation Agreement Vanilla",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "RiskParticipationAgreement_Vanilla_XCcy": {
+    "description": "Risk Participation Agreement Vanilla X Ccy",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "RiskParticipationAgreement_Structured": {
+    "description": "Risk Participation Agreement Structured",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "RiskParticipationAgreement_TLock": {
+    "description": "Risk Participation Agreement T Lock",
+    "instrument": "NONE",
+    "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+    "source": "seed",
+    "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+    "curator": "marco",
+    "date": "2026-10-25"
+  }
+}

@@ -9,8 +9,9 @@ Writes the populate scripts of the pricing engine vocabulary:
   analytics_sensitivity_templates_populate.sql     the sensitivity template keys
 
 The pairs and settings come from the ORE user guide chapter on the pricing engine
-configuration, read by extract_vocabulary.py. The descriptions that the guide does not give
-come from descriptions.py. Run it again after an ORE release.
+configuration, read by extract_vocabulary.py. The descriptions that the guide does not give,
+the instrument of each product type and the spelling of a name come from the curation
+files beside it. Run it again after an ORE release.
 
 It also writes pricing_vocabulary.json, which the ACME generators read, so they need no ORE
 checkout.
@@ -20,15 +21,15 @@ Usage:
 """
 import json
 import os
-import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-import descriptions as authored
-import extract_vocabulary as extract
+import curation  # noqa: E402
+import extract_vocabulary as extract  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
+CURATED = curation.CURATED
 OUT = os.path.join(ROOT, "projects", "ores.sql", "populate", "analytics")
 
 LICENCE = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
@@ -54,17 +55,13 @@ LICENCE = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -
 
 TENANT = "ores_utility_system_tenant_id_fn()"
 ACTOR = "'ores_analytics_service', 'system.initial_load'"
+SEED = "Seed pricing engine vocabulary"
 
 
 def q(value):
     if value is None or value == "":
         return "null"
     return "'" + str(value).replace("'", "''") + "'"
-
-
-def humanise(code):
-    words = re.sub(r"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])", " ", code.replace("_", " "))
-    return words.replace("Xccy", "cross currency").replace("Fx ", "FX ").replace("Cpi", "CPI").replace(" Yy", " year-on-year")
 
 
 def write(name, header, table, columns, rows, label):
@@ -97,14 +94,20 @@ where valid_to = ores_utility_infinity_timestamp_fn();
     print(name, len(rows), "rows")
 
 
-def existing_types():
-    path = os.path.join(OUT, "analytics_pricing_engine_types_populate.sql")
-    rows = {}
-    text = open(path, encoding="utf-8").read()
-    for m in re.finditer(
-            r"\('([A-Za-z_]+)',\s*ores_utility_system_tenant_id_fn\(\), 0, '([^']*)',\s*'([A-Za-z]+)'", text):
-        rows[m.group(1)] = (m.group(2), m.group(3))
-    return rows
+def populated_types(vocabulary):
+    """The types to write, in curation order, or a fail when the guide adds one."""
+    out = {code: (entry["description"], entry["instrument"])
+           for code, entry in CURATED.types.items()}
+    uncurated = sorted(set(vocabulary) - set(out))
+    if uncurated:
+        sys.exit(f"no curation entry in curation/types.json for {', '.join(uncurated)}")
+    return out
+
+
+def described_rows(table, codes):
+    """The description, the detail and the source of each model or engine, one row each."""
+    return [[q(c), TENANT, "0", q(table[c]["description"]), q(table[c]["detail"]),
+             q(table[c]["source"]), ACTOR, q(SEED)] for c in sorted(codes)]
 
 
 def main(ore):
@@ -112,16 +115,12 @@ def main(ore):
     with open(os.path.join(HERE, "pricing_vocabulary.json"), "w", encoding="utf-8") as handle:
         json.dump(vocabulary, handle, indent=1, ensure_ascii=False)
         handle.write("\n")
-    seed = "Seed pricing engine vocabulary"
-
-    types = existing_types()
-    for t, v in vocabulary.items():
-        if t not in types:
-            types[t] = (humanise(t), "NONE")
+    types_to_write = populated_types(vocabulary)
     write("analytics_pricing_engine_types_populate.sql",
           "Pricing Engine Types Population Script\n *\n * The product types the pricing engine file names. The first rows are the types that\n * the ORE examples use; the rest come from the guide.",
           "ores_analytics_pricing_engine_types_tbl", "description, instrument_type_code",
-          [[q(c), TENANT, "0", q(d), q(i), ACTOR, q(seed)] for c, (d, i) in types.items()],
+          [[q(c), TENANT, "0", q(d), q(i), ACTOR, q(SEED)]
+           for c, (d, i) in types_to_write.items()],
           "Pricing Engine Types")
 
     pair_rows, setting_rows = [], []
@@ -132,13 +131,13 @@ def main(ore):
             models.add(m)
             engines.add(e)
             pair_rows.append([q(f"{t}:{m}:{e}"), TENANT, "0", q(m), q(e), q(t),
-                              "true" if pair["usual"] else "false", q(pair["note"]), ACTOR, q(seed)])
+                              "true" if pair["usual"] else "false", q(pair["note"]), ACTOR, q(SEED)])
             for s in pair["settings"]:
                 setting_rows.append([
                     q(f"{t}:{m}:{e}:{s['scope']}:{s['name']}"), TENANT, "0", q(m), q(e), q(t),
                     q(s["scope"]), q(s["name"]), q(s["kind"]), q(s["usual"]),
                     q(",".join(s["options"])), "true" if s["required"] else "false", q(s["text"]),
-                    ACTOR, q(seed)])
+                    ACTOR, q(SEED)])
     write("analytics_pricing_model_engine_pairs_populate.sql",
           "Pricing Model Engine Pairs Population Script\n *\n * The pairs of model and engine that ORE can use for each product type. The first pair\n * the guide lists for a type is marked usual.",
           "ores_analytics_pricing_model_engine_pairs_tbl",
@@ -149,24 +148,23 @@ def main(ore):
           "model, engine, pricing_engine_type_code, scope, name, kind, usual_value, options, is_required, note",
           setting_rows, "Pricing Pair Settings")
 
-    missing_models = sorted(models - set(authored.MODELS))
-    missing_engines = sorted(engines - set(authored.ENGINES))
+    missing_models = sorted(models - set(CURATED.models))
+    missing_engines = sorted(engines - set(CURATED.engines))
     if missing_models or missing_engines:
         sys.exit(f"no description for models {missing_models} and engines {missing_engines}")
     write("analytics_pricing_models_populate.sql",
           "Pricing Models Population Script\n *\n * The description of each pricing model that a pair names.",
           "ores_analytics_pricing_models_tbl", "description, detail, source",
-          [[q(c), TENANT, "0", q(authored.MODELS[c][0]), q(authored.MODELS[c][1]), q(authored.MODELS[c][2]),
-            ACTOR, q(seed)] for c in sorted(models)], "Pricing Models")
+          described_rows(CURATED.models, models), "Pricing Models")
     write("analytics_pricing_methods_populate.sql",
           "Pricing Methods Population Script\n *\n * The description of each engine that a pair names. ORE calls a pricing method an\n * engine.",
           "ores_analytics_pricing_methods_tbl", "description, detail, source",
-          [[q(c), TENANT, "0", q(authored.ENGINES[c][0]), q(authored.ENGINES[c][1]), q(authored.ENGINES[c][2]),
-            ACTOR, q(seed)] for c in sorted(engines)], "Pricing Methods")
+          described_rows(CURATED.engines, engines), "Pricing Methods")
     write("analytics_sensitivity_templates_populate.sql",
           "Sensitivity Templates Population Script\n *\n * The sensitivity template keys that ORE examples put on products.",
           "ores_analytics_sensitivity_templates_tbl", "asset_class, method, description",
-          [[q(c), TENANT, "0", q(a), q(m), q(d), ACTOR, q(seed)] for c, (a, m, d) in authored.TEMPLATES.items()],
+          [[q(c), TENANT, "0", q(e["asset_class"]), q(e["method"]), q(e["description"]),
+            ACTOR, q(SEED)] for c, e in CURATED.templates.items()],
           "Sensitivity Templates")
 
 

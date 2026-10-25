@@ -1,0 +1,227 @@
+{
+  "Accrual": {
+    "description": "Accrues a repo at its rate; no market model.",
+    "detail": "The repo value follows from accruing the cash and the security on the repo terms. No stochastic model and no volatility input are involved.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BGM": {
+    "description": "Brace-Gatarek-Musiela market model for forward rates.",
+    "detail": "A LIBOR market model. ORE uses it in the range accrual pricer, which builds the model from the smile sections of the swaption volatility surface and prices each daily range observation.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Black": {
+    "description": "Black (1976) lognormal model on a forward.",
+    "detail": "Prices an option on a forward with a lognormal or shifted lognormal volatility. ORE reads the volatility from the market surface that the product names.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackBachelier": {
+    "description": "Black or Bachelier, chosen by the volatility input.",
+    "detail": "The swaption volatility surface decides the model. A lognormal or shifted lognormal surface prices with Black. A normal surface prices with Bachelier.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackOrBachelier": {
+    "description": "Black or Bachelier for coupon pricers, chosen by the volatility input.",
+    "detail": "The caplet volatility surface decides the model. A lognormal or shifted lognormal surface prices the capped and floored coupons with Black. A normal surface prices them with Bachelier.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackQuantoAdjusted": {
+    "description": "Black model with a quanto adjustment from the FX-equity correlation.",
+    "detail": "Prices an equity coupon paid in another currency. The forward of the equity is adjusted with the FX volatility and the equity-FX correlation. A setting can switch the convexity adjustment off.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackScholes": {
+    "description": "Black-Scholes model with a volatility surface and no dividend yield.",
+    "detail": "The classic lognormal model with a constant rate and volatility for each strike and expiry. The market volatility surface supplies the volatility.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackScholesMerton": {
+    "description": "Black-Scholes model with a continuous dividend yield.",
+    "detail": "The Black-Scholes model for an equity that pays a continuous dividend yield. The forward of the equity follows from the equity curve and the dividend curve.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BrigoMercurio": {
+    "description": "Lognormal model for CMS spread options, after Brigo and Mercurio.",
+    "detail": "Prices the spread of two constant maturity swap rates with two correlated lognormal variables. The reference is Brigo and Mercurio, Interest Rate Models - Theory and Practice, section 13.16.2.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CapFlooredNonStdYYModel": {
+    "description": "Year-on-year inflation coupon model for non-standard legs.",
+    "detail": "Chooses a Black, unit displaced Black or Bachelier inflation coupon pricer from the volatility type of the market surface. The non-standard pricers handle coupons whose accrual does not follow the standard year-on-year timing.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CapFlooredYYModel": {
+    "description": "Year-on-year inflation coupon model.",
+    "detail": "Chooses a Black, unit displaced Black or Bachelier year-on-year inflation coupon pricer from the volatility type of the market surface.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CpiCapModel": {
+    "description": "CPI cap and floor model, Black or Bachelier.",
+    "detail": "Chooses the Black or the Bachelier CPI cap floor pricer from the volatility type of the market surface.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CrossAssetModel": {
+    "description": "ORE cross asset model: Gaussian rates, FX, inflation, credit, equity and commodity.",
+    "detail": "Joins single-asset parametrizations with a correlation matrix. It can be one LGM model for one currency, a cross currency LGM model, or a model for rates, FX, inflation, credit, equity and commodity together. ORE uses it to simulate exposure, and with the MC and AMC engines to price products by Monte Carlo.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DefaultableEquityJumpDiffusion": {
+    "description": "Equity jump-to-default model for convertible bonds.",
+    "detail": "The stock price follows a diffusion with a default intensity that depends on the stock price, and it jumps to zero at default. The model follows Andersen and Buffum, Calibration and Implementation of Convertible Bond Models (2002).",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DiscountedCashflows": {
+    "description": "Discounts the known cashflows; no stochastic model.",
+    "detail": "Projects each cashflow from the curves of the market and discounts it. The result needs no volatility. Credit-risky products also use the default curve and the recovery rate.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "GarmanKohlhagen": {
+    "description": "Black-Scholes model for FX with a domestic and a foreign rate.",
+    "detail": "The Garman-Kohlhagen extension of Black-Scholes for a currency pair. The foreign rate takes the place of the dividend yield.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "GaussCopula": {
+    "description": "One-factor Gaussian copula for credit index tranches.",
+    "detail": "Links the defaults of the names of an index with one common Gaussian factor. The tranche loss follows from the loss distribution of the pool.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Hagan": {
+    "description": "Hagan replication pricers for constant maturity swap coupons.",
+    "detail": "Prices a CMS coupon by replicating the coupon with swaptions, after Hagan. The analytic pricer uses a closed-form approximation. The numerical pricer integrates numerically.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "IborCapModel": {
+    "description": "Cap and floor model, Black or Bachelier.",
+    "detail": "Chooses the Black or the Bachelier cap floor engine from the volatility type of the market surface.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "LGM": {
+    "description": "Linear Gauss Markov model, a one-factor Gaussian rates model.",
+    "detail": "A one-factor Gaussian short rate model in the form of Hagan. In ORE it is a cross asset model with one currency. Its state process always uses analytical moments, which makes simulation fast. ORE calibrates it to swaption prices.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "LinearTSR": {
+    "description": "Linear terminal swap rate model for CMS convexity adjustments.",
+    "detail": "Models the annuity mapping as a linear function of the swap rate. The policy setting bounds the rates and the strikes of the replication.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "LognormalAdjustedIndexSpread": {
+    "description": "Lognormal model for the spread of an index CDS.",
+    "detail": "Prices an option on an index CDS with a lognormal spread. The model adjusts the index spread for the front end protection.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "OneFactorCopula": {
+    "description": "One-factor copula for cash flow CBO tranches.",
+    "detail": "Links the defaults in the pool of a collateralised bond obligation with one common factor and prices the tranches by Monte Carlo.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ScriptedTrade": {
+    "description": "Scripted trade model; the script defines the payoff.",
+    "detail": "The scripted trade framework simulates the underlyings and evaluates the script of the trade. The model and engine settings come from the pricing engine configuration of the product type ScriptedTrade.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "YYCapModel": {
+    "description": "Year-on-year inflation cap and floor model.",
+    "detail": "Chooses a Black, unit displaced Black or Bachelier year-on-year cap floor engine from the volatility type of the market surface.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  }
+}

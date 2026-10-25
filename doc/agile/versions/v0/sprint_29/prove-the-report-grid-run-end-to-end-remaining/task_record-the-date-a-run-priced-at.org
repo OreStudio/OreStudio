@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 03BC9F61-8C0E-4767-AF5F-7DEF0C079918
+:END:
+#+title: Task: Record the date a run priced at
+#+description: The run document is written for the date the run asked for, and the package handler moves it to the date the gathered market data carries when the two disagree, with only a warning in the log. Nothing on the run says which date it used or why it moved, so no client can say it. The report instance gains priced_at and price_note, the package handler reports the date it used through a reporting operation, and the reporting service writes it on the instance.
+#+type: task
+#+level: s1
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A run records the date it priced at, and why it moved when it did.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A run says which date it priced at, and why it moved.
+
+The report instance gained =priced_at= and =price_note=, both nullable, with
+their SQL, repository, domain and TypeScript regenerated. A =record_run_pricing=
+operation carries the two from the package handler to the reporting service,
+which writes them on the instance. The package handler sends it with the run's
+own token, so the write is the run's and row-level security scopes it, and it
+does not touch the database itself. A moved date says the run asked for one date
+and the gathered data ends at the other. A date that did not move says nothing.
+The page shows one line on the Run tab when the date is there.
+
+Proven on instance =c09ebaf1=: =priced_at= 2026-05-05 and =price_note= "The run
+asked for 2026-10-23 and the gathered market data ends at 2026-05-05, so the run
+priced at the data's date.", read back both from SQL and from
+=report_instances get=. The run completed, because it was a package run, whose
+last step is packaging.
+
+The reporting and shell suites pass, the web typecheck is clean, and the new
+service and page tests cover the write and the line.
+
+=

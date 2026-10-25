@@ -30,9 +30,9 @@ The bond planner is the first implementation. The commodity planner is the secon
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Units one and two landed: the planner registry, and a slot that carries its own family's terms. The component suite is green. |
+| Now          | Units one to three landed: the planner registry, a slot that carries its own family's terms, and the population size as a config column. The component suite and the drift check are green. |
 | Waiting on   | Nothing. |
-| Next         | The population size in the config, then the commodity planner. |
+| Next         | The commodity planner, against the eight shapes the importer maps. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -130,8 +130,17 @@ task and name that file in the Command column.
 | The whole synthetic core suite | 61 cases passed, 1388 assertions | =publish/bin/ores.synthetic.core.tests= | 8bd52fa8a2 |
 | The population cases, after the payload split | 15 cases passed, 352 assertions | =publish/bin/ores.synthetic.core.tests "[trade_population]"= | aa8bcee163 |
 | The whole suite, after the payload split | 61 cases passed, 1388 assertions | =publish/bin/ores.synthetic.core.tests= | aa8bcee163 |
+| The population cases, after the size moved into the config | 16 cases passed, 354 assertions | =publish/bin/ores.synthetic.core.tests "[trade_population]"= | 32d442c12f |
+| The whole suite, after the size moved into the config, on a database rebuilt the same day | 62 cases passed, 1390 assertions | =publish/bin/ores.synthetic.core.tests= | 32d442c12f |
+| Codegen drift for the component | no drift: generated output matches the checked-in tree | =projects/ores.codegen/scripts/check_component_drift.py --component synthetic --dry-run= | 32d442c12f |
 
 * Notes
+
+=trades_per_book= is a column the create script states as =not null= with
+no SQL default, so a fresh database has no value to fall back on. The C++
+side defaults to eight and the ACME seed states eight, which is what keeps
+the two in step; a new tenant's seed data has to state it too.
+
 
 The catalogue routes all twenty-five commodity codes to
 =commodity_instrument=, but the ORE importer maps only eight shapes, at

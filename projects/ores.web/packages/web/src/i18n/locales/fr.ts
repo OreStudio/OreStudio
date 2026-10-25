@@ -3583,6 +3583,8 @@ const fr: SourceCatalogue = {
 
     trading: {
         trades: {
+            areaLead:
+                'Les transactions et structures que vous pouvez voir, et les livres où elles se trouvent.',
             title: 'Transactions',
             lead: 'Les transactions et structures de votre partie, et les livres où elles se trouvent.',
             filterStatus: 'État',

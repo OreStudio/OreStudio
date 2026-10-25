@@ -3541,6 +3541,7 @@ export const en: SourceCatalogue = {
 
     trading: {
         trades: {
+            areaLead: 'The trades and structures you may see, and the books they sit in.',
             title: 'Trades',
             lead: 'The trades and structures of your party, and the books they sit in.',
             filterStatus: 'State',

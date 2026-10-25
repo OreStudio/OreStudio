@@ -98,7 +98,10 @@ export function TradesPage(): ReactNode {
             source={source}
             title={t('trading.trades.title')}
             lead={t('trading.trades.lead')}
-            crumbs={[{ label: t('shell.menu.home'), to: '/' }, { label: t('trading.trades.title') }]}
+            crumbs={[
+                { label: t('shell.menu.home'), to: '/' },
+                { label: t('trading.trades.title') },
+            ]}
             keyOf={(row) => row.id}
             columns={[
                 {

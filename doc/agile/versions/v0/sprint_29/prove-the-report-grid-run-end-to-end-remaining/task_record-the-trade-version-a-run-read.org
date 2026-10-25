@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: A648B2CE-64DC-462E-A96C-367ED0E1BD98
+:END:
+#+title: Task: Record the trade version a run read
+#+description: The error screen links a failed trade at a version, and the error rows recorded no version, so every reference said v?. The export carries each trade's version, and the bundle now keeps the manifest the gather received. The recorder looks a trade up in that manifest and writes subject_version, with subject_as_of set to the date the instance priced at. A trade missing from the manifest records with both null rather than failing.
+#+type: task
+#+level: s1
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A failed trade's error row says the version the run read it at, and the date it
+read it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A failed trade's error row says the version the run read.
+
+The trading export response now carries the version of every trade it wrote.
+The gather passes that manifest through the workflow, the bundle keeps it as
+=trade_versions= (jsonb), and the recorder looks the failing trade up in it. A
+trade found there gets =subject_version=, and =subject_as_of= is the date the
+instance priced at. A trade the manifest does not name records with both null,
+because a missing manifest is a fact about the run and not a reason to lose the
+error.
+
+Proven on instance =ea7bcf57=. The run failed on market data and recorded 24
+trade rows, eight trades read three times each. Every row carries
+=subject_version= 5 and =subject_as_of= 2026-05-05, the instance's priced date,
+and all eight manifest entries equal the stored version of their trade.
+
+The bound worth knowing: every trade in that report's books is at version 5, so
+the run shows one version repeated and the per-trade lookup is held by the unit
+tests rather than by two differing values in one run.

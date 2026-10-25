@@ -295,6 +295,16 @@ struct gather_trades_result {
     std::string message;
     int trade_count = 0;
     std::string storage_key;
+    /**
+     * @brief The version of each trade the export wrote, as a JSON object keyed by
+     * trade id. Empty when the export wrote none.
+     *
+     * The trades themselves stay in object storage, so only this manifest travels
+     * with the run. A command line cannot fill a map, and the run carries the
+     * manifest to the bundle unchanged, so the JSON text is what both messages
+     * state.
+     */
+    std::string trade_versions;
 };
 
 struct gather_market_data_request {
@@ -353,6 +363,14 @@ struct assemble_bundle_request {
      */
     std::string fixings_storage_key;
     int trade_count = 0;
+    /**
+     * @brief The version of each trade the run read, as the JSON object the gather
+     * step received. Empty when the run read no trades.
+     *
+     * The bundle stores it in its own column, because an error the engine raises for
+     * a trade names the version of the trade the engine was given.
+     */
+    std::string trade_versions = "";
     int series_count = 0;
 };
 

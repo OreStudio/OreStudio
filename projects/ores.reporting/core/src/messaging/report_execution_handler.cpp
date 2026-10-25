@@ -338,6 +338,12 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         result.success = true;
         result.trade_count = exp_resp->trade_count;
         result.storage_key = exp_resp->storage_key;
+        // The manifest is a lookup from trade id to the version the export read.
+        // It travels to the bundle as JSON, which is the form the bundle column
+        // holds, so no reader has to rebuild it from the trades blob.
+        result.trade_versions = exp_resp->trade_versions.empty() ?
+                                    std::string{} :
+                                    rfl::json::write(exp_resp->trade_versions);
         result.message =
             std::format("Gathered {} trades from {} books", exp_resp->trade_count, book_ids.size());
 
@@ -509,6 +515,8 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
         bundle.market_data_storage_key = req.market_data_storage_key;
         bundle.fixings_storage_key = req.fixings_storage_key;
         bundle.trade_count = req.trade_count;
+        bundle.trade_versions =
+            req.trade_versions.empty() ? std::nullopt : std::optional(req.trade_versions);
         bundle.series_count = req.series_count;
         bundle.created_at =
             ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now());

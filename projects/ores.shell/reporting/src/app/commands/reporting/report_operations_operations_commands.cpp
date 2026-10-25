@@ -136,7 +136,7 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
         },
         "assemble-bundle <report_instance_id> <definition_id> <tenant_id> <correlation_id> "
         "<trades_storage_key> <market_data_storage_key> <fixings_storage_key> [--trade_count <v>] "
-        "[--series_count <v>]");
+        "[--trade_versions <v>] [--series_count <v>]");
 
     menu->Insert(
         "prepare-ore-package",
@@ -607,6 +607,7 @@ void report_operations_operations_commands::process_assemble_bundle(
 
     const std::vector<flag_spec> specs{
         {.name = "trade_count", .requires_value = true, .default_value = ""},
+        {.name = "trade_versions", .requires_value = true, .default_value = ""},
         {.name = "series_count", .requires_value = true, .default_value = ""},
     };
     const auto parsed = parse_args(args, specs);
@@ -634,6 +635,10 @@ void report_operations_operations_commands::process_assemble_bundle(
         req.fixings_storage_key = parsed->positionals[next++];
         if (const auto& raw_trade_count = parsed->flag("trade_count"); !raw_trade_count.empty()) {
             req.trade_count = ores::shell::app::from_token<int>(raw_trade_count, "trade_count");
+        }
+        if (const auto& raw_trade_versions = parsed->flag("trade_versions");
+            !raw_trade_versions.empty()) {
+            req.trade_versions = raw_trade_versions;
         }
         if (const auto& raw_series_count = parsed->flag("series_count");
             !raw_series_count.empty()) {

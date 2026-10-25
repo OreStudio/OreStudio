@@ -40,6 +40,7 @@
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_identifier.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
@@ -314,6 +315,15 @@ struct export_trades_to_storage_response {
      * @brief The key written, echoed from the request.
      */
     std::string storage_key;
+    /**
+     * @brief The version of each trade written, keyed by trade id.
+     *
+     * The blob holds the trades, so a reader of it needs no manifest to read them.
+     * This is for the caller that holds a trade id and has to say which version of
+     * that trade the export read: a report run writes the errors its engine raises,
+     * and an error about a trade names the version the engine was given.
+     */
+    std::map<std::string, int> trade_versions;
 };
 
 }

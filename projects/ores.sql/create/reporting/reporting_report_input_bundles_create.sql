@@ -24,7 +24,8 @@
  * An immutable artifact created by the assemble_bundle workflow step.
  * Records the object-storage keys where the MsgPack-serialised trades
  * and market data blobs produced during gather_trades and
- * gather_market_data are stored.
+ * gather_market_data are stored, and the version of each trade the run
+ * read, as a JSON object keyed by trade id.
  *
  * One bundle is created per report instance execution.  The bundle is
  * consumed downstream by prepare_ore_package to repackage the data as
@@ -40,6 +41,7 @@ create table if not exists "ores_reporting_report_input_bundles_tbl" (
     "market_data_storage_key"   text    not null,
     "fixings_storage_key"       text    not null,
     "trade_count"               integer not null default 0,
+    "trade_versions"            jsonb   null,
     "series_count"              integer not null default 0,
     "created_at"                timestamp with time zone not null default current_timestamp,
     primary key (tenant_id, id),

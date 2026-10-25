@@ -55,6 +55,6 @@ A row that needs a seam the code lacks says so.
 | 44 | invariant | NoSilentDelete | A deleted record carries the reason of its delete; a removed link carries none | RS-FEEDBACK-06, RS-RELATED-03 | a record with links |
 | 39 | open question | the first page after a write | Decide before the test: does Refresh after a write return to page one always, or only when the sort could move the record | RS Paging | the owner |
 
-Thirty nine obligations. Thirteen need a second browser or a second account,
-two need a controllable clock, and one is an open question for the owner. The
-rest need nothing the running environment lacks.
+Forty four obligations. Fifteen need a second browser or a second account, two
+need a controllable clock, and one is an open question for the owner. The rest
+need nothing the running environment lacks.

@@ -10,7 +10,7 @@ Register every generated reporting shell unit, not only the two that were missin
 #+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 3792
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3792][#3792]] | [shell] Read a run's errors and its job chain |
 
 * Review
 

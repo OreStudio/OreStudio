@@ -1,0 +1,697 @@
+{
+  "catalogues": {
+    "refdata.tenor": {
+      "name": "Tenors",
+      "relation": "ores_refdata_tenor_catalogue_v",
+      "description": "The tenors reference data holds.",
+      "is_active": true
+    },
+    "analytics.sensitivity_template": {
+      "name": "Sensitivity templates",
+      "relation": "ores_analytics_sensitivity_template_catalogue_v",
+      "description": "The sensitivity template keys the sensitivity configuration states.",
+      "is_active": true
+    }
+  },
+  "sets": {
+    "flag": {
+      "name": "Flag",
+      "source_kind": "boolean",
+      "is_ordered": false,
+      "values": [],
+      "description": "The values the flag setting accepts."
+    },
+    "brownianbridgeordering": {
+      "name": "Brownianbridgeordering",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "Factors",
+          "label": "Factors",
+          "description": "Factors is one of the values ORE accepts for BrownianBridgeOrdering.",
+          "order": 0
+        },
+        {
+          "value": "Steps",
+          "label": "Steps",
+          "description": "Steps is one of the values ORE accepts for BrownianBridgeOrdering.",
+          "order": 1
+        },
+        {
+          "value": "Diagonal",
+          "label": "Diagonal",
+          "description": "Diagonal is one of the values ORE accepts for BrownianBridgeOrdering.",
+          "order": 2
+        }
+      ],
+      "description": "The values the brownianbridgeordering setting accepts."
+    },
+    "curve": {
+      "name": "Curve",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "Index",
+          "label": "Index",
+          "description": "Index is one of the values ORE accepts for Curve.",
+          "order": 0
+        },
+        {
+          "value": "Underlying",
+          "label": "Underlying",
+          "description": "Underlying is one of the values ORE accepts for Curve.",
+          "order": 1
+        }
+      ],
+      "description": "The values the curve setting accepts."
+    },
+    "fepcurve": {
+      "name": "Fepcurve",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "Index",
+          "label": "Index",
+          "description": "Index is one of the values ORE accepts for FepCurve.",
+          "order": 0
+        },
+        {
+          "value": "Underlying",
+          "label": "Underlying",
+          "description": "Underlying is one of the values ORE accepts for FepCurve.",
+          "order": 1
+        }
+      ],
+      "description": "The values the fepcurve setting accepts."
+    },
+    "optionexpiryposition": {
+      "name": "Optionexpiryposition",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "Left",
+          "label": "Left",
+          "description": "Left is one of the values ORE accepts for OptionExpiryPosition.",
+          "order": 0
+        },
+        {
+          "value": "Mid",
+          "label": "Mid",
+          "description": "Mid is one of the values ORE accepts for OptionExpiryPosition.",
+          "order": 1
+        }
+      ],
+      "description": "The values the optionexpiryposition setting accepts."
+    },
+    "policy": {
+      "name": "Policy",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "RateBound",
+          "label": "RateBound",
+          "description": "RateBound is one of the values ORE accepts for Policy.",
+          "order": 0
+        },
+        {
+          "value": "VegaRatio",
+          "label": "VegaRatio",
+          "description": "VegaRatio is one of the values ORE accepts for Policy.",
+          "order": 1
+        },
+        {
+          "value": "PriceThreshold",
+          "label": "PriceThreshold",
+          "description": "PriceThreshold is one of the values ORE accepts for Policy.",
+          "order": 2
+        },
+        {
+          "value": "BsStdDev",
+          "label": "BsStdDev",
+          "description": "BsStdDev is one of the values ORE accepts for Policy.",
+          "order": 3
+        }
+      ],
+      "description": "The values the policy setting accepts."
+    },
+    "pricing_sequence": {
+      "name": "Pricing sequence",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "MersenneTwister",
+          "label": "MersenneTwister",
+          "description": "MersenneTwister is one of the values ORE accepts for Pricing.Sequence.",
+          "order": 0
+        },
+        {
+          "value": "MersenneTwisterAntithetic",
+          "label": "MersenneTwisterAntithetic",
+          "description": "MersenneTwisterAntithetic is one of the values ORE accepts for Pricing.Sequence.",
+          "order": 1
+        },
+        {
+          "value": "Sobol",
+          "label": "Sobol",
+          "description": "Sobol is one of the values ORE accepts for Pricing.Sequence.",
+          "order": 2
+        },
+        {
+          "value": "SobolBrownianBridge",
+          "label": "SobolBrownianBridge",
+          "description": "SobolBrownianBridge is one of the values ORE accepts for Pricing.Sequence.",
+          "order": 3
+        },
+        {
+          "value": "Burley2020SobolBrownianBridge",
+          "label": "Burley2020SobolBrownianBridge",
+          "description": "Burley2020SobolBrownianBridge is one of the values ORE accepts for Pricing.Sequence.",
+          "order": 4
+        }
+      ],
+      "description": "The values the pricing sequence setting accepts."
+    },
+    "regressormodel": {
+      "name": "Regressormodel",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "Simple",
+          "label": "Simple",
+          "description": "Simple is one of the values ORE accepts for RegressorModel.",
+          "order": 0
+        },
+        {
+          "value": "Lagged",
+          "label": "Lagged",
+          "description": "Lagged is one of the values ORE accepts for RegressorModel.",
+          "order": 1
+        },
+        {
+          "value": "LaggedIR",
+          "label": "LaggedIR",
+          "description": "LaggedIR is one of the values ORE accepts for RegressorModel.",
+          "order": 2
+        },
+        {
+          "value": "LaggedFX",
+          "label": "LaggedFX",
+          "description": "LaggedFX is one of the values ORE accepts for RegressorModel.",
+          "order": 3
+        },
+        {
+          "value": "LaggedEQ",
+          "label": "LaggedEQ",
+          "description": "LaggedEQ is one of the values ORE accepts for RegressorModel.",
+          "order": 4
+        }
+      ],
+      "description": "The values the regressormodel setting accepts."
+    },
+    "salvagingalgorithm": {
+      "name": "Salvagingalgorithm",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "None",
+          "label": "None",
+          "description": "None is one of the values ORE accepts for SalvagingAlgorithm.",
+          "order": 0
+        },
+        {
+          "value": "Spectral",
+          "label": "Spectral",
+          "description": "Spectral is one of the values ORE accepts for SalvagingAlgorithm.",
+          "order": 1
+        },
+        {
+          "value": "Hypersphere",
+          "label": "Hypersphere",
+          "description": "Hypersphere is one of the values ORE accepts for SalvagingAlgorithm.",
+          "order": 2
+        },
+        {
+          "value": "LowerDiagonal",
+          "label": "LowerDiagonal",
+          "description": "LowerDiagonal is one of the values ORE accepts for SalvagingAlgorithm.",
+          "order": 3
+        },
+        {
+          "value": "Higham",
+          "label": "Higham",
+          "description": "Higham is one of the values ORE accepts for SalvagingAlgorithm.",
+          "order": 4
+        },
+        {
+          "value": "Principal",
+          "label": "Principal",
+          "description": "Principal is one of the values ORE accepts for SalvagingAlgorithm.",
+          "order": 5
+        }
+      ],
+      "description": "The values the salvagingalgorithm setting accepts."
+    },
+    "scheme": {
+      "name": "Scheme",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "CrankNicolson",
+          "label": "CrankNicolson",
+          "description": "CrankNicolson is one of the values ORE accepts for Scheme.",
+          "order": 0
+        },
+        {
+          "value": "Hundsdorfer",
+          "label": "Hundsdorfer",
+          "description": "Hundsdorfer is one of the values ORE accepts for Scheme.",
+          "order": 1
+        },
+        {
+          "value": "Douglas",
+          "label": "Douglas",
+          "description": "Douglas is one of the values ORE accepts for Scheme.",
+          "order": 2
+        },
+        {
+          "value": "CraigSneyd",
+          "label": "CraigSneyd",
+          "description": "CraigSneyd is one of the values ORE accepts for Scheme.",
+          "order": 3
+        },
+        {
+          "value": "ModifiedCraigSneyd",
+          "label": "ModifiedCraigSneyd",
+          "description": "ModifiedCraigSneyd is one of the values ORE accepts for Scheme.",
+          "order": 4
+        },
+        {
+          "value": "ImplicitEuler",
+          "label": "ImplicitEuler",
+          "description": "ImplicitEuler is one of the values ORE accepts for Scheme.",
+          "order": 5
+        },
+        {
+          "value": "ExplicitEuler",
+          "label": "ExplicitEuler",
+          "description": "ExplicitEuler is one of the values ORE accepts for Scheme.",
+          "order": 6
+        },
+        {
+          "value": "MethodOfLines",
+          "label": "MethodOfLines",
+          "description": "MethodOfLines is one of the values ORE accepts for Scheme.",
+          "order": 7
+        },
+        {
+          "value": "TrBDF2",
+          "label": "TrBDF2",
+          "description": "TrBDF2 is one of the values ORE accepts for Scheme.",
+          "order": 8
+        }
+      ],
+      "description": "The values the scheme setting accepts."
+    },
+    "sensitivitydecomposition": {
+      "name": "Sensitivitydecomposition",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "Underlying",
+          "label": "Underlying",
+          "description": "Underlying is one of the values ORE accepts for SensitivityDecomposition.",
+          "order": 0
+        },
+        {
+          "value": "NotionalWeighted",
+          "label": "NotionalWeighted",
+          "description": "NotionalWeighted is one of the values ORE accepts for SensitivityDecomposition.",
+          "order": 1
+        },
+        {
+          "value": "LossWeighted",
+          "label": "LossWeighted",
+          "description": "LossWeighted is one of the values ORE accepts for SensitivityDecomposition.",
+          "order": 2
+        },
+        {
+          "value": "DeltaWeighted",
+          "label": "DeltaWeighted",
+          "description": "DeltaWeighted is one of the values ORE accepts for SensitivityDecomposition.",
+          "order": 3
+        }
+      ],
+      "description": "The values the sensitivitydecomposition setting accepts."
+    },
+    "sensitivity_template": {
+      "name": "Sensitivity template",
+      "source_kind": "catalogue",
+      "catalogue_code": "analytics.sensitivity_template",
+      "description": "The values the sensitivity template setting accepts."
+    },
+    "soboldirectionintegers": {
+      "name": "Soboldirectionintegers",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "Unit",
+          "label": "Unit",
+          "description": "Unit is one of the values ORE accepts for SobolDirectionIntegers.",
+          "order": 0
+        },
+        {
+          "value": "Jaeckel",
+          "label": "Jaeckel",
+          "description": "Jaeckel is one of the values ORE accepts for SobolDirectionIntegers.",
+          "order": 1
+        },
+        {
+          "value": "SobolLevitan",
+          "label": "SobolLevitan",
+          "description": "SobolLevitan is one of the values ORE accepts for SobolDirectionIntegers.",
+          "order": 2
+        },
+        {
+          "value": "SobolLevitanLemieux",
+          "label": "SobolLevitanLemieux",
+          "description": "SobolLevitanLemieux is one of the values ORE accepts for SobolDirectionIntegers.",
+          "order": 3
+        },
+        {
+          "value": "JoeKuoD5",
+          "label": "JoeKuoD5",
+          "description": "JoeKuoD5 is one of the values ORE accepts for SobolDirectionIntegers.",
+          "order": 4
+        },
+        {
+          "value": "JoeKuoD6",
+          "label": "JoeKuoD6",
+          "description": "JoeKuoD6 is one of the values ORE accepts for SobolDirectionIntegers.",
+          "order": 5
+        },
+        {
+          "value": "JoeKuoD7",
+          "label": "JoeKuoD7",
+          "description": "JoeKuoD7 is one of the values ORE accepts for SobolDirectionIntegers.",
+          "order": 6
+        },
+        {
+          "value": "Kuo",
+          "label": "Kuo",
+          "description": "Kuo is one of the values ORE accepts for SobolDirectionIntegers.",
+          "order": 7
+        },
+        {
+          "value": "Kuo2",
+          "label": "Kuo2",
+          "description": "Kuo2 is one of the values ORE accepts for SobolDirectionIntegers.",
+          "order": 8
+        },
+        {
+          "value": "Kuo3",
+          "label": "Kuo3",
+          "description": "Kuo3 is one of the values ORE accepts for SobolDirectionIntegers.",
+          "order": 9
+        }
+      ],
+      "description": "The values the soboldirectionintegers setting accepts."
+    },
+    "tenor": {
+      "name": "Tenor",
+      "source_kind": "catalogue",
+      "catalogue_code": "refdata.tenor",
+      "description": "The values the tenor setting accepts."
+    },
+    "training_basisfunction": {
+      "name": "Training basisfunction",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "Monomial",
+          "label": "Monomial",
+          "description": "Monomial is one of the values ORE accepts for Training.BasisFunction.",
+          "order": 0
+        },
+        {
+          "value": "Laguerre",
+          "label": "Laguerre",
+          "description": "Laguerre is one of the values ORE accepts for Training.BasisFunction.",
+          "order": 1
+        },
+        {
+          "value": "Hermite",
+          "label": "Hermite",
+          "description": "Hermite is one of the values ORE accepts for Training.BasisFunction.",
+          "order": 2
+        },
+        {
+          "value": "Hyperbolic",
+          "label": "Hyperbolic",
+          "description": "Hyperbolic is one of the values ORE accepts for Training.BasisFunction.",
+          "order": 3
+        },
+        {
+          "value": "Legendre",
+          "label": "Legendre",
+          "description": "Legendre is one of the values ORE accepts for Training.BasisFunction.",
+          "order": 4
+        },
+        {
+          "value": "Chebyshev",
+          "label": "Chebyshev",
+          "description": "Chebyshev is one of the values ORE accepts for Training.BasisFunction.",
+          "order": 5
+        },
+        {
+          "value": "Chebyshev2nd",
+          "label": "Chebyshev2nd",
+          "description": "Chebyshev2nd is one of the values ORE accepts for Training.BasisFunction.",
+          "order": 6
+        }
+      ],
+      "description": "The values the training basisfunction setting accepts."
+    },
+    "training_sequence": {
+      "name": "Training sequence",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "MersenneTwister",
+          "label": "MersenneTwister",
+          "description": "MersenneTwister is one of the values ORE accepts for Training.Sequence.",
+          "order": 0
+        },
+        {
+          "value": "MersenneTwisterAntithetic",
+          "label": "MersenneTwisterAntithetic",
+          "description": "MersenneTwisterAntithetic is one of the values ORE accepts for Training.Sequence.",
+          "order": 1
+        },
+        {
+          "value": "Sobol",
+          "label": "Sobol",
+          "description": "Sobol is one of the values ORE accepts for Training.Sequence.",
+          "order": 2
+        },
+        {
+          "value": "SobolBrownianBridge",
+          "label": "SobolBrownianBridge",
+          "description": "SobolBrownianBridge is one of the values ORE accepts for Training.Sequence.",
+          "order": 3
+        },
+        {
+          "value": "Burley2020SobolBrownianBridge",
+          "label": "Burley2020SobolBrownianBridge",
+          "description": "Burley2020SobolBrownianBridge is one of the values ORE accepts for Training.Sequence.",
+          "order": 4
+        }
+      ],
+      "description": "The values the training sequence setting accepts."
+    },
+    "calibration": {
+      "name": "Calibration",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "Bootstrap",
+          "label": "Bootstrap",
+          "description": "Bootstrap is one of the values ORE accepts for Calibration.",
+          "order": 0
+        },
+        {
+          "value": "BestFit",
+          "label": "BestFit",
+          "description": "BestFit is one of the values ORE accepts for Calibration.",
+          "order": 1
+        },
+        {
+          "value": "None",
+          "label": "None",
+          "description": "None is one of the values ORE accepts for Calibration.",
+          "order": 2
+        }
+      ],
+      "description": "The values the calibration setting accepts."
+    },
+    "calibrationstrategy": {
+      "name": "Calibrationstrategy",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "CoterminalDealStrike",
+          "label": "CoterminalDealStrike",
+          "description": "CoterminalDealStrike is one of the values ORE accepts for CalibrationStrategy.",
+          "order": 0
+        },
+        {
+          "value": "CoterminalATM",
+          "label": "CoterminalATM",
+          "description": "CoterminalATM is one of the values ORE accepts for CalibrationStrategy.",
+          "order": 1
+        },
+        {
+          "value": "DeltaGammaAdjusted",
+          "label": "DeltaGammaAdjusted",
+          "description": "DeltaGammaAdjusted is one of the values ORE accepts for CalibrationStrategy.",
+          "order": 2
+        },
+        {
+          "value": "None",
+          "label": "None",
+          "description": "None is one of the values ORE accepts for CalibrationStrategy.",
+          "order": 3
+        }
+      ],
+      "description": "The values the calibrationstrategy setting accepts."
+    },
+    "fxcalibration": {
+      "name": "Fxcalibration",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "None",
+          "label": "None",
+          "description": "None is one of the values ORE accepts for FxCalibration.",
+          "order": 0
+        },
+        {
+          "value": "Bootstrap",
+          "label": "Bootstrap",
+          "description": "Bootstrap is one of the values ORE accepts for FxCalibration.",
+          "order": 1
+        }
+      ],
+      "description": "The values the fxcalibration setting accepts."
+    },
+    "reversiontype": {
+      "name": "Reversiontype",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "Hagan",
+          "label": "Hagan",
+          "description": "Hagan is one of the values ORE accepts for ReversionType.",
+          "order": 0
+        },
+        {
+          "value": "HullWhite",
+          "label": "HullWhite",
+          "description": "HullWhite is one of the values ORE accepts for ReversionType.",
+          "order": 1
+        }
+      ],
+      "description": "The values the reversiontype setting accepts."
+    },
+    "volatilitytype": {
+      "name": "Volatilitytype",
+      "source_kind": "enumerated",
+      "is_ordered": false,
+      "values": [
+        {
+          "value": "Hagan",
+          "label": "Hagan",
+          "description": "Hagan is one of the values ORE accepts for VolatilityType.",
+          "order": 0
+        },
+        {
+          "value": "HullWhite",
+          "label": "HullWhite",
+          "description": "HullWhite is one of the values ORE accepts for VolatilityType.",
+          "order": 1
+        }
+      ],
+      "description": "The values the volatilitytype setting accepts."
+    }
+  },
+  "links": {
+    "EngineParameters|AlwaysRecomputeOptionRepresentation": "flag",
+    "EngineParameters|AntitheticVariate": "flag",
+    "EngineParameters|BrownianBridge": "flag",
+    "EngineParameters|BrownianBridgeOrdering": "brownianbridgeordering",
+    "EngineParameters|ByCallSpread": "flag",
+    "EngineParameters|CalibrateUnderlyingCurves": "flag",
+    "EngineParameters|ControlVariate": "flag",
+    "EngineParameters|Curve": "curve",
+    "EngineParameters|EnforceMonotoneVariance": "flag",
+    "EngineParameters|FepCurve": "fepcurve",
+    "EngineParameters|IncludePastCashflows": "flag",
+    "EngineParameters|Interactive": "flag",
+    "EngineParameters|MesherIsStatic": "flag",
+    "EngineParameters|MinObsDate": "flag",
+    "EngineParameters|OptionExpiryPosition": "optionexpiryposition",
+    "EngineParameters|Policy": "policy",
+    "EngineParameters|Pricing.Sequence": "pricing_sequence",
+    "EngineParameters|RegressorModel": "regressormodel",
+    "EngineParameters|SalvagingAlgorithm": "salvagingalgorithm",
+    "EngineParameters|Scheme": "scheme",
+    "EngineParameters|ScriptedLibraryOverride": "flag",
+    "EngineParameters|SensitivityDecomposition": "sensitivitydecomposition",
+    "EngineParameters|SensitivityTemplate": "sensitivity_template",
+    "EngineParameters|SeparateCallPutVols": "flag",
+    "EngineParameters|Sobol": "flag",
+    "EngineParameters|SobolDirectionIntegers": "soboldirectionintegers",
+    "EngineParameters|SpreadOnIncomeCurve": "flag",
+    "EngineParameters|TimestepPeriod": "tenor",
+    "EngineParameters|Training.BasisFunction": "training_basisfunction",
+    "EngineParameters|Training.Sequence": "training_sequence",
+    "EngineParameters|calibrateConstituentCurves": "flag",
+    "EngineParameters|homogeneousPoolWhenJustified": "flag",
+    "EngineParameters|useIndexCDSPricer": "flag",
+    "EngineParameters|useLossDistWhenJustified": "flag",
+    "EngineParameters|useQuadrature": "flag",
+    "EngineParameters|withFlatVol": "flag",
+    "ModelParameters|AdjustCreditSpreadToRR": "flag",
+    "ModelParameters|AdjustDiscounting": "flag",
+    "ModelParameters|AdjustEquityForward": "flag",
+    "ModelParameters|AdjustEquityVolatility": "flag",
+    "ModelParameters|Calibration": "calibration",
+    "ModelParameters|CalibrationStrategy": "calibrationstrategy",
+    "ModelParameters|EnableCredit": "flag",
+    "ModelParameters|FxCalibration": "fxcalibration",
+    "ModelParameters|IncludeSecurityLeg": "flag",
+    "ModelParameters|MatchUnderlyingTenor": "flag",
+    "ModelParameters|ReversionType": "reversiontype",
+    "ModelParameters|TreatSecuritySpreadAsCreditSpread": "flag",
+    "ModelParameters|VolatilityType": "volatilitytype",
+    "ModelParameters|ZeroRecoveryOverwrite": "flag",
+    "ModelParameters|useAssumedRecovery": "flag",
+    "ModelParameters|useStochasticRecovery": "flag"
+  }
+}

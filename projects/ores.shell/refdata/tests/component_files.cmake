@@ -51,6 +51,7 @@ set(files
     "cds_volatility_config_commands_tests.cpp"
     "cds_volatility_term_commands_tests.cpp"
     "cms_spread_option_convention_commands_tests.cpp"
+    "commodity_commands_tests.cpp"
     "commodity_curve_config_commands_tests.cpp"
     "commodity_forward_convention_commands_tests.cpp"
     "commodity_future_convention_commands_tests.cpp"

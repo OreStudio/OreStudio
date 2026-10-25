@@ -131,6 +131,15 @@ export interface PublishCalendarsFromDqRequest {}
 export interface PublishCashflowTypesFromDqRequest {}
 
 /**
+ * @brief The workflow step that publishes the DQ-cleared commodities.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_commodities_from_dq_fn.
+ */
+export interface PublishCommoditiesFromDqRequest {}
+
+/**
  * @brief The workflow step that publishes the DQ-cleared conventions.
  *
  * A trigger rather than a request: the DQ publisher sends it and reads no
@@ -459,6 +468,7 @@ export const subjects = {
     publish_calendar_types_from_dq_request: 'refdata.v1.ops.publish_calendar_types_from_dq',
     publish_calendars_from_dq_request: 'refdata.v1.ops.publish_calendars_from_dq',
     publish_cashflow_types_from_dq_request: 'refdata.v1.ops.publish_cashflow_types_from_dq',
+    publish_commodities_from_dq_request: 'refdata.v1.ops.publish_commodities_from_dq',
     publish_conventions_from_dq_request: 'refdata.v1.ops.publish_conventions_from_dq',
     publish_counterparty_aliases_from_dq_request:
         'refdata.v1.ops.publish_counterparty_aliases_from_dq',
@@ -527,6 +537,7 @@ export const requiresSession = {
     publish_calendar_types_from_dq_request: true,
     publish_calendars_from_dq_request: true,
     publish_cashflow_types_from_dq_request: true,
+    publish_commodities_from_dq_request: true,
     publish_conventions_from_dq_request: true,
     publish_counterparty_aliases_from_dq_request: true,
     publish_countries_from_dq_request: true,

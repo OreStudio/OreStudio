@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 14DAAF81-2057-4ADD-9B5F-9296506C5ED1
+:END:
+#+title: The codegen emits ores_dq_<entity>_artefact_create.sql for a…
+#+description: The codegen emits ores_dq_<entity>_artefact_create.sql for an entity that turns on the domain_entity_artefact_create property, but emits no matching artefact drop. ores.refdata.calendar_type has both, and ores.refdata.commodity got only the create, so drop.sql leaves the table behind. Found while adding the commodity catalogue; worked around by hand-writing dq_commodities_artefact_drop.sql.
+#+type: capture
+#+level: cross
+#+filetags: :sql:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

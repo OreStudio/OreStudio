@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,28 +26,84 @@ A commodity trade names its commodity in free text, and nothing holds the set of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
 
 - A refdata entity holds one commodity: the code as the engine spells it, a human name, the unit it is quoted in and the currency it is quoted in.
 - The catalogue arrives through the DQ pipeline, as countries, currencies and calendar types do: an artefact table, a publish function and a dataset, with the rows staged rather than inserted.
-- The publish is idempotent: a second publish changes no row, inserts nothing and reports it.
+- The publish leaves no duplicate current row, and it reports what it did.
+  In =upsert= mode a second publish replaces each row and reports
+  =updated=; in =insert_only= mode it reports =skipped= and changes
+  nothing. The task states which mode a tenant's bundle uses rather than
+  claiming one ''idempotent'' behaviour covers both.
 - The catalogue carries the index names ORE's own corpus uses, among them NYMEX:CL, NYMEX:NG, XLME:AH and PM:XAUUSD.
 - Every seeded commodity states a unit and a quotation currency that match how that commodity is traded: barrels for WTI, MMBtu for gas, tonnes for LME aluminium, ounces for gold.
-- A commodity code the catalogue does not hold is refused by name, rather than accepted as free text.
+- The catalogue is the authority a planner validates against. The refusal itself is the planner's, and belongs to [[id:29DAA209-E62B-47C4-9220-51CA6622EC0C][Populate the commodity family]], which is where a population names a commodity.
 - The entity, the artefact table and the publish function are generated through codegen, and the component's drift check is clean afterwards.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. The entity. =ores.refdata.commodity=, an =ores.codegen.entity= bound to
+   the =simple-lookup= profile, carrying the code as the engine spells it,
+   a name, a description, the unit it is quoted in, the currency it is
+   quoted in and a display order. The profile brings the version, the
+   audit tail and the tenant isolation the neighbouring catalogues have.
+
+2. Half the DQ side comes from the model, and half does not.
+   =refdata.calendar_type= turns its artefact on with one property in the
+   file drawer, =:ores.sql.schema.domain_entity_artefact_create.enabled:
+   true=, and the generator then emits
+   =ores_dq_calendar_types_artefact_tbl=. Commodity takes the same
+   property and gets =ores_dq_commodities_artefact_tbl= the same way.
+
+   The publish function is not generated. =refdata_publish_from_dq_create.sql=
+   carries forty-nine of them as hand-written SQL, with no generation marker
+   and a history of hand edits. Commodity's function is written there by
+   hand, copied from =ores_refdata_publish_calendar_types_from_dq_fn=. Its
+   C++ counterpart is enumerated in
+   =ores.refdata.publish_operations.org=, which lists one operation per
+   publish, so commodity adds an entry there too.
+
+3. The dataset and its rows are seeded the way calendar types are, in
+   =refdata_calendar_types_seed_populate.sql=: register a catalog, register
+   a dataset =refdata.commodities=, then delete and insert the artefact
+   rows so a second run converges. That file is hand-written and states
+   that it is kept in lockstep with the generated populate by hand. This
+   task does the same and says so, rather than pretending the two are one
+   source.
+
+4. The vocabulary is what the engine resolves, not what reads well.
+   =external/ore/catalogue/index_corpus.jsonl= carries 25 commodity futures
+   indices over five underlyings: =ICE:B=, =NYMEX:A7Q=, =NYMEX:CL=,
+   =NYMEX:CSX= and =NYMEX:NG=. The shipped example trades add
+   =XLME:AH= and =PM:XAUUSD=. Those seven are the seed. Each states the
+   unit and quotation currency it is actually traded in: barrels for the
+   two crudes, MMBtu for gas, tonnes for coal and aluminium, ounces for
+   gold, dollars for all of them.
+
+5. Every human name is confirmed against the engine's own convention files
+   before it is written down. =NYMEX:A7Q= is the one that needs checking;
+   the other six are named in the example trades or the corpus.
+
+6. The refusal. A commodity code the catalogue does not hold is refused by
+   name. =commodity_instrument.commodity_code= has no foreign key today, so
+   the task decides between adding one and refusing in the planner, and
+   records which and why.
+
+7. Verification, each one run before the task closes: the component's drift
+   check is clean; a fresh provision publishes the catalogue; a second
+   publish changes no row and reports nothing inserted; a query over
+   =ores_refdata_commodities_tbl= shows the seven.
+
+8. Not this task: the forward curves a commodity prices on. A commodity
+   with no curve books, exports and then fails at pricing, and the market
+   data stories own that.
 
 * Measurements
 
@@ -61,9 +117,34 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Commodity artefact rows after a rebuild | 6 | =select count(*) from ores_dq_commodities_artefact_tbl= | 6af57fef68 |
+| First publish, =upsert= | inserted 6, and the catalogue reads back with each commodity's unit and quotation currency | =select * from ores_refdata_publish_commodities_from_dq_fn(...)= | 6af57fef68 |
+| Second publish, =upsert= | updated 6: every row is replaced and re-versioned | same | 6af57fef68 |
+| Third publish, =insert_only= | skipped 6: nothing written | same, with mode =insert_only= | 6af57fef68 |
+| Current rows after the three publishes | 6 current rows, 12 version rows in all: no duplicate current row | =select count(*), max(version), count(*) from ores_refdata_commodities_tbl= | 6af57fef68 |
+| The refdata component builds with the entity, the artefact, the publish function and the operation | 2335 targets, exit 0 | =compass build ores.refdata.core.tests= | c9c02c38ab |
+| The generated eventing test for the commodity | 8 assertions in 1 test case | =publish/bin/ores.refdata.core.tests "write_commodity_publishes_an_event"= | c9c02c38ab |
+| Codegen drift for the component | no drift: generated output matches the checked-in tree | =check_component_drift.py --component refdata --dry-run= | c9c02c38ab |
 |      |       |         |        |
 
 * Notes
+
+** What the generator does and does not make
+
+Declaring the entity with =:ores.sql.schema.domain_entity_artefact_create.enabled:
+true= and the =simple-lookup= profile generates both tables and the whole
+surface around them: the create and drop scripts for
+=ores_refdata_commodities_tbl= and =ores_dq_commodities_artefact_tbl=, the
+domain type, the JSON and table I/O, the protocol, the repository, the
+handler, the registrar, the history provider, the shell commands, the event
+mapping and the web wire types. The generated tables carry all five
+declared columns.
+
+It does not generate the publish function. That file carries a
+hand-written header and forty-nine hand-written functions, and =git log=
+shows it edited by hand. So the publish is written, not declared, and the
+plan says so after measuring rather than assuming.
+
 
 The catalogue arrives through DQ rather than a generated populate script,
 and the tree says why. Both mechanisms are live, and they split by who
@@ -116,3 +197,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Refdata holds a commodity catalogue: =ores_refdata_commodities_tbl= with
+the code as the engine spells it, a name, a description, the unit the
+commodity is quoted in, the quotation currency and a display order. It
+arrives through the DQ pipeline as the other market-standard catalogues do:
+=ores_dq_commodities_artefact_tbl=, =ores_refdata_publish_commodities_from_dq_fn=,
+a =refdata.commodities= dataset, and the operation
+=refdata.v1.ops.publish_commodities_from_dq= to reach the function from a
+workflow step.
+
+Six commodities are seeded, each with the unit and quotation currency it
+trades in: ICE:B and NYMEX:CL in barrels, NYMEX:NG in MMBtu, NYMEX:CSX in
+short tons, XLME:AH in tonnes and PM:XAUUSD in ounces, all quoted in
+dollars. NYMEX:A7Q is deliberately absent: the engine's corpus names it by
+code and states no unit, so seeding it would mean inventing one.
+
+Measured end to end: a rebuild seeds six artefact rows, the first publish
+inserts six, a second upsert replaces and re-versions them, an
+=insert_only= run skips them, and no publish leaves a duplicate current row.
+
+Three things this task needed are hand-written and only the entity surface
+and the artefact create come from the model: the publish function, the
+create and drop index entries, and the artefact drop. The generator gap
+behind the last is captured in =a_dq_artefact_gets_no_drop=.
+
+Not done, and moved: the refusal for a commodity the catalogue does not
+hold. With no foreign key on =commodity_instrument.commodity_code=, that is
+the planner's refusal and belongs to the commodity family task.

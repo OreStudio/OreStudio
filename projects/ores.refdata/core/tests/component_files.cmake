@@ -53,6 +53,7 @@ set(files
     "cds_volatility_term_eventing_integration_tests.cpp"
     "cms_spread_option_convention_eventing_integration_tests.cpp"
     "commodity_curve_config_eventing_integration_tests.cpp"
+    "commodity_eventing_integration_tests.cpp"
     "commodity_forward_convention_eventing_integration_tests.cpp"
     "commodity_future_convention_eventing_integration_tests.cpp"
     "commodity_price_segment_eventing_integration_tests.cpp"

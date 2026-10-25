@@ -8,7 +8,7 @@
 #+filetags: :seed_the_commodity_permissions:sprint_29:v0:
 #+owner: marco
 #+branch: feature/seed-the-commodity-permissions
-#+pr:
+#+pr: 3772
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -72,7 +72,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3772][#3772]] | [iam] Seed the commodity permissions the handler checks |
 
 * Review
 

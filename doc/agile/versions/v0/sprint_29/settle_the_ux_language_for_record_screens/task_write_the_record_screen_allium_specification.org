@@ -8,7 +8,7 @@
 #+filetags: :settle_the_ux_language_for_record_screens:sprint_29:v0:
 #+owner: marco
 #+branch: feature/write-the-record-screen-allium-spec
-#+pr: 3760
+#+pr: 3764
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -85,6 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3764][#3764]] | [agile] Record the specification review round and the obligation count |
 | [[https://github.com/OreStudio/OreStudio/pull/3760][#3760]] | [docs] Write the record screen Allium specification |
 
 * Review
@@ -92,6 +93,16 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the spec against the language reference by eye, because the CLI is absent | doc/llm/specs | Accept | A first draft used functions the language lacks and a vacuous invariant; both replaced before commit |
+| 2 | Create writes no version, against NoVersionIsLost and NoSilentWrite | spec | Accept | FirstVersionWritten fires on Record.created with the new record reason |
+| 3 | Delete records its reason nowhere | spec | Accept | A delete is a closing write: closed_reason on the record and its parts, and NoSilentDelete |
+| 4 | Nothing keeps ReasonsFollowTheChange true | spec | Accept | FieldEditedFollowsTheReasons clears a reason when the offer changes; Take the new values clears it too |
+| 5 | marked_rows is never populated | spec | Accept | ReloadReturned carries the changed rows; ReloadMarksTheRowsThatChanged marks them |
+| 6 | The uniqueness check counts deleted records | spec | Accept | The check reads only records that exist |
+| 7 | stale is stored and derived | spec | Accept | The stored field is gone; is_stale and refresh_gold remain |
+| 8 | Revert has no stale refusal and only half of RS-HIST-02 | spec | Accept | RevertConfirmed claims the version read; RevertRefusedAsStale; RevertOfferedOnEveryOlderVersion both ways |
+| 9 | Unbound names in the surfaces | spec | Accept | The screen carries entered_reason; Revert iterates the versions |
+| 10 | The refused deletes ensure only what they require | spec | Accept | The screen's write_refusal says what happened |
+| 11 | Keep and Take use the server version at the click | spec | Accept | Said in the comment; the stale rule covers a later change |
 
 * Result
 

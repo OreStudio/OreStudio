@@ -40,7 +40,7 @@ This page is the top of the tree and the only inventory.
 | [[file:data_exchange/][Data exchange]] | Importing and exporting a party, a dataset or a whole environment, and what a run leaves behind | 5 |
 | [[file:operations/][Operations]] | The installation's own life: the services running, the compute grid, the message bus, the logs, and the versions and database under them | 6 |
 | [[file:compute/][Compute]] | The grid's work: the load, one job end to end, a failure to reproduce, the capacity planned, and what it may run | 4 |
-| [[file:../knowledge/journeys/currencies/currencies.org][Currencies and FX]] | Currencies with their countries, calendars and desk groups, and currency pairs | none yet |
+| [[file:currencies/][Currencies and FX]] | Currencies with their countries, calendars and desk groups, and currency pairs | 1 |
 | [[file:calendars/][Calendars]] | Holiday calendars: their rules, exceptions and events, and the business days they produce | 1 |
 | [[file:classifications/][Classifications]] | The short code lists that classify reference data | 1 |
 | [[file:parties/][Parties]] | The tenant's own legal entities and the counterparties it trades with | 3 |
@@ -51,9 +51,6 @@ This page is the top of the tree and the only inventory.
 | [[file:trades/][Trades]] | What a person does with a trade: structure-based booking and pricing, amending, reading, ORE import and export, lifecycle events, and structures and packages | 5 |
 | [[file:reporting/][Reporting]] | The reports a party runs, what each produced, what went wrong, when the next one starts, and how a report is created and changed, how the analytics it runs are managed, and which named convention set it chooses, and how the pricing engine configurations and the engine run settings it binds are seen, authored, changed, brought in and signed off | 17 |
 | [[file:testing/][Testing]] | Working through a test scenario in the browser, what waits for a tester, and the agile tree | 2 |
-
-One group has no prototype yet: Currencies and FX. Its journeys are the
-first place a new prototype would go.
 
 * Where a prototype sits
 

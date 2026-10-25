@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  PROTOTYPE. Throwaway. Mock data from the Acme seed plus invented history;
+  no backend, no build step.
+
+  Currencies, desk groups and currency pairs: the three lists, one record of
+  each kind with its tabs, the shared dialogs, and the standard Import and
+  Export pair on the currencies list. Every state is reached by query parameters:
+    ?screen=currencies|groups|pairs
+    ?screen=currency&code=EUR&tab=details|countries|calendars|groups|history
+    ?screen=group&code=G11&tab=details|members|history
+    ?screen=pair&code=EUR/USD&tab=details|calendars|history
+    &dialog=add|edit|delete|add-link|remove-link|revert|export
+    ?screen=import&step=1|2|3|4   &file=ok|wrong   &clean=1
+    &who=admin|reader
+-->
+<title>ORE Studio Currencies</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <span class="brand"><span class="brand-mark"></span>ORE Studio <span class="tenant">Acme Corporation</span></span>
+    <nav class="menu" aria-label="Areas">
+      <span>Home</span><span aria-current="page">Reference data</span><span>Organisation</span><span>Market data</span><span>Trades</span><span>Requests</span><span>Operations</span><span>Reporting</span>
+    </nav>
+    <span class="me" id="me">TA</span>
+  </div>
+</header>
+<main id="main"></main>
+<div id="layer"></div>
+<footer class="proto">
+  <div class="proto-inner">
+    <strong>PROTOTYPE</strong>
+    <span>Signed in as</span>
+    <span class="seg" id="who-seg"></span>
+    <span id="proto-where"></span>
+  </div>
+</footer>
+<script src="prototype.js"></script>
+</body>
+</html>

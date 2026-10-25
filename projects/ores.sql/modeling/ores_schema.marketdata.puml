@@ -848,9 +848,13 @@ package "marketdata" #E3F2FD {
     }
 
     note right of ores_marketdata_ticks_tbl
-    One append-only hypertable for the ticks of one retention class. A tick is a value of a
-    series at a time, and the series has one owner, a tenant and a party, so each row carries
-    the owner of its series. The ingest copies the owner from the series that it resolved.
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Tick Table
+    A tick is a value of a series at a time, and the series has one owner, a tenant and a
+    party, so each row carries the owner of its series. The ingest copies the owner from the
+    series that it resolved.
     The table has no trigger, no valid_to and one index on the series and the time. A
     correction is a new row, and the reader takes the latest. There is no notification trigger:
     the live path publishes the tick, and the table is the history.

@@ -94,6 +94,17 @@ export function formatDateTime(at: string, language: string): string {
     }).format(date);
 }
 
+/**
+ * A server timestamp as the day it falls on, such as "5 May 2026".
+ *
+ * For a fact that names a day rather than a moment: the date a run priced at is
+ * a date, and the midnight the store holds it as is an artefact of the column's
+ * type, not something the reader asked for.
+ */
+export function formatDate(at: string, language: string): string {
+    return new Intl.DateTimeFormat(language, { dateStyle: 'medium' }).format(parseTimestamp(at));
+}
+
 /** A timestamp drawn relative, with the exact value on hover, as the record screen standard sets it. */
 export function RelativeTime({ at }: { readonly at: string }): ReactNode {
     const { language } = useTranslation();

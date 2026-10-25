@@ -59,6 +59,8 @@ function runView(overrides: Partial<GridReportRunView> = {}): GridReportRunView 
         output_message: 'All trades priced',
         started_at: '2026-10-23 07:00:00.000000Z' as GridReportRunView['started_at'],
         completed_at: null,
+        priced_at: null,
+        price_note: '',
         batch_id: BATCH_ID,
         modified_by: 'scheduler',
         recorded_at: '2026-10-23 07:00:00.000000Z' as GridReportRunView['recorded_at'],
@@ -199,6 +201,27 @@ describe('the report run page', () => {
 
         expect(failed).toContain('This run made no batch.');
         expect(hidden).toContain('No batch of this run is visible to you.');
+    });
+
+    it('says the date the run priced at, and why it moved when it did', () => {
+        const html = render(
+            runView({
+                priced_at: '2026-05-05 00:00:00.000000Z' as GridReportRunView['priced_at'],
+                price_note:
+                    'The run asked for 2026-05-06 and the gathered market data ends at 2026-05-05, so the run priced at the data\'s date.',
+            }),
+        );
+
+        expect(html).toContain('Priced at May 5, 2026');
+        expect(html).toContain(
+            'The run asked for 2026-05-06 and the gathered market data ends at 2026-05-05',
+        );
+    });
+
+    it('says nothing about a date a run has not priced at', () => {
+        const html = render(runView());
+
+        expect(html).not.toContain('Priced at');
     });
 
     it('warns when the run is not a production run', () => {

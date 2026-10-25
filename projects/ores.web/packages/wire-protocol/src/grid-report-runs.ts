@@ -31,7 +31,9 @@ import { nullableWireTimestampSchema, wireTimestampSchema } from './time.js';
  * so `batch_id` is found by reading the batches for that reference and is `null`
  * when the session sees none. `health` is the word the reporting service derives
  * from the run's state, and is `null` when the service states none or a word the
- * screens do not know.
+ * screens do not know. `priced_at` is the date the run actually priced at, which
+ * the packaging step records on the run, and is `null` until the run reaches that
+ * step; `price_note` says why the date moved when it did, and is empty otherwise.
  */
 export const gridReportRunViewSchema = z.object({
     id: z.string(),
@@ -47,6 +49,8 @@ export const gridReportRunViewSchema = z.object({
     output_message: z.string(),
     started_at: nullableWireTimestampSchema,
     completed_at: nullableWireTimestampSchema,
+    priced_at: nullableWireTimestampSchema,
+    price_note: z.string(),
     batch_id: z.string().nullable(),
     modified_by: z.string(),
     recorded_at: wireTimestampSchema,

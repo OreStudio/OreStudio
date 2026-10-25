@@ -1866,6 +1866,7 @@ export const en: SourceCatalogue = {
                 state: 'State',
                 startedAt: 'Started',
                 completedAt: 'Completed',
+                pricedAt: 'Priced at {date}',
                 output: 'Output',
                 links: 'Links',
                 report: 'Open the report',

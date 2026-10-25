@@ -59,6 +59,8 @@ struct report_instance_entity {
     std::optional<std::string> output_storage_key;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> started_at;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> completed_at;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> priced_at;
+    std::optional<std::string> price_note;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

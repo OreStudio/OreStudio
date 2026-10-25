@@ -265,6 +265,8 @@ export function registerGridReportRunRoutes(
                 output_message: text(run['output_message']),
                 started_at: nullableText(run['started_at']),
                 completed_at: nullableText(run['completed_at']),
+                priced_at: nullableText(run['priced_at']),
+                price_note: text(run['price_note']),
                 batch_id: batchId,
                 modified_by: text(run['modified_by']),
                 recorded_at: text(run['recorded_at']),

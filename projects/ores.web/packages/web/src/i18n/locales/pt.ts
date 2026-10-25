@@ -1878,6 +1878,7 @@ const pt: SourceCatalogue = {
                 state: 'Estado',
                 startedAt: 'Início',
                 completedAt: 'Fim',
+                pricedAt: 'Avaliado em {date}',
                 output: 'Saída',
                 links: 'Ligações',
                 report: 'Abrir o relatório',

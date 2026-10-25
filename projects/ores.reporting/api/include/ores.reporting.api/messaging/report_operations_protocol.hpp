@@ -96,6 +96,47 @@ struct get_run_health_response {
     std::string health;
 };
 
+/**
+ * @brief Records the date a run priced at, and why it moved when it did.
+ *
+ * The packaging step is the only place that knows both dates: the run document
+ * asks for one, and the gathered market data carries another. The step states
+ * the date it used on the run itself, so the screen that shows the run can say
+ * which date it priced at without parsing a message. The run is named rather
+ * than scoped to the caller's party: the write is scoped by row-level security
+ * on the table, as the run reads are.
+ */
+struct record_run_pricing_request {
+    using response_type = struct record_run_pricing_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.record_run_pricing";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** @brief The run the date was priced for. */
+    boost::uuids::uuid report_instance_id;
+    /**
+     * @brief The date the run priced at, as an ISO 8601 date (YYYY-MM-DD).
+     *
+     * A date and not a timestamp: the engine prices one day, and the time of
+     * day the packaging step ran is not part of the answer.
+     */
+    std::string priced_at;
+    /**
+     * @brief Why the run priced at that date, in the step's own words.
+     *
+     * Empty when the run priced at the date it asked for.
+     */
+    std::string price_note;
+};
+
+struct record_run_pricing_response {
+    ores::utility::domain::result result;
+};
+
 struct schedule_report_definitions_request {
     using response_type = struct schedule_report_definitions_response;
     static constexpr std::string_view nats_subject = "reporting.v1.ops.schedule_report_definitions";

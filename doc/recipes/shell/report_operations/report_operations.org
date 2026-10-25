@@ -54,6 +54,27 @@ It is addressed at =reporting.v1.ops.get_run_health=.
 report_operations get-run-health 00000000-0000-0000-0000-000000000000
 #+end_src
 
+** =record-run-pricing=
+:PROPERTIES:
+:ID: 6EA0B575-89E8-5D51-B513-C95D2AF9E2A1
+:END:
+
+Sends =record_run_pricing_request= and prints =record_run_pricing_response=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =priced_at=, =price_note=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations record-run-pricing <report_instance_id> <priced_at> <price_note>
+#+end_example
+
+It is addressed at =reporting.v1.ops.record_run_pricing=.
+
+#+name: report_operations-record-run-pricing
+#+begin_src ores-shell :tangle report_operations-record-run-pricing.ores :exports none
+report_operations record-run-pricing 00000000-0000-0000-0000-000000000000 __none__ __none__
+#+end_src
+
 ** =schedule-report-definitions=
 :PROPERTIES:
 :ID: 790F561C-58C8-51D2-9BB3-DA4331F7253F

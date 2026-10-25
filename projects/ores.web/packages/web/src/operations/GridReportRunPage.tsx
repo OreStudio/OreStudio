@@ -31,7 +31,7 @@ import { AreaTrail } from '../shell/AreaTrail.js';
 import { gridBatchPath, reportPath } from '../shell/paths.js';
 import { Detail, LinkButton, Notice, PageHeader, Tag, cx } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
-import { formatDateTime } from '../ui/Time.js';
+import { formatDate, formatDateTime } from '../ui/Time.js';
 import { ReadFailure } from './GridJobs.js';
 
 /**
@@ -506,6 +506,18 @@ function Run({ run }: { readonly run: GridReportRunView }): ReactNode {
                     value={run.modified_by}
                 />
             </dl>
+            {run.priced_at !== null && (
+                <div>
+                    <p className="text-sm">
+                        {t(`${FIELD}.pricedAt`, {
+                            date: formatDate(run.priced_at, language),
+                        })}
+                    </p>
+                    {run.price_note !== '' && (
+                        <p className="text-sm text-ink-muted">{run.price_note}</p>
+                    )}
+                </div>
+            )}
             {run.description !== '' && <p className="text-sm">{run.description}</p>}
         </section>
     );

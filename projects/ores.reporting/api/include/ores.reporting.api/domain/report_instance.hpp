@@ -143,6 +143,21 @@ struct report_instance final {
     std::optional<std::chrono::system_clock::time_point> completed_at;
 
     /**
+     * @brief The date the run actually priced at. It is set once the packaging step has chosen the
+     * date, which is the date the run document asked for when the gathered market data carries it,
+     * and the last date that data carries when it does not. NULL until then, and NULL for a run
+     * that never reached the packaging step.
+     */
+    std::optional<std::chrono::system_clock::time_point> priced_at;
+
+    /**
+     * @brief Why the run priced at the date it did, in the words the packaging step wrote. It is
+     * empty when the run priced at the date it asked for, and states the date it asked for and the
+     * date the gathered data ends at when the two differ.
+     */
+    std::string price_note;
+
+    /**
      * @brief Username of the person who last modified this report instance.
      */
     std::string modified_by;

@@ -1887,6 +1887,7 @@ const fr: SourceCatalogue = {
                 state: 'État',
                 startedAt: 'Début',
                 completedAt: 'Fin',
+                pricedAt: 'Évalué au {date}',
                 output: 'Sortie',
                 links: 'Liens',
                 report: 'Ouvrir le rapport',

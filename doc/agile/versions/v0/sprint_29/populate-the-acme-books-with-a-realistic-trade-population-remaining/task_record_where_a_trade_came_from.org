@@ -125,6 +125,20 @@ regression rather than a gap.
   the session, which would remove the refusal problem entirely.
 - The reason-code clause is still deferred, and nothing states =ux=.
 
+** The permission check fails open
+
+=has_permission= returns true when =ctx.roles()= is empty, so a context that
+carries no roles passes every check in the platform. That is presumably how
+system and service contexts are meant to behave, and it is why the existing
+suite passes unchanged. It also means the new origin permission is enforced
+only for a caller whose context carries roles — the forwarded party token
+does, so the generator and the ordinary user are both judged, but any context
+that arrives without roles is unrestricted.
+
+Two cases are still owed for criterion 5: a caller without
+=trading::trades:write_service_origin= stating =synthetic= is refused, and a
+caller holding it succeeds.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

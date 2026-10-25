@@ -112,6 +112,7 @@ domain::trade_generation_config to_domain(const messaging::trade_generation_conf
     v.max_notional = write.max_notional;
     v.as_of_date = write.as_of_date;
     v.seed = write.seed;
+    v.trades_per_book = write.trades_per_book;
     v.enabled = write.enabled;
     v.reference_curve_id = write.reference_curve_id;
     return v;

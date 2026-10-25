@@ -55,19 +55,6 @@ struct trade_population_stored final {
 };
 
 /**
- * @brief What a run is told to do about one planned trade.
- */
-struct trade_population_write final {
-    ores::synthetic::domain::trade_population_slot slot;
-    /**
-     * @brief The instrument the slot trades, which its book names. Several
-     * trades of one book share it, and its legs are written once.
-     */
-    std::string security_id;
-    boost::uuids::uuid issue_id;
-};
-
-/**
  * @brief What a run reports for one trade.
  */
 struct trade_population_outcome final {
@@ -117,10 +104,12 @@ public:
 
     /**
      * @brief Books the trade: its anchor, its booking, its state, its Internal
-     * identifier and its instrument, in one call. The security the instrument
-     * names is created first, the first time the run sees it.
+     * identifier and its instrument, in one call.
+     *
+     * Whatever the slot's own family needs in place before a trade can be
+     * booked is created first, so a run cut short leaves no trade without it.
      */
-    virtual void write_trade(const trade_population_write& write,
+    virtual void write_trade(const domain::trade_population_slot& slot,
                              const domain::trade_generation_scope& scope) = 0;
 };
 

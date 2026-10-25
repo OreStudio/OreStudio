@@ -181,7 +181,9 @@ cross join (values
     ]}'::jsonb),
     ('acme_demo', 'subscribe_market_data', 60, '{"provider": "bloomberg", "source": "bloomberg-a"}'::jsonb),
     -- One config per trading entity, each booking into the book that entity
-    -- keeps its liquidity in. The counterparties are the entity's own
+    -- keeps its liquidity in. The book count and the population size are the
+    -- config's, so a tenant that wants a thinner book changes a row and not
+    -- the generator. The counterparties are the entity's own
     -- tradeable links, which is why the step resolves them rather than the
     -- row naming them. No anchor is stated: the population is meant to sit
     -- relative to the present, so it is anchored on the day the run makes it.
@@ -190,22 +192,22 @@ cross join (values
          "description": "The bonds ACME Plc books, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "Group Intercompany Loans",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK bond population",
          "description": "The bonds ACME UK plc books, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8},
         {"party": "ACME Corporation US Inc", "name": "ACME ACCOUS bond population",
          "description": "The bonds ACME US Inc books, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8},
         {"party": "ACME Corporation HK Ltd", "name": "ACME ACCOHK bond population",
          "description": "The bonds ACME HK Ltd books, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42}
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8}
     ]}'::jsonb),
     -- Northwind Traders: the second demonstration tenant. Lighter than ACME --
     -- one legal entity, one party, nine staff and seven books -- and its party
@@ -237,12 +239,12 @@ cross join (values
          "description": "The bonds Northwind Traders books in its London GBP book, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "GBP Bonds Book",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42},
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8},
         {"party": "Northwind Traders Ltd", "name": "Northwind USD bond population",
          "description": "The bonds Northwind Traders books in its London USD book, generated from its own books, counterparties and staff.",
          "asset_class_code": "bond", "book": "USD Bonds Book",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "100000", "max_notional": "10000000", "seed": 42}
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8}
     ]}'::jsonb)
 ) as v(code, step_kind, display_order, arguments_json)
 where p.code = v.code

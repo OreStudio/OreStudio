@@ -64,6 +64,7 @@ trade_generation_config_mapper::map(const trade_generation_config_entity& v) {
     r.max_notional = ores::utility::decimal::decimal::from_string(v.max_notional).value();
     r.as_of_date = ores::platform::time::datetime::from_iso8601_date(v.as_of_date);
     r.seed = v.seed;
+    r.trades_per_book = v.trades_per_book;
     r.enabled = v.enabled;
     r.reference_curve_id = v.reference_curve_id.value_or("");
     r.modified_by = v.modified_by;
@@ -97,6 +98,7 @@ trade_generation_config_mapper::map(const domain::trade_generation_config& v) {
     r.max_notional = v.max_notional.to_string();
     r.as_of_date = ores::platform::time::datetime::to_iso8601_date(v.as_of_date);
     r.seed = v.seed;
+    r.trades_per_book = v.trades_per_book;
     r.enabled = v.enabled;
     r.reference_curve_id =
         v.reference_curve_id.empty() ? std::nullopt : std::optional(v.reference_curve_id);

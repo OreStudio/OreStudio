@@ -58,6 +58,7 @@ generate_synthetic_trade_generation_config(utility::generation::generation_conte
     r.max_notional = ores::utility::decimal::decimal::from_string("10000000").value();
     r.as_of_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 2};
     r.seed = std::uint64_t{1};
+    r.trades_per_book = std::uint32_t{8};
     r.enabled = faker::datatype::boolean();
     r.modified_by = modified_by;
     r.performed_by = modified_by;

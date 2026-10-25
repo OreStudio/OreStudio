@@ -223,6 +223,26 @@ alone.
 std::uint64_t{1}
 #+end_src
 
+** trades_per_book
+:PROPERTIES:
+:type:          integer
+:cpp_type:      std::uint32_t
+:nullable:      false
+:default_value: 8
+:END:
+
+How many trades one book of the scope receives. The size is a property of
+the population and not of the generator, so a tenant that wants a larger or
+smaller book states it here rather than in code: the generator holds no
+count of its own.
+
+It is a count per book and not a total, so a configuration scoped to four
+books states four times this many trades.
+
+#+begin_src cpp :name generator
+std::uint32_t{8}
+#+end_src
+
 ** enabled
 :PROPERTIES:
 :type:     boolean
@@ -284,6 +304,7 @@ which of two labels is longer.
 | "min_notional" >= 0                         |
 | "max_notional" >= "min_notional"            |
 | "seed" > 0                                  |
+| "trades_per_book" > 0                       |
 
 * Insert trigger
 ** Validations

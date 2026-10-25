@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace ores::synthetic::domain {
@@ -53,6 +54,14 @@ struct trade_generation_scope final {
     double max_notional = 0.0;
     std::chrono::year_month_day as_of_date;
     std::uint64_t seed = 0;
+    /**
+     * @brief How many trades each book of the scope receives.
+     *
+     * The size belongs to the configuration and not to the generator: a tenant
+     * that wants a thinner or a fuller book changes a row. It is a count per
+     * book, so a scope over four books states four times this many trades.
+     */
+    std::uint32_t trades_per_book = 8;
     std::vector<boost::uuids::uuid> book_ids;
     std::vector<boost::uuids::uuid> counterparty_ids;
     /**
@@ -87,6 +96,44 @@ struct trade_generation_scope final {
 };
 
 /**
+ * @brief The facts a bond slot carries and no other family does.
+ *
+ * A bond is a security, so its terms are the security's and not the trade's:
+ * several trades of one security state the same issue and the same maturity.
+ * Keeping them here rather than on the slot is what lets a slot describe a
+ * family that has no security at all.
+ */
+struct bond_terms final {
+    std::string security_id;
+    boost::uuids::uuid issue_id;
+    /**
+     * @brief The counterparty that issued the security. It is a fact of the
+     * security and not of the trade, so it need not be the trade's own.
+     */
+    boost::uuids::uuid issuer_id;
+    std::chrono::year_month_day issue_date;
+    std::chrono::year_month_day maturity_date;
+    /// The security's original term in years, not the trade's remaining life.
+    std::uint32_t tenor_years = 1;
+    std::string calendar = "TARGET";
+    /**
+     * @brief The curve this trade's bond is discounted on, as the oresmd URI of
+     * the market series that curve is, or empty when the population states
+     * none.
+     */
+    std::string reference_curve_id;
+};
+
+/**
+ * @brief The terms of one slot, in the shape its asset class states them.
+ *
+ * The slot carries the keys every family shares and this carries the rest, so
+ * a reader of a bond slot sees bond facts and a reader of another family never
+ * has to ask what a security is.
+ */
+using trade_terms = std::variant<bond_terms>;
+
+/**
  * @brief One trade the population states, with every reference already
  * resolved.
  *
@@ -105,28 +152,12 @@ struct trade_population_slot final {
     std::string trader_username;
     std::string trade_type_code;
     std::string internal_identifier;
-    std::string security_id;
-    boost::uuids::uuid issue_id;
-    /**
-     * @brief The counterparty that issued the security. It is a fact of the
-     * security and not of the trade, so it need not be the trade's own.
-     */
-    boost::uuids::uuid issuer_id;
     std::chrono::year_month_day trade_date;
-    std::chrono::year_month_day issue_date;
-    std::chrono::year_month_day maturity_date;
-    /// The security's original term in years, not the trade's remaining life.
-    std::uint32_t tenor_years = 1;
     double notional = 0.0;
     std::string currency;
-    std::string calendar = "TARGET";
     bool intra_group = false;
-    /**
-     * @brief The curve this trade's bond is discounted on, as the oresmd URI of
-     * the market series that curve is, or empty when the population states
-     * none.
-     */
-    std::string reference_curve_id;
+    /// The facts that belong to this slot's own family, and to no other.
+    trade_terms terms;
 };
 
 /**

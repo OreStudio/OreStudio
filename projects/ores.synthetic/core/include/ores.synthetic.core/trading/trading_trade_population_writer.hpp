@@ -60,7 +60,7 @@ public:
     [[nodiscard]] std::optional<trade_population_stored>
     read_trade(const boost::uuids::uuid& trade_id) override;
 
-    void write_trade(const trade_population_write& write,
+    void write_trade(const domain::trade_population_slot& slot,
                      const domain::trade_generation_scope& scope) override;
 
 private:
@@ -71,7 +71,7 @@ private:
      * whole or absent, so a security the tenant already holds with equal terms
      * is taken as present.
      */
-    void ensure_issue(const trade_population_write& write);
+    void ensure_issue(const domain::trade_population_slot& slot);
 
     ores::nats::service::nats_client& nats_;
     /*

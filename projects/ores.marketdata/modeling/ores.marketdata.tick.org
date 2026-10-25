@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 7C1F3B52-9D84-4E6A-B1C7-5A2E8D0F4B93
+:END:
+#+title: ores.marketdata.tick
+#+description: Codegen entity model for the marketdata ticks table; one append-only hypertable for the ticks of one retention class.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: tick
+#+entity_plural: ticks
+#+entity_title: Tick
+#+brief: The value of a series coordinate at an instant; TimescaleDB hypertable partitioned by ts.
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+A tick is a value of a series at a time, and the series has one owner, a tenant and a
+party, so each row carries the owner of its series. The ingest copies the owner from the
+series that it resolved.
+
+The table has no trigger, no valid_to and one index on the series and the time. A
+correction is a new row, and the reader takes the latest. There is no notification trigger:
+the live path publishes the tick, and the table is the history.
+
+Row-level security uses the policies of the other tables, in the scalar subquery form. The
+session functions that the other tables call cost about 8 to 10 microseconds for each
+filtered row, because the planner calls them again for every row, and a subquery around the
+setting makes it evaluate the setting once for each query. FORCE makes the policies apply
+to the owner too.
+
+The marketdata tick writer role has BYPASSRLS and INSERT only. PostgreSQL refuses COPY into
+a table with row-level security for a role that the policies apply to, and this role is
+exempt. It does not own the table and has no SELECT.
+
+The table is not compressed, because row-level security is not supported on compressed
+chunks. Retention drops whole chunks. See doc/knowledge/architecture/tick_ingest_pipeline.org.
+
+Variables: :marketdata_writer_user
+
+* Flags
+:PROPERTIES:
+:schema:          public
+:product:         ores
+:component:       marketdata
+:has_tenant_id:   true
+:no_primary_key:  true
+:sql_only:        true
+:END:
+
+* Columns
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Party that owns the series this tick belongs to. The ingest copies it from the
+series, and the party policy filters every read by it.
+
+** series_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Reference to =ores_marketdata_market_series_tbl(id)= -- the series this tick is a
+value of.
+
+** ts
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The instant of the tick, in UTC. Also the hypertable partition column.
+
+** coord
+:PROPERTIES:
+:type:     smallint
+:cpp_type: std::int16_t
+:END:
+
+The datum's coordinate: the number the series gives one datum URI.
+
+** value
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:END:
+
+The value of the datum at the instant.
+
+** source_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Reference to =ores_marketdata_market_data_sources_tbl(id)= -- the source that
+produced this tick.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                   ores_marketdata_ticks_tbl
+:hypertable:                  true
+:hypertable_partition_column: ts
+:hypertable_chunk_interval:   1 day
+:hypertable_retention_interval: 7 days
+:no_audit_columns:            true
+:index_prefix:                marketdata_ticks
+:rls_tenant_isolation:        true
+:rls_party_isolation:         true
+:rls_policy_style:            hot_path
+:writer_role:                 marketdata_writer_user
+:END:
+
+The table is not compressed, because row-level security is not supported on
+compressed chunks. Retention drops whole chunks.
+
+The tenant and party policies take the value of their session setting through a
+scalar subquery, so the setting is read once for each query rather than once for
+each row. The party policy is =select= alone and =restrictive=, and carries no
+null passthrough: an ingest session states its visible parties.
+
+** Indexes
+
+| name      | columns           | unique | current_only | where_extra |
+|-----------+-------------------+--------+--------------+-------------|
+| series_ts | series_id, ts desc | false  | false        |             |
+
+One index serves the reader that takes the latest tick of each coordinate of a
+series. The table is not keyed, so the index is the only structure over it.
+
+* Physical space
+
+No facet beyond the SQL schema renders: the model states =:sql_only: true=.
+
+The table sends no notification. The live tick stream carries each new value, and
+a notification for each row would take a database-wide lock at every commit and
+tell a client to reload a series that changes faster than the client can read it.
+
+| Address                             | Enabled |
+|-------------------------------------+---------|
+| ores.sql.schema.notify_trigger      | false   |
+| ores.sql.schema.notify_trigger_drop | false   |

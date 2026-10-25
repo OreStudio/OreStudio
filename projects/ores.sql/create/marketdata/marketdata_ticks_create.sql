@@ -17,13 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
  * Tick Table
  *
- * One append-only hypertable for the ticks of one retention class. A tick is a value of a
- * series at a time, and the series has one owner, a tenant and a party, so each row carries
- * the owner of its series. The ingest copies the owner from the series that it resolved.
+ * A tick is a value of a series at a time, and the series has one owner, a tenant and a
+ * party, so each row carries the owner of its series. The ingest copies the owner from the
+ * series that it resolved.
  *
  * The table has no trigger, no valid_to and one index on the series and the time. A
  * correction is a new row, and the reader takes the latest. There is no notification trigger:
@@ -61,7 +64,6 @@ on "ores_marketdata_ticks_tbl" (series_id, ts desc);
 do $$
 declare
     tsdb_installed boolean;
-    current_license text;
 begin
     select exists (
         select 1 from pg_extension where extname = 'timescaledb'
@@ -76,19 +78,24 @@ begin
             chunk_time_interval => interval '1 day',
             if_not_exists => true
         );
-
-        -- The licence decides whether the retention policy can be set. Without it, a
-        -- job of the service drops the chunks that have aged out.
-        select current_setting('timescaledb.license', true) into current_license;
-        if current_license = 'timescale' then
-            perform public.add_retention_policy(
-                '"ores_marketdata_ticks_tbl"',
-                drop_after => interval '7 days',
-                if_not_exists => true
-            );
-        else
-            raise notice 'TimescaleDB community edition - no retention policy is set for ores_marketdata_ticks_tbl';
-        end if;
+        -- A hypertable grows without bound unless a retention policy drops the
+        -- chunks that have aged out. The licence decides whether the policy can
+        -- be set: the community edition has no retention job, so the model's
+        -- interval is reported rather than silently ignored.
+        declare
+            current_license text;
+        begin
+            select current_setting('timescaledb.license', true) into current_license;
+            if current_license = 'timescale' then
+                perform public.add_retention_policy(
+                    '"ores_marketdata_ticks_tbl"',
+                    drop_after => interval '7 days',
+                    if_not_exists => true
+                );
+            else
+                raise notice 'TimescaleDB community edition - no retention policy is set for ores_marketdata_ticks_tbl';
+            end if;
+        end;
     else
         raise notice 'TimescaleDB not available - using regular table (manual cleanup required)';
     end if;

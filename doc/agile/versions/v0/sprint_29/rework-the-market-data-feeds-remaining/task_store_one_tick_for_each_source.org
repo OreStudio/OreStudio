@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: A8FFF8B9-0240-472E-929E-E0E37641DB87
+:END:
+#+title: Task: Store one tick for each source
+#+description: Write each tick once under the system tenant, point the per-party series at it, and remove the ingest's routes read.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/store-one-tick-for-each-source
+#+pr: 3769
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The tick store holds one row for each tick of a source, not one for each routed party. The ingest writes it without reading any tenant's routes, and a party's series reads the shared stream.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- The ingest writes one row for each tick, under the system tenant, and no longer reads the routes.
+- A routed party's series reads the shared tick stream, and the tick read tests pass.
+- A provisioned tenant still ticks end to end, proved by the smoke check.
+- The ingest and quote-series pages describe the shared store.
+
+* Plan
+
+The decision is in [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared
+tick or one copy for each party]]. The slices, each verified before the next:
+
+1a. Bring the tick table under codegen. The generator already emits the
+   hypertable (partition column, chunk interval, retention). It lacks three
+   traits the tick table needs, and the model needs a fourth capability:
+   - =:rls_policy_style:= (default or hot_path). =hot_path= emits FORCE row
+     level security, the tenant policy in the scalar-subquery form, and the
+     restrictive select-only party policy without the null passthrough. One
+     typed style, not three booleans that must agree.
+   - =:writer_role:= (a psql variable). Emits =grant insert on <table> to
+     :<role>=, for a role that carries BYPASSRLS.
+   - =:sql_only:= at the model level. The model emits the SQL facet alone.
+     Without it, modelling the tick store also generates a domain type,
+     repository and service that duplicate the hand-written batch writer.
+   - =:no_primary_key:= at the model level. The tick table has no primary
+     key, and the template always emits one. The capability is needed to
+     reproduce it, with a validation that a hypertable may omit the key.
+   The four hypertable knobs are undocumented and unvalidated. Document them,
+   and refuse a hypertable that names no partition column, because the
+   template otherwise emits a broken key and create_hypertable call.
+   Model the tick table with =:no_audit_columns:=, the hypertable knobs and the
+   new traits, and prove the generated SQL matches the hand-written choices.
+   Delivered in PR #3769 with a baseline repair for the arrival change that
+   main left stale. The store reshape (1b) follows in its own PR.
+1b. Model the shared point store: a tick belongs to a source and a datum, not a
+   party, and every row sits under the system tenant. The per-party series
+   keeps its classification and gains the key that finds the shared stream.
+2. The ingest writes one row for each tick and stops reading the routes for
+   the store. The delivery fan-out still needs to know who consumes the
+   source, so it moves to the demand snapshot the supervisor already builds,
+   or the ingest keeps a routes read for delivery only; the slice decides
+   which and records it.
+3. The history read resolves the party's series to the shared stream and
+   checks the subscription and its rights before it returns a tick.
+4. The ingest loop and quote series pages describe the decided shape, and the
+   provisioning smoke proves the path end to end.
+
+The table was hand-written because it led the generator on row-level security,
+not because the generator cannot make a hypertable. Modelling it is part of
+this task, so the shared store is reviewable through the model and the
+policy-form knob is available to every hypertable after it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3769][#3769]] | [codegen] Model the tick table under codegen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

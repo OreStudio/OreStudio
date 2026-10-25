@@ -106,6 +106,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: docs class | journeys/currencies | Accept | Each judgement cites the identifier it rests on; the pair's own dialog is named against RS-WRITE-31 and left to the prototype to redraw as the shared one |
 | 2 | PR 3827 review: the measurements' commit, a pointer from the pair's step 4 to its capture for the prototype, the task's Next, the long step 9 cell | this task, the journey, the prototype task | Accept | The measurements name ad0cf13ae9; the prototype task's Notes point at the pair's write-together capture; step 9 is two rows, export and import, so the owner's two decisions read apart; Next names the prototype task |
+| 3 | PR 3829 review: seven points on the pair | the standards, the icon pages, messaging.org | Accept 2, 4, 5, 6, 7; decline 1 and 3 | The icon guidelines gain the two icons and the true file count; RS-LIST-03 and the checklist point at RS-ORE-02 for Export on the record header; RS-ORE-02 says the preview needs write; the messaging row states only what exists; RS-NAME-02 rewrapped. The entity specification is superseded and kept as a record, so its icon rows stay; the build task's Notes already name the Icon.tsx registration |
 
 * Result
 

@@ -60,7 +60,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Stories under the epic | 4 | =ls -d doc/agile/versions/v0/sprint_29/{inventory_the_qt*,settle_the_ux*,check_every_record*,take_the_first_refdata*}= | ea0ab6ee09 |
+| Tasks under the epic | 17 | =find <the four story folders> -name 'task_*.org' \vert wc -l= | ea0ab6ee09 |
 
 * Notes
 
@@ -86,6 +87,10 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Local review of the docs class: no findings | doc/agile/versions/v0/sprint_29 | Accept | compass check 6/6, misspell-fixer clean, no placeholder left outside the template Plan text of BACKLOG tasks |
+| 2 | Task is DONE while the PR is open | task_scaffold | Decline | The documented order: bookkeeping closes before the PR is raised, so no bookkeeping commit follows a green review |
+| 3 | Measurements table left empty while the Result states counts | task_scaffold | Accept | The two counts recorded with their command and commit |
+| 4 | Story Next names a BACKLOG task | story | Decline | Consistent at the time; the task moved to STARTED on its own branch |
+| 5 | The Plan says five stories became four and no decision says why | story | Accept | Decision added: the parity gaps fold into the per-topic pipeline |
 
 * Result
 

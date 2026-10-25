@@ -59,6 +59,11 @@ The epic starts from facts. One document says, per reference data entity, what t
 - 2026-10-25: /One epic, four stories first./ The epic One UX language for
   every screen holds the arc in the sprint. Later topics and the other areas of
   the application join it as their own stories.
+- 2026-10-25: /The Qt parity gaps are not a story of their own./ The arc was
+  proposed with a fifth story that closed the parity gaps. It folds into the
+  per-topic pipeline, because a gap is only known once the topic's journeys say
+  what a person needs, and a screen built to close a gap without a journey is
+  the Qt dialog again.
 - 2026-10-25: /The checks go in before the screens change./ The harness story
   precedes the first topic story, so the first screen work proves the checks.
 - 2026-10-25: /Playwright is the first harness./ Rendering checks run in a real

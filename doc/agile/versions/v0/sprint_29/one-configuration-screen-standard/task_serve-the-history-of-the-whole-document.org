@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/serve-the-history-of-the-whole-document
-#+pr:
+#+pr: 3767
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3767][#3767]] | [web] Draw the whole document history on the timeline |
 
 * Review
 

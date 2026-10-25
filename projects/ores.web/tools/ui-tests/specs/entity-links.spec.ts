@@ -1,20 +1,11 @@
 import { expect, test } from '@playwright/test';
+import { signIn } from './support/sign-in';
 
 /**
  * The trade list names a counterparty and a book, and each name opens that
  * entity's own page. Both pages are new, so this case is also what proves they
  * exist and carry the trade's own counterparty and book.
  */
-const USERNAME = process.env['ORES_UI_USERNAME'] ?? 'diane.kay@acme_corporation';
-const PASSWORD = process.env['ORES_UI_PASSWORD'] ?? '';
-
-async function signIn(page: import('@playwright/test').Page) {
-    await page.goto('/');
-    await page.getByLabel(/username/i).fill(USERNAME);
-    await page.getByLabel(/password/i).fill(PASSWORD);
-    await page.getByRole('button', { name: /sign in/i }).click();
-    await expect(page).not.toHaveURL(/\/login$/);
-}
 
 test('a trade opens its counterparty, its book, and comes back', async ({ page }) => {
     await signIn(page);

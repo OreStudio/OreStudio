@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { signIn } from './support/sign-in';
 
 /**
  * One trade's page, opened from the list.
@@ -7,20 +8,17 @@ import { expect, test } from '@playwright/test';
  * row, and read the trade's own page. It asserts what the page must show rather
  * than how it is built, so a tab that stops rendering its part fails here.
  */
-const USERNAME = process.env['ORES_UI_USERNAME'] ?? 'diane.kay@acme_corporation';
-const PASSWORD = process.env['ORES_UI_PASSWORD'] ?? '';
 
 test('a trade opens its own page and every tab answers', async ({ page }) => {
-    await page.goto('/');
-    await page.getByLabel(/username/i).fill(USERNAME);
-    await page.getByLabel(/password/i).fill(PASSWORD);
-    await page.getByRole('button', { name: /sign in/i }).click();
-    await expect(page).not.toHaveURL(/\/login$/);
+    await signIn(page);
 
     await page.goto('/trading/trades');
     const firstRow = page.locator('tbody tr').first();
     await expect(firstRow).toBeVisible();
-    await firstRow.click();
+    // The row holds links of its own, and a click in the middle of it follows
+    // whichever one is under the pointer. The identifier is not a link, so a
+    // click there opens the trade as a person expects.
+    await firstRow.locator('td').first().click();
 
     await expect(page).toHaveURL(/\/trading\/trades\/[0-9a-f-]{36}$/);
     await expect(page.getByRole('tab', { name: 'Details' })).toBeVisible();
@@ -37,11 +35,7 @@ test('a trade opens its own page and every tab answers', async ({ page }) => {
  * checks the address rather than the heading.
  */
 test('the instrument issue links to its calendar', async ({ page }) => {
-    await page.goto('/');
-    await page.getByLabel(/username/i).fill(USERNAME);
-    await page.getByLabel(/password/i).fill(PASSWORD);
-    await page.getByRole('button', { name: /sign in/i }).click();
-    await expect(page).not.toHaveURL(/\/login$/);
+    await signIn(page);
 
     await page.goto('/trading/trades');
     const row = page.locator('tbody tr').first();

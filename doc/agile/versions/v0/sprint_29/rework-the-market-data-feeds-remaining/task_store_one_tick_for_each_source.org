@@ -45,7 +45,15 @@ The tick store holds one row for each tick of a source, not one for each routed 
 The decision is in [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared
 tick or one copy for each party]]. The slices, each verified before the next:
 
-1. Model the shared point store: a tick belongs to a source and a datum, not a
+1a. Bring the tick table under codegen. The generator already emits the
+   hypertable (partition column, chunk interval, retention). Add the three
+   knobs it lacks and tests for them: the scalar-subquery policy form, FORCE
+   row-level security, and the writer role with INSERT only and BYPASSRLS (the
+   grant either from the entity template or kept in the IAM grants with the
+   model naming the role). Model the tick table as a domain entity with
+   =:no_audit_columns:= and the hypertable knobs, and prove the generated SQL
+   matches the hand-written choices.
+1b. Model the shared point store: a tick belongs to a source and a datum, not a
    party, and every row sits under the system tenant. The per-party series
    keeps its classification and gains the key that finds the shared stream.
 2. The ingest writes one row for each tick and stops reading the routes for
@@ -57,6 +65,11 @@ tick or one copy for each party]]. The slices, each verified before the next:
    checks the subscription and its rights before it returns a tick.
 4. The ingest loop and quote series pages describe the decided shape, and the
    provisioning smoke proves the path end to end.
+
+The table was hand-written because it led the generator on row-level security,
+not because the generator cannot make a hypertable. Modelling it is part of
+this task, so the shared store is reviewable through the model and the
+policy-form knob is available to every hypertable after it.
 
 * Measurements
 

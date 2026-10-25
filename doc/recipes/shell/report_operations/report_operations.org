@@ -33,6 +33,27 @@ It is addressed at =reporting.v1.ops.trigger_report_instance=.
 report_operations trigger-report-instance 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000
 #+end_src
 
+** =get-run-health=
+:PROPERTIES:
+:ID: BA8FC9A8-4A8F-5CE1-9D8C-0E823642EC09
+:END:
+
+Sends =get_run_health_request= and prints =get_run_health_response=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations get-run-health <report_instance_id>
+#+end_example
+
+It is addressed at =reporting.v1.ops.get_run_health=.
+
+#+name: report_operations-get-run-health
+#+begin_src ores-shell :tangle report_operations-get-run-health.ores :exports none
+report_operations get-run-health 00000000-0000-0000-0000-000000000000
+#+end_src
+
 ** =schedule-report-definitions=
 :PROPERTIES:
 :ID: 790F561C-58C8-51D2-9BB3-DA4331F7253F

@@ -3655,12 +3655,52 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'reporting.v1.ore_parameter_setting_value_sets.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['setting_value_sets'],
+    },
+    'reporting.v1.ore_parameter_setting_value_sets_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'reporting.v1.ore_parameter_value_domains.list': {
         asOf: true,
         filter: ['code_one_of'],
         rows: ['domains'],
     },
     'reporting.v1.ore_parameter_value_domains_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'reporting.v1.ore_parameter_value_set_catalogues.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['catalogues'],
+    },
+    'reporting.v1.ore_parameter_value_set_catalogues_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'reporting.v1.ore_parameter_value_set_values.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['values'],
+    },
+    'reporting.v1.ore_parameter_value_set_values_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'reporting.v1.ore_parameter_value_sets.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['sets'],
+    },
+    'reporting.v1.ore_parameter_value_sets_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -4940,6 +4980,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['option_types'],
     },
     'trading.v1.option_types_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.origin_types.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['origin_types'],
+    },
+    'trading.v1.origin_types_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

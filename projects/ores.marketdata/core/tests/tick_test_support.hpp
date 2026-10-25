@@ -23,10 +23,14 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/datum/series_stream.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
+#include "ores.marketdata.api/generators/subscription_generator.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.core/repository/subscription_repository.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.testing/make_generation_context.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -62,35 +66,72 @@ zero_identity(const std::string& curve_id) {
     return id;
 }
 
-/// The session of a series' party, which the party policy of the tick table needs.
+/// The session of a party of @p h, which the policies of the series and the subscription need.
 inline ores::database::context party_context(ores::testing::database_helper& h,
                                              const boost::uuids::uuid& party_id) {
     return h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 }
 
-/// Appends one tick as the owner of the series. A statement that returns no row is refused
-/// by the read helper, so the insert states one.
+/// Grants @p party the rights of @p display, @p non_display and @p derived to the feeds of
+/// @p provider, in the tenant of @p ctx. Every read of ticks checks the subscription before it
+/// reads a row.
+inline void subscribe(ores::testing::database_helper& h,
+                      const ores::database::context& ctx,
+                      const boost::uuids::uuid& party,
+                      const std::string& provider,
+                      bool display = true,
+                      bool non_display = false,
+                      bool derived = false) {
+    auto generation = ores::testing::make_generation_context(h);
+    auto sub = ores::marketdata::generators::generate_synthetic_subscription(generation);
+    sub.tenant_id = ctx.tenant_id();
+    sub.party_id = party;
+    sub.provider_code = provider;
+    sub.display = display;
+    sub.non_display = non_display;
+    sub.derived = derived;
+    sub.modified_by = h.db_user();
+    sub.performed_by = h.db_user();
+    sub.change_reason_code = "system.test";
+    sub.change_commentary = "Test subscription";
+    ores::marketdata::repository::subscription_repository{}.write(ctx, sub);
+}
+
+/// The same, in the tenant of @p h.
+inline void subscribe(ores::testing::database_helper& h,
+                      const boost::uuids::uuid& party,
+                      const std::string& provider,
+                      bool display = true,
+                      bool non_display = false,
+                      bool derived = false) {
+    subscribe(h, h.context(), party, provider, display, non_display, derived);
+}
+
+/// The stream that holds the ticks of one series, derived from its provider and its URI, as the
+/// ingest derives it.
+inline boost::uuids::uuid stream_of(const std::string& provider_code,
+                                    const std::string& series_uri) {
+    return ores::marketdata::datum::stream_id(provider_code, series_uri);
+}
+
+/// Appends one tick to @p stream. A statement that returns no row is refused by the read
+/// helper, so the insert states one.
 inline void insert_tick(ores::database::context ctx,
-                        const boost::uuids::uuid& party_id,
-                        const boost::uuids::uuid& series_id,
+                        const boost::uuids::uuid& stream_id,
                         int coord,
                         std::chrono::system_clock::time_point ts,
                         double value) {
     auto lg(ores::logging::make_logger("ores.marketdata.core.tests"));
     ores::database::repository::execute_parameterized_multi_column_query(
         ctx,
-        "INSERT INTO ores_marketdata_ticks_tbl (tenant_id, party_id, series_id, ts, coord, value, "
-        "source_id) "
-        "VALUES ($1::uuid, $2::uuid, $3::uuid, $4::timestamptz, $5::smallint, $6::float8, "
-        "        $7::uuid) "
+        "INSERT INTO ores_marketdata_ticks_tbl (stream_id, source_id, ts, coord, value) "
+        "VALUES ($1::uuid, $2::uuid, $3::timestamptz, $4::smallint, $5::float8) "
         "RETURNING 1",
-        {ctx.tenant_id().to_string(),
-         boost::uuids::to_string(party_id),
-         boost::uuids::to_string(series_id),
+        {boost::uuids::to_string(stream_id),
+         boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_import_source_id()),
          ores::platform::time::datetime::to_iso8601_utc(ts),
          std::to_string(coord),
-         std::format("{}", value),
-         boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_import_source_id())},
+         std::format("{}", value)},
         lg,
         "inserting a tick");
 }

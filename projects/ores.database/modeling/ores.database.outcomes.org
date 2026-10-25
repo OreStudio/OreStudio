@@ -374,6 +374,24 @@ look complete. The read refuses and says why.
 This read of the {entity} needs a party, and the session has none.
 #+end_src
 
+** not_subscribed
+:PROPERTIES:
+:code: not_subscribed
+:outcome: denied
+:producer: request
+:args: entity, field, value
+:END:
+
+A read of ticks arrives from a party that holds no subscription to the provider
+of the series, or holds one whose rights are derived only. The tick store is
+shared by every party and filters no row by party, so this check is the only
+door to the ticks. A derived right lets a party compute new values from the data
+and not read the raw values the history returns, so it is refused here.
+
+#+begin_src text :name message
+This read of the {entity} needs a subscription to the {field} {value} that holds display or non-display, and this party holds none that does.
+#+end_src
+
 ** range_inverted
 :PROPERTIES:
 :code: range_inverted

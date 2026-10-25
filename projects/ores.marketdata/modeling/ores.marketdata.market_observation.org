@@ -292,14 +292,22 @@ std::vector<domain::market_observation> read_latest_for_series(context ctx,
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
 #include "ores.database/repository/unit_of_work.hpp"
+#include "ores.marketdata.api/datum/series_stream.hpp"
 #include "ores.marketdata.core/repository/as_of_rows.hpp"
+#include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
+#include "ores.marketdata.core/repository/pg_array.hpp"
+#include "ores.marketdata.core/repository/tick_entitlement.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <format>
 #include <map>
+#include <optional>
+#include <set>
 #include <string>
+#include <utility>
+#include <vector>
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
@@ -402,15 +410,60 @@ read_as_of_records(context ctx,
 namespace {
 
 /*
- * The datums of one series, as the tick table numbers them: the dictionary rows of the series,
- * one for each distinct datum URI the feed sent. $2 is the series.
+ * The stream of the ticks of one series, as the ingest derives it from the provider and the
+ * series URI. Nothing returns when the session cannot see the series, or when it names a party
+ * that may not read the provider's ticks, so a series with no ticks, a series the session cannot
+ * read and a party with no subscription all answer with no tick. A context with no party is a
+ * service context, which reads the store on its own authority, as every service read does. The
+ * id is stored nowhere, so every read computes it.
  */
-std::string tick_coords_cte() {
-    return R"(coords AS (
-            SELECT coord, oresmd_uri
-            FROM ores_marketdata_tick_coords_tbl
-            WHERE series_id = $2::uuid
-        ))";
+std::optional<std::string> stream_of(market_observation_repository::context ctx,
+                                     const boost::uuids::uuid& series_id) {
+    const auto series =
+        market_series_repository{}.read_latest(ctx, boost::uuids::to_string(series_id));
+    if (series.empty())
+        return std::nullopt;
+    const auto& s = series.front();
+    if (ctx.party_id() && !may_read_ticks(ctx, s.provider_code))
+        return std::nullopt;
+    return boost::uuids::to_string(datum::stream_id(s.provider_code, s.oresmd_uri));
+}
+
+/*
+ * The stream of every series of the tenant that the session may read the ticks of, with the
+ * series each belongs to, in one order. read_as_of_all reads every series in one statement, and
+ * no statement derives the id.
+ */
+std::pair<std::vector<std::string>, std::vector<std::string>>
+streams_of_every_series(market_observation_repository::context ctx) {
+    const auto party = ctx.party_id();
+    const auto readable = party ? readable_providers(ctx) : std::set<std::string>{};
+    std::vector<std::string> series;
+    std::vector<std::string> streams;
+    for (const auto& s : market_series_repository{}.read_latest(ctx)) {
+        if (party && !readable.contains(s.provider_code))
+            continue;
+        series.push_back(boost::uuids::to_string(s.id));
+        streams.push_back(boost::uuids::to_string(datum::stream_id(s.provider_code, s.oresmd_uri)));
+    }
+    return {std::move(series), std::move(streams)};
+}
+
+/*
+ * The datums of one series' stream, with the owner the tick rows no longer carry. The stream id
+ * is derived rather than stored, so the caller states it in @p stream. $2 is the series, and
+ * @p max is the record time the current series row carries.
+ */
+std::string tick_coords_cte(std::string_view stream, std::string_view max) {
+    return std::format(R"(coords AS (
+            SELECT c.stream_id, c.coord, c.oresmd_uri, s.id AS series_id, s.tenant_id, s.party_id
+            FROM ores_marketdata_tick_coords_tbl c
+            JOIN ores_marketdata_market_series_tbl s
+              ON s.id = $2::uuid AND s.valid_to = {1}::timestamptz
+            WHERE c.stream_id = {0}::uuid
+        ))",
+                       stream,
+                       max);
 }
 
 /*
@@ -420,13 +473,13 @@ std::string tick_coords_cte() {
  */
 std::string latest_tick_points(std::string_view bound, std::string_view max) {
     return std::format(R"(
-            SELECT md5(t.series_id::text || t.coord::text || t.ts::text)::uuid,
-                   t.tenant_id, t.party_id, t.series_id, t.ts, c.oresmd_uri, t.value::text,
+            SELECT md5(c.series_id::text || t.coord::text || t.ts::text)::uuid,
+                   c.tenant_id, c.party_id, c.series_id, t.ts, c.oresmd_uri, t.value::text,
                    NULL::text, t.source_id, t.ts, {1}::timestamptz, 1
             FROM coords c
             CROSS JOIN LATERAL (
                 SELECT * FROM ores_marketdata_ticks_tbl x
-                WHERE x.series_id = $2::uuid AND x.coord = c.coord
+                WHERE x.stream_id = c.stream_id AND x.coord = c.coord
                     AND x.ts <= {0}::timestamptz
                 ORDER BY x.ts DESC
                 LIMIT 1
@@ -514,6 +567,9 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
     const auto as_of_str = datetime::to_iso8601_utc(as_of_datetime);
+    const auto stream = stream_of(ctx, series_id);
+    if (!stream)
+        return {};
 
     // DISTINCT ON (oresmd_uri) returns exactly one row per point -- the latest at or before
     // as_of_datetime -- reconstructing a curve/grid snapshot from independently-ticking rows.
@@ -524,7 +580,7 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
     // coordinate dictionary. The tick branch takes the latest tick of each coordinate with one
     // index probe, so it reads a few rows however long the series is. On a tie the observation
     // row wins, because it carries the source and its own id.
-    static const std::string sql = "WITH " + tick_coords_cte() + R"(,
+    static const std::string sql = "WITH " + tick_coords_cte("$5", "$4") + R"(,
         points AS (
             SELECT id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
                    source, source_id, valid_from, valid_to, 0 AS src_rank
@@ -542,7 +598,11 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
     )";
 
     const auto rows = execute_parameterized_multi_column_query(
-        ctx, sql, {tid, sid, as_of_str, MAX_TIMESTAMP}, lg(), "reading as-of curve snapshot");
+        ctx,
+        sql,
+        {tid, sid, as_of_str, MAX_TIMESTAMP, *stream},
+        lg(),
+        "reading as-of curve snapshot");
 
     std::vector<observation_record> result;
     result.reserve(rows.size());
@@ -644,14 +704,22 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
     const auto as_of_str = datetime::to_iso8601_utc(as_of_datetime);
     BOOST_LOG_SEV(lg(), debug) << "Reading the as-of snapshot of every series as-of: " << as_of_str;
 
-    // The statement of read_as_of_records without its series filter: the coordinates of
-    // every series, the latest tick of each by one index probe, and the observation rows,
-    // reduced to one row for each datum of each series.
+    // The streams of the tenant travel as two arrays of one order, because the tick rows name
+    // their stream by a derived id and no statement derives it. The statement of
+    // read_as_of_records without its series filter: the coordinates of every series, the latest
+    // tick of each by one index probe, and the observation rows, reduced to one row for each
+    // datum of each series.
+    const auto [series_ids, streams] = streams_of_every_series(ctx);
+    if (series_ids.empty())
+        return {};
+
     static const std::string sql = R"(
         WITH coords AS (
-            SELECT series_id, coord, oresmd_uri
-            FROM ores_marketdata_tick_coords_tbl
-            WHERE tenant_id = $1
+            SELECT x.series_id, x.stream_id, s.tenant_id, s.party_id, c.coord, c.oresmd_uri
+            FROM unnest($4::uuid[], $5::uuid[]) AS x(series_id, stream_id)
+            JOIN ores_marketdata_market_series_tbl s
+              ON s.id = x.series_id AND s.valid_to = $3
+            JOIN ores_marketdata_tick_coords_tbl c ON c.stream_id = x.stream_id
         ),
         points AS (
             SELECT id, tenant_id, party_id, series_id, observation_datetime, oresmd_uri, value,
@@ -659,13 +727,13 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
             FROM ores_marketdata_market_observations_tbl
             WHERE tenant_id = $1 AND observation_datetime <= $2 AND valid_to = $3
             UNION ALL
-            SELECT md5(t.series_id::text || t.coord::text || t.ts::text)::uuid,
-                   t.tenant_id, t.party_id, t.series_id, t.ts, c.oresmd_uri, t.value::text,
+            SELECT md5(c.series_id::text || t.coord::text || t.ts::text)::uuid,
+                   c.tenant_id, c.party_id, c.series_id, t.ts, c.oresmd_uri, t.value::text,
                    NULL::text, t.source_id, t.ts, $3::timestamptz, 1
             FROM coords c
             CROSS JOIN LATERAL (
                 SELECT * FROM ores_marketdata_ticks_tbl x
-                WHERE x.series_id = c.series_id AND x.coord = c.coord
+                WHERE x.stream_id = c.stream_id AND x.coord = c.coord
                     AND x.ts <= $2::timestamptz
                 ORDER BY x.ts DESC
                 LIMIT 1
@@ -679,7 +747,11 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
     )";
 
     const auto rows = execute_parameterized_multi_column_query(
-        ctx, sql, {tid, as_of_str, MAX_TIMESTAMP}, lg(), "reading as-of snapshot of every series");
+        ctx,
+        sql,
+        {tid, as_of_str, MAX_TIMESTAMP, pg_array(series_ids), pg_array(streams)},
+        lg(),
+        "reading as-of snapshot of every series");
 
     std::vector<observation_record> result;
     result.reserve(rows.size());
@@ -749,6 +821,9 @@ market_observation_repository::read_as_of_buckets(
     const auto latest_str = datetime::to_iso8601_utc(latest_boundary);
     const auto bucket_seconds = std::to_string(bucket_size.count());
     const auto count_str = std::to_string(bucket_count);
+    const auto stream = stream_of(ctx, series_id);
+    if (!stream)
+        return std::vector<std::vector<domain::market_observation>>(bucket_count);
 
     // Bucket boundaries and the per-bucket as-of reduction both happen in the database, in
     // one statement: generate_series() produces the (up to bucket_count) boundaries ending
@@ -767,7 +842,7 @@ market_observation_repository::read_as_of_buckets(
                 $4::int * interval '1 second'
             ) WITH ORDINALITY AS t(boundary, ordinality)
         ),
-        )" + tick_coords_cte() +
+        )" + tick_coords_cte("$7", "$6") +
                                    R"(
         SELECT b.bucket_ordinal, o.id, o.tenant_id, o.party_id, o.series_id,
                o.observation_datetime, o.oresmd_uri, o.value, o.source, o.source_id, o.valid_from, o.valid_to
@@ -796,7 +871,7 @@ market_observation_repository::read_as_of_buckets(
     const auto rows = execute_parameterized_multi_column_query(
         ctx,
         sql,
-        {tid, sid, latest_str, bucket_seconds, count_str, MAX_TIMESTAMP},
+        {tid, sid, latest_str, bucket_seconds, count_str, MAX_TIMESTAMP, *stream},
         lg(),
         "reading as-of bucketed curve evolution");
 
@@ -893,6 +968,9 @@ market_observation_repository::read_instants(
     const auto from_str = datetime::to_iso8601_utc(from_datetime);
     const auto to_str = datetime::to_iso8601_utc(to_datetime);
     const auto cap_str = std::to_string(max_instants + 1);
+    const auto stream = stream_of(ctx, series_id);
+    if (!stream)
+        return {};
 
     // The stated instants travel as one comma-separated string, because the
     // read takes text parameters. An empty one gives an empty array, which is
@@ -919,7 +997,7 @@ market_observation_repository::read_instants(
         WITH stated AS (
             SELECT unnest(string_to_array($7, ',')::timestamptz[]) AS instant
         ),
-        )" + tick_coords_cte() +
+        )" + tick_coords_cte("$8", "$6") +
                                    R"(,
         instants AS (
             SELECT instant FROM (
@@ -934,7 +1012,7 @@ market_observation_repository::read_instants(
                 UNION
                 SELECT DISTINCT ts
                 FROM ores_marketdata_ticks_tbl
-                WHERE series_id = $2::uuid AND ts >= $3::timestamptz AND ts <= $4::timestamptz
+                WHERE stream_id = $8::uuid AND ts >= $3::timestamptz AND ts <= $4::timestamptz
                     AND NOT EXISTS (SELECT 1 FROM stated)
             ) u
             ORDER BY instant
@@ -948,12 +1026,12 @@ market_observation_repository::read_instants(
               ON o.tenant_id = $1 AND o.series_id = $2
              AND o.observation_datetime = i.instant AND o.valid_to = $6
             UNION ALL
-            SELECT i.instant, md5(t.series_id::text || t.coord::text || t.ts::text)::uuid,
-                   t.tenant_id, t.party_id, t.series_id, t.ts, c.oresmd_uri, t.value::text,
+            SELECT i.instant, md5(c.series_id::text || t.coord::text || t.ts::text)::uuid,
+                   c.tenant_id, c.party_id, c.series_id, t.ts, c.oresmd_uri, t.value::text,
                    NULL::text, t.source_id, t.ts, $6::timestamptz, 1
             FROM instants i
-            JOIN ores_marketdata_ticks_tbl t ON t.series_id = $2::uuid AND t.ts = i.instant
-            JOIN coords c ON c.coord = t.coord
+            JOIN ores_marketdata_ticks_tbl t ON t.stream_id = $8::uuid AND t.ts = i.instant
+            JOIN coords c ON c.stream_id = t.stream_id AND c.coord = t.coord
         )
         SELECT DISTINCT ON (instant, oresmd_uri)
                (extract(epoch FROM instant) * 1000000)::bigint::text,
@@ -966,7 +1044,7 @@ market_observation_repository::read_instants(
     const auto rows = execute_parameterized_multi_column_query(
         ctx,
         sql,
-        {tid, sid, from_str, to_str, cap_str, MAX_TIMESTAMP, stated_str},
+        {tid, sid, from_str, to_str, cap_str, MAX_TIMESTAMP, stated_str, *stream},
         lg(),
         "reading the instants of a series");
 

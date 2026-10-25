@@ -48,11 +48,23 @@ using ores::testing::database_helper;
 
 using ores::marketdata::tests::insert_tick;
 using ores::marketdata::tests::party_context;
+using ores::marketdata::tests::stream_of;
+using ores::marketdata::tests::subscribe;
 
 /// The number of the series' own datum in the tick dictionary, assigned if it has none.
 int number_of(const ores::database::context& owner,
               const ores::marketdata::domain::market_series& s) {
-    return tick_coords_repository{}.resolve(owner, s.party_id, s.id, s.oresmd_uri);
+    return tick_coords_repository{}.resolve(
+        owner,
+        ores::marketdata::tests::stream_of(s.provider_code, s.oresmd_uri),
+        s.oresmd_uri);
+}
+
+/// Gives @p s a URI that names this run only, so the shared store holds no tick of an earlier
+/// run on its stream and the reads see only what the test wrote.
+ores::marketdata::domain::market_series unique_series(ores::marketdata::domain::market_series s) {
+    s.oresmd_uri = "oresmd://generic/test-" + boost::uuids::to_string(s.id) + "?type=fixing";
+    return s;
 }
 
 /// A whole second, so that the instants of a test survive the round trip through text.
@@ -65,13 +77,14 @@ std::chrono::system_clock::time_point now_second() {
 TEST_CASE("a_tick_is_the_point_of_a_series_without_coordinates", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto s = generate_synthetic_market_series(ctx);
+    auto s = unique_series(generate_synthetic_market_series(ctx));
     market_series_repository{}.write(h.context(), s);
+    subscribe(h, s.party_id, s.provider_code);
 
     const auto t0 = now_second();
     const auto owner = party_context(h, s.party_id);
     const auto number = number_of(owner, s);
-    insert_tick(owner, s.party_id, s.id, number, t0, 1.0845);
+    insert_tick(owner, stream_of(s.provider_code, s.oresmd_uri), number, t0, 1.0845);
 
     const auto points =
         market_observation_repository{}.read_as_of(owner, s.id, t0 + std::chrono::minutes(1));
@@ -85,24 +98,26 @@ TEST_CASE("a_tick_is_the_point_of_a_series_without_coordinates", tags) {
 TEST_CASE("a_snapshot_reads_the_latest_tick_of_each_coordinate_at_or_before_the_instant", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto s = generate_synthetic_market_series(ctx);
+    auto s = unique_series(generate_synthetic_market_series(ctx));
     market_series_repository{}.write(h.context(), s);
+    subscribe(h, s.party_id, s.provider_code);
 
     const auto owner = party_context(h, s.party_id);
     const auto spot = "oresmd://test/" + boost::uuids::to_string(s.id) + "/SPOT";
     const auto year = "oresmd://test/" + boost::uuids::to_string(s.id) + "/1Y";
+    const auto stream = stream_of(s.provider_code, s.oresmd_uri);
     tick_coords_repository numbers;
-    const auto spot_number = numbers.resolve(owner, s.party_id, s.id, spot);
-    const auto year_number = numbers.resolve(owner, s.party_id, s.id, year);
+    const auto spot_number = numbers.resolve(owner, stream, spot);
+    const auto year_number = numbers.resolve(owner, stream, year);
     CHECK(spot_number == 1);
     CHECK(year_number == 2);
-    CHECK(numbers.resolve(owner, s.party_id, s.id, spot) == spot_number);
+    CHECK(numbers.resolve(owner, stream, spot) == spot_number);
 
     const auto t0 = now_second();
-    insert_tick(owner, s.party_id, s.id, spot_number, t0, 1.0);
-    insert_tick(owner, s.party_id, s.id, spot_number, t0 + std::chrono::seconds(10), 2.0);
-    insert_tick(owner, s.party_id, s.id, year_number, t0 + std::chrono::seconds(5), 3.0);
-    insert_tick(owner, s.party_id, s.id, year_number, t0 + std::chrono::seconds(30), 4.0);
+    insert_tick(owner, stream_of(s.provider_code, s.oresmd_uri), spot_number, t0, 1.0);
+    insert_tick(owner, stream_of(s.provider_code, s.oresmd_uri), spot_number, t0 + std::chrono::seconds(10), 2.0);
+    insert_tick(owner, stream_of(s.provider_code, s.oresmd_uri), year_number, t0 + std::chrono::seconds(5), 3.0);
+    insert_tick(owner, stream_of(s.provider_code, s.oresmd_uri), year_number, t0 + std::chrono::seconds(30), 4.0);
 
     const auto points =
         market_observation_repository{}.read_as_of(owner, s.id, t0 + std::chrono::seconds(20));
@@ -120,12 +135,13 @@ TEST_CASE("a_snapshot_reads_the_latest_tick_of_each_coordinate_at_or_before_the_
 TEST_CASE("a_tick_of_another_party_is_not_in_the_snapshot", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto s = generate_synthetic_market_series(ctx);
+    auto s = unique_series(generate_synthetic_market_series(ctx));
     market_series_repository{}.write(h.context(), s);
+    subscribe(h, s.party_id, s.provider_code);
 
     const auto t0 = now_second();
     const auto owner = party_context(h, s.party_id);
-    insert_tick(owner, s.party_id, s.id, number_of(owner, s), t0, 1.5);
+    insert_tick(owner, stream_of(s.provider_code, s.oresmd_uri), number_of(owner, s), t0, 1.5);
 
     const auto stranger = boost::uuids::random_generator{}();
     const auto points = market_observation_repository{}.read_as_of(
@@ -136,8 +152,9 @@ TEST_CASE("a_tick_of_another_party_is_not_in_the_snapshot", tags) {
 TEST_CASE("an_observation_row_wins_a_tie_with_a_tick_at_the_same_instant", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto s = generate_synthetic_market_series(ctx);
+    auto s = unique_series(generate_synthetic_market_series(ctx));
     market_series_repository{}.write(h.context(), s);
+    subscribe(h, s.party_id, s.provider_code);
 
     const auto t0 = now_second();
     auto observed = generate_synthetic_market_observation(ctx);
@@ -151,7 +168,7 @@ TEST_CASE("an_observation_row_wins_a_tie_with_a_tick_at_the_same_instant", tags)
 
     const auto owner = party_context(h, s.party_id);
     const auto number = number_of(owner, s);
-    insert_tick(owner, s.party_id, s.id, number, t0, 1.0);
+    insert_tick(owner, stream_of(s.provider_code, s.oresmd_uri), number, t0, 1.0);
 
     const auto points =
         market_observation_repository{}.read_as_of(owner, s.id, t0 + std::chrono::minutes(1));
@@ -163,14 +180,15 @@ TEST_CASE("an_observation_row_wins_a_tie_with_a_tick_at_the_same_instant", tags)
 TEST_CASE("each_bucket_of_the_evolution_reads_the_latest_tick_at_its_boundary", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto s = generate_synthetic_market_series(ctx);
+    auto s = unique_series(generate_synthetic_market_series(ctx));
     market_series_repository{}.write(h.context(), s);
+    subscribe(h, s.party_id, s.provider_code);
 
     const auto t0 = now_second();
     const auto owner = party_context(h, s.party_id);
     const auto number = number_of(owner, s);
-    insert_tick(owner, s.party_id, s.id, number, t0, 1.0);
-    insert_tick(owner, s.party_id, s.id, number, t0 + std::chrono::minutes(10), 2.0);
+    insert_tick(owner, stream_of(s.provider_code, s.oresmd_uri), number, t0, 1.0);
+    insert_tick(owner, stream_of(s.provider_code, s.oresmd_uri), number, t0 + std::chrono::minutes(10), 2.0);
 
     const auto buckets = market_observation_repository{}.read_as_of_buckets(
         owner, s.id, t0 + std::chrono::minutes(20), std::chrono::minutes(10), 3);
@@ -185,14 +203,15 @@ TEST_CASE("each_bucket_of_the_evolution_reads_the_latest_tick_at_its_boundary", 
 TEST_CASE("the_instants_of_a_series_are_the_times_of_its_ticks", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto s = generate_synthetic_market_series(ctx);
+    auto s = unique_series(generate_synthetic_market_series(ctx));
     market_series_repository{}.write(h.context(), s);
+    subscribe(h, s.party_id, s.provider_code);
 
     const auto t0 = now_second();
     const auto owner = party_context(h, s.party_id);
     const auto number = number_of(owner, s);
-    insert_tick(owner, s.party_id, s.id, number, t0, 1.0);
-    insert_tick(owner, s.party_id, s.id, number, t0 + std::chrono::seconds(5), 2.0);
+    insert_tick(owner, stream_of(s.provider_code, s.oresmd_uri), number, t0, 1.0);
+    insert_tick(owner, stream_of(s.provider_code, s.oresmd_uri), number, t0 + std::chrono::seconds(5), 2.0);
 
     market_observation_repository repo;
     const auto all = repo.read_instants(
@@ -217,24 +236,28 @@ TEST_CASE("the_instants_of_a_series_are_the_times_of_its_ticks", tags) {
 TEST_CASE("the_numbers_of_many_datums_are_assigned_together_and_stay_the_same", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto first = generate_synthetic_market_series(ctx);
-    auto second = generate_synthetic_market_series(ctx);
+    auto first = unique_series(generate_synthetic_market_series(ctx));
+    auto second = unique_series(generate_synthetic_market_series(ctx));
     market_series_repository{}.write(h.context(), first);
     market_series_repository{}.write(h.context(), second);
+    subscribe(h, first.party_id, first.provider_code);
+    subscribe(h, second.party_id, second.provider_code);
     const auto owner = party_context(h, first.party_id);
 
     // A URI may hold a comma, a quote and a backslash, which an array literal must carry.
     const std::string awkward = R"(oresmd://test/a,"b"\c)";
+    const auto first_stream = stream_of(first.provider_code, first.oresmd_uri);
+    const auto second_stream = stream_of(second.provider_code, second.oresmd_uri);
     tick_coords_repository numbers;
     const auto assigned = numbers.resolve_all(owner,
-                                              {{first.party_id, first.id, "oresmd://test/b"},
-                                               {first.party_id, first.id, "oresmd://test/a"},
-                                               {second.party_id, second.id, "oresmd://test/b"},
-                                               {first.party_id, first.id, awkward},
-                                               {first.party_id, first.id, "oresmd://test/a"}});
+                                              {{first_stream, "oresmd://test/b"},
+                                               {first_stream, "oresmd://test/a"},
+                                               {second_stream, "oresmd://test/b"},
+                                               {first_stream, awkward},
+                                               {first_stream, "oresmd://test/a"}});
     REQUIRE(assigned.size() == 5);
 
-    // The numbers of a series are distinct and start at 1. Which URI gets which is the order of
+    // The numbers of a stream are distinct and start at 1. Which URI gets which is the order of
     // the database, so the test does not state it.
     CHECK(assigned[4] == assigned[1]);
     CHECK(assigned[2] == 1);
@@ -243,8 +266,8 @@ TEST_CASE("the_numbers_of_many_datums_are_assigned_together_and_stay_the_same", 
 
     // A second call finds the same numbers, and a new datum takes the next one.
     const auto again = numbers.resolve_all(owner,
-                                           {{first.party_id, first.id, "oresmd://test/b"},
-                                            {first.party_id, first.id, "oresmd://test/new"}});
+                                           {{first_stream, "oresmd://test/b"},
+                                            {first_stream, "oresmd://test/new"}});
     CHECK(again[0] == assigned[0]);
     CHECK(again[1] == 4);
     CHECK(numbers.resolve_all(owner, {}).empty());

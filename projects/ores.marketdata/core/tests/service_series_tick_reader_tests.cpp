@@ -54,6 +54,8 @@ using ores::marketdata::service::series_tick_reader;
 using ores::marketdata::tests::fresh_curve_id;
 using ores::marketdata::tests::insert_tick;
 using ores::marketdata::tests::party_context;
+using ores::marketdata::tests::subscribe;
+using ores::marketdata::tests::stream_of;
 using ores::marketdata::tests::zero_identity;
 using ores::marketdata::tests::zero_uri;
 using ores::testing::database_helper;
@@ -63,10 +65,12 @@ std::chrono::system_clock::time_point now_second() {
     return std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
 }
 
-/// A series that the test owns, with the number of its own datum in the tick dictionary.
+/// A series that the test owns, the stream its ticks sit on, and the number of its own datum in
+/// that stream's tick dictionary.
 struct owned_series {
     ores::marketdata::domain::market_series series;
     ores::database::context owner;
+    boost::uuids::uuid stream;
     int number;
     resolve_series_identity_request identity;
 };
@@ -76,7 +80,8 @@ struct owned_series {
 owned_series make_series(database_helper& h,
                          const std::string& curve_id = fresh_curve_id(),
                          const boost::uuids::uuid& party = boost::uuids::nil_uuid(),
-                         const std::string& provider = "") {
+                         const std::string& provider = "",
+                         bool with_subscription = true) {
     auto ctx = ores::testing::make_generation_context(h);
     auto s = generate_synthetic_market_series(ctx);
     if (!party.is_nil())
@@ -85,9 +90,12 @@ owned_series make_series(database_helper& h,
         s.provider_code = provider;
     s.oresmd_uri = zero_uri(curve_id);
     market_series_repository{}.write(h.context(), s);
+    if (with_subscription)
+        subscribe(h, s.party_id, s.provider_code);
     auto owner = party_context(h, s.party_id);
-    const auto number = tick_coords_repository{}.resolve(owner, s.party_id, s.id, s.oresmd_uri);
-    return {std::move(s), std::move(owner), number, zero_identity(curve_id)};
+    const auto stream = stream_of(s.provider_code, s.oresmd_uri);
+    const auto number = tick_coords_repository{}.resolve(owner, stream, s.oresmd_uri);
+    return {std::move(s), std::move(owner), stream, number, zero_identity(curve_id)};
 }
 
 get_series_ticks_request span(const owned_series& o,
@@ -119,18 +127,16 @@ void insert_many_ticks(const owned_series& o,
         o.owner,
         "WITH ins AS ("
         "  INSERT INTO ores_marketdata_ticks_tbl "
-        "    (tenant_id, party_id, series_id, ts, coord, value, source_id) "
-        "  SELECT $1::uuid, $2::uuid, $3::uuid, $4::timestamptz + n * interval '1 second', "
-        "         $5::smallint, n::float8, $6::uuid "
-        "  FROM generate_series(0, $7::int - 1) AS n "
+        "    (stream_id, source_id, ts, coord, value) "
+        "  SELECT $1::uuid, $2::uuid, $3::timestamptz + n * interval '1 second', "
+        "         $4::smallint, n::float8 "
+        "  FROM generate_series(0, $5::int - 1) AS n "
         "  RETURNING 1) "
         "SELECT count(*) FROM ins",
-        {o.owner.tenant_id().to_string(),
-         boost::uuids::to_string(o.series.party_id),
-         boost::uuids::to_string(o.series.id),
+        {boost::uuids::to_string(o.stream),
+         boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_import_source_id()),
          ores::platform::time::datetime::to_iso8601_utc(first),
          std::to_string(o.number),
-         boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_import_source_id()),
          std::to_string(count)},
         lg,
         "inserting many ticks");
@@ -142,13 +148,12 @@ TEST_CASE("a_span_returns_every_tick_in_one_reply_with_the_gaps_between_them", t
     database_helper h;
     const auto o = make_series(h);
     const auto other = "oresmd://test/" + boost::uuids::to_string(o.series.id) + "/1Y";
-    const auto other_number =
-        tick_coords_repository{}.resolve(o.owner, o.series.party_id, o.series.id, other);
+    const auto other_number = tick_coords_repository{}.resolve(o.owner, o.stream, other);
 
     const auto t0 = now_second();
-    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0, 1.5);
-    insert_tick(o.owner, o.series.party_id, o.series.id, other_number, t0 + 1500000us, 2.5);
-    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0 + 4s, 3.5);
+    insert_tick(o.owner, o.stream, o.number, t0, 1.5);
+    insert_tick(o.owner, o.stream, other_number, t0 + 1500000us, 2.5);
+    insert_tick(o.owner, o.stream, o.number, t0 + 4s, 3.5);
 
     const auto reply = series_tick_reader::read(o.owner, span(o, t0 - 1s, t0 + 1min));
 
@@ -167,9 +172,9 @@ TEST_CASE("a_span_holds_its_first_instant_and_not_its_last", tags) {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
-    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0, 1.0);
-    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0 + 10s, 2.0);
-    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0 + 20s, 3.0);
+    insert_tick(o.owner, o.stream, o.number, t0, 1.0);
+    insert_tick(o.owner, o.stream, o.number, t0 + 10s, 2.0);
+    insert_tick(o.owner, o.stream, o.number, t0 + 20s, 3.0);
 
     const auto reply = series_tick_reader::read(o.owner, span(o, t0, t0 + 20s));
 
@@ -180,8 +185,8 @@ TEST_CASE("a_span_with_no_end_reads_up_to_now", tags) {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
-    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0, 1.0);
-    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0 + 1h, 2.0);
+    insert_tick(o.owner, o.stream, o.number, t0, 1.0);
+    insert_tick(o.owner, o.stream, o.number, t0 + 1h, 2.0);
 
     auto request = span(o, t0 - 1s, t0);
     request.to_instant.reset();
@@ -194,11 +199,10 @@ TEST_CASE("a_coordinate_filter_reads_that_coordinate_only", tags) {
     database_helper h;
     const auto o = make_series(h);
     const auto other = "oresmd://test/" + boost::uuids::to_string(o.series.id) + "/1Y";
-    const auto other_number =
-        tick_coords_repository{}.resolve(o.owner, o.series.party_id, o.series.id, other);
+    const auto other_number = tick_coords_repository{}.resolve(o.owner, o.stream, other);
     const auto t0 = now_second();
-    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0, 1.0);
-    insert_tick(o.owner, o.series.party_id, o.series.id, other_number, t0 + 1s, 2.0);
+    insert_tick(o.owner, o.stream, o.number, t0, 1.0);
+    insert_tick(o.owner, o.stream, other_number, t0 + 1s, 2.0);
 
     auto request = span(o, t0 - 1s, t0 + 1min);
     request.coordinates = {other};
@@ -227,7 +231,7 @@ TEST_CASE("a_tick_of_another_party_is_not_in_the_reply", tags) {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
-    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0, 1.0);
+    insert_tick(o.owner, o.stream, o.number, t0, 1.0);
 
     const auto stranger = boost::uuids::random_generator{}();
     const auto reply =
@@ -241,7 +245,7 @@ TEST_CASE("a_session_with_no_party_is_refused_and_not_answered_with_an_empty_rep
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
-    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0, 1.0);
+    insert_tick(o.owner, o.stream, o.number, t0, 1.0);
 
     const auto reply = series_tick_reader::read(h.context(), span(o, t0 - 1s, t0 + 1min));
 
@@ -265,7 +269,7 @@ TEST_CASE("a_span_that_starts_and_ends_at_one_instant_is_empty_and_not_refused",
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
-    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0, 1.0);
+    insert_tick(o.owner, o.stream, o.number, t0, 1.0);
 
     const auto reply = series_tick_reader::read(o.owner, span(o, t0, t0));
 
@@ -284,8 +288,7 @@ TEST_CASE("a_span_at_the_ceiling_is_answered_and_a_span_over_it_is_refused_namin
     CHECK(at.result.outcome == outcome::ok);
     CHECK(at.values.size() == series_tick_reader::max_ticks);
 
-    insert_tick(
-        o.owner, o.series.party_id, o.series.id, o.number, t0 + std::chrono::seconds(ceiling), 0.0);
+    insert_tick(o.owner, o.stream, o.number, t0 + std::chrono::seconds(ceiling), 0.0);
     const auto over = series_tick_reader::read(o.owner, span(o, t0, t0 + 24h));
     CHECK(over.result.outcome == outcome::invalid);
     CHECK(over.result.code == "range_too_large");
@@ -297,11 +300,10 @@ TEST_CASE("ticks_of_one_instant_come_in_the_order_of_their_coordinates", tags) {
     database_helper h;
     const auto o = make_series(h);
     const auto other = "oresmd://test/" + boost::uuids::to_string(o.series.id) + "/1Y";
-    const auto other_number =
-        tick_coords_repository{}.resolve(o.owner, o.series.party_id, o.series.id, other);
+    const auto other_number = tick_coords_repository{}.resolve(o.owner, o.stream, other);
     const auto t0 = now_second();
-    insert_tick(o.owner, o.series.party_id, o.series.id, other_number, t0, 2.0);
-    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0, 1.0);
+    insert_tick(o.owner, o.stream, other_number, t0, 2.0);
+    insert_tick(o.owner, o.stream, o.number, t0, 1.0);
 
     const auto reply = series_tick_reader::read(o.owner, span(o, t0 - 1s, t0 + 1min));
 
@@ -391,7 +393,7 @@ TEST_CASE("an_identity_that_two_parties_carry_is_refused_and_not_resolved_to_one
     const auto first = make_series(h, curve);
     const auto second = make_series(h, curve);
     const auto t0 = now_second();
-    insert_tick(first.owner, first.series.party_id, first.series.id, first.number, t0, 1.0);
+    insert_tick(first.owner, first.stream, first.number, t0, 1.0);
 
     // The identity table shows a session the series of its visible parties only, so a session
     // that sees one party can never meet the same identity twice. A parent party sees its
@@ -407,15 +409,24 @@ TEST_CASE("an_identity_that_two_parties_carry_is_refused_and_not_resolved_to_one
 TEST_CASE("an_identity_that_states_the_party_names_that_partys_series", tags) {
     database_helper h;
     const auto curve = fresh_curve_id();
-    const auto first = make_series(h, curve);
-    const auto second = make_series(h, curve);
+    // Two providers, because two parties of one provider read the same stream and would not
+    // tell the two series apart.
+    const auto first = make_series(h, curve, boost::uuids::nil_uuid(), "ore");
+    const auto second = make_series(h, curve, boost::uuids::nil_uuid(), "bloomberg");
     const auto t0 = now_second();
-    insert_tick(first.owner, first.series.party_id, first.series.id, first.number, t0, 1.0);
-    insert_tick(second.owner, second.series.party_id, second.series.id, second.number, t0, 2.0);
+    insert_tick(first.owner, first.stream, first.number, t0, 1.0);
+    insert_tick(second.owner, second.stream, second.number, t0, 2.0);
 
     auto request = span(second, t0 - 1s, t0 + 1min);
     request.identity.party_id = boost::uuids::to_string(second.series.party_id);
-    const auto reply = series_tick_reader::read(sees_both(h, first, second), request);
+    // The session's party is the one that names its series and holds the subscription, which
+    // the history read checks before it returns a tick.
+    const auto both = h.context().with_party(
+        h.tenant_id(),
+        second.series.party_id,
+        {first.series.party_id, second.series.party_id},
+        h.db_user());
+    const auto reply = series_tick_reader::read(both, request);
 
     CHECK(reply.result.outcome == outcome::ok);
     CHECK(reply.values == std::vector<double>{2.0});
@@ -427,8 +438,7 @@ TEST_CASE("an_identity_that_two_providers_of_one_party_carry_is_refused_and_name
     const auto ore = make_series(h, curve, boost::uuids::nil_uuid(), "ore");
     const auto bloomberg = make_series(h, curve, ore.series.party_id, "bloomberg");
     const auto t0 = now_second();
-    insert_tick(
-        bloomberg.owner, bloomberg.series.party_id, bloomberg.series.id, bloomberg.number, t0, 1.0);
+    insert_tick(bloomberg.owner, bloomberg.stream, bloomberg.number, t0, 1.0);
 
     const auto reply = series_tick_reader::read(ore.owner, span(ore, t0 - 1s, t0 + 1min));
 
@@ -446,9 +456,8 @@ TEST_CASE("a_provider_states_which_series_of_one_party_is_read", tags) {
     const auto ore = make_series(h, curve, boost::uuids::nil_uuid(), "ore");
     const auto bloomberg = make_series(h, curve, ore.series.party_id, "bloomberg");
     const auto t0 = now_second();
-    insert_tick(ore.owner, ore.series.party_id, ore.series.id, ore.number, t0, 1.0);
-    insert_tick(
-        bloomberg.owner, bloomberg.series.party_id, bloomberg.series.id, bloomberg.number, t0, 2.0);
+    insert_tick(ore.owner, ore.stream, ore.number, t0, 1.0);
+    insert_tick(bloomberg.owner, bloomberg.stream, bloomberg.number, t0, 2.0);
 
     auto request = span(ore, t0 - 1s, t0 + 1min);
     request.identity.provider_code = "bloomberg";
@@ -462,7 +471,7 @@ TEST_CASE("a_provider_that_holds_no_series_of_the_identity_gives_an_empty_reply"
     database_helper h;
     const auto o = make_series(h, fresh_curve_id(), boost::uuids::nil_uuid(), "ore");
     const auto t0 = now_second();
-    insert_tick(o.owner, o.series.party_id, o.series.id, o.number, t0, 1.0);
+    insert_tick(o.owner, o.stream, o.number, t0, 1.0);
 
     auto request = span(o, t0 - 1s, t0 + 1min);
     request.identity.provider_code = "bloomberg";
@@ -471,3 +480,4 @@ TEST_CASE("a_provider_that_holds_no_series_of_the_identity_gives_an_empty_reply"
     CHECK(reply.result.outcome == outcome::ok);
     CHECK(reply.values.empty());
 }
+

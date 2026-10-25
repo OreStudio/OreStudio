@@ -19,7 +19,9 @@
  */
 #include "ores.marketdata.core/service/series_tick_reader.hpp"
 #include "ores.database/domain/outcome_code.hpp"
+#include "ores.marketdata.api/datum/series_stream.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
+#include "ores.marketdata.core/repository/tick_entitlement.hpp"
 #include "ores.marketdata.core/repository/tick_repository.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <map>
@@ -37,8 +39,8 @@ series_tick_reader::read(ores::database::context ctx,
                          std::chrono::system_clock::time_point now) {
     messaging::get_series_ticks_response response;
 
-    // The party policy of the tick table shows a session with no party no tick, so an empty
-    // reply would look like a series with no ticks.
+    // The store filters no tick by party, so a session with no party has no door to it and an
+    // empty reply would look like a series with no ticks.
     if (ctx.visible_party_ids().empty()) {
         response.result = refuse(outcome_code::party_required, {.entity = "ticks"});
         return response;
@@ -84,8 +86,28 @@ series_tick_reader::read(ores::database::context ctx,
     }
 
     // One tick more than the ceiling tells a span over it from a span at it.
+    const auto& resolved = series.front();
+
+    // The tick store is shared by every party and no policy filters it by party, so the
+    // subscription is the door to it. The history returns raw values, so the party must hold
+    // display or non-display; may_read_ticks states the rule once for every read of ticks.
+    if (!ctx.party_id()) {
+        response.result = refuse(outcome_code::party_required, {.entity = "ticks"});
+        return response;
+    }
+    if (!repository::may_read_ticks(ctx, resolved.provider_code)) {
+        response.result = refuse(outcome_code::not_subscribed,
+                                 {.entity = "ticks",
+                                  .field = "provider",
+                                  .value = resolved.provider_code});
+        return response;
+    }
+
+    // The stream is named by the provider and the series URI, as the ingest names it, and no
+    // table maps a series to a stream.
+    const auto stream = datum::stream_id(resolved.provider_code, resolved.oresmd_uri);
     const auto ticks = repository::tick_repository{}.read_range(
-        ctx, series.front().id, request.from_instant, to, request.coordinates, max_ticks + 1);
+        ctx, stream, request.from_instant, to, request.coordinates, max_ticks + 1);
     if (ticks.size() > max_ticks) {
         response.result = refuse(outcome_code::range_too_large,
                                  {.entity = "ticks", .limit = std::to_string(max_ticks)});

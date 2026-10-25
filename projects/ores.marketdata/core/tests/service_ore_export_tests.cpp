@@ -309,7 +309,7 @@ TEST_CASE("export_with_a_date_keeps_the_history_and_writes_the_value_at_the_clos
     import_service importer(t.ctx, auth_nats);
 
     ores::marketdata::messaging::import_market_data_request req;
-    req.market_data_content = "20160204 FX/RATE/EUR/USD 1.05\n20160205 FX/RATE/EUR/USD 1.10\n";
+    req.market_data_content = "20160204 FX/RATE/AUD/CAD 1.05\n20160205 FX/RATE/AUD/CAD 1.10\n";
     req.source = "test.ore_export";
     REQUIRE(importer.import(req).success);
 
@@ -325,11 +325,13 @@ TEST_CASE("export_with_a_date_keeps_the_history_and_writes_the_value_at_the_clos
     // URI the observation rows carry.
     const auto owner =
         t.ctx.with_party(t.ctx.tenant_id(), s.party_id, {s.party_id}, t.base.db_user());
+    ores::marketdata::tests::subscribe(t.base, t.ctx, s.party_id, s.provider_code);
+    const auto stream = ores::marketdata::tests::stream_of(s.provider_code, s.oresmd_uri);
     const auto number = ores::marketdata::repository::tick_coords_repository{}.resolve(
-        owner, s.party_id, s.id, stored.front().oresmd_uri);
+        owner, stream, stored.front().oresmd_uri);
     using namespace std::chrono;
     ores::marketdata::tests::insert_tick(
-        owner, s.party_id, s.id, number, sys_days{2016y / February / 5} + 12h, 1.2);
+        owner, stream, number, sys_days{2016y / February / 5} + 12h, 1.2);
 
     // Each line as "date value", sorted.
     const auto lines_of = [](const std::string& body) {
@@ -377,7 +379,7 @@ TEST_CASE("the_reads_for_every_series_give_what_the_reads_for_each_series_give",
     import_service importer(t.ctx, auth_nats);
 
     ores::marketdata::messaging::import_market_data_request req;
-    req.market_data_content = "20160204 FX/RATE/EUR/USD 1.05\n20160205 FX/RATE/EUR/USD 1.10\n"
+    req.market_data_content = "20160204 FX/RATE/SEK/NOK 1.05\n20160205 FX/RATE/SEK/NOK 1.10\n"
                               "20160204 FX/RATE/GBP/USD 1.40\n20160205 FX/RATE/GBP/USD 1.45\n"
                               "20160204 FX/RATE/CHF/USD 1.01\n";
     req.source = "test.ore_export";
@@ -394,11 +396,14 @@ TEST_CASE("the_reads_for_every_series_give_what_the_reads_for_each_series_give",
     REQUIRE(!stored.empty());
     const auto owner =
         t.ctx.with_party(t.ctx.tenant_id(), ticked.party_id, {ticked.party_id}, t.base.db_user());
+    ores::marketdata::tests::subscribe(t.base, t.ctx, ticked.party_id, ticked.provider_code);
+    const auto stream =
+        ores::marketdata::tests::stream_of(ticked.provider_code, ticked.oresmd_uri);
     const auto number = ores::marketdata::repository::tick_coords_repository{}.resolve(
-        owner, ticked.party_id, ticked.id, stored.front().oresmd_uri);
+        owner, stream, stored.front().oresmd_uri);
     using namespace std::chrono;
     ores::marketdata::tests::insert_tick(
-        owner, ticked.party_id, ticked.id, number, sys_days{2016y / February / 5} + 12h, 1.2);
+        owner, stream, number, sys_days{2016y / February / 5} + 12h, 1.2);
 
     // The datums of a read, as "uri value", sorted, so the order of the rows does not matter.
     const auto datums = [](const std::vector<ores::marketdata::domain::market_observation>& rows) {

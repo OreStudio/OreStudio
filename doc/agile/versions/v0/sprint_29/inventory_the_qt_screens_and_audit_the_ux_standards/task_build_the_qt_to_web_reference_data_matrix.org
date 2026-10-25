@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :inventory_the_qt_screens_and_audit_the_ux_standards:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-qt-to-web-matrix
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ One table answers, for each of the 61 Qt reference data entities, which web scre
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The matrix page is written and the script that produces it is beside this task. |
+| Waiting on   | PR #3742, the scaffold, to merge so this branch can target main. |
+| Next         | Raise the PR. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -42,9 +42,25 @@ One table answers, for each of the 61 Qt reference data entities, which web scre
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Build the lever, not the table. A script beside this task,
+=evidence/qt_web_matrix.py=, reads the Qt sources and the web registries and
+writes the matrix, so a reviewer reruns it instead of trusting a hand copy.
+
+1. Qt side. An entity exists where a window, a dialog or a client model exists.
+   The fields of a dialog are the entity struct members the dialog source reads
+   and writes, because the widget names are not the wire names and some combos
+   are built in code. The columns are what the model returns for the display
+   role. The actions are the toolbar actions the window adds.
+2. Web side. The record registry, the classification lists and the convention
+   kinds, matched by entity type, plus the =FieldSpec[]= table beside each
+   record screen. An entity the registries do not name is matched by hand in
+   the script, with the surface that covers it.
+3. Judgement. The provenance fields, the parent keys and the party scope are
+   not gaps, and the script names the standard section for each. The rest of
+   the judgement, the gaps and what was dropped on purpose, is prose on the
+   knowledge page.
+4. The page. =doc/knowledge/ui/qt_web_reference_data_matrix.org=, with the two
+   generated tables spliced between markers, linked from the UX hub.
 
 * Measurements
 
@@ -58,7 +74,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Qt reference data entities | 63 | =python3 -I evidence/qt_web_matrix.py --qt <ores.qt>= | web ea0ab6ee09; the Qt vault is not versioned, read 2026-10-25 |
+| With a detail dialog | 61 | same | same |
+| Covered by a record screen | 12 | same | same |
+| Covered by the classification screen | 24 | same | same |
+| Covered by the convention screen | 9, of which 3 with editable terms | same | same |
+| Reached from another area | 6 | same | same |
+| In the record registry with no screen | 5 | same | same |
+| Not in the web | 7 | same | same |
 
 * Notes
 
@@ -86,3 +109,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The knowledge page [[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]] holds one row per Qt
+entity with its parts, the web surface that covers it, the field counts and
+the fields only one side has. It also holds the windows that went beyond the
+standard toolbar, what the web added, the gaps judged, and what was dropped on
+purpose with the standard section that drops it. The UX hub links it. The
+script beside this task produces both generated tables and a reviewer reruns it.
+
+The first pass matched Qt widget names to web field names and reported false
+gaps on business units and parties. The dialog source, which reads and writes
+the entity struct, replaced it as the source of Qt fields.

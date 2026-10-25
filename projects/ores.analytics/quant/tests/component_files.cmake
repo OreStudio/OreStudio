@@ -55,6 +55,7 @@ set(files
     "service_tenor_resolution_engine_tests.cpp"
     "shared_intensity_tests.cpp"
     "tick_clock_tests.cpp"
+    "tick_scheduler_tests.cpp"
     "topology_builder_tests.cpp"
     "two_factor_gaussian_process_tests.cpp"
     "vasicek_process_tests.cpp"

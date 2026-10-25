@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: CF6DE0F5-4013-4BDF-8188-5D5C98F5717E
+:END:
+#+title: The check gate recreates the developer database
+#+description: compass check runs compass db recreate -y -k as its db check, and its ticks-smoke check recreates the database again before provisioning acme_corporation from acme_demo. A routine gate run therefore destroys the developer's provisioned state, including rows a manual proof recorded, and leaves a fresh ACME provision in its place.
+#+type: capture
+#+level: cross
+#+filetags: :testing:gate:database:destructive:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass check= reads as a read-only gate, and two of its checks recreate the
+environment database. The =db= check is =./compass.sh db recreate -y -k=.
+=ticks-smoke= runs =./compass.sh smoke ticks --fresh=, which stops the
+services, recreates the database, and then provisions =acme_corporation= from
+=acme_demo=.
+
+* Why
+
+Gating a change is ordinary work, and it should not cost a developer their
+state. Anything provisioned by hand is destroyed, including the rows a manual
+proof recorded, and the replacement looks like a provision, so nothing signals
+that the old rows are gone. The reader who goes looking for an instance id finds
+a fresh ACME tenant with no history.
+
+Three ways out, in order of preference:
+
+- Run the heavy checks against a database of their own, created and dropped with
+  the run. That also answers the isolation capture below.
+- Keep the current database, and make the destructive step explicit: a flag on
+  =compass check=, or a prompt that names the database it is about to rebuild.
+- At minimum, print the database name and what will be destroyed before the
+  recreate, so the log says what happened.
+
+The same run also exposes the shared test database name, which is a separate
+capture: [[id:0CF3B77E-557B-4976-98D8-3E6B5566DA12][Give the test run its own database]].
+
+* References
+
+- =compass check --list=, the check catalogue: the =db= check runs
+  =./compass.sh db recreate -y -k=, and =ticks-smoke= runs
+  =./compass.sh smoke ticks --fresh=.
+- =projects/ores.compass/src/compass_smoke.py=: the smoke stops the fleet,
+  recreates, and provisions =acme_corporation= with the =acme_demo= profile.
+- Observed on 2026-10-25: after a gate run, the database held 2 live tenants,
+  78 report definitions and 34 parties, all stamped 01:40 to 01:42, where a
+  hand-provisioned environment had stood before.
+
+* See also
+
+-

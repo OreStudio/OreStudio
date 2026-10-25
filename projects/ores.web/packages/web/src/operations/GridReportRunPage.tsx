@@ -20,6 +20,7 @@
  */
 
 import type { ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import type { GridReportRunView } from '@ores/wire-protocol/browser';
@@ -144,6 +145,190 @@ function Links({ run }: { readonly run: GridReportRunView }): ReactNode {
     );
 }
 
+
+/** One error a run recorded, shaped for the two views. */
+type RunError = {
+    id: string;
+    scope: string;
+    severity: string;
+    message: string;
+    subject: string;
+    subjectId: string;
+    version: number | null;
+    asOf: string;
+    time: string;
+};
+
+const asText = (value: unknown): string => (typeof value === 'string' ? value : '');
+
+const toError = (raw: unknown): RunError => {
+    const row = raw as Record<string, unknown>;
+    return {
+        id: asText(row['id']),
+        scope: asText(row['scope']),
+        severity: asText(row['severity']),
+        message: asText(row['message']),
+        subject: asText(row['subject']),
+        subjectId: asText(row['subject_id']),
+        version: typeof row['subject_version'] === 'number' ? row['subject_version'] : null,
+        asOf: asText(row['subject_as_of']),
+        time: asText(row['time']),
+    };
+};
+
+const tradeHref = (error: RunError): string =>
+    `/trades?trade=${error.subjectId}${error.version === null ? '' : `&version=${error.version}`}`;
+
+/** The run's errors: grouped by cause, or as rows beside the selected one. */
+function RunErrors({ id }: { id: string }): ReactNode {
+    const [view, setView] = useState<'grouped' | 'split'>('grouped');
+    const [severity, setSeverity] = useState('all');
+    const [search, setSearch] = useState('');
+    const [selected, setSelected] = useState<string | null>(null);
+
+    const errors = useQuery({
+        queryKey: ['report-run-errors', id],
+        queryFn: () => api.gridReportRunErrors(id),
+        meta: { quiet: true },
+    });
+
+    const rows = useMemo(
+        () => (errors.data ?? []).map(toError),
+        [errors.data],
+    );
+
+    const shown = useMemo(
+        () =>
+            rows.filter((error) => {
+                if (severity !== 'all' && error.severity !== severity) return false;
+                const needle = search.trim().toLowerCase();
+                if (needle === '') return true;
+                return [error.message, error.subjectId, error.subject]
+                    .join(' ')
+                    .toLowerCase()
+                    .includes(needle);
+            }),
+        [rows, severity, search],
+    );
+
+    const causes = useMemo(() => {
+        const byCause = new Map<string, RunError[]>();
+        for (const error of shown) {
+            const key = `${error.scope}|${error.subject}|${error.message}`;
+            byCause.set(key, [...(byCause.get(key) ?? []), error]);
+        }
+        return [...byCause.values()];
+    }, [shown]);
+
+    if (errors.isPending) return null;
+    if (rows.length === 0) {
+        return (
+            <Notice tone="success">
+                This run recorded no errors.
+            </Notice>
+        );
+    }
+
+    const current = shown.find((error) => error.id === selected) ?? shown[0] ?? null;
+
+    return (
+        <section className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-base">{`Errors (${rows.length})`}</h2>
+                <button type="button" onClick={() => setSeverity('all')}
+                    aria-pressed={severity === 'all'}>All</button>
+                <button type="button" onClick={() => setSeverity('error')}
+                    aria-pressed={severity === 'error'}>Errors</button>
+                <button type="button" onClick={() => setSeverity('warning')}
+                    aria-pressed={severity === 'warning'}>Warnings</button>
+                <input type="search" placeholder="Search message, curve or trade id"
+                    value={search} onChange={(event) => setSearch(event.target.value)} />
+                <button type="button" onClick={() => setView('grouped')}
+                    aria-pressed={view === 'grouped'}>Grouped</button>
+                <button type="button" onClick={() => setView('split')}
+                    aria-pressed={view === 'split'}>Split</button>
+            </div>
+            {view === 'grouped' && (
+                <ul className="space-y-3">
+                    {causes.map((cause) => {
+                        const first = cause[0];
+                        if (first === undefined) return null;
+                        return (
+                            <li key={`${first.scope}-${first.message}`}
+                                className="space-y-2 rounded border border-line p-3">
+                                <p className="font-mono text-sm">{first.subject || first.message}</p>
+                                <p className="text-xs text-ink-muted">
+                                    {`${first.severity} · ${first.scope} · ${cause.length} trade(s)`}
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {cause.filter((error) => error.subjectId !== '').map((error) => (
+                                        <a key={error.id} className="font-mono text-xs underline"
+                                            href={tradeHref(error)}>
+                                            {`${error.subjectId.slice(0, 8)}… ${error.subject} · v${error.version ?? '?'}${error.asOf === '' ? '' : ` @ ${error.asOf}`}`}
+                                        </a>
+                                    ))}
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
+            )}
+            {view === 'split' && (
+                <div className="grid gap-4 md:grid-cols-2">
+                    <table className="w-full text-left text-sm">
+                        <thead>
+                            <tr>
+                                <th>Severity</th><th>Scope</th><th>Subject</th>
+                                <th>Trade</th><th>Version</th><th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {shown.map((error) => (
+                                <tr key={error.id} className="cursor-pointer"
+                                    aria-selected={current?.id === error.id}
+                                    onClick={() => setSelected(error.id)}>
+                                    <td>{error.severity}</td>
+                                    <td>{error.scope}</td>
+                                    <td className="font-mono">{error.subject || '—'}</td>
+                                    <td className="font-mono">
+                                        {error.subjectId === '' ? '—' : (
+                                            <a className="underline" href={tradeHref(error)}
+                                                onClick={(event) => event.stopPropagation()}>
+                                                {error.subjectId}
+                                            </a>
+                                        )}
+                                    </td>
+                                    <td className="font-mono">
+                                        {error.version === null ? '—' : `v${error.version}${error.asOf === '' ? '' : ` @ ${error.asOf}`}`}
+                                    </td>
+                                    <td className="font-mono text-xs">{error.time}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    {current !== null && (
+                        <div className="space-y-2">
+                            <p className="font-mono text-sm">{current.subject || current.scope}</p>
+                            <p className="text-xs text-ink-muted">{`${current.severity} · ${current.scope}`}</p>
+                            <pre className="whitespace-pre-wrap font-mono text-xs">
+                                {current.message}
+                            </pre>
+                            {current.subjectId !== '' && (
+                                <p className="font-mono text-xs">
+                                    {`${current.subjectId} · version ${current.version ?? 'unknown'}${current.asOf === '' ? '' : ` · as of ${current.asOf}`}`}
+                                    <a className="ml-2 underline" href={tradeHref(current)}>
+                                        Open the trade
+                                    </a>
+                                </p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
+        </section>
+    );
+}
+
 /** The report run page. */
 export function GridReportRunPage(): ReactNode {
     const { t } = useTranslation();
@@ -181,6 +366,7 @@ export function GridReportRunPage(): ReactNode {
                         </Notice>
                     )}
                     <Run run={run.data} />
+                    <RunErrors id={run.data.id} />
                     <Links run={run.data} />
                 </>
             )}

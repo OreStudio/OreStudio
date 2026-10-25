@@ -2420,6 +2420,14 @@ export const api = {
         );
     },
 
+    /** The errors a report run recorded. */
+    async gridReportRunErrors(id: string): Promise<readonly unknown[]> {
+        const reply = (await request(`/api/operations/grid/report-runs/${id}/errors`, {
+            method: 'GET',
+        })) as { errors?: readonly unknown[] };
+        return reply.errors ?? [];
+    },
+
     /** One app version with its packages and the other versions of its app. */
     async gridAppVersion(id: string): Promise<AppVersionPageView> {
         return appVersionPageViewSchema.parse(

@@ -46,7 +46,7 @@ a throwaway web page organised by provider and scope, with start and stop at any
 node and feeds that open the existing FX and IR feed pages. A first version
 offered three layouts of one screen; after review it became one flow of five
 screens: Market data, Synthetic, Feed overview, Feed tree and a feed page:
-[[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]].
+[[id:4F8C2A1D-6B3E-49F7-8A52-1C9E7D0B3A64][Browse the feed tree prototype]].
 
 * Measurements
 

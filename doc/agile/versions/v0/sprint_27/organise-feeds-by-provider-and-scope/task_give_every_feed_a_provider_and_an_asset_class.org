@@ -42,7 +42,7 @@ Every feed has a provider and an asset class. The server filters the feed table 
 
 * Plan
 
-The shape is the [[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]].
+The shape is the [[id:4F8C2A1D-6B3E-49F7-8A52-1C9E7D0B3A64][Browse the feed tree prototype]].
 
 - A collection names its provider, and the column is required. The ORE examples are a provider of their own, ORE, of kind reference, and the Generic provider is gone. Each provider's description says what it simulates.
 - Both feed tables carry =asset_class_code=, checked against the asset class table: =fx= for an FX spot, =interest_rates= for an IR curve.

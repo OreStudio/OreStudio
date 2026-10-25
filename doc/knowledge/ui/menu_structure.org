@@ -401,7 +401,7 @@ They are added to the Market data area when they have screens; a feed of a new
 kind joins the Feed tree.
 
 The Synthetic screen, with its Dashboard and its Feed tree, is designed in the
-[[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]] and built by the tasks of
+[[id:4F8C2A1D-6B3E-49F7-8A52-1C9E7D0B3A64][Synthetic feeds prototype]] and built by the tasks of
 [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]].
 
 ** Changing the menu

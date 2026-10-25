@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Synthetic feeds prototype — Market data</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}.small{font-size:.8rem}
+.wrap{max-width:1280px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.crumbs{font-size:.8rem;color:var(--ink-faint)}.crumbs b{color:var(--ink-dim)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px;align-content:start}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;display:grid;gap:2px}
+.kpi .lbl{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.kpi .val{font-family:var(--mono);font-size:1.35rem;color:var(--ink)}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;white-space:nowrap}
+td.num,th.num{text-align:right;font-family:var(--mono)}
+tr.row:hover td{background:#1f1f24}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim);white-space:nowrap}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}.tag.plan{border-style:dashed;color:var(--ink-faint)}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.alert{border:1px solid #4a3a17;border-radius:var(--radius);padding:10px 12px;background:#221c10;color:var(--warn);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:5px 10px;color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tab{background:none;border:none;border-bottom:2px solid transparent;padding:8px 14px;color:var(--ink-dim)}
+.tab.on{color:var(--ink);border-bottom-color:var(--accent)}
+.split{display:grid;grid-template-columns:250px 1fr;gap:14px;align-items:start}
+@media(max-width:960px){.split{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+.tree{font-size:.86rem;max-height:70vh;overflow:auto}
+.node{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:5px;color:var(--ink-dim);white-space:nowrap}
+.node .ico{width:14px;color:var(--ink-faint)}
+.node.sel{background:#1d2633;outline:1px solid #2b4466;color:var(--ink)}
+.node .count{margin-left:auto;font-family:var(--mono);font-size:.72rem;color:var(--ink-faint)}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:5px 12px;font-size:.86rem}
+.kv dt{color:var(--ink-faint)}.kv dd{margin:0;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:.74rem;color:var(--ink-dim)}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+</style>
+</head>
+<body>
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The Synthetic feeds screen set, with one counter rule and the dashboard
+  language.
+
+  ?screen=dashboard|provider|feed|sources|subscriptions
+  ?provider=Bloomberg|Demo|ICE Data Services|LSEG|Tradeweb
+  ?feed=<name>  ?tab=details|process|ticks|history
+
+  A feed serves when its provider's source serves and is demanded at least
+  one id. Every roll, tag and tile counts that one state.
+-->
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<footer style="position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:11px;color:#71717a;padding:4px">Prototype, mock data, not the product. Switch screens with the bar or the query string.</footer>
+<script>
+const P = new URLSearchParams(location.search);
+const screen = P.get('screen') || 'dashboard';
+const provider = P.get('provider') || 'Bloomberg';
+const feedName = P.get('feed') || 'AUD AONIA';
+const tab = P.get('tab') || 'details';
+
+/* One rule: a feed serves when its provider's source serves and is demanded at least one id. */
+const PROVIDERS = [
+  {name:'Bloomberg', kind:'Data vendor', says:'Simulates Bloomberg composite quotes: FX spots and overnight and swap rates for the major currencies.', holds:'26 FX · 29 IR', feeds:55, source:'bloomberg-a', serving:true, demanded:26},
+  {name:'Demo', kind:'Reference set', says:'A fictional provider for exercises and demonstrations: uniform, exaggerated volatility that is easy to eyeball on a chart.', holds:'11 FX · 20 IR', feeds:31, source:'demo-a', serving:false, demanded:0},
+  {name:'ICE Data Services', kind:'Data vendor', says:'Simulates ICE evaluated prices and benchmark rates, and the curves they imply.', holds:'0 FX · 5 IR', feeds:5, source:'ice-a', serving:false, demanded:0},
+  {name:'LSEG', kind:'Data vendor', says:'Simulates LSEG composite FX quotes, the WM benchmark rates and money-market rates.', holds:'14 FX · 0 IR', feeds:14, source:'lseg-a', serving:true, demanded:26},
+  {name:'Tradeweb', kind:'Broker', says:'Simulates Tradeweb dealer composite prices for rates, credit and money markets.', holds:'0 FX · 5 IR', feeds:5, source:'tradeweb-a', serving:false, demanded:0}
+];
+const FEEDS = [
+  {name:'AUD AONIA', class:'Rates', underlying:'AUD', engine:'Cox-Ingersoll-Ross', freq:'Every 1 min', enabled:true, provider:'Bloomberg'},
+  {name:'AUD AONIA', class:'Rates', underlying:'AUD', engine:'Vasicek', freq:'Every 1 min', enabled:true, provider:'Demo'},
+  {name:'AUD/USD', class:'FX', underlying:'AUD/USD', engine:'Geometric', freq:'Every 2 s', enabled:true, provider:'Bloomberg'},
+  {name:'AUD/USD', class:'FX', underlying:'AUD/USD', engine:'Geometric', freq:'Every 1 s', enabled:true, provider:'Demo'},
+  {name:'AUD/JPY', class:'FX', underlying:'AUD/JPY', engine:'Geometric', freq:'Every 2 s', enabled:true, provider:'LSEG'},
+  {name:'AUD/NZD', class:'FX', underlying:'AUD/NZD', engine:'Geometric', freq:'Every 2 s', enabled:true, provider:'LSEG'},
+  {name:'BRL CDI', class:'Rates', underlying:'BRL', engine:'Cox-Ingersoll-Ross', freq:'Every 1 min', enabled:true, provider:'Bloomberg'},
+  {name:'CAD CORRA', class:'Rates', underlying:'CAD', engine:'Vasicek', freq:'Every 1 min', enabled:true, provider:'Demo'}
+];
+const serves = p => p.serving && p.demanded > 0;
+const servingFeeds = PROVIDERS.filter(serves).reduce((n,p) => n + p.feeds, 0);
+const totalFeeds = PROVIDERS.reduce((n,p) => n + p.feeds, 0);
+const demandedIds = PROVIDERS.filter(serves).reduce((n,p) => n + p.demanded, 0);
+
+function bar(){
+  return '<span class="label faint">screen</span>' +
+    [['dashboard','Dashboard'],['provider','Provider'],['feed','Feed'],['sources','Sources'],['subscriptions','Subscriptions']].map(([v,l]) =>
+      '<button data-screen="' + v + '" class="' + (v === screen ? 'on' : '') + '">' + l + '</button>').join('');
+}
+function nav(){
+  return '<div class="top"><h1>ORE Studio — Market data / Synthetic</h1><span class="muted">The feeds the platform generates.</span>' +
+    '<a style="margin-left:auto" href="../../../knowledge/journeys/market_data/market_data.html">the journeys →</a></div>' +
+    '<div class="tabs"><button class="tab on">Dashboard</button><button class="tab" data-screen="provider">Provider</button></div>';
+}
+
+function dashboard(){
+  const rows = PROVIDERS.map(p => {
+    const s = serves(p);
+    const notServed = s ? 0 : p.demanded;
+    return '<tr class="row"><td><b>' + p.name + '</b> <span class="tag plan">' + p.kind + '</span></td>' +
+      '<td class="muted" style="max-width:430px">' + p.says + '</td><td class="faint">' + p.holds + '</td>' +
+      '<td class="num">' + p.feeds + '</td>' +
+      '<td>' + (s ? '<span class="tag ok">Serving</span>' : '<span class="tag">Stopped</span>') + '</td>' +
+      '<td class="num">' + (notServed ? '<span class="tag warn">' + notServed + ' ids</span>' : '<span class="faint">—</span>') + '</td>' +
+      '<td><button class="btn" data-provider="' + p.name + '">Open</button></td></tr>';
+  }).join('');
+  return nav() +
+    '<div class="kpis">' +
+      '<div class="kpi"><span class="lbl">Providers</span><span class="val">' + PROVIDERS.length + '</span></div>' +
+      '<div class="kpi"><span class="lbl">Feeds serving</span><span class="val">' + servingFeeds + '</span></div>' +
+      '<div class="kpi"><span class="lbl">Feeds stopped</span><span class="val">' + (totalFeeds - servingFeeds) + '</span></div>' +
+      '<div class="kpi"><span class="lbl">Ids demanded</span><span class="val">' + demandedIds + '</span></div>' +
+      '<div class="kpi"><span class="lbl">Ticks / min</span><span class="val">298</span></div>' +
+    '</div>' +
+    (PROVIDERS.some(p => !serves(p) && p.demanded > 0) ? '<div class="alert"><span>Demanded ids are not being served.</span><span class="tag warn">read the demand</span></div>' : '') +
+    '<div class="panel"><h2>Providers</h2><table><thead><tr><th>Provider</th><th>What it simulates</th><th>Holds</th><th class="num">Feeds</th><th>State</th><th class="num">Demand not served</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+    '<div class="notice">One rule: a feed serves when its provider\'s source serves and is demanded at least one id. Every number above counts that one state. Start and Stop are the operator test control on the provider screen.</div>';
+}
+
+function providerScreen(){
+  const p = PROVIDERS.find(x => x.name === provider) || PROVIDERS[0];
+  const s = serves(p);
+  const classes = [['FX','26'],['Rates','29']];
+  const tree = classes.map(([name,n]) =>
+    '<div class="node' + (name === 'FX' ? ' sel' : '') + '"><span class="ico">▸</span>' + name + '<span class="count">' + (s ? n + '/' + n : '0/' + n) + '</span></div>').join('');
+  const feeds = FEEDS.filter(f => f.provider === p.name);
+  const rows = (feeds.length ? feeds : FEEDS.slice(0,3).map(f => ({...f, provider:p.name}))).map(f =>
+    '<tr class="row"><td>' + (s ? '<span class="tag ok">Serving</span>' : '<span class="tag">Stopped</span>') + '</td>' +
+    '<td>' + (f.enabled ? '<span class="tag ok">Enabled</span>' : '<span class="tag bad">Disabled</span>') + '</td>' +
+    '<td>' + f.name + '</td><td>' + f.class + '</td><td>' + f.underlying + '</td><td>' + f.engine + '</td><td class="num">' + f.freq + '</td></tr>').join('');
+  return nav() +
+    '<div class="top"><h1>Provider</h1>' +
+      '<select class="btn" id="provider-pick">' + PROVIDERS.map(x => '<option ' + (x.name === p.name ? 'selected' : '') + '>' + x.name + '</option>').join('') + '</select>' +
+      '<span class="tag ' + (s ? 'ok' : '') + '">' + (s ? 'Serving' : 'Stopped') + '</span>' +
+      '<span class="muted">' + p.holds + ' · ' + p.feeds + ' feeds</span>' +
+      '<span style="margin-left:auto"></span>' +
+      '<button class="btn" ' + (s ? 'disabled' : '') + '>Start (test)</button><button class="btn" ' + (s ? '' : 'disabled') + '>Stop (test)</button>' +
+    '</div>' +
+    '<div class="split"><div class="panel"><h2>Folders</h2><div class="tree">' +
+      '<div class="node sel"><span class="ico">▾</span>' + p.name + '<span class="count">' + (s ? p.feeds + '/' + p.feeds : '0/' + p.feeds) + '</span></div>' + tree +
+      '</div></div><div class="panel"><h2>Feeds</h2>' +
+      '<table><thead><tr><th>State</th><th>Enabled</th><th>Name</th><th>Asset class</th><th>Underlying</th><th>Engine</th><th class="num">Frequency</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<div class="notice">The oresmd URI column is gone. The series is reached from the feed\'s page. No feed is selected for a run test.</div></div></div>';
+}
+
+function feedScreen(){
+  const p = PROVIDERS.find(x => FEEDS.some(f => f.name === feedName && f.provider === x.name)) || PROVIDERS[0];
+  const s = serves(p);
+  const f = FEEDS.find(x => x.name === feedName) || FEEDS[0];
+  const tabs = ['details','process','ticks','history'];
+  const labels = {details:'Details', process: f.class === 'FX' ? 'Price behaviour' : 'Process', ticks:'Ticks', history:'History'};
+  const body = tab === 'process'
+    ? '<div class="panel"><div class="top"><h2 style="border:0;padding:0">Process</h2><span class="tag plan">draft</span><span style="margin-left:auto"></span><button class="btn">Discard</button><button class="btn primary">Save</button></div>' +
+      '<div class="top"><span class="muted">Engine</span><select class="btn"><option>' + f.engine + '</option></select><span class="faint small">0 unsaved changes.</span></div>' +
+      '<table><thead><tr><th>#</th><th>Description</th><th>Profile</th><th class="num">μ</th><th class="num">σ</th><th class="num">w</th><th class="num">Share</th></tr></thead><tbody>' +
+      '<tr><td>0</td><td>Primary · calibrated to the anchor</td><td>Normal</td><td class="num">0</td><td class="num">0.001</td><td class="num">0.95</td><td class="num">95.0%</td></tr>' +
+      '<tr><td>1</td><td>Tail · four times the primary</td><td>Custom</td><td class="num">0</td><td class="num">0.004</td><td class="num">0.05</td><td class="num">5.0%</td></tr>' +
+      '</tbody></table><div class="notice">The engine\'s note sits here, under the previews, as the standard draws it.</div></div>'
+    : tab === 'ticks'
+    ? '<div class="panel"><h2>Ticks</h2><table><thead><tr><th>Time</th><th>Value</th><th>Series</th></tr></thead><tbody><tr><td class="mono">10:32:01</td><td class="num">3.15</td><td class="mono">oresmd://ir/AUD?type=quote</td></tr><tr><td class="mono">10:32:02</td><td class="num">3.16</td><td class="mono">oresmd://ir/AUD?type=quote</td></tr></tbody></table></div>'
+    : tab === 'history'
+    ? '<div class="panel"><h2>History</h2><p class="muted">The stream of the feed and every part it holds, with Revert on each version older than its record\'s newest.</p></div>'
+    : '<div class="panel"><h2>Details</h2><dl class="kv"><dt>Provider</dt><dd>' + p.name + '</dd><dt>Asset class</dt><dd>' + f.class + '</dd><dt>Underlying</dt><dd>' + f.underlying + '</dd><dt>Engine</dt><dd>' + f.engine + '</dd><dt>Frequency</dt><dd>' + f.freq + '</dd><dt>Series</dt><dd class="mono">oresmd://' + (f.class === 'FX' ? 'fx/' + f.underlying : 'ir/' + f.underlying) + '?type=quote</dd></dl>' +
+      '<h2>Demand</h2><div class="chips"><span class="chip">ACME</span><span class="chip">ACME UK</span><span class="chip">ACME US</span></div><p class="faint small">Demand is computed from the subscriptions and the routes. It is not a run control.</p></div>';
+  return nav() +
+    '<div class="crumbs"><a href="#" data-screen="dashboard">Dashboard</a> › <a href="#" data-screen="provider">Provider</a> › ' + p.name + ' › <b>' + f.name + '</b></div>' +
+    '<div class="top"><h1>' + f.name + '</h1><span class="tag ' + (s ? 'ok' : '') + '">' + (s ? 'Serving' : 'Stopped') + '</span>' +
+      '<span class="muted">' + f.underlying + ' · ' + f.engine + '</span><span style="margin-left:auto"></span>' +
+      '<button class="btn" ' + (s ? 'disabled' : '') + '>Start (test)</button><button class="btn" ' + (s ? '' : 'disabled') + '>Stop (test)</button><button class="btn">Edit</button></div>' +
+    '<div class="tabs">' + tabs.map(x => '<button class="tab ' + (x === tab ? 'on' : '') + '" data-tab="' + x + '">' + labels[x] + '</button>').join('') + '</div>' +
+    body;
+}
+
+function sourcesScreen(){
+  return nav() +
+    '<div class="top"><h1>Market data sources</h1><span class="tag warn">1 with no demand</span><span class="tag bad">1 stale</span></div>' +
+    '<div class="kpis"><div class="kpi"><span class="lbl">Sources</span><span class="val">5</span></div><div class="kpi"><span class="lbl">Serving</span><span class="val">2</span></div><div class="kpi"><span class="lbl">Routes</span><span class="val">12</span></div><div class="kpi"><span class="lbl">Ticks / min</span><span class="val">298</span></div><div class="kpi"><span class="lbl">Quiet</span><span class="val">1</span></div></div>' +
+    '<div class="panel"><h2>Sources</h2><table><thead><tr><th>Source</th><th>Provider</th><th>Kind</th><th>State</th><th class="num">Routes</th><th class="num">Demanded</th><th class="num">Accepted</th><th class="num">Ticks / min</th><th class="num">Last tick</th></tr></thead><tbody>' +
+    '<tr><td class="mono">bloomberg-a</td><td>bloomberg</td><td>simulated</td><td><span class="tag ok">serving</span></td><td class="num">5</td><td class="num">26</td><td class="num">26</td><td class="num">298</td><td class="num muted">0.4 s</td></tr>' +
+    '<tr><td class="mono">lseg-a</td><td>lseg</td><td>simulated</td><td><span class="tag warn">no demand</span></td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num muted">never</td></tr>' +
+    '<tr><td class="mono">ore-import</td><td>ore</td><td>replay</td><td><span class="tag bad">stale</span></td><td class="num">2</td><td class="num">4</td><td class="num">0 /4</td><td class="num">0</td><td class="num muted">1 h</td></tr>' +
+    '</tbody></table><div class="notice">The operations board. Its full prototype is under Operations.</div></div>';
+}
+
+function subscriptionsScreen(){
+  return nav() +
+    '<div class="panel"><h2>Subscriptions</h2><table><thead><tr><th>Party</th><th>Provider</th><th>Rights</th><th>Source</th><th>State</th></tr></thead><tbody>' +
+    '<tr><td>ACME</td><td>bloomberg</td><td><span class="tag ok">display, non-display</span></td><td class="mono">bloomberg-a</td><td><span class="tag ok">serving</span></td></tr>' +
+    '<tr><td>ACME UK</td><td>lseg</td><td><span class="tag ok">display</span></td><td class="mono">lseg-a</td><td><span class="tag warn">no demand</span></td></tr>' +
+    '</tbody></table><div class="notice">A subscription names a provider and its rights. The route picks the source. The history read needs display or non-display.</div></div>';
+}
+
+function render(){
+  document.getElementById('note').textContent = 'Prototype · Synthetic feeds · screen ' + screen;
+  const body = screen === 'provider' ? providerScreen() : screen === 'feed' ? feedScreen() : screen === 'sources' ? sourcesScreen() : screen === 'subscriptions' ? subscriptionsScreen() : dashboard();
+  document.getElementById('app').innerHTML = body;
+  document.getElementById('bar').innerHTML = bar();
+  document.querySelectorAll('[data-screen]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); go({screen: b.dataset.screen}); }));
+  document.querySelectorAll('[data-provider]').forEach(b => b.addEventListener('click', () => go({screen:'provider', provider: b.dataset.provider})));
+  document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => go({tab: b.dataset.tab})));
+  const pick = document.getElementById('provider-pick');
+  if (pick) pick.addEventListener('change', () => go({provider: pick.value}));
+}
+function go(changes){
+  const next = new URLSearchParams(location.search);
+  Object.keys(changes).forEach(k => next.set(k, changes[k]));
+  location.search = next.toString();
+}
+render();
+</script>
+</body>
+</html>

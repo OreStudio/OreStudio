@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 4F8C2A1D-6B3E-49F7-8A52-1C9E7D0B3A64
+:END:
+#+title: Synthetic feeds prototype
+#+description: The synthetic feeds screen set for sign-off: the dashboard totals, a Provider tab with a combo and its own tree, the feed page with its process tab, the sources board and subscriptions, on mock data.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:synthetic:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+| Item          | Where                                    |
+|---------------+------------------------------------------|
+| Prototype     | [[file:synthetic-feeds/][the prototype]] |
+| Gemini review | none                                     |
+| Group         | [[file:index.org][Market data prototypes]]   |
+
+* Summary
+
+The synthetic feeds, as one screen set after demand replaced start and stop.
+The dashboard opens with the totals and then the providers. The Provider screen
+chooses one provider, shows its tree and its feeds. A feed keeps its record
+page and its process tab. The sources board and subscriptions are reached from
+the same tree.
+
+Every number counts one state: a feed serves when its provider's source serves
+and is demanded at least one id. The old tree and the old Market Simulator are
+gone with their prototypes.
+
+* Screens
+
+=screen=dashboard|provider|feed|sources|subscriptions=, with =provider=, =feed=
+and =tab= for the detail.
+
+- Dashboard. Five tiles, then the provider list. A demanded provider that does
+  not serve is the only alert.
+- Provider. A combo at the top, a tree on the left for that provider only, and
+  the feed grid on the right without the oresmd URI. Start and Stop are the
+  operator test control.
+- Feed. The record page and its tabs: Details, Price behaviour or Process,
+  Ticks, History. The demand line says who makes it run.
+- Sources. The operations board as it stands.
+- Subscriptions. A party's rights and the source its route picks.
+
+* States
+
+A provider is serving or stopped. A feed is serving or stopped by the same
+rule. Quiet and stale sources appear on the sources board. The mock covers
+serving, stopped, no demand and stale.
+
+* What is fake
+
+Mock data. No service, no session, no build step. The numbers follow the live
+provisioned tenant.
+
+* Where the code lives
+
+[[file:synthetic-feeds/index.html][The prototype]] is one plain HTML file.
+
+* Verdict
+
+Awaiting sign-off. The dashboard totals and the Provider tab are the design
+questions. The feed page and the process tab are carried over unchanged.

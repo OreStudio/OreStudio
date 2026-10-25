@@ -375,7 +375,7 @@ is not drawn.
 Synthetic (=marketdata/synthetic/SyntheticScreen.tsx=) is one screen with two tabs, the
 dashboard and the feed tree. It lists no feed list of its own per asset class: the feed
 table lists every kind. Everything on it is synthetic, so no label says so. The
-[[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]] shows it.
+[[id:4F8C2A1D-6B3E-49F7-8A52-1C9E7D0B3A64][Synthetic feeds prototype]] shows it.
 
 *** The dashboard
 

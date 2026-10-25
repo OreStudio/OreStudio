@@ -192,6 +192,17 @@ def classify(parser, enums):
     return None, []
 
 
+def humanise(name):
+    """The words a person reads for a setting name.
+
+    Splits a dotted, underscored or camel-cased name into words and keeps its
+    own capitals, so TrainingSamples reads Training Samples and
+    MersenneTwister stays Mersenne Twister.
+    """
+    spaced = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", name)
+    return re.sub(r"[._]+", " ", spaced).strip()
+
+
 def slug(name):
     return re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
 
@@ -232,7 +243,7 @@ def sets_of(found):
         elif kind in ("integer", "real", "period"):
             set_code = slug(name)
             sets[set_code] = {
-                "name": name.replace("_", " ").replace(".", " ").strip().capitalize(),
+                "name": humanise(name),
                 "description": f"The values the {name} setting accepts.",
                 "source_kind": {"integer": "integer", "real": "number", "period": "text"}[kind],
                 "is_ordered": False,
@@ -240,7 +251,7 @@ def sets_of(found):
         elif kind == "enum":
             set_code = slug(name)
             sets[set_code] = {
-                "name": name.replace("_", " ").replace(".", " ").strip().capitalize(),
+                "name": humanise(name),
                 "description": f"The values the {name} setting accepts.",
                 "source_kind": "enumerated",
                 "is_ordered": False,
@@ -257,7 +268,7 @@ def sets_of(found):
         elif kind == "text":
             set_code = slug(name)
             sets[set_code] = {
-                "name": name.replace("_", " ").replace(".", " ").strip().capitalize(),
+                "name": humanise(name),
                 "description": f"The values the {name} setting accepts.",
                 "source_kind": "text",
                 "is_ordered": False,

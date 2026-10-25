@@ -70,6 +70,10 @@
 #include "ores.shell/app/commands/reporting/report_definition_commands.hpp"
 #include "ores.shell/app/commands/reporting/report_instance_commands.hpp"
 #include "ores.shell/app/commands/reporting/report_operations_operations_commands.hpp"
+#include "ores.shell/app/commands/reporting/ore_parameter_setting_value_set_commands.hpp"
+#include "ores.shell/app/commands/reporting/ore_parameter_value_set_catalogue_commands.hpp"
+#include "ores.shell/app/commands/reporting/ore_parameter_value_set_commands.hpp"
+#include "ores.shell/app/commands/reporting/ore_parameter_value_set_value_commands.hpp"
 #include "ores.shell/app/commands/reporting/report_type_commands.hpp"
 #include "ores.shell/app/commands/scheduler_commands.hpp"
 #include "ores.shell/app/commands/script_commands.hpp"
@@ -138,6 +142,10 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     concurrency_policy_commands::register_commands(*root, session_);
     configuration_analytic_parameter_commands::register_commands(*root, session_);
     report_definition_commands::register_commands(*root, session_);
+    ore_parameter_setting_value_set_commands::register_commands(*root, session_);
+    ore_parameter_value_set_catalogue_commands::register_commands(*root, session_);
+    ore_parameter_value_set_commands::register_commands(*root, session_);
+    ore_parameter_value_set_value_commands::register_commands(*root, session_);
     report_instance_commands::register_commands(*root, session_);
     configuration_market_binding_commands::register_commands(*root, session_);
     report_type_commands::register_commands(*root, session_);

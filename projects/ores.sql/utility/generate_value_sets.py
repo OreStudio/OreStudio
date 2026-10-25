@@ -140,8 +140,8 @@ def contract_pairs():
             for setting in pair.get("settings", []):
                 pairs.add((scope_of(setting["scope"]), setting["name"]))
     with open(CONTRACT_SOURCES["code"], encoding="utf-8") as handle:
-        for entry in json.load(handle).values():
-            pairs.add((scope_of(entry["scope"]), entry.get("name", entry.get("setting", ""))))
+        for name, entry in json.load(handle).items():
+            pairs.add((scope_of(entry["scope"]), name))
     with open(CONTRACT_SOURCES["globals"], encoding="utf-8") as handle:
         for name in json.load(handle):
             pairs.add(("GlobalParameters", name))
@@ -169,12 +169,25 @@ def resolve(data):
         if (scope, name) in linked:
             continue
         candidates = by_name.get(name, set())
+        if not candidates:
+            folded = name.lower()
+            candidates = {set_code for other, set_code in by_name.items()
+                          if other.lower() == folded}
+            if len(candidates) == 1:
+                candidates = set(candidates)
         if len(candidates) == 1:
             data["links"][f"{scope}|{name}"] = next(iter(candidates))
         elif len(candidates) > 1:
             problems.append(f"{scope}|{name} could be {sorted(candidates)}")
         else:
             problems.append(f"{scope}|{name} has no value set")
+    contract = contract_pairs()
+    for key in [key for key in data["links"]
+                if (key.partition("|")[0], key.partition("|")[2]) not in contract]:
+        del data["links"][key]
+    named = set(data["links"].values())
+    for code in [code for code in data["sets"] if code not in named]:
+        del data["sets"][code]
     return problems
 
 

@@ -245,25 +245,25 @@
     "allowmodelfallbacks": {
       "description": "The values the AllowModelFallbacks setting accepts.",
       "is_ordered": false,
-      "name": "Allowmodelfallbacks",
+      "name": "Allow Model Fallbacks",
       "source_kind": "text"
     },
     "allowmodelfallbakcs": {
       "description": "The values the AllowModelFallbakcs setting accepts.",
       "is_ordered": false,
-      "name": "Allowmodelfallbakcs",
+      "name": "Allow Model Fallbakcs",
       "source_kind": "text"
     },
     "baseccy": {
       "description": "The values the BaseCcy setting accepts.",
       "is_ordered": false,
-      "name": "Baseccy",
+      "name": "Base Ccy",
       "source_kind": "text"
     },
     "beta": {
       "description": "The values the beta setting accepts.",
       "is_ordered": false,
-      "name": "Beta",
+      "name": "beta",
       "source_kind": "number"
     },
     "bins": {
@@ -275,49 +275,49 @@
     "bootstrap_calibrationgrid": {
       "description": "The values the Bootstrap.CalibrationGrid setting accepts.",
       "is_ordered": false,
-      "name": "Bootstrap calibrationgrid",
+      "name": "Bootstrap Calibration Grid",
       "source_kind": "text"
     },
     "bootstrap_mesherconcentration": {
       "description": "The values the Bootstrap.MesherConcentration setting accepts.",
       "is_ordered": false,
-      "name": "Bootstrap mesherconcentration",
+      "name": "Bootstrap Mesher Concentration",
       "source_kind": "text"
     },
     "bootstrap_mesherepsilon": {
       "description": "The values the Bootstrap.MesherEpsilon setting accepts.",
       "is_ordered": false,
-      "name": "Bootstrap mesherepsilon",
+      "name": "Bootstrap Mesher Epsilon",
       "source_kind": "number"
     },
     "bootstrap_mesherscaling": {
       "description": "The values the Bootstrap.MesherScaling setting accepts.",
       "is_ordered": false,
-      "name": "Bootstrap mesherscaling",
+      "name": "Bootstrap Mesher Scaling",
       "source_kind": "number"
     },
     "bootstrap_mode": {
       "description": "The values the Bootstrap.Mode setting accepts.",
       "is_ordered": false,
-      "name": "Bootstrap mode",
+      "name": "Bootstrap Mode",
       "source_kind": "text"
     },
     "bootstrap_stategridpoints": {
       "description": "The values the Bootstrap.StateGridPoints setting accepts.",
       "is_ordered": false,
-      "name": "Bootstrap stategridpoints",
+      "name": "Bootstrap State Grid Points",
       "source_kind": "integer"
     },
     "bootstrap_timestepsperyear": {
       "description": "The values the Bootstrap.TimeStepsPerYear setting accepts.",
       "is_ordered": false,
-      "name": "Bootstrap timestepsperyear",
+      "name": "Bootstrap Time Steps Per Year",
       "source_kind": "integer"
     },
     "bootstraptolerance": {
       "description": "The values the BootstrapTolerance setting accepts.",
       "is_ordered": false,
-      "name": "Bootstraptolerance",
+      "name": "Bootstrap Tolerance",
       "source_kind": "number"
     },
     "bounds": {
@@ -329,7 +329,7 @@
     "brownianbridgeordering": {
       "description": "The values the BrownianBridgeOrdering setting accepts.",
       "is_ordered": false,
-      "name": "Brownianbridgeordering",
+      "name": "Brownian Bridge Ordering",
       "source_kind": "enumerated",
       "values": [
         {
@@ -355,43 +355,43 @@
     "bsstddevs": {
       "description": "The values the BSStdDevs setting accepts.",
       "is_ordered": false,
-      "name": "Bsstddevs",
+      "name": "BSStd Devs",
       "source_kind": "number"
     },
     "buckets": {
       "description": "The values the buckets setting accepts.",
       "is_ordered": false,
-      "name": "Buckets",
+      "name": "buckets",
       "source_kind": "integer"
     },
     "buckettimes": {
       "description": "The values the BucketTimes setting accepts.",
       "is_ordered": false,
-      "name": "Buckettimes",
+      "name": "Bucket Times",
       "source_kind": "number"
     },
     "buckettimesdeltagamma": {
       "description": "The values the BucketTimesDeltaGamma setting accepts.",
       "is_ordered": false,
-      "name": "Buckettimesdeltagamma",
+      "name": "Bucket Times Delta Gamma",
       "source_kind": "number"
     },
     "buckettimesvega": {
       "description": "The values the BucketTimesVega setting accepts.",
       "is_ordered": false,
-      "name": "Buckettimesvega",
+      "name": "Bucket Times Vega",
       "source_kind": "number"
     },
     "buckettimesvegaopt": {
       "description": "The values the BucketTimesVegaOpt setting accepts.",
       "is_ordered": false,
-      "name": "Buckettimesvegaopt",
+      "name": "Bucket Times Vega Opt",
       "source_kind": "number"
     },
     "buckettimesvegaund": {
       "description": "The values the BucketTimesVegaUnd setting accepts.",
       "is_ordered": false,
-      "name": "Buckettimesvegaund",
+      "name": "Bucket Times Vega Und",
       "source_kind": "number"
     },
     "calibrate": {
@@ -409,49 +409,49 @@
     "calibrationindexterms": {
       "description": "The values the calibrationIndexTerms setting accepts.",
       "is_ordered": false,
-      "name": "Calibrationindexterms",
+      "name": "calibration Index Terms",
       "source_kind": "text"
     },
     "calibrationinstrumentspacing": {
       "description": "The values the CalibrationInstrumentSpacing setting accepts.",
       "is_ordered": false,
-      "name": "Calibrationinstrumentspacing",
+      "name": "Calibration Instrument Spacing",
       "source_kind": "text"
     },
     "calibrationmoneyness": {
       "description": "The values the CalibrationMoneyness setting accepts.",
       "is_ordered": false,
-      "name": "Calibrationmoneyness",
+      "name": "Calibration Moneyness",
       "source_kind": "number"
     },
     "calibrationstrategy": {
       "description": "The values the CalibrationStrategy setting accepts.",
       "is_ordered": false,
-      "name": "Calibrationstrategy",
+      "name": "Calibration Strategy",
       "source_kind": "text"
     },
     "callspreadeps": {
       "description": "The values the CallSpreadEps setting accepts.",
       "is_ordered": false,
-      "name": "Callspreadeps",
+      "name": "Call Spread Eps",
       "source_kind": "number"
     },
     "cashflowgeneration_oncpnaddsimtimescutoff": {
       "description": "The values the CashflowGeneration.OnCpnAddSimTimesCutoff setting accepts.",
       "is_ordered": false,
-      "name": "Cashflowgeneration oncpnaddsimtimescutoff",
+      "name": "Cashflow Generation On Cpn Add Sim Times Cutoff",
       "source_kind": "text"
     },
     "cashflowgeneration_oncpnmaxsimtimes": {
       "description": "The values the CashflowGeneration.OnCpnMaxSimTimes setting accepts.",
       "is_ordered": false,
-      "name": "Cashflowgeneration oncpnmaxsimtimes",
+      "name": "Cashflow Generation On Cpn Max Sim Times",
       "source_kind": "integer"
     },
     "continueoncalibrationerror": {
       "description": "The values the ContinueOnCalibrationError setting accepts.",
       "is_ordered": false,
-      "name": "Continueoncalibrationerror",
+      "name": "Continue On Calibration Error",
       "source_kind": "text"
     },
     "correlation": {
@@ -463,19 +463,19 @@
     "credit_reversion": {
       "description": "The values the Credit_Reversion setting accepts.",
       "is_ordered": false,
-      "name": "Credit reversion",
+      "name": "Credit Reversion",
       "source_kind": "number"
     },
     "credit_volatility": {
       "description": "The values the Credit_Volatility setting accepts.",
       "is_ordered": false,
-      "name": "Credit volatility",
+      "name": "Credit Volatility",
       "source_kind": "number"
     },
     "credit_volatilitytimes": {
       "description": "The values the Credit_VolatilityTimes setting accepts.",
       "is_ordered": false,
-      "name": "Credit volatilitytimes",
+      "name": "Credit Volatility Times",
       "source_kind": "number"
     },
     "curve": {
@@ -487,7 +487,7 @@
     "dampingsteps": {
       "description": "The values the DampingSteps setting accepts.",
       "is_ordered": false,
-      "name": "Dampingsteps",
+      "name": "Damping Steps",
       "source_kind": "integer"
     },
     "displacement": {
@@ -505,43 +505,43 @@
     "errortolerance": {
       "description": "The values the ErrorTolerance setting accepts.",
       "is_ordered": false,
-      "name": "Errortolerance",
+      "name": "Error Tolerance",
       "source_kind": "number"
     },
     "eta": {
       "description": "The values the eta setting accepts.",
       "is_ordered": false,
-      "name": "Eta",
+      "name": "eta",
       "source_kind": "number"
     },
     "exercisetimestepsperyear": {
       "description": "The values the ExerciseTimeStepsPerYear setting accepts.",
       "is_ordered": false,
-      "name": "Exercisetimestepsperyear",
+      "name": "Exercise Time Steps Per Year",
       "source_kind": "integer"
     },
     "externalcomputedevice": {
       "description": "The values the ExternalComputeDevice setting accepts.",
       "is_ordered": false,
-      "name": "Externalcomputedevice",
+      "name": "External Compute Device",
       "source_kind": "text"
     },
     "fepcurve": {
       "description": "The values the FepCurve setting accepts.",
       "is_ordered": false,
-      "name": "Fepcurve",
+      "name": "Fep Curve",
       "source_kind": "text"
     },
     "fixedmaxstddevs": {
       "description": "The values the FixedMaxStdDevs setting accepts.",
       "is_ordered": false,
-      "name": "Fixedmaxstddevs",
+      "name": "Fixed Max Std Devs",
       "source_kind": "number"
     },
     "fixedminstddevs": {
       "description": "The values the FixedMinStdDevs setting accepts.",
       "is_ordered": false,
-      "name": "Fixedminstddevs",
+      "name": "Fixed Min Std Devs",
       "source_kind": "number"
     },
     "flag": {
@@ -553,115 +553,115 @@
     "flatvol": {
       "description": "The values the FlatVol setting accepts.",
       "is_ordered": false,
-      "name": "Flatvol",
+      "name": "Flat Vol",
       "source_kind": "number"
     },
     "floatspreadmapping": {
       "description": "The values the FloatSpreadMapping setting accepts.",
       "is_ordered": false,
-      "name": "Floatspreadmapping",
+      "name": "Float Spread Mapping",
       "source_kind": "text"
     },
     "fxcalibration": {
       "description": "The values the FxCalibration setting accepts.",
       "is_ordered": false,
-      "name": "Fxcalibration",
+      "name": "Fx Calibration",
       "source_kind": "text"
     },
     "fxsource": {
       "description": "The values the FXSource setting accepts.",
       "is_ordered": false,
-      "name": "Fxsource",
+      "name": "FXSource",
       "source_kind": "text"
     },
     "fxvolatility": {
       "description": "The values the FxVolatility setting accepts.",
       "is_ordered": false,
-      "name": "Fxvolatility",
+      "name": "Fx Volatility",
       "source_kind": "text"
     },
     "fxvolatilitytimes": {
       "description": "The values the FxVolatilityTimes setting accepts.",
       "is_ordered": false,
-      "name": "Fxvolatilitytimes",
+      "name": "Fx Volatility Times",
       "source_kind": "text"
     },
     "generateadditionalresults": {
       "description": "The values the GenerateAdditionalResults setting accepts.",
       "is_ordered": false,
-      "name": "Generateadditionalresults",
+      "name": "Generate Additional Results",
       "source_kind": "text"
     },
     "globalmodel": {
       "description": "The values the GlobalModel setting accepts.",
       "is_ordered": false,
-      "name": "Globalmodel",
+      "name": "Global Model",
       "source_kind": "text"
     },
     "gridcoarsening": {
       "description": "The values the GridCoarsening setting accepts.",
       "is_ordered": false,
-      "name": "Gridcoarsening",
+      "name": "Grid Coarsening",
       "source_kind": "text"
     },
     "heston_calibrationexpiries": {
       "description": "The values the Heston.CalibrationExpiries setting accepts.",
       "is_ordered": false,
-      "name": "Heston calibrationexpiries",
+      "name": "Heston Calibration Expiries",
       "source_kind": "text"
     },
     "heston_calibrationmethod": {
       "description": "The values the Heston.CalibrationMethod setting accepts.",
       "is_ordered": false,
-      "name": "Heston calibrationmethod",
+      "name": "Heston Calibration Method",
       "source_kind": "text"
     },
     "heston_calibrationvarianceterms": {
       "description": "The values the Heston.CalibrationVarianceTerms setting accepts.",
       "is_ordered": false,
-      "name": "Heston calibrationvarianceterms",
+      "name": "Heston Calibration Variance Terms",
       "source_kind": "text"
     },
     "heston_earlyexitthreshold": {
       "description": "The values the Heston.EarlyExitThreshold setting accepts.",
       "is_ordered": false,
-      "name": "Heston earlyexitthreshold",
+      "name": "Heston Early Exit Threshold",
       "source_kind": "number"
     },
     "heston_initialvalues": {
       "description": "The values the Heston.InitialValues setting accepts.",
       "is_ordered": false,
-      "name": "Heston initialvalues",
+      "name": "Heston Initial Values",
       "source_kind": "number"
     },
     "heston_maxacceptableerror": {
       "description": "The values the Heston.MaxAcceptableError setting accepts.",
       "is_ordered": false,
-      "name": "Heston maxacceptableerror",
+      "name": "Heston Max Acceptable Error",
       "source_kind": "number"
     },
     "heston_maxcalibrationattempts": {
       "description": "The values the Heston.MaxCalibrationAttempts setting accepts.",
       "is_ordered": false,
-      "name": "Heston maxcalibrationattempts",
+      "name": "Heston Max Calibration Attempts",
       "source_kind": "integer"
     },
     "heston_maximuminitialvalues": {
       "description": "The values the Heston.MaximumInitialValues setting accepts.",
       "is_ordered": false,
-      "name": "Heston maximuminitialvalues",
+      "name": "Heston Maximum Initial Values",
       "source_kind": "number"
     },
     "heston_processdiscretization": {
       "description": "The values the Heston.ProcessDiscretization setting accepts.",
       "is_ordered": false,
-      "name": "Heston processdiscretization",
+      "name": "Heston Process Discretization",
       "source_kind": "text"
     },
     "heston_quantoprocessdiscretization": {
       "description": "The values the Heston.QuantoProcessDiscretization setting accepts.",
       "is_ordered": false,
-      "name": "Heston quantoprocessdiscretization",
+      "name": "Heston Quanto Process Discretization",
       "source_kind": "enumerated",
       "values": [
         {
@@ -723,175 +723,175 @@
     "heston_relaxedfellerconstraint": {
       "description": "The values the Heston.RelaxedFellerConstraint setting accepts.",
       "is_ordered": false,
-      "name": "Heston relaxedfellerconstraint",
+      "name": "Heston Relaxed Feller Constraint",
       "source_kind": "number"
     },
     "indicatorsmoothingforderivatives": {
       "description": "The values the IndicatorSmoothingForDerivatives setting accepts.",
       "is_ordered": false,
-      "name": "Indicatorsmoothingforderivatives",
+      "name": "Indicator Smoothing For Derivatives",
       "source_kind": "text"
     },
     "indicatorsmoothingforvalues": {
       "description": "The values the IndicatorSmoothingForValues setting accepts.",
       "is_ordered": false,
-      "name": "Indicatorsmoothingforvalues",
+      "name": "Indicator Smoothing For Values",
       "source_kind": "text"
     },
     "infdkvolatility": {
       "description": "The values the InfDkVolatility setting accepts.",
       "is_ordered": false,
-      "name": "Infdkvolatility",
+      "name": "Inf Dk Volatility",
       "source_kind": "number"
     },
     "infjyindexvol": {
       "description": "The values the InfJyIndexVol setting accepts.",
       "is_ordered": false,
-      "name": "Infjyindexvol",
+      "name": "Inf Jy Index Vol",
       "source_kind": "text"
     },
     "infjyrealratereversion": {
       "description": "The values the InfJyRealRateReversion setting accepts.",
       "is_ordered": false,
-      "name": "Infjyrealratereversion",
+      "name": "Inf Jy Real Rate Reversion",
       "source_kind": "text"
     },
     "infjyrealratevol": {
       "description": "The values the InfJyRealRateVol setting accepts.",
       "is_ordered": false,
-      "name": "Infjyrealratevol",
+      "name": "Inf Jy Real Rate Vol",
       "source_kind": "text"
     },
     "infjyrealtonominalvolratio": {
       "description": "The values the InfJyRealToNominalVolRatio setting accepts.",
       "is_ordered": false,
-      "name": "Infjyrealtonominalvolratio",
+      "name": "Inf Jy Real To Nominal Vol Ratio",
       "source_kind": "number"
     },
     "infjytimes": {
       "description": "The values the InfJyTimes setting accepts.",
       "is_ordered": false,
-      "name": "Infjytimes",
+      "name": "Inf Jy Times",
       "source_kind": "text"
     },
     "infmodeltype": {
       "description": "The values the InfModelType setting accepts.",
       "is_ordered": false,
-      "name": "Infmodeltype",
+      "name": "Inf Model Type",
       "source_kind": "text"
     },
     "integrationpoints": {
       "description": "The values the IntegrationPoints setting accepts.",
       "is_ordered": false,
-      "name": "Integrationpoints",
+      "name": "Integration Points",
       "source_kind": "integer"
     },
     "irreversion": {
       "description": "The values the IrReversion_ setting accepts.",
       "is_ordered": false,
-      "name": "Irreversion",
+      "name": "Ir Reversion",
       "source_kind": "text"
     },
     "irvolatilitytype": {
       "description": "The values the IrVolatilityType setting accepts.",
       "is_ordered": false,
-      "name": "Irvolatilitytype",
+      "name": "Ir Volatility Type",
       "source_kind": "text"
     },
     "lossdistributionperiods": {
       "description": "The values the LossDistributionPeriods setting accepts.",
       "is_ordered": false,
-      "name": "Lossdistributionperiods",
+      "name": "Loss Distribution Periods",
       "source_kind": "text"
     },
     "lowerlimit": {
       "description": "The values the LowerLimit setting accepts.",
       "is_ordered": false,
-      "name": "Lowerlimit",
+      "name": "Lower Limit",
       "source_kind": "number"
     },
     "max": {
       "description": "The values the max setting accepts.",
       "is_ordered": false,
-      "name": "Max",
+      "name": "max",
       "source_kind": "number"
     },
     "maxcprmultiplier": {
       "description": "The values the MaxCPRMultiplier setting accepts.",
       "is_ordered": false,
-      "name": "Maxcprmultiplier",
+      "name": "Max CPRMultiplier",
       "source_kind": "number"
     },
     "maxdiscretisationpoints": {
       "description": "The values the MaxDiscretisationPoints setting accepts.",
       "is_ordered": false,
-      "name": "Maxdiscretisationpoints",
+      "name": "Max Discretisation Points",
       "source_kind": "integer"
     },
     "maxgapdays": {
       "description": "The values the MaxGapDays setting accepts.",
       "is_ordered": false,
-      "name": "Maxgapdays",
+      "name": "Max Gap Days",
       "source_kind": "integer"
     },
     "maxiterations": {
       "description": "The values the MaxIterations setting accepts.",
       "is_ordered": false,
-      "name": "Maxiterations",
+      "name": "Max Iterations",
       "source_kind": "integer"
     },
     "maxpricethresholdsteps": {
       "description": "The values the MaxPriceThresholdSteps setting accepts.",
       "is_ordered": false,
-      "name": "Maxpricethresholdsteps",
+      "name": "Max Price Threshold Steps",
       "source_kind": "integer"
     },
     "maxsamples": {
       "description": "The values the MaxSamples setting accepts.",
       "is_ordered": false,
-      "name": "Maxsamples",
+      "name": "Max Samples",
       "source_kind": "integer"
     },
     "mctype": {
       "description": "The values the McType setting accepts.",
       "is_ordered": false,
-      "name": "Mctype",
+      "name": "Mc Type",
       "source_kind": "text"
     },
     "meanreversion": {
       "description": "The values the MeanReversion setting accepts.",
       "is_ordered": false,
-      "name": "Meanreversion",
+      "name": "Mean Reversion",
       "source_kind": "number"
     },
     "mesherconcentration": {
       "description": "The values the MesherConcentration setting accepts.",
       "is_ordered": false,
-      "name": "Mesherconcentration",
+      "name": "Mesher Concentration",
       "source_kind": "number"
     },
     "mesherepsilon": {
       "description": "The values the MesherEpsilon setting accepts.",
       "is_ordered": false,
-      "name": "Mesherepsilon",
+      "name": "Mesher Epsilon",
       "source_kind": "number"
     },
     "meshermaxconcentratingpoints": {
       "description": "The values the MesherMaxConcentratingPoints setting accepts.",
       "is_ordered": false,
-      "name": "Meshermaxconcentratingpoints",
+      "name": "Mesher Max Concentrating Points",
       "source_kind": "integer"
     },
     "mesherscaling": {
       "description": "The values the MesherScaling setting accepts.",
       "is_ordered": false,
-      "name": "Mesherscaling",
+      "name": "Mesher Scaling",
       "source_kind": "number"
     },
     "method": {
       "description": "The values the method setting accepts.",
       "is_ordered": false,
-      "name": "Method",
+      "name": "method",
       "source_kind": "enumerated",
       "values": [
         {
@@ -917,13 +917,13 @@
     "min": {
       "description": "The values the min setting accepts.",
       "is_ordered": false,
-      "name": "Min",
+      "name": "min",
       "source_kind": "number"
     },
     "mincprmultiplier": {
       "description": "The values the MinCPRMultiplier setting accepts.",
       "is_ordered": false,
-      "name": "Mincprmultiplier",
+      "name": "Min CPRMultiplier",
       "source_kind": "number"
     },
     "model": {
@@ -935,43 +935,43 @@
     "model_correlation": {
       "description": "The values the model_Correlation setting accepts.",
       "is_ordered": false,
-      "name": "Model correlation",
+      "name": "model Correlation",
       "source_kind": "text"
     },
     "nsimulations": {
       "description": "The values the nSimulations setting accepts.",
       "is_ordered": false,
-      "name": "Nsimulations",
+      "name": "n Simulations",
       "source_kind": "integer"
     },
     "nx": {
       "description": "The values the nx setting accepts.",
       "is_ordered": false,
-      "name": "Nx",
+      "name": "nx",
       "source_kind": "integer"
     },
     "ny": {
       "description": "The values the ny setting accepts.",
       "is_ordered": false,
-      "name": "Ny",
+      "name": "ny",
       "source_kind": "integer"
     },
     "openenddatereplacement": {
       "description": "The values the OpenEndDateReplacement setting accepts.",
       "is_ordered": false,
-      "name": "Openenddatereplacement",
+      "name": "Open End Date Replacement",
       "source_kind": "text"
     },
     "optionexpiryposition": {
       "description": "The values the OptionExpiryPosition setting accepts.",
       "is_ordered": false,
-      "name": "Optionexpiryposition",
+      "name": "Option Expiry Position",
       "source_kind": "text"
     },
     "p": {
       "description": "The values the p setting accepts.",
       "is_ordered": false,
-      "name": "P",
+      "name": "p",
       "source_kind": "number"
     },
     "policy": {
@@ -983,7 +983,7 @@
     "polynomtype": {
       "description": "The values the PolynomType setting accepts.",
       "is_ordered": false,
-      "name": "Polynomtype",
+      "name": "Polynom Type",
       "source_kind": "enumerated",
       "values": [
         {
@@ -1039,49 +1039,49 @@
     "pricethreshold": {
       "description": "The values the PriceThreshold setting accepts.",
       "is_ordered": false,
-      "name": "Pricethreshold",
+      "name": "Price Threshold",
       "source_kind": "number"
     },
     "pricethresholdstep": {
       "description": "The values the PriceThresholdStep setting accepts.",
       "is_ordered": false,
-      "name": "Pricethresholdstep",
+      "name": "Price Threshold Step",
       "source_kind": "number"
     },
     "pricing_conversionratiodiscretisationgrid": {
       "description": "The values the Pricing.ConversionRatioDiscretisationGrid setting accepts.",
       "is_ordered": false,
-      "name": "Pricing conversionratiodiscretisationgrid",
+      "name": "Pricing Conversion Ratio Discretisation Grid",
       "source_kind": "number"
     },
     "pricing_mesherepsilon": {
       "description": "The values the Pricing.MesherEpsilon setting accepts.",
       "is_ordered": false,
-      "name": "Pricing mesherepsilon",
+      "name": "Pricing Mesher Epsilon",
       "source_kind": "number"
     },
     "pricing_mesherscaling": {
       "description": "The values the Pricing.MesherScaling setting accepts.",
       "is_ordered": false,
-      "name": "Pricing mesherscaling",
+      "name": "Pricing Mesher Scaling",
       "source_kind": "number"
     },
     "pricing_samples": {
       "description": "The values the Pricing.Samples setting accepts.",
       "is_ordered": false,
-      "name": "Pricing samples",
+      "name": "Pricing Samples",
       "source_kind": "integer"
     },
     "pricing_seed": {
       "description": "The values the Pricing.Seed setting accepts.",
       "is_ordered": false,
-      "name": "Pricing seed",
+      "name": "Pricing Seed",
       "source_kind": "integer"
     },
     "pricing_sequence": {
       "description": "The values the Pricing.Sequence setting accepts.",
       "is_ordered": false,
-      "name": "Pricing sequence",
+      "name": "Pricing Sequence",
       "source_kind": "enumerated",
       "values": [
         {
@@ -1119,91 +1119,91 @@
     "pricing_stategridpoints": {
       "description": "The values the Pricing.StateGridPoints setting accepts.",
       "is_ordered": false,
-      "name": "Pricing stategridpoints",
+      "name": "Pricing State Grid Points",
       "source_kind": "integer"
     },
     "pricing_timestepsperyear": {
       "description": "The values the Pricing.TimeStepsPerYear setting accepts.",
       "is_ordered": false,
-      "name": "Pricing timestepsperyear",
+      "name": "Pricing Time Steps Per Year",
       "source_kind": "integer"
     },
     "quantocurrencypairs": {
       "description": "The values the QuantoCurrencyPairs setting accepts.",
       "is_ordered": false,
-      "name": "Quantocurrencypairs",
+      "name": "Quanto Currency Pairs",
       "source_kind": "text"
     },
     "recoveryrategrid": {
       "description": "The values the recoveryRateGrid setting accepts.",
       "is_ordered": false,
-      "name": "Recoveryrategrid",
+      "name": "recovery Rate Grid",
       "source_kind": "text"
     },
     "recoveryrateprobabilities": {
       "description": "The values the recoveryRateProbabilities setting accepts.",
       "is_ordered": false,
-      "name": "Recoveryrateprobabilities",
+      "name": "recovery Rate Probabilities",
       "source_kind": "text"
     },
     "referencecalibrationgrid": {
       "description": "The values the ReferenceCalibrationGrid setting accepts.",
       "is_ordered": false,
-      "name": "Referencecalibrationgrid",
+      "name": "Reference Calibration Grid",
       "source_kind": "text"
     },
     "regression_maxsimtimeseq": {
       "description": "The values the Regression.MaxSimTimesEQ setting accepts.",
       "is_ordered": false,
-      "name": "Regression maxsimtimeseq",
+      "name": "Regression Max Sim Times EQ",
       "source_kind": "integer"
     },
     "regression_maxsimtimesfx": {
       "description": "The values the Regression.MaxSimTimesFX setting accepts.",
       "is_ordered": false,
-      "name": "Regression maxsimtimesfx",
+      "name": "Regression Max Sim Times FX",
       "source_kind": "integer"
     },
     "regression_maxsimtimesir": {
       "description": "The values the Regression.MaxSimTimesIR setting accepts.",
       "is_ordered": false,
-      "name": "Regression maxsimtimesir",
+      "name": "Regression Max Sim Times IR",
       "source_kind": "integer"
     },
     "regression_vargroupmode": {
       "description": "The values the Regression.VarGroupMode setting accepts.",
       "is_ordered": false,
-      "name": "Regression vargroupmode",
+      "name": "Regression Var Group Mode",
       "source_kind": "text"
     },
     "regressionorder": {
       "description": "The values the RegressionOrder setting accepts.",
       "is_ordered": false,
-      "name": "Regressionorder",
+      "name": "Regression Order",
       "source_kind": "integer"
     },
     "regressionvariancecutoff": {
       "description": "The values the RegressionVarianceCutoff setting accepts.",
       "is_ordered": false,
-      "name": "Regressionvariancecutoff",
+      "name": "Regression Variance Cutoff",
       "source_kind": "text"
     },
     "regressormodel": {
       "description": "The values the RegressorModel setting accepts.",
       "is_ordered": false,
-      "name": "Regressormodel",
+      "name": "Regressor Model",
       "source_kind": "text"
     },
     "requiredsamples": {
       "description": "The values the RequiredSamples setting accepts.",
       "is_ordered": false,
-      "name": "Requiredsamples",
+      "name": "Required Samples",
       "source_kind": "integer"
     },
     "requiredtolerance": {
       "description": "The values the RequiredTolerance setting accepts.",
       "is_ordered": false,
-      "name": "Requiredtolerance",
+      "name": "Required Tolerance",
       "source_kind": "number"
     },
     "reversion": {
@@ -1215,19 +1215,19 @@
     "reversiontype": {
       "description": "The values the ReversionType setting accepts.",
       "is_ordered": false,
-      "name": "Reversiontype",
+      "name": "Reversion Type",
       "source_kind": "text"
     },
     "runtype": {
       "description": "The values the RunType setting accepts.",
       "is_ordered": false,
-      "name": "Runtype",
+      "name": "Run Type",
       "source_kind": "text"
     },
     "salvagingalgorithm": {
       "description": "The values the SalvagingAlgorithm setting accepts.",
       "is_ordered": false,
-      "name": "Salvagingalgorithm",
+      "name": "Salvaging Algorithm",
       "source_kind": "enumerated",
       "values": [
         {
@@ -1271,7 +1271,7 @@
     "samples": {
       "description": "The values the samples setting accepts.",
       "is_ordered": false,
-      "name": "Samples",
+      "name": "samples",
       "source_kind": "integer"
     },
     "scheme": {
@@ -1339,31 +1339,31 @@
     "seed": {
       "description": "The values the seed setting accepts.",
       "is_ordered": false,
-      "name": "Seed",
+      "name": "seed",
       "source_kind": "integer"
     },
     "sensitivitydecomposition": {
       "description": "The values the SensitivityDecomposition setting accepts.",
       "is_ordered": false,
-      "name": "Sensitivitydecomposition",
+      "name": "Sensitivity Decomposition",
       "source_kind": "text"
     },
     "sensitivitytemplate": {
       "description": "The values the SensitivityTemplate setting accepts.",
       "is_ordered": false,
-      "name": "Sensitivitytemplate",
+      "name": "Sensitivity Template",
       "source_kind": "text"
     },
     "separatecallputvols": {
       "description": "The values the SeparateCallPutVols setting accepts.",
       "is_ordered": false,
-      "name": "Separatecallputvols",
+      "name": "Separate Call Put Vols",
       "source_kind": "text"
     },
     "sequencetype": {
       "description": "The values the SequenceType setting accepts.",
       "is_ordered": false,
-      "name": "Sequencetype",
+      "name": "Sequence Type",
       "source_kind": "enumerated",
       "values": [
         {
@@ -1401,19 +1401,19 @@
     "shifthorizon": {
       "description": "The values the ShiftHorizon setting accepts.",
       "is_ordered": false,
-      "name": "Shifthorizon",
+      "name": "Shift Horizon",
       "source_kind": "number"
     },
     "singleswaptionthreshold": {
       "description": "The values the singleSwaptionThreshold setting accepts.",
       "is_ordered": false,
-      "name": "Singleswaptionthreshold",
+      "name": "single Swaption Threshold",
       "source_kind": "number"
     },
     "soboldirectionintegers": {
       "description": "The values the SobolDirectionIntegers setting accepts.",
       "is_ordered": false,
-      "name": "Soboldirectionintegers",
+      "name": "Sobol Direction Integers",
       "source_kind": "enumerated",
       "values": [
         {
@@ -1481,7 +1481,7 @@
     "sobolordering": {
       "description": "The values the SobolOrdering setting accepts.",
       "is_ordered": false,
-      "name": "Sobolordering",
+      "name": "Sobol Ordering",
       "source_kind": "enumerated",
       "values": [
         {
@@ -1507,73 +1507,73 @@
     "spreadonincomecurve": {
       "description": "The values the SpreadOnIncomeCurve setting accepts.",
       "is_ordered": false,
-      "name": "Spreadonincomecurve",
+      "name": "Spread On Income Curve",
       "source_kind": "text"
     },
     "sqrtsmoothingforderivatives": {
       "description": "The values the SqrtSmoothingForDerivatives setting accepts.",
       "is_ordered": false,
-      "name": "Sqrtsmoothingforderivatives",
+      "name": "Sqrt Smoothing For Derivatives",
       "source_kind": "text"
     },
     "stategridpoints": {
       "description": "The values the StateGridPoints setting accepts.",
       "is_ordered": false,
-      "name": "Stategridpoints",
+      "name": "State Grid Points",
       "source_kind": "integer"
     },
     "steps": {
       "description": "The values the steps setting accepts.",
       "is_ordered": false,
-      "name": "Steps",
+      "name": "steps",
       "source_kind": "integer"
     },
     "strikespread": {
       "description": "The values the StrikeSpread setting accepts.",
       "is_ordered": false,
-      "name": "Strikespread",
+      "name": "Strike Spread",
       "source_kind": "text"
     },
     "sx": {
       "description": "The values the sx setting accepts.",
       "is_ordered": false,
-      "name": "Sx",
+      "name": "sx",
       "source_kind": "number"
     },
     "sy": {
       "description": "The values the sy setting accepts.",
       "is_ordered": false,
-      "name": "Sy",
+      "name": "sy",
       "source_kind": "number"
     },
     "timegridminimumsize": {
       "description": "The values the TimeGridMinimumSize setting accepts.",
       "is_ordered": false,
-      "name": "Timegridminimumsize",
+      "name": "Time Grid Minimum Size",
       "source_kind": "integer"
     },
     "timegridperyear": {
       "description": "The values the TimeGridPerYear setting accepts.",
       "is_ordered": false,
-      "name": "Timegridperyear",
+      "name": "Time Grid Per Year",
       "source_kind": "integer"
     },
     "timestepperiod": {
       "description": "The values the TimestepPeriod setting accepts.",
       "is_ordered": false,
-      "name": "Timestepperiod",
+      "name": "Timestep Period",
       "source_kind": "text"
     },
     "timestepsperyear": {
       "description": "The values the TimeStepsPerYear setting accepts.",
       "is_ordered": false,
-      "name": "Timestepsperyear",
+      "name": "Time Steps Per Year",
       "source_kind": "integer"
     },
     "timingadjustment": {
       "description": "The values the TimingAdjustment setting accepts.",
       "is_ordered": false,
-      "name": "Timingadjustment",
+      "name": "Timing Adjustment",
       "source_kind": "text"
     },
     "tolerance": {
@@ -1585,7 +1585,7 @@
     "training_basisfunction": {
       "description": "The values the Training.BasisFunction setting accepts.",
       "is_ordered": false,
-      "name": "Training basisfunction",
+      "name": "Training Basis Function",
       "source_kind": "enumerated",
       "values": [
         {
@@ -1635,25 +1635,25 @@
     "training_basisfunctionorder": {
       "description": "The values the Training.BasisFunctionOrder setting accepts.",
       "is_ordered": false,
-      "name": "Training basisfunctionorder",
+      "name": "Training Basis Function Order",
       "source_kind": "integer"
     },
     "training_samples": {
       "description": "The values the Training.Samples setting accepts.",
       "is_ordered": false,
-      "name": "Training samples",
+      "name": "Training Samples",
       "source_kind": "integer"
     },
     "training_seed": {
       "description": "The values the Training.Seed setting accepts.",
       "is_ordered": false,
-      "name": "Training seed",
+      "name": "Training Seed",
       "source_kind": "integer"
     },
     "training_sequence": {
       "description": "The values the Training.Sequence setting accepts.",
       "is_ordered": false,
-      "name": "Training sequence",
+      "name": "Training Sequence",
       "source_kind": "enumerated",
       "values": [
         {
@@ -1691,19 +1691,19 @@
     "trainingsamples": {
       "description": "The values the TrainingSamples setting accepts.",
       "is_ordered": false,
-      "name": "Trainingsamples",
+      "name": "Training Samples",
       "source_kind": "text"
     },
     "trainingseed": {
       "description": "The values the TrainingSeed setting accepts.",
       "is_ordered": false,
-      "name": "Trainingseed",
+      "name": "Training Seed",
       "source_kind": "integer"
     },
     "trainingsequencetype": {
       "description": "The values the TrainingSequenceType setting accepts.",
       "is_ordered": false,
-      "name": "Trainingsequencetype",
+      "name": "Training Sequence Type",
       "source_kind": "enumerated",
       "values": [
         {
@@ -1741,43 +1741,43 @@
     "treatsecurityspreadascreditspread": {
       "description": "The values the TreatSecuritySpreadAsCreditSpread setting accepts.",
       "is_ordered": false,
-      "name": "Treatsecurityspreadascreditspread",
+      "name": "Treat Security Spread As Credit Spread",
       "source_kind": "text"
     },
     "upperlimit": {
       "description": "The values the UpperLimit setting accepts.",
       "is_ordered": false,
-      "name": "Upperlimit",
+      "name": "Upper Limit",
       "source_kind": "number"
     },
     "usead": {
       "description": "The values the UseAD setting accepts.",
       "is_ordered": false,
-      "name": "Usead",
+      "name": "Use AD",
       "source_kind": "text"
     },
     "useindexcdspricer": {
       "description": "The values the useIndexCDSPricer setting accepts.",
       "is_ordered": false,
-      "name": "Useindexcdspricer",
+      "name": "use Index CDSPricer",
       "source_kind": "text"
     },
     "useindexcurveforindexcds": {
       "description": "The values the useIndexCurveForIndexCDS setting accepts.",
       "is_ordered": false,
-      "name": "Useindexcurveforindexcds",
+      "name": "use Index Curve For Index CDS",
       "source_kind": "text"
     },
     "variancestategridpoints": {
       "description": "The values the VarianceStateGridPoints setting accepts.",
       "is_ordered": false,
-      "name": "Variancestategridpoints",
+      "name": "Variance State Grid Points",
       "source_kind": "integer"
     },
     "vegaratio": {
       "description": "The values the VegaRatio setting accepts.",
       "is_ordered": false,
-      "name": "Vegaratio",
+      "name": "Vega Ratio",
       "source_kind": "number"
     },
     "volatility": {
@@ -1789,25 +1789,25 @@
     "volatilitytimes": {
       "description": "The values the VolatilityTimes setting accepts.",
       "is_ordered": false,
-      "name": "Volatilitytimes",
+      "name": "Volatility Times",
       "source_kind": "number"
     },
     "volatilitytype": {
       "description": "The values the VolatilityType setting accepts.",
       "is_ordered": false,
-      "name": "Volatilitytype",
+      "name": "Volatility Type",
       "source_kind": "text"
     },
     "xgrid": {
       "description": "The values the XGrid setting accepts.",
       "is_ordered": false,
-      "name": "Xgrid",
+      "name": "XGrid",
       "source_kind": "integer"
     },
     "yieldcurvemodel": {
       "description": "The values the YieldCurveModel setting accepts.",
       "is_ordered": false,
-      "name": "Yieldcurvemodel",
+      "name": "Yield Curve Model",
       "source_kind": "text"
     }
   }

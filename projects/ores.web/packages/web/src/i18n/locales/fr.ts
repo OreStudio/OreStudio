@@ -1888,7 +1888,6 @@ const fr: SourceCatalogue = {
                 startedAt: 'Début',
                 completedAt: 'Fin',
                 output: 'Sortie',
-                instrument: 'Instrument',
                 links: 'Liens',
                 report: 'Ouvrir le rapport',
                 batch: 'Ouvrir le lot',
@@ -3615,11 +3614,12 @@ const fr: SourceCatalogue = {
                 identifiers: 'Identifiants et rôles',
                 links: 'Liens',
                 history: 'Historique',
-                instrument: 'Instrument',
             },
             state: 'État',
             bookingDate: 'Date de réservation',
             execution: 'Exécutée à',
+            instrumentRefused:
+                'Vous pouvez lire la transaction mais pas les termes de son instrument.',
             instrumentNotRouted:
                 "Aucune table d'instrument n'est encore routée pour un {type} : les termes de cette transaction ne sont donc stockés nulle part.",
             instrumentNoTerms:

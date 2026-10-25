@@ -264,8 +264,8 @@ describe('trade list route', () => {
         expect(body.history).toHaveLength(1);
         // The fixture's trade is a Swap, which has no instrument table yet, so
         // the page is told that rather than shown empty terms.
-        expect(body.instrument).toBeNull();
-        expect(body.isInstrumentRouted).toBe(false);
+        expect(body.terms).toBeNull();
+        expect(body.routed).toBe(false);
         // Both ends of the links are read, which is how one trade's links are found.
         const linkCalls = calls.filter((call) => call.subject === 'trading.v1.trade_links.list');
         expect(linkCalls).toHaveLength(2);
@@ -302,8 +302,8 @@ describe('trade list route', () => {
 
         const body = (await send(server, sessionId, `/api/trades/${TRADE}`)).json();
 
-        expect(body.isInstrumentRouted).toBe(true);
-        expect(body.instrument).toMatchObject({
+        expect(body.routed).toBe(true);
+        expect(body.terms).toMatchObject({
             notional: '1000000.00',
             issue: { security_id: 'POP09MP3R9XP5' },
         });

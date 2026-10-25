@@ -186,37 +186,62 @@ const INSTRUMENT_TABLES: Readonly<
     Bond: { subject: bondSubjects.list_bond_instruments_request, rows: 'bond_instruments' },
 };
 
-/** One trade's instrument terms, or null when its type has no table yet. */
+/**
+ * One trade's instrument terms.
+ *
+ * `routed` says the type has a table, which is a fact about the type. `refused`
+ * says a read was attempted and the service declined it, so the page can draw
+ * the rest of the trade instead of failing whole. `terms` is null when the table
+ * holds no row for the trade.
+ */
 async function readInstrument(
     session: LiveSession,
     instrumentType: string,
     tradeId: string,
-): Promise<Record<string, unknown> | null> {
-    const table = INSTRUMENT_TABLES[instrumentType];
-    if (table === undefined) {
-        return null;
+): Promise<{
+    readonly routed: boolean;
+    readonly refused: boolean;
+    readonly terms: Record<string, unknown> | null;
+}> {
+    // `in` walks the prototype chain, so a type named `constructor` would read
+    // as routed.
+    if (!Object.hasOwn(INSTRUMENT_TABLES, instrumentType)) {
+        return { routed: false, refused: false, terms: null };
     }
-    const rows = await readAll(session, table.subject, table.rows, {
-        filter: { trade_id_one_of: [tradeId] },
-    });
+    const table = INSTRUMENT_TABLES[instrumentType] as {
+        readonly subject: string;
+        readonly rows: string;
+    };
+    let rows: readonly Record<string, unknown>[];
+    try {
+        rows = await readAll(session, table.subject, table.rows, {
+            filter: { trade_id_one_of: [tradeId] },
+        });
+    } catch {
+        return { routed: true, refused: true, terms: null };
+    }
     const terms = rows[0];
     if (terms === undefined) {
-        return null;
+        return { routed: true, refused: false, terms: null };
     }
-    // The terms name their issue by id, which a person cannot read. The issue's
-    // own reference is read here so the page shows a name and not a uuid.
+    // The terms name their issue by id, which a person cannot read, so the issue
+    // is read here and travels with the terms.
     const issueId = text(terms['issue_id']);
-    const issue =
-        issueId === ''
-            ? null
-            : ((
-                  await readAll(session, bondIssueSubjects.list_bond_issues_request, 'issues', {
-                      filter: { issue_id_one_of: [issueId] },
-                  })
-              )[0] ?? null);
-    // The issue's own terms belong with the instrument's: for a bond they are
-    // most of what a person means by "the terms", so they travel together.
-    return { ...terms, issue };
+    let issue: Record<string, unknown> | null = null;
+    if (issueId !== '') {
+        try {
+            const issues = await readAll(
+                session,
+                bondIssueSubjects.list_bond_issues_request,
+                'issues',
+                { filter: { issue_id_one_of: [issueId] } },
+            );
+            issue = issues[0] ?? null;
+        } catch {
+            issue = null;
+        }
+    }
+    return { routed: true, refused: false, terms: { ...terms, issue } };
 }
 
 /**
@@ -277,8 +302,7 @@ function registerTradePageRoute(
             identifiers,
             roles,
             booking: bookings[0] ?? null,
-            instrument: await readInstrument(session, text(summary['instrument_type']), id),
-            isInstrumentRouted: text(summary['instrument_type']) in INSTRUMENT_TABLES,
+            ...(await readInstrument(session, text(summary['instrument_type']), id)),
             links: { from: fromLinks, to: toLinks },
             history: versions,
         };

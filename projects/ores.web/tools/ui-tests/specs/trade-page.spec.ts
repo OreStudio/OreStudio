@@ -31,6 +31,11 @@ test('a trade opens its own page and every tab answers', async ({ page }) => {
     }
 });
 
+/**
+ * The issue names its calendar by code, and the calendar has a page. That page is
+ * titled by the calendar's own name, so this reads the code from the link and
+ * checks the address rather than the heading.
+ */
 test('the instrument issue links to its calendar', async ({ page }) => {
     await page.goto('/');
     await page.getByLabel(/username/i).fill(USERNAME);
@@ -44,9 +49,10 @@ test('the instrument issue links to its calendar', async ({ page }) => {
     await row.locator('td').first().click();
     await page.getByRole('tab', { name: 'Instrument' }).click();
 
-    const calendar = page.getByRole('link', { name: /^[A-Z]{2,}$/ }).first();
-    const code = (await calendar.innerText()).trim();
-    await calendar.click();
-    await expect(page).toHaveURL(new RegExp(`/refdata/calendars/${code}$`));
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(code);
+    const linked = page.locator('main a[href^="/refdata/calendars/"]');
+    await expect(linked).toHaveCount(1);
+    const code = (await linked.innerText()).trim();
+    await linked.click();
+    await expect(page).toHaveURL(/\/refdata\/calendars\/.+$/);
+    expect(page.url()).toContain(encodeURIComponent(code));
 });

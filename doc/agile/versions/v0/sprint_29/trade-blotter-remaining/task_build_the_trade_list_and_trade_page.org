@@ -188,7 +188,7 @@ The route that feeds it, =GET /api/trades/:id=, makes those six reads and return
 - *Trading is the area, Trades is a card in it.* The menu names the area, its page draws the cards, and the trade list is one of them. The list and the trade page now live at =/trading/trades=, and every trail reads Home, Trading, then the screen. Saying "Trades" in the menu named a screen where the person expects a place to work.
 - *State and authorisation are badges.* Both use the standard =Tag=, in the list and on the page, with the state's tone saying how alive the trade is.
 - *External version has its own field*, in the list and on the page. It was folded into one "v5 · ext 0" cell, which hid a field the desk reads on its own.
-- *The Instrument tab does not ship.* The page keeps four tabs and states no promise it cannot keep.
+- *The Instrument tab does not ship yet.* It waits for its read, which came later in the same task.
 
 * Still open from the review
 
@@ -207,4 +207,25 @@ Trading held no =refdata::counterparty_identifiers:read=, which the counterparty
 
 * What this leaves
 
-The instrument read is the last piece of the task. The book page shows the book and its portfolio but not the trades booked in it, which is the read a person arrives wanting; that is the same instrument-and-population work.
+The instrument read came after this note: the tab ships now, and the section below records it. The book page shows the book and its portfolio but not the trades booked in it, which is the read a person arrives wanting; that is the same instrument-and-population work.
+
+* The Instrument tab, and what the review found
+
+The tab reads the terms from the table the trade's product type is stored in. Bond is the only type routed today: its terms come from =bond_instruments= by trade id, and the issue they name is read from =bond_issues= and shown inline with the trade type, the notional, and its security, face value, issue date, settlement days, calendar and credit group.
+
+=Details= and =Instrument= no longer read =trading::trades= alone: the tab's read is =trading::bond_instruments:read= plus =trading::bond_issues:read=, both granted to the four blotter roles.
+
+* What the two reviews changed
+
+- *A refused instrument read no longer takes the page down.* The tab's reads are caught, and the tab says it may not show the terms, so Details, Identifiers and Links still draw. The rule the review quoted — a tab whose read is refused is not drawn — is now true of the payload as well as the screen.
+- *`in` walked the prototype chain*, so a trade typed `constructor` read as routed. The lookup is owned (`Object.hasOwn`) and the read returns the facts as one object, so the flag and the terms cannot disagree.
+- *The trade type comes from the trade*, not from the terms' identity block: the page already knows the type, and a routed type with no terms used to show a dash.
+- *The Portuguese for notional was misspelled* (`Noional`) and a stray `instrument` label sat in the operations screen's tabs. Both removed.
+- *A fixture mocked `bond_issues`*, the very reply field this task fixed, and passed only because that case never read it. Removed.
+- *The browser case assumed a two-letter calendar code and a titled-by-code page.* It now takes the code from the link it clicks and asserts the address.
+
+* Still open, recorded rather than fixed
+
+- The prototype's bond card also carries a *Legs* card. The tab does not show legs, and no capture said so until now: [[id:6C1D7A90-2B58-4E13-A9F4-58B0C2E7D316][The bond's legs are not on the instrument tab]].
+- The prototype draws the issue as a reference and every card with a record version and a read-only marker. The tab shows the issue inline and no version.
+- The instrument terms and the issue are still =Record<string, unknown>= on both sides. A typed shape would remove the casts, and it is the right next step before a second instrument table is routed.

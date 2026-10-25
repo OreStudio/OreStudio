@@ -80,14 +80,8 @@ function PartTable({
     );
 }
 
-/**
- * A value a person can read.
- *
- * An issuer is written as a free-text name, but the population writes a party id
- * there. A uuid is not something to put on a screen, so it is left out with a
- * dash and the fault is recorded rather than dressed up.
- */
-function readable(value: string): string {
+/** The value, unless it is a uuid, which is not something to put on a screen. */
+function withoutId(value: string): string {
     const looksLikeId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
         value,
     );
@@ -118,8 +112,11 @@ function stateTone(state: string): 'up' | 'warn' | 'muted' | 'neutral' {
  */
 function InstrumentTab({ record }: { readonly record: TradePageRecord }): ReactNode {
     const { t } = useTranslation();
-    const terms = record.instrument;
-    if (!record.isInstrumentRouted) {
+    const terms = record.terms;
+    if (record.refused) {
+        return <Notice tone="info">{t('trading.page.instrumentRefused')}</Notice>;
+    }
+    if (!record.routed) {
         return (
             <Notice tone="info">
                 {t('trading.page.instrumentNotRouted', { type: record.trade.instrument_type })}
@@ -129,19 +126,18 @@ function InstrumentTab({ record }: { readonly record: TradePageRecord }): ReactN
     if (terms === null) {
         return <Notice tone="info">{t('trading.page.instrumentNoTerms')}</Notice>;
     }
-    const identity = terms['identity'] as Readonly<Record<string, unknown>> | undefined;
     const issue = terms['issue'] as Readonly<Record<string, unknown>> | null | undefined;
-    const notional = terms['notional'];
-    const text = (value: unknown): string =>
-        value === undefined || value === null ? '' : String(value);
+    const value = (given: unknown): string =>
+        given === undefined || given === null ? '' : String(given);
+    const calendar = value(issue?.['calendar']);
     return (
         <div className="space-y-6">
             <dl className="grid grid-cols-2 gap-4 md:grid-cols-4">
                 <Fact
                     label={t('trading.page.tradeTypeCode')}
-                    value={identity === undefined ? '' : text(identity['trade_type_code'])}
+                    value={record.trade.instrument_type}
                 />
-                <Fact label={t('trading.page.notional')} value={text(notional)} />
+                <Fact label={t('trading.page.notional')} value={value(terms['notional'])} />
             </dl>
             <section className="space-y-3">
                 <h2 className="text-sm font-medium text-ink">{t('trading.page.issue')}</h2>
@@ -151,39 +147,39 @@ function InstrumentTab({ record }: { readonly record: TradePageRecord }): ReactN
                     <dl className="grid grid-cols-2 gap-4 md:grid-cols-4">
                         <Fact
                             label={t('trading.page.securityId')}
-                            value={text(issue['security_id'])}
+                            value={value(issue['security_id'])}
                         />
                         <Fact
                             label={t('trading.page.issuer')}
-                            value={readable(text(issue['issuer']))}
+                            value={withoutId(value(issue['issuer']))}
                         />
                         <Fact
                             label={t('trading.page.faceValue')}
-                            value={text(issue['face_value'])}
+                            value={value(issue['face_value'])}
                         />
                         <Fact
                             label={t('trading.page.issueDate')}
-                            value={text(issue['issue_date'])}
+                            value={value(issue['issue_date'])}
                         />
                         <Fact
                             label={t('trading.page.settlementDays')}
-                            value={text(issue['settlement_days'])}
+                            value={value(issue['settlement_days'])}
                         />
                         <Fact label={t('trading.page.calendar')}>
-                            {text(issue['calendar']) === '' ? (
+                            {calendar === '' ? (
                                 '—'
                             ) : (
                                 <Link
                                     className="text-accent hover:text-accent-bright"
-                                    to={`${PATHS.calendars}/${encodeURIComponent(text(issue['calendar']))}`}
+                                    to={`${PATHS.calendars}/${encodeURIComponent(calendar)}`}
                                 >
-                                    {text(issue['calendar'])}
+                                    {calendar}
                                 </Link>
                             )}
                         </Fact>
                         <Fact
                             label={t('trading.page.creditGroup')}
-                            value={text(issue['credit_group'])}
+                            value={value(issue['credit_group'])}
                         />
                     </dl>
                 )}

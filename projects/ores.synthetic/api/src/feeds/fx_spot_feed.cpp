@@ -215,6 +215,8 @@ void fx_spot_feed::start() {
             const auto elapsed_ticks =
                 elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0;
             const auto value = std::format("{}", process_->next(elapsed_ticks));
+            if (intensity_ != nullptr)
+                intensity_->record_event();
             const auto now = std::chrono::system_clock::now();
             const auto& codec = ores::nats::default_wire_codec();
             // A quote is perishable, so it goes out on core NATS without a wait for an

@@ -102,6 +102,8 @@ void ir_curve_feed::start() {
             const auto elapsed_ticks =
                 elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0;
             process_->next(elapsed_ticks);
+            if (intensity_ != nullptr)
+                intensity_->record_event();
             const auto now = std::chrono::system_clock::now();
 
             for (std::size_t i = 0; i < entries_.size(); ++i) {

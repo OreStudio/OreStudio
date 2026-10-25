@@ -146,6 +146,9 @@ private:
     /// The arrival rate in ticks per second, the unit a step is counted in and
     /// the one the arrival process itself divides by.
     double ticks_per_second_;
+    /// The heat this feed adds to when it ticks, or null for a run with no
+    /// endogenous factor.
+    ores::analytics::quant::domain::shared_intensity* intensity_;
     std::vector<ir_curve_resolved_entry> entries_;
 };
 

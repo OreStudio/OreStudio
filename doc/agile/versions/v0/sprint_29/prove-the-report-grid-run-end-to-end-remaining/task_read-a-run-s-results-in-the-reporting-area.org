@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person opens a report in the reporting area, sees its runs, and reads the resu
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -87,3 +87,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A report in the reporting area now carries the result of its latest run.
+
+The page has three tabs. *Definition* is the record as before. *Runs* lists the
+report's runs newest first, each with its state and when it started and finished,
+and each opens the run it names. *Results* reads =npv.csv= from the latest run's
+output archive and draws the trade count and the total NPV first, then one row
+per trade with its type, NPV, base NPV, notional and counterparty.
+
+The run that proves it is =9ff0e92e-f21d-4137-bb24-ad4956fa99f0=, on the NPV
+definition of ACME Corporation HK Ltd. It completed, and its Results tab shows
+eight bond trades and a total NPV of =31,607,092.99=. The Runs tab shows the six
+runs of that definition, one completed and five failed, which is the history of
+the market data work that led here.
+
+The market data the run priced against is hand crafted: 521 swap series for
+fourteen currencies, each with an observation at 2026-05-05, in the shape the
+engine names (=IR_SWAP/RATE/<ccy>/0D/1D/<term>=, with the term in the months or
+years the engine asks for).
+
+Three things are deliberately not here yet. The comparison against a previous
+run, the book tree and the plots are the rest of variant A. The counterparty
+column shows the id the engine writes, not a name. And the reports list pages at
+fifteen rows, so a person finds an =NPV= report by searching for it.

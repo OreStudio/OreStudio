@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: A8FFF8B9-0240-472E-929E-E0E37641DB87
+:END:
+#+title: Task: Store one tick for each source
+#+description: Write each tick once under the system tenant, point the per-party series at it, and remove the ingest's routes read.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/store-one-tick-for-each-source
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The tick store holds one row for each tick of a source, not one for each routed party. The ingest writes it without reading any tenant's routes, and a party's series reads the shared stream.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- The ingest writes one row for each tick, under the system tenant, and no longer reads the routes.
+- A routed party's series reads the shared tick stream, and the tick read tests pass.
+- A provisioned tenant still ticks end to end, proved by the smoke check.
+- The ingest and quote-series pages describe the shared store.
+
+* Plan
+
+The decision is in [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared
+tick or one copy for each party]]. The slices, each verified before the next:
+
+1. Model the shared point store: a tick belongs to a source and a datum, not a
+   party, and every row sits under the system tenant. The per-party series
+   keeps its classification and gains the key that finds the shared stream.
+2. The ingest writes one row for each tick and stops reading the routes for
+   the store. The delivery fan-out still needs to know who consumes the
+   source, so it moves to the demand snapshot the supervisor already builds,
+   or the ingest keeps a routes read for delivery only; the slice decides
+   which and records it.
+3. The history read resolves the party's series to the shared stream and
+   checks the subscription and its rights before it returns a tick.
+4. The ingest loop and quote series pages describe the decided shape, and the
+   provisioning smoke proves the path end to end.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

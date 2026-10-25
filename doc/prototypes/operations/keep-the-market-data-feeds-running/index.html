@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Keep the market data feeds running prototype — Operations journeys</title>
+<title>Keep the market data sources running prototype — Operations journeys</title>
 <style>
 :root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
 *{box-sizing:border-box}[hidden]{display:none!important}
@@ -12,36 +12,50 @@ body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,H
 h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
 p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
 button,input,select{font:inherit;color:inherit}button{cursor:pointer}
-.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
-.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}.small{font-size:.8rem}
+.wrap{max-width:1240px;margin:0 auto;display:grid;gap:14px}
 .top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px;align-content:start}
 .panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
-.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
-.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
-.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
 table{width:100%;border-collapse:collapse;font-size:.86rem}
-th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
-th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
-td.num{text-align:right;font-family:var(--mono)}
-.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
-.btn[disabled]{opacity:.45;cursor:not-allowed}
-.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
-.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;white-space:nowrap}
+td.num,th.num{text-align:right;font-family:var(--mono)}
+tr.row:hover td{background:#1f1f24}
+tr.on td{background:#1d2633}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim);white-space:nowrap}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}.tag.plan{border-style:dashed;color:var(--ink-faint)}
 .notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.alert{border:1px solid #4a3a17;border-radius:var(--radius);padding:10px 12px;background:#221c10;color:var(--warn);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.alert span{flex:1;min-width:260px}
+.split{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;align-items:start}
+@media(max-width:980px){.split{grid-template-columns:1fr}}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;display:grid;gap:2px}
+.kpi .lbl{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.kpi .val{font-family:var(--mono);font-size:1.3rem;color:var(--ink)}
+.spark{display:inline-flex;align-items:flex-end;gap:1px;height:16px}
+.spark i{width:3px;border-radius:1px;background:#2f5b86}.spark i.on{background:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:.74rem;color:var(--ink-dim)}
+.card{border:1px solid var(--line);border-radius:6px;background:var(--panel-2);padding:8px 10px;display:grid;gap:4px}
+.card .hd{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.card .nm{font-family:var(--mono);font-size:.82rem;color:var(--ink)}
+.card .ft{display:flex;justify-content:space-between;font-size:.72rem;color:var(--ink-faint)}
+.pipe{display:grid;grid-template-columns:1.1fr auto 1fr auto 1fr;gap:10px;align-items:start}
+@media(max-width:1000px){.pipe{grid-template-columns:1fr}.pipe .arrow{display:none}}
+.arrow{color:var(--ink-faint);align-self:center;font-size:1.1rem}
+.bars{display:flex;align-items:flex-end;gap:3px;height:34px}
+.bars i{width:8px;border-radius:2px;background:#2f5b86}.bars i.on{background:var(--accent)}
+.hist{display:flex;align-items:flex-end;gap:14px}
+.hist .total{font-family:var(--mono);font-size:1.4rem;color:var(--ink)}
+.hist .lbl{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
 .proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
 .proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
 .proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
 .proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
 .proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
-.urlbtn{display:inline-flex;align-items:baseline;gap:6px;max-width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:3px 8px;color:var(--ink);text-align:left}
-.urlbtn:hover{border-color:var(--accent)}
-.urlbtn .mono{overflow-wrap:anywhere}
-.urlbtn .edit{color:var(--accent);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
-.oresmd-overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
-.oresmd-frame{width:min(1120px,96vw);height:min(840px,92vh);border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
 </style>
 </head>
 <body>
@@ -49,19 +63,21 @@ td.num{text-align:right;font-family:var(--mono)}
 <!--
   PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
 
-  The operator's "Keep the market data feeds running" screen
+  The operator's "Keep the market data sources running" screen
   (doc/knowledge/journeys/operations/journey_keep-the-market-data-feeds-running.org):
-  the binding roster and its summary at the top, the selected binding and the
-  producer behind it in the middle, the folder control and the binding versions
-  under them, so the operator reads what is held, then what is behind it.
+  every source with its adapter state, the ids in demand, the rejected ids, the
+  age of the last tick and the quality drops, then one source with the parties
+  routed to it.
 
-  Variants with ?variant=a|b|c: a is a flat table, b groups the roster by source
-  family, c pairs the roster with a detail panel per feed.
-  ?state=all|quiet|disabled switches the mock running set. Nothing here calls a
-  service: start and stop are shell-only today.
+  ?variant=a|b|c: a is a flat table with a detail panel, b groups the sources by
+  provider, c draws sources, routes and parties as columns.
+  ?state=all|quiet|stale filters the mock set. ?source= picks the detail row.
+
+  There is no start or stop here. Demand is computed and the adapters follow it;
+  a person restarts an adapter service, not a feed.
 -->
 
-<div class="proto-note" id="note"></div>
+<div class="proto-note" id="note">Prototype · mock data · no service</div>
 <div class="wrap" id="app"></div>
 <div class="proto-bar" id="bar"></div>
 
@@ -69,183 +85,204 @@ td.num{text-align:right;font-family:var(--mono)}
 const params = new URLSearchParams(location.search);
 const variant = params.get('variant') || 'a';
 const state = params.get('state') || 'all';
-const sel = params.get('feed') || 'ir_curve.usd';
-const NOW = Date.parse('2026-10-06T16:00:20Z');
+const selected = params.get('source') || 'bloomberg-a';
 
-const feeds = [
-  {src:'ir_curve.usd', kind:'IR curve', party:'Rates desk', ws:'Live', series:'oresmd://ir/USD?type=series', folder:'Synthetic / Rates / IR', ccy:'USD', family:'USD-SOFR', tenor:'3M..30Y', tph:60, last:'2026-10-06T16:00:12Z', ver:4, by:'a.reyes'},
-  {src:'ir_curve.eur', kind:'IR curve', party:'Rates desk', ws:'Live', series:'oresmd://ir/EUR?type=series', folder:'Synthetic / Rates / IR', ccy:'EUR', family:'EUR-ESTR', tenor:'3M..30Y', tph:60, last:'2026-10-06T16:00:08Z', ver:2, by:'m.oduya'},
-  {src:'fx_spot.eur-usd', kind:'FX spot', party:'FX desk', ws:'Live', series:'oresmd://fx/EUR-USD?type=series', folder:'Synthetic / FX', ccy:'EUR-USD', family:'—', tenor:'spot', tph:120, last:'2026-10-06T16:00:10Z', ver:3, by:'a.reyes'},
-  {src:'fx_spot.gbp-usd', kind:'FX spot', party:'FX desk', ws:'Live', series:'oresmd://fx/GBP-USD?type=series', folder:'Synthetic / FX', ccy:'GBP-USD', family:'—', tenor:'spot', tph:120, last:'2026-10-06T16:00:04Z', ver:1, by:'j.silva'},
-  {src:'bloomberg.usd_sofr', kind:'Vendor feed', party:'Rates desk', ws:'Live', series:'oresmd://ir/USD?type=series', folder:'— (vendor)', ccy:'USD', family:'USD-SOFR', tenor:'3M..30Y', tph:30, last:'2026-10-06T16:00:02Z', ver:2, by:'ops'},
-  {src:'refinitiv.uk_gilt', kind:'Vendor feed', party:'Rates desk', ws:'Live', series:'oresmd://ir/GBP?type=series', folder:'— (vendor)', ccy:'GBP', family:'GBP-GILT', tenor:'5Y..30Y', tph:30, last:'2026-10-06T15:59:55Z', ver:1, by:'ops'},
-  {src:'internal_fixings.euribor', kind:'Internal fixings', party:'Rates desk', ws:'Live', series:'oresmd://ir/EUR?type=fixing', folder:'— (internal)', ccy:'EUR', family:'EURIBOR', tenor:'1M..12M', tph:12, last:'2026-10-06T15:56:00Z', ver:1, by:'m.oduya'},
-  {src:'ir_curve.gbp', kind:'IR curve', party:'Rates desk', ws:'Live', series:'oresmd://ir/GBP?type=series', folder:'Synthetic / Rates / IR', ccy:'GBP', family:'GBP-SONIA', tenor:'3M..30Y', tph:60, last:'2026-10-06T16:00:06Z', ver:3, by:'m.oduya'}
+const SOURCES = [
+  {name:'bloomberg-a', provider:'bloomberg', kind:'simulated', adapter:'serving', hb:2, routes:5, demanded:26, accepted:26, rejected:0,
+   ticks:298, last:0.4, trend:[28,31,30,34,33,36,35,38,37,40,39,41], parties:['ACME','ACME UK','ACME US','ACME HK','ACME SG'],
+   rejects:{}, drops:{unmapped:0, nan:0, out_of_range:0, stale:0, out_of_order:0}, history:['serving since 09:12','demand 26 since 09:14','last reject 08:02']},
+  {name:'lseg-a', provider:'lseg', kind:'simulated', adapter:'ready', hb:4, routes:2, demanded:0, accepted:0, rejected:0,
+   ticks:0, last:null, trend:[], parties:['ACME UK','ACME HK'],
+   rejects:{}, drops:{unmapped:0, nan:0, out_of_range:0, stale:0, out_of_order:0}, history:['ready since 09:30','no demand since 09:30']},
+  {name:'ore-derived', provider:'ore', kind:'derived', adapter:'serving', hb:3, routes:3, demanded:12, accepted:12, rejected:0,
+   ticks:0, last:120, trend:[0,0,0,0,0,0,0,0,0,0,0,0], parties:['ACME','ACME US','ACME UK'],
+   rejects:{}, drops:{unmapped:0, nan:0, out_of_range:0, stale:0, out_of_order:0}, history:['serving since 09:12','reads on demand']},
+  {name:'ore-import', provider:'ore', kind:'replay', adapter:'stale', hb:41, routes:2, demanded:4, accepted:0, rejected:4,
+   ticks:0, last:3600, trend:[], parties:['ACME UK','ACME US'],
+   rejects:{unknown_id:2, not_entitled:2}, drops:{unmapped:4, nan:0, out_of_range:0, stale:0, out_of_order:0}, history:['stale since 09:31','heartbeat missed','4 rejects on the last reply']},
+  {name:'demo-a', provider:'demo', kind:'simulated', adapter:'ready', hb:6, routes:0, demanded:0, accepted:0, rejected:0,
+   ticks:0, last:null, trend:[], parties:[],
+   rejects:{}, drops:{unmapped:0, nan:0, out_of_range:0, stale:0, out_of_order:0}, history:['ready since 10:02','no route names it']}
 ];
 
-function urlButton(url){
-  return `<button class="urlbtn" type="button" data-url="${url}" title="Edit in the oresmd URL editor">`+
-         `<span class="mono">${url}</span><span class="edit">edit</span></button>`;
+function ageLabel(seconds){
+  if (seconds === null) return 'never';
+  if (seconds < 60) return seconds.toFixed(1) + ' s';
+  if (seconds < 3600) return Math.round(seconds / 60) + ' min';
+  return Math.round(seconds / 3600) + ' h';
 }
-function openOresmdEditor(url, host){
-  const ov=document.createElement('div'); ov.className='oresmd-overlay';
-  const f=document.createElement('iframe'); f.className='oresmd-frame'; f.title='oresmd URL editor';
-  f.src='../oresmd-url-editor/index.html?embed=1&url='+encodeURIComponent(url||'');
-  ov.appendChild(f); document.body.appendChild(ov);
-  function close(){ window.removeEventListener('message', onMsg); document.removeEventListener('keydown', onKey); ov.remove(); }
-  function onMsg(e){ if(e.data && e.data.type==='oresmd-url'){ host.dataset.url=e.data.url; const m=host.querySelector('.mono'); if(m) m.textContent=e.data.url; close(); } }
-  function onKey(e){ if(e.key==='Escape') close(); }
-  window.addEventListener('message', onMsg); document.addEventListener('keydown', onKey);
-  ov.addEventListener('click', e=>{ if(e.target===ov) close(); });
+function stateTag(s){
+  if (s.adapter === 'stale') return '<span class="tag bad">stale</span>';
+  if (s.routes > 0 && s.demanded === 0) return '<span class="tag warn">no demand</span>';
+  if (s.adapter === 'ready') return '<span class="tag plan">ready</span>';
+  return '<span class="tag ok">serving</span>';
 }
-document.addEventListener('click', e=>{
-  const b=e.target.closest('.urlbtn'); if(!b) return;
-  openOresmdEditor(b.dataset.url||'', b);
-});
-function live(f){
-  let enabled = true, running = true, last = f.last;
-  if (state === 'quiet' && f.src === 'fx_spot.gbp-usd'){ running = false; last = '2026-10-06T15:18:44Z'; }
-  if (state === 'disabled' && f.src === 'ir_curve.gbp'){ enabled = false; running = false; last = null; }
-  const age = last ? Math.round((NOW - Date.parse(last)) / 1000) : null;
-  const quiet = enabled && age !== null && age > (running ? 4 * 3600 / f.tph : 300);
-  return {...f, enabled, running, quiet, age};
+function kindTag(k){ return '<span class="tag">' + k + '</span>'; }
+function spark(values){
+  if (!values || values.length === 0) return '<span class="faint small">no ticks</span>';
+  const top = Math.max.apply(null, values) || 1;
+  return '<span class="spark">' + values.map(function(v, i){
+    const h = Math.max(2, Math.round(v / top * 16));
+    return '<i class="' + (i === values.length - 1 ? 'on' : '') + '" style="height:' + h + 'px"></i>';
+  }).join('') + '</span>';
 }
-const rows = feeds.map(live);
-const tag = (t, k) => `<span class="tag ${k || ''}">${t}</span>`;
-const ageLabel = a => a === null ? '—' : a < 90 ? a + 's ago' : a < 5400 ? Math.round(a / 60) + 'm ago' : Math.round(a / 3600) + 'h ago';
-const runningTag = f => f.quiet ? tag('silent', 'bad') : f.running ? tag('running', 'ok') : tag('stopped', 'bad');
-const enabledTag = f => f.enabled ? tag('yes', 'ok') : tag('no', 'warn');
+function visible(){
+  return SOURCES.filter(function(s){
+    if (state === 'quiet') return s.routes > 0 && s.demanded === 0;
+    if (state === 'stale') return s.adapter === 'stale';
+    return true;
+  });
+}
+function byName(name){
+  return SOURCES.filter(function(s){ return s.name === name; })[0] || SOURCES[0];
+}
+function kpi(label, value){
+  return '<div class="kpi"><span class="lbl">' + label + '</span><span class="val">' + value + '</span></div>';
+}
 
 function header(){
-  const enabled = rows.filter(f => f.enabled).length, running = rows.filter(f => f.running).length, quiet = rows.filter(f => f.quiet).length;
-  return `
-  <div class="top">
-    <h1>ORE Studio — System administration: Operations / Market data feeds</h1>
-    ${quiet ? tag(`${quiet} quiet`, 'bad') : tag('all ticking', 'ok')}
-    <a style="margin-left:auto" href="../../../knowledge/journeys/operations/journey_keep-the-market-data-feeds-running.html">the journey &rarr;</a>
-  </div>
-  <div class="panel">
-    <h2>Roster summary</h2>
-    <div class="row">
-      <div class="field"><label>Bindings held</label><div class="value">${rows.length}</div></div>
-      <div class="field"><label>Enabled</label><div class="value">${enabled}</div></div>
-      <div class="field"><label>Running</label><div class="value">${running}</div></div>
-      <div class="field"><label>Quiet</label><div class="value">${quiet}</div></div>
-      <button class="btn" id="refresh">Refresh</button>
-      <span class="muted">A binding is stored and versioned; the running set is live, held by the producer factory, and gone after a restart.</span>
-    </div>
-  </div>`;
+  const rows = visible();
+  const serving = rows.filter(function(s){ return s.adapter === 'serving'; }).length;
+  const quiet = rows.filter(function(s){ return s.routes > 0 && s.demanded === 0; }).length;
+  const stale = rows.filter(function(s){ return s.adapter === 'stale'; }).length;
+  const ticks = rows.reduce(function(n, s){ return n + s.ticks; }, 0);
+  return '' +
+  '<div class="top"><h1>ORE Studio — Operations / Market data sources</h1>' +
+  (quiet ? '<span class="tag warn">' + quiet + ' with no demand</span>' : '<span class="tag ok">all demanded</span>') +
+  (stale ? '<span class="tag bad">' + stale + ' stale</span>' : '') +
+  '<a style="margin-left:auto" href="../../../knowledge/journeys/operations/journey_keep-the-market-data-feeds-running.html">the journey &rarr;</a></div>' +
+  '<div class="kpis">' +
+  kpi('Sources', String(rows.length)) + kpi('Serving', String(serving)) +
+  kpi('Routes', String(rows.reduce(function(n,s){return n+s.routes;},0))) +
+  kpi('Ticks / min', String(ticks)) + kpi('Quiet', String(quiet)) +
+  '</div>' +
+  (quiet || stale ? '<div class="alert" style="margin-top:14px"><span>' +
+    [quiet ? 'An adapter is up with routes that name it and is demanded nothing.' : '',
+     stale ? 'A source missed its heartbeat: the service keeps the routes and waits.' : ''].filter(Boolean).join(' ') +
+    '</span><span class="tag warn">read the demand</span></div>' : '');
 }
 
-function flat(){
-  return `
-  <div class="panel">
-    <h2>Feed bindings</h2>
-    <table><thead><tr><th>Source</th><th>Kind</th><th>Party</th><th>Workspace</th><th>Enabled</th><th>Running</th><th>Last tick</th><th>Series (inferred)</th><th></th></tr></thead><tbody>
-    ${rows.map(f => `<tr><td><a href="#" data-f="${f.src}">${f.src}</a></td><td>${f.kind}</td><td>${f.party}</td><td>${f.ws}</td>
-      <td>${enabledTag(f)}</td><td>${runningTag(f)}</td><td class="mono">${f.enabled ? ageLabel(f.age) : '—'}</td>
-      <td class="mono faint">${f.enabled ? urlButton(f.series) : '—'}</td><td><button class="btn" disabled>${f.running ? 'Stop' : 'Start'}</button></td></tr>`).join('')}
-    </tbody></table>
-    <div class="notice">A binding names a source, not a series, so the series column is inferred from the newest observations. No read returns a last tick, so the column is a mock reading of the ingest loop's in-memory counter.</div>
-  </div>`;
+function tableRows(rows){
+  return rows.map(function(s){
+    return '<tr class="row' + (s.name === selected ? ' on' : '') + '" data-source="' + s.name + '">' +
+      '<td class="mono">' + s.name + '</td><td class="muted">' + s.provider + '</td><td>' + kindTag(s.kind) + '</td>' +
+      '<td>' + stateTag(s) + '</td><td class="num">' + ageLabel(s.hb) + '</td>' +
+      '<td class="num">' + s.routes + '</td><td class="num">' + s.demanded + '</td>' +
+      '<td class="num">' + s.accepted + (s.rejected ? ' <span style="color:var(--bad)">/' + s.rejected + '</span>' : '') + '</td>' +
+      '<td class="num">' + s.ticks + '</td><td>' + spark(s.trend) + '</td>' +
+      '<td class="num muted">' + ageLabel(s.last) + '</td></tr>';
+  }).join('');
 }
 
-function grouped(){
+function detail(s){
+  const drops = Object.keys(s.drops).filter(function(k){ return s.drops[k] > 0; });
+  const rejects = Object.keys(s.rejects).filter(function(k){ return s.rejects[k] > 0; });
+  return '<div class="panel"><h2>' + s.name + ' · ' + stateTag(s) + '</h2>' +
+    '<table><tbody>' +
+    '<tr><td>Provider</td><td class="mono">' + s.provider + '</td><td>Kind</td><td>' + s.kind + '</td></tr>' +
+    '<tr><td>Adapter</td><td>' + s.adapter + '</td><td>Heartbeat</td><td class="mono">' + ageLabel(s.hb) + '</td></tr>' +
+    '<tr><td>Routes</td><td class="num">' + s.routes + '</td><td>Demanded</td><td class="num">' + s.demanded + '</td></tr>' +
+    '<tr><td>Accepted</td><td class="num">' + s.accepted + '</td><td>Rejected</td><td class="num">' + s.rejected + '</td></tr>' +
+    '<tr><td>Ticks / min</td><td class="num">' + s.ticks + '</td><td>Last tick</td><td class="mono">' + ageLabel(s.last) + '</td></tr>' +
+    '</tbody></table>' +
+    '<div><h2 style="border:0;padding:0">Rejected ids</h2>' +
+      (rejects.length ? '<table><tbody>' + rejects.map(function(k){ return '<tr><td>' + k + '</td><td class="num">' + s.rejects[k] + '</td></tr>'; }).join('') + '</tbody></table>'
+        : '<p class="faint small">none on the last reply</p>') + '</div>' +
+    '<div><h2 style="border:0;padding:0">Quality drops · last hour</h2>' +
+      (drops.length ? '<table><tbody>' + drops.map(function(k){ return '<tr><td>' + k + '</td><td class="num">' + s.drops[k] + '</td></tr>'; }).join('') + '</tbody></table>'
+        : '<p class="faint small">none</p>') + '</div>' +
+    '<div><h2 style="border:0;padding:0">Parties routed</h2><div class="chips">' +
+      (s.parties.length ? s.parties.map(function(p){ return '<span class="chip">' + p + '</span>'; }).join('') : '<span class="faint small">none</span>') +
+    '</div></div>' +
+    '<div><h2 style="border:0;padding:0">State history</h2><ul>' +
+      s.history.map(function(h){ return '<li class="faint small">' + h + '</li>'; }).join('') + '</ul></div>' +
+  '</div>';
+}
+
+function variantA(){
+  const rows = visible();
+  return '<div class="split"><div class="panel"><h2>Sources</h2>' +
+    '<table><thead><tr><th>Source</th><th>Provider</th><th>Kind</th><th>State</th><th class="num">Heartbeat</th><th class="num">Routes</th><th class="num">Demanded</th><th class="num">Accepted</th><th class="num">Ticks / min</th><th>Trend</th><th class="num">Last tick</th></tr></thead>' +
+    '<tbody>' + tableRows(rows) + '</tbody></table>' +
+    '<div class="notice">An adapter that is up with routes and no demand is the shape of a silent source. The state tag says it before the operator reads a single counter.</div></div>' +
+    detail(byName(selected)) + '</div>';
+}
+
+function variantB(){
+  const rows = visible();
   const groups = {};
-  rows.forEach(f => { const g = f.src.split('.')[0]; (groups[g] = groups[g] || []).push(f); });
-  return Object.entries(groups).map(([g, fs]) => `
-  <div class="panel">
-    <h2>${g} · ${fs.length} binding${fs.length > 1 ? 's' : ''} · ${fs.filter(f => f.quiet).length} quiet</h2>
-    <ul>${fs.map(f => `<li style="display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid var(--line-soft)">
-      <a href="#" data-f="${f.src}" style="min-width:200px">${f.src}</a>
-      <span class="muted">${f.party} · ${f.ws}</span>${enabledTag(f)} ${runningTag(f)}
-      <span class="mono faint" style="margin-left:auto">${f.enabled ? ageLabel(f.age) : 'disabled'}</span>
-      <span class="mono faint">${f.enabled ? urlButton(f.series) : '—'}</span>
-    </li>`).join('')}</ul>
-  </div>`).join('');
+  rows.forEach(function(s){ (groups[s.provider] = groups[s.provider] || []).push(s); });
+  return Object.keys(groups).map(function(provider){
+    const list = groups[provider];
+    return '<div class="panel"><h2>' + provider + ' · ' + list.length + ' source' + (list.length > 1 ? 's' : '') + '</h2>' +
+      list.map(function(s){
+        return '<div class="card"><div class="hd"><span class="nm">' + s.name + '</span><span>' + stateTag(s) + '</span></div>' +
+          '<div class="ft"><span>' + s.kind + ' · heartbeat ' + ageLabel(s.hb) + '</span>' +
+          '<span>' + s.routes + ' routes · ' + s.accepted + '/' + s.demanded + ' ids · ' + s.ticks + '/m · last ' + ageLabel(s.last) + '</span></div></div>';
+      }).join('') + '</div>';
+  }).join('');
 }
 
-function bindingTable(f){
-  return `<table><tbody>
-    <tr><td>Source name</td><td class="mono">${f.src}</td><td>Enabled</td><td>${enabledTag(f)}</td></tr>
-    <tr><td>Party</td><td>${f.party}</td><td>Workspace</td><td>${f.ws}</td></tr>
-    <tr><td>Running</td><td>${runningTag(f)}</td><td>Last tick</td><td class="mono">${f.enabled ? ageLabel(f.age) : '—'}</td></tr>
-    <tr><td>Version</td><td class="mono">${f.ver}</td><td>Last changed by</td><td>${f.by}</td></tr>
-    <tr><td>Series (inferred)</td><td class="mono" colspan="3">${f.enabled ? urlButton(f.series) : 'disabled, no ticks land'}</td></tr>
-  </tbody></table>`;
-}
-function producerTable(f){
-  const synthetic = f.folder.startsWith('Synthetic');
-  return `<table><tbody>
-    <tr><td>Folder</td><td class="mono">${f.folder}</td><td>Ticks per hour</td><td class="num">${f.tph}</td></tr>
-    <tr><td>Currency</td><td>${f.ccy}</td><td>Index family</td><td>${f.family}</td></tr>
-    <tr><td>Tenor</td><td class="mono">${f.tenor}</td><td>Enabled / auto-start</td><td>${f.enabled ? 'yes' : 'no'} / yes</td></tr>
-  </tbody></table>
-  <div class="notice">${synthetic ? 'The IR generation configs cannot be listed (only get and put), so this row appears only because the screen already knows the config id; the folder tree stands in for the enumeration.' : 'Only the FX generation configs list. A vendor source has no synthetic generation config, so these fields come from the binding and the inferred series.'}</div>`;
-}
-function versionsTable(f){
-  const vers = [{v:f.ver, at:'2026-10-06 09:02', by:f.by, en:'yes'}, {v:f.ver - 1, at:'2026-10-05 18:40', by:'m.oduya', en:'no'}];
-  return `<table><thead><tr><th>Version</th><th>When</th><th>Actor</th><th>Enabled</th><th>Change reason</th></tr></thead><tbody>
-    ${vers.map(x => `<tr><td class="mono">${x.v}</td><td class="mono">${x.at}</td><td>${x.by}</td><td>${x.en === 'yes' ? tag('yes', 'ok') : tag('no', 'warn')}</td><td class="mono faint">feed_binding.update</td></tr>`).join('')}
-  </tbody></table>`;
-}
-function folderRow(){
-  return `<div class="row">
-    <div class="field" style="min-width:260px"><label>Folder subtree</label><div class="value mono">Synthetic / Rates / IR</div></div>
-    <button class="btn primary" disabled>Start feeds</button>
-    <button class="btn" disabled>Stop feeds</button>
-    <span class="muted">Start and stop act on the running service, not on stored rows.</span>
-  </div>`;
+function variantC(){
+  const rows = visible();
+  const parties = SOURCES.reduce(function(all, s){
+    s.parties.forEach(function(p){ if (all.indexOf(p) < 0) all.push(p); });
+    return all;
+  }, []);
+  return '<div class="panel"><div class="hist"><span class="lbl">Ticks / min</span>' +
+    '<span class="bars"><i style="height:10px"></i><i style="height:12px"></i><i style="height:11px"></i><i style="height:14px"></i><i style="height:13px"></i><i style="height:16px"></i><i style="height:15px"></i><i style="height:18px"></i><i style="height:17px"></i><i style="height:20px"></i><i style="height:19px"></i><i class="on" style="height:22px"></i></span>' +
+    '<span class="total">' + rows.reduce(function(n,s){return n+s.ticks;},0) + '</span></div></div>' +
+    '<div class="pipe" style="margin-top:14px">' +
+    '<div class="panel"><h2>Sources</h2>' + rows.map(function(s){
+      return '<div class="card"><div class="hd"><span class="nm">' + s.name + '</span>' + stateTag(s) + '</div>' +
+        '<div class="ft"><span>' + s.kind + '</span><span>' + s.accepted + '/' + s.demanded + ' ids · ' + s.ticks + '/m</span></div></div>';
+    }).join('') + '</div>' +
+    '<div class="arrow">→</div>' +
+    '<div class="panel"><h2>Routes</h2>' + rows.map(function(s){
+      return '<div class="card"><div class="nm">' + s.name + ' → ' + s.provider + '</div>' +
+        '<div class="chips" style="margin-top:6px">' + (s.parties.length ? s.parties.map(function(p){return '<span class="tag">' + p + '</span>';}).join('') : '<span class="faint small">none</span>') + '</div></div>';
+    }).join('') + '</div>' +
+    '<div class="arrow">→</div>' +
+    '<div class="panel"><h2>Parties</h2>' + parties.map(function(p){
+      const served = rows.filter(function(s){ return s.parties.indexOf(p) >= 0; });
+      return '<div class="card"><div class="hd"><span class="nm">' + p + '</span><span class="mono faint small">' +
+        served.reduce(function(n,s){return n + Math.round(s.ticks / Math.max(1, s.parties.length));},0) + '/m</span></div>' +
+        '<div class="chips" style="margin-top:6px">' + (served.length ? served.map(function(s){return '<span class="tag">' + s.provider + '</span>';}).join('') : '<span class="faint small">nothing</span>') + '</div></div>';
+    }).join('') + '</div>' +
+    '</div>' +
+    '<div class="notice" style="margin-top:14px">A party reads a shared tick when its subscription for the provider holds display or non-display. A route says which source serves the party. Neither starts or stops anything: demand is computed from the catalogue and the routes, and the adapters follow it.</div>';
 }
 
-function detailPanels(f){
-  return `
-  <div class="grid2">
-    <div class="panel"><h2>Selected binding · ${f.src}</h2>${bindingTable(f)}
-      <div class="row"><button class="btn primary" disabled>Start feed</button><button class="btn" disabled>Stop feed</button><button class="btn" disabled>Save binding</button></div>
-      <div class="notice">The start and stop subjects exist (synthetic.v1.ops.start_feed and .stop) but no web operation calls them and no permission gates them, so the controls are disabled and the shell is the way in.</div>
-    </div>
-    <div class="panel"><h2>Producer behind the source</h2>${producerTable(f)}${folderRow()}</div>
-  </div>
-  <div class="panel"><h2>Binding versions</h2>${versionsTable(f)}
-    <div class="notice">A binding has versions, so an enable or a disable is recorded. Nothing records when a feed started, stopped or went quiet, so there is no uptime to read.</div>
-  </div>`;
+function bar(){
+  const variants = [['a','flat table'],['b','grouped by provider'],['c','pipeline']];
+  const states = [['all','all'],['quiet','quiet'],['stale','stale']];
+  return '<span class="label faint">variant</span>' +
+    variants.map(function(v){ return '<button data-variant="' + v[0] + '" class="' + (v[0] === variant ? 'on' : '') + '">' + v[0] + ' · ' + v[1] + '</button>'; }).join('') +
+    '<span class="sep">|</span><span class="label faint">state</span>' +
+    states.map(function(s){ return '<button data-state="' + s[0] + '" class="' + (s[0] === state ? 'on' : '') + '">' + s[1] + '</button>'; }).join('');
 }
 
-function detailSplit(){
-  return `
-  <div class="grid2">
-    <div class="panel"><h2>Market data feeds (${rows.length})</h2>
-      <ul>${rows.map(f => `<li style="padding:6px 0;border-bottom:1px solid var(--line-soft)">
-        <button class="btn" data-f="${f.src}" style="${f.src === sel ? 'border-color:var(--accent)' : ''}">${f.src}</button>
-        <span style="margin-left:8px">${enabledTag(f)} ${runningTag(f)}</span>
-        <span class="mono faint" style="margin-left:8px">${f.enabled ? ageLabel(f.age) : 'disabled'}</span></li>`).join('')}</ul>
-    </div>
-    <div class="panel"><h2>Feed detail</h2>${bindingTable(current())}${producerTable(current())}${folderRow()}
-      <div class="notice">One panel per feed hides the roster comparison the operator needs to spot the quiet one at a glance.</div>
-    </div>
-  </div>
-  <div class="panel"><h2>Binding versions · ${current().src}</h2>${versionsTable(current())}</div>`;
-}
-
-const current = () => rows.find(f => f.src === sel) || rows[0];
 function render(){
-  const app = document.getElementById('app');
-  const body = variant === 'b' ? grouped() : variant === 'c' ? detailSplit() : flat() + detailPanels(current());
-  app.innerHTML = header() + body;
-  document.getElementById('note').textContent = `Prototype · market data feeds · variant ${variant.toUpperCase()} · running set: ${state} · a binding is stored, the running set is not`;
-  document.getElementById('bar').innerHTML =
-    `<span class="label">Variant</span>` +
-    ['a','b','c'].map(v => `<button data-v="${v}" class="${v===variant?'on':''}">${v.toUpperCase()}</button>`).join('') +
-    `<span class="sep">|</span><span class="label">Running set</span>` +
-    ['all','quiet','disabled'].map(s => `<button data-s="${s}" class="${s===state?'on':''}">${s}</button>`).join('');
-  document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
-  document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
-  document.querySelectorAll('#app [data-f]').forEach(b => b.onclick = e => { e.preventDefault(); set('feed', b.dataset.f); });
-  const r = document.getElementById('refresh');
-  if (r) r.onclick = () => { r.textContent = 'Read at ' + new Date().toLocaleTimeString(); };
+  document.getElementById('note').textContent = 'Prototype · mock data · no service · variant ' + variant + ' · state ' + state;
+  const body = variant === 'b' ? variantB() : variant === 'c' ? variantC() : variantA();
+  document.getElementById('app').innerHTML = header() + '<div style="margin-top:14px"></div>' + body;
+  document.getElementById('bar').innerHTML = bar();
+  Array.prototype.forEach.call(document.querySelectorAll('#bar [data-variant]'), function(b){
+    b.addEventListener('click', function(){ go({variant: b.dataset.variant}); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#bar [data-state]'), function(b){
+    b.addEventListener('click', function(){ go({state: b.dataset.state}); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-source]'), function(r){
+    r.addEventListener('click', function(){ go({source: r.dataset.source}); });
+  });
 }
-function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
+function go(changes){
+  const next = new URLSearchParams(location.search);
+  Object.keys(changes).forEach(function(k){ next.set(k, changes[k]); });
+  location.search = next.toString();
+}
+
 render();
 </script>
 </body>

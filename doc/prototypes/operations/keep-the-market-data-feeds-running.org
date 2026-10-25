@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 7C41D2B6-8A3E-4F1B-9C62-5D8E0A4F6B71
+:END:
+#+title: Keep the market data sources running prototype
+#+description: The operator's source screen after demand replaced start and stop: every source with its adapter state, the ids in demand, the rejects, the drops and the age of the last tick, then one source with the parties routed to it.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:operations:market_data:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+| Item          | Where                                                    |
+|---------------+----------------------------------------------------------|
+| Prototype     | [[file:keep-the-market-data-feeds-running/][the prototype]] |
+| Gemini review | none                                                     |
+| Group         | [[file:index.org][Operations prototypes]]                       |
+
+* Summary
+
+The prototype argues that the operator's market data screen is a coverage
+board of sources, not a roster of feeds with a start and a stop. The
+[[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data sources running]] journey already says demand is
+computed and the adapters follow it, so nothing on the screen starts or stops
+a feed. What the operator does is read which source is serving, what it is
+demanded, what it rejects, what it drops, and how old its last tick is.
+
+It replaces the earlier version of this prototype, which listed feed bindings
+with an enabled flag and a running flag. Those two flags no longer exist in
+the service.
+
+* Detail
+
+** The question
+
+The old screen answered "which feeds are running", because a person started
+them. The service now computes the demand set from the catalogue and the
+routes, sends it to the adapter, and the adapter publishes. So the question
+becomes "which source is serving, and where has the path broken": the
+adapter, the demand, the mapping, the store, or the party's subscription.
+
+** What the screen holds
+
+One list, one detail.
+
+- The list has one row per source: name, provider, kind, adapter state,
+  heartbeat age, the number of routes, the ids demanded, the ids accepted and
+  rejected, ticks per minute with a sparkline, and the age of the last tick.
+- The state tag carries the diagnosis before a counter is read. =serving=,
+  =ready=, =stale=, and =no demand= for the case that matters most: an
+  adapter that is up with routes that name it and is demanded nothing.
+- The detail shows the source's fields, its rejects by reason, its drops by
+  reason for the last hour, the parties routed to it, and its state history.
+- There is no start and no stop. A stale adapter is brought back by
+  restarting its service, and the demand returns with the heartbeat.
+
+** The variants
+
+- *A. Flat table with a detail panel.* The list is the primary object and the
+  detail sits beside it. Best for diagnosis, because the counters and the
+  reasons are on one glance.
+- *B. Grouped by provider.* One panel per provider with its sources. Best when
+  a provider has many sources and the question is which provider is quiet.
+- *C. Pipeline.* Sources, then routes, then parties as three columns. Best for
+  the question "who is not getting data, and why", which crosses the
+  operator's screen and the party administrator's subscription.
+
+** The states
+
+The bar switches =?variant=a|b|c=. A second switch filters the mock set:
+=all=, =quiet= (routes with no demand) and =stale= (a missed heartbeat). A row
+opens the detail with =?source=.
+
+** What is fake
+
+Every counter is mock data. There is no service, no session and no build step.
+The numbers follow the live shape measured on the provisioned tenant, where
+=bloomberg-a= served 26 ids and ticked about 300 times a minute.
+
+** Where the code lives
+
+[[file:keep-the-market-data-feeds-running/index.html][The prototype]] is one plain HTML file with its CSS and JavaScript embedded.
+The site publishes it as it stands.
+
+** Verdict
+
+Awaiting sign-off. My recommendation is A. The operator's job is to find the
+broken link in a short chain, and a table with the reasons beside it reads
+faster than a grouped list or a diagram. The pipeline of C is the better
+second screen, for the question that crosses parties.

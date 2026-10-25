@@ -26,7 +26,7 @@ generated alternative kept beside the agreed design, never instead of it.
 #+ATTR_HTML: :class hug-leading
 | Prototype                           | What it argues | Open it | Review |
 |-------------------------------------+----------------+---------+--------|
-| Keep the market data feeds running  | A feed is a binding, a last tick and an enabled state; a quiet feed must stay visible rather than disappear. | [[file:keep-the-market-data-feeds-running/][prototype]] | none |
+| [[file:keep-the-market-data-feeds-running.org][Keep the market data sources running]] | The source is the object now, not the feed: adapter state, demand, rejects, drops and the age of the last tick on one board, with no start or stop. | [[file:keep-the-market-data-feeds-running/][prototype]] | none |
 | See the running services            | The roster the registry expects, met by the samples the instances send: a service that stopped keeps its row and a build that lags behind is visible. | [[file:services/][prototype]] | none |
 | Watch the compute grid              | The grid is the installation's, shared by every tenant's work, so the screen shows the nodes and the wrappers running on them. | [[file:compute-grid/][prototype]] | none |
 | Watch the message bus               | The streams and their samples, listed so a stream nobody publishes to is visible rather than silently absent. | [[file:message-bus/][prototype]] | none |

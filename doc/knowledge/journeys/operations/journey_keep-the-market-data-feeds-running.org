@@ -54,8 +54,8 @@ adapter to bring up, or a routine check. The journey starts at *Operations*, the
    =stale=. The person sorts by last tick.
 6. *Bring a source back.* For a stale adapter, the person reads the adapter's log
    and restarts the adapter service. The service sends the demand set again when
-   the heartbeat returns. For a simulated source the person can also start and
-   stop single generators from the simulator area; the demand set does the rest.
+   the heartbeat returns. There is nothing to start or stop: the demand set does
+   the rest.
 7. *Read what a party takes.* The person opens the parties routed to a source and
    follows the link to the party's subscription.
 8. *Leave.* The person goes back to the *Operations* area.
@@ -82,8 +82,10 @@ again, the service sends the demand set, and delivery resumes.
 
 * Screens and wireframes
 
-One screen of the table, a detail panel, and the demand and drops views. The
-wireframe is still to be drawn.
+One screen of the table, a detail panel, and the demand and drops views.
+[[file:../../../prototypes/operations/keep-the-market-data-feeds-running/index.html][The prototype]] draws the table with the detail beside it. Its variant A is the
+table, B groups the sources by provider, and C draws sources, routes and parties
+as three columns.
 
 * Entities composed
 
@@ -99,11 +101,11 @@ wireframe is still to be drawn.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| List the sources | List sources with status | =marketdata.v1.ops.list_source_status= | planned |
+| List the sources | List adapters with their status and demand counts | =marketdata.v1.ops.list_adapter_status= | built |
 | Read the demand | Read the demand set and the rejected ids | =marketdata.v1.ops.get_source_demand= | planned |
 | Read the drops | Read the quality counters | =marketdata.v1.ops.get_source_drops= | planned |
 | Read what a party takes | List the routes of a source | =marketdata.v1.routes.list= | planned |
-| Start or stop a generator | Start or stop one generator | =marketdata.v1.synthetic.ops.start_generator=, =.stop_generator= | planned |
+
 
 * Related journeys
 

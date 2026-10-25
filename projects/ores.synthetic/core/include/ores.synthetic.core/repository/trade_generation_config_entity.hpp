@@ -60,6 +60,7 @@ struct trade_generation_config_entity {
     std::string max_notional;
     std::string as_of_date;
     std::uint64_t seed = 1;
+    std::uint32_t trades_per_book = 8;
     bool enabled = false;
     std::optional<std::string> reference_curve_id;
     std::string modified_by;

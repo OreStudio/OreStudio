@@ -31,6 +31,8 @@
 \ir ./refdata_currency_market_tiers_notify_trigger_create.sql
 \ir ./refdata_calendar_types_create.sql
 \ir ./refdata_calendar_types_notify_trigger_create.sql
+\ir ./refdata_commodities_create.sql
+\ir ./refdata_commodities_notify_trigger_create.sql
 
 -- Core reference data tables
 \ir ./refdata_currencies_create.sql

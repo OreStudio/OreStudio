@@ -38,11 +38,15 @@ import {
     type ListColumn,
     type ListSource,
     type PageRequest,
+    type ListFilter,
 } from '../refdata/RecordList.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { pricingEnginePath } from '../shell/paths.js';
 import { WorkflowMenu } from '../shell/WorkflowMenu.js';
-import { Tag } from '../ui/Primitives.js';
+import { PARTY_COLUMN_ID, PARTY_FILTER_ID, usePartyScope } from '../refdata/partyScope.js';
+import { Crumbs } from '../refdata/shared.js';
+import { ScreenFrame } from '../shell/ScreenFrame.js';
+import { Notice, Tag } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
 
 /** Where the services announce a change to a configuration, so the list can hear one. */
@@ -71,13 +75,17 @@ function isSortField(field: string): field is SortField {
 /** One page of the rows, searched and ordered as the list asked. */
 export function pageOf(
     rows: readonly PricingSummary[],
-    page: Pick<PageRequest, 'offset' | 'limit' | 'sort' | 'descending' | 'search'>,
+    page: Pick<PageRequest, 'offset' | 'limit' | 'sort' | 'descending' | 'search'> & {
+        readonly filters?: Readonly<Record<string, string>>;
+    },
 ): { readonly rows: readonly PricingSummary[]; readonly total: number } {
     const needle = page.search.trim().toLowerCase();
+    const party = page.filters?.[PARTY_FILTER_ID] ?? '';
+    const owned = party === '' ? rows : rows.filter((row) => row.partyId === party);
     const found =
         needle === ''
-            ? [...rows]
-            : rows.filter((row) =>
+            ? [...owned]
+            : owned.filter((row) =>
                   [row.name, row.description, row.variant, row.partyName, row.partyCode].some(
                       (text) => text.toLowerCase().includes(needle),
                   ),
@@ -95,18 +103,33 @@ export function pageOf(
     return { rows: found.slice(page.offset, page.offset + page.limit), total: found.length };
 }
 
-const SOURCE: ListSource<PricingSummary> = {
-    key: 'pricing-engines',
-    read: async (page) => pageOf(await pricingEngines.list(), page),
-    search: true,
-    sortable: SORTABLE,
-    mayAdd: false,
-    watches: [PRICING_ENGINES_EVENTS],
-    recordKey: (row) => ({ name: row.name }),
-};
+function sourceOf(filter: ListFilter | undefined): ListSource<PricingSummary> {
+    return {
+        key: 'pricing-engines',
+        // An address can carry a party from a time the account worked in several. A
+        // list with no party filter has no way to clear it, so it ignores it.
+        read: async (page) =>
+            pageOf(
+                await pricingEngines.list(),
+                filter === undefined ? { ...page, filters: {} } : page,
+            ),
+        search: true,
+        sortable: SORTABLE,
+        ...(filter === undefined ? {} : { filters: [filter] }),
+        mayAdd: false,
+        watches: [PRICING_ENGINES_EVENTS],
+        recordKey: (row) => ({ name: row.name }),
+    };
+}
 
-function useColumns(): readonly ListColumn<PricingSummary>[] {
+function useColumns(showParty: boolean): readonly ListColumn<PricingSummary>[] {
     const { t } = useTranslation();
+    const party = {
+        id: PARTY_COLUMN_ID,
+        sort: 'partyName' as const,
+        header: t('pricingEngines.columns.party'),
+        cell: (row: PricingSummary) => (row.partyName === '' ? row.partyId : row.partyName),
+    };
     return [
         {
             id: 'name',
@@ -118,12 +141,7 @@ function useColumns(): readonly ListColumn<PricingSummary>[] {
                 </Link>
             ),
         },
-        {
-            id: 'party',
-            sort: 'partyName',
-            header: t('pricingEngines.columns.party'),
-            cell: (row) => (row.partyName === '' ? row.partyId : row.partyName),
-        },
+        ...(showParty ? [party] : []),
         {
             id: 'variant',
             sort: 'variant',
@@ -168,11 +186,33 @@ function useColumns(): readonly ListColumn<PricingSummary>[] {
 
 export function PricingEnginesPage(): ReactNode {
     const { t } = useTranslation();
-    const columns = useColumns();
+    const scope = usePartyScope({
+        label: t('pricingEngines.columns.party'),
+        all: t('pricingEngines.allParties'),
+    });
+    const columns = useColumns(scope.several);
+    const source = sourceOf(scope.filter);
     const trail = [...useAreaRoot('reporting'), { label: t('pricingEngines.title') }];
+    if (scope.pending || scope.error !== null) {
+        return (
+            <ScreenFrame
+                trail={<Crumbs parts={trail} />}
+                title={t('pricingEngines.title')}
+                description={t('pricingEngines.lead')}
+            >
+                {scope.error === null ? (
+                    <p className="text-sm text-ink-muted" role="status">
+                        {t('common.loading')}
+                    </p>
+                ) : (
+                    <Notice tone="error">{scope.error}</Notice>
+                )}
+            </ScreenFrame>
+        );
+    }
     return (
         <RecordList
-            source={SOURCE}
+            source={source}
             title={t('pricingEngines.title')}
             lead={t('pricingEngines.lead')}
             crumbs={trail}

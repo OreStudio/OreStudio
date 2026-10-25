@@ -31,7 +31,18 @@ The questions to answer, once the prototype is signed off:
 
 The prototype of the trade list, [[id:1D348CB0-B7BD-4AA8-B61A-34A17AC3BA20][Trade list and page prototype]], argues the tree and filters the list by it. The screen is built from mock data, so nothing yet proves that the server can serve the hierarchy the tree draws. Discovering this late would force either a new read model or a tree that pages, and both change the screen.
 
-This work waits for the prototype to be signed off. It is not in the plan of [[id:26F3DAAA-30F1-462C-B3C1-42A413251F42][Build the trade list and the trade page]] yet, because the signed-off shape decides what to ask for.
+The prototype was signed off on 2026-10-24, so the questions below are now answered from the code. The tree cannot be drawn from the reads that exist, and that is the decision the task waits on.
+
+* Answers, read from the code on 2026-10-24
+
+1. *No whole-hierarchy portfolio read.* =refdata.v1.portfolios.list= takes =offset=, =limit=, =order=, =as_of= and a filter of =sandbox_id=, =id_one_of= and =sandbox_id_one_of= only. There is no party member and no tree read, so a party's hierarchy is only reachable by walking every page.
+2. *Books can be asked for by portfolio.* =books_filter= carries =parent_portfolio_id= and =parent_portfolio_id_one_of=, so the books of a set of portfolios come back in one call, up to 1000 portfolios.
+3. *Both are party-scoped by the session, not by the filter.* =portfolio_repository= and =book_repository= erase the rows of another party with =ctx.party_id()= after the query. The erase happens after paging, so =total= and the page are tenant-wide while the rows are party-scoped: a page can come back short, and the count is not the party's count.
+4. *Counts per node would be one call each.* The count reads exist per entity, but nothing returns a count per portfolio or per book, so a count per row of the tree is N calls.
+5. *The reads need =refdata::portfolios:read= and =refdata::books:read=.* Both codes are seeded; whether the seeded roles grant them is unverified.
+6. *The reported portfolios stay out.* =trade_portfolios= is not needed for the tree, which follows the book.
+
+The consequence is one question: the tree needs either a read that returns a party's hierarchy with a count per node, or a page walk the list standard forbids. The party filter belongs in the query rather than in an erase after paging, because the erase and the pager disagree.
 
 * References
 

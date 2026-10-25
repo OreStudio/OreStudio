@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 1E0EF4FA-60C0-4F2F-AAE1-848E84675449
+:END:
+#+title: Story: Take the first reference data topic through the screen pipeline
+#+description: Run the calendars topic through journeys, prototype, build, test scenario and sign off; the pipeline is the deliverable.
+#+type: story
+#+level: s2
+#+filetags: :ux:web:refdata:journeys:prototype:sprint_29:v0:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One reference data topic goes end to end through the pipeline, and the pipeline is written down so the next topic repeats it without discussion. Each step has an output a person signs off: the journeys, the prototype, the screens, the test scenario and the review.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | The harness of [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] must exist before the screens are built. The topic is calendars, per [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][The screen pipeline topics]]. |
+| Next          | Extract the journeys of the first topic. |
+| Last touched  | 2026-10-25                               |
+
+* Acceptance
+
+- The journeys of the topic are written as user journey documents, and each is judged as a CRUD variation the standard screen covers or as a workflow the screen offers under Workflows.
+- A prototype of each screen follows the settled standard and is signed off before any code.
+- The screens are built from the shared record parts, with the server side extensions they need, and no screen builds a dialog of its own.
+- A test scenario covers list, record page, create, amend with a stale version, delete, history and revert.
+- The harness passes on each screen, the manual checklist lines are walked, and the sign off is recorded on the task.
+- The pipeline is written as a runbook and the next topic story is scaffolded from it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DCA8E0F8-1769-458C-83FC-77440252C1DE][Extract the journeys of the first topic]] | BACKLOG | | | Write the user journeys of the first topic in the existing form and judge each as a CRUD variation or as a workflow. |
+| [[id:29F81FF8-6836-439E-8945-3AAB20850A6C][Prototype the screens of the first topic]] | BACKLOG | | | Prototype each screen of the topic to the settled standard, with its design note, and get it signed off before any code. |
+| [[id:E8CE97DD-CB32-4F94-81D6-A0C1B69C54FA][Build the screens of the first topic]] | BACKLOG | | | Build the signed off screens from the shared record parts, with registry entries, field tables and server side work. |
+| [[id:5AC1321A-68CF-4C2B-8815-EF05E6E40BFF][Test and sign off the screens of the first topic]] | BACKLOG | | | Write the test scenario, run it on a fresh environment, run the harness, walk the manual lines, record the sign off. |
+| [[id:04113E33-1D67-4C96-9318-0982BD788A48][Write the screen pipeline runbook]] | BACKLOG | | | Write the pipeline as a runbook, from journeys to sign off, and scaffold the next topic story from it. |
+
+* Decisions
+
+* Out of scope
+
+-

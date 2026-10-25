@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2
+:END:
+#+title: Story: Settle the UX language for record screens
+#+description: Decide every contradiction between the standards, write the form layout rules, name each rule, and specify it in Allium.
+#+type: story
+#+level: s2
+#+filetags: :ux:web:refdata:standards:allium:sprint_29:v0:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A reviewer or a check can point at a rule by its identifier, and the rule has one answer. The standards no longer disagree on where Edit stands, how the dialog is titled or when Save is enabled. The form layout is specified: how fields group, which widget each field kind uses, where the buttons go, how history is laid out and how refresh behaves. The behaviour of a record screen is an Allium specification beside the prose.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | The [[id:F4EF9042-0EC2-4B64-95E7-7DEBF273F2F7][Audit of the UX standards]] to merge: it lists the nine contradictions, the eleven form layout questions and the identifier scheme this story decides. |
+| Next          | Decide each contradiction between the standards. |
+| Last touched  | 2026-10-25                               |
+
+* Acceptance
+
+- Every contradiction the audit found has a decision, recorded on the page that now rules, and the losing page points at it.
+- The record screen standard states the form layout rules: field grouping and order, the widget per field kind, button placement, the history layout and the refresh behaviour.
+- Every rule in the record screen standard and the entity screen specification carries a stable identifier, and the Screen review checklist is keyed by those identifiers.
+- An Allium specification under doc/llm/specs states the record screen behaviour: the stale and Refresh rule, the edit in progress conflict, the stale version refusal, revert as a new version, and the create and delete flows.
+- The UX hub reading order reflects the settled pages.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A09CD80D-1980-4136-9164-E637E7C0FCA7][Decide each contradiction between the standards]] | BACKLOG | | | Decide each contradiction the audit lists, record the decision on the ruling page and point the other page at it. |
+| [[id:3138F4FC-9659-4335-B5A1-B94A95ED42C6][Write the form layout rules]] | BACKLOG | | | Fill the form layout gaps: field grouping and order, widget per field kind, button placement, history layout, refresh. |
+| [[id:5F39FFBF-234F-4E87-A5EB-D9799536D1FC][Give every rule a stable identifier]] | BACKLOG | | | Give each rule in the two standards a stable identifier and rekey the Screen review checklist by those identifiers. |
+| [[id:6B828FD6-3B7C-4952-89A0-0DCE1D8B3B4D][Write the record screen Allium specification]] | BACKLOG | | | State the record screen behaviour in Allium: Refresh, edit in progress, stale version, revert, create and delete. |
+
+* Decisions
+
+* Out of scope
+
+-

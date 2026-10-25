@@ -29,7 +29,7 @@ The prototype is throwaway. Everything on it is mock data: 38 trades, 7 of them 
 | Query | What it shows |
 |-------+---------------|
 | (none) | The list, 15 rows a page. It holds trades and structures as rows of the same level; =?show=trades= or =?show=structures= narrows it. A structure row has no state or version of its own, so those cells say how many trades it holds or stay empty. The prototype matches a structure when one of its trades matches, which the read model does not: a structure row there carries no state, book or date, so a filter on one leaves it out. The list follows the view in the first PR and the refinement waits, as the task records. A Book a trade button, sortable headers, a trade date range, and the request line under the table, in the form of the standard entity protocol: a page, a stated order and a filter record on the trade summary read model. The page, the size, the search, the filters and the order are in the address (=offset=, =limit=, =search=, =portfolio=, =status=, =book=, =cp=, =type=, =from=, =to=, =sort=, =dir=) |
-| =?portfolio=FX=, =?book=EMEA-FX= | The list narrowed to the chosen portfolio, every portfolio under it, or one book. The tree marks the chosen row, and choosing it again clears the filter |
+| =?party=, =?portfolio= or =?book= | The list narrowed to the chosen party, portfolio, or book, with everything under the chosen row. The tree marks the choice, and choosing it again clears the filter |
 | =?state=stale= | The list or page after a change reached the browser: Refresh is gold and a row pulses |
 | =?state=loading=, =empty=, =error= | The in-place states of the list, and of the page. =empty= says there are no trades and points to Book a trade |
 | =?state=refused&tab=history= | The History tab states that the reader may not read it. The other tabs carry on |
@@ -44,13 +44,14 @@ The prototype is throwaway. Everything on it is mock data: 38 trades, 7 of them 
 
 A trade is filed in one book, and a book hangs from exactly one portfolio. The tree on the left therefore holds both, and the tree and the list are one request.
 
-- A portfolio nests under a portfolio. A book hangs from its portfolio, so a portfolio row is followed by its child portfolios and then by its books.
-- *The two rows are told apart by their icon, never by their words.* A portfolio takes the briefcase and a book takes the book, which are the two icons [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][the icon guidelines]] name for the concepts: =ic_fluent_briefcase_20_regular= for a portfolio and =ic_fluent_book_20_regular= for a book. No new icon is drawn for this screen.
-- Choosing a portfolio keeps the trades of every book under it. Choosing a book keeps that book's trades. The choice marks the row and moves the accent onto its icon.
+- A party nests under its parent party, so a holding company shows the operating companies beneath it. A party holds its own root portfolios; a portfolio nests under a portfolio; a book hangs from its portfolio. Each row is followed by its children portfolios and then by its books, and a party's portfolios come before the parties it holds, as the legacy tree drew them.
+- A party that holds nothing is drawn as a shell with a count of 0, rather than left out, because a holding company is a real row of the tree.
+- *The three rows are told apart by their icon, never by their words.* A party takes the hierarchy glyph, a portfolio the briefcase and a book the book, which are the icons [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][the icon guidelines]] name for the concepts: =ic_fluent_organization_20_regular=, =ic_fluent_briefcase_20_regular= and =ic_fluent_book_20_regular=. No new icon is drawn for this screen.
+- Choosing a party keeps the trades of every book of the parties under it, choosing a portfolio the books under it, and choosing a book that book's trades. The choice marks the row and moves the accent onto its icon.
 - Each row states how many trades sit in its subtree, so a person sees where the population is before opening a folder.
 - A sandbox's portfolios are virtual and are drawn in italics. The trades in a sandbox leave the list as soon as a portfolio or a book outside the sandbox is chosen.
 - The tree keeps its shape while the list shows loading, empty or error, so a portfolio that holds nothing is not a trap.
-- The address carries the choice as =?portfolio= or =?book=, and the request line states it as a book filter, because a book of the tree is a book of the trade and a portfolio is the books under it. One book is an equals member, =book_id=, and many are a one-of member, =book_id_one_of=. The book combo box of the filter row and the tree stay in step, and choosing one clears the other.
+- The address carries the choice as =?party=, =?portfolio= or =?book=. A party is a filter of its own, =party_id=, and the other two are a book filter, because a book of the tree is a book of the trade and a portfolio is the books under it. One book is an equals member, =book_id=, and many are a one-of member, =book_id_one_of=. The book combo box of the filter row and the tree stay in step, and choosing one clears the other.
 
 The trade summary read model already carries =book_id=, so the tree needs no column it lacks. It does not honour the other portfolios a trade may be reported in, which =ores_trading_trade_portfolios_tbl= records beside the book. A list that must show those is a later decision, and it is recorded in the task.
 
@@ -90,7 +91,7 @@ Open the exercise prices card of ACME-100202 and change the strike. The dialog s
 
 ** What is fake
 
-- The data. The prices, the counterparties and the books are mock, and so are the portfolios and the two joins the tree rests on: the portfolio each book sits in, and the constituent trades of the one composite trade.
+- The data. The prices, the counterparties and the books are mock, and so are the parties, the portfolios and the three joins the tree rests on: the party each root portfolio sits in, the portfolio each book sits in, and the constituent trades of the one composite trade. The root portfolio of a party carries the party's own name, as the seeder lays it out, so two rows of the tree read "Acme London".
 - The server. A save waits in the browser until Refresh. State does not survive a reload, except trades booked or imported in the other prototypes. A saved table of rows comes back as text, without its links.
 - The activity type codes, except the ones the model documents (new booking, draft capture, amendment, novation, termination, cancellation).
 

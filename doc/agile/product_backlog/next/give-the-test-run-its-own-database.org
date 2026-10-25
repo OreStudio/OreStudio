@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 0CF3B77E-557B-4976-98D8-3E6B5566DA12
+:END:
+#+title: Give the test run its own database
+#+description: ORES_TEST_DB_DATABASE carries the same name as ORES_DB_DATABASE, so a ctest run writes its tenants and fixtures into the developer's own environment database. Test rows sit beside environment rows, a query that expects one tenant sees many, and two runs on one machine share rows. The suites use their own tenants; what they do not have is a database of their own.
+#+type: capture
+#+level: cross
+#+filetags: :testing:test_isolation:database:ctest:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A test run should create or use a database of its own, and empty it with the
+run, so it neither sees nor leaves environment state. Today =ORES_TEST_DB_DATABASE=
+carries the same name as =ORES_DB_DATABASE=, so both point at
+=ores_dev_swift_curie=.
+
+* Why
+
+The suites are well behaved about tenants: each makes its own, named for the
+test, and none of them truncates a table or touches another party's rows. The
+problem is the database underneath them. A ctest run leaves its tenants and
+fixtures in the developer's environment database. After one gate run the tenant
+table held 52 live rows, and the reporting instances were the suites' own
+=CD_instance-N= rows.
+
+That costs a reader twice. A query written for one tenant returns many, and
+nobody can tell which rows are theirs. And two runs on one machine share rows,
+so a suite that counts or lists sees the other run's work.
+
+It does *not* explain a missing provision. A provisioned ACME tenant disappears
+because the gate recreates the database before the suites run, which is a
+separate capture: [[id:CF6DE0F5-4013-4BDF-8188-5D5C98F5717E][The check gate recreates the developer database]].
+
+* References
+
+- =.env=: =ORES_TEST_DB_DATABASE= and =ORES_DB_DATABASE= hold the same name.
+- The gate's =ctest= check runs =./compass.sh test run --preset {preset}=, which
+  inherits that environment.
+- The evidence: 52 live tenants and =CD_instance-N= rows in
+  =ores_reporting_report_instances_tbl= after a gate run on 2026-10-25.
+
+* See also
+
+-

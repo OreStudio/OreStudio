@@ -43,6 +43,7 @@ export interface TradeGenerationConfigWrite {
     max_notional: string;
     as_of_date: string;
     seed: number;
+    trades_per_book: number;
     enabled: boolean;
     reference_curve_id: string;
 }

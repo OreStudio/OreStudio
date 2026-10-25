@@ -388,6 +388,7 @@ export const FOLDERS: readonly FolderDef[] = [
     { to: PATHS.refdata, bodyKey: 'refdata.area.lead', icon: 'database' },
     { to: PATHS.organisation, bodyKey: 'access.hub.lead', icon: 'people' },
     { to: '/market-data', bodyKey: 'home.party.marketdataBody', icon: 'chart' },
+    { to: PATHS.trades, bodyKey: 'trading.trades.areaLead', icon: 'document' },
     { to: '/requests', bodyKey: 'inbox.queue.lead', icon: 'document' },
     { to: PATHS.operations, bodyKey: 'operations.hub.description', icon: 'server' },
     { to: PATHS.reporting, bodyKey: 'reporting.area.lead', icon: 'chart' },

@@ -25,7 +25,10 @@
 #include <chrono>
 #include <cmath>
 #include <format>
+#include <map>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace ores::synthetic::service {
 
@@ -161,7 +164,7 @@ std::string slot_name(const domain::trade_generation_scope& scope, std::uint32_t
 
 }
 
-domain::trade_population_plan plan_population(const domain::trade_generation_scope& scope) {
+void validate_scope(const domain::trade_generation_scope& scope) {
     if (scope.book_ids.empty())
         throw trade_population_error("The config states no book, so the population has nowhere "
                                      "to land.");
@@ -171,9 +174,6 @@ domain::trade_population_plan plan_population(const domain::trade_generation_sco
     if (scope.trader_usernames.empty())
         throw trade_population_error("The party holds no account that may trade, so no trade can "
                                      "name the person who entered it.");
-    if (scope.asset_class_code != "bond")
-        throw trade_population_error("Asset class '" + scope.asset_class_code +
-                                     "' is not one this generator covers yet; it states bonds.");
     if (scope.max_notional < scope.min_notional)
         throw trade_population_error("The notional band's ceiling is below its floor.");
 
@@ -183,13 +183,48 @@ domain::trade_population_plan plan_population(const domain::trade_generation_sco
         throw trade_population_error("The tenor band's long end '" + scope.max_tenor_code +
                                      "' is shorter than its short end '" + scope.min_tenor_code +
                                      "'.");
+}
+
+std::vector<std::string_view> planned_asset_classes() {
+    static const std::vector<std::string_view> codes{"bond"};
+    return codes;
+}
+
+const trade_planner& planner_for(const std::string& asset_class_code) {
+    static const bond_trade_planner bond;
+    static const std::map<std::string, const trade_planner*> planners{{"bond", &bond}};
+
+    const auto entry = planners.find(asset_class_code);
+    if (entry == planners.end()) {
+        std::string known;
+        for (const auto code : planned_asset_classes()) {
+            if (!known.empty())
+                known += ", ";
+            known += code;
+        }
+        throw trade_population_error("Asset class '" + asset_class_code +
+                                     "' has no trade planner; the planners are " + known + ".");
+    }
+    return *entry->second;
+}
+
+std::string_view bond_trade_planner::asset_class_code() const {
+    return "bond";
+}
+
+domain::trade_population_plan
+bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
+    validate_scope(scope);
+
+    const auto min_years = tenor_years_of(scope.min_tenor_code);
+    const auto max_years = tenor_years_of(scope.max_tenor_code);
 
     domain::trade_population_plan plan;
     plan.config_id = scope.config_id;
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
-    const auto total = trades_per_book * static_cast<std::uint32_t>(scope.book_ids.size());
+    const auto total = scope.trades_per_book * static_cast<std::uint32_t>(scope.book_ids.size());
     for (std::uint32_t slot = 0; slot < total; ++slot) {
         const auto& book_id = scope.book_ids[slot % scope.book_ids.size()];
         const auto& counterparty_id = scope.counterparty_ids[slot % scope.counterparty_ids.size()];
@@ -200,18 +235,12 @@ domain::trade_population_plan plan_population(const domain::trade_generation_sco
         const auto drawn =
             min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
 
-        domain::trade_population_slot entry;
-        entry.slot = slot;
-        entry.book_id = book_id;
-        entry.counterparty_id = counterparty_id;
-        entry.trader_username = trader;
-        entry.trade_type_code = std::string(bond_trade_type_code);
-        entry.trade_id = trade_id_for(scope, slot);
-        entry.internal_identifier = internal_identifier_for(scope, slot);
-        entry.tenor_years = std::clamp(drawn, min_years, max_years);
-        entry.security_id = security_id_for(scope, entry.tenor_years);
-        entry.issue_id = issue_id_for_security(entry.security_id);
-        entry.issuer_id = issuer_id_for(scope, entry.tenor_years);
+        domain::bond_terms terms;
+        terms.tenor_years = std::clamp(drawn, min_years, max_years);
+        terms.security_id = security_id_for(scope, terms.tenor_years);
+        terms.issue_id = issue_id_for_security(terms.security_id);
+        terms.issuer_id = issuer_id_for(scope, terms.tenor_years);
+        terms.reference_curve_id = scope.reference_curve_id;
 
         /*
          * The anchor is the config's as-of and never the clock, so a
@@ -220,13 +249,21 @@ domain::trade_population_plan plan_population(const domain::trade_generation_sco
          * anchor and its original term alone, so every trade of it states the
          * same ones; the trade date is the only date that belongs to the trade.
          */
-        entry.trade_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
-        entry.issue_date = add_months(scope.as_of_date, -security_age_months);
-        entry.maturity_date = add_years(entry.issue_date, static_cast<int>(entry.tenor_years));
+        terms.issue_date = add_months(scope.as_of_date, -security_age_months);
+        terms.maturity_date = add_years(terms.issue_date, static_cast<int>(terms.tenor_years));
 
+        domain::trade_population_slot entry;
+        entry.slot = slot;
+        entry.book_id = book_id;
+        entry.counterparty_id = counterparty_id;
+        entry.trader_username = trader;
+        entry.trade_type_code = std::string(bond_trade_type_code);
+        entry.trade_id = trade_id_for(scope, slot);
+        entry.internal_identifier = internal_identifier_for(scope, slot);
+        entry.trade_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
         entry.notional = notional_from(scope, draw(name, 1));
         entry.currency = scope.currency_code;
-        entry.reference_curve_id = scope.reference_curve_id;
+        entry.terms = terms;
 
         for (const auto& pair : scope.netting_sets) {
             if (pair.first == counterparty_id) {

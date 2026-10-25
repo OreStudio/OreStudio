@@ -39,6 +39,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import analytic_parameter_rows  # noqa: E402
+import pricing_parameter_rows  # noqa: E402
 import block_parameter_rows  # noqa: E402
 import setup_parameter_rows  # noqa: E402
 from ore_parameter_seed import artefact_row, parameter_id, sql_text, xpath  # noqa: E402
@@ -151,7 +152,7 @@ PARAMETER_COLUMNS = (
 
 def rows():
     out = (setup_parameter_rows.rows() + block_parameter_rows.rows()
-           + analytic_parameter_rows.rows())
+           + analytic_parameter_rows.rows() + pricing_parameter_rows.rows())
     ids = [parameter_id(r) for r in out]
     if len(set(ids)) != len(ids):
         raise ValueError("two parameters document the same leaf")
@@ -164,7 +165,8 @@ def rows():
 def missing():
     return (setup_parameter_rows.missing(setup_parameter_rows.rows())
             + block_parameter_rows.missing(block_parameter_rows.rows())
-            + analytic_parameter_rows.missing(analytic_parameter_rows.rows()))
+            + analytic_parameter_rows.missing(analytic_parameter_rows.rows())
+            + pricing_parameter_rows.missing(pricing_parameter_rows.rows()))
 
 
 def render(all_rows):
@@ -184,11 +186,11 @@ def render(all_rows):
                 columns=DOMAIN_COLUMNS, rows=domain_rows)
             + DATASET.format(
                 title="Ore Parameters", code="ore.parameters",
-                description=sql_text("The documentation of the leaves of ore.xml that a screen "
-                                     "shows: a label, a help line, a description, the default, "
-                                     "the format and the ORE releases that introduced and removed "
-                                     "each one."),
-                context=sql_text("Parameter documentation for the engine settings screens"),
+                description=sql_text("The documentation of the leaves of the ORE documents that a "
+                                     "screen shows: a label, a help line, a description, the "
+                                     "default, the format and the ORE releases that introduced "
+                                     "and removed each one."),
+                context=sql_text("Parameter documentation for the configuration screens"),
                 artefact_type="ore_parameters",
                 table="ores_dq_ore_parameters_artefact_tbl",
                 columns=PARAMETER_COLUMNS, rows=parameter_rows))

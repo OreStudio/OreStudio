@@ -711,8 +711,8 @@ void process_assignment(ores::nats::service::client& nats,
 
             if (!verdict.succeeded) {
                 error_message = verdict.failure;
-                BOOST_LOG_SEV(lg, error) << "Engine produced no analytics for " << evt.result_id
-                                         << ": " << verdict.failure;
+                BOOST_LOG_SEV(lg, error)
+                    << "Engine run failed for " << evt.result_id << ": " << verdict.failure;
                 // ClientError.
                 outcome = 3;
             } else {

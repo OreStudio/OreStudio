@@ -27,7 +27,7 @@ trade_population_service::trade_population_service(trade_population_writer& writ
 
 trade_population_run trade_population_service::run(const boost::uuids::uuid& config_id) {
     const auto scope = writer_.resolve_scope(config_id);
-    const auto plan = plan_population(scope);
+    const auto plan = planner_for(scope.asset_class_code).plan(scope);
 
     trade_population_run run;
     run.config_id = scope.config_id;
@@ -51,12 +51,7 @@ trade_population_run trade_population_service::run(const boost::uuids::uuid& con
             continue;
         }
 
-        trade_population_write write;
-        write.slot = slot;
-        write.security_id = slot.security_id;
-        write.issue_id = slot.issue_id;
-
-        writer_.write_trade(write, scope);
+        writer_.write_trade(slot, scope);
 
         ++run.written;
         run.outcomes.push_back(

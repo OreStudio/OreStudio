@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/rename-the-configuration-screens
-#+pr:
+#+pr: 3749
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -26,17 +26,20 @@ Every configuration screen, card, journey and translation uses the standard's na
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-24                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
 
 * Acceptance
 
 - No screen title, card or lead uses a bare kind name: each carries the standard's name and its one-line definition.
-- The pricing engine page's Settings tab is renamed Parameters.
+- The pricing engine page's Settings tab is renamed Parameters. Superseded: the
+  final design has no Parameters tab, because the global parameters have their own
+  tab. The record page has Details, Global parameters, Products, Reports and
+  History, and the apply task built it.
 - The English, French and Portuguese strings agree.
 - The journeys and the prototypes use the same words as the screens.
 
@@ -77,6 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3749][#3749]] | [agile] Record the rename task result |
 | [[https://github.com/OreStudio/OreStudio/pull/3727][#3727]] | [web] Rename the two configuration screens |
 
 * Review
@@ -86,3 +90,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The two screens and their words are renamed. #3727 renamed the area cards, the
+list and the record page titles, the journeys and the English, French and
+Portuguese strings. The screens are Product pricing and Engine run settings, and
+no card or title uses a bare kind name.
+
+The task asked for the Settings tab to become Parameters. The final design has no
+Parameters tab: the global parameters have their own tab, and the record page has
+Details, Global parameters, Products, Reports and History. The apply task built
+that page. The line is recorded as superseded rather than met.

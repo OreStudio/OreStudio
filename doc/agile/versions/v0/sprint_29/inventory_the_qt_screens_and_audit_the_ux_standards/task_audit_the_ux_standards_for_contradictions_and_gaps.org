@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: C07590C7-3A95-42B3-9CD2-B3A08C82EC18
+:END:
+#+title: Task: Audit the UX standards for contradictions and gaps
+#+description: Read the UX standards in full and list the contradictions, the open layout questions and the rules no check can name.
+#+type: task
+#+level: s1
+#+filetags: :inventory_the_qt_screens_and_audit_the_ux_standards:sprint_29:v0:
+#+owner: marco
+#+branch: feature/audit-the-ux-standards
+#+pr: 3750
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The second story knows exactly what to decide and what to write. The audit lists each contradiction with the two sections that disagree, each open form layout question (field grouping, widget per field kind, button placement, history layout, refresh), and judges whether the checklist can serve as a review instrument when rules have no stable identifier.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- Every contradiction between the pages is listed with both sections and the screens that follow each side today.
+- Every open form layout question is listed with the Qt dialogs that show the need.
+- The audit says which rules are checkable by a machine, which need a person, and what a rule needs so a check can name it.
+- The audit judges whether Allium fits the behaviour rules and names the rules it would cover.
+- The audit is a knowledge page under doc/knowledge/ui, and the second story links it.
+
+* Plan
+
+Read the five pages in full and compare every normative sentence across them.
+Where two pages disagree, read the shared code to say which side the screens
+follow today, so each contradiction comes with a proposal the second story can
+accept or change. Use the matrix script's record of the Qt dialogs' tabs and
+group boxes as the evidence for the form layout questions. Judge the checklist
+as an instrument, size the identifier work by counting bullets and headings,
+and say which rules a machine can check and which Allium can state.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Rules in the record screen standard | 84 bullets under 42 headings | =grep -c '^- ' doc/knowledge/ui/record_screen_standard.org= and =grep -c '^\*\+ '= | c42c8b58a2 |
+| Rules in the entity screen specification | 224 bullets under 60 headings | same, on =entity_screen_specification.org= | c42c8b58a2 |
+| Lines in the screen review checklist | 109 | same, on =screen_review_checklist.org= | c42c8b58a2 |
+| Qt dialogs with one content tab | 60 of 61 | =evidence/qt_web_matrix.json=, =dialog.tabs= | c42c8b58a2 |
+| Qt dialogs with eight or more fields | 7 | same, =fields= | c42c8b58a2 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3750][#3750]] | [docs] Audit the UX standards for contradictions and gaps |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review of the docs class: no findings | doc/knowledge/ui, product_backlog/next | Accept | compass check 7/7, misspell-fixer clean; the four captures carry a short title, a capped description, their tags and the next bucket |
+| 2 | Rows 1, 2 and 6 give no evidence for the code column | ux_standards_audit.org | Accept | File and line references added to each |
+| 3 | Rows 3 and 5 do not name the sentences to edit | ux_standards_audit.org | Accept | The edits are named in each proposal |
+| 4 | "About two thirds" is a sample, not a measurement | ux_standards_audit.org | Accept | Stated as 17 of the 26 rules sampled, and the summary says so |
+| 5 | The rule counts have no source | ux_standards_audit.org | Accept | The grep commands and the commit are named |
+| 6 | The form layout section should link the matrix where it uses its numbers | ux_standards_audit.org | Accept | Linked |
+| 7 | The identifier scheme does not say what happens when a rule moves | ux_standards_audit.org | Accept | Permanence added: a rule keeps its identifier when it moves |
+| 8 | The captures keep the template placeholders in Why and References | product_backlog/next | Accept | Filled, with a link back to the audit and to the story that decides |
+| 9 | Misspell check clean | | Accept | No action |
+
+* Result
+
+The knowledge page Audit of the UX standards lists nine contradictions between
+the pages, each with the code's answer today and a proposal, three places where
+the code already contradicts a rule, eleven form layout questions the standards
+leave open, the identifier scheme a rule needs so a check can name it, which
+rules a machine can check, the obligations an Allium specification of the record
+screen would carry, and a judgement of the checklist as an instrument. The UX
+hub links it and the second story waits on it. The four findings that are work
+are captures in the next bucket.

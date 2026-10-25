@@ -43,6 +43,8 @@ def sql_text(value):
 
 
 def xpath(row):
+    if row.get("xpath"):
+        return row["xpath"]
     if row["scope"] in BLOCK_SCOPES:
         return f"/ORE/{row['scope']}/Parameter[@name='{row['name']}']"
     return (f"/ORE/Analytics/Analytic[@type='{row['subtype']}']"

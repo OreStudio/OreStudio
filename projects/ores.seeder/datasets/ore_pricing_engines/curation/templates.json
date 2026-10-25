@@ -1,0 +1,192 @@
+{
+  "IR_Analytical": {
+    "asset_class": "IR",
+    "method": "Analytical",
+    "description": "Interest rate products priced by a closed formula.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "IR_Semianalytical": {
+    "asset_class": "IR",
+    "method": "Semianalytical",
+    "description": "Interest rate products priced by a formula that needs a numerical step, such as CMS replication.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "IR_FD": {
+    "asset_class": "IR",
+    "method": "Finite difference",
+    "description": "Interest rate products priced on a finite difference grid, such as Bermudan swaptions.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "IR_MC": {
+    "asset_class": "IR",
+    "method": "Monte Carlo",
+    "description": "Interest rate products priced by Monte Carlo.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FX_Analytical": {
+    "asset_class": "FX",
+    "method": "Analytical",
+    "description": "FX products priced by a closed formula.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FX_Semianalytical": {
+    "asset_class": "FX",
+    "method": "Semianalytical",
+    "description": "FX products priced by a formula with a numerical step.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FX_FD": {
+    "asset_class": "FX",
+    "method": "Finite difference",
+    "description": "FX products priced on a finite difference grid.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FX_MC": {
+    "asset_class": "FX",
+    "method": "Monte Carlo",
+    "description": "FX products priced by Monte Carlo.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EQ_Analytical": {
+    "asset_class": "EQ",
+    "method": "Analytical",
+    "description": "Equity products priced by a closed formula.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EQ_Semianalytical": {
+    "asset_class": "EQ",
+    "method": "Semianalytical",
+    "description": "Equity products priced by a formula with a numerical step.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EQ_FD": {
+    "asset_class": "EQ",
+    "method": "Finite difference",
+    "description": "Equity products priced on a finite difference grid, such as American options.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EQ_MC": {
+    "asset_class": "EQ",
+    "method": "Monte Carlo",
+    "description": "Equity products priced by Monte Carlo, such as Asian options.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "COMM_Analytical": {
+    "asset_class": "COMM",
+    "method": "Analytical",
+    "description": "Commodity products priced by a closed formula.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "COMM_Semianalytical": {
+    "asset_class": "COMM",
+    "method": "Semianalytical",
+    "description": "Commodity products priced by a formula with a numerical step.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "COMM_FD": {
+    "asset_class": "COMM",
+    "method": "Finite difference",
+    "description": "Commodity products priced on a finite difference grid.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "COMM_MC": {
+    "asset_class": "COMM",
+    "method": "Monte Carlo",
+    "description": "Commodity products priced by Monte Carlo.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CR_Semianalytical": {
+    "asset_class": "CR",
+    "method": "Semianalytical",
+    "description": "Credit products priced by a formula with a numerical step.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CR_MC": {
+    "asset_class": "CR",
+    "method": "Monte Carlo",
+    "description": "Credit products priced by Monte Carlo.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "SensiTrade": {
+    "asset_class": "ALL",
+    "method": "Trade level",
+    "description": "Products whose sensitivities the trade computes on its own, not by shifting the market.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  }
+}

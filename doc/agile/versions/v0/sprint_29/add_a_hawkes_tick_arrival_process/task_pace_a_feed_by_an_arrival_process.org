@@ -109,6 +109,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/3753][#3753]] | [synthetic] Pace a feed by an arrival regime |
+| [[https://github.com/OreStudio/OreStudio/pull/3751][#3751]] | [web] Repair the web build after the arrival change |
 | [[https://github.com/OreStudio/OreStudio/pull/3743][#3743]] | [synthetic] Pace a feed by its own arrival regime |
 
 * Review

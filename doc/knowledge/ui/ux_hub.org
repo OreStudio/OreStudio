@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:ui:ux:structure_note:
 #+created: 2026-10-10
-#+updated: 2026-10-24
+#+updated: 2026-10-25
 
 A screen in ORE Studio is built from decisions made at four levels. The first
 is how it looks. The second is what its marks mean. The third is where it
@@ -88,6 +88,23 @@ Each line names the section that states it.
 [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the goal each
 screen serves. A journey decides which records a person works with. The pages
 above decide how each screen looks and behaves.
+
+** Where the screens came from
+
+[[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]] — what
+each Qt reference data screen offered against what the web shows today. Read it
+to find a gap before a topic enters the screen pipeline. It is a measurement,
+produced by a script a reviewer can rerun, and it adds no rule.
+
+[[id:F4EF9042-0EC2-4B64-95E7-7DEBF273F2F7][Audit of the UX standards]] — where the
+pages above disagree, what the form layout leaves open, and what a rule needs
+so a check can name it. Read it to see what the standards still have to settle.
+It adds no rule either.
+
+[[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][The screen pipeline topics]] — the Qt
+entities grouped into eleven topics, each judged as standard or a workflow and
+ordered for the pipeline. Calendars go first. Read it to know which topic is
+next and what it carries.
 
 # aside
 

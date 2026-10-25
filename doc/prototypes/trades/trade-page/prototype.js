@@ -27,7 +27,7 @@ let listQuery = {
     offset: num('offset', 0), limit: PAGE_SIZES.includes(num('limit', 15)) ? num('limit', 15) : 15, search: P.get('search') || '',
     status: P.get('status') || '', book: P.get('book') || '', cp: P.get('cp') || '', type: P.get('type') || '', from: P.get('from') || '', to: P.get('to') || '',
     sort: P.get('sort') || '', desc: P.get('dir') !== 'asc', show: ['trades', 'structures'].includes(P.get('show')) ? P.get('show') : '',
-    portfolio: P.get('portfolio') || ''
+    party: P.get('party') || '', portfolio: P.get('portfolio') || ''
 };
 let selected = new Set();
 const pageCrumbs = () => [['Home', '#'], ['Trades', '../trade-page/'], ['Trades', qs({ trade: null, tab: null, workflow: null })], [CODE]];
@@ -83,6 +83,7 @@ const SORT_FIELDS = { code: 'code', type: 'trade_type_code', cp: 'counterparty_i
  * every book under it. A sandbox's portfolios are virtual. */
 const ICONS = {
     portfolio: '<svg viewBox="0 0 20 20" width="20" height="20" fill="none" aria-hidden="true"><path fill="currentColor" d="M11.25 2C12.2165 2 13 2.7835 13 3.75V5H15C16.6569 5 18 6.34315 18 8V14C18 15.6569 16.6569 17 15 17H5C3.39489 17 2.08421 15.7394 2.00391 14.1543L2 14V8C2 6.34315 3.34315 5 5 5H7V3.75C7 2.7835 7.7835 2 8.75 2H11.25ZM17 11.2314C16.469 11.7077 15.7695 12 15 12H11V12.5C11 12.7761 10.7761 13 10.5 13H9.5C9.22386 13 9 12.7761 9 12.5V12H5C4.23053 12 3.53103 11.7077 3 11.2314V14L3.01074 14.2041C3.113 15.2128 3.96435 16 5 16H15C16.1046 16 17 15.1046 17 14V11.2314ZM5 6C3.89543 6 3 6.89543 3 8V9C3 10.1046 3.89543 11 5 11H9V10.5C9 10.2239 9.22386 10 9.5 10H10.5C10.7761 10 11 10.2239 11 10.5V11H15C16.1046 11 17 10.1046 17 9V8C17 6.89543 16.1046 6 15 6H5ZM8.75 3C8.33579 3 8 3.33579 8 3.75V5H12V3.75C12 3.33579 11.6642 3 11.25 3H8.75Z"/></svg>',
+    party: '<svg viewBox="0 0 20 20" width="20" height="20" fill="none" aria-hidden="true"><path fill="currentColor" d="M9.99992 2C8.34271 2 6.99927 3.34344 6.99927 5.00066C6.99927 6.48754 8.08073 7.72183 9.49999 7.95985V9.5H6.5C5.67157 9.5 5 10.1716 5 11V12.0416C3.5811 12.2799 2.5 13.514 2.5 15.0007C2.5 16.6579 3.84344 18.0013 5.50066 18.0013C7.15787 18.0013 8.50131 16.6579 8.50131 15.0007C8.50131 13.5136 7.41954 12.2791 6 12.0414V11C6 10.7239 6.22386 10.5 6.5 10.5H13.5C13.7761 10.5 14 10.7239 14 11V12.0416C12.5811 12.2799 11.5 13.514 11.5 15.0007C11.5 16.6579 12.8434 18.0013 14.5007 18.0013C16.1579 18.0013 17.5013 16.6579 17.5013 15.0007C17.5013 13.5136 16.4195 12.2791 15 12.0414V11C15 10.1716 14.3284 9.5 13.5 9.5H10.5V7.95983C11.9192 7.72176 13.0006 6.48749 13.0006 5.00066C13.0006 3.34344 11.6571 2 9.99992 2ZM7.99927 5.00066C7.99927 3.89572 8.89499 3 9.99992 3C11.1049 3 12.0006 3.89572 12.0006 5.00066C12.0006 6.10559 11.1049 7.00131 9.99992 7.00131C8.89499 7.00131 7.99927 6.10559 7.99927 5.00066ZM3.5 15.0007C3.5 13.8957 4.39572 13 5.50066 13C6.60559 13 7.50131 13.8957 7.50131 15.0007C7.50131 16.1056 6.60559 17.0013 5.50066 17.0013C4.39572 17.0013 3.5 16.1056 3.5 15.0007ZM14.5007 13C15.6056 13 16.5013 13.8957 16.5013 15.0007C16.5013 16.1056 15.6056 17.0013 14.5007 17.0013C13.3957 17.0013 12.5 16.1056 12.5 15.0007C12.5 13.8957 13.3957 13 14.5007 13Z"/></svg>',
     book: '<svg viewBox="0 0 20 20" width="20" height="20" fill="none" aria-hidden="true"><path fill="currentColor" d="M6 5C6 4.44772 6.44772 4 7 4H13C13.5523 4 14 4.44772 14 5V6C14 6.55228 13.5523 7 13 7H7C6.44772 7 6 6.55228 6 6V5ZM7 5V6H13V5H7ZM4 4V16C4 17.1046 4.89543 18 6 18H15.5C15.7761 18 16 17.7761 16 17.5C16 17.2239 15.7761 17 15.5 17H6C5.44772 17 5 16.5523 5 16H15C15.5523 16 16 15.5523 16 15V4C16 2.89543 15.1046 2 14 2H6C4.89543 2 4 2.89543 4 4ZM14 3C14.5523 3 15 3.44772 15 4V15H5V4C5 3.44772 5.44772 3 6 3H14Z"/></svg>'
 };
 const treeIcon = kind => {
@@ -90,16 +91,25 @@ const treeIcon = kind => {
     el.innerHTML = ICONS[kind];
     return el;
 };
+/* A party holds its own portfolios and nests under its parent party, so a holding company shows its operating companies
+ * beneath it. The mock states the group the trades belong to, and one operating company with no books yet, because the
+ * legacy tree drew a party that holds nothing. */
+const PARTIES = [
+    { id: 'GRP-ACME', name: 'Acme Corporation', parent: null, holding: true },
+    { id: 'PTY-LONDON', name: 'Acme London', parent: 'GRP-ACME' },
+    { id: 'PTY-NEW-YORK', name: 'Acme New York', parent: 'GRP-ACME' }
+];
+/* Only a root portfolio names its party; a child portfolio hangs off its parent, as the model states it. */
 const PORTFOLIOS = [
-    { id: 'ACME-LONDON', name: 'Acme London', parent: null },
+    { id: 'ACME-LONDON', name: 'Acme London', parent: null, party: 'PTY-LONDON' },
     { id: 'TRADING', name: 'Trading', parent: 'ACME-LONDON' },
     { id: 'RATES', name: 'Rates', parent: 'TRADING' },
     { id: 'FX', name: 'FX flow', parent: 'TRADING' },
     { id: 'CREDIT', name: 'Credit', parent: 'TRADING' },
     { id: 'EQUITY', name: 'Equity', parent: 'TRADING' },
     { id: 'COMMODITY', name: 'Commodity', parent: 'TRADING' },
-    { id: 'CLOSED-2025', name: 'Closed 2025', parent: 'ACME-LONDON' },
-    { id: 'SANDBOX', name: 'Sandboxes', parent: 'ACME-LONDON', virtual: true },
+    { id: 'CLOSED-2025', name: 'Closed 2025', parent: 'ACME-LONDON', party: 'PTY-LONDON' },
+    { id: 'SANDBOX', name: 'Sandboxes', parent: 'ACME-LONDON', virtual: true, party: 'PTY-LONDON' },
     { id: 'SANDBOX-ORE', name: 'ORE samples', parent: 'SANDBOX', virtual: true },
     { id: 'SANDBOX-WHATIF', name: 'Rates what-ifs', parent: 'SANDBOX', virtual: true }
 ];
@@ -111,6 +121,8 @@ const PORTFOLIO_OF_BOOK = {
     'ORE-EX-SWAPS': 'SANDBOX-ORE', 'ORE-EX-FX': 'SANDBOX-ORE'
 };
 const childPortfolios = id => PORTFOLIOS.filter(p => p.parent === id);
+const rootPortfoliosOf = party => PORTFOLIOS.filter(p => !p.parent && p.party === party);
+const childParties = id => PARTIES.filter(p => p.parent === id);
 const booksIn = id => BOOKS.filter(b => PORTFOLIO_OF_BOOK[b.code] === id);
 /* A folder that counted only its own books would look empty while its children held the population. */
 function subtree(id) {
@@ -118,31 +130,43 @@ function subtree(id) {
     for (const child of childPortfolios(id)) out.push(...subtree(child.id));
     return out;
 }
-const booksUnder = id => subtree(id).flatMap(booksIn);
-const tradesInBook = code => TRADES.filter(t => t.book === code).length;
-const tradesInPortfolio = id => {
-    const codes = new Set(booksUnder(id).map(b => b.code));
-    return TRADES.filter(t => codes.has(t.book)).length;
+const partiesUnder = id => [id, ...childParties(id).flatMap(p => partiesUnder(p.id))];
+const booksUnderPortfolio = id => subtree(id).flatMap(booksIn);
+/* A party's books are the books of its root portfolios and of every party under it. */
+const booksUnderParty = id => partiesUnder(id).flatMap(party => rootPortfoliosOf(party).flatMap(p => booksUnderPortfolio(p.id)));
+const tradesIn = codes => {
+    const set = new Set(codes);
+    return TRADES.filter(t => set.has(t.book)).length;
 };
-/* The node the tree has chosen, and the books that choice selects: a book selects itself, a portfolio selects the books
- * under it. Both the list and the request line ask these two, so the rule is written once. */
-const chosenNode = q => q.book || q.portfolio || '';
+const tradesInBook = code => tradesIn([code]);
+const tradesInPortfolio = id => tradesIn(booksUnderPortfolio(id).map(b => b.code));
+const tradesInParty = id => tradesIn(booksUnderParty(id).map(b => b.code));
+/* The node the tree has chosen, and the books that choice selects: a book selects itself, a portfolio the books under
+ * it, and a party every book of the parties under it. The list, the request line and the note ask these two, so the
+ * rule is written once. */
+const TREE_KINDS = ['party', 'portfolio', 'book'];
+const chosenNode = q => q.book || q.portfolio || q.party || '';
 const chosenBookCodes = q => {
     if (q.book) return [q.book];
-    if (q.portfolio) return booksUnder(q.portfolio).map(b => b.code);
+    if (q.portfolio) return booksUnderPortfolio(q.portfolio).map(b => b.code);
+    if (q.party) return booksUnderParty(q.party).map(b => b.code);
     return null;
 };
 function portfolioRail(q) {
     const chosen = chosenNode(q);
-    /* One row builder for both kinds: choosing it sets its own field and clears the other, because the tree holds one
-     * choice at a time. */
     const treeRow = ({ kind, id, label, count, depth, virtual, title }) => h('button', {
         class: 'tree-node' + (chosen === id ? ' tree-chosen' : '') + (virtual ? ' tree-virtual' : ''),
         style: 'padding-left:' + (0.5 + depth * 0.9).toFixed(2) + 'rem',
         'aria-current': chosen === id ? 'true' : null,
         title,
-        onclick: () => { q[kind] = q[kind] === id ? '' : id; q[kind === 'book' ? 'portfolio' : 'book'] = ''; q.offset = 0; renderList(); }
+        onclick: () => {
+            q[kind] = q[kind] === id ? '' : id;
+            TREE_KINDS.filter(other => other !== kind).forEach(other => { q[other] = ''; });
+            q.offset = 0;
+            renderList();
+        }
     }, treeIcon(kind), h('span', { class: 'tree-name' }, label), h('span', { class: 'tree-count' }, String(count)));
+    /* The order the legacy tree drew: a party's portfolios, then the parties it holds. */
     const portfolioRows = (p, depth) => [
         treeRow({ kind: 'portfolio', id: p.id, label: p.name, count: tradesInPortfolio(p.id), depth, virtual: p.virtual,
             title: p.virtual ? p.name + ' — a virtual portfolio, in a sandbox' : p.name + ' — a portfolio' }),
@@ -150,10 +174,16 @@ function portfolioRail(q) {
         booksIn(p.id).map(b => treeRow({ kind: 'book', id: b.code, label: b.name, count: tradesInBook(b.code), depth: depth + 1,
             title: b.name + ' — a book in ' + p.name }))
     ];
+    const partyRows = (party, depth) => [
+        treeRow({ kind: 'party', id: party.id, label: party.name, count: tradesInParty(party.id), depth,
+            title: party.holding ? party.name + ' — a holding company' : party.name + ' — a party' }),
+        rootPortfoliosOf(party.id).map(p => portfolioRows(p, depth + 1)),
+        childParties(party.id).map(child => partyRows(child, depth + 1))
+    ];
     return h('aside', { class: 'ptree', 'aria-label': 'Portfolio tree' },
         h('div', { class: 'ptree-head' }, 'Portfolio tree'),
-        PORTFOLIOS.filter(p => !p.parent).map(p => portfolioRows(p, 0)),
-        h('div', { class: 'ptree-note faint small' }, chosen ? 'A portfolio holds the books under it. Choose it again to clear.' : 'Choose a portfolio or a book to narrow the list.'));
+        PARTIES.filter(p => !p.parent).map(p => partyRows(p, 0)),
+        h('div', { class: 'ptree-note faint small' }, chosen ? 'A folder holds the books under it. Choose it again to clear.' : 'Choose a party, a portfolio or a book to narrow the list.'));
 }
 /* A structure matches a filter when one of its legs does. */
 function listTrades(q) {
@@ -183,13 +213,15 @@ function requestLine(q, total) {
     const f = {};
     if (q.search) f[SERVER === 'today' ? 'id_one_of' : 'search'] = q.search;
     if (SERVER !== 'today') {
-        /* A portfolio names no column of a trade: a trade is filed in one book, so a portfolio asks for the books under
-         * it and a book asks for itself. One value is an equals member and many are a one-of member, which is the shape
-         * the filter record states. */
-        const codes = chosenBookCodes(q);
-        if (codes) {
-            if (codes.length === 1) f.book_id = codes[0];
-            else f.book_id_one_of = codes;
+        /* The narrowest member that states the choice. A party has a column of its own, and a portfolio names none, so
+         * it asks for the books under it while a book asks for itself: one value is an equals member and many are a
+         * one-of member, which is the shape the filter record states. */
+        if (q.party) {
+            f.party_id = q.party;
+        } else {
+            const codes = chosenBookCodes(q);
+            if (codes && codes.length === 1) f.book_id = codes[0];
+            else if (codes && codes.length > 1) f.book_id_one_of = codes;
         }
         if (q.status) f.status = q.status;
         if (q.cp) f.counterparty_id = q.cp;
@@ -215,7 +247,7 @@ const stateChip = s => chip(s, { live: 'ok', draft: 'warn', expired: '', cancell
 const tradeHref = (code, tab) => qs({ trade: code, tab: tab || null, state: null, workflow: null });
 function syncUrl() {
     const q = listQuery;
-    history.replaceState(null, '', qs({ offset: q.offset || null, limit: q.limit === 15 ? null : q.limit, search: q.search, portfolio: q.portfolio, status: q.status, book: q.book, cp: q.cp, type: q.type, from: q.from, to: q.to, sort: q.sort, dir: q.sort ? (q.desc ? 'desc' : 'asc') : null, show: q.show || null }));
+    history.replaceState(null, '', qs({ offset: q.offset || null, limit: q.limit === 15 ? null : q.limit, search: q.search, party: q.party, portfolio: q.portfolio, status: q.status, book: q.book, cp: q.cp, type: q.type, from: q.from, to: q.to, sort: q.sort, dir: q.sort ? (q.desc ? 'desc' : 'asc') : null, show: q.show || null }));
 }
 function sortBy(key) {
     const q = listQuery;
@@ -287,7 +319,7 @@ function renderList() {
             h('td', { class: 'nw' }, stateChip(t.state)), h('td', { class: 'nw' }, t.date),
             h('td', { class: 'num mono nw' }, 'v' + t.ver + ' · ext ' + t.ext)))(r.t)) :
             h('tr', null, h('td', { colspan: sel ? 8 : 7 }, filtered
-                ? ['Nothing matches. ', h('button', { class: 'btn small', onclick: () => { Object.assign(listQuery, { offset: 0, show: '', search: '', status: '', book: '', cp: '', type: '', from: '', to: '', portfolio: '' }); renderList(); } }, 'Clear filters')]
+                ? ['Nothing matches. ', h('button', { class: 'btn small', onclick: () => { Object.assign(listQuery, { offset: 0, show: '', search: '', status: '', book: '', cp: '', type: '', from: '', to: '', party: '', portfolio: '' }); renderList(); } }, 'Clear filters')]
                 : ['There are no trades yet. ', CAN.book ? h('a', { href: '../book-a-trade/' }, 'Book a trade') : null])))));
     put(wrap(head, selected.size ? h('div', { class: 'notice acc' }, selected.size + ' chosen. ', h('button', { class: 'btn small', onclick: () => { selected.clear(); renderList(); } }, 'Clear')) : null,
         stale && !newsOnPage ? h('div', { class: 'strip' }, 'Something changed that this page cannot show. Press Refresh to read it again.') : null,

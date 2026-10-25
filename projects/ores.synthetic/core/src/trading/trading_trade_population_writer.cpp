@@ -36,6 +36,7 @@
 #include <format>
 #include <optional>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace ores::synthetic::service {
@@ -129,6 +130,7 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     scope.max_notional = config.max_notional.to_double();
     scope.as_of_date = config.as_of_date;
     scope.seed = config.seed;
+    scope.trades_per_book = config.trades_per_book;
     scope.reference_curve_id = config.reference_curve_id;
 
     synthetic::list_trade_generation_books_request book_scope_req;
@@ -260,11 +262,12 @@ trading_trade_population_writer::read_trade(const boost::uuids::uuid& trade_id) 
         .external_version = static_cast<std::uint32_t>(decoded->trades.front().external_version)};
 }
 
-void trading_trade_population_writer::ensure_issue(const trade_population_write& write) {
-    if (issues_written_.contains(write.issue_id))
+void trading_trade_population_writer::ensure_issue(const domain::trade_population_slot& slot) {
+    const auto& terms = std::get<domain::bond_terms>(slot.terms);
+
+    if (issues_written_.contains(terms.issue_id))
         return;
 
-    const auto& slot = write.slot;
     const auto& codec = ores::nats::default_wire_codec();
     const std::string commentary = "Generated trade population.";
     const auto reason = std::string(population_reason);
@@ -274,13 +277,13 @@ void trading_trade_population_writer::ensure_issue(const trade_population_write&
 
     ores::trading::messaging::put_bond_issue_composite_request req;
     auto& issue = req.issue;
-    issue.issue_id = write.issue_id;
-    issue.security_id = write.security_id;
-    issue.issuer = boost::uuids::to_string(slot.issuer_id);
+    issue.issue_id = terms.issue_id;
+    issue.security_id = terms.security_id;
+    issue.issuer = boost::uuids::to_string(terms.issuer_id);
     issue.face_value = face_value;
-    issue.issue_date = slot.issue_date;
+    issue.issue_date = terms.issue_date;
     issue.settlement_days = 2;
-    issue.calendar = slot.calendar;
+    issue.calendar = terms.calendar;
     issue.sub_type = "Fixed";
     issue.price_type = "Clean";
     /*
@@ -289,11 +292,11 @@ void trading_trade_population_writer::ensure_issue(const trade_population_write&
      * states none is refused with a curve it could not find rather than
      * priced.
      */
-    if (!slot.reference_curve_id.empty())
-        issue.reference_curve_id = slot.reference_curve_id;
+    if (!terms.reference_curve_id.empty())
+        issue.reference_curve_id = terms.reference_curve_id;
 
     ores::trading::domain::bond_issue_leg leg;
-    leg.issue_id = write.issue_id;
+    leg.issue_id = terms.issue_id;
     leg.leg_number = 1;
     leg.payer = false;
     leg.leg_type = "Fixed";
@@ -303,7 +306,7 @@ void trading_trade_population_writer::ensure_issue(const trade_population_write&
     req.legs.push_back(leg);
 
     ores::trading::domain::bond_issue_leg_amount notional;
-    notional.issue_id = write.issue_id;
+    notional.issue_id = terms.issue_id;
     notional.leg_number = 1;
     notional.amount_role = "notional";
     notional.sequence_number = 1;
@@ -316,13 +319,13 @@ void trading_trade_population_writer::ensure_issue(const trade_population_write&
      * the leg the engine rebuilds has no FixedLegData and refuses to price.
      */
     ores::trading::domain::bond_issue_leg_rate rate;
-    rate.issue_id = write.issue_id;
+    rate.issue_id = terms.issue_id;
     rate.leg_number = 1;
     rate.rate_kind = "fixed";
     req.rates.push_back(rate);
 
     ores::trading::domain::bond_issue_leg_amount coupon;
-    coupon.issue_id = write.issue_id;
+    coupon.issue_id = terms.issue_id;
     coupon.leg_number = 1;
     coupon.amount_role = "rate";
     coupon.sequence_number = 2;
@@ -335,15 +338,15 @@ void trading_trade_population_writer::ensure_issue(const trade_population_write&
      * states, and the dates follow from them.
      */
     ores::trading::domain::bond_issue_leg_schedule schedule;
-    schedule.issue_id = write.issue_id;
+    schedule.issue_id = terms.issue_id;
     schedule.leg_number = 1;
     schedule.schedule_role = "schedule";
     schedule.sequence_number = 1;
     schedule.schedule_kind = "rules";
-    schedule.start_date = slot.issue_date;
-    schedule.end_date = slot.maturity_date;
+    schedule.start_date = terms.issue_date;
+    schedule.end_date = terms.maturity_date;
     schedule.tenor = "1Y";
-    schedule.calendar = slot.calendar;
+    schedule.calendar = terms.calendar;
     schedule.convention = "F";
     schedule.term_convention = "F";
     schedule.rule = "Forward";
@@ -369,13 +372,13 @@ void trading_trade_population_writer::ensure_issue(const trade_population_write&
     const auto error = reply.headers.find("X-Error");
     if (error != reply.headers.end())
         throw trade_population_write_error(
-            std::format("Writing bond issue {} was refused: {}", write.security_id, error->second));
+            std::format("Writing bond issue {} was refused: {}", terms.security_id, error->second));
     auto decoded =
         codec.decode<ores::trading::messaging::put_bond_issue_composite_response>(reply.data);
     if (!decoded)
         throw trade_population_write_error(
             std::format("Writing bond issue {} answered something unreadable: {}",
-                        write.security_id,
+                        terms.security_id,
                         decoded.error().what()));
 
     /*
@@ -387,21 +390,21 @@ void trading_trade_population_writer::ensure_issue(const trade_population_write&
     const bool present = result.outcome == outcome::conflict && result.code == "already_exists";
     if (result.outcome != outcome::ok && !present)
         throw trade_population_write_error(
-            std::format("Writing bond issue {} failed: {}", write.security_id, result.message));
-    issues_written_.insert(write.issue_id);
+            std::format("Writing bond issue {} failed: {}", terms.security_id, result.message));
+    issues_written_.insert(terms.issue_id);
 }
 
-void trading_trade_population_writer::write_trade(const trade_population_write& write,
+void trading_trade_population_writer::write_trade(const domain::trade_population_slot& slot,
                                                   const domain::trade_generation_scope& scope) {
     const auto& codec = ores::nats::default_wire_codec();
-    const auto& slot = write.slot;
+    const auto& terms = std::get<domain::bond_terms>(slot.terms);
 
     /*
      * The security is in place before the trade is booked. A run cut short in
      * the issue then leaves no trade, so the next run writes the issue again
      * and not a booked trade that no run revisits.
      */
-    ensure_issue(write);
+    ensure_issue(slot);
 
     ores::trading::messaging::book_trade_request book_req;
     book_req.anchor.id = slot.trade_id;
@@ -440,7 +443,7 @@ void trading_trade_population_writer::write_trade(const trade_population_write& 
     book_req.identifiers.push_back(identifier);
 
     ores::trading::domain::bond_instrument_data bond;
-    bond.instrument.issue_id = write.issue_id;
+    bond.instrument.issue_id = terms.issue_id;
     bond.instrument.notional = ores::utility::decimal::decimal::from_double(slot.notional).value();
     bond.instrument.audit.change_reason_code = std::string(population_reason);
     bond.instrument.audit.change_commentary = "Generated trade population.";

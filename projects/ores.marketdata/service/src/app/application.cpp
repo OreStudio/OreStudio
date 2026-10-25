@@ -289,8 +289,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             subs.push_back(
                 n.queue_subscribe(std::string(mm::list_adapter_status_request::nats_subject),
                                   queue,
-                                  [&n, c, v, supervisor](ores::nats::message msg) mutable {
-                                      mm::adapter_status_handler h(n, c, v, supervisor);
+                                  [&n, c, v, supervisor, ingest](ores::nats::message msg) mutable {
+                                      mm::adapter_status_handler h(n, c, v, supervisor, ingest);
                                       h.list(std::move(msg));
                                   }));
             subs.push_back(n.queue_subscribe(std::string(mm::republish_curve_request::nats_subject),

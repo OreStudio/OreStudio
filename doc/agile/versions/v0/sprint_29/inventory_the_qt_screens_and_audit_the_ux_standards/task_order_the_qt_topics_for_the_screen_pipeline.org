@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 9FAC8BCB-3267-41AB-88CA-F5AD477EAC65
+:END:
+#+title: Task: Order the Qt topics for the screen pipeline
+#+description: Group the Qt entities into topics, judge each as standard CRUD or a workflow, and order them for the pipeline.
+#+type: task
+#+level: s1
+#+filetags: :inventory_the_qt_screens_and_audit_the_ux_standards:sprint_29:v0:
+#+owner: marco
+#+branch: feature/order-the-qt-topics
+#+pr: 3752
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The pipeline has a queue. Each topic names its entities, the journeys it needs, whether a standard record screen is enough or a workflow is needed, the server side work it implies, and its place in the order. The first topic is chosen and the reason is recorded.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- Every entity of the matrix belongs to exactly one topic.
+- Each topic is judged as standard CRUD or as needing a workflow, with the reason.
+- The topics are ordered and the first topic is named with its reason, and the fourth story's description is updated to name it.
+- Topics after the first are filed as captures in the next bucket, one per topic, so each becomes a story when its turn comes.
+
+* Plan
+
+Group the 63 entities of the matrix into topics by the records a person keeps
+together, name the journeys that already exist for each from the journey
+catalogue, judge each topic's shape from the record and entity standards, and
+order them: the owner's choice first, then the shapes the standards must prove
+in order, then by the size of the gap. Write the order as a knowledge page, file
+a capture per later topic tagged pipeline, name calendars in the fourth story and
+record the decision on the first.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Topics | 11 | the table on The screen pipeline topics | 08852769ec |
+| Topics with a journey already | 7 | =compass list --type user_journey=, matched by hand | 08852769ec |
+| Captures filed, tagged pipeline | 10 | =compass list --type capture --tag pipeline= | 08852769ec |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3752][#3752]] | [docs] Order the Qt topics for the screen pipeline |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review of the docs class: no findings | doc/knowledge/ui, product_backlog/next | Accept | compass check green, misspell-fixer clean; the ten captures carry a short title, a capped description, tags, bucket, Why and References |
+| 2 | The tenor convention is in two topics, so the entities sum to 64 | screen_pipeline_topics.org | Accept | Removed from conventions; it belongs to tenors |
+| 3 | "Seven kinds list ids only" has no source | screen_pipeline_topics.org | Accept | The row names the matrix section |
+| 4 | The captures keep an empty See also bullet | product_backlog/next | Accept | Each links the UX hub |
+| 5 | Open decisions in rows 2 and 10 are carried by the captures | screen_pipeline_topics.org | Accept | No action; the review agrees |
+
+* Result
+
+The knowledge page The screen pipeline topics orders the 63 Qt entities into
+eleven topics, each with its entities, the journeys that exist, its shape and
+why it stands where it does. Calendars go first by the owner's choice, and the
+fourth story names them. The other ten topics are captures in the next bucket
+tagged pipeline. The first story records the decision.

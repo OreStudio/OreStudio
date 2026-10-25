@@ -65,6 +65,8 @@ const documentSchema = z.object({
     recordedAt: z.string(),
     changeReason: z.string(),
     changeCommentary: z.string(),
+    /** The reports that bind the configuration, or null when the read of them failed. */
+    reports: z.array(z.object({ id: z.string(), name: z.string() })).nullable(),
     products: z.array(productSchema),
     parameters: z.array(parameterSchema),
 });
@@ -99,6 +101,8 @@ const vocabularySchema = z.object({
             code: z.string(),
             description: z.string(),
             instrumentTypeCode: z.string(),
+            assetClass: z.string(),
+            documentation: z.string().default(''),
         }),
     ),
     pairs: z.array(
@@ -107,7 +111,11 @@ const vocabularySchema = z.object({
             model: z.string(),
             engine: z.string(),
             usual: z.boolean(),
-            note: z.string(),
+            label: z.string().default(''),
+            help: z.string().default(''),
+            description: z.string().default(''),
+            defaultText: z.string().default(''),
+            xpath: z.string().default(''),
         }),
     ),
     settings: z.array(
@@ -121,10 +129,34 @@ const vocabularySchema = z.object({
             usual: z.string(),
             options: z.array(z.string()),
             required: z.boolean(),
-            note: z.string(),
+            documented: z.boolean().default(false),
+            label: z.string().default(''),
+            help: z.string().default(''),
+            description: z.string().default(''),
+            defaultText: z.string().default(''),
+            format: z.string().default(''),
+            introducedIn: z.string().default(''),
+            removedIn: z.string().default(''),
+            xpath: z.string().default(''),
         }),
     ),
     models: z.array(described),
+    globals: z
+        .array(
+            z.object({
+                name: z.string(),
+                domain: z.string().default('string'),
+                label: z.string().default(''),
+                help: z.string().default(''),
+                description: z.string().default(''),
+                defaultText: z.string().default(''),
+                format: z.string().default(''),
+                introducedIn: z.string().default(''),
+                removedIn: z.string().default(''),
+                xpath: z.string().default(''),
+            }),
+        )
+        .default([]),
     methods: z.array(described),
     templates: z.array(
         z.object({

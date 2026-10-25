@@ -68,8 +68,18 @@ TEST_CASE("the engine's own error reaches the refusal", tags) {
 
     CHECK_FALSE(outcome.succeeded);
     CHECK(outcome.failure ==
-          "The engine produced no analytics. The engine reported:\n"
+          "The engine's analytic failed. The engine reported:\n"
           "  Error in ORE analytics: error opening file Input/market_20160205_flat.txt");
+}
+
+TEST_CASE("a run that wrote nothing but its log still states why it failed", tags) {
+    const auto log = line("ALERT", "Error in ORE analytics: Failed to run analytics NPV");
+
+    const auto outcome = judge_engine_run({"log.txt"}, log);
+
+    CHECK_FALSE(outcome.succeeded);
+    CHECK(outcome.failure == "The engine's analytic failed. The engine reported:\n"
+                             "  Error in ORE analytics: Failed to run analytics NPV");
 }
 
 TEST_CASE("an error does not fail a run that still wrote analytics", tags) {
@@ -79,6 +89,31 @@ TEST_CASE("an error does not fail a run that still wrote analytics", tags) {
 
     CHECK(outcome.succeeded);
     CHECK(outcome.failure.empty());
+}
+
+TEST_CASE("the engine's own failed-analytic verdict outranks the files it wrote", tags) {
+    // ORE writes its calibration and timing reports even when the analytic it
+    // was asked for produced nothing, so the files alone say the run worked.
+    // It states the failure on an ALERT line, repeats it inside the structured
+    // warning, and can state it again later.
+    const auto failure = "Error in ORE analytics: Failed to run analytics PORTFOLIO_DETAILS";
+    const auto log = line("ALERT", failure) +
+                     line("WARNING",
+                          "StructuredMessage { \"category\": \"Warning\", \"message\": \"" +
+                              std::string(failure) + "\" }") +
+                     line("ALERT", failure);
+
+    const auto outcome = judge_engine_run({"log.txt",
+                                           "log_structured.json",
+                                           "pricingstats.csv",
+                                           "runtimes.csv",
+                                           "todaysmarketcalibration.csv",
+                                           "todaysmarketcalibration_cashflows.csv"},
+                                          log);
+
+    CHECK_FALSE(outcome.succeeded);
+    CHECK(outcome.failure ==
+          "The engine's analytic failed. The engine reported:\n  " + std::string(failure));
 }
 
 TEST_CASE("a refusal says how many errors it left out", tags) {

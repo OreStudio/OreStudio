@@ -389,6 +389,8 @@
 \ir ./refdata_calendars_drop.sql
 \ir ./refdata_calendar_types_notify_trigger_drop.sql
 \ir ./refdata_calendar_types_drop.sql
+\ir ./refdata_commodities_notify_trigger_drop.sql
+\ir ./refdata_commodities_drop.sql
 
 -- Countries
 \ir ./refdata_countries_notify_trigger_drop.sql

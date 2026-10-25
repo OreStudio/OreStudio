@@ -75,6 +75,7 @@ export const en: SourceCatalogue = {
         },
         account: 'Your account',
         menu: {
+            trades: 'Trades',
             marketdata: 'Market data',
             home: 'Home',
             accounts: 'Accounts',
@@ -1683,7 +1684,12 @@ export const en: SourceCatalogue = {
                 loadingWorkunits: 'Reading the workunits...',
                 loadingResults: 'Reading the results...',
                 empty: 'No batch has been recorded yet.',
-                noMatch: 'No batch matches. Clear the filters.',
+            discardTitle: 'Discard the changes?',
+            discardBody: 'You changed {type} and have not saved. Moving to another product loses those changes.',
+            discard: 'Discard',
+            noMatch: 'No batch matches. Clear the filters.',
+            expandAll: 'Expand all',
+            collapseAll: 'Collapse all',
                 download: 'Download the file',
                 runsTitle: 'Runs with the outcome',
                 noRuns: 'No run ended with this outcome.',
@@ -3538,6 +3544,36 @@ export const en: SourceCatalogue = {
             'Marks the tenant ready: it stops bootstrapping and becomes active.',
     },
 
+    trading: {
+        trades: {
+            areaLead: 'The trades and structures you may see, and the books they sit in.',
+            title: 'Trades',
+            lead: 'The trades and structures of your party, and the books they sit in.',
+            filterStatus: 'State',
+            filterAllStates: 'All states',
+            filterType: 'Type',
+            filterAllTypes: 'All types',
+            structureRow: 'Structure',
+            structureHolds: '{count} trades',
+            versionPair: 'v{version} · ext {external}',
+        },
+        fields: {
+            identifier: 'Id',
+            instrumentType: 'Type',
+            counterparty: 'Counterparty',
+            book: 'Book',
+            state: 'State',
+            tradeDate: 'Trade date',
+            version: 'Version',
+        },
+        states: {
+            live: 'Live',
+            draft: 'Draft',
+            expired: 'Expired',
+            cancelled: 'Cancelled',
+        },
+    },
+
     refdata: {
         crumbs: 'Breadcrumb',
         area: {
@@ -4626,7 +4662,7 @@ export const en: SourceCatalogue = {
         reporting: {
             party: 'Party',
             allParties: 'All parties',
-            noParty: 'Works in no party',
+                noParty: 'Works in no party',
             outside: 'Reports to someone you cannot see',
             outsideManager: 'Someone outside your view',
             zoomIn: 'Zoom in',
@@ -4853,6 +4889,50 @@ export const en: SourceCatalogue = {
         },
         title: 'Product pricing',
         lead: 'How each product type is priced for the party you work in: the model, the engine and their parameters.',
+        allParties: 'All parties',
+        tabs: {
+            label: 'Configuration sections',
+            details: 'Details',
+            globals: 'Global parameters',
+            products: 'Products',
+            reports: 'Reports',
+            history: 'History',
+        },
+        workbench: {
+            assetClass: 'Asset class',
+            instrument: 'Instrument',
+            definitionModel:
+                'A model is the mathematical description of how the product behaves: its dynamics, the assumptions and what it is calibrated to.',
+            definitionEngine:
+                'An engine is the implementation that computes the price from the model: a closed formula, a lattice, a grid or a simulation.',
+            noDescription: 'No description is held for this choice.',
+            parameters: 'Parameters',
+            noParameters: 'No parameters. The model or the engine uses its own defaults.',
+            documentation: 'Documentation',
+            filter: 'Filter products',
+            expandAll: 'Expand all',
+            collapseAll: 'Collapse all',
+            noAssetClass: 'No asset class',
+            noMatch: 'No product matches.',
+            format: 'Format',
+            default: 'Default',
+            introduced: 'Introduced in',
+            required: 'Required',
+            options: 'Options',
+            runSettings:
+                'This page sets how each product is priced. How the engine runs every product — fixings, market building, threads — is set for the whole run in',
+        },
+        globals: {
+            heading: 'Global parameters',
+            lead: 'Parameters that apply to the whole document.',
+            empty: 'This configuration holds no global parameter.',
+            noDocumentation: 'No documentation is held for this parameter yet.',
+        },
+        reports: {
+            heading: 'The reports that bind this configuration',
+            lead: 'A report needs a price for every product type in its portfolio. A change reaches the next run of each report once it is saved.',
+            empty: 'No report binds this configuration.',
+        },
         columns: {
             name: 'Configuration',
             party: 'Party',
@@ -4867,6 +4947,7 @@ export const en: SourceCatalogue = {
             noDescription: 'No description',
         },
         actions: {
+            edit: 'Edit',
             addProduct: 'Add product',
             change: 'Change',
             remove: 'Remove',
@@ -4905,6 +4986,8 @@ export const en: SourceCatalogue = {
                 'The models and engines could not be read, so products cannot be changed: {message}',
         },
         change: {
+            reviewHint:
+                'The change is shown in the difference and the checks. Give a reason to save it.',
             detailsTitle: 'Change {name}',
             productTitle: 'Change how {type} is priced',
             addTitle: 'Add a product to {name}',
@@ -5212,6 +5295,8 @@ export const en: SourceCatalogue = {
         advancedHelp: "Set the model's own parameters.",
     },
     common: {
+        yes: 'Yes',
+        no: 'No',
         locked: 'Locked',
         unlocked: 'Unlocked',
         loading: 'Loading...',
@@ -5231,6 +5316,23 @@ export const en: SourceCatalogue = {
         continue: 'Continue',
         retry: 'Retry',
         cancel: 'Cancel',
+    },
+    oreParameter: {
+        documentation: 'Documentation',
+        hideDocumentation: 'Hide documentation',
+        undocumented: 'No documentation is held for {name}.',
+        defaultIs: 'Default: {text}',
+        schema: {
+            xml: 'ORE XML',
+            format: 'Format',
+            introduced: 'Introduced in',
+            removed: 'Removed in',
+        },
+        filters: {
+            set: 'Set in this configuration',
+            numbers: 'Changes the numbers',
+            shown: '{shown} of {total} settings shown',
+        },
     },
 };
 

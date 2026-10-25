@@ -80,7 +80,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:D9200121-7FCB-4677-89E5-608F6B53E8A9][Manage reports from the list a party runs — the remaining work]] | BACKLOG | | | Give report management its own UX, whose front door is the list of reports a party runs, and keep the analytic authoring surfaces out of it. |
 | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] | STARTED | | | The engine settings work set the pattern for every configuration that comes off ORE XML. Generalise it into one UX standard, apply it to the pricing engine configuration, and make the two similarly named configurations impossible to confuse. |
 | [[id:7F612088-182C-415D-8B47-00D3C66B7A38][Name the record in a change event]] | BACKLOG | | | A change event says that an entity changed and names no record, so a record screen cannot tell whether the change concerns the record it shows. Carry the key of the changed row on every entity event, pass it to the browser, and let a record screen go stale only for its own record. |
-| [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] | BACKLOG | | | ACME's books hold no trades, so a report package is structurally valid and substantively empty. Populate them from a synthetic generator in present time, referencing ACME's own books, counterparties and staff, starting with bonds and extending to every instrument. |
+| [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] | STARTED | | | ACME's books hold no trades, so a report package is structurally valid and substantively empty. Populate them from a synthetic generator in present time, referencing ACME's own books, counterparties and staff, starting with bonds and extending to every instrument. |
 | [[id:0D825C70-655C-4D0A-8E9E-9D45C4B51C46][Preview a convention's term structure on a calendar — the remaining work]] | BACKLOG | | | A person picks a tenor convention and a calendar in ores.web and sees every tenor of the convention resolved to its date at once. |
 | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] | BACKLOG | | | The ACME report definition runs to completion against the compute grid from an input bundle that already exists, the compute results are retrieved, and the run is reproducible from a freshly recreated database. |
 | [[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]] | BACKLOG | | | Add an ores.codegen facet that generates the SECURITY DEFINER publish-from-dq SQL function for the homogeneous family — about 29 of the 57 hand-written copies — from a declaration on the entity's codegen model, and unify the eight per-service publish_from_dq handlers rather than generating 57 of them. |
@@ -103,6 +103,24 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:A6472918-1412-4456-B80A-922EEA6795C9][Validate a curve pillar's tenor codes]] | BACKLOG | | | ir_curve_bootstrap_pillar.start_tenor_code and end_tenor_code are undeclared soft references to refdata_tenors. The only database check validates curve_role_code, so a typo in a tenor code saves and then throws at bootstrap time inside curve_republish_resolver, where the end tenor doubles as the quote point id. |
 | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] | STARTED | | | A synthetic feed can draw the times of its ticks from a self-exciting Hawkes point process, ported from the tick library (BSD 3-clause, the tick developers, CMAP), so bursts of ticks follow bursts of ticks as they do in a live market. |
 | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] | BACKLOG | | | Let the whole market speed up together: an exogenous calm/active state and a shared endogenous intensity, driven by one clock per run, so a panic is representable and cross-series counts correlate. |
+
+*** Epic: One UX language for every screen
+
+Every screen in ores.web speaks one UX language, and a reviewer or a check can
+tell whether a screen fits it. The arc starts from the reference data screens
+the Qt client had: inventory them against the web, settle the standards so
+each rule has one answer and one identifier, build the checks before the
+screens change, then take each Qt topic through one pipeline: journeys,
+prototype, build, test scenario and sign off. Later topics and the other areas
+of the application join as their own stories under this heading.
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------|
+| [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] | DONE | 2026-10-25 | 2026-10-25 | Build the Qt-to-web matrix of the reference data screens, audit the UX standards for gaps, and order the topics. |
+| [[id:90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2][Settle the UX language for record screens]] | BACKLOG | | | Decide every contradiction between the standards, write the form layout rules, name each rule, and specify it in Allium. |
+| [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] | BACKLOG | | | Build a Playwright harness that checks every record screen by rule identifier, and write the sign off recipe. |
+| [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] | BACKLOG | | | Run the calendars topic through journeys, prototype, build, test scenario and sign off; the pipeline is the deliverable. |
 
 ** Hotfixes
 

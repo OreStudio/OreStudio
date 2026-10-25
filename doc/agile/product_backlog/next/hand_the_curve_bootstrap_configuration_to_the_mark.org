@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 6009EBAC-9687-4031-8714-E25AED13DC80
+:END:
+#+title: Hand the curve bootstrap configuration to the market data area
+#+description: Its web surface is the synthetic IR feeds and its journeys are curve journeys, so the feed standard rules it.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:refdata:pipeline:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Hand the curve bootstrap configuration to the market data area. IrCurveBootstrapConfig had a Qt window in the reference data plugin, but its web surface is the synthetic IR feeds and its journeys are Manage a curve's blueprint and Check a curve's fit, so the feed screen standard rules it and it leaves the reference data pipeline. Last in the order the inventory story set.
+
+* Why
+
+Every screen must speak one UX language, and the epic One UX language for
+every screen takes the Qt reference data topics through one pipeline, one topic
+at a time. This capture is one topic's turn. The order and the judgement of
+each topic are on The screen pipeline topics.
+
+* References
+
+- [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][The screen pipeline topics]] — the order and the judgement of every topic.
+- [[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]] — the entities and the gaps the topic carries.
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders the UX cluster.

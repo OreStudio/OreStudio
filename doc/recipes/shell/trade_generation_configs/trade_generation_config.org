@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-trade_generation_configs add <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <enabled> <reference_curve_id> <reason> <commentary>
+trade_generation_configs add <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <trades_per_book> <enabled> <reference_curve_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.trade_generation_configs.put=.
 
 #+name: trade_generation_configs-add
 #+begin_src ores-shell :tangle trade_generation_configs-add.ores :exports none
-trade_generation_configs add __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false __none__ system.new_record generated_script
+trade_generation_configs add __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 0 false __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-trade_generation_configs set <id> <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <enabled> <reference_curve_id> <reason> <commentary> [--version <n>]
+trade_generation_configs set <id> <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <trades_per_book> <enabled> <reference_curve_id> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =synthetic.v1.trade_generation_configs.put=.
 
 #+name: trade_generation_configs-set
 #+begin_src ores-shell :tangle trade_generation_configs-set.ores :exports none
-trade_generation_configs set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false __none__ system.new_record generated_script
+trade_generation_configs set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 0 false __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-trade_generation_configs put-many --count <n> <id> <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <enabled> <reference_curve_id> <reason> <commentary>
+trade_generation_configs put-many --count <n> <id> <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <trades_per_book> <enabled> <reference_curve_id> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.trade_generation_configs.put_many=.
 
 #+name: trade_generation_configs-put-many
 #+begin_src ores-shell :tangle trade_generation_configs-put-many.ores :exports none
-trade_generation_configs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false __none__ system.new_record generated_script
+trade_generation_configs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 0 false __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

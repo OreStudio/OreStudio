@@ -112,8 +112,7 @@ process_parameter_validation_result validate_arrival_process_parameters(const st
                                                                         double decay) {
 
     if (mode != "periodic" && mode != "poisson" && mode != "hawkes")
-        return invalid("Unknown arrival mode '" + mode +
-                       "'. Use periodic, poisson or hawkes.");
+        return invalid("Unknown arrival mode '" + mode + "'. Use periodic, poisson or hawkes.");
 
     if (!std::isfinite(ticks_per_hour) || ticks_per_hour <= 0.0)
         return invalid("The tick rate must be greater than zero.");

@@ -8,12 +8,12 @@
 #+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_26:sprint_29:v0:
 #+owner: marco
 #+branch: feature/seed-acme-report
-#+pr:
+#+pr: 3745
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
 #+updated: 2026-10-24
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The story needs a report type, a definition owned by an ACME party, and the inpu
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | The ACME bundle and the report definitions are seeded (=acme_bundle_populate.sql=, =acme_*_report_definitions_artefact_populate.sql=). That a recreate gives a triggerable report, with its input in storage and an app version, is not witnessed.                       |
+| Now          | Nothing. |
 | Waiting on   | A database recreate and a trigger.                               |
-| Next         | Recreate, trigger one report and record what is missing.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-21                               |
 
 * Acceptance
@@ -62,7 +62,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3745][#3745]] | [agile] Close the seed task and record the analytic-switch gap |
 
 * Review
 
@@ -71,3 +71,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A recreate followed by one provision gives a triggerable report, and the run's
+inputs reached storage.
+
+- *After a database recreate* the ACME tenant carries the report type and 78
+  report definitions. A session acting for =Acme Corporation Plc= triggered
+  "Audit Trail Summary" (definition =831711f4-d9f1-4f39-b5da-246e202fbc7e=),
+  and instance =25922e99-e541-44ca-ab22-c6b7ddbc558a= walked pending, running
+  and completed.
+- *The chain's inputs exist where it expects them.* The run left
+  =reporting/runs/25922e99-e541-44ca-ab22-c6b7ddbc558a/= holding =trades.msgpack=,
+  =market_data.txt= and =fixings.txt=, and built
+  =ore/packages/25922e99-.../ore_package.tar.gz=. The engine read that package
+  and logged =Built Portfolio. Initial size = 8, size now 8, built 0 failed
+  trades=.
+- *The tenant has compute app versions.* The provision publishes
+  =1.8.16.0-4-g3b62ba248= and =1.8.17.0=. Dispatch used
+  =608de93d-b96d-455a-925b-1d31ca3d6234=, and a wrapper claimed the work, so
+  submit did not fail for want of an app version.
+
+The evidence is recorded in full, with every id, on
+[[id:063E3B7C-EAEB-403F-93E5-C4384570BCF2][Prove the run end to end and keep it repeatable]].

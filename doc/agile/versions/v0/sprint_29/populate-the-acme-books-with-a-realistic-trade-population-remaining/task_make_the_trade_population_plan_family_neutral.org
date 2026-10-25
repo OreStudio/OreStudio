@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/make-the-trade-population-plan-family-neutral
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
 #+updated: 2026-10-24
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -22,18 +22,22 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 Synthetic has one planner interface, one shared plan envelope and one shared writer. The plan carries a payload that belongs to its family, so a bond slot is a bond and a commodity slot is a commodity trade. The asset class a config names selects its planner, and a class with no planner is refused by name. The population size is a config field and not a constant.
 
-The bond planner is the first implementation. The commodity planner is the second, and it is delivered whole rather than as a stub: every commodity trade type books through it, its share matches its weight, and it exports and reverse-maps. Commodity is the proof because it is the one class whose every declared type routes, so the seam is tested on the plan alone and not on routing work.
+The bond planner is the first implementation. It is the only one this
+task delivers. A second family needs references and market data that this
+task cannot supply, so each family proves the seam in its own task, and
+the extension point is exercised by the bond population until the first of
+them lands.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-24                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
 
 * Acceptance
 
@@ -45,22 +49,63 @@ The bond planner is the first implementation. The commodity planner is the secon
   planner is refused by name.
 - The bond planner implements the interface, and the old bond-only free
   function is deleted.
-- A commodity planner is added with no change to the writer, the plan
-  envelope or booking, and it books all twenty-five routed commodity
-  trade types.
-- The commodity share of the population matches its weight in Trade
-  Population Weights within tolerance.
-- The bond and commodity populations export as the ORE portfolio the
-  engine reads, and reverse-map without loss.
+- Adding a family adds a payload type, a planner and one arm where the
+  writer reads the payload. It changes no booking logic and no envelope.
+- The bond population exports as the ORE portfolio the engine reads, and
+  reverse-maps without loss.
 - The population size is a config field, and the =trades_per_book=
   constant is gone.
 - A second run of any planner books nothing.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. The envelope stays. =trade_population_plan= keeps the config id, the
+   party and the as-of. =trade_population_slot= keeps the keys every
+   family shares: the trade id, the slot number, the book, the
+   counterparty, the netting set, the trader, the trade type, the trade
+   date, the notional and the currency.
+
+2. The payload becomes a variant. A slot carries
+   =std::variant<bond_terms, commodity_terms>=. =bond_terms= holds the
+   security id, the issue id, the issuer, the issue date, the maturity,
+   the tenor in years, the calendar and the reference curve.
+   =commodity_terms= holds the commodity, the delivery and maturity
+   dates and the price, strike, barrier or averaging fields its shape
+   needs. A family is a type, so a reader of a slot sees which facts it
+   carries and no others.
+
+3. The writer reads the payload, and the payload stays plain data. The
+   trading protocol carries one typed array per entity, so a family's
+   terms become batch members only through a trading type. Putting that
+   mapping on the payload would make =ores.synthetic.api= depend on
+   =ores.trading.api= and invert the layering, so the writer extracts the
+   payload it knows and fills the batch itself. Adding a family therefore
+   adds one arm where the writer reads the payload. It changes no booking
+   logic, which is the part of the invariant that matters.
+
+4. The planner becomes an interface. =trade_planner= answers
+   =plan(scope)=. A registry maps =asset_class_code= to a planner, and a
+   class with no entry is refused by name. The free =plan_population= is
+   deleted.
+
+5. The shared validation moves up. Book, counterparty, trader, notional
+   band and tenor band are checks every family makes, so they run once
+   before the planner is called and not inside each planner.
+
+6. The bond planner becomes the first implementation. It states bond
+   terms for each slot and produces what =plan_population= produced, so
+   the existing tests keep their meaning.
+
+7. The size moves to the config. =trades_per_book= leaves the planner
+   header for a column on =ores.synthetic.trade_generation_config.org=,
+   regenerated through codegen.
+
+8. Delivery order, one verifiable commit each: the planner interface and
+   registry with the bond planner behind it; then the payload, so a slot
+   carries its own family's terms; then the population size as a config
+   column, generated through codegen. A family of its own is a task of its
+   own, because it needs references and market data this task cannot
+   supply.
 
 * Measurements
 
@@ -74,9 +119,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The population cases | 15 cases passed, 352 assertions, on a database recreated the same day | =publish/bin/ores.synthetic.core.tests "[trade_population]"= | 8bd52fa8a2 |
+| The whole synthetic core suite | 61 cases passed, 1388 assertions | =publish/bin/ores.synthetic.core.tests= | 8bd52fa8a2 |
+| The population cases, after the payload split | 15 cases passed, 352 assertions | =publish/bin/ores.synthetic.core.tests "[trade_population]"= | aa8bcee163 |
+| The whole suite, after the payload split | 61 cases passed, 1388 assertions | =publish/bin/ores.synthetic.core.tests= | aa8bcee163 |
+| The population cases, after the size moved into the config | 16 cases passed, 354 assertions | =publish/bin/ores.synthetic.core.tests "[trade_population]"= | 32d442c12f |
+| The whole suite, after the size moved into the config, on a database rebuilt the same day | 62 cases passed, 1390 assertions | =publish/bin/ores.synthetic.core.tests= | 32d442c12f |
+| Codegen drift for the component | no drift: generated output matches the checked-in tree | =projects/ores.codegen/scripts/check_component_drift.py --component synthetic --dry-run= | 32d442c12f |
 
 * Notes
+
+=trades_per_book= is a column the create script states as =not null= with
+no SQL default, so a fresh database has no value to fall back on. The C++
+side defaults to eight and the ACME seed states eight, which is what keeps
+the two in step; a new tenant's seed data has to state it too.
 
 * Test Scenarios
 
@@ -102,3 +158,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Synthetic now has a planner interface, a registry keyed by the config's
+asset class, and a plan whose slot carries the terms its own family states.
+The free =plan_population=, which held the bond family inline and refused
+every other class by hand, is deleted. The bond planner implements the
+interface, and a class with no planner is refused by name.
+
+The population size left the planner header for a column on
+=ores_synthetic_trade_generation_configs_tbl=, generated through codegen,
+so a tenant sizes its own book. The bond population is unchanged apart from
+where it reads that count.
+
+Not done, and moved out deliberately: every other asset class. A family
+needs references and market data this task could not supply. Commodity
+became its own task and waits on the commodity catalogue.
+
+The extension point is therefore exercised and tested, but proven by one
+implementation. The first family task that lands proves the other half of
+the claim.

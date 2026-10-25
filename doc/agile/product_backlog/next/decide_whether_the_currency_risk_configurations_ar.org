@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 7D5B05EE-559D-4158-854B-3D52D59CEF1E
+:END:
+#+title: Decide whether the currency risk configurations are still wanted
+#+description: Three CRM configurations had Qt dialogs and have no web surface or journey; the configuration standard would rule.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:refdata:pipeline:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Decide whether the currency risk configurations are still wanted and, if so, take them through the screen pipeline. CRM driver pair, CRM enabled derived pair and CRM topology config had Qt dialogs, are party scoped, and have no web surface and no journey. A configuration shape, so the configuration screen standard would rule. Tenth topic in the order the inventory story set.
+
+* Why
+
+Every screen must speak one UX language, and the epic One UX language for
+every screen takes the Qt reference data topics through one pipeline, one topic
+at a time. This capture is one topic's turn. The order and the judgement of
+each topic are on The screen pipeline topics.
+
+* References
+
+- [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][The screen pipeline topics]] — the order and the judgement of every topic.
+- [[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]] — the entities and the gaps the topic carries.
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders the UX cluster.

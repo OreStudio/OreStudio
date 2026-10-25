@@ -113,6 +113,10 @@ public:
     /// @return Whether the adapter answered. A failure is logged and the caller sends again.
     bool send_demand(const std::string& adapter_id);
 
+    /// How long the catalogue is re-read even when no change event arrives. A missed event
+    /// delays a demand set by at most this interval and never loses it.
+    static constexpr std::chrono::minutes refresh_interval{1};
+
 private:
     struct snapshot;
 
@@ -125,6 +129,9 @@ private:
     void monitor_loop();
     std::shared_ptr<const snapshot> current() const;
 
+    /// The routes that name the source of @p adapter_id, across every tenant.
+    std::uint32_t routes_for(const std::string& adapter_id) const;
+
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     adapter_registry registry_;
@@ -134,6 +141,8 @@ private:
     std::map<std::string, std::chrono::steady_clock::time_point> needs_demand_;
     /// The adapters whose heartbeat arrived before they announced themselves, reported once.
     std::set<std::string> unknown_reported_;
+    /// The adapters reported as up with routes that name them and no demand, reported once.
+    std::set<std::string> no_demand_warned_;
     std::function<void(const demand_catalogue&, std::chrono::system_clock::time_point)> listener_;
     std::atomic<bool> stop_{false};
     std::optional<ores::nats::service::subscription> announce_sub_;

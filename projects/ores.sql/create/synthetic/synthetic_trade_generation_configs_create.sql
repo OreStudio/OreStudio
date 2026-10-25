@@ -66,6 +66,7 @@ create table if not exists "ores_synthetic_trade_generation_configs_tbl" (
     "max_notional" numeric(38, 12) not null,
     "as_of_date" date not null,
     "seed" bigint not null,
+    "trades_per_book" integer not null,
     "enabled" boolean not null,
     "reference_curve_id" text null,
     "modified_by" text not null,
@@ -87,7 +88,8 @@ create table if not exists "ores_synthetic_trade_generation_configs_tbl" (
     check ("max_tenor_code" <> ''),
     check ("min_notional" >= 0),
     check ("max_notional" >= "min_notional"),
-    check ("seed" > 0)
+    check ("seed" > 0),
+    check ("trades_per_book" > 0)
 );
 
 -- Composite natural key: unique combination for active records

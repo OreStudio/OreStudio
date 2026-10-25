@@ -49,6 +49,10 @@
 \ir ./refdata_calendar_types_seed_populate.sql
 
 \echo ''
+\echo '--- Commodities Seed Data ---'
+\ir ./refdata_commodities_seed_populate.sql
+
+\echo ''
 \echo '--- Calendars Seed Data ---'
 \ir ./refdata_calendars_seed_populate.sql
 

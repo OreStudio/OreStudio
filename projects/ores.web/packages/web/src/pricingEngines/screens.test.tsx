@@ -25,6 +25,7 @@ import type { PricingDocument, PricingSummary, PricingVocabulary } from '../api/
 import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
 import { accessOf, renderRecords } from '../refdata/testSupport.js';
 import { textOf } from '../textOf.js';
+import { MY_PARTIES_QUERY_KEY } from '../refdata/partyScope.js';
 import { PricingEnginePage, VOCABULARY_KEY, pricingEngineKey } from './PricingEnginePage.js';
 import { PricingEngineJourney, HELD_KEY } from './PricingEngineJourney.js';
 import { ModelEnginePanels, SettingValue } from './parts.js';
@@ -90,6 +91,7 @@ const DOCUMENT: PricingDocument = {
     recordedAt: '2026-10-19 10:00:00.000000Z',
     changeReason: 'common.correction',
     changeCommentary: '',
+    reports: [{ id: 'report-eod', name: 'EOD risk' }],
     products: [
         {
             id: PRODUCT,
@@ -110,18 +112,36 @@ const DOCUMENT: PricingDocument = {
             value: 'Bootstrap',
             position: 0,
         },
+        {
+            id: 'parameter-global',
+            version: 1,
+            productId: null,
+            scope: 'global',
+            name: 'Calendar',
+            value: 'TARGET',
+            position: 1,
+        },
     ],
 };
 
 const VOCABULARY: PricingVocabulary = {
-    types: [{ code: 'BermudanSwaption', description: '', instrumentTypeCode: 'SWPTN' }],
+    globals: [],
+    types: [
+        {
+            code: 'BermudanSwaption',
+            description: 'A swap exercisable on several dates.',
+            instrumentTypeCode: 'SWPTN',
+            assetClass: 'interest_rates',
+        },
+    ],
     pairs: [
         {
             typeCode: 'BermudanSwaption',
             model: 'LGM',
             engine: 'Grid',
             usual: true,
-            note: 'Builds a numeric multi-leg option engine.',
+            help: 'Builds a numeric multi-leg option engine.',
+            description: 'Builds a numeric multi-leg option engine.',
         },
     ],
     settings: [
@@ -135,7 +155,13 @@ const VOCABULARY: PricingVocabulary = {
             usual: 'IR_FD',
             options: [],
             required: false,
-            note: 'The sensitivity template of the product.',
+            help: 'The sensitivity template of the product.',
+            description: 'The sensitivity template of the product.',
+            label: 'Sensitivity template',
+            defaultText: 'IR_FD',
+            format: 'The code of a sensitivity template.',
+            introducedIn: '1.8.0.7 or earlier',
+            xpath: "/PricingEngines/Product[@type='BermudanSwaption']/EngineParameters/Parameter[@name='SensitivityTemplate']",
         },
         {
             typeCode: 'BermudanSwaption',
@@ -147,7 +173,8 @@ const VOCABULARY: PricingVocabulary = {
             usual: '3M',
             options: [],
             required: true,
-            note: 'The step of the grid.',
+            help: 'The step of the grid.',
+            description: 'The step of the grid.',
         },
     ],
     models: [
@@ -189,13 +216,35 @@ const VOCABULARY: PricingVocabulary = {
 const WRITE = ['analytics::pricing_model_configs:read', 'analytics::pricing_model_configs:write'];
 const READ = ['analytics::pricing_model_configs:read'];
 
-function list(codes: string[]): string {
+const party = (partyId: string, name: string) => ({
+    partyId,
+    name,
+    shortCode: name.slice(0, 3).toUpperCase(),
+    partyCategory: 'Operational',
+    businessCenterCode: 'GBLO',
+});
+
+const ONE_PARTY = { defaultPartyId: 'p-london', parties: [party('p-london', 'ACME Corporation UK')] };
+const TWO_PARTIES = {
+    defaultPartyId: 'p-london',
+    parties: [
+        party('p-london', 'ACME Corporation UK'),
+        party('p-newyork', 'ACME Corporation US'),
+    ],
+};
+
+function list(
+    codes: string[],
+    parties = TWO_PARTIES,
+    query = '',
+): string {
     return renderRecords(
-        '/reporting/pricing-engines',
+        `/reporting/pricing-engines${query}`,
         [],
         <Route path="/reporting/pricing-engines" element={<PricingEnginesPage />} />,
         (client: QueryClient) => {
             client.setQueryData(['my-access'], accessOf(codes));
+            client.setQueryData(MY_PARTIES_QUERY_KEY, parties);
             client.setQueryData(pageKey({ key: 'pricing-engines' }, FIRST_PAGE), {
                 rows: ROWS,
                 total: ROWS.length,
@@ -204,9 +253,13 @@ function list(codes: string[]): string {
     );
 }
 
-function record(codes: string[], vocabulary: PricingVocabulary | null = VOCABULARY): string {
+function record(
+    codes: string[],
+    vocabulary: PricingVocabulary | null = VOCABULARY,
+    tab?: string,
+): string {
     return renderRecords(
-        `/reporting/pricing-engines/${EOD}`,
+        `/reporting/pricing-engines/${EOD}${tab === undefined ? '' : `?tab=${tab}`}`,
         [],
         <Route path="/reporting/pricing-engines/:id" element={<PricingEnginePage />} />,
         (client: QueryClient) => {
@@ -277,6 +330,20 @@ describe('the list of pricing engine configurations', () => {
         expect(html).toContain(`href="/reporting/pricing-engines/${INTRADAY}"`);
     });
 
+    it('offers the party filter only when the account works in more than one party', () => {
+        expect(textOf(list(READ, TWO_PARTIES))).toContain('All parties');
+        expect(textOf(list(READ, ONE_PARTY))).not.toContain('All parties');
+    });
+
+    it('narrows the rows to the chosen party', () => {
+        const page = { offset: 0, limit: 15, sort: 'name', descending: false, search: '' };
+        const text = pageOf(ROWS, { ...page, filters: { party: 'p-london' } });
+        expect(text.rows.map((row) => row.name)).toEqual(['EOD pricing']);
+        expect(pageOf(ROWS, { ...page, filters: { party: 'p-newyork' } }).rows).toEqual([
+            ROWS[1],
+        ]);
+    });
+
     it('lists the workflows only to a person who may write', () => {
         expect(textOf(list(WRITE))).toContain('Define a pricing engine configuration');
         expect(textOf(list(READ))).not.toContain('Define a pricing engine configuration');
@@ -284,35 +351,61 @@ describe('the list of pricing engine configurations', () => {
 });
 
 describe('one pricing engine configuration', () => {
-    it('states its details, its product and the settings of that product', () => {
+    it('states its details', () => {
         const text = textOf(record(READ));
         expect(text).toContain('EOD pricing');
         expect(text).toContain('ACME Corporation UK');
+        expect(text).toContain('Details');
+        expect(text).toContain('Global parameters');
+        expect(text).toContain('Products');
+        expect(text).toContain('Reports');
+        expect(text).toContain('History');
+    });
+
+    it('draws the product under the model and the engine that price it', () => {
+        const text = textOf(record(READ, VOCABULARY, 'products'));
         expect(text).toContain('BermudanSwaption');
-        expect(text).toContain('LGM / Grid');
+        expect(text).toContain('LGM');
+        expect(text).toContain('Grid');
         expect(text).toContain('Calibration');
         expect(text).toContain('Bootstrap');
+        expect(text).toContain('Interest Rates');
     });
 
-    it('says the reports that use it cannot be listed yet', () => {
-        expect(textOf(record(READ))).toContain('cannot be listed yet');
+    it('offers the Simple and Advanced switch', () => {
+        const text = textOf(record(READ, VOCABULARY, 'products'));
+        expect(text).toContain('Simple');
+        expect(text).toContain('Advanced');
     });
 
-    it('offers Change, Remove and Add product to a person who may write', () => {
-        const text = textOf(record(WRITE));
-        expect(text).toContain('Change');
+    it('states the reach of a change', () => {
+        const text = textOf(record(READ, VOCABULARY, 'reports'));
+        expect(text).toContain('EOD risk');
+        expect(text).toContain('A report needs a price');
+    });
+
+    it('states the global parameters of the document', () => {
+        const text = textOf(record(READ, VOCABULARY, 'globals'));
+        expect(text).toContain('Global parameters');
+        expect(text).toContain('Calendar');
+        expect(text).toContain('TARGET');
+    });
+
+    it('offers Edit, Remove and Add product to a person who may write', () => {
+        const text = textOf(record(WRITE, VOCABULARY, 'products'));
+        expect(text).toContain('Edit');
         expect(text).toContain('Remove');
         expect(text).toContain('Add product');
     });
 
     it('offers no change to a person who may only read', () => {
-        const text = textOf(record(READ));
+        const text = textOf(record(READ, VOCABULARY, 'products'));
         expect(text).not.toContain('Add product');
         expect(text).not.toContain('Remove');
     });
 
     it('offers no product change until the models and engines are read', () => {
-        expect(textOf(record(WRITE, null))).not.toContain('Add product');
+        expect(textOf(record(WRITE, null, 'products'))).not.toContain('Add product');
     });
 });
 

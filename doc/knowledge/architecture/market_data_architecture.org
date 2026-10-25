@@ -62,7 +62,7 @@ order goes from the provider to the party.
    notation, and the =minted= flag.
 4. [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]]. The link from a vendor instrument to an internal item, on the
    provider.
-5. [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]]. The key (item, provider, party), and the observations under it.
+5. [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]]. The key (item, provider, party), and the observations under it. The cost of the per-party copy and the decision to store one tick for each source are in [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared tick or one copy for each party]].
 6. [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]]. The entitlement of a party to a provider.
 7. [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived rights are modelled on the subscription]]. Display, non-display and derived.
 8. [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]]. One active source for each (party, provider).

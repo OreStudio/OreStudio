@@ -26,16 +26,17 @@ Any tick anywhere raises a shared intensity that decays, so a panic spreads inst
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Delivered: the heat, the rate it reaches, the coupling and one clock for the run. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review and the panel. |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
 
 - Every event adds to a shared intensity that decays at its own rate.
+- One clock per run drives every feed; a feed no longer owns a clock.
 - Each row's rate gains the shared intensity scaled by its sensitivity.
 - Counts of two series are positively correlated in the active state and near zero in the calm one.
 - An unstable parameter set is refused before anything is built.

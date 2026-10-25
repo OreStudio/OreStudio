@@ -54,7 +54,7 @@ and the per-series laws survive it.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:B12C5D02-2CC8-48A5-9ABB-805AE2C901D6][Carry a shared market state and one clock]] | DONE | 2026-10-25 | 2026-10-25 | Add a calm/active market state, a per-series sensitivity, and a single shared clock that schedules every feed, so the market can speed up together. |
-| [[id:FA7CE833-E35F-4CEE-A039-E527AD353AFB][Carry the shared endogenous intensity]] | STARTED | 2026-10-25 | | Let any event raise a common intensity that decays, so a panic spreads rather than being switched on, and prove it with cross-series correlation. |
+| [[id:FA7CE833-E35F-4CEE-A039-E527AD353AFB][Carry the shared endogenous intensity]] | DONE | 2026-10-25 | 2026-10-25 | Let any event raise a common intensity that decays, so a panic spreads rather than being switched on, and prove it with cross-series correlation. |
 | [[id:5D4A9369-BA25-436A-8845-80810041BC9A][Configure the market regime from the feeds screen]] | BACKLOG | | | A control panel on the feeds screen that shows the current market state and lets a user set the regime: auto, pinned calm or pinned active, the transition rate, and the shared intensity's jump and decay, with the sensitivity per feed. |
 
 * Decisions

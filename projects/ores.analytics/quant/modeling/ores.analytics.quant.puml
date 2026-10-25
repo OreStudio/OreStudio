@@ -25,6 +25,12 @@ namespace ores #F2F2F2 {
     namespace analytics #F2F2F2 {
         namespace quant #F2F2F2 {
             namespace domain #F2F2F2 {
+                class arrival_spec <<struct>> {
+                    +mode : string
+                    +ticks_per_hour : double
+                    +branching_ratio : double
+                    +decay : double
+                }
                 class calendar_date_row <<struct>> {
                     +calendar_index : size_t
                     +date : chrono::year_month_day
@@ -37,6 +43,11 @@ namespace ores #F2F2F2 {
                     -holidays_ : vector<chrono::year_month_day>
                     -calendar_offsets_ : vector<size_t>
                     -weekend_masks_ : vector<bitset<7>>
+                    +from_rows(span<const calendar_date_row> rows, size_t calendar_count, vector<bitset<7>> weekend_masks) : [[nodiscard]] static business_day_calendar_set
+                    +is_business_day_batch(span<const calendar_query> queries) : [[nodiscard]] vector<bool>
+                    +is_business_day(size_t calendar_index, chrono::year_month_day date) : [[nodiscard]] bool
+                    +calendar_count() : [[nodiscard]] size_t
+                    +holiday_count(size_t calendar_index) : [[nodiscard]] size_t
                 }
                 enum calendar_rule_kind {
                     fixed_date
@@ -48,6 +59,7 @@ namespace ores #F2F2F2 {
                     none
                     nearest_weekday
                     roll_forward_to_monday
+                    sunday_to_monday
                 }
                 class calendar_rule <<struct>> {
                     +kind : calendar_rule_kind
@@ -58,6 +70,7 @@ namespace ores #F2F2F2 {
                     +shift : observance_shift
                     +effective_from : optional<chrono::year>
                     +effective_to : optional<chrono::year>
+                    +active_in(chrono::year y) : [[nodiscard]] bool
                 }
                 class calendar_exception <<struct>> {
                     +date : chrono::year_month_day
@@ -66,6 +79,7 @@ namespace ores #F2F2F2 {
                 class calendar_ruleset <<struct>> {
                     +rules : vector<calendar_rule>
                     +exceptions : vector<calendar_exception>
+                    +weekend_mask : bitset<7>
                 }
                 class instantiated_holiday <<struct>> {
                     +calendar_index : size_t
@@ -96,9 +110,38 @@ namespace ores #F2F2F2 {
                     -edge_to_parent_ : vector<optional<ccy_pair>>
                     -currency_index_ : unordered_map<string, currency_id>
                     -currency_code_ : vector<string>
+                    +vertex_count() : [[nodiscard]] size_t
+                    +pivot() : [[nodiscard]] currency_id
+                    +parent(currency_id id) : [[nodiscard]] currency_id
+                    +currency_id_for(const string& code) : [[nodiscard]] optional<currency_id>
+                    +code_of(currency_id id) : [[nodiscard]] const string&
+                    +path_to_pivot(currency_id id) : [[nodiscard]] vector<ccy_pair>
                 }
                 class currency_id {
                     -index_ : uint16_t
+                    +index() : [[nodiscard]] constexpr uint16_t
+                    +valid() : [[nodiscard]] constexpr bool
+                }
+                enum business_day_convention {
+                    unadjusted
+                    following
+                    modified_following
+                    preceding
+                    modified_preceding
+                    nearest
+                    half_month_modified_following
+                }
+                enum period_unit {
+                    day
+                    week
+                    month
+                    year
+                    none
+                }
+                class date_period <<struct>> {
+                    +unit : period_unit
+                    +multiplier : int
+                    +is_empty() : [[nodiscard]] bool
                 }
                 class derived_rate <<struct>> {
                     +base_code : string
@@ -113,9 +156,15 @@ namespace ores #F2F2F2 {
                     +rate : double
                     +observed_at : chrono::system_clock::time_point
                 }
+                class i_arrival_process {
+                    +next_gap() : double
+                }
                 class i_stochastic_process {
+                    +next() : double
+                    +current() : double
                 }
                 class i_yield_curve_process {
+                    +discount_factor(size_t ticks_ahead) : double
                 }
                 class process_parameter_validation_result <<struct>> {
                     +valid : bool
@@ -123,6 +172,9 @@ namespace ores #F2F2F2 {
                 }
                 class rate_snapshot {
                     -states_ : immer::vector<vertex_state>
+                    +at(currency_id id) : [[nodiscard]] const vertex_state&
+                    +size() : [[nodiscard]] size_t
+                    +transient() : [[nodiscard]] immer::vector<vertex_state>::transient_type
                 }
                 enum rate_status {
                     fresh
@@ -132,9 +184,78 @@ namespace ores #F2F2F2 {
                 }
                 class staleness_policy <<struct>> {
                     +stale_after : chrono::system_clock::duration
+                    +max() : chrono::system_clock::duration::
+                    +evaluate(chrono::system_clock::duration age) : [[nodiscard]] rate_status
+                }
+                enum tenor_kind {
+                    period
+                    special
+                }
+                enum tenor_anchor {
+                    none
+                    spot
+                    today
+                    tomorrow
+                    near_leg
+                    imm_roll
+                }
+                enum resolution_algorithm {
+                    anchor_offset
+                    schedule_step
+                }
+                enum schedule_kind {
+                    none
+                    cds_roll_quarter
+                    event_lookup
+                }
+                class tenor_spec <<struct>> {
+                    +kind : tenor_kind
+                    +period : date_period
+                }
+                class tenor_rule <<struct>> {
+                    +anchor : tenor_anchor
+                    +algorithm : resolution_algorithm
+                    +roll : business_day_convention
+                    +offset : date_period
+                    +schedule : schedule_kind
+                    +schedule_index : size_t
+                    +schedule_step_count : int
+                    +end_of_month : bool
+                }
+                class schedule_date <<struct>> {
+                    +schedule_index : size_t
+                    +date : chrono::year_month_day
+                }
+                class tenor_resolution_request <<struct>> {
+                    +tenor : tenor_spec
+                    +rule : optional<tenor_rule>
+                    +horizon : chrono::year_month_day
+                    +spot_date : optional<chrono::year_month_day>
+                    +calendar_index : size_t
+                }
+                enum resolution_status {
+                    ok
+                    tenor_not_in_convention
+                    calendar_index_out_of_range
+                    unsupported_anchor
+                    missing_spot_date
+                    period_tenor_without_period
+                    special_tenor_without_offset
+                    inconsistent_schedule_declaration
+                    schedule_without_dates
+                    schedule_dates_not_ordered
+                    schedule_exhausted
+                }
+                class tenor_resolution_result <<struct>> {
+                    +status : resolution_status
+                    +anchor_date : chrono::year_month_day
+                    +unadjusted_date : chrono::year_month_day
+                    +resolved_date : chrono::year_month_day
                 }
                 class topology_build_error {
                     -errors_ : vector<topology_error>
+                    +errors() : [[nodiscard]] const vector<topology_error>&
+                    -build_message(const vector<topology_error>& errors) : string
                 }
                 enum topology_error_kind {
                     missing_major
@@ -146,11 +267,14 @@ namespace ores #F2F2F2 {
                     +kind : topology_error_kind
                     +base_code : string
                     +quote_code : string
+                    +describe() : [[nodiscard]] string
                 }
                 class vertex_state <<struct>> {
                     +edge_log_delta : double
+                    +edge_observed_at : chrono::system_clock::time_point
                     +edge_valid : bool
                     +log_rate : double
+                    +as_of : chrono::system_clock::time_point
                     +valid : bool
                 }
             }
@@ -166,10 +290,27 @@ namespace ores #F2F2F2 {
                 }
                 class rate_tree <<struct>> {
                     +levels : vector<vector<rate_tree_node>>
+                    +step_count() : size_t
                 }
             }
             namespace service #F2F2F2 {
+                class calendar_arithmetic {
+                    +add_period(chrono::year_month_day date, domain::date_period period) : [[nodiscard]] static chrono::year_month_day
+                    +adjust(chrono::year_month_day date, domain::business_day_convention convention, size_t calendar_index, const domain::business_day_calendar_set& calendars) : [[nodiscard]] static chrono::year_month_day
+                    +advance(chrono::year_month_day date, domain::date_period period, domain::business_day_convention convention, bool end_of_month, size_t calendar_index, const domain::business_day_calendar_set& calendars)
+                    +is_end_of_month(chrono::year_month_day date, size_t calendar_index, const domain::business_day_calendar_set& calendars) : [[nodiscard]] static bool
+                    +last_business_day(chrono::year_month_day date, domain::business_day_convention convention, size_t calendar_index, const domain::business_day_calendar_set& calendars) : [[nodiscard]] static chrono::year_month_day
+                    +nth_weekday(unsigned nth, chrono::weekday weekday, chrono::month month, chrono::year year) : [[nodiscard]] static chrono::year_month_day
+                    +imm_date(chrono::month month, chrono::year year) : [[nodiscard]] static chrono::year_month_day
+                    +is_imm_date(chrono::year_month_day date, bool main_cycle) : [[nodiscard]] static bool
+                    +next_imm_date(chrono::year_month_day date, bool main_cycle) : [[nodiscard]] static chrono::year_month_day
+                    +asx_date(chrono::month month, chrono::year year) : [[nodiscard]] static chrono::year_month_day
+                    +is_asx_date(chrono::year_month_day date, bool main_cycle) : [[nodiscard]] static bool
+                    +next_asx_date(chrono::year_month_day date, bool main_cycle) : [[nodiscard]] static chrono::year_month_day
+                }
                 class calendar_rule_engine {
+                    +easter_sunday(chrono::year y) : [[nodiscard]] static chrono::year_month_day
+                    +instantiate_holidays_batch(span<const domain::calendar_ruleset> calendars, chrono::year_month_day start, chrono::year_month_day end) : [[nodiscard]] static vector<domain::instantiated_holiday>
                 }
                 enum bootstrap_curve_role_code {
                     DEPOSIT
@@ -185,15 +326,20 @@ namespace ores #F2F2F2 {
                     +point_id : string
                     +curve_role : bootstrap_curve_role_code
                     +observed_rate : double
+                    +start_date : chrono::year_month_day
+                    +end_date : chrono::year_month_day
                     +fixed_leg_dates : vector<chrono::year_month_day>
                 }
                 class bootstrapped_point <<struct>> {
                     +point_id : string
+                    +date : chrono::year_month_day
                     +discount_factor : double
                 }
                 class discount_curve_required_error {
                 }
                 class curve_bootstrap_engine {
+                    +bootstrap(chrono::year_month_day value_date, const vector<bootstrap_pillar>& pillars, day_count_convention_code day_count_convention, interpolation_method_code interpolation_method, const vector<bootstrapped_point>* discount_curve) : vector<bootstrapped_point>
+                    +interpolate_discount_factor(const vector<bootstrapped_point>& points, chrono::year_month_day query_date, interpolation_method_code interpolation_method) : double
                 }
                 enum curve_health_severity {
                     INFO
@@ -205,8 +351,13 @@ namespace ores #F2F2F2 {
                     +message : string
                 }
                 class curve_health_checker {
+                    +check_discount_factors(const vector<bootstrapped_point>& points) : vector<curve_health_finding>
+                    +check_forward_rates(const vector<forward_rate_point>& forwards, double outlier_z_threshold) : vector<curve_health_finding>
                 }
                 class curve_instrument_pricer {
+                    +deposit_rate(double discount_factor, double year_fraction) : double
+                    +fra_rate(double discount_factor_start, double discount_factor_end, double accrual_fraction) : double
+                    +swap_par_rate(double discount_factor_start, double discount_factor_end, const vector<double>& fixed_leg_discount_factors, const vector<double>& accrual_fractions) : double
                 }
                 enum day_count_convention_code {
                     A360
@@ -215,14 +366,20 @@ namespace ores #F2F2F2 {
                     THIRTY_360
                 }
                 class day_count_calculator {
+                    +year_fraction(chrono::year_month_day start, chrono::year_month_day end, day_count_convention_code convention) : double
                 }
                 class forward_rate_point <<struct>> {
                     +point_id : string
+                    +start_date : chrono::year_month_day
+                    +end_date : chrono::year_month_day
                     +instantaneous_forward_rate : double
                 }
                 class forward_rate_calculator {
+                    +calculate(const vector<bootstrapped_point>& points, day_count_convention_code day_count_convention) : vector<forward_rate_point>
                 }
                 class process_factory {
+                    +make_arrival_process(const string& mode, double ticks_per_hour, double branching_ratio, double decay, uint32_t seed) : unique_ptr<ores::analytics::quant::domain::i_arrival_process>
+                    +make_arrival_process(const ores::analytics::quant::domain::arrival_spec& spec, uint32_t seed) : unique_ptr<ores::analytics::quant::domain::i_arrival_process>
                 }
                 class affine_term_structure_params <<struct>> {
                     +kappas : Eigen::VectorXd
@@ -291,20 +448,45 @@ namespace ores #F2F2F2 {
                     +initial_rate : double
                 }
                 class quantlib_calendar_rulesets {
+                    +target() : [[nodiscard]] static domain::calendar_ruleset
+                    +weekends_only() : [[nodiscard]] static domain::calendar_ruleset
+                    +united_states_settlement() : [[nodiscard]] static domain::calendar_ruleset
+                    +south_africa() : [[nodiscard]] static domain::calendar_ruleset
                 }
                 class rate_delta_tracker {
                     -mutex_ : mutex
                     -previous_ : map<pair_key, double>
+                    +apply(vector<domain::crm_rate_view>& views) : void
                 }
                 class rate_engine {
                     -topology_ : domain::crm_topology
                     -policy_ : domain::staleness_policy
                     -children_ : vector<vector<domain::currency_id>>
                     -snapshot_ : immer::atom<domain::rate_snapshot>
+                    +rate_engine(domain::crm_topology topology, domain::staleness_policy policy)
+                    +rate_engine(rate_engine&& other)
+                    +topology() : [[nodiscard]] const domain::crm_topology&
+                    +update(const domain::driver_quote& quote) : void
+                    +rate(const string& base_code, const string& quote_code, chrono::system_clock::time_point now) : [[nodiscard]] domain::derived_rate
+                    +rates(const vector<pair<string, string>>& pairs, chrono::system_clock::time_point now) : [[nodiscard]] vector<domain::derived_rate>
+                    -rate_from_snapshot(const domain::rate_snapshot& snapshot, const string& base_code, const string& quote_code, chrono::system_clock::time_point now) : domain::derived_rate
                 }
                 class rate_reciprocator {
+                    +make_lookup(const vector<domain::derived_rate>& rates) : [[nodiscard]] static rate_lookup
+                    +resolve(const string& base_code, const string& quote_code, const rate_lookup& lookup, bool allow_reciprocal) : [[nodiscard]] static domain::crm_rate_view
+                }
+                class tenor_resolution_engine {
+                }
+                class tick_clock {
+                    -arrivals_ : ores::analytics::quant::domain::i_arrival_process&
+                    -stop_flag_ : atomic<bool>
+                    -publish_count_ : atomic<uint64_t>
+                    +run(const tick_body& body, const published_hook& on_published, const failure_hook& on_failed) : void
+                    +stop() : void
+                    +publish_count() : [[nodiscard]] uint64_t
                 }
                 class topology_builder {
+                    +build(const vector<domain::ccy_pair_input>& pairs, const string& pivot_code, const vector<string>& required_majors) : [[nodiscard]] static domain::crm_topology
                 }
             }
         }

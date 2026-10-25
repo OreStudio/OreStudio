@@ -24,8 +24,6 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace synthetic #F2F2F2 {
         namespace domain #F2F2F2 {
-            enum binding_mode {
-            }
             class curve_template_validation_result <<struct>> {
                 +valid : bool
                 +message : string
@@ -60,7 +58,7 @@ namespace ores #F2F2F2 {
                 +base_currency_code : string
                 +quote_currency_code : string
                 +source_name : string
-                +ore_key : string
+                +oresmd_uri : string
                 +price_source : string
                 +gmm_initial_price : double
                 +ticks_per_hour : int
@@ -70,25 +68,16 @@ namespace ores #F2F2F2 {
                 +vintage_source : string
                 +vintage_date : string
                 +folder_id : optional<boost::uuids::uuid>
+                +asset_class_code : string
+                +arrival_mode : string
+                +branching_ratio : double
+                +decay : double
+                +sensitivity : double
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
                 +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
-            }
-            class generated_organisation <<struct>> {
-                +seed : uint64_t
-                +parties : vector<refdata::domain::party>
-                +party_contacts : vector<refdata::domain::party_contact_information>
-                +party_identifiers : vector<refdata::domain::party_identifier>
-                +counterparties : vector<refdata::domain::counterparty>
-                +counterparty_contacts : vector<refdata::domain::counterparty_contact_information>
-                +counterparty_identifiers : vector<refdata::domain::counterparty_identifier>
-                +party_counterparties : vector<refdata::domain::party_counterparty>
-                +business_unit_types : vector<refdata::domain::business_unit_type>
-                +business_units : vector<refdata::domain::business_unit>
-                +portfolios : vector<refdata::domain::portfolio>
-                +books : vector<refdata::domain::book>
             }
             class generation_options <<struct>> {
                 +seed : optional<uint64_t>
@@ -137,10 +126,16 @@ namespace ores #F2F2F2 {
                 +price_source : string
                 +vintage_source : string
                 +vintage_date : string
+                +vintage_series_uri : string
                 +description : string
                 +fixed_leg_payment_frequency_code : string
                 +source_name : string
                 +folder_id : optional<boost::uuids::uuid>
+                +asset_class_code : string
+                +arrival_mode : string
+                +branching_ratio : double
+                +decay : double
+                +sensitivity : double
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
@@ -181,12 +176,11 @@ namespace ores #F2F2F2 {
                 +tenant_id : utility::uuid::tenant_id
                 +id : boost::uuids::uuid
                 +party_id : optional<boost::uuids::uuid>
-                +scope : domain::scope
-                +binding_mode : domain::binding_mode
                 +name : string
                 +description : string
                 +enabled : bool
                 +dataset_id : optional<boost::uuids::uuid>
+                +provider_code : string
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string
@@ -207,27 +201,6 @@ namespace ores #F2F2F2 {
                 +change_commentary : string
                 +recorded_at : chrono::system_clock::time_point
             }
-            class organisation_generation_options <<struct>> {
-                +seed : optional<uint64_t>
-                +modified_by : string
-                +tenant_id : string
-                +country : string
-                +party_count : size_t
-                +party_max_depth : size_t
-                +counterparty_count : size_t
-                +counterparty_max_depth : size_t
-                +portfolio_leaf_count : size_t
-                +portfolio_max_depth : size_t
-                +books_per_leaf_portfolio : size_t
-                +business_unit_count : size_t
-                +business_unit_max_depth : size_t
-                +generate_addresses : bool
-                +contacts_per_party : size_t
-                +contacts_per_counterparty : size_t
-                +generate_identifiers : bool
-            }
-            enum scope {
-            }
             class synthetic_catalog <<struct>> {
                 +seed : uint64_t
                 +accounts : vector<iam::domain::account>
@@ -239,6 +212,100 @@ namespace ores #F2F2F2 {
                 +treatment_dimensions : vector<dq::domain::treatment_dimension>
                 +datasets : vector<dq::domain::dataset>
                 +dependencies : vector<string>
+            }
+            class trade_generation_book <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +config_id : boost::uuids::uuid
+                +book_id : boost::uuids::uuid
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class trade_generation_config <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +name : string
+                +description : string
+                +asset_class_code : string
+                +min_tenor_code : string
+                +max_tenor_code : string
+                +min_notional : ores::utility::decimal::decimal
+                +max_notional : ores::utility::decimal::decimal
+                +as_of_date : chrono::year_month_day
+                +seed : uint64_t
+                +enabled : bool
+                +reference_curve_id : string
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class trade_generation_counterparty <<struct>> {
+                +version : int
+                +tenant_id : utility::uuid::tenant_id
+                +id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +config_id : boost::uuids::uuid
+                +counterparty_id : boost::uuids::uuid
+                +modified_by : string
+                +performed_by : string
+                +change_reason_code : string
+                +change_commentary : string
+                +recorded_at : chrono::system_clock::time_point
+            }
+            class trade_generation_scope <<struct>> {
+                +config_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +asset_class_code : string
+                +min_tenor_code : string
+                +max_tenor_code : string
+                +min_notional : double
+                +max_notional : double
+                +as_of_date : chrono::year_month_day
+                +seed : uint64_t
+                +book_ids : vector<boost::uuids::uuid>
+                +counterparty_ids : vector<boost::uuids::uuid>
+                +issuer_ids : vector<boost::uuids::uuid>
+                +netting_sets : vector<pair<boost::uuids::uuid, boost::uuids::uuid>>
+                +trader_usernames : vector<string>
+                +currency_code : string
+                +reference_curve_id : string
+            }
+            class trade_population_slot <<struct>> {
+                +slot : uint32_t
+                +trade_id : boost::uuids::uuid
+                +book_id : boost::uuids::uuid
+                +counterparty_id : boost::uuids::uuid
+                +netting_set_id : optional<boost::uuids::uuid>
+                +trader_username : string
+                +trade_type_code : string
+                +internal_identifier : string
+                +security_id : string
+                +issue_id : boost::uuids::uuid
+                +issuer_id : boost::uuids::uuid
+                +trade_date : chrono::year_month_day
+                +issue_date : chrono::year_month_day
+                +maturity_date : chrono::year_month_day
+                +tenor_years : uint32_t
+                +notional : double
+                +currency : string
+                +calendar : string
+                +intra_group : bool
+                +reference_curve_id : string
+            }
+            class trade_population_plan <<struct>> {
+                +config_id : boost::uuids::uuid
+                +party_id : boost::uuids::uuid
+                +as_of_date : chrono::year_month_day
+                +slots : vector<trade_population_slot>
             }
             class yield_curve_process_parameter_definition <<struct>> {
                 +version : int
@@ -276,14 +343,28 @@ namespace ores #F2F2F2 {
             }
         }
         namespace feed #F2F2F2 {
+            class fault_plan <<struct>> {
+                +connection_lost : bool
+                +tick_delay : chrono::milliseconds
+                +repeat_ticks : bool
+                +out_of_range : bool
+                +not_entitled : bool
+                +any() : [[nodiscard]] bool
+            }
+            class fault_state {
+                -mu_ : mutable mutex
+                -plan_ : fault_plan
+                +set(const fault_plan& plan) : void
+                +get() : [[nodiscard]] fault_plan
+            }
             class feed_build_context <<struct>> {
                 +nats : ores::nats::service::client&
                 +auth_nats : ores::nats::service::nats_client&
-                +caller_bearer_token : string
             }
             class fx_spot_feed_build_input <<struct>> {
                 +config : ores::synthetic::domain::fx_spot_generation_config
                 +components : vector<ores::synthetic::domain::gmm_component>
+                +adapter : optional<adapter_target>
             }
             class ir_curve_feed_build_input <<struct>> {
                 +config : ores::synthetic::domain::ir_curve_generation_config
@@ -294,35 +375,92 @@ namespace ores #F2F2F2 {
             }
             class feed_factory {
                 -builders_ : map<string, builder>
+                +register_kind(string kind, builder b) : void
+                +make(const string& kind, const feed_build_context& ctx, const feed_build_input& input) : [[nodiscard]] shared_ptr<ores::marketdata::domain::i_feed>
+                +kinds() : [[nodiscard]] vector<string>
+            }
+            class feed_filter <<struct>> {
+                +folder_id : string
+                +provider_code : string
+                +asset_class : string
+                +search : string
+                +state : string
+                +should_run : bool
+                +feed_ids : vector<string>
+                +excluded_ids : vector<string>
+            }
+            class folder_feed_count <<struct>> {
+                +folder_id : string
+                +fx_feeds : int
+                +ir_feeds : int
+                +running_feeds : int
+                +idle_auto_feeds : int
+            }
+            class fx_mixture <<struct>> {
+                +means : vector<double>
+                +stdevs : vector<double>
+                +weights : vector<double>
+            }
+            class fx_simple_view <<struct>> {
+                +trend_pct_per_hour : double
+                +volatility_pct_per_hour : double
+                +jump_share_pct : double
+                +half_life_minutes : double
+            }
+            class fx_simple_reading <<struct>> {
+                +view : fx_simple_view
+                +exact : bool
+                +reason : string
+            }
+            class adapter_target <<struct>> {
+                +id : ores::marketdata::messaging::vendor_id
+                +subject : string
+                +faults : shared_ptr<const fault_state>
             }
             class fx_spot_feed {
                 -nats_ : ores::nats::service::client&
-                -ore_key_ : string
+                -quote_uri_ : string
+                -series_uris_ : vector<string>
                 -source_name_ : string
-                -qualifier_ : string
                 -process_ : unique_ptr<ores::analytics::quant::domain::i_stochastic_process>
-                -ticks_per_hour_ : double
+                -arrivals_ : unique_ptr<ores::analytics::quant::domain::i_arrival_process>
+                -clock_ : ores::analytics::quant::service::tick_clock
                 -nats_subject_ : string
-                -stop_flag_ : atomic<bool>
-                -publish_count_ : atomic<uint64_t>
+                -adapter_ : optional<adapter_target>
+                -previous_tick_ : optional<ores::marketdata::messaging::adapter_tick>
+                +quote_uri() : const string&
+                +source_name() : const string&
+                +series_uris() : const vector<string>&
+                +role() : const string&
+                +nats_subject() : const string&
+                +kind() : string_view
+                +start() : void
+                +stop() : void
+                +publish_count() : uint64_t
+                -published_subject() : const string&
             }
             class vintage_data_missing_error {
             }
             class ir_curve_feed {
                 -nats_ : ores::nats::service::client&
-                -tenant_id_ : ores::utility::uuid::tenant_id
-                -party_id_ : boost::uuids::uuid
                 -source_name_ : string
                 -nats_subject_ : string
-                -series_type_ : string
-                -metric_ : string
-                -qualifier_ : string
+                -currency_code_ : string
                 -role_ : string
+                -series_uris_ : vector<string>
+                -datum_uris_ : vector<string>
                 -process_ : unique_ptr<ores::analytics::quant::domain::i_yield_curve_process>
-                -ticks_per_hour_ : double
+                -arrivals_ : unique_ptr<ores::analytics::quant::domain::i_arrival_process>
+                -clock_ : ores::analytics::quant::service::tick_clock
                 -entries_ : vector<ir_curve_resolved_entry>
-                -stop_flag_ : atomic<bool>
-                -publish_count_ : atomic<uint64_t>
+                +start() : void
+                +stop() : void
+                +publish_count() : uint64_t
+                +kind() : string_view
+                +source_name() : const string&
+                +nats_subject() : const string&
+                +series_uris() : const vector<string>&
+                +role() : const string&
             }
             class ir_curve_schedule_step <<struct>> {
                 +ticks_ahead : size_t
@@ -331,11 +469,14 @@ namespace ores #F2F2F2 {
             class ir_curve_resolved_entry <<struct>> {
                 +sequence_index : int
                 +point_id : string
+                +start_tenor_code : string
                 +curve_role : string
                 +ticks_ahead_start : size_t
                 +ticks_ahead_end : size_t
                 +year_fraction : double
                 +fixed_leg_schedule : vector<ir_curve_schedule_step>
+                +start_date : chrono::year_month_day
+                +end_date : chrono::year_month_day
             }
             class ir_curve_refdata_context <<struct>> {
                 +tenors_by_code : map<string, ores::refdata::domain::tenor>
@@ -347,8 +488,86 @@ namespace ores #F2F2F2 {
                 +spot : chrono::year_month_day
                 +schedule_dates : optional<vector<chrono::year_month_day>>
             }
+            class ir_simple_view <<struct>> {
+                +start_rate : double
+                +long_run_rate : double
+                +half_life_years : double
+                +yearly_move_bp : double
+            }
+            class ir_simple_reading <<struct>> {
+                +view : optional<ir_simple_view>
+                +exact : bool
+                +reason : string
+                +caution : string
+            }
         }
         namespace messaging #F2F2F2 {
+            class convert_fx_mixture_request <<struct>> {
+                +gmm_means : vector<double>
+                +gmm_stdevs : vector<double>
+                +gmm_weights : vector<double>
+                +from_process_type : string
+                +to_process_type : string
+                +initial_price : double
+                +ticks_per_hour : int
+            }
+            class convert_fx_mixture_response <<struct>> {
+                +success : bool
+                +message : string
+                +gmm_means : vector<double>
+                +gmm_stdevs : vector<double>
+                +gmm_weights : vector<double>
+            }
+            class convert_fx_simple_request <<struct>> {
+                +process_type : string
+                +to_simple : bool
+                +initial_price : double
+                +ticks_per_hour : int
+                +gmm_means : vector<double>
+                +gmm_stdevs : vector<double>
+                +gmm_weights : vector<double>
+                +trend_pct_per_hour : double
+                +volatility_pct_per_hour : double
+                +jump_share_pct : double
+                +half_life_minutes : double
+            }
+            class convert_fx_simple_response <<struct>> {
+                +success : bool
+                +message : string
+                +has_simple_form : bool
+                +trend_pct_per_hour : double
+                +volatility_pct_per_hour : double
+                +jump_share_pct : double
+                +half_life_minutes : double
+                +gmm_means : vector<double>
+                +gmm_stdevs : vector<double>
+                +gmm_weights : vector<double>
+            }
+            class convert_ir_parameters_request <<struct>> {
+                +process_type : string
+                +to_simple : bool
+                +parameter_names : vector<string>
+                +parameter_values : vector<double>
+            }
+            class convert_ir_parameters_response <<struct>> {
+                +success : bool
+                +message : string
+                +has_simple_form : bool
+                +caution : string
+                +parameter_names : vector<string>
+                +parameter_values : vector<double>
+            }
+            class set_faults_request <<struct>> {
+                +connection_lost : bool
+                +tick_delay_ms : uint32_t
+                +repeat_ticks : bool
+                +out_of_range : bool
+                +not_entitled : bool
+            }
+            class set_faults_response <<struct>> {
+                +success : bool
+                +message : string
+            }
             class start_feed_request <<struct>> {
                 +config_id : string
             }
@@ -369,6 +588,106 @@ namespace ores #F2F2F2 {
             class list_feeds_response <<struct>> {
                 +success : bool
                 +running_source_names : vector<string>
+            }
+            class feed_folder <<struct>> {
+                +id : string
+                +parent_id : string
+                +name : string
+                +kind : string
+                +provider_code : string
+                +fx_feeds : int
+                +ir_feeds : int
+                +running_feeds : int
+                +idle_auto_feeds : int
+                +has_children : bool
+            }
+            class list_feed_folders_request <<struct>> {
+                +parent_id : string
+            }
+            class list_feed_folders_response <<struct>> {
+                +success : bool
+                +message : string
+                +folders : vector<feed_folder>
+            }
+            class folder_feed <<struct>> {
+                +id : string
+                +kind : string
+                +label : string
+                +source_name : string
+                +oresmd_uri : string
+                +folder_id : string
+                +enabled : bool
+                +provider_code : string
+                +asset_class_code : string
+                +underlying : string
+                +engine : string
+                +ticks_per_hour : int
+                +auto_start : bool
+                +running : bool
+            }
+            class list_folder_feeds_request <<struct>> {
+                +folder_id : string
+                +provider_code : string
+                +should_run : bool
+                +search : string
+                +state : string
+                +asset_class : string
+                +offset : int
+                +limit : int
+            }
+            class list_folder_feeds_response <<struct>> {
+                +success : bool
+                +message : string
+                +total : int
+                +feeds : vector<folder_feed>
+            }
+            class series_owner <<struct>> {
+                +series : string
+                +source_name : string
+            }
+            class resolve_series_owners_request <<struct>> {
+                +series : vector<string>
+            }
+            class resolve_series_owners_response <<struct>> {
+                +success : bool
+                +message : string
+                +owners : vector<series_owner>
+            }
+            class start_selected_feeds_request <<struct>> {
+                +folder_id : string
+                +provider_code : string
+                +should_run : bool
+                +search : string
+                +state : string
+                +asset_class : string
+                +feed_ids : vector<string>
+                +excluded_ids : vector<string>
+            }
+            class start_selected_feeds_response <<struct>> {
+                +success : bool
+                +message : string
+                +started : int
+                +already_running : int
+                +skipped : int
+                +stopped : int
+            }
+            class stop_selected_feeds_request <<struct>> {
+                +folder_id : string
+                +provider_code : string
+                +should_run : bool
+                +search : string
+                +state : string
+                +asset_class : string
+                +feed_ids : vector<string>
+                +excluded_ids : vector<string>
+            }
+            class stop_selected_feeds_response <<struct>> {
+                +success : bool
+                +message : string
+                +started : int
+                +already_running : int
+                +skipped : int
+                +stopped : int
             }
             class folder_key <<struct>> {
                 +id : boost::uuids::uuid
@@ -392,6 +711,9 @@ namespace ores #F2F2F2 {
                 +key : folder_key
                 +folder : optional<ores::synthetic::domain::folder>
             }
+            class folders_filter <<struct>> {
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+            }
             class folder_event <<struct>> {
                 +event_id : boost::uuids::uuid
                 +key : folder_key
@@ -413,6 +735,8 @@ namespace ores #F2F2F2 {
                 +offset : uint32_t
                 +limit : uint32_t
                 +order : ores::utility::domain::order
+                +filter : optional<folders_filter>
+                +as_of : optional<string>
             }
             class list_folders_response <<struct>> {
                 +result : ores::utility::domain::result
@@ -439,7 +763,7 @@ namespace ores #F2F2F2 {
             }
             class put_folder_response <<struct>> {
                 +result : ores::utility::domain::result
-                +folder : ores::synthetic::domain::folder
+                +folder : optional<ores::synthetic::domain::folder>
             }
             class put_many_folders_request <<struct>> {
                 +changes : vector<folder_change>
@@ -480,7 +804,7 @@ namespace ores #F2F2F2 {
             }
             class get_folder_version_response <<struct>> {
                 +result : ores::utility::domain::result
-                +version : ores::synthetic::domain::folder
+                +version : optional<ores::synthetic::domain::folder>
             }
             class fx_spot_generation_config_key <<struct>> {
                 +id : boost::uuids::uuid
@@ -491,7 +815,7 @@ namespace ores #F2F2F2 {
                 +base_currency_code : string
                 +quote_currency_code : string
                 +source_name : string
-                +ore_key : string
+                +oresmd_uri : string
                 +price_source : string
                 +gmm_initial_price : double
                 +ticks_per_hour : int
@@ -501,6 +825,11 @@ namespace ores #F2F2F2 {
                 +vintage_source : string
                 +vintage_date : string
                 +folder_id : optional<boost::uuids::uuid>
+                +asset_class_code : string
+                +arrival_mode : string
+                +branching_ratio : double
+                +decay : double
+                +sensitivity : double
             }
             class fx_spot_generation_config_change <<struct>> {
                 +write : fx_spot_generation_config_write
@@ -513,6 +842,10 @@ namespace ores #F2F2F2 {
             class fx_spot_generation_config_lookup <<struct>> {
                 +key : fx_spot_generation_config_key
                 +fx_spot_generation_config : optional<ores::synthetic::domain::fx_spot_generation_config>
+            }
+            class fx_spot_generation_configs_filter <<struct>> {
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+                +search : optional<string>
             }
             class fx_spot_generation_config_event <<struct>> {
                 +event_id : boost::uuids::uuid
@@ -535,6 +868,8 @@ namespace ores #F2F2F2 {
                 +offset : uint32_t
                 +limit : uint32_t
                 +order : ores::utility::domain::order
+                +filter : optional<fx_spot_generation_configs_filter>
+                +as_of : optional<string>
             }
             class list_fx_spot_generation_configs_response <<struct>> {
                 +result : ores::utility::domain::result
@@ -561,7 +896,7 @@ namespace ores #F2F2F2 {
             }
             class put_fx_spot_generation_config_response <<struct>> {
                 +result : ores::utility::domain::result
-                +fx_spot_generation_config : ores::synthetic::domain::fx_spot_generation_config
+                +fx_spot_generation_config : optional<ores::synthetic::domain::fx_spot_generation_config>
             }
             class put_many_fx_spot_generation_configs_request <<struct>> {
                 +changes : vector<fx_spot_generation_config_change>
@@ -602,37 +937,7 @@ namespace ores #F2F2F2 {
             }
             class get_fx_spot_generation_config_version_response <<struct>> {
                 +result : ores::utility::domain::result
-                +version : ores::synthetic::domain::fx_spot_generation_config
-            }
-            class generate_organisation_request <<struct>> {
-                +country : string
-                +party_count : uint32_t
-                +party_max_depth : uint32_t
-                +counterparty_count : uint32_t
-                +counterparty_max_depth : uint32_t
-                +portfolio_leaf_count : uint32_t
-                +portfolio_max_depth : uint32_t
-                +books_per_leaf_portfolio : uint32_t
-                +business_unit_count : uint32_t
-                +business_unit_max_depth : uint32_t
-                +generate_addresses : bool
-                +contacts_per_party : uint32_t
-                +contacts_per_counterparty : uint32_t
-                +generate_identifiers : bool
-                +seed : optional<uint64_t>
-            }
-            class generate_organisation_response <<struct>> {
-                +success : bool
-                +error_message : string
-                +seed : uint64_t
-                +parties_count : int
-                +counterparties_count : int
-                +business_unit_types_count : int
-                +business_units_count : int
-                +portfolios_count : int
-                +books_count : int
-                +contacts_count : int
-                +identifiers_count : int
+                +version : optional<ores::synthetic::domain::fx_spot_generation_config>
             }
             class gmm_component_key <<struct>> {
                 +id : boost::uuids::uuid
@@ -658,6 +963,11 @@ namespace ores #F2F2F2 {
                 +key : gmm_component_key
                 +gmm_component : optional<ores::synthetic::domain::gmm_component>
             }
+            class gmm_components_filter <<struct>> {
+                +fx_spot_config_id : optional<boost::uuids::uuid>
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+                +fx_spot_config_id_one_of : optional<vector<boost::uuids::uuid>>
+            }
             class gmm_component_event <<struct>> {
                 +event_id : boost::uuids::uuid
                 +key : gmm_component_key
@@ -679,6 +989,8 @@ namespace ores #F2F2F2 {
                 +offset : uint32_t
                 +limit : uint32_t
                 +order : ores::utility::domain::order
+                +filter : optional<gmm_components_filter>
+                +as_of : optional<string>
             }
             class list_gmm_components_response <<struct>> {
                 +result : ores::utility::domain::result
@@ -705,7 +1017,7 @@ namespace ores #F2F2F2 {
             }
             class put_gmm_component_response <<struct>> {
                 +result : ores::utility::domain::result
-                +gmm_component : ores::synthetic::domain::gmm_component
+                +gmm_component : optional<ores::synthetic::domain::gmm_component>
             }
             class put_many_gmm_components_request <<struct>> {
                 +changes : vector<gmm_component_change>
@@ -746,7 +1058,7 @@ namespace ores #F2F2F2 {
             }
             class get_gmm_component_version_response <<struct>> {
                 +result : ores::utility::domain::result
-                +version : ores::synthetic::domain::gmm_component
+                +version : optional<ores::synthetic::domain::gmm_component>
             }
             class ir_curve_generation_config_process_parameter_value_key <<struct>> {
                 +id : boost::uuids::uuid
@@ -768,6 +1080,11 @@ namespace ores #F2F2F2 {
             class ir_curve_generation_config_process_parameter_value_lookup <<struct>> {
                 +key : ir_curve_generation_config_process_parameter_value_key
             }
+            class ir_curve_generation_config_process_parameter_values_filter <<struct>> {
+                +config_id : optional<boost::uuids::uuid>
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+                +config_id_one_of : optional<vector<boost::uuids::uuid>>
+            }
             class ir_curve_generation_config_process_parameter_value_event <<struct>> {
                 +event_id : boost::uuids::uuid
                 +key : ir_curve_generation_config_process_parameter_value_key
@@ -788,6 +1105,8 @@ namespace ores #F2F2F2 {
                 +offset : uint32_t
                 +limit : uint32_t
                 +order : ores::utility::domain::order
+                +filter : optional<ir_curve_generation_config_process_parameter_values_filter>
+                +as_of : optional<string>
             }
             class list_ir_curve_generation_config_process_parameter_values_response <<struct>> {
                 +result : ores::utility::domain::result
@@ -855,7 +1174,6 @@ namespace ores #F2F2F2 {
             }
             class get_ir_curve_generation_config_process_parameter_value_version_response <<struct>> {
                 +result : ores::utility::domain::result
-                +version : ores::synthetic::domain::ir_curve_generation_config_process_parameter_value
             }
             class ir_curve_generation_config_key <<struct>> {
                 +id : boost::uuids::uuid
@@ -874,10 +1192,16 @@ namespace ores #F2F2F2 {
                 +price_source : string
                 +vintage_source : string
                 +vintage_date : string
+                +vintage_series_uri : string
                 +description : string
                 +fixed_leg_payment_frequency_code : string
                 +source_name : string
                 +folder_id : optional<boost::uuids::uuid>
+                +asset_class_code : string
+                +arrival_mode : string
+                +branching_ratio : double
+                +decay : double
+                +sensitivity : double
             }
             class ir_curve_generation_config_change <<struct>> {
                 +write : ir_curve_generation_config_write
@@ -890,6 +1214,10 @@ namespace ores #F2F2F2 {
             class ir_curve_generation_config_lookup <<struct>> {
                 +key : ir_curve_generation_config_key
                 +ir_curve_generation_config : optional<ores::synthetic::domain::ir_curve_generation_config>
+            }
+            class ir_curve_generation_configs_filter <<struct>> {
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+                +search : optional<string>
             }
             class ir_curve_generation_config_event <<struct>> {
                 +event_id : boost::uuids::uuid
@@ -912,6 +1240,8 @@ namespace ores #F2F2F2 {
                 +offset : uint32_t
                 +limit : uint32_t
                 +order : ores::utility::domain::order
+                +filter : optional<ir_curve_generation_configs_filter>
+                +as_of : optional<string>
             }
             class list_ir_curve_generation_configs_response <<struct>> {
                 +result : ores::utility::domain::result
@@ -938,7 +1268,7 @@ namespace ores #F2F2F2 {
             }
             class put_ir_curve_generation_config_response <<struct>> {
                 +result : ores::utility::domain::result
-                +ir_curve_generation_config : ores::synthetic::domain::ir_curve_generation_config
+                +ir_curve_generation_config : optional<ores::synthetic::domain::ir_curve_generation_config>
             }
             class put_many_ir_curve_generation_configs_request <<struct>> {
                 +changes : vector<ir_curve_generation_config_change>
@@ -979,7 +1309,46 @@ namespace ores #F2F2F2 {
             }
             class get_ir_curve_generation_config_version_response <<struct>> {
                 +result : ores::utility::domain::result
-                +version : ores::synthetic::domain::ir_curve_generation_config
+                +version : optional<ores::synthetic::domain::ir_curve_generation_config>
+            }
+            class parameter_spec <<struct>> {
+                +parameter_name : string
+                +parameter_value : double
+            }
+            class simulate_ir_curve_paths_request <<struct>> {
+                +process_type : string
+                +parameters : vector<parameter_spec>
+                +num_ticks : int
+                +num_paths : int
+                +seed : uint32_t
+            }
+            class simulate_ir_curve_paths_response <<struct>> {
+                +success : bool
+                +message : string
+                +paths : vector<vector<double>>
+            }
+            class preview_ir_curve_template_row <<struct>> {
+                +sequence_index : int
+                +start_tenor_code : string
+                +end_tenor_code : string
+                +instrument_code : string
+            }
+            class preview_ir_curve_shape_request <<struct>> {
+                +process_type : string
+                +parameters : vector<parameter_spec>
+                +fixed_leg_payment_frequency_code : string
+                +entries : vector<preview_ir_curve_template_row>
+            }
+            class preview_ir_curve_shape_point <<struct>> {
+                +sequence_index : int
+                +start_tenor_code : string
+                +end_tenor_code : string
+                +rate : double
+            }
+            class preview_ir_curve_shape_response <<struct>> {
+                +success : bool
+                +message : string
+                +points : vector<preview_ir_curve_shape_point>
             }
             class ir_curve_template_entry_key <<struct>> {
                 +id : boost::uuids::uuid
@@ -1004,6 +1373,11 @@ namespace ores #F2F2F2 {
                 +key : ir_curve_template_entry_key
                 +ir_curve_template_entry : optional<ores::synthetic::domain::ir_curve_template_entry>
             }
+            class ir_curve_template_entries_filter <<struct>> {
+                +ir_curve_config_id : optional<boost::uuids::uuid>
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+                +ir_curve_config_id_one_of : optional<vector<boost::uuids::uuid>>
+            }
             class ir_curve_template_entry_event <<struct>> {
                 +event_id : boost::uuids::uuid
                 +key : ir_curve_template_entry_key
@@ -1025,6 +1399,8 @@ namespace ores #F2F2F2 {
                 +offset : uint32_t
                 +limit : uint32_t
                 +order : ores::utility::domain::order
+                +filter : optional<ir_curve_template_entries_filter>
+                +as_of : optional<string>
             }
             class list_ir_curve_template_entries_response <<struct>> {
                 +result : ores::utility::domain::result
@@ -1051,7 +1427,7 @@ namespace ores #F2F2F2 {
             }
             class put_ir_curve_template_entry_response <<struct>> {
                 +result : ores::utility::domain::result
-                +ir_curve_template_entry : ores::synthetic::domain::ir_curve_template_entry
+                +ir_curve_template_entry : optional<ores::synthetic::domain::ir_curve_template_entry>
             }
             class put_many_ir_curve_template_entries_request <<struct>> {
                 +changes : vector<ir_curve_template_entry_change>
@@ -1092,19 +1468,18 @@ namespace ores #F2F2F2 {
             }
             class get_ir_curve_template_entry_version_response <<struct>> {
                 +result : ores::utility::domain::result
-                +version : ores::synthetic::domain::ir_curve_template_entry
+                +version : optional<ores::synthetic::domain::ir_curve_template_entry>
             }
             class market_data_generation_config_key <<struct>> {
                 +id : boost::uuids::uuid
             }
             class market_data_generation_config_write <<struct>> {
                 +id : boost::uuids::uuid
-                +scope : domain::scope
-                +binding_mode : domain::binding_mode
                 +name : string
                 +description : string
                 +enabled : bool
                 +dataset_id : optional<boost::uuids::uuid>
+                +provider_code : string
             }
             class market_data_generation_config_change <<struct>> {
                 +write : market_data_generation_config_write
@@ -1116,6 +1491,9 @@ namespace ores #F2F2F2 {
             }
             class market_data_generation_config_lookup <<struct>> {
                 +key : market_data_generation_config_key
+            }
+            class market_data_generation_configs_filter <<struct>> {
+                +id_one_of : optional<vector<boost::uuids::uuid>>
             }
             class market_data_generation_config_event <<struct>> {
                 +event_id : boost::uuids::uuid
@@ -1138,6 +1516,8 @@ namespace ores #F2F2F2 {
                 +offset : uint32_t
                 +limit : uint32_t
                 +order : ores::utility::domain::order
+                +filter : optional<market_data_generation_configs_filter>
+                +as_of : optional<string>
             }
             class list_market_data_generation_configs_response <<struct>> {
                 +result : ores::utility::domain::result
@@ -1162,7 +1542,6 @@ namespace ores #F2F2F2 {
             }
             class put_market_data_generation_config_response <<struct>> {
                 +result : ores::utility::domain::result
-                +market_data_generation_config : ores::synthetic::domain::market_data_generation_config
             }
             class put_many_market_data_generation_configs_request <<struct>> {
                 +changes : vector<market_data_generation_config_change>
@@ -1202,7 +1581,7 @@ namespace ores #F2F2F2 {
             }
             class get_market_data_generation_config_version_response <<struct>> {
                 +result : ores::utility::domain::result
-                +version : ores::synthetic::domain::market_data_generation_config
+                +version : optional<ores::synthetic::domain::market_data_generation_config>
             }
             class market_data_provider_key <<struct>> {
                 +code : string
@@ -1321,29 +1700,6 @@ namespace ores #F2F2F2 {
                 +result : ores::utility::domain::result
                 +version : optional<ores::synthetic::domain::market_data_provider>
             }
-            class preview_ir_curve_template_row <<struct>> {
-                +sequence_index : int
-                +start_tenor_code : string
-                +end_tenor_code : string
-                +instrument_code : string
-            }
-            class preview_ir_curve_shape_request <<struct>> {
-                +process_type : string
-                +parameters : vector<parameter_spec>
-                +fixed_leg_payment_frequency_code : string
-                +entries : vector<preview_ir_curve_template_row>
-            }
-            class preview_ir_curve_shape_point <<struct>> {
-                +sequence_index : int
-                +start_tenor_code : string
-                +end_tenor_code : string
-                +rate : double
-            }
-            class preview_ir_curve_shape_response <<struct>> {
-                +success : bool
-                +message : string
-                +points : vector<preview_ir_curve_shape_point>
-            }
             class simulate_fx_spot_paths_request <<struct>> {
                 +gmm_means : vector<double>
                 +gmm_stdevs : vector<double>
@@ -1359,21 +1715,363 @@ namespace ores #F2F2F2 {
                 +message : string
                 +paths : vector<vector<double>>
             }
-            class parameter_spec <<struct>> {
-                +parameter_name : string
-                +parameter_value : double
+            class trade_generation_book_key <<struct>> {
+                +id : boost::uuids::uuid
             }
-            class simulate_ir_curve_paths_request <<struct>> {
-                +process_type : string
-                +parameters : vector<parameter_spec>
-                +num_ticks : int
-                +num_paths : int
-                +seed : uint32_t
+            class trade_generation_book_write <<struct>> {
+                +id : boost::uuids::uuid
+                +config_id : boost::uuids::uuid
+                +book_id : boost::uuids::uuid
             }
-            class simulate_ir_curve_paths_response <<struct>> {
-                +success : bool
-                +message : string
-                +paths : vector<vector<double>>
+            class trade_generation_book_change <<struct>> {
+                +write : trade_generation_book_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class trade_generation_book_removal <<struct>> {
+                +key : trade_generation_book_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class trade_generation_book_lookup <<struct>> {
+                +key : trade_generation_book_key
+                +trade_generation_book : optional<ores::synthetic::domain::trade_generation_book>
+            }
+            class trade_generation_books_filter <<struct>> {
+                +config_id : optional<boost::uuids::uuid>
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+                +config_id_one_of : optional<vector<boost::uuids::uuid>>
+            }
+            class trade_generation_book_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : trade_generation_book_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class trade_generation_book_version_key <<struct>> {
+                +trade_generation_book : trade_generation_book_key
+                +version : uint32_t
+            }
+            class trade_generation_book_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_trade_generation_books_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<trade_generation_books_filter>
+                +as_of : optional<string>
+            }
+            class list_trade_generation_books_response <<struct>> {
+                +result : ores::utility::domain::result
+                +trade_generation_books : vector<ores::synthetic::domain::trade_generation_book>
+                +total : uint64_t
+            }
+            class get_trade_generation_book_request <<struct>> {
+                +key : trade_generation_book_key
+            }
+            class get_trade_generation_book_response <<struct>> {
+                +result : ores::utility::domain::result
+                +trade_generation_book : optional<ores::synthetic::domain::trade_generation_book>
+            }
+            class get_many_trade_generation_books_request <<struct>> {
+                +keys : vector<trade_generation_book_key>
+            }
+            class get_many_trade_generation_books_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<trade_generation_book_lookup>
+            }
+            class put_trade_generation_book_request <<struct>> {
+                +change : trade_generation_book_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_trade_generation_book_response <<struct>> {
+                +result : ores::utility::domain::result
+                +trade_generation_book : optional<ores::synthetic::domain::trade_generation_book>
+            }
+            class put_many_trade_generation_books_request <<struct>> {
+                +changes : vector<trade_generation_book_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_trade_generation_books_response <<struct>> {
+                +result : ores::utility::domain::result
+                +trade_generation_books : vector<ores::synthetic::domain::trade_generation_book>
+            }
+            class delete_trade_generation_book_request <<struct>> {
+                +removal : trade_generation_book_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_trade_generation_book_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_trade_generation_books_request <<struct>> {
+                +removals : vector<trade_generation_book_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_trade_generation_books_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_trade_generation_book_versions_request <<struct>> {
+                +key : trade_generation_book_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<trade_generation_book_versions_filter>
+            }
+            class list_trade_generation_book_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::synthetic::domain::trade_generation_book>
+                +total : uint64_t
+            }
+            class get_trade_generation_book_version_request <<struct>> {
+                +key : trade_generation_book_version_key
+            }
+            class get_trade_generation_book_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::synthetic::domain::trade_generation_book>
+            }
+            class trade_generation_config_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class trade_generation_config_write <<struct>> {
+                +id : boost::uuids::uuid
+                +name : string
+                +description : string
+                +asset_class_code : string
+                +min_tenor_code : string
+                +max_tenor_code : string
+                +min_notional : ores::utility::decimal::decimal
+                +max_notional : ores::utility::decimal::decimal
+                +as_of_date : chrono::year_month_day
+                +seed : uint64_t
+                +enabled : bool
+                +reference_curve_id : string
+            }
+            class trade_generation_config_change <<struct>> {
+                +write : trade_generation_config_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class trade_generation_config_removal <<struct>> {
+                +key : trade_generation_config_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class trade_generation_config_lookup <<struct>> {
+                +key : trade_generation_config_key
+                +trade_generation_config : optional<ores::synthetic::domain::trade_generation_config>
+            }
+            class trade_generation_configs_filter <<struct>> {
+                +as_of_date : optional<chrono::year_month_day>
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+                +as_of_date_one_of : optional<vector<chrono::year_month_day>>
+                +as_of_date_from : optional<string>
+                +as_of_date_to : optional<string>
+                +search : optional<string>
+            }
+            class trade_generation_config_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : trade_generation_config_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class trade_generation_config_version_key <<struct>> {
+                +trade_generation_config : trade_generation_config_key
+                +version : uint32_t
+            }
+            class trade_generation_config_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_trade_generation_configs_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<trade_generation_configs_filter>
+                +as_of : optional<string>
+            }
+            class list_trade_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +trade_generation_configs : vector<ores::synthetic::domain::trade_generation_config>
+                +total : uint64_t
+            }
+            class get_trade_generation_config_request <<struct>> {
+                +key : trade_generation_config_key
+            }
+            class get_trade_generation_config_response <<struct>> {
+                +result : ores::utility::domain::result
+                +trade_generation_config : optional<ores::synthetic::domain::trade_generation_config>
+            }
+            class get_many_trade_generation_configs_request <<struct>> {
+                +keys : vector<trade_generation_config_key>
+            }
+            class get_many_trade_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<trade_generation_config_lookup>
+            }
+            class put_trade_generation_config_request <<struct>> {
+                +change : trade_generation_config_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_trade_generation_config_response <<struct>> {
+                +result : ores::utility::domain::result
+                +trade_generation_config : optional<ores::synthetic::domain::trade_generation_config>
+            }
+            class put_many_trade_generation_configs_request <<struct>> {
+                +changes : vector<trade_generation_config_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_trade_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+                +trade_generation_configs : vector<ores::synthetic::domain::trade_generation_config>
+            }
+            class delete_trade_generation_config_request <<struct>> {
+                +removal : trade_generation_config_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_trade_generation_config_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_trade_generation_configs_request <<struct>> {
+                +removals : vector<trade_generation_config_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_trade_generation_configs_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_trade_generation_config_versions_request <<struct>> {
+                +key : trade_generation_config_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<trade_generation_config_versions_filter>
+            }
+            class list_trade_generation_config_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::synthetic::domain::trade_generation_config>
+                +total : uint64_t
+            }
+            class get_trade_generation_config_version_request <<struct>> {
+                +key : trade_generation_config_version_key
+            }
+            class get_trade_generation_config_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::synthetic::domain::trade_generation_config>
+            }
+            class trade_generation_counterparty_key <<struct>> {
+                +id : boost::uuids::uuid
+            }
+            class trade_generation_counterparty_write <<struct>> {
+                +id : boost::uuids::uuid
+                +config_id : boost::uuids::uuid
+                +counterparty_id : boost::uuids::uuid
+            }
+            class trade_generation_counterparty_change <<struct>> {
+                +write : trade_generation_counterparty_write
+                +precondition : ores::utility::domain::precondition
+            }
+            class trade_generation_counterparty_removal <<struct>> {
+                +key : trade_generation_counterparty_key
+                +precondition : ores::utility::domain::precondition
+            }
+            class trade_generation_counterparty_lookup <<struct>> {
+                +key : trade_generation_counterparty_key
+            }
+            class trade_generation_counterparties_filter <<struct>> {
+                +config_id : optional<boost::uuids::uuid>
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+                +config_id_one_of : optional<vector<boost::uuids::uuid>>
+            }
+            class trade_generation_counterparty_event <<struct>> {
+                +event_id : boost::uuids::uuid
+                +key : trade_generation_counterparty_key
+                +action : string
+                +version : uint32_t
+                +occurred_at : chrono::system_clock::time_point
+                +correlation_id : optional<string>
+            }
+            class trade_generation_counterparty_version_key <<struct>> {
+                +trade_generation_counterparty : trade_generation_counterparty_key
+                +version : uint32_t
+            }
+            class trade_generation_counterparty_versions_filter <<struct>> {
+                +version : optional<uint32_t>
+                +from_version : optional<uint32_t>
+                +to_version : optional<uint32_t>
+            }
+            class list_trade_generation_counterparties_request <<struct>> {
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<trade_generation_counterparties_filter>
+                +as_of : optional<string>
+            }
+            class list_trade_generation_counterparties_response <<struct>> {
+                +result : ores::utility::domain::result
+                +total : uint64_t
+            }
+            class get_trade_generation_counterparty_request <<struct>> {
+                +key : trade_generation_counterparty_key
+            }
+            class get_trade_generation_counterparty_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class get_many_trade_generation_counterparties_request <<struct>> {
+                +keys : vector<trade_generation_counterparty_key>
+            }
+            class get_many_trade_generation_counterparties_response <<struct>> {
+                +result : ores::utility::domain::result
+                +entries : vector<trade_generation_counterparty_lookup>
+            }
+            class put_trade_generation_counterparty_request <<struct>> {
+                +change : trade_generation_counterparty_change
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_trade_generation_counterparty_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class put_many_trade_generation_counterparties_request <<struct>> {
+                +changes : vector<trade_generation_counterparty_change>
+                +intent : ores::utility::domain::change_intent
+            }
+            class put_many_trade_generation_counterparties_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_trade_generation_counterparty_request <<struct>> {
+                +removal : trade_generation_counterparty_removal
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_trade_generation_counterparty_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class delete_many_trade_generation_counterparties_request <<struct>> {
+                +removals : vector<trade_generation_counterparty_removal>
+                +intent : ores::utility::domain::change_intent
+            }
+            class delete_many_trade_generation_counterparties_response <<struct>> {
+                +result : ores::utility::domain::result
+            }
+            class list_trade_generation_counterparty_versions_request <<struct>> {
+                +key : trade_generation_counterparty_key
+                +offset : uint32_t
+                +limit : uint32_t
+                +order : ores::utility::domain::order
+                +filter : optional<trade_generation_counterparty_versions_filter>
+            }
+            class list_trade_generation_counterparty_versions_response <<struct>> {
+                +result : ores::utility::domain::result
+                +versions : vector<ores::synthetic::domain::trade_generation_counterparty>
+                +total : uint64_t
+            }
+            class get_trade_generation_counterparty_version_request <<struct>> {
+                +key : trade_generation_counterparty_version_key
+            }
+            class get_trade_generation_counterparty_version_response <<struct>> {
+                +result : ores::utility::domain::result
+                +version : optional<ores::synthetic::domain::trade_generation_counterparty>
             }
             class yield_curve_process_parameter_definition_key <<struct>> {
                 +parameter_name : string
@@ -1403,6 +2101,9 @@ namespace ores #F2F2F2 {
             class yield_curve_process_parameter_definition_lookup <<struct>> {
                 +key : yield_curve_process_parameter_definition_key
             }
+            class yield_curve_process_parameter_definitions_filter <<struct>> {
+                +id_one_of : optional<vector<boost::uuids::uuid>>
+            }
             class yield_curve_process_parameter_definition_event <<struct>> {
                 +event_id : boost::uuids::uuid
                 +key : yield_curve_process_parameter_definition_key
@@ -1424,6 +2125,8 @@ namespace ores #F2F2F2 {
                 +offset : uint32_t
                 +limit : uint32_t
                 +order : ores::utility::domain::order
+                +filter : optional<yield_curve_process_parameter_definitions_filter>
+                +as_of : optional<string>
             }
             class list_yield_curve_process_parameter_definitions_response <<struct>> {
                 +result : ores::utility::domain::result
@@ -1487,7 +2190,7 @@ namespace ores #F2F2F2 {
             }
             class get_yield_curve_process_parameter_definition_version_response <<struct>> {
                 +result : ores::utility::domain::result
-                +version : ores::synthetic::domain::yield_curve_process_parameter_definition
+                +version : optional<ores::synthetic::domain::yield_curve_process_parameter_definition>
             }
             class yield_curve_process_type_key <<struct>> {
                 +code : string
@@ -1510,6 +2213,9 @@ namespace ores #F2F2F2 {
                 +key : yield_curve_process_type_key
                 +yield_curve_process_type : optional<ores::synthetic::domain::yield_curve_process_type>
             }
+            class yield_curve_process_types_filter <<struct>> {
+                +code_one_of : optional<vector<string>>
+            }
             class yield_curve_process_type_event <<struct>> {
                 +event_id : boost::uuids::uuid
                 +key : yield_curve_process_type_key
@@ -1531,6 +2237,8 @@ namespace ores #F2F2F2 {
                 +offset : uint32_t
                 +limit : uint32_t
                 +order : ores::utility::domain::order
+                +filter : optional<yield_curve_process_types_filter>
+                +as_of : optional<string>
             }
             class list_yield_curve_process_types_response <<struct>> {
                 +result : ores::utility::domain::result
@@ -1557,7 +2265,7 @@ namespace ores #F2F2F2 {
             }
             class put_yield_curve_process_type_response <<struct>> {
                 +result : ores::utility::domain::result
-                +yield_curve_process_type : ores::synthetic::domain::yield_curve_process_type
+                +yield_curve_process_type : optional<ores::synthetic::domain::yield_curve_process_type>
             }
             class put_many_yield_curve_process_types_request <<struct>> {
                 +changes : vector<yield_curve_process_type_change>
@@ -1598,7 +2306,7 @@ namespace ores #F2F2F2 {
             }
             class get_yield_curve_process_type_version_response <<struct>> {
                 +result : ores::utility::domain::result
-                +version : ores::synthetic::domain::yield_curve_process_type
+                +version : optional<ores::synthetic::domain::yield_curve_process_type>
             }
         }
     }

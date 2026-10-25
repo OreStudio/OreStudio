@@ -57,6 +57,9 @@ The prototype is at
 
 * The cascade rule
 
+Demand starts a generator on its own. The start and stop paths below are the
+operator's test controls, not the way a feed normally runs.
+
 A tree node carries one of three states, running, stopped, or partial, and a
 partial node reads as a count such as "3 of 8 running".
 

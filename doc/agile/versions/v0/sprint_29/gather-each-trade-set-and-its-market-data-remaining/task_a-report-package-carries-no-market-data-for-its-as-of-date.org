@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: B0EB5843-1178-4954-A378-BA47303344A3
+:END:
+#+title: Task: A report's package carries no market data for its own as-of date
+#+description: A report run failed with 'Failed to build market: There are no quotes available for date October 23rd, 2026'. The market data the chain gathered and put in the package does not cover the run's as-of date, so PRICING, PARAMETRIC_VAR and SA_CCR all failed on the same missing quotes. The as-of date the run uses and the vintage the gather selects have to agree, or the package has to carry the date it does have and the run must use that.
+#+type: task
+#+level: s1
+#+filetags: :gather-each-trade-set-and-its-market-data-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/a-report-package-carries-no-market-data-for-its-as-of-date
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:ACFE9144-48DF-4FE5-902D-18C757DC91F4][Gather each trade set and its market data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The market data a run's package carries must cover the date the run prices at.
+When it does not, the engine refuses every analytic with one message, and the
+report fails for a reason that has nothing to do with the report.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:ACFE9144-48DF-4FE5-902D-18C757DC91F4][Gather each trade set and its market data — the remaining work]] |
+| Now          | The cause is stale data, not a missing date: the gather asks for the run's date and the export drops every datum as stale, because the tenant's data tops out at 2026-05-05. No code changed.                       |
+| Waiting on   | A decision between pricing at the data's date and failing early, or both.                               |
+| Next         | Report the export's effective date, use it for the run, and fail with a clear message when nothing covers the requested date.                  |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- A run whose configuration says =eod= prices at the date of the market data it
+  gathered, not at the previous weekday of the run's clock.
+- A configuration that names a date keeps pricing at that date, and the gather
+  selects data for the date it names.
+- The "Board Risk Dashboard" run completes its pricing analytics once the
+  package's data covers the date it prices at.
+- A unit test states the rule for an =eod= run with a gathered date, a
+  configuration that names a date, and a gather that reports none.
+
+* Plan
+
+*Where the date is chosen.* =valuation_date_of= in
+=projects/ores.reporting/core/src/service/run_document_generator.cpp=:
+
+#+begin_src cpp
+std::string valuation_date_of(const domain::risk_report_config& risk,
+                              const std::string& run_date) {
+    if (risk.market_data_type == "date")
+        return risk.market_data_date;
+    return risk.market_data_type == "eod" ? previous_weekday(run_date) : run_date;
+}
+#+end_src
+
+=generate_run_document= then forces =market_data_type= to =date= with that value,
+so the run always states an =asofDate=.
+
+*What the rule should be.* The ORE parameter catalogue states it for the
+platform: "Sets the valuation date of the run... Use the date of the market data
+file." For =eod=, the previous weekday of the run's clock is a guess about the
+data, and it is wrong whenever the gathered data is a different vintage.
+
+*Why the package has no data for the date.* The gather does ask for the run's
+date: =gather_market_data= passes =valuation_date_of(...)= in the export's
+=valuation_date=. The export answers with =carried_forward_count= and
+=stale_count=: a datum whose latest value is older than the staleness limit is
+left out of the requested date, and a datum within the limit is carried forward.
+On this database the data tops out at 2026-05-05 and every datum was left out,
+which is why =market.txt= holds no line for 2026-10-23 at all.
+
+*So the question is stale data, not a missing date.* Three ways out:
+
+1. *Price at the date the data has.* The export knows each datum's latest date
+   and already reports how many it dropped. Report an effective date too, and
+   let the run document take it when nothing covers the requested date. A
+   config that names =market_data_date= already does this by hand.
+2. *Carry stale values forward regardless.* That changes the staleness rule and
+   prices October with May data without saying so, which is worse than failing.
+3. *Fail early and say why.* The gather sees the counts, so it can fail with "no
+   market data for 2026-10-23, the latest is 2026-05-05" instead of letting the
+   engine fail each analytic in turn.
+
+*Recommended.* 1 with 3: report the effective date, use it, and fail with a
+clear message when the response says nothing covers the requested date. The
+bundle needs no new column if the effective date rides the step payload; it
+needs one only if later reads must see it.
+
+*Test plan.* Unit tests on =valuation_date_of= for the three cases, then the
+live re-run of "Board Risk Dashboard" on a recreated and provisioned database,
+asserting that the pricing analytics run instead of failing at market build.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| the failed run's instance | =180f3c3f-72e7-4074-8b01-512a5cee1639= | instance table | 8e18cf885c |
+| its result | =ab955b07-0111-4282-a7d2-bfe347a2f10c=, outcome 3 | result table | 8e18cf885c |
+| the date the package asked for | 2026-10-23 | =Input/ore.xml=, =Setup/asofDate= | 8e18cf885c |
+| the dates the package carried | 2016-01-04 onward | =Input/market.txt= | 8e18cf885c |
+
+* Notes
+
+The engine's own words, from the job's =Output/log.txt=:
+
+#+begin_example
+ALERT ... Failed to build market: There are no quotes available for date October 23rd, 2026
+ALERT ... analyticType=PRICING, exceptionType=Failed Analytic
+ALERT ... analyticType=PARAMETRIC_VAR, exceptionType=Failed Analytic
+#+end_example
+
+The report instance went to =failed= and the result carried that message, which
+is the verdict fix from #3733 working on a real report. The analytics themselves
+were named correctly by the engine, so this is not a wrong switch.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-10-25 in the product backlog; promoted preserving the UUID.

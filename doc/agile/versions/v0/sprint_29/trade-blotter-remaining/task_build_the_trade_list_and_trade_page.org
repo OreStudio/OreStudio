@@ -116,6 +116,10 @@ Two axes, run independently on the branch: standards against the repo's document
 
 * Result
 
+*The list has shipped.* The Trades area reads a page of the trade summary read model through the BFF, which enriches the page with the identifier, the book and counterparty names and the two versions. The screen uses the shared record list, so the pager, the column menu, the search, the filters and the states are the standard ones. The area is offered from the menu and the home folders, with messages in the three catalogues.
+
+Two things are deliberately not in it. The portfolio tree waits on a count read of its own, as the investigation records, so the list ships without the rail. The trade page is the second PR, so a row does not open yet and the structure rows state their kind instead of linking to a screen that does not exist.
+
 The prototype is settled and the plan is written. The trade list now draws a portfolio tree that holds portfolios and the books under them, states on every row whether it is a trade, a composite trade or a structure, and shows an identifier rather than the internal uuid. The Notional column is gone, because notional belongs to the instrument.
 
 Two model errors were corrected in the process: a single notional per trade cannot be read faithfully, and a composite instrument is not a structure. Both are recorded on the prototype's page so the next reader does not repeat them.

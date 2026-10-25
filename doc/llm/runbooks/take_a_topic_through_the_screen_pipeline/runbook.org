@@ -108,8 +108,9 @@ spoken, and closes on the next PR.
 
 5. /Close the topic./ Close the story with its decisions distilled, and
    scaffold the next topic's story from this runbook with the same four
-   tasks, in the order of [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][Screen pipeline topics]]. Add to this page what the
-   topic taught that the next one must know.
+   tasks, in the order of [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][Screen pipeline topics]]. The close PR of each
+   topic adds what the topic taught to the section below, under the topic's
+   name and date, so the page grows without being rewritten.
 
 * Postconditions
 
@@ -123,7 +124,9 @@ spoken, and closes on the next PR.
   verdict, and every gap found is a capture or a fix.
 - The story is DONE with its decisions, and the next topic's story exists.
 
-* What the calendars topic taught
+* What the topics taught
+
+** Calendars, 2026-10-25
 
 - The topic's journey already existed; the task was to judge it, not to
   write a second one. Look before writing.

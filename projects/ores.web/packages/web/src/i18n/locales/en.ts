@@ -3573,7 +3573,6 @@ export const en: SourceCatalogue = {
                 history: 'History',
             },
             state: 'State',
-            authorisation: 'Authorisation',
             bookingDate: 'Booking date',
             execution: 'Executed at',
             identifiers: 'Identifiers',
@@ -3593,6 +3592,7 @@ export const en: SourceCatalogue = {
             noHistory: 'This trade has no recorded version yet.',
         },
         fields: {
+            authorisation: 'Authorisation',
             externalVersion: 'External version',
             identifier: 'Id',
             instrumentType: 'Type',

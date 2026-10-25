@@ -3599,7 +3599,6 @@ const pt: SourceCatalogue = {
                 history: 'Histórico',
             },
             state: 'Estado',
-            authorisation: 'Autorização',
             bookingDate: 'Data de registo',
             execution: 'Executada em',
             identifiers: 'Identificadores',
@@ -3619,6 +3618,7 @@ const pt: SourceCatalogue = {
             noHistory: 'Esta transação ainda não tem versão registada.',
         },
         fields: {
+            authorisation: 'Autorização',
             externalVersion: 'Versão externa',
             identifier: 'Id',
             instrumentType: 'Tipo',

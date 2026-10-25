@@ -194,7 +194,7 @@ export function TradePage(): ReactNode {
                         </div>
                         <div>
                             <dt className="text-xs uppercase tracking-wide text-ink-faint">
-                                {t('trading.page.authorisation')}
+                                {t('trading.fields.authorisation')}
                             </dt>
                             <dd className="text-sm text-ink">
                                 <Tag tone="muted">{trade.authorisation_status}</Tag>

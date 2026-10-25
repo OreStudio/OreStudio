@@ -3616,7 +3616,6 @@ const fr: SourceCatalogue = {
                 history: 'Historique',
             },
             state: 'État',
-            authorisation: 'Autorisation',
             bookingDate: 'Date de réservation',
             execution: 'Exécutée à',
             identifiers: 'Identifiants',
@@ -3636,6 +3635,7 @@ const fr: SourceCatalogue = {
             noHistory: "Cette transaction n'a pas encore de version enregistrée.",
         },
         fields: {
+            authorisation: 'Autorisation',
             externalVersion: 'Version externe',
             identifier: 'Id',
             instrumentType: 'Type',

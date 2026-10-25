@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 87C86441-0B57-4357-B04D-C02986124023
+:END:
+#+title: Task: Add the three commodity permission codes to the seed
+#+description: Initial task for: Seed the commodity permissions the handler needs
+#+type: task
+#+level: s1
+#+filetags: :seed_the_commodity_permissions:sprint_29:v0:
+#+owner: marco
+#+branch: feature/seed-the-commodity-permissions
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FDD5FC75-1A53-4F6C-8FC5-1BACDC9E9290][Seed the commodity permissions the handler needs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The permission seed defines every code the commodity handler checks, the two codegen tests pass on main, and the tooling class of the local gate is green again for every branch.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:FDD5FC75-1A53-4F6C-8FC5-1BACDC9E9290][Seed the commodity permissions the handler needs]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- iam_permissions_populate.sql defines refdata::commodities:read, write and delete beside the other commodity codes.
+- test_every_handler_permission_is_seeded and test_a_code_missing_from_the_seeds_is_reported pass.
+- The capture The commodity handler permissions are not seeded is promoted or closed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -127,7 +127,7 @@ of the application join as their own stories under this heading.
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-|       |       |       |     |             |
+| [[id:FDD5FC75-1A53-4F6C-8FC5-1BACDC9E9290][Seed the commodity permissions the handler needs]] | BACKLOG | | | The commodity handler checks refdata::commodities read, write and delete, and the permission seed does not define them, so two codegen tests fail on main and redden the tooling gate. |
 
 * Achievements
 

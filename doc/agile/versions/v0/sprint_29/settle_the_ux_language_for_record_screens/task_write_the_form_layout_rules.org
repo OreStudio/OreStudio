@@ -8,7 +8,7 @@
 #+filetags: :settle_the_ux_language_for_record_screens:sprint_29:v0:
 #+owner: marco
 #+branch: feature/write-the-form-layout-rules
-#+pr:
+#+pr: 3756
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3756][#3756]] | [docs] Write the form layout rules |
 
 * Review
 

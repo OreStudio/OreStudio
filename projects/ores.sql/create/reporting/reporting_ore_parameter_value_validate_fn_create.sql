@@ -74,7 +74,15 @@ begin
                and v.valid_to = ores_utility_infinity_timestamp_fn())
           into v_ok;
     elsif v_kind = 'boolean' then
-        v_ok := lower(NEW.parameter_value) in ('true', 'false');
+        /*
+         * A boolean has two spellings in this tree. ORE's XML states it as Y or
+         * N and the projection stores what the document said, so a document
+         * that reads Y writes Y; the screens state true or false. Both are the
+         * same value. The check accepts either and stores it as it arrived,
+         * because normalising it would change the document an export writes
+         * back and break a roundtrip that is meant to be lossless.
+         */
+        v_ok := lower(NEW.parameter_value) in ('true', 'false', 'y', 'n');
     elsif v_kind = 'range' then
         begin
             select NEW.parameter_value::numeric >= coalesce(s.minimum, '-Infinity'::numeric)

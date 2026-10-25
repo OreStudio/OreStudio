@@ -8,7 +8,6 @@
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
 #+branch:
-#+pr: 3795
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -74,7 +73,6 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/3795][#3795]] | [synthetic] Prove one clock drives every feed |
 | [[https://github.com/OreStudio/OreStudio/pull/3794][#3794]] | [agile] Add the per-feed clock removal to the backlog |
 
 * Review

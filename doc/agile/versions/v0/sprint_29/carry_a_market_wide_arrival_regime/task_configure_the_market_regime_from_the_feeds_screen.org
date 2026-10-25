@@ -9,6 +9,7 @@
 #+owner: marco
 #+branch: feature/configure-the-market-regime-from-the-feeds-screen
 #+pr:
+#+pr: 3795
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -80,6 +81,10 @@ via its "Verifies task" field.
 |          |       |       |
 
 * PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3795][#3795]] | [synthetic] Prove one clock drives every feed |
 
 | PR | Title |
 |----+-------|

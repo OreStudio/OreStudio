@@ -16,8 +16,8 @@ provisioned Acme tenant that is five identical copies of the same 26 series:
 3,427,320 rows and 369.7 MB, where one copy for each source needs 685,464 rows.
 The usage recorder and the delivery meter key on (party, provider, datum,
 period) events, not on stored rows, so billing loses nothing when the copies
-go. The decision is to store one tick for each source, owned by the system
-tenant, and check the subscription at read time.
+go. The decision is to store one tick for each source, with no tenant and no
+party on the row, and check the subscription at read time.
 
 * Detail
 
@@ -65,22 +65,31 @@ would need metering the store, and the current rate cards charge delivery.
 Today a tick sits in the party's tenant and the ingest reads every tenant's
 routes to know whom to copy it for. The shared shape puts the ticks with the
 catalogue: market data is an observation about a source, not a tenant's row.
-The ingest then reads only the catalogue, and the read checks the party's
-subscription and the rights it holds before it returns a tick. That is a
-stronger boundary, not a weaker one: the store holds no tenant's data, and the
-entitlement check moves to the only place that has the session.
+The row carries a stream id derived from the provider code and the series URI,
+and neither a tenant nor a party, so no policy filters it. The ingest then
+reads only the catalogue, and the read checks the party's subscription and the
+rights it holds before it returns a tick. That is a stronger boundary, not a
+weaker one: the store holds no tenant's data, and the entitlement check moves to
+the only place that has the session.
 
 ** The decision
 
-Store one tick for each source, owned by the system tenant, and check the
-subscription at read time. The series metadata stays for each party, because
-the classification and the asset classes are the party's; only the points
-become shared.
+Store one tick for each source, with no tenant and no party on the row, and
+check the subscription at read time. The series metadata stays for each party,
+because the classification and the asset classes are the party's; only the
+points become shared.
+
+The history read returns raw values, so it requires the party's subscription to
+the provider of the series to hold display or non-display. A subscription with
+the derived right alone lets a party compute new values from the data and not
+read them, so it is refused, as is a party with no subscription. The coordinate
+dictionary is shared too, keyed by the stream and the coordinate, so every party
+of a stream agrees on the number that means each datum.
 
 ** The costs
 
 - The series key loses the party in the point store; the per-party series
-  points at the shared stream.
+  names the shared stream by the id derived from its provider and its series URI.
 - The history read gains a subscription and rights check. It runs for every
   read, so it must be one indexed lookup.
 - The ingest stops reading every tenant's routes, which removes the last

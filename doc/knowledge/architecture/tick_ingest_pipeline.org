@@ -56,13 +56,20 @@ what a feed owes the pipeline and what the pipeline owes the feed.
 8. *A consumer receives what it watches.* A consumer selects a class, a series or a
    datum on the broker. It does not receive every tick of its party and discard most.
 
-** Why the present path cannot meet them
+** Why the earlier path could not meet them
 
-[[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop]] handles each tick on
-one thread, in arrival order. For each route of the tick, it reads the series,
-inserts two observations, and publishes to JetStream. Each insert is a commit. The
-publish waits for an acknowledgement. The rule that the republish follows the stored
-row ties the live view to the speed of the database.
+The analysis below was written against the path before step 1.
+[[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop]] handled each tick on
+one thread, in arrival order. For each route of the tick, it read the series,
+inserted two observations, and published to JetStream. Each insert was a commit. The
+publish waited for an acknowledgement. The rule that the republish followed the stored
+row tied the live view to the speed of the database.
+
+Step 1 and the shared store replaced that path. The loop copies one row for each tick
+into an append-only hypertable, through the writer role, with no observation row and no
+wait for an acknowledgement. The row is shared by every party of its stream, and the
+history read checks the party's subscription before it returns a tick. See
+[[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared tick or one copy for each party]].
 
 The queue sits inside the NATS client. It has no age limit, and it serves the oldest
 tick first. When the loop falls behind, it spends its time on old ticks while newer
@@ -347,10 +354,11 @@ The lag of 70 minutes that started this work would have fired it within seconds.
   quote for a current one. A series with no tick at or before the date has no line in the file. A
   development environment that needs quotes for a past date gets them from a seed or a
   backfill, not from the ingest.
-- *One row for each party.* A tick is stored once for each route. The cost grows
-  with the number of parties that consume a source. It is an open question whether
-  the store should keep one row for each source and let parties read it through a
-  view.
+- *One row for each party.* A tick was stored once for each route, and the cost grew
+  with the number of parties that consumed a source. The store now keeps one row for each
+  tick of a source, on a stream shared by every party, and the history read checks the
+  party's subscription before it returns a tick. See
+  [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared tick or one copy for each party]].
 - *Indexes.* The table has seven indexes and a trigger that closes the previous
   current point. Each index costs a write. A measurement with a batch decides
   which of them the hot path needs.
@@ -358,10 +366,12 @@ The lag of 70 minutes that started this work would have fired it within seconds.
   =valid_from= and a =valid_to=, and a trigger closes the previous row of the same key.
   That serves curated and manual points that people correct. It does not serve a tick,
   which nobody corrects. The proposal gives ticks their own append-only hypertable. It
-  has no trigger and no =valid_to=. It has one index on the series and the time, and
-  it stores the series and the coordinate as identifiers, not the URI text in each
-  row. A view joins it with the observation table for a reader that wants both. The
-  step 0 prototype measures the gain before the choice is made.
+  has no trigger and no =valid_to=. It has one index on the stream, the coordinate and the
+  time, and it stores the stream and the coordinate as identifiers, not the URI text in
+  each row. The stream is an id derived from the provider code and the series URI, and the
+  coordinate is a number in a shared dictionary keyed by the stream. A view joins it with
+  the observation table for a reader that wants both. The step 0 prototype measures the
+  gain before the choice is made.
 - *The volume.* A row of the observation table takes 1,199 bytes with its indexes,
   as step 0 measured. An append-only row takes 162 bytes. Thirty thousand ticks each
   second reach about 276,000 rows each second with today's fan-out, which is about 24
@@ -376,8 +386,8 @@ The lag of 70 minutes that started this work would have fired it within seconds.
   =postgresql-18-timescaledb 2.30.1+dfsg=, which has the Apache license only.
   =compress_chunk= is refused there with "functionality not supported under the current
   apache license". The Timescale documentation also says that row-level security is not
-  supported on compressed chunks, and the tick table needs the policies. So the plan drops
-  chunks and does not compress them. The test did not try the policy jobs or =drop_chunks=
+  supported on compressed chunks. The tick table carried the policies when this was
+  written and carries none now. The plan still drops chunks and does not compress them. The test did not try the policy jobs or =drop_chunks=
   on the Apache build. The SQL of the repository skips a policy when =timescaledb.license=
   is not =timescale=, so a job that the service schedules drops old chunks with
   =drop_chunks=. That path needs a test first. A deployment that wants compressed history
@@ -385,12 +395,14 @@ The lag of 70 minutes that started this work would have fired it within seconds.
 - *One row for each source.* The largest factor that the design controls is the
   fan-out of 4.6 rows for each tick, and the second row doubles it again. A row for
   each source, with parties reading it through the routes, removes both factors.
-- *A batch belongs to one tenant.* The row-level security policy checks the tenant of
-  each row against the tenant of the connection, and the connection takes its tenant
-  when it is acquired. One transaction therefore holds the rows of one tenant. A lane
-  groups the rows of a cycle by tenant and writes one transaction for each. A lane
-  that serves many tenants writes smaller batches. This is one more reason to store a
-  row for each source and not for each party.
+- *A batch belongs to one tenant.* The observation table's row-level security policy
+  checks the tenant of each row against the tenant of the connection, and the connection
+  takes its tenant when it is acquired. One transaction therefore holds the rows of one
+  tenant, and a lane groups the rows of a cycle by tenant. The tick table carries no tenant
+  and no policy, so a batch of ticks is one transaction whatever the tenants of their
+  parties, and the series and the coordinates the loop writes for a party still belong to
+  that party's tenant. This is one more reason to store a row for each source and not for
+  each party.
 - *Two rows of one key never share a batch.* =current_timestamp= is the start of the
   transaction. The trigger closes only rows that began before it, so two rows with the
   same key in one batch would break the unique index. The lane keeps the last row of
@@ -886,14 +898,22 @@ shared.
 
 ** Tenant and party isolation of the tick table
 
-A series is not a shared source. It is one observation of an instrument, and the
-observation includes its provenance. The synthetic generator makes one ground truth for
-each tenant. A party binds EURUSD to one vendor, and another party binds it to a different
-vendor. The rate blending service will make a blended EURUSD for one party from several
-inputs. These are different series with different values and different owners. The
-series table agrees: each series has a =tenant_id= and a =party_id=, and its key is the
-tenant, the party and the URI. So a tick has an owner, and the unit of isolation is the
-series.
+A series is not a shared source. It is one catalogue entry of an instrument for one
+party, and its classification and asset classes are the party's. The synthetic generator
+makes one ground truth for each tenant. A party binds EURUSD to one vendor, and another
+party binds it to a different vendor. The rate blending service makes a blended EURUSD for
+one party from several inputs. These are different series with different owners. So the
+series table keeps =tenant_id= and =party_id=, and its key is the tenant, the party and the
+URI.
+
+The points are shared. A tick is an observation about a source, and the parties of a
+provider read the same values, so a copy for each party only multiplied the store by the
+number of parties. A tick belongs to a stream: the series of one provider, named by an id
+derived from the provider code and the series URI. The stream carries no tenant and no
+party, and the row carries neither. The history read resolves the party's series, checks the
+party's subscription to the provider, and only then reads the stream. That check replaces
+the party policy as the door to the ticks, and it is the only door: the table has no policy
+at all. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared tick or one copy for each party]].
 
 *** What the second pass found
 
@@ -902,35 +922,40 @@ applies to. The server answered "COPY FROM not supported with row-level security
 role was =ores_brave_hopper_test_ddl_user=, which has no =BYPASSRLS=. A later test showed
 that =COPY= works for a role that has =BYPASSRLS=, also when that role does not own the
 table. So the fast writer and the policy do not exclude each other. The rule is by role.
+The shared tick table carries no policy, so the rule no longer applies to it: a role with
+=INSERT= writes with =COPY= whatever its =BYPASSRLS=.
 
 *** The design
 
-- *One append-only hypertable for each retention class.* The columns are =tenant_id=,
-  =party_id=, =series_id=, =ts=, =coord= and =value=. It has no trigger, no =valid_to= and
-  one index on the series and the time. Retention drops whole chunks by time, so a class
-  with a different retention needs its own table. The number of tables follows the policy
-  table and does not grow with the tenants.
+- *One append-only hypertable for each retention class.* The columns are =stream_id=,
+  =source_id=, =ts=, =coord= and =value=. The table has no trigger, no =valid_to=, no
+  primary key and one index on the stream, the coordinate and the time. Retention drops
+  whole chunks by time, so a class with a different retention needs its own table. The
+  number of tables follows the policy table and does not grow with the tenants.
+- *A shared coordinate dictionary.* =ores_marketdata_tick_coords_tbl= holds
+  (stream_id, coord, oresmd_uri) and is keyed by the stream and the coordinate. The ingest
+  assigns a number the first time it sees a datum of a stream, and every party of the stream
+  reads the same numbers, so the coordinate order is one order. A unique index on (stream_id,
+  oresmd_uri) keeps one number for each datum.
 - *No compression.* The documentation of Timescale says that row-level security is not
-  supported on compressed chunks. A compressed chunk would either refuse the read or skip
-  the policy. Neither is acceptable, and the Apache build cannot test it. The table keeps
-  raw chunks until retention drops them. If compression is needed later, the fallbacks are
-  a table for each party, or a read layer that enforces the owner on compressed history.
-- *The two policies of the other tables.* A tenant policy keeps the rows of the tenant of
-  the session. A restrictive party policy keeps the rows of the visible parties. =FORCE ROW
-  LEVEL SECURITY= makes the policy apply to the owner too.
-- *A writer role with =BYPASSRLS= and =INSERT= only.* It does not own the table. It writes
-  with =COPY=. It has no =SELECT=. The ingest copies the tenant and the party from the
-  series that it resolved, never from the message. The ingest keeps a cache of series
-  already, so this costs no new lookup.
-- *Readers use the tenant-aware pool and no =BYPASSRLS=.* The marketdata service holds two
-  pools, one for the writer role and one for the readers. The writer pool never serves
-  a request that carries a tenant.
+  supported on compressed chunks. The table carries no policy now, but the Apache build
+  cannot test compression and no reader needs it. The table keeps raw chunks until retention
+  drops them.
+- *No row-level security on the ticks.* The rows belong to the system, not to a tenant or a
+  party. The history read checks the party's subscription for the provider of the series and
+  refuses a party with none, or with the derived right alone, because the read returns raw
+  values. The check is the only door to the table.
+- *A writer role with =INSERT= only.* It does not own the table. It writes with =COPY= into
+  the five columns. It has no =SELECT=. It needs no =BYPASSRLS=, because no policy applies.
+- *Readers use the service role.* The marketdata service reads the ticks and the dictionary
+  through the same grants it holds on every marketdata table. A reader has already passed
+  the subscription check before it names a stream.
 - *Hot reads skip the table.* A chart and the latest value come from the recent window
-  and the live subject. The subject has the tenant and the party. The policy guards the
-  reads of history only.
+  and the live subject. The subscription check guards the reads of history only.
 - *A derived series enters through the same door.* The blending service reads its inputs
   on the live path, in the context of the party. It emits ticks for the derived series of
-  the party into the same lane and the same writer.
+  the party into the same lane and the same writer. The derived series is shared like any
+  other, and a party whose only right is derived still cannot read its raw history.
 
 *** What was measured
 
@@ -1009,21 +1034,20 @@ Five findings follow.
 - *A staging table, then an insert from it.* It writes every row twice, and the bypass role
   makes it unnecessary.
 - *A multi-row =INSERT= with the policy.* It gives up =COPY=. It was not measured.
-- *One row for each source.* A tick belongs to a series, and the series belongs to a
-  party. A blended or vendor series exists only for its party, and a valuation must
-  reproduce the tick that the party observed. A route that only passes a series
-  through inside one tenant could read the source series through the route. That is an
-  optimisation to evaluate later, and it is not part of the base design.
+- *One row for each source.* This was set aside while the series was the unit of
+  isolation. It is now the design: a tick belongs to a stream shared by every party of its
+  provider, the series stays per party, and the history read checks the subscription. See
+  [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared tick or one copy for each party]].
 
 *** What stays untested
 
 - The provisioning of the writer role. The project creates its service roles with a
-  script, and none of them has =BYPASSRLS= except the DDL users. A new role needs a change
-  to that script in every environment.
+  script. The writer role now needs =INSERT= on the tick table and nothing else, so the
+  change is one grant in every environment, and no role needs =BYPASSRLS= for ticks.
 - =drop_chunks= as the retention job on the Apache build.
 - A read of one party or one tenant by its series list, at the size of a real deployment.
-- The cost of the policy in the repository code that reads through the tenant-aware pool,
-  which adds the client path to these figures.
+- The cost of the subscription check in the history read, which is one indexed lookup on
+  the subscriptions, and the cost of the stream derivation, both outside these figures.
 
 ** The risks, and what would change the design
 
@@ -1031,7 +1055,7 @@ Five findings follow.
 | Risk | What would show it | What changes if it is true |
 |------+--------------------+----------------------------|
 | PostgreSQL cannot sustain the batch rate. The target is about 280,000 rows each second with today's fan-out. Step 0 shows that the present table cannot, at 8,300 each second for each connection, and that an append-only table can, at 187,000. | The next pass of step 0, from the application. It writes batches of 5,000 rows into the hypertable with the notification trigger removed, and it times the rate for each batch size. | Move the history to a column store sooner. Cut the fan-out first: one row for each source, and no second row for each tick. |
-| The write for each party multiplies with the number of parties. | The count of routes for each source, against the row rate. | Keep one row for each source and let a party read through a view. |
+| The write for each party multiplies with the number of parties. | The count of routes for each source, against the row rate. | It did. The store keeps one row for each stream and the history read checks the party's subscription. |
 | One thread decodes every tick. | The busy share of the receive thread at 30,000 ticks each second. | Run several ingest instances, as the section on scale describes. |
 | One series is much hotter than the others. | The busy share of each lane. | Split the lane key below the series, and give up whole-series operations for that class. |
 | The volume of rows exceeds what the store holds. | The bytes for each row and the rows each day, measured in step 0. | Store bars only for the high-rate classes, and keep raw ticks for a short time. |
@@ -1108,9 +1132,10 @@ a burst of ticks at a chosen rate and times the drain.
   observation table side by side, and take the latest value of each datum. They need no view.
 - How long does the store keep raw ticks, and which classes keep bars only? The
   answer is a policy row for each class.
-- Who provisions the writer role with =BYPASSRLS=, and does the project accept a role that
-  skips the policy for writes? The section on tenant and party isolation gives the design
-  and the measurements.
+- Who provisions the writer role, and which role reads the shared table? The writer role has
+  =INSERT= only and needs no =BYPASSRLS=, because the tick table carries no policy. The
+  service role reads it through the grants every marketdata table gives it. The section on
+  tenant and party isolation gives the design.
 - Should the session functions of the policies change for every table? The section on tenant
   and party isolation shows a seven-fold cost on an indexed read.
 - Which edition of TimescaleDB does the deployment run? The Community edition schedules

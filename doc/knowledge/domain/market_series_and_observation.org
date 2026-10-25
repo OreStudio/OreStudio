@@ -16,7 +16,8 @@ a quote series: one internal item from one provider for one party. A
 =market_observation= records one value of that series that a person or a process
 states. The series key is (item, provider, party). It holds no source, so a party
 can change its source and keep one series. A live tick is not an observation. It lives
-in the tick table, and its own read returns it.
+in the shared tick table, on a stream that every party of the provider reads, and its
+own read returns it after checking the party's subscription.
 
 * Detail
 
@@ -41,6 +42,21 @@ for the table. The observation table holds the points that people and processes 
 ORE import, a hand-keyed point and a derived point. The list of observations returns
 observations and never a tick. A client that wants ticks calls the history read. See
 [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]].
+
+** The tick store is shared
+
+A tick is an observation about a source, not a row of a party. The store holds one row for
+each tick of a source, on a stream named by an id derived from the provider code and the
+series URI, and a party's series names the same stream. The row carries the stream, the
+source, the time, the coordinate and the value, and no tenant or party. So the store does
+not grow with the number of parties, and two parties of one provider read the same row.
+
+The history read is therefore the only door to the ticks. It resolves the party's series,
+checks that the party holds a subscription to the provider with display or non-display, and
+refuses a party with none or with the derived right alone. See
+[[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared tick or one copy for each party]].
+The coordinate dictionary is shared for the same reason: every party of a stream must agree
+on which number means which datum.
 
 ** Why the provider is in the key
 
@@ -90,6 +106,7 @@ per-observation lineage row in [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineag
 - [[id:78B65BF0-C003-48F6-84E3-615A36D39266][Lineage and provenance]] — completes: the extra row of a derived observation.
 - [[id:CE99CD2A-B31F-4306-865F-CBC519FBC1B8][The oresmd datum identity]] — completes: where the stored URIs come from.
 - [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]] — completes: the writer of the tick table.
+- [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared tick or one copy for each party]] — answers: why the tick store holds no tenant and no party, and why the read checks the subscription.
 - [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]] — completes: the one read of ticks.
 - [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]] — completes: the step that gives the item.
 - [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch changes one route and nothing else]] — answers: why a switch does not split a series.

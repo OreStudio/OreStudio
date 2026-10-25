@@ -7,41 +7,60 @@
 #+level: s1
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/show-every-partys-configurations
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A person who works in several parties sees every configuration of every
+party their account works in, on Reporting -> Product pricing and on
+Reporting -> Engine settings. The party filter offers those parties, and
+narrows the list to one of them. A configuration of a party the account does
+not work in is not read.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
+| Now          | Root cause found and fixed; the list shows every account party. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Re-run the product pricing scenario, then close. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
 
--
+- The party filter on both screens offers the parties =/api/session= answers
+  as =availableParties=, and no other party.
+- "All parties" shows the configurations of every one of those parties.
+- Choosing one party shows only that party's configurations.
+- A configuration whose party the account does not work in is absent.
+- A session with no actor (a service context) reads what it read before.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The party isolation policy on the configuration tables admits rows whose
+=party_id= is in =app.visible_party_ids=, which the login mints as the
+selected party and its descendants. An account that works in several parties
+therefore reads only the acting party's rows, whatever the filter says.
+
+- =ores_iam_actor_party_ids_fn()= answers the parties the session's account
+  works in, read from =ores_iam_account_parties_tbl= for the session's tenant
+  and actor, and NULL where there is no actor.
+- A new codegen flag, =rls_account_party_isolation=, adds that set to the
+  party isolation policy of the tables the two screens read.
+- The tenant policy still applies, and the actor's set is the account's own
+  parties, so nothing widens beyond them, and trading and other
+  tree-scoped business data keep the subtree rule.
 
 * Measurements
 
@@ -55,9 +74,58 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Pricing configurations in the Acme tenant | 23 | =select count(*) from ores_reporting_configurations_tbl where valid_to = ores_utility_infinity_timestamp_fn() and configuration_type_code = 'pricing_engines'= | eff52eea69 |
+| Pricing configurations the HK session reads | 23 of 23 | =GET /api/reporting/pricing-engines= as =tenant_admin= in HK | eff52eea69 |
+| Engine settings the HK session reads | 7 of 7 | =GET /api/reporting/engine-settings= as =tenant_admin= in HK | eff52eea69 |
+| BFF tests | 962 pass | =npm test --workspace @ores/bff= | eff52eea69 |
+| Web tests | 2028 pass | =npm test --workspace @ores/web= | eff52eea69 |
+| Codegen tests | 1622 pass | =python -m pytest tests= in =projects/ores.codegen= | eff52eea69 |
 
 * Notes
+
+** Root cause, proved on the running system
+
+The list route reads every row its table admits; the party filter is applied
+client side. The scope comes from the RESTRICTIVE party isolation policy,
+whose set is =app.visible_party_ids=, minted at login and at party selection
+as =ores_refdata_visible_party_ids_fn(tenant, party)= -- the selected party
+and its descendants. Choosing ACME Corporation HK Ltd therefore admits HK
+alone, even though the account works in five parties.
+
+#+begin_src sql
+set role ores_solid_dirac_reporting_service;
+select set_config('app.current_tenant_id','<acme tenant>',false),
+       set_config('app.current_party_id','<HK>',false),
+       set_config('app.visible_party_ids','{<HK>}',false),
+       set_config('app.current_actor','tenant_admin',false);
+select party_id, count(*) from ores_reporting_configurations_tbl
+ where valid_to = ores_utility_infinity_timestamp_fn()
+   and configuration_type_code = 'pricing_engines'
+ group by party_id;
+-- before the fix: HK 8
+-- after the fix : Plc 2, HK 8, UK 9, US 6
+#+end_src
+
+Through the API, as =tenant_admin= in HK, =GET /api/reporting/pricing-engines=
+answered 6 rows, all HK; =GET /api/reporting/engine-settings= answered 2
+rows, all HK. After the fix the first answers 23 rows across the four
+operating parties and the second answers 7.
+
+** Proved live in the browser
+
+Signed in as =tenant_admin=, chose ACME Corporation HK Ltd, and drove both
+lists with Playwright. A party the account does not work in, =ZZ Unlisted
+Probe Ltd=, was created under Acme Corporation Plc with a pricing
+configuration of its own. The filter offered the account's five parties and
+not that one, "All parties" showed 23 configurations across the four
+operating parties and did not show the probe, UK plc narrowed to its 9, and
+engine settings narrowed from 7 to US Inc's 2.
+
+** Left open**
+
+The report runs a definition owns stay party-scoped, so the Reports screen
+shows another party's definitions with no latest run. It needs its own
+decision on the run tables, which this task did not take.
 
 * Test Scenarios
 
@@ -68,7 +136,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:804EEE6C-772B-4BAA-8378-A6747F16E0B6][Verify the Product pricing screen]] | PENDING | Step 2 recorded the failure; re-run it. |
 
 * PRs
 

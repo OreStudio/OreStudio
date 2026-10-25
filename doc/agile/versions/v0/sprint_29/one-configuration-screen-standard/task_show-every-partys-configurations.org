@@ -30,11 +30,11 @@ not work in is not read.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Root cause found and fixed; the list shows every account party. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Re-run the product pricing scenario, then close. |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance

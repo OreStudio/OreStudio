@@ -71,6 +71,11 @@
   tbody tr[aria-selected="true"] { background: #1d2433; }
   td.msg { font-family: var(--mono); font-size: 12.5px; min-width: 320px; }
   .grid-wrap { overflow-x: auto; }
+  tbody tr.group { background: #12151b; cursor: default; }
+  tbody tr.group:hover { background: #12151b; }
+  tbody tr.group td { padding-top: 14px; border-bottom: 1px solid var(--line); }
+  tbody tr.group .count { color: var(--muted); }
+  tbody tr.member td:first-child { padding-left: 24px; }
   body[data-view="b"] .layout { grid-template-columns: 1fr; }
   body[data-view="b"] #detail { display: none; }
   .inline { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
@@ -222,20 +227,34 @@ version ${t.version} · as of ${c.asOf}</div>
 
   function render() {
     const items = visible();
-    const rows = rowsOf(items);
-    const body = rows.length === 0 ?
+    const body = items.length === 0 ?
       '<tr><td colspan="7" class="empty">No errors match this filter.</td></tr>' :
-      rows.map(({ c, t }) => `
-        <tr aria-selected="${c.key === selected.cause && (t ? t.id === selected.trade : !selected.trade)}"
-            onclick="select('${c.key}', ${t ? `'${t.id}'` : 'null'})">
-          <td><span class="badge b-${c.severity === 'error' ? 'error' : 'warn'}">${c.severity}</span></td>
-          <td>${c.scope}</td>
-          <td class="mono">${c.subject || '—'}</td>
-          <td class="mono">${t ? t.id : '—'}</td>
-          <td class="mono muted">${t ? `v${t.version} @ ${c.asOf}` : '—'}</td>
-          <td class="msg">${c.message}</td>
-          <td class="mono muted">${c.time}</td>
-        </tr>`).join('');
+      items.map((c) => {
+        const header = `
+          <tr class="group">
+            <td colspan="7">
+              <span class="mono">${c.mandatoryId || c.message}</span>
+              <span class="count">${c.subject ? ' · ' + c.subject : ''}${c.asOf ? ' · ' + c.asOf : ''}
+                · ${c.trades.length} trade(s)</span>
+            </td>
+          </tr>`;
+        const rows = c.trades.length === 0 ? [`
+          <tr class="member" aria-selected="${c.key === selected.cause && !selected.trade}"
+              onclick="select('${c.key}', null)">
+            <td><span class="badge b-${c.severity === 'error' ? 'error' : 'warn'}">${c.severity}</span></td>
+            <td>${c.scope}</td><td class="mono">${c.subject || '—'}</td>
+            <td class="mono muted">—</td><td class="mono muted">—</td>
+            <td class="msg">${c.message}</td><td class="mono muted">${c.time}</td>
+          </tr>`] : c.trades.map((t) => `
+          <tr class="member" aria-selected="${c.key === selected.cause && t.id === selected.trade}"
+              onclick="select('${c.key}', '${t.id}')">
+            <td><span class="badge b-${c.severity === 'error' ? 'error' : 'warn'}">${c.severity}</span></td>
+            <td>${c.scope}</td><td class="mono">${t.type}</td>
+            <td class="mono">${t.id}</td><td class="mono muted">v${t.version} @ ${c.asOf}</td>
+            <td class="msg">${c.message}</td><td class="mono muted">${c.time}</td>
+          </tr>`);
+        return header + rows.join('');
+      }).join('');
 
     document.getElementById('causes').innerHTML = `<div class="grid-wrap"><table>
       <thead><tr><th>Severity</th><th>Scope</th><th>Subject</th><th>Trade</th>

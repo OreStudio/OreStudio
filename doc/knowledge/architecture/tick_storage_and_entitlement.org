@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: D71F9446-C62E-48A6-A87B-136EF598A59E
+:END:
+#+title: One shared tick or one copy for each party
+#+description: The tick store holds one copy for each party today. This page measures that copy on a provisioned tenant, reads what the usage recorder and the delivery meter need from it, and decides the shape of the store.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:ticks:storage:entitlement:decision:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+* Summary
+
+The ingest stores one tick for each party routed to a source. On the
+provisioned Acme tenant that is five identical copies of the same 26 series:
+3,427,320 rows and 369.7 MB, where one copy for each source needs 685,464 rows.
+The usage recorder and the delivery meter key on (party, provider, datum,
+period) events, not on stored rows, so billing loses nothing when the copies
+go. The decision is to store one tick for each source, owned by the system
+tenant, and check the subscription at read time.
+
+* Detail
+
+** What the store holds today
+
+Every routed party gets its own row for every tick, in a series keyed by item,
+provider and party. The measurement below comes from the Acme tenant the
+provisioning recipe creates, with five parties routed to one simulated
+Bloomberg source.
+
+| What | Value | Command |
+|------+-------+---------|
+| Tick rows of the tenant | 3,427,320 | =select count(*) from ores_marketdata_ticks_tbl k join ores_iam_tenants_tbl t on t.id = k.tenant_id where t.code = 'acme_corporation'= |
+| Series of the tenant | 130 | =count(distinct series_id)=, same join |
+| Parties routed to the source | 5 | =count(distinct party_id)=, same join |
+| Rows for each party | 685,464 | =count(*) group by party_id= |
+| Series for each party | 26 | =count(distinct series_id) group by party_id= |
+| Store size | 369.7 MB | =hypertable_size('ores_marketdata_ticks_tbl')= |
+| Bytes for each row | about 108 | the size divided by the rows |
+| Rows if stored once for each source | 685,464 | the rows of one party |
+| Rows the copies add | 2,742,856 (80%) | three quarters of the store |
+
+Every party's copy is identical: the same 26 series and the same 685,464
+rows. The store grows with the number of parties, and every extra party costs
+another identical copy.
+
+** What the usage recorder and the delivery meter need
+
+Neither reads the tick store.
+
+- The delivery meter counts, in memory, one delivery for each (tenant, party,
+  provider, source, datum, period) the ingest hands to a party stream. It
+  writes =ores_marketdata_delivery_counts_tbl= (215 rows on the measured
+  database). Its key carries the party, so it is already per party, and it
+  does not name a series or a tick row.
+- The usage recorder writes =subscription_intervals= (12 rows) and
+  =demand_intervals= (2 rows), from the subscription and the demand, not from
+  the store.
+
+So the per-party copy is not a billing fact. Only a future charge for reads
+would need metering the store, and the current rate cards charge delivery.
+
+** The tenant boundary
+
+Today a tick sits in the party's tenant and the ingest reads every tenant's
+routes to know whom to copy it for. The shared shape puts the ticks with the
+catalogue: market data is an observation about a source, not a tenant's row.
+The ingest then reads only the catalogue, and the read checks the party's
+subscription and the rights it holds before it returns a tick. That is a
+stronger boundary, not a weaker one: the store holds no tenant's data, and the
+entitlement check moves to the only place that has the session.
+
+** The decision
+
+Store one tick for each source, owned by the system tenant, and check the
+subscription at read time. The series metadata stays for each party, because
+the classification and the asset classes are the party's; only the points
+become shared.
+
+** The costs
+
+- The series key loses the party in the point store; the per-party series
+  points at the shared stream.
+- The history read gains a subscription and rights check. It runs for every
+  read, so it must be one indexed lookup.
+- The ingest stops reading every tenant's routes, which removes the last
+  cross-tenant read from the loop.
+- There is no migration: the database is recreated.
+
+** What follows
+
+1. Store one tick for each source and point the per-party series at it.
+2. Check the subscription and its rights in the history read.
+3. Remove the routes read from the ingest.
+4. Update the ingest loop and quote series pages to the decided shape.
+
+* Patterns used
+
+-
+
+* See also
+
+- [[id:7D1DE23F-AA14-44AB-81D5-9961EF02533C][Market data ticks because ownership, demand and a smoke check agree]]
+- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]]
+- [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]]

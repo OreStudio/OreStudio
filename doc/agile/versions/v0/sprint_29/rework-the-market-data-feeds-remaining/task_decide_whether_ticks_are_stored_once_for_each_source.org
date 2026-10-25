@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decide-whether-ticks-are-stored-once-for-each-source
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A decision page weighs the two shapes on storage, billing, entitlement and the t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -41,9 +41,14 @@ A decision page weighs the two shapes on storage, billing, entitlement and the t
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Measure the tick rows and the store size on the provisioned Acme tenant,
+   and the rows each copy adds.
+2. Read the usage recorder and the delivery meter, and say what each needs
+   from the tick store.
+3. Weigh the two shapes on storage, billing, entitlement and the tenant
+   boundary.
+4. Record the decision in the knowledge page and in the story, and list the
+   tasks it creates.
 
 * Measurements
 
@@ -85,3 +90,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Decided: store one tick for each source, owned by the system tenant, and
+check the subscription at read time. The page is
+[[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared tick or one copy for each party]].
+
+On the provisioned Acme tenant the per-party copy is five identical copies of
+26 series: 3,427,320 rows and 369.7 MB, where one copy for each source is
+685,464 rows. The copies add 80% of the store, and every new routed party adds
+another identical copy.
+
+Billing does not need the copies. The delivery meter counts deliveries by
+(tenant, party, provider, source, datum, period) in memory and writes
+=ores_marketdata_delivery_counts_tbl= (215 rows); the usage recorder writes
+=subscription_intervals= (12 rows) and =demand_intervals= (2 rows). Neither
+names a series or a tick row.
+
+The shared shape strengthens the tenant boundary: the store holds no tenant's
+data, the ingest stops reading every tenant's routes, and the read checks the
+subscription and its rights. The costs are the series key losing the party in
+the point store, an indexed subscription check on every history read, and the
+ingest losing its routes read. There is no migration: the database is
+recreated.
+
+What follows: store one tick for each source and point the per-party series at
+it; check the subscription in the history read; remove the routes read from
+the ingest; update the ingest loop and quote series pages.

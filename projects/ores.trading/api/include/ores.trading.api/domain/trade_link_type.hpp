@@ -80,7 +80,7 @@ struct trade_link_type final {
      * @brief True when the link carries an economic effect, which makes it a trade event that is
      * confirmed and settled. False when it is an annotation that changes no term.
      */
-    bool has_economic_effect;
+    bool has_economic_effect = false;
 
     /**
      * @brief Username of the person who last modified this trade link type.

@@ -48,7 +48,7 @@ struct composite_leg_entity {
     std::string party_id;
     std::string trade_id;
     std::string trade_activity_id;
-    int leg_sequence = 1;
+    int leg_sequence = 0;
     std::string constituent_trade_id;
     std::string modified_by;
     std::string performed_by;

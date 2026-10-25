@@ -80,7 +80,7 @@ struct structure_member final {
     /**
      * @brief The leg's ordinal within its role, counting from one.
      */
-    int sequence_number;
+    int sequence_number = 0;
 
     /**
      * @brief Username of the person who last modified this structure member.

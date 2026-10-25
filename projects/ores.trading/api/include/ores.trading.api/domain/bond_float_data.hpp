@@ -45,7 +45,7 @@ struct bond_float_data {
     /**
      * @brief The number the document states.
      */
-    ores::utility::decimal::decimal value;
+    ores::utility::decimal::decimal value = {};
 
     /**
      * @brief The date the number applies from, when the document states one.

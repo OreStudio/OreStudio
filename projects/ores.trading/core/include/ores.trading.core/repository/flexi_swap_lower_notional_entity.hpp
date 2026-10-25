@@ -47,7 +47,7 @@ struct flexi_swap_lower_notional_entity {
     std::string tenant_id;
     int version = 0;
     std::string trade_activity_id;
-    int bound_number;
+    int bound_number = 0;
     std::optional<std::string> currency;
     std::optional<std::string> start_date;
     std::string notional;

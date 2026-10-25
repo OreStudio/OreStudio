@@ -209,7 +209,7 @@ struct instrument_option final {
      * @brief True when the document stated an exercise block, whether or not the block carried a
      * price.
      */
-    bool has_exercise_data;
+    bool has_exercise_data = false;
 
     /**
      * @brief Date the exercise block names.
@@ -227,7 +227,7 @@ struct instrument_option final {
     /**
      * @brief True when the document stated a payment-dates block.
      */
-    bool has_payment_data;
+    bool has_payment_data = false;
 
     /**
      * @brief Number of days the payment dates are derived forward by.
@@ -252,7 +252,7 @@ struct instrument_option final {
     /**
      * @brief True when the document stated a settlement block.
      */
-    bool has_settlement_data;
+    bool has_settlement_data = false;
 
     /**
      * @brief Currency the settlement block pays in.

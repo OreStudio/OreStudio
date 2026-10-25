@@ -47,7 +47,7 @@ struct structure_member_entity {
     int version = 0;
     std::string structure_id;
     std::string role;
-    int sequence_number;
+    int sequence_number = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

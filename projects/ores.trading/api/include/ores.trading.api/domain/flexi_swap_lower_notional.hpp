@@ -83,7 +83,7 @@ struct flexi_swap_lower_notional final {
      * Rows that share a bound number share a block, so export writes them back under one
      * LowerNotionalBounds element.
      */
-    int bound_number;
+    int bound_number = 0;
 
     /**
      * @brief Currency the lower bound block states, when the document states one.

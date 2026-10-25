@@ -48,7 +48,7 @@ struct trade_link_type_entity {
     std::optional<std::string> description;
     std::string from_role;
     std::string to_role;
-    bool has_economic_effect;
+    bool has_economic_effect = false;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

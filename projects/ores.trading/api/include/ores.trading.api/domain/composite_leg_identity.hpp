@@ -44,12 +44,12 @@ struct composite_leg_identity {
     /**
      * @brief Version number for optimistic locking and change tracking.
      */
-    int version;
+    int version = 0;
 
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    utility::uuid::tenant_id tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief UUID uniquely identifying this leg row.
@@ -75,7 +75,7 @@ instrument, so it is the parent key rather than a separate instrument key.
     /**
      * @brief 1-based ordinal of this leg within the parent instrument's basket.
      */
-    int leg_sequence;
+    int leg_sequence = 1;
 
     /**
      * @brief Value equality.

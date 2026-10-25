@@ -39,7 +39,7 @@ struct bond_option_payment_rules {
     /**
      * @brief How long after each period end the payment falls.
      */
-    std::uint64_t lag;
+    std::uint64_t lag = 0;
 
     /**
      * @brief Business day calendar the payment dates are adjusted against.

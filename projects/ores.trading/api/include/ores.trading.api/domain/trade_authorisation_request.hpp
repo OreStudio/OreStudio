@@ -70,7 +70,7 @@ struct trade_authorisation_request final {
     /**
      * @brief The version of the trade the request covers.
      */
-    int trade_version;
+    int trade_version = 0;
 
     /**
      * @brief Username of the person who last modified this trade authorisation request.

@@ -73,13 +73,13 @@ struct structure_template_role final {
     /**
      * @brief The fewest legs this role may hold, counting from zero.
      */
-    int min_legs;
+    int min_legs = 0;
 
     /**
      * @brief The most legs this role may hold. Zero means the role states no upper bound, which is
      * what a dynamically typed product needs.
      */
-    int max_legs;
+    int max_legs = 0;
 
     /**
      * @brief What the role is for, when the name alone does not say.

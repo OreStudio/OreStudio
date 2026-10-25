@@ -76,7 +76,7 @@ struct trade_type final {
      *
      * Used by FX and Equity families to reveal an additional options panel.
      */
-    bool has_options;
+    bool has_options = false;
 
     /**
      * @brief True when this trade type requires the family's extension sub-form.
@@ -84,7 +84,7 @@ struct trade_type final {
      * Used by Swap, Bond, Credit, Equity, and Commodity families to reveal additional extension
      * fields.
      */
-    bool has_extension;
+    bool has_extension = false;
 
     /**
      * @brief Username of the person who last modified this trade type.

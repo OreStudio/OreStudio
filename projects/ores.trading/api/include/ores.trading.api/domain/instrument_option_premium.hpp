@@ -105,7 +105,7 @@ struct instrument_option_premium final {
     /**
      * @brief True when the premium states a settlement block.
      */
-    bool has_settlement;
+    bool has_settlement = false;
 
     /**
      * @brief Currency the premium's settlement block pays in.

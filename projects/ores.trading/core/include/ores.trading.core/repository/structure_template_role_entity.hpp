@@ -46,8 +46,8 @@ struct structure_template_role_entity {
     sqlgen::PrimaryKey<std::string> role;
     std::string tenant_id;
     int version = 0;
-    int min_legs;
-    int max_legs;
+    int min_legs = 0;
+    int max_legs = 0;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

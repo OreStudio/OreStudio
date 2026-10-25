@@ -49,7 +49,7 @@ struct bond_formula_based_leg_data {
     /**
      * @brief How many days before the period end the formula fixes.
      */
-    std::int64_t fixing_days;
+    std::int64_t fixing_days = {};
 
     /**
      * @brief The calendar that resolves the fixing dates, when the document states one.

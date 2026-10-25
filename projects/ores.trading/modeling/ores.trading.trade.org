@@ -179,7 +179,7 @@ Which system first wrote the trade down: =ux=, =api=, =ore_import= or
 economic digest: the same trade imported twice is one trade.
 
 #+begin_src cpp :name generator
-std::string("api")
+ores::trading::domain::origin::api
 #+end_src
 
 ** origin_reference

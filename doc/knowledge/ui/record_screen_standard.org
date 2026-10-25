@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :web:ux:standards:
 #+created: 2026-10-05
-#+updated: 2026-10-10
+#+updated: 2026-10-25
 
 * Summary
 
@@ -139,8 +139,9 @@ one path segment, as the pair code =EUR/USD= is.
 
 *** Header
 
-- The breadcrumb (=Crumbs=), then the plural as the title, in sentence case
-  (=PageHeader=).
+- The breadcrumb (=Crumbs=), whose shape is the
+  [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] page's, then the
+  plural as the title, in sentence case (=PageHeader=).
 - One sentence that says what the records are.
 - At the right, /Refresh/, then /Workflows/, then /Add/. Add is the primary
   button and is drawn only for a person who may write. Workflows is a menu of the
@@ -204,8 +205,9 @@ repeats.
   a cap, so it keeps the rule in
   [[id:92F755EA-5FA9-48DF-82F2-FF3E8F2236C7][Lists are always paged]].
 - A new search, a new filter, a new order or a new page size returns to the
-  first page. After a write the list returns to the first page, because the
-  changed record may have moved.
+  first page. A write reloads nothing; it turns Refresh gold. The reload that
+  follows a write returns to the first page, because the changed record may
+  have moved.
 - The page, page size, search and order are held in the address, so a link and
   the browser's back button restore the list.
 
@@ -223,10 +225,14 @@ repeats.
 *** Recency
 
 When a change notification says a record of this kind changed, the list marks
-Refresh as stale. After a reload, rows whose =recorded_at= is newer than the
-previous load are marked for three seconds, so a person sees what changed. The
-first load marks nothing. A person can turn the mark off. The notifications
-come from [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]].
+Refresh as stale. After a reload, a row that was not on the page before, or
+whose content is not what it was, gets a gold left edge and pulses three times,
+and the mark goes after four seconds. The comparison is with the same page read
+before and uses no clock, so the first load marks nothing and moving to another
+page marks nothing. There is no control to turn the mark off (decided
+2026-10-25; the rule is the Entity screen specification's Rows and entries that
+changed). The notifications come from
+[[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]].
 
 ** The record page
 
@@ -252,6 +258,11 @@ come from [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]].
 - The actions at the right, in this order: the kind's own actions (such as
   /Derive a calendar/), then /Edit/, then /Delete/. Each is drawn only for a
   person who may take it, and only when the record allows it.
+- Edit stands on the thing it changes, and the version stands beside the thing
+  it versions. A record of one kind is one card, so both stand in its header. An
+  entity is a card per record, so both stand on each card, as the
+  [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] draws
+  them (decided 2026-10-25).
 
 *** Tabs
 
@@ -338,8 +349,10 @@ The form is drawn from the field table. One control per field kind:
 
 *** Amend
 
-- /Edit/ opens the record dialog with the current values. Its title is
-  "Edit <key>" and its button is /Save/.
+- /Edit/ opens the record dialog with the current values. Its title is Edit
+  followed by the title of the page, which is the display field, so the dialog
+  and the page name the record the same way; a card's dialog is Edit followed
+  by the card's title (decided 2026-10-25). Its button is /Save/.
 - The person picks a change reason from the server's reasons for an amendment
   (=useReason('amend')=), and writes a commentary when the reason needs one.
 - The reasons follow the change. When a field changed, =common.non_material_update=
@@ -504,7 +517,7 @@ and no icon carries two ideas.
 
 | What happened | What the screen says |
 |---------------+----------------------|
-| A write succeeded | The dialog closes and the page shows the new values |
+| A write succeeded | The dialog closes. The page does not reload: the write's own change event turns Refresh gold, and the person presses it to see the new values (decided 2026-10-25; see the Entity screen specification, Refresh) |
 | A field is wrong | The message under the field, and the list of fields still to fill in |
 | The server refused | The server's own words, in the dialog, which stays open |
 | The record changed since it was read | That it changed, and an offer to reload |
@@ -548,8 +561,9 @@ message.
 | Interface words | Sentence case | "Calendar type" |
 
 The verbs are Add, Edit, Save, Delete, Remove (for a link only), Revert,
-Refresh and Cancel. A kind's own action is a verb and its object, such as
-/Derive a calendar/ or /Rebuild business days/.
+Refresh, Cancel and Propose. This is the one list; the Entity screen
+specification points here. A kind's own action is a verb and its object, such
+as /Derive a calendar/ or /Rebuild business days/.
 
 ** Exceptions
 
@@ -602,7 +616,7 @@ component carries it today.
 | Icons | =Icon= in =ui/Icon.tsx=, the =icon= of =Button= | Exists for the actions in the icon table |
 | Last-changed line | =LastChanged=, drawn by =RecordDetails= | Exists |
 | Timestamps | =RelativeTime= in =ui/Time.tsx= | Exists |
-| Recency | (none) | Missing; needs the change notification consumer |
+| Recency | =useChangedRows= in =refdata/changedRows.ts= | Exists |
 | Permissions | =useRecordPermissions= | Exists |
 | Access mark | =AccessMark= in =ui/AccessMark.tsx=, drawn by =RecordHeader= | Exists |
 | Workflows of a kind | =WorkflowMenu= in =shell/WorkflowMenu.tsx= | Exists on Parties |

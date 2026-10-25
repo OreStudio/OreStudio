@@ -102,4 +102,23 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| BFF suite | 962 passed | =npx vitest run= in packages/bff | 37d0b8710e |
+| Web typecheck | clean | =npx tsc --build= in packages/web | 37d0b8710e |
+| Synthetic suite | 145 passed | =npx vitest run src/marketdata/synthetic= | 37d0b8710e |
+| Process tab files | 37 passed | =npx vitest run fxFeeds.test.tsx irFeeds.test.tsx= | 37d0b8710e |
+| Full web suite | 2008 of 2009 | =npx vitest run= in packages/web | 37d0b8710e |
+| Old run names | none remain | grep for the six deleted names in web and BFF src | 37d0b8710e |
+
+The one full-suite failure is =pricingEngines/screens.test.tsx=, which fails
+the same way with these changes stashed.
+
+Open. The live check waits on the schema, which bearings reports out of sync.
+=should_run= and =state=started|stopped= still mean demand and carry the old
+words; they are service wire fields, so the rename needs a service change. The
+provider a feed page reads is derived on the read from its collection.
+
 * Result

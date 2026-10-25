@@ -18,6 +18,7 @@ environments. New recipes go in this folder; edit this inventory to add a link.
 - [[id:B7726C15-7A7B-4FC6-A0E2-48A6EE64216F][How do I find the log files for an environment?]]
 - [[id:B3685CBB-277D-4A17-972B-1055D91C504C][How do I open the web as an Acme user?]]
 - [[id:D8BD9068-113A-4324-894C-06D74D34813E][How do I run the browser harness against the environment?]]
+- [[id:BB919630-E0C1-42A6-965D-109EBE52227A][How do I sign off a screen?]]
 
 * Testing
 

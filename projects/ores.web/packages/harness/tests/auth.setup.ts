@@ -19,9 +19,33 @@
  *
  */
 
-import { test as setup } from '@playwright/test';
-import { TENANT_ADMIN } from '../src/acme.js';
+import { expect, test as setup } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { PASSWORD, TENANT_ADMIN, TENANT_HOSTNAME } from '../src/acme.js';
 import { ADMIN_STATE, signIn } from '../src/signIn.js';
+
+/** The shell script that provisions Acme, and so holds the facts acme.ts copies. */
+const PROVISIONING = resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    '../../../../ores.shell/scripts/library/provisioning',
+    'how_do_i_provision_the_system_with_acme_corporation_holding_group.ores',
+);
+
+/**
+ * A password or hostname that drifts from the provisioning script would fail
+ * every check as a sign-in error; this names the drift instead.
+ */
+setup('the Acme facts match the provisioning script', async () => {
+    const script = readFileSync(PROVISIONING, 'utf8');
+    expect(script, `${PROVISIONING} sets the tenant administrator password`).toContain(
+        `--tenant-admin-password ${PASSWORD}`,
+    );
+    expect(script, `${PROVISIONING} names the tenant hostname`).toContain(
+        `--tenant-hostname ${TENANT_HOSTNAME}`,
+    );
+});
 
 /** Signs in once as the tenant administrator; every check reuses the session. */
 setup('sign in as the tenant administrator', async ({ page }) => {

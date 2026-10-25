@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 6B18F7DE-2493-4943-B2B3-AABA993EFB6A
+:END:
+#+title: A seeded reader is editable on currencies
+#+description: adrian.vance, whom the harness calls a reader, sees Add, Edit and Delete on currencies with the mark Editable.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:iam:harness:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+adrian.vance is editable on currencies, where the harness calls this person a reader. The sign off walk of 2026-10-25 signed in as adrian.vance@acme_corporation, a seeded member of the London office, and the currencies list drew Add currency, the record page drew Edit and Delete and the access mark read Editable. packages/harness/src/acme.ts documents ADRIAN_VANCE as a member who reads reference data and writes none, and the harness has no check of a reader's screen yet. Either the seeded role grants more than the harness expects or the comment is wrong; decide which, and then the harness can assert RS-FEEDBACK-01 and RS-LIST-03 as a reader.
+
+* Why
+
+RS-FEEDBACK-01 says an action the person may not take is not drawn, and
+RS-LIST-03 says Add shows only for a writer. The harness can only assert them
+with a signed-in reader, and the one it names is not one. Until this is
+decided every sign off sheet leaves those lines Not checked.
+
+* References
+
+- =projects/ores.web/packages/harness/src/acme.ts= — the person and the claim.
+- [[id:BB919630-E0C1-42A6-965D-109EBE52227A][How do I sign off a screen?]] — the walk that found it.
+
+* See also
+
+- [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] — the two lines it blocks.

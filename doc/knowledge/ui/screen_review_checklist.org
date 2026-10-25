@@ -17,7 +17,9 @@ section that state it. The list adds no rule. If a line and its source differ,
 the source is right and this page is wrong.
 
 Mark each line /Meets/, /Gap/ or /N/A/. Write a gap in the story or task that
-owns the screen, with the line it breaks. The two standards no longer disagree
+owns the screen, with the line it breaks. To sign a screen off, follow
+[[id:BB919630-E0C1-42A6-965D-109EBE52227A][How do I sign off a screen?]]: the harness marks the lines it checks, and
+the person walks the rest on one sheet beside the task. The two standards no longer disagree
 on a line here; the [[id:F4EF9042-0EC2-4B64-95E7-7DEBF273F2F7][Audit of the UX standards]]
 records how each disagreement was decided. The [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] rules for an entity. The [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] rules
 for one kind of record.

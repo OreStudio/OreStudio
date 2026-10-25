@@ -21,11 +21,11 @@ The checks exist before the screens change, so the first screen work proves the 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The harness checks 32 screens and the baseline is recorded with four captures. The sign off recipe is last. |
+| Now           | Done: the harness checks 32 screens, the baseline is recorded and the sign off recipe has its worked example. |
 | Waiting on    | Nothing.                               |
-| Next          | Write the screen sign off recipe. |
+| Next          | Nothing; the calendars topic story takes the pipeline from here. |
 | Last touched  | 2026-10-25                               |
 
 * Acceptance
@@ -44,9 +44,29 @@ The checks exist before the screens change, so the first screen work proves the 
 | [[id:0E35B0D2-19D4-4876-B46C-9B589E643BEC][Run Playwright against the environment]] | DONE | 2026-10-25 | 2026-10-25 | Add Playwright to ores.web: read .env, sign in as a seeded Acme user and open a record screen, from one command. |
 | [[id:BC3F6289-110F-4380-9B0A-0EA598B656A4][Build the conformance harness over the registries]] | DONE | 2026-10-25 | 2026-10-25 | Walk every record kind the registries name and run one check per checkable rule; a failure names the rule identifier. |
 | [[id:CA7E3A05-7865-41E6-980E-E514ACCEF1E9][Record the baseline of today's screens]] | DONE | 2026-10-25 | 2026-10-25 | Run the harness over every record screen of today and file each failure per screen family as a capture or a task. |
-| [[id:49EEB245-FDF4-410A-99ED-D89F47BE9543][Write the screen sign off recipe]] | STARTED | 2026-10-25 | | Write the sign off recipe: run the harness, walk the manual checklist lines and record the outcome on the task. |
+| [[id:49EEB245-FDF4-410A-99ED-D89F47BE9543][Write the screen sign off recipe]] | DONE | 2026-10-25 | 2026-10-25 | Write the sign off recipe: run the harness, walk the manual checklist lines and record the outcome on the task. |
 
 * Decisions
+
+- Playwright drives the running web of the environment; the harness starts no
+  server and is not part of =npm test=, because it needs Acme provisioned.
+- The screens come from the registries the BFF reads, through a hand table of
+  routes that refuses a kind it does not place; a new kind is checked or
+  stopped, never skipped in silence.
+- A test is titled by the rule identifier it asserts and its describe names
+  the screen, so the JSON report folds into rule against screen with no other
+  knowledge of the tests.
+- A row that opens no page skips the record checks with the reason; RS-LIST-10
+  reports the list once.
+- The breadcrumb's last crumb is the key or the title, as the standard's
+  sketch draws it; the check was corrected, not the screen.
+- Refresh on a list keeps the page the person was on (RS-LIST-19, decided on
+  2026-10-25 in the Allium task).
+- The baseline is a measurement page the next run replaces, with one capture
+  per broken rule in the next bucket, not a work list.
+- Sign off is one sheet per screen: the harness marks the lines it checks and
+  a person walks the rest with Meets, Gap, N/A or Not checked; a screen is
+  signed off only with no ✗, no Gap and no Not checked.
 
 * Out of scope
 

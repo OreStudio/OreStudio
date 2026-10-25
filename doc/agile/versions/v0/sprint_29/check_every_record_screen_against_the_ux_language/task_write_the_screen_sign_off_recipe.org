@@ -26,11 +26,11 @@ Signing off a screen is one procedure, the same for every screen and every revie
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -41,9 +41,17 @@ Signing off a screen is one procedure, the same for every screen and every revie
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The checklist has 104 identifiers and the harness asserts 20, so the sign off
+cannot be the harness alone and cannot be a person alone: a script folds one
+screen's run into a sheet of every checklist line, with the harness's mark where
+it has a check and a blank for the person where it does not, so the same sheet
+serves every screen and names what a person still owes. Write the recipe around
+the sheet, point the checklist at it, and use it once on the currencies screen
+so the worked example is real: run the harness on the screen alone, walk the
+lines as the administrator and as a member, and record the verdict beside the
+task. Add the deferred check that the harness's copy of the Acme password
+matches the provisioning script, so a drift names itself instead of failing
+every check as a sign-in error.
 
 * Measurements
 
@@ -57,7 +65,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Checklist lines on the sheet | 110 | =screen_sign_off.py currencies=, rows of the table | 569618a1e9 |
+| Lines the harness marks | 18, 3 with a failure | the sheet's last line | 569618a1e9 |
+| Lines the person walks | 98, 92 with no harness mark | the sheet's last line | 569618a1e9 |
+| The currencies walk | 17 gaps, 31 met, 24 N/A, 26 not checked | =evidence/sign_off_currencies.org=, the verdict | 569618a1e9 |
+| A run on one screen | 22 checks in 35.4 s | =npx playwright test --grep "record currencies"= | 569618a1e9 |
 
 * Notes
 
@@ -82,6 +94,22 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: docs and web classes | scripts/screen_sign_off.py, tests/auth.setup.ts, doc/recipes/ops | Accept | typecheck and prettier clean; the first filtered run failed RS-LIST-10 while a screenshot script drove the same web, the second run did not, so the recipe says to run twice and read the trace |
 
 * Result
+
+The recipe How do I sign off a screen? states the one procedure: run the
+harness on the screen alone, fold the run into the sheet with
+=projects/ores.web/scripts/screen_sign_off.py=, walk the lines marked walk as
+the administrator and as a member, write the verdict, and record the sheet on
+the task. The screen review checklist points at the recipe, and the ops
+inventory lists it. The sheet of the currencies screen in =evidence/= is the
+worked example: the harness marks 18 of 110 lines, 3 with the baseline's
+failures, and the walk found 17 gaps, met 31 lines, set 24 aside and could not
+check 26, so currencies is not signed off and the gaps go to its topic. One
+finding became a capture: adrian.vance, whom the harness calls a reader, is
+editable on currencies. The harness setup now checks that its copy of the Acme
+password and hostname match the provisioning script. The fixture test for
+=harness_baseline.py= was not written: no runner picks up Python tests under
+=projects/ores.web/scripts=, and the sheet script is exercised by the worked
+example.

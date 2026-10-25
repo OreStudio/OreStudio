@@ -44,3 +44,17 @@ reason every other permission is.
 * See also
 
 -
+
+* Known limitation of the first cut
+
+The generator authenticates as the party it books for, so any permission it
+holds is held by that party's users too. Granting
+=trading::trades:write_service_origin= to the =Trading= role makes the
+population work and narrows who may claim a service origin to that role's
+holders, but it does not make the claim unforgeable: a trader can still state
+=synthetic= on their own trade.
+
+Closing that needs the generator to authenticate as itself and to carry the
+party it acts for as a claim, rather than borrowing the party's user token.
+Until then the check is a narrowing, not a proof, and the task records it as
+such.

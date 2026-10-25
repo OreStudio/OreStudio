@@ -122,3 +122,44 @@ TEST_CASE("the scheduler does nothing with no series", "[tick_scheduler]") {
     CHECK_FALSE(scheduler.step().has_value());
     CHECK(scheduler.publish_count() == 0);
 }
+
+TEST_CASE("a series can join and leave while the scheduler runs", "[tick_scheduler]") {
+    fixed_gap_process process(0.25);
+    tick_scheduler scheduler;
+    int calls = 0;
+
+    const auto first = scheduler.add(process, {}, [&](double) {
+        ++calls;
+        return std::string{};
+    });
+    scheduler.step();
+    REQUIRE(calls == 1);
+
+    scheduler.remove(first);
+    CHECK(scheduler.size() == 0);
+    CHECK_FALSE(scheduler.step().has_value());
+    CHECK(calls == 1);
+}
+
+TEST_CASE("the scheduler ticks one series and leaves the rest pending", "[tick_scheduler]") {
+    fixed_gap_process fast(0.1);
+    fixed_gap_process slow(10.0);
+    tick_scheduler scheduler;
+    int fast_calls = 0;
+    int slow_calls = 0;
+
+    scheduler.add(fast, {}, [&](double) {
+        ++fast_calls;
+        return std::string{};
+    });
+    scheduler.add(slow, {}, [&](double) {
+        ++slow_calls;
+        return std::string{};
+    });
+
+    for (int i = 0; i < 5; ++i)
+        scheduler.step();
+
+    CHECK(fast_calls == 5);
+    CHECK(slow_calls == 0);
+}

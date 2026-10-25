@@ -25,6 +25,7 @@
 #include "feed_run_control.hpp"
 #include "ores.analytics.quant/domain/market_regime.hpp"
 #include "ores.analytics.quant/domain/shared_intensity.hpp"
+#include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -70,7 +71,8 @@ public:
                            std::optional<ores::security::jwt::jwt_authenticator> verifier,
                            const feed_kind_registry& registry,
                            ores::analytics::quant::domain::market_regime* market = nullptr,
-                           ores::analytics::quant::domain::shared_intensity* intensity = nullptr)
+                           ores::analytics::quant::domain::shared_intensity* intensity = nullptr,
+                           ores::analytics::quant::service::tick_scheduler* scheduler = nullptr)
         : nats_(nats)
         , ctrl_(std::move(ctrl))
         , auth_nats_(auth_nats)
@@ -78,7 +80,8 @@ public:
         , verifier_(std::move(verifier))
         , registry_(registry)
         , market_(market)
-        , intensity_(intensity) {}
+        , intensity_(intensity)
+        , scheduler_(scheduler) {}
 
     void start(ores::nats::message msg) {
         using namespace ores::synthetic::messaging;
@@ -140,7 +143,8 @@ private:
                 const ores::synthetic::feed::feed_build_context build{.nats = nats_,
                                                                       .auth_nats = auth_nats_,
                                                                       .market = market_,
-                                                                      .intensity = intensity_};
+                                                                      .intensity = intensity_,
+                                                                      .scheduler = scheduler_};
                 const auto outcome = start_feeds(
                     registry_,
                     *ctrl_,
@@ -205,6 +209,7 @@ private:
     const feed_kind_registry& registry_;
     ores::analytics::quant::domain::market_regime* market_;
     ores::analytics::quant::domain::shared_intensity* intensity_;
+    ores::analytics::quant::service::tick_scheduler* scheduler_;
 };
 
 }

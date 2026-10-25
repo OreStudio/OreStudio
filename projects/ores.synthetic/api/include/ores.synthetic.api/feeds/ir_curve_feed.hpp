@@ -26,6 +26,7 @@
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/domain/market_link.hpp"
 #include "ores.analytics.quant/service/tick_clock.hpp"
+#include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/domain/market_clock.hpp"
 #include "ores.nats/service/client.hpp"
@@ -97,9 +98,12 @@ public:
                   std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
                   const ores::analytics::quant::domain::arrival_spec& arrival,
                   std::vector<ir_curve_resolved_entry> entries,
-                  ores::analytics::quant::domain::market_link link = {});
+                  ores::analytics::quant::domain::market_link link = {},
+                  ores::analytics::quant::service::tick_scheduler* scheduler = nullptr);
 
     void start() override;
+    /// One tick, as the scheduler or the feed's own clock drives it.
+    std::string tick(double elapsed_seconds);
     void stop() override;
     std::uint64_t publish_count() const override {
         return clock_.publish_count();
@@ -149,6 +153,14 @@ private:
     /// The heat this feed adds to when it ticks, or null for a run with no
     /// endogenous factor.
     ores::analytics::quant::domain::shared_intensity* intensity_;
+    /// The row's rate, which a scheduler needs to re-arm this series.
+    ores::analytics::quant::domain::arrival_spec arrival_;
+    /// The factors this feed follows.
+    ores::analytics::quant::domain::market_link link_;
+    /// The run's scheduler, or null when the feed runs its own clock.
+    ores::analytics::quant::service::tick_scheduler* scheduler_;
+    /// The series' registration in the scheduler, while it is registered.
+    std::optional<std::size_t> handle_;
     std::vector<ir_curve_resolved_entry> entries_;
 };
 
@@ -191,7 +203,8 @@ ORES_SYNTHETIC_API_EXPORT std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
         definitions,
     const ir_curve_refdata_context& refctx,
     const ores::marketdata::domain::market_clock* clock = nullptr,
-    ores::analytics::quant::domain::market_link link = {});
+    ores::analytics::quant::domain::market_link link = {},
+    ores::analytics::quant::service::tick_scheduler* scheduler = nullptr);
 
 /**
  * @brief Picks the vintage-lookup anchor entry from a resolved Curve Template: the DEPOSIT entry

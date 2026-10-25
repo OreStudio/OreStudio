@@ -25,6 +25,7 @@
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.analytics.quant/domain/market_link.hpp"
 #include "ores.analytics.quant/service/tick_clock.hpp"
+#include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/domain/market_clock.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
@@ -98,7 +99,8 @@ public:
                  std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process,
                  const ores::analytics::quant::domain::arrival_spec& arrival,
                  std::optional<adapter_target> adapter = std::nullopt,
-                 ores::analytics::quant::domain::market_link link = {});
+                 ores::analytics::quant::domain::market_link link = {},
+                 ores::analytics::quant::service::tick_scheduler* scheduler = nullptr);
 
     /**
      * @brief The oresmd quote URI this feed publishes ticks under, e.g.
@@ -119,6 +121,8 @@ public:
         return fx_spot_feed_kind;
     }
     void start() override;
+    /// One tick, as the scheduler or the feed's own clock drives it.
+    std::string tick(double elapsed_seconds);
     void stop() override;
     std::uint64_t publish_count() const override {
         return clock_.publish_count();
@@ -135,6 +139,14 @@ private:
     std::string source_name_;
     std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process_;
     std::unique_ptr<ores::analytics::quant::domain::i_arrival_process> arrivals_;
+    /// The row's rate, which a scheduler needs to re-arm this series.
+    ores::analytics::quant::domain::arrival_spec arrival_;
+    /// The factors this feed follows.
+    ores::analytics::quant::domain::market_link link_;
+    /// The run's scheduler, or null when the feed runs its own clock.
+    ores::analytics::quant::service::tick_scheduler* scheduler_;
+    /// The series' registration in the scheduler, while it is registered.
+    std::optional<std::size_t> handle_;
     ores::analytics::quant::service::tick_clock clock_;
     /// The arrival rate in ticks per second, the unit a step is counted in and
     /// the one the arrival process itself divides by.
@@ -175,7 +187,8 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   std::optional<adapter_target> adapter = std::nullopt,
                   const ores::marketdata::domain::market_clock* clock = nullptr,
-                  ores::analytics::quant::domain::market_link link = {});
+                  ores::analytics::quant::domain::market_link link = {},
+                  ores::analytics::quant::service::tick_scheduler* scheduler = nullptr);
 
 }
 #endif

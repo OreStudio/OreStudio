@@ -44,7 +44,7 @@ struct market_link final {
     /// The state every series shares, or null for a run with no market.
     const market_regime* market = nullptr;
     /// The heat every event feeds, or null for a run with no endogenous factor.
-    const shared_intensity* intensity = nullptr;
+    shared_intensity* intensity = nullptr;
     /// How strongly this series follows the market, one being the average.
     double sensitivity = 1.0;
     /// The mean rate the row configures, in arrivals per second.

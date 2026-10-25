@@ -59,9 +59,9 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_fx_spot(const feed_build
         in.components,
         in.adapter,
         ctx.clock.get(),
-        ores::analytics::quant::domain::market_link{.market = ctx.market,
-                                                    .intensity = ctx.intensity,
-                                                    .sensitivity = in.config.sensitivity});
+        ores::analytics::quant::domain::market_link{
+            .market = ctx.market, .intensity = ctx.intensity, .sensitivity = in.config.sensitivity},
+        ctx.scheduler);
 }
 
 std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_build_context& ctx,
@@ -76,9 +76,9 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_buil
         in.definitions,
         in.refctx,
         ctx.clock.get(),
-        ores::analytics::quant::domain::market_link{.market = ctx.market,
-                                                    .intensity = ctx.intensity,
-                                                    .sensitivity = in.config.sensitivity});
+        ores::analytics::quant::domain::market_link{
+            .market = ctx.market, .intensity = ctx.intensity, .sensitivity = in.config.sensitivity},
+        ctx.scheduler);
 }
 
 } // namespace

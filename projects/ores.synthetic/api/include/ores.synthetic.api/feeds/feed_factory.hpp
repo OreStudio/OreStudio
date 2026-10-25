@@ -61,6 +61,8 @@ struct feed_build_context final {
     /// The heat every event in the run feeds, or null for a run with no
     /// endogenous factor.
     ores::analytics::quant::domain::shared_intensity* intensity = nullptr;
+    /// The run's one clock, or null for a run where each feed keeps its own.
+    ores::analytics::quant::service::tick_scheduler* scheduler = nullptr;
 };
 
 /**

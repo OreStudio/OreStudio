@@ -286,6 +286,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // The heat any event anywhere adds to. The same thread fades it, so the decay
     // is paid once a period rather than once per reader.
     ores::analytics::quant::domain::shared_intensity intensity;
+
+    // One clock for the whole run: every feed registers its tick body here at
+    // start() and leaves at stop(), so the order in which series tick is decided
+    // in one place and a series can see another's event.
+    ores::analytics::quant::service::tick_scheduler scheduler;
+    std::jthread scheduler_thread([&scheduler](const std::stop_token& stop) {
+        scheduler.run();
+        (void)stop;
+    });
+
     constexpr auto market_period = std::chrono::milliseconds(100);
     std::jthread market_owner([&market, &intensity, market_period](const std::stop_token& stop) {
         while (!stop.stop_requested()) {
@@ -298,8 +308,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // The simulator is an adapter of the market data service for each simulated source. It
     // serves the system collections of the provider of the source, and it starts a generator for
     // each id that the demand names.
-    const ores::synthetic::feed::feed_build_context adapter_build{
-        .nats = nats, .auth_nats = svc_nats, .market = &market, .intensity = &intensity};
+    const ores::synthetic::feed::feed_build_context adapter_build{.nats = nats,
+                                                                  .auth_nats = svc_nats,
+                                                                  .market = &market,
+                                                                  .intensity = &intensity,
+                                                                  .scheduler = &scheduler};
     const auto faults = std::make_shared<ores::synthetic::feed::fault_state>();
     adapter_fleet fleet(nats, svc_nats, db_ctx, registry, adapter_build, faults);
 
@@ -308,10 +321,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         std::move(db_ctx),
         "ores.synthetic.service",
-        [ctrl, faults, &svc_nats, &registry, &market, &intensity](auto& n, auto c, auto v) {
+        [ctrl, faults, &svc_nats, &registry, &market, &intensity, &scheduler](
+            auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
             auto market_subs = ores::synthetic::service::registrar::register_handlers(
-                n, svc_nats, ctrl, faults, c, v, registry, &market, &intensity);
+                n, svc_nats, ctrl, faults, c, v, registry, &market, &intensity, &scheduler);
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));
@@ -323,6 +337,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
 
+    scheduler.stop();
     ctrl->shutdown();
     event_source.stop();
     co_return;

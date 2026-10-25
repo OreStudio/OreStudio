@@ -25,6 +25,8 @@
 #include <chrono>
 #include <functional>
 #include <limits>
+#include <map>
+#include <mutex>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -62,13 +64,23 @@ public:
      * @param link The factors this series follows.
      * @param body What the series does when it ticks.
      */
-    void add(ores::analytics::quant::domain::i_arrival_process& arrivals,
-             ores::analytics::quant::domain::market_link link,
-             stream_body body) {
-        streams_.push_back(stream{&arrivals, link, std::move(body), 0.0, false});
+    std::size_t add(ores::analytics::quant::domain::i_arrival_process& arrivals,
+                    ores::analytics::quant::domain::market_link link,
+                    stream_body body) {
+        const auto guard = std::lock_guard(mutex_);
+        const auto id = next_id_++;
+        streams_.emplace(id, stream{&arrivals, link, std::move(body), 0.0, false});
+        return id;
+    }
+
+    /// @brief Stop ticking a series. Safe while the scheduler runs.
+    void remove(std::size_t id) {
+        const auto guard = std::lock_guard(mutex_);
+        streams_.erase(id);
     }
 
     [[nodiscard]] std::size_t size() const {
+        const auto guard = std::lock_guard(mutex_);
         return streams_.size();
     }
 
@@ -87,7 +99,8 @@ public:
      * shared factors reaches a gap that was already in flight.
      */
     void refresh() {
-        for (auto& s : streams_)
+        const auto guard = std::lock_guard(mutex_);
+        for (auto& [id, s] : streams_)
             arm(s);
     }
 
@@ -121,18 +134,34 @@ public:
 
 private:
     std::optional<std::pair<std::size_t, double>> tick_once(bool should_sleep, double period) {
-        if (streams_.empty())
-            return std::nullopt;
-
         std::size_t winner = 0;
         double earliest = std::numeric_limits<double>::infinity();
-        for (std::size_t i = 0; i < streams_.size(); ++i) {
-            if (!streams_[i].armed)
-                arm(streams_[i]);
-            if (streams_[i].pending < earliest) {
-                earliest = streams_[i].pending;
-                winner = i;
+        stream_body body;
+
+        {
+            const auto guard = std::lock_guard(mutex_);
+            if (streams_.empty())
+                return std::nullopt;
+
+            for (auto& [id, s] : streams_) {
+                if (!s.armed)
+                    arm(s);
+                if (s.pending < earliest) {
+                    earliest = s.pending;
+                    winner = id;
+                }
             }
+
+            for (auto& [id, s] : streams_) {
+                s.pending -= earliest;
+                if (s.pending < 0.0)
+                    s.pending = 0.0;
+            }
+
+            const auto it = streams_.find(winner);
+            if (it == streams_.end())
+                return std::nullopt;
+            body = it->second.body;
         }
 
         if (should_sleep) {
@@ -141,15 +170,8 @@ private:
                 return std::nullopt;
         }
 
-        for (auto& s : streams_) {
-            s.pending -= earliest;
-            if (s.pending < 0.0)
-                s.pending = 0.0;
-        }
-
-        auto& w = streams_[winner];
         try {
-            const auto summary = w.body(earliest);
+            const auto summary = body(earliest);
             const auto n = published_.fetch_add(1, std::memory_order_relaxed) + 1;
             if (on_published_)
                 on_published_(n, summary);
@@ -158,14 +180,19 @@ private:
                 on_failed_(ex);
         }
 
-        // The series that fired draws its next gap from its current rate.
-        arm(w);
+        {
+            const auto guard = std::lock_guard(mutex_);
+            const auto it = streams_.find(winner);
+            if (it != streams_.end())
+                arm(it->second);
 
-        if (period > 0.0) {
-            since_refresh_ += earliest;
-            if (since_refresh_ >= period) {
-                refresh();
-                since_refresh_ = 0.0;
+            if (period > 0.0) {
+                since_refresh_ += earliest;
+                if (since_refresh_ >= period) {
+                    for (auto& [id, s] : streams_)
+                        arm(s);
+                    since_refresh_ = 0.0;
+                }
             }
         }
         return std::pair{winner, earliest};
@@ -199,7 +226,9 @@ private:
             std::chrono::duration<double>(seconds)));
     }
 
-    std::vector<stream> streams_;
+    mutable std::mutex mutex_;
+    std::map<std::size_t, stream> streams_;
+    std::size_t next_id_ = 0;
     std::atomic<bool> stop_flag_{false};
     std::atomic<std::uint64_t> published_{0};
     published_hook on_published_;

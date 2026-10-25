@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :settle_the_ux_language_for_record_screens:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/decide-each-contradiction
+#+pr: 3754
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2][Settle the UX language for record screens]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ No rule has two answers. Where Edit stands, how the dialog is titled, when Save 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2][Settle the UX language for record screens]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -41,9 +41,13 @@ No rule has two answers. Where Edit stands, how the dialog is titled, when Save 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Take the nine contradictions and the two smaller disagreements from the audit,
+with the proposal each carries. Where the code already follows one page, that
+page rules. Write each decision on the ruling page with its date, make the
+losing page point at it, and remove the two checklist lines that offered a
+choice. Apply every edit by one script whose replacements must match exactly
+once, so a page that moved stops the script instead of being half edited, and
+record the decisions on the story.
 
 * Measurements
 
@@ -57,7 +61,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Contradictions decided | 9, plus 2 smaller disagreements | the table on the Audit of the UX standards | d7c1dae56b |
+| Pages edited | 5 | =git show --stat d7c1dae56b= | d7c1dae56b |
+| Checklist lines that offered a choice | 0, from 2 | =grep -c 'Pick one\|Follow ESS' doc/knowledge/ui/screen_review_checklist.org= | d7c1dae56b |
 
 * Notes
 
@@ -76,12 +82,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3754][#3754]] | [docs] Decide each contradiction between the UX standards |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review of the docs class: no findings | doc/knowledge/ui | Accept | compass check green, misspell-fixer clean; every edit carries its date and names the page it derives from |
+| 2 | Three edited paragraphs were left over the line width | ESS, checklist | Accept | Re-filled |
+| 3 | The paging exception sat between the rule and its list | ESS Paging | Accept | The exception now follows the list |
+| 4 | "A write reloads nothing" read against the reload sentence | RSS Paging | Accept | Reworded as the review proposed |
+| 5 | Confirm the four seconds against the code | RSS Recency | Accept | MARK_MS is 4000 in changedRows.ts and the animation runs three cycles of 900 ms; the page names both |
+| 6 | The checklist's Save line should say what is offered | checklist | Accept | Reworded |
+| 7 | The UX Language note should link the Journey runtime page | UXL | Accept | Linked by id |
 
 * Result
+
+Every contradiction the audit found has a decision on the page that now rules,
+dated 2026-10-25, and the losing page points at it. A save does not reload the
+page; a save with no field change is allowed; changed rows are found by
+comparing pages; Edit and the version stand on the thing they belong to; the
+dialog is titled Edit and the title of what it changes; the classification list
+stays the one list read whole; a journey is a design document and a rail is a
+wizard; labels are sentence case; the verbs live once; the breadcrumb's shape
+belongs to Menu structure. The checklist offers no choice. The story records
+the decisions.

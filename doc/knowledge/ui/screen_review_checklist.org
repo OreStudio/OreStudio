@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :web:ux:standards:checklist:
 #+created: 2026-10-20
-#+updated: 2026-10-24
+#+updated: 2026-10-25
 
 * Summary
 
@@ -17,8 +17,9 @@ section that state it. The list adds no rule. If a line and its source differ,
 the source is right and this page is wrong.
 
 Mark each line /Meets/, /Gap/ or /N/A/. Write a gap in the story or task that
-owns the screen, with the line it breaks. Where the two standards disagree, the
-line says so. The [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] rules for an entity. The [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] rules
+owns the screen, with the line it breaks. The two standards no longer disagree
+on a line here; the [[id:F4EF9042-0EC2-4B64-95E7-7DEBF273F2F7][Audit of the UX standards]]
+records how each disagreement was decided. The [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] rules for an entity. The [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] rules
 for one kind of record.
 
 Source names: RSS is the Record screen standard, ESS is the Entity screen
@@ -39,7 +40,7 @@ CFG is the [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen stand
 - [ ] Audit columns are hidden by default. A tenant id and a UUID id never show. (RSS The table)
 - [ ] The list shows these states: loading, loading again with dimmed rows, none yet, nothing matches with a way to clear, and an error in place with Retry. (RSS States)
 - [ ] A party appears as a tag with its name, not its code. (ESS The list)
-- [ ] Rows that changed after a reload are marked for a short time. (RSS Recency; ESS Rows and entries that changed)
+- [ ] Rows that changed after a reload get a gold left edge, pulse three times and clear after four seconds, found by comparing the page with the one read before. (RSS Recency; ESS Rows and entries that changed)
 
 ** The record page
 
@@ -60,12 +61,12 @@ CFG is the [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen stand
 ** Edit
 
 - [ ] Edit is one button with an icon and the word Edit. It is on the card it changes. (ESS The Edit pattern)
-- [ ] The page header has no Edit. (ESS Header). RSS puts Edit in the header of a record page. Follow ESS for an entity.
+- [ ] Edit stands on the thing it changes: the header for a record of one kind, the card for an entity. (RSS Header; ESS Header)
 - [ ] Edit opens a modal dialog over the page. The dialog has no address. (RSS Addresses)
-- [ ] The dialog title is "Edit <key>" (RSS Amend) or names the card (ESS The Edit pattern). Pick one per screen.
+- [ ] The dialog is titled Edit followed by the title of the page or the card it changes. (RSS Amend; ESS The Edit pattern)
 - [ ] The dialog asks for the change reason and commentary. The page asks for neither. (ESS The Edit pattern)
 - [ ] The reasons follow the change. "No change in substance" is offered only when nothing changed. (RSS Amend)
-- [ ] Save stays disabled until a field differs from the record. (ESS The Edit pattern). RSS does not say this.
+- [ ] Save is enabled once the form is complete. A save with no field change is allowed and is offered only No change in substance. (RSS Amend; ESS The Edit pattern)
 - [ ] A commentary is required when the chosen reason needs one. (RSS Amend)
 - [ ] A wrong field shows its message under it when the person leaves it. Save waits until the form is complete. (RSS The form)
 - [ ] The write claims the version that was read. A stale save is refused, and the dialog says so and offers to reload. (RSS Amend; ESS The Edit pattern)

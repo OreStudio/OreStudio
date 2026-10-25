@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:ui:ux:design:badges:icons:
 #+created: 2026-06-04
-#+updated: 2026-10-05
+#+updated: 2026-10-25
 #+startup: inlineimages
 
 * Summary
@@ -122,6 +122,14 @@ draws none in its header. The server still decides every write; the mark only
 says what it will allow.
 
 ** Journey screen anatomy
+
+A journey is a design document, and a screen is never a journey copied step
+by step; that rule is the Entity screen specification's User journeys and
+screens (decided 2026-10-25). The screen with a rail of steps described below
+is a wizard, the exception that specification allows for a task that steps
+make quicker, and this section moves to the
+[[id:6A63AAC7-4869-493A-97E7-55B919874784][Journey runtime]] page. Where it
+speaks of a journey as a screen, read a wizard.
 
 A journey is one screen, organised around a goal. The screen carries an
 ordered rail of steps, and each step draws the view it needs. Commit

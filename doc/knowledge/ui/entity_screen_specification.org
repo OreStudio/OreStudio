@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :web:ux:standards:entities:
 #+created: 2026-10-10
-#+updated: 2026-10-11
+#+updated: 2026-10-25
 
 * Summary
 
@@ -169,7 +169,10 @@ Staff is a different list for them, built from the organisation read. See
   state, its internal version and its external version, because the two-version
   rule of [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] is what a person reads a trade for. The cards still carry
   their own versions.
-- The header carries no Edit button. Edit belongs to the card it changes.
+- The header carries no Edit button. Edit belongs to the card it changes,
+  because each card is its own record. This is the one rule of the Record
+  screen standard's Header, Edit stands on the thing it changes, applied to an
+  entity (decided 2026-10-25).
 
 *** Tabs
 
@@ -211,12 +214,16 @@ Each aspect that a person can change is one card.
 
 - Edit is one button with an icon and the word Edit, on the card it changes. It
   is drawn only for a person who may change that card.
-- Edit opens a dialog with the current values. The dialog is titled for the card.
-  It asks for the change reason and the commentary. The card itself asks for
-  neither, and shows no reason field beside its values.
-- Save stays disabled until a field differs from the record. The reasons offered
-  follow the change: when a field changed, "No change in substance" is not
-  offered, and when nothing changed only that reason is.
+- Edit opens a dialog with the current values. The dialog is titled Edit
+  followed by the card's title, the entity's shape of the Record screen
+  standard's Amend rule. It asks for the change reason and the commentary. The
+  card itself asks for neither, and shows no reason field beside its values.
+- Save is enabled once the form is complete, and a save with no field change
+  is allowed: it writes a version that carries only its reason, which the history
+  model keeps (decided 2026-10-25; the rule is the Record screen standard's
+  Amend). The reasons offered follow the change: when a field changed, "No
+  change in substance" is not offered, and when nothing changed only that
+  reason is.
 - The write claims the version that was read. A record that has changed since is
   refused with a conflict, and the dialog says so and offers to reload.
 - Closing the dialog with changes asks "You have unsaved changes. Close anyway?"
@@ -377,10 +384,13 @@ The paging on the screen must match the paging of the data requests.
 - A search is sent when the typing pauses, not on every key.
 - The default page is 15 rows, and the sizes are those of the record standard. No
   screen sets its own.
-- An entity is never read whole. That includes the lists a screen needs only to
-  draw something else: the permissions of a role, the people who hold a role, the
-  roles a person holds, the people a name is resolved against. Each of them is a
-  page, or a lookup of the few rows the screen draws.
+- An entity is never read whole. That includes the lists a screen needs only
+  to draw something else: the permissions of a role, the people who hold a
+  role, the roles a person holds, the people a name is resolved against. Each
+  of them is a page, or a lookup of the few rows the screen draws. The one
+  exception is the classification list of the Record screen standard's
+  Exceptions, which is short, reordered as a whole and bounded by the Load all
+  rule of 1000 rows (decided 2026-10-25).
 - A count that a screen needs, such as how many people hold a role, is part of
   the answer to the page, not a second read of everything.
 - A thing that is not a list but looks like one to the reader, such as the
@@ -815,8 +825,8 @@ by a direct edit for those who hold the update permission.
 - A time is relative with the exact time on hover. "Never signed in" is a phrase
   and not 1 January 1970: a missing time is not a time, the server states null
   for it, and no screen has a zero instant to explain.
-- Words are in sentence case, and the verbs are Add, Edit, Save, Delete, Remove,
-  Revert, Refresh, Cancel and Propose. An entity's own action is a verb and its
+- Words are in sentence case, and the verbs are the Record screen standard's
+  Naming list, which includes Propose. An entity's own action is a verb and its
   object.
 - Every string exists in English, French and Portuguese before the screen ships.
 - A screen never shows an identifier where a name would do.

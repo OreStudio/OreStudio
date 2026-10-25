@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:ui:design:
 #+created: 2026-05-21
-#+updated: 2026-09-27
+#+updated: 2026-10-25
 
 The design system the ORE Studio UI is built against — Jony
 Ive-level precision with intentional personality. Use this to set
@@ -206,7 +206,9 @@ children can wrap to new lines.
 
 - Headlines: 600 weight, tight letter-spacing (-0.02em)
 - Body: 400-500 weight, standard tracking
-- Labels: 500 weight, slight positive tracking for uppercase
+- Labels: 500 weight, in sentence case, as the Record screen standard's Fields
+  rule says (decided 2026-10-25); positive tracking only where a label is
+  uppercase, which a field label never is
 - Scale: 11px, 12px, 13px, 14px (base), 16px, 18px, 24px, 32px
 
 ** Monospace for Data

@@ -28,9 +28,9 @@ Any tick anywhere raises a shared intensity that decays, so a panic spreads inst
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | The heat, the rate it reaches, the coupling and the scheduler are in. The feeds still own their clocks. |
+| Now          | Delivered: the heat, the rate it reaches, the coupling and one clock for the run. |
 | Waiting on   | Nothing.                               |
-| Next         | Register the feeds' tick bodies with the scheduler instead of running a clock each. |
+| Next         | Review and the panel. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -83,7 +83,9 @@ task and name that file in the Command column.
 | Counts of two series sharing heat | correlated above 0.2 | =two series on one heat move together and separately without it= | 59a28138e1 |
 | The same two series with the factor off | within 0.1 of zero | same | 59a28138e1 |
 | The three affected suites | 3 of 3 pass, with the marketdata service stopped | =ctest -R "ores.(synthetic.api\|synthetic.service\|analytics.quant).tests"= | 59a28138e1 |
-| Scheduler cases | 5, covering order, the elapsed gap, re-rating, a throwing body and an empty run | =tick_scheduler_tests= | 21e0d48258 |
+| Scheduler cases | 7, covering order, the elapsed gap, re-rating, a throwing body, an empty run, a series joining and leaving, and one series ticking while another stays pending | =tick_scheduler_tests= | 61f2ea143e |
+| Two feeds on one clock | both register, one steps, both leave on stop | =two feeds register with one scheduler and leave it on stop= | 61f2ea143e |
+| The three affected suites | 3 of 3 pass | =ctest -R "ores.(synthetic.api\|synthetic.service\|analytics.quant).tests"= | 61f2ea143e |
 
 * Notes
 
@@ -124,9 +126,13 @@ independent streams exactly. A series is re-armed from its current rate when it
 fires, and every series is re-armed once a period, so a change in the shared
 factors reaches a gap already in flight rather than waiting for it.
 
-The scheduler does not yet drive the feeds: each still starts its own clock, so
-the service takes the coupling through the shared heat but not the single thread.
-Registering the feeds' tick bodies with one scheduler is the remaining slice.
+Every feed now runs from that one clock: start() registers its tick body and
+returns, stop() removes it, and a run without a scheduler — a single feed, or a
+test — keeps the clock it had. The service builds one scheduler and one thread for
+it, and stops it before the feeds' controller tears down.
+
+Building this found an uninitialised intensity_ in both feeds, which was the
+intermittent segfault the service suite had been showing under load.
 
 One correction to the plan: aggregate thinning with per-stream intensity bounds is
 not what the scheduler does. The minimum of independent gaps *is* the

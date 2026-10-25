@@ -96,6 +96,7 @@ parameter of every analytic, so the row carries it rather than inferring it.
 :tablename: ores_reporting_configuration_analytics_tbl
 :rls_tenant_isolation: true
 :rls_party_isolation: true
+:rls_account_party_isolation: true
 :END:
 
 * Foreign keys

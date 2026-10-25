@@ -180,6 +180,43 @@ const reads = {
     'reporting.v1.report_configurations.list': { result: ok, report_configurations: [] },
 };
 
+/** A second party of the same account, and a configuration it holds. */
+const HK_PARTY_ID = '0a12c57f-5555-4666-8777-888888888888';
+const HK_CONFIG_ID = '55555555-5555-4555-8555-666666666666';
+
+/** The account works in both parties, and each holds a configuration. */
+const twoPartyReads = {
+    'iam.v1.ops.get_my_parties': {
+        result: ok,
+        default_party_id: PARTY_ID,
+        parties: [
+            {
+                party_id: PARTY_ID,
+                name: 'ACME Corporation UK',
+                short_code: 'ACMEUK',
+                party_category: 'Operational',
+                business_center_code: 'GBLO',
+            },
+            {
+                party_id: HK_PARTY_ID,
+                name: 'ACME Corporation HK',
+                short_code: 'ACMEHK',
+                party_category: 'Operational',
+                business_center_code: 'HKHK',
+            },
+        ],
+    },
+    'analytics.v1.pricing_model_configs.list': {
+        result: ok,
+        configs: [
+            header,
+            { ...header, id: HK_CONFIG_ID, party_id: HK_PARTY_ID, name: 'Intraday pricing' },
+        ],
+    },
+    'analytics.v1.pricing_model_products.list': { result: ok, products: [] },
+    'analytics.v1.pricing_model_product_parameters.list': { result: ok, parameters: [] },
+};
+
 const INTENT = { reason_code: 'common.correction', commentary: 'Fix the grid' };
 const body = {
     name: 'EOD pricing',
@@ -477,6 +514,33 @@ describe('pricing engine routes', () => {
             `/api/reporting/pricing-engines/${CONFIG_ID}`,
         );
         expect(one.json()).toMatchObject({ partyId: PARTY_ID, partyName: 'ACME Corporation UK' });
+    });
+
+    it("lists every party's configurations an account works in", async () => {
+        const { server, sessionId } = buildTestServer(twoPartyReads);
+        const response = await send(server, sessionId, 'GET', '/api/reporting/pricing-engines');
+        expect(response.statusCode).toBe(200);
+        expect(
+            response.json().rows.map((row: Record<string, unknown>) => ({
+                name: row.name,
+                partyId: row.partyId,
+                partyName: row.partyName,
+                partyCode: row.partyCode,
+            })),
+        ).toEqual([
+            {
+                name: 'EOD pricing',
+                partyId: PARTY_ID,
+                partyName: 'ACME Corporation UK',
+                partyCode: 'ACMEUK',
+            },
+            {
+                name: 'Intraday pricing',
+                partyId: HK_PARTY_ID,
+                partyName: 'ACME Corporation HK',
+                partyCode: 'ACMEHK',
+            },
+        ]);
     });
 
     it('still lists the configurations when the parties cannot be read', async () => {

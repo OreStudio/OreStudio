@@ -139,6 +139,7 @@ carried here instead.
 :tablename: ores_analytics_pricing_model_products_tbl
 :rls_tenant_isolation: true
 :rls_party_isolation: true
+:rls_account_party_isolation: true
 :END:
 
 * C++

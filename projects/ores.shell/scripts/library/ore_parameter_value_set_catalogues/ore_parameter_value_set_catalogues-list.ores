@@ -1,0 +1,6 @@
+# =list=
+#
+# GENERATED from doc/recipes/shell/ore_parameter_value_set_catalogues/ore_parameter_value_set_catalogue.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+ore_parameter_value_set_catalogues list --limit 1

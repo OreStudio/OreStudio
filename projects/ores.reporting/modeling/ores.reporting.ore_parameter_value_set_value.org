@@ -1,0 +1,158 @@
+:PROPERTIES:
+:ID: 04A75464-2671-40A8-8ECA-866B547C390A
+:END:
+#+title: ores.reporting.ore_parameter_value_set_value
+#+description: Codegen entity model for the reporting =ore_parameter_value_set_value= table. One value an enumerated parameter set offers.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: One value of an enumerated parameter set.
+#+entity_singular: ore_parameter_value_set_value
+#+entity_plural: ore_parameter_value_set_values
+#+entity_title: Ore Parameter Value Set Value
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+One value of an enumerated set, with the label a person reads, where it sits in
+the combo and whether it may still be chosen. The contract is the one place a
+value list lives: the per-pair settings table no longer carries one.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 reporting
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:tablename: ores_reporting_ore_parameter_value_set_values_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+The set and the value joined with a colon, for example
+=polynom_type:Chebyshev2nd=.
+
+** value_set_code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The set this value belongs to. Soft foreign key to
+=ores_reporting_ore_parameter_value_sets_tbl=.
+
+** value
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The string a configuration holds, for example =Chebyshev2nd=.
+
+** label
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The words a person reads in the combo, for example =Chebyshev, second kind=.
+
+** description
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+What choosing this value means.
+
+** display_order
+:PROPERTIES:
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:END:
+
+Where the value sits in the combo, counting from zero.
+
+** is_active
+:PROPERTIES:
+:type:         boolean
+:cpp_type:     bool
+:nullable:     false
+:END:
+
+Whether the value may still be chosen. A value turned inactive stays on the
+configurations that already hold it and is refused for a new one.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_ore_parameter_value_set_values_tbl
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                       |
+|----------------------+-------------------------------------------|
+| change_reason_code   | ores_dq_validate_change_reason_fn         |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:service_find_prefix:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: value
+:entity_plural_short:   values
+:entity_singular_words: ore parameter value set value
+:entity_plural_words:   ore parameter value set values
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pvv
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| value_set_code | Set        |
+| value         | Value       |
+| label         | Label       |
+| display_order | Order       |
+| is_active     | Active      |

@@ -87,6 +87,11 @@ class Curation:
         self.engines = self._load("engines.json", ("description", "detail"))
         self.templates = self._load("templates.json",
                                     ("asset_class", "method", "description"))
+        self.code_settings = self._load("settings-code.json",
+                                        ("scope", "description", "source_ref"))
+        for name, entry in self.code_settings.items():
+            if entry["scope"] not in ("model", "engine"):
+                raise CurationError(f"settings-code.json: {name} has an unknown scope")
         self.globals = self._load("globals.json",
                                   ("domain", "label", "help", "description"))
         for name, entry in self.globals.items():

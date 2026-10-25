@@ -1,0 +1,1814 @@
+{
+  "links": {
+    "EngineParameters|Accuracy": "accuracy",
+    "EngineParameters|AdditionalResultsPathLevel": "flag",
+    "EngineParameters|AlwaysRecomputeOptionRepresentation": "flag",
+    "EngineParameters|AntitheticVariate": "flag",
+    "EngineParameters|ApplyConvexityAdjustment": "flag",
+    "EngineParameters|ApplySimmExemptions": "flag",
+    "EngineParameters|BSStdDevs": "bsstddevs",
+    "EngineParameters|Bins": "bins",
+    "EngineParameters|Bootstrap.CalibrationGrid": "bootstrap_calibrationgrid",
+    "EngineParameters|Bootstrap.MesherConcentration": "bootstrap_mesherconcentration",
+    "EngineParameters|Bootstrap.MesherEpsilon": "bootstrap_mesherepsilon",
+    "EngineParameters|Bootstrap.MesherScaling": "bootstrap_mesherscaling",
+    "EngineParameters|Bootstrap.Mode": "bootstrap_mode",
+    "EngineParameters|Bootstrap.StateGridPoints": "bootstrap_stategridpoints",
+    "EngineParameters|Bootstrap.TimeStepsPerYear": "bootstrap_timestepsperyear",
+    "EngineParameters|BootstrapTolerance": "bootstraptolerance",
+    "EngineParameters|Bounds": "bounds",
+    "EngineParameters|BrownianBridge": "flag",
+    "EngineParameters|BrownianBridgeOrdering": "brownianbridgeordering",
+    "EngineParameters|BucketTimes": "buckettimes",
+    "EngineParameters|BucketTimesDeltaGamma": "buckettimesdeltagamma",
+    "EngineParameters|BucketTimesVega": "buckettimesvega",
+    "EngineParameters|BucketTimesVegaOpt": "buckettimesvegaopt",
+    "EngineParameters|BucketTimesVegaUnd": "buckettimesvegaund",
+    "EngineParameters|ByCallSpread": "flag",
+    "EngineParameters|CalibrateUnderlyingCurves": "flag",
+    "EngineParameters|CalibrationMoneyness": "calibrationmoneyness",
+    "EngineParameters|CallSpreadEps": "callspreadeps",
+    "EngineParameters|CashflowGeneration.OnCpnAddSimTimesCutoff": "cashflowgeneration_oncpnaddsimtimescutoff",
+    "EngineParameters|CashflowGeneration.OnCpnMaxSimTimes": "cashflowgeneration_oncpnmaxsimtimes",
+    "EngineParameters|ComputeBPS": "flag",
+    "EngineParameters|ComputeDelta": "flag",
+    "EngineParameters|ComputeDeltaVega": "flag",
+    "EngineParameters|ComputeGamma": "flag",
+    "EngineParameters|ControlVariate": "flag",
+    "EngineParameters|Correlation": "correlation",
+    "EngineParameters|Curve": "curve",
+    "EngineParameters|DampingSteps": "dampingsteps",
+    "EngineParameters|EnableCgOptimization": "flag",
+    "EngineParameters|EnforceMonotoneVariance": "flag",
+    "EngineParameters|Engine": "engine",
+    "EngineParameters|ErrorTolerance": "errortolerance",
+    "EngineParameters|ExternalComputeDevice": "externalcomputedevice",
+    "EngineParameters|ExternalDeviceCompatibilityMode": "flag",
+    "EngineParameters|FXSource": "fxsource",
+    "EngineParameters|FepCurve": "fepcurve",
+    "EngineParameters|FixedMaxStdDevs": "fixedmaxstddevs",
+    "EngineParameters|FixedMinStdDevs": "fixedminstddevs",
+    "EngineParameters|FlatVol": "flatvol",
+    "EngineParameters|FxVolIsStatic": "flag",
+    "EngineParameters|Heston.CalibrationExpiries": "heston_calibrationexpiries",
+    "EngineParameters|Heston.CalibrationMethod": "heston_calibrationmethod",
+    "EngineParameters|Heston.CalibrationVarianceTerms": "heston_calibrationvarianceterms",
+    "EngineParameters|Heston.EarlyExitThreshold": "heston_earlyexitthreshold",
+    "EngineParameters|Heston.FixedValues": "flag",
+    "EngineParameters|Heston.InitialValues": "heston_initialvalues",
+    "EngineParameters|Heston.MaxAcceptableError": "heston_maxacceptableerror",
+    "EngineParameters|Heston.MaxCalibrationAttempts": "heston_maxcalibrationattempts",
+    "EngineParameters|Heston.MaximumInitialValues": "heston_maximuminitialvalues",
+    "EngineParameters|Heston.ProcessDiscretization": "heston_processdiscretization",
+    "EngineParameters|Heston.QuantoProcessDiscretization": "heston_quantoprocessdiscretization",
+    "EngineParameters|Heston.RelaxedFellerConstraint": "heston_relaxedfellerconstraint",
+    "EngineParameters|IncludePastCashflows": "flag",
+    "EngineParameters|IndicatorSmoothingForDerivatives": "indicatorsmoothingforderivatives",
+    "EngineParameters|IndicatorSmoothingForValues": "indicatorsmoothingforvalues",
+    "EngineParameters|IntegrationPoints": "integrationpoints",
+    "EngineParameters|Interactive": "flag",
+    "EngineParameters|LinearInZero": "flag",
+    "EngineParameters|LossDistributionPeriods": "lossdistributionperiods",
+    "EngineParameters|LowerLimit": "lowerlimit",
+    "EngineParameters|MaxDiscretisationPoints": "maxdiscretisationpoints",
+    "EngineParameters|MaxGapDays": "maxgapdays",
+    "EngineParameters|MaxIterations": "maxiterations",
+    "EngineParameters|MaxPriceThresholdSteps": "maxpricethresholdsteps",
+    "EngineParameters|MaxSamples": "maxsamples",
+    "EngineParameters|MeanReversion": "meanreversion",
+    "EngineParameters|MesherConcentration": "mesherconcentration",
+    "EngineParameters|MesherEpsilon": "mesherepsilon",
+    "EngineParameters|MesherIsStatic": "flag",
+    "EngineParameters|MesherMaxConcentratingPoints": "meshermaxconcentratingpoints",
+    "EngineParameters|MesherScaling": "mesherscaling",
+    "EngineParameters|MinObsDate": "flag",
+    "EngineParameters|OptionExpiryPosition": "optionexpiryposition",
+    "EngineParameters|Policy": "policy",
+    "EngineParameters|PolynomType": "polynomtype",
+    "EngineParameters|Precision": "precision",
+    "EngineParameters|PriceThreshold": "pricethreshold",
+    "EngineParameters|PriceThresholdStep": "pricethresholdstep",
+    "EngineParameters|Pricing.ConversionRatioDiscretisationGrid": "pricing_conversionratiodiscretisationgrid",
+    "EngineParameters|Pricing.MesherEpsilon": "pricing_mesherepsilon",
+    "EngineParameters|Pricing.MesherScaling": "pricing_mesherscaling",
+    "EngineParameters|Pricing.Samples": "pricing_samples",
+    "EngineParameters|Pricing.Seed": "pricing_seed",
+    "EngineParameters|Pricing.Sequence": "pricing_sequence",
+    "EngineParameters|Pricing.StateGridPoints": "pricing_stategridpoints",
+    "EngineParameters|Pricing.TimeStepsPerYear": "pricing_timestepsperyear",
+    "EngineParameters|QuantoCurrencyPairs": "quantocurrencypairs",
+    "EngineParameters|RecalibrateOnStickyCloseOutDates": "flag",
+    "EngineParameters|ReevaluateExerciseInStickyRun": "flag",
+    "EngineParameters|Regression.MaxSimTimesEQ": "regression_maxsimtimeseq",
+    "EngineParameters|Regression.MaxSimTimesFX": "regression_maxsimtimesfx",
+    "EngineParameters|Regression.MaxSimTimesIR": "regression_maxsimtimesir",
+    "EngineParameters|Regression.VarGroupMode": "regression_vargroupmode",
+    "EngineParameters|RegressionOrder": "regressionorder",
+    "EngineParameters|RegressionVarianceCutoff": "regressionvariancecutoff",
+    "EngineParameters|RegressorModel": "regressormodel",
+    "EngineParameters|RequiredSamples": "requiredsamples",
+    "EngineParameters|RequiredTolerance": "requiredtolerance",
+    "EngineParameters|SalvagingAlgorithm": "salvagingalgorithm",
+    "EngineParameters|Samples": "samples",
+    "EngineParameters|Scheme": "scheme",
+    "EngineParameters|ScriptedLibraryOverride": "flag",
+    "EngineParameters|Seed": "seed",
+    "EngineParameters|SensitivityDecomposition": "sensitivitydecomposition",
+    "EngineParameters|SensitivityTemplate": "sensitivitytemplate",
+    "EngineParameters|SeparateCallPutVols": "separatecallputvols",
+    "EngineParameters|SequenceType": "sequencetype",
+    "EngineParameters|SobolDirectionIntegers": "soboldirectionintegers",
+    "EngineParameters|SobolOrdering": "sobolordering",
+    "EngineParameters|SpreadOnIncomeCurve": "spreadonincomecurve",
+    "EngineParameters|SqrtSmoothingForDerivatives": "sqrtsmoothingforderivatives",
+    "EngineParameters|StateGridPoints": "stategridpoints",
+    "EngineParameters|StaticNpvMem": "flag",
+    "EngineParameters|Steps": "steps",
+    "EngineParameters|TimeGridMinimumSize": "timegridminimumsize",
+    "EngineParameters|TimeGridPerYear": "timegridperyear",
+    "EngineParameters|TimeStepsPerYear": "timestepsperyear",
+    "EngineParameters|TimestepPeriod": "timestepperiod",
+    "EngineParameters|TimingAdjustment": "timingadjustment",
+    "EngineParameters|Training.BasisFunction": "training_basisfunction",
+    "EngineParameters|Training.BasisFunctionOrder": "training_basisfunctionorder",
+    "EngineParameters|Training.Samples": "training_samples",
+    "EngineParameters|Training.Seed": "training_seed",
+    "EngineParameters|Training.Sequence": "training_sequence",
+    "EngineParameters|TrainingSamples": "trainingsamples",
+    "EngineParameters|TrainingSeed": "trainingseed",
+    "EngineParameters|TrainingSequenceType": "trainingsequencetype",
+    "EngineParameters|UpperLimit": "upperlimit",
+    "EngineParameters|UseAD": "usead",
+    "EngineParameters|UseCG": "flag",
+    "EngineParameters|UseDoublePrecisionForExternalCalculation": "flag",
+    "EngineParameters|UseExternalComputeDevice": "flag",
+    "EngineParameters|VarianceStateGridPoints": "variancestategridpoints",
+    "EngineParameters|VegaRatio": "vegaratio",
+    "EngineParameters|XGrid": "xgrid",
+    "EngineParameters|YieldCurveModel": "yieldcurvemodel",
+    "EngineParameters|ZeroVolatility": "flag",
+    "EngineParameters|beta": "beta",
+    "EngineParameters|buckets": "buckets",
+    "EngineParameters|calibrateConstituentCurves": "flag",
+    "EngineParameters|calibrationIndexTerms": "calibrationindexterms",
+    "EngineParameters|homogeneousPoolWhenJustified": "flag",
+    "EngineParameters|method": "method",
+    "EngineParameters|nSimulations": "nsimulations",
+    "EngineParameters|nx": "nx",
+    "EngineParameters|ny": "ny",
+    "EngineParameters|samples": "samples",
+    "EngineParameters|seed": "seed",
+    "EngineParameters|singleSwaptionThreshold": "singleswaptionthreshold",
+    "EngineParameters|sx": "sx",
+    "EngineParameters|sy": "sy",
+    "EngineParameters|useIndexCDSPricer": "useindexcdspricer",
+    "EngineParameters|useIndexCurveForIndexCDS": "useindexcurveforindexcds",
+    "EngineParameters|withFlatVol": "flag",
+    "GlobalParameters|AllowModelFallbacks": "allowmodelfallbacks",
+    "GlobalParameters|AllowModelFallbakcs": "allowmodelfallbakcs",
+    "GlobalParameters|Calibrate": "calibrate",
+    "GlobalParameters|ContinueOnCalibrationError": "continueoncalibrationerror",
+    "GlobalParameters|GenerateAdditionalResults": "generateadditionalresults",
+    "GlobalParameters|McType": "mctype",
+    "GlobalParameters|RunType": "runtype",
+    "GlobalParameters|StrikeSpread": "strikespread",
+    "ModelParameters|AdjustCreditSpreadToRR": "flag",
+    "ModelParameters|AdjustDiscounting": "flag",
+    "ModelParameters|AdjustEquityForward": "flag",
+    "ModelParameters|AdjustEquityVolatility": "flag",
+    "ModelParameters|BaseCcy": "baseccy",
+    "ModelParameters|Calibration": "calibration",
+    "ModelParameters|CalibrationInstrumentSpacing": "calibrationinstrumentspacing",
+    "ModelParameters|CalibrationStrategy": "calibrationstrategy",
+    "ModelParameters|Correlation": "model_correlation",
+    "ModelParameters|Credit_Reversion": "credit_reversion",
+    "ModelParameters|Credit_Volatility": "credit_volatility",
+    "ModelParameters|Credit_VolatilityTimes": "credit_volatilitytimes",
+    "ModelParameters|Displacement": "displacement",
+    "ModelParameters|EnableCredit": "flag",
+    "ModelParameters|EnforceBaseCcy": "flag",
+    "ModelParameters|ExerciseTimeStepsPerYear": "exercisetimestepsperyear",
+    "ModelParameters|FloatSpreadMapping": "floatspreadmapping",
+    "ModelParameters|FullDynamicFx": "flag",
+    "ModelParameters|FullDynamicIr": "flag",
+    "ModelParameters|FxCalibration": "fxcalibration",
+    "ModelParameters|FxVolatility": "fxvolatility",
+    "ModelParameters|FxVolatilityTimes": "fxvolatilitytimes",
+    "ModelParameters|GlobalModel": "globalmodel",
+    "ModelParameters|GridCoarsening": "gridcoarsening",
+    "ModelParameters|IncludeSecurityLeg": "flag",
+    "ModelParameters|InfDkVolatility": "infdkvolatility",
+    "ModelParameters|InfJyIndexVol": "infjyindexvol",
+    "ModelParameters|InfJyRealRateReversion": "infjyrealratereversion",
+    "ModelParameters|InfJyRealRateVol": "infjyrealratevol",
+    "ModelParameters|InfJyRealToNominalVolRatio": "infjyrealtonominalvolratio",
+    "ModelParameters|InfJyTimes": "infjytimes",
+    "ModelParameters|InfModelType": "infmodeltype",
+    "ModelParameters|IrReversion": "irreversion",
+    "ModelParameters|IrReversion_": "irreversion",
+    "ModelParameters|IrVolatilityType": "irvolatilitytype",
+    "ModelParameters|MatchUnderlyingTenor": "flag",
+    "ModelParameters|MaxCPRMultiplier": "maxcprmultiplier",
+    "ModelParameters|MinCPRMultiplier": "mincprmultiplier",
+    "ModelParameters|Model": "model",
+    "ModelParameters|OpenEndDateReplacement": "openenddatereplacement",
+    "ModelParameters|ReferenceCalibrationGrid": "referencecalibrationgrid",
+    "ModelParameters|Reversion": "reversion",
+    "ModelParameters|ReversionType": "reversiontype",
+    "ModelParameters|ShiftHorizon": "shifthorizon",
+    "ModelParameters|StaticTodaysSpot": "flag",
+    "ModelParameters|SurvivalWeightedFundingReturnCashflows": "flag",
+    "ModelParameters|Tolerance": "tolerance",
+    "ModelParameters|TreatSecuritySpreadAsCreditSpread": "treatsecurityspreadascreditspread",
+    "ModelParameters|Volatility": "volatility",
+    "ModelParameters|VolatilityTimes": "volatilitytimes",
+    "ModelParameters|VolatilityType": "volatilitytype",
+    "ModelParameters|ZeroRecoveryOverwrite": "flag",
+    "ModelParameters|eta": "eta",
+    "ModelParameters|max": "max",
+    "ModelParameters|min": "min",
+    "ModelParameters|p": "p",
+    "ModelParameters|recoveryRateGrid": "recoveryrategrid",
+    "ModelParameters|recoveryRateProbabilities": "recoveryrateprobabilities",
+    "ModelParameters|steps": "steps",
+    "ModelParameters|useAssumedRecovery": "flag",
+    "ModelParameters|useQuadrature": "flag",
+    "ModelParameters|useStochasticRecovery": "flag"
+  },
+  "sets": {
+    "accuracy": {
+      "description": "The values the Accuracy setting accepts.",
+      "is_ordered": false,
+      "name": "Accuracy",
+      "source_kind": "number"
+    },
+    "allowmodelfallbacks": {
+      "description": "The values the AllowModelFallbacks setting accepts.",
+      "is_ordered": false,
+      "name": "Allow Model Fallbacks",
+      "source_kind": "text"
+    },
+    "allowmodelfallbakcs": {
+      "description": "The values the AllowModelFallbakcs setting accepts.",
+      "is_ordered": false,
+      "name": "Allow Model Fallbakcs",
+      "source_kind": "text"
+    },
+    "baseccy": {
+      "description": "The values the BaseCcy setting accepts.",
+      "is_ordered": false,
+      "name": "Base Ccy",
+      "source_kind": "text"
+    },
+    "beta": {
+      "description": "The values the beta setting accepts.",
+      "is_ordered": false,
+      "name": "beta",
+      "source_kind": "number"
+    },
+    "bins": {
+      "description": "The values the Bins setting accepts.",
+      "is_ordered": false,
+      "name": "Bins",
+      "source_kind": "integer"
+    },
+    "bootstrap_calibrationgrid": {
+      "description": "The values the Bootstrap.CalibrationGrid setting accepts.",
+      "is_ordered": false,
+      "name": "Bootstrap Calibration Grid",
+      "source_kind": "text"
+    },
+    "bootstrap_mesherconcentration": {
+      "description": "The values the Bootstrap.MesherConcentration setting accepts.",
+      "is_ordered": false,
+      "name": "Bootstrap Mesher Concentration",
+      "source_kind": "text"
+    },
+    "bootstrap_mesherepsilon": {
+      "description": "The values the Bootstrap.MesherEpsilon setting accepts.",
+      "is_ordered": false,
+      "name": "Bootstrap Mesher Epsilon",
+      "source_kind": "number"
+    },
+    "bootstrap_mesherscaling": {
+      "description": "The values the Bootstrap.MesherScaling setting accepts.",
+      "is_ordered": false,
+      "name": "Bootstrap Mesher Scaling",
+      "source_kind": "number"
+    },
+    "bootstrap_mode": {
+      "description": "The values the Bootstrap.Mode setting accepts.",
+      "is_ordered": false,
+      "name": "Bootstrap Mode",
+      "source_kind": "text"
+    },
+    "bootstrap_stategridpoints": {
+      "description": "The values the Bootstrap.StateGridPoints setting accepts.",
+      "is_ordered": false,
+      "name": "Bootstrap State Grid Points",
+      "source_kind": "integer"
+    },
+    "bootstrap_timestepsperyear": {
+      "description": "The values the Bootstrap.TimeStepsPerYear setting accepts.",
+      "is_ordered": false,
+      "name": "Bootstrap Time Steps Per Year",
+      "source_kind": "integer"
+    },
+    "bootstraptolerance": {
+      "description": "The values the BootstrapTolerance setting accepts.",
+      "is_ordered": false,
+      "name": "Bootstrap Tolerance",
+      "source_kind": "number"
+    },
+    "bounds": {
+      "description": "The values the Bounds setting accepts.",
+      "is_ordered": false,
+      "name": "Bounds",
+      "source_kind": "text"
+    },
+    "brownianbridgeordering": {
+      "description": "The values the BrownianBridgeOrdering setting accepts.",
+      "is_ordered": false,
+      "name": "Brownian Bridge Ordering",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Factors is one of the values the ORE code accepts for BrownianBridgeOrdering.",
+          "label": "Factors",
+          "order": 0,
+          "value": "Factors"
+        },
+        {
+          "description": "Steps is one of the values the ORE code accepts for BrownianBridgeOrdering.",
+          "label": "Steps",
+          "order": 1,
+          "value": "Steps"
+        },
+        {
+          "description": "Diagonal is one of the values the ORE code accepts for BrownianBridgeOrdering.",
+          "label": "Diagonal",
+          "order": 2,
+          "value": "Diagonal"
+        }
+      ]
+    },
+    "bsstddevs": {
+      "description": "The values the BSStdDevs setting accepts.",
+      "is_ordered": false,
+      "name": "BSStd Devs",
+      "source_kind": "number"
+    },
+    "buckets": {
+      "description": "The values the buckets setting accepts.",
+      "is_ordered": false,
+      "name": "buckets",
+      "source_kind": "integer"
+    },
+    "buckettimes": {
+      "description": "The values the BucketTimes setting accepts.",
+      "is_ordered": false,
+      "name": "Bucket Times",
+      "source_kind": "number"
+    },
+    "buckettimesdeltagamma": {
+      "description": "The values the BucketTimesDeltaGamma setting accepts.",
+      "is_ordered": false,
+      "name": "Bucket Times Delta Gamma",
+      "source_kind": "number"
+    },
+    "buckettimesvega": {
+      "description": "The values the BucketTimesVega setting accepts.",
+      "is_ordered": false,
+      "name": "Bucket Times Vega",
+      "source_kind": "number"
+    },
+    "buckettimesvegaopt": {
+      "description": "The values the BucketTimesVegaOpt setting accepts.",
+      "is_ordered": false,
+      "name": "Bucket Times Vega Opt",
+      "source_kind": "number"
+    },
+    "buckettimesvegaund": {
+      "description": "The values the BucketTimesVegaUnd setting accepts.",
+      "is_ordered": false,
+      "name": "Bucket Times Vega Und",
+      "source_kind": "number"
+    },
+    "calibrate": {
+      "description": "The values the Calibrate setting accepts.",
+      "is_ordered": false,
+      "name": "Calibrate",
+      "source_kind": "text"
+    },
+    "calibration": {
+      "description": "The values the Calibration setting accepts.",
+      "is_ordered": false,
+      "name": "Calibration",
+      "source_kind": "text"
+    },
+    "calibrationindexterms": {
+      "description": "The values the calibrationIndexTerms setting accepts.",
+      "is_ordered": false,
+      "name": "calibration Index Terms",
+      "source_kind": "text"
+    },
+    "calibrationinstrumentspacing": {
+      "description": "The values the CalibrationInstrumentSpacing setting accepts.",
+      "is_ordered": false,
+      "name": "Calibration Instrument Spacing",
+      "source_kind": "text"
+    },
+    "calibrationmoneyness": {
+      "description": "The values the CalibrationMoneyness setting accepts.",
+      "is_ordered": false,
+      "name": "Calibration Moneyness",
+      "source_kind": "number"
+    },
+    "calibrationstrategy": {
+      "description": "The values the CalibrationStrategy setting accepts.",
+      "is_ordered": false,
+      "name": "Calibration Strategy",
+      "source_kind": "text"
+    },
+    "callspreadeps": {
+      "description": "The values the CallSpreadEps setting accepts.",
+      "is_ordered": false,
+      "name": "Call Spread Eps",
+      "source_kind": "number"
+    },
+    "cashflowgeneration_oncpnaddsimtimescutoff": {
+      "description": "The values the CashflowGeneration.OnCpnAddSimTimesCutoff setting accepts.",
+      "is_ordered": false,
+      "name": "Cashflow Generation On Cpn Add Sim Times Cutoff",
+      "source_kind": "text"
+    },
+    "cashflowgeneration_oncpnmaxsimtimes": {
+      "description": "The values the CashflowGeneration.OnCpnMaxSimTimes setting accepts.",
+      "is_ordered": false,
+      "name": "Cashflow Generation On Cpn Max Sim Times",
+      "source_kind": "integer"
+    },
+    "continueoncalibrationerror": {
+      "description": "The values the ContinueOnCalibrationError setting accepts.",
+      "is_ordered": false,
+      "name": "Continue On Calibration Error",
+      "source_kind": "text"
+    },
+    "correlation": {
+      "description": "The values the Correlation setting accepts.",
+      "is_ordered": false,
+      "name": "Correlation",
+      "source_kind": "number"
+    },
+    "credit_reversion": {
+      "description": "The values the Credit_Reversion setting accepts.",
+      "is_ordered": false,
+      "name": "Credit Reversion",
+      "source_kind": "number"
+    },
+    "credit_volatility": {
+      "description": "The values the Credit_Volatility setting accepts.",
+      "is_ordered": false,
+      "name": "Credit Volatility",
+      "source_kind": "number"
+    },
+    "credit_volatilitytimes": {
+      "description": "The values the Credit_VolatilityTimes setting accepts.",
+      "is_ordered": false,
+      "name": "Credit Volatility Times",
+      "source_kind": "number"
+    },
+    "curve": {
+      "description": "The values the Curve setting accepts.",
+      "is_ordered": false,
+      "name": "Curve",
+      "source_kind": "text"
+    },
+    "dampingsteps": {
+      "description": "The values the DampingSteps setting accepts.",
+      "is_ordered": false,
+      "name": "Damping Steps",
+      "source_kind": "integer"
+    },
+    "displacement": {
+      "description": "The values the Displacement setting accepts.",
+      "is_ordered": false,
+      "name": "Displacement",
+      "source_kind": "text"
+    },
+    "engine": {
+      "description": "The values the Engine setting accepts.",
+      "is_ordered": false,
+      "name": "Engine",
+      "source_kind": "text"
+    },
+    "errortolerance": {
+      "description": "The values the ErrorTolerance setting accepts.",
+      "is_ordered": false,
+      "name": "Error Tolerance",
+      "source_kind": "number"
+    },
+    "eta": {
+      "description": "The values the eta setting accepts.",
+      "is_ordered": false,
+      "name": "eta",
+      "source_kind": "number"
+    },
+    "exercisetimestepsperyear": {
+      "description": "The values the ExerciseTimeStepsPerYear setting accepts.",
+      "is_ordered": false,
+      "name": "Exercise Time Steps Per Year",
+      "source_kind": "integer"
+    },
+    "externalcomputedevice": {
+      "description": "The values the ExternalComputeDevice setting accepts.",
+      "is_ordered": false,
+      "name": "External Compute Device",
+      "source_kind": "text"
+    },
+    "fepcurve": {
+      "description": "The values the FepCurve setting accepts.",
+      "is_ordered": false,
+      "name": "Fep Curve",
+      "source_kind": "text"
+    },
+    "fixedmaxstddevs": {
+      "description": "The values the FixedMaxStdDevs setting accepts.",
+      "is_ordered": false,
+      "name": "Fixed Max Std Devs",
+      "source_kind": "number"
+    },
+    "fixedminstddevs": {
+      "description": "The values the FixedMinStdDevs setting accepts.",
+      "is_ordered": false,
+      "name": "Fixed Min Std Devs",
+      "source_kind": "number"
+    },
+    "flag": {
+      "description": "A switch that is either on or off.",
+      "is_ordered": false,
+      "name": "Flag",
+      "source_kind": "boolean"
+    },
+    "flatvol": {
+      "description": "The values the FlatVol setting accepts.",
+      "is_ordered": false,
+      "name": "Flat Vol",
+      "source_kind": "number"
+    },
+    "floatspreadmapping": {
+      "description": "The values the FloatSpreadMapping setting accepts.",
+      "is_ordered": false,
+      "name": "Float Spread Mapping",
+      "source_kind": "text"
+    },
+    "fxcalibration": {
+      "description": "The values the FxCalibration setting accepts.",
+      "is_ordered": false,
+      "name": "Fx Calibration",
+      "source_kind": "text"
+    },
+    "fxsource": {
+      "description": "The values the FXSource setting accepts.",
+      "is_ordered": false,
+      "name": "FXSource",
+      "source_kind": "text"
+    },
+    "fxvolatility": {
+      "description": "The values the FxVolatility setting accepts.",
+      "is_ordered": false,
+      "name": "Fx Volatility",
+      "source_kind": "text"
+    },
+    "fxvolatilitytimes": {
+      "description": "The values the FxVolatilityTimes setting accepts.",
+      "is_ordered": false,
+      "name": "Fx Volatility Times",
+      "source_kind": "text"
+    },
+    "generateadditionalresults": {
+      "description": "The values the GenerateAdditionalResults setting accepts.",
+      "is_ordered": false,
+      "name": "Generate Additional Results",
+      "source_kind": "text"
+    },
+    "globalmodel": {
+      "description": "The values the GlobalModel setting accepts.",
+      "is_ordered": false,
+      "name": "Global Model",
+      "source_kind": "text"
+    },
+    "gridcoarsening": {
+      "description": "The values the GridCoarsening setting accepts.",
+      "is_ordered": false,
+      "name": "Grid Coarsening",
+      "source_kind": "text"
+    },
+    "heston_calibrationexpiries": {
+      "description": "The values the Heston.CalibrationExpiries setting accepts.",
+      "is_ordered": false,
+      "name": "Heston Calibration Expiries",
+      "source_kind": "text"
+    },
+    "heston_calibrationmethod": {
+      "description": "The values the Heston.CalibrationMethod setting accepts.",
+      "is_ordered": false,
+      "name": "Heston Calibration Method",
+      "source_kind": "text"
+    },
+    "heston_calibrationvarianceterms": {
+      "description": "The values the Heston.CalibrationVarianceTerms setting accepts.",
+      "is_ordered": false,
+      "name": "Heston Calibration Variance Terms",
+      "source_kind": "text"
+    },
+    "heston_earlyexitthreshold": {
+      "description": "The values the Heston.EarlyExitThreshold setting accepts.",
+      "is_ordered": false,
+      "name": "Heston Early Exit Threshold",
+      "source_kind": "number"
+    },
+    "heston_initialvalues": {
+      "description": "The values the Heston.InitialValues setting accepts.",
+      "is_ordered": false,
+      "name": "Heston Initial Values",
+      "source_kind": "number"
+    },
+    "heston_maxacceptableerror": {
+      "description": "The values the Heston.MaxAcceptableError setting accepts.",
+      "is_ordered": false,
+      "name": "Heston Max Acceptable Error",
+      "source_kind": "number"
+    },
+    "heston_maxcalibrationattempts": {
+      "description": "The values the Heston.MaxCalibrationAttempts setting accepts.",
+      "is_ordered": false,
+      "name": "Heston Max Calibration Attempts",
+      "source_kind": "integer"
+    },
+    "heston_maximuminitialvalues": {
+      "description": "The values the Heston.MaximumInitialValues setting accepts.",
+      "is_ordered": false,
+      "name": "Heston Maximum Initial Values",
+      "source_kind": "number"
+    },
+    "heston_processdiscretization": {
+      "description": "The values the Heston.ProcessDiscretization setting accepts.",
+      "is_ordered": false,
+      "name": "Heston Process Discretization",
+      "source_kind": "text"
+    },
+    "heston_quantoprocessdiscretization": {
+      "description": "The values the Heston.QuantoProcessDiscretization setting accepts.",
+      "is_ordered": false,
+      "name": "Heston Quanto Process Discretization",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "PartialTruncation is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "PartialTruncation",
+          "order": 0,
+          "value": "PartialTruncation"
+        },
+        {
+          "description": "FullTruncation is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "FullTruncation",
+          "order": 1,
+          "value": "FullTruncation"
+        },
+        {
+          "description": "Reflection is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "Reflection",
+          "order": 2,
+          "value": "Reflection"
+        },
+        {
+          "description": "NonCentralChiSquareVariance is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "NonCentralChiSquareVariance",
+          "order": 3,
+          "value": "NonCentralChiSquareVariance"
+        },
+        {
+          "description": "QuadraticExponential is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "QuadraticExponential",
+          "order": 4,
+          "value": "QuadraticExponential"
+        },
+        {
+          "description": "QuadraticExponentialMartingale is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "QuadraticExponentialMartingale",
+          "order": 5,
+          "value": "QuadraticExponentialMartingale"
+        },
+        {
+          "description": "BroadieKayaExactSchemeLobatto is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "BroadieKayaExactSchemeLobatto",
+          "order": 6,
+          "value": "BroadieKayaExactSchemeLobatto"
+        },
+        {
+          "description": "BroadieKayaExactSchemeLaguerre is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "BroadieKayaExactSchemeLaguerre",
+          "order": 7,
+          "value": "BroadieKayaExactSchemeLaguerre"
+        },
+        {
+          "description": "BroadieKayaExactSchemeTrapezoidal is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "BroadieKayaExactSchemeTrapezoidal",
+          "order": 8,
+          "value": "BroadieKayaExactSchemeTrapezoidal"
+        }
+      ]
+    },
+    "heston_relaxedfellerconstraint": {
+      "description": "The values the Heston.RelaxedFellerConstraint setting accepts.",
+      "is_ordered": false,
+      "name": "Heston Relaxed Feller Constraint",
+      "source_kind": "number"
+    },
+    "indicatorsmoothingforderivatives": {
+      "description": "The values the IndicatorSmoothingForDerivatives setting accepts.",
+      "is_ordered": false,
+      "name": "Indicator Smoothing For Derivatives",
+      "source_kind": "text"
+    },
+    "indicatorsmoothingforvalues": {
+      "description": "The values the IndicatorSmoothingForValues setting accepts.",
+      "is_ordered": false,
+      "name": "Indicator Smoothing For Values",
+      "source_kind": "text"
+    },
+    "infdkvolatility": {
+      "description": "The values the InfDkVolatility setting accepts.",
+      "is_ordered": false,
+      "name": "Inf Dk Volatility",
+      "source_kind": "number"
+    },
+    "infjyindexvol": {
+      "description": "The values the InfJyIndexVol setting accepts.",
+      "is_ordered": false,
+      "name": "Inf Jy Index Vol",
+      "source_kind": "text"
+    },
+    "infjyrealratereversion": {
+      "description": "The values the InfJyRealRateReversion setting accepts.",
+      "is_ordered": false,
+      "name": "Inf Jy Real Rate Reversion",
+      "source_kind": "text"
+    },
+    "infjyrealratevol": {
+      "description": "The values the InfJyRealRateVol setting accepts.",
+      "is_ordered": false,
+      "name": "Inf Jy Real Rate Vol",
+      "source_kind": "text"
+    },
+    "infjyrealtonominalvolratio": {
+      "description": "The values the InfJyRealToNominalVolRatio setting accepts.",
+      "is_ordered": false,
+      "name": "Inf Jy Real To Nominal Vol Ratio",
+      "source_kind": "number"
+    },
+    "infjytimes": {
+      "description": "The values the InfJyTimes setting accepts.",
+      "is_ordered": false,
+      "name": "Inf Jy Times",
+      "source_kind": "text"
+    },
+    "infmodeltype": {
+      "description": "The values the InfModelType setting accepts.",
+      "is_ordered": false,
+      "name": "Inf Model Type",
+      "source_kind": "text"
+    },
+    "integrationpoints": {
+      "description": "The values the IntegrationPoints setting accepts.",
+      "is_ordered": false,
+      "name": "Integration Points",
+      "source_kind": "integer"
+    },
+    "irreversion": {
+      "description": "The values the IrReversion_ setting accepts.",
+      "is_ordered": false,
+      "name": "Ir Reversion",
+      "source_kind": "text"
+    },
+    "irvolatilitytype": {
+      "description": "The values the IrVolatilityType setting accepts.",
+      "is_ordered": false,
+      "name": "Ir Volatility Type",
+      "source_kind": "text"
+    },
+    "lossdistributionperiods": {
+      "description": "The values the LossDistributionPeriods setting accepts.",
+      "is_ordered": false,
+      "name": "Loss Distribution Periods",
+      "source_kind": "text"
+    },
+    "lowerlimit": {
+      "description": "The values the LowerLimit setting accepts.",
+      "is_ordered": false,
+      "name": "Lower Limit",
+      "source_kind": "number"
+    },
+    "max": {
+      "description": "The values the max setting accepts.",
+      "is_ordered": false,
+      "name": "max",
+      "source_kind": "number"
+    },
+    "maxcprmultiplier": {
+      "description": "The values the MaxCPRMultiplier setting accepts.",
+      "is_ordered": false,
+      "name": "Max CPRMultiplier",
+      "source_kind": "number"
+    },
+    "maxdiscretisationpoints": {
+      "description": "The values the MaxDiscretisationPoints setting accepts.",
+      "is_ordered": false,
+      "name": "Max Discretisation Points",
+      "source_kind": "integer"
+    },
+    "maxgapdays": {
+      "description": "The values the MaxGapDays setting accepts.",
+      "is_ordered": false,
+      "name": "Max Gap Days",
+      "source_kind": "integer"
+    },
+    "maxiterations": {
+      "description": "The values the MaxIterations setting accepts.",
+      "is_ordered": false,
+      "name": "Max Iterations",
+      "source_kind": "integer"
+    },
+    "maxpricethresholdsteps": {
+      "description": "The values the MaxPriceThresholdSteps setting accepts.",
+      "is_ordered": false,
+      "name": "Max Price Threshold Steps",
+      "source_kind": "integer"
+    },
+    "maxsamples": {
+      "description": "The values the MaxSamples setting accepts.",
+      "is_ordered": false,
+      "name": "Max Samples",
+      "source_kind": "integer"
+    },
+    "mctype": {
+      "description": "The values the McType setting accepts.",
+      "is_ordered": false,
+      "name": "Mc Type",
+      "source_kind": "text"
+    },
+    "meanreversion": {
+      "description": "The values the MeanReversion setting accepts.",
+      "is_ordered": false,
+      "name": "Mean Reversion",
+      "source_kind": "number"
+    },
+    "mesherconcentration": {
+      "description": "The values the MesherConcentration setting accepts.",
+      "is_ordered": false,
+      "name": "Mesher Concentration",
+      "source_kind": "number"
+    },
+    "mesherepsilon": {
+      "description": "The values the MesherEpsilon setting accepts.",
+      "is_ordered": false,
+      "name": "Mesher Epsilon",
+      "source_kind": "number"
+    },
+    "meshermaxconcentratingpoints": {
+      "description": "The values the MesherMaxConcentratingPoints setting accepts.",
+      "is_ordered": false,
+      "name": "Mesher Max Concentrating Points",
+      "source_kind": "integer"
+    },
+    "mesherscaling": {
+      "description": "The values the MesherScaling setting accepts.",
+      "is_ordered": false,
+      "name": "Mesher Scaling",
+      "source_kind": "number"
+    },
+    "method": {
+      "description": "The values the method setting accepts.",
+      "is_ordered": false,
+      "name": "method",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "SingleSwaptions is one of the values the ORE code accepts for method.",
+          "label": "SingleSwaptions",
+          "order": 0,
+          "value": "SingleSwaptions"
+        },
+        {
+          "description": "SwaptionArray is one of the values the ORE code accepts for method.",
+          "label": "SwaptionArray",
+          "order": 1,
+          "value": "SwaptionArray"
+        },
+        {
+          "description": "Automatic is one of the values the ORE code accepts for method.",
+          "label": "Automatic",
+          "order": 2,
+          "value": "Automatic"
+        }
+      ]
+    },
+    "min": {
+      "description": "The values the min setting accepts.",
+      "is_ordered": false,
+      "name": "min",
+      "source_kind": "number"
+    },
+    "mincprmultiplier": {
+      "description": "The values the MinCPRMultiplier setting accepts.",
+      "is_ordered": false,
+      "name": "Min CPRMultiplier",
+      "source_kind": "number"
+    },
+    "model": {
+      "description": "The values the Model setting accepts.",
+      "is_ordered": false,
+      "name": "Model",
+      "source_kind": "text"
+    },
+    "model_correlation": {
+      "description": "The values the model_Correlation setting accepts.",
+      "is_ordered": false,
+      "name": "model Correlation",
+      "source_kind": "text"
+    },
+    "nsimulations": {
+      "description": "The values the nSimulations setting accepts.",
+      "is_ordered": false,
+      "name": "n Simulations",
+      "source_kind": "integer"
+    },
+    "nx": {
+      "description": "The values the nx setting accepts.",
+      "is_ordered": false,
+      "name": "nx",
+      "source_kind": "integer"
+    },
+    "ny": {
+      "description": "The values the ny setting accepts.",
+      "is_ordered": false,
+      "name": "ny",
+      "source_kind": "integer"
+    },
+    "openenddatereplacement": {
+      "description": "The values the OpenEndDateReplacement setting accepts.",
+      "is_ordered": false,
+      "name": "Open End Date Replacement",
+      "source_kind": "text"
+    },
+    "optionexpiryposition": {
+      "description": "The values the OptionExpiryPosition setting accepts.",
+      "is_ordered": false,
+      "name": "Option Expiry Position",
+      "source_kind": "text"
+    },
+    "p": {
+      "description": "The values the p setting accepts.",
+      "is_ordered": false,
+      "name": "p",
+      "source_kind": "number"
+    },
+    "policy": {
+      "description": "The values the Policy setting accepts.",
+      "is_ordered": false,
+      "name": "Policy",
+      "source_kind": "text"
+    },
+    "polynomtype": {
+      "description": "The values the PolynomType setting accepts.",
+      "is_ordered": false,
+      "name": "Polynom Type",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Monomial is one of the values the ORE code accepts for PolynomType.",
+          "label": "Monomial",
+          "order": 0,
+          "value": "Monomial"
+        },
+        {
+          "description": "Laguerre is one of the values the ORE code accepts for PolynomType.",
+          "label": "Laguerre",
+          "order": 1,
+          "value": "Laguerre"
+        },
+        {
+          "description": "Hermite is one of the values the ORE code accepts for PolynomType.",
+          "label": "Hermite",
+          "order": 2,
+          "value": "Hermite"
+        },
+        {
+          "description": "Hyperbolic is one of the values the ORE code accepts for PolynomType.",
+          "label": "Hyperbolic",
+          "order": 3,
+          "value": "Hyperbolic"
+        },
+        {
+          "description": "Legendre is one of the values the ORE code accepts for PolynomType.",
+          "label": "Legendre",
+          "order": 4,
+          "value": "Legendre"
+        },
+        {
+          "description": "Chebyshev is one of the values the ORE code accepts for PolynomType.",
+          "label": "Chebyshev",
+          "order": 5,
+          "value": "Chebyshev"
+        },
+        {
+          "description": "Chebyshev2nd is one of the values the ORE code accepts for PolynomType.",
+          "label": "Chebyshev2nd",
+          "order": 6,
+          "value": "Chebyshev2nd"
+        }
+      ]
+    },
+    "precision": {
+      "description": "The values the Precision setting accepts.",
+      "is_ordered": false,
+      "name": "Precision",
+      "source_kind": "number"
+    },
+    "pricethreshold": {
+      "description": "The values the PriceThreshold setting accepts.",
+      "is_ordered": false,
+      "name": "Price Threshold",
+      "source_kind": "number"
+    },
+    "pricethresholdstep": {
+      "description": "The values the PriceThresholdStep setting accepts.",
+      "is_ordered": false,
+      "name": "Price Threshold Step",
+      "source_kind": "number"
+    },
+    "pricing_conversionratiodiscretisationgrid": {
+      "description": "The values the Pricing.ConversionRatioDiscretisationGrid setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing Conversion Ratio Discretisation Grid",
+      "source_kind": "number"
+    },
+    "pricing_mesherepsilon": {
+      "description": "The values the Pricing.MesherEpsilon setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing Mesher Epsilon",
+      "source_kind": "number"
+    },
+    "pricing_mesherscaling": {
+      "description": "The values the Pricing.MesherScaling setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing Mesher Scaling",
+      "source_kind": "number"
+    },
+    "pricing_samples": {
+      "description": "The values the Pricing.Samples setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing Samples",
+      "source_kind": "integer"
+    },
+    "pricing_seed": {
+      "description": "The values the Pricing.Seed setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing Seed",
+      "source_kind": "integer"
+    },
+    "pricing_sequence": {
+      "description": "The values the Pricing.Sequence setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing Sequence",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "MersenneTwister is one of the values the ORE code accepts for Pricing.Sequence.",
+          "label": "MersenneTwister",
+          "order": 0,
+          "value": "MersenneTwister"
+        },
+        {
+          "description": "MersenneTwisterAntithetic is one of the values the ORE code accepts for Pricing.Sequence.",
+          "label": "MersenneTwisterAntithetic",
+          "order": 1,
+          "value": "MersenneTwisterAntithetic"
+        },
+        {
+          "description": "Sobol is one of the values the ORE code accepts for Pricing.Sequence.",
+          "label": "Sobol",
+          "order": 2,
+          "value": "Sobol"
+        },
+        {
+          "description": "SobolBrownianBridge is one of the values the ORE code accepts for Pricing.Sequence.",
+          "label": "SobolBrownianBridge",
+          "order": 3,
+          "value": "SobolBrownianBridge"
+        },
+        {
+          "description": "Burley2020SobolBrownianBridge is one of the values the ORE code accepts for Pricing.Sequence.",
+          "label": "Burley2020SobolBrownianBridge",
+          "order": 4,
+          "value": "Burley2020SobolBrownianBridge"
+        }
+      ]
+    },
+    "pricing_stategridpoints": {
+      "description": "The values the Pricing.StateGridPoints setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing State Grid Points",
+      "source_kind": "integer"
+    },
+    "pricing_timestepsperyear": {
+      "description": "The values the Pricing.TimeStepsPerYear setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing Time Steps Per Year",
+      "source_kind": "integer"
+    },
+    "quantocurrencypairs": {
+      "description": "The values the QuantoCurrencyPairs setting accepts.",
+      "is_ordered": false,
+      "name": "Quanto Currency Pairs",
+      "source_kind": "text"
+    },
+    "recoveryrategrid": {
+      "description": "The values the recoveryRateGrid setting accepts.",
+      "is_ordered": false,
+      "name": "recovery Rate Grid",
+      "source_kind": "text"
+    },
+    "recoveryrateprobabilities": {
+      "description": "The values the recoveryRateProbabilities setting accepts.",
+      "is_ordered": false,
+      "name": "recovery Rate Probabilities",
+      "source_kind": "text"
+    },
+    "referencecalibrationgrid": {
+      "description": "The values the ReferenceCalibrationGrid setting accepts.",
+      "is_ordered": false,
+      "name": "Reference Calibration Grid",
+      "source_kind": "text"
+    },
+    "regression_maxsimtimeseq": {
+      "description": "The values the Regression.MaxSimTimesEQ setting accepts.",
+      "is_ordered": false,
+      "name": "Regression Max Sim Times EQ",
+      "source_kind": "integer"
+    },
+    "regression_maxsimtimesfx": {
+      "description": "The values the Regression.MaxSimTimesFX setting accepts.",
+      "is_ordered": false,
+      "name": "Regression Max Sim Times FX",
+      "source_kind": "integer"
+    },
+    "regression_maxsimtimesir": {
+      "description": "The values the Regression.MaxSimTimesIR setting accepts.",
+      "is_ordered": false,
+      "name": "Regression Max Sim Times IR",
+      "source_kind": "integer"
+    },
+    "regression_vargroupmode": {
+      "description": "The values the Regression.VarGroupMode setting accepts.",
+      "is_ordered": false,
+      "name": "Regression Var Group Mode",
+      "source_kind": "text"
+    },
+    "regressionorder": {
+      "description": "The values the RegressionOrder setting accepts.",
+      "is_ordered": false,
+      "name": "Regression Order",
+      "source_kind": "integer"
+    },
+    "regressionvariancecutoff": {
+      "description": "The values the RegressionVarianceCutoff setting accepts.",
+      "is_ordered": false,
+      "name": "Regression Variance Cutoff",
+      "source_kind": "text"
+    },
+    "regressormodel": {
+      "description": "The values the RegressorModel setting accepts.",
+      "is_ordered": false,
+      "name": "Regressor Model",
+      "source_kind": "text"
+    },
+    "requiredsamples": {
+      "description": "The values the RequiredSamples setting accepts.",
+      "is_ordered": false,
+      "name": "Required Samples",
+      "source_kind": "integer"
+    },
+    "requiredtolerance": {
+      "description": "The values the RequiredTolerance setting accepts.",
+      "is_ordered": false,
+      "name": "Required Tolerance",
+      "source_kind": "number"
+    },
+    "reversion": {
+      "description": "The values the Reversion setting accepts.",
+      "is_ordered": false,
+      "name": "Reversion",
+      "source_kind": "number"
+    },
+    "reversiontype": {
+      "description": "The values the ReversionType setting accepts.",
+      "is_ordered": false,
+      "name": "Reversion Type",
+      "source_kind": "text"
+    },
+    "runtype": {
+      "description": "The values the RunType setting accepts.",
+      "is_ordered": false,
+      "name": "Run Type",
+      "source_kind": "text"
+    },
+    "salvagingalgorithm": {
+      "description": "The values the SalvagingAlgorithm setting accepts.",
+      "is_ordered": false,
+      "name": "Salvaging Algorithm",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "None is one of the values the ORE code accepts for SalvagingAlgorithm.",
+          "label": "None",
+          "order": 0,
+          "value": "None"
+        },
+        {
+          "description": "Spectral is one of the values the ORE code accepts for SalvagingAlgorithm.",
+          "label": "Spectral",
+          "order": 1,
+          "value": "Spectral"
+        },
+        {
+          "description": "Hypersphere is one of the values the ORE code accepts for SalvagingAlgorithm.",
+          "label": "Hypersphere",
+          "order": 2,
+          "value": "Hypersphere"
+        },
+        {
+          "description": "LowerDiagonal is one of the values the ORE code accepts for SalvagingAlgorithm.",
+          "label": "LowerDiagonal",
+          "order": 3,
+          "value": "LowerDiagonal"
+        },
+        {
+          "description": "Higham is one of the values the ORE code accepts for SalvagingAlgorithm.",
+          "label": "Higham",
+          "order": 4,
+          "value": "Higham"
+        },
+        {
+          "description": "Principal is one of the values the ORE code accepts for SalvagingAlgorithm.",
+          "label": "Principal",
+          "order": 5,
+          "value": "Principal"
+        }
+      ]
+    },
+    "samples": {
+      "description": "The values the samples setting accepts.",
+      "is_ordered": false,
+      "name": "samples",
+      "source_kind": "integer"
+    },
+    "scheme": {
+      "description": "The values the Scheme setting accepts.",
+      "is_ordered": false,
+      "name": "Scheme",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "CrankNicolson is one of the values the ORE code accepts for Scheme.",
+          "label": "CrankNicolson",
+          "order": 0,
+          "value": "CrankNicolson"
+        },
+        {
+          "description": "Hundsdorfer is one of the values the ORE code accepts for Scheme.",
+          "label": "Hundsdorfer",
+          "order": 1,
+          "value": "Hundsdorfer"
+        },
+        {
+          "description": "Douglas is one of the values the ORE code accepts for Scheme.",
+          "label": "Douglas",
+          "order": 2,
+          "value": "Douglas"
+        },
+        {
+          "description": "CraigSneyd is one of the values the ORE code accepts for Scheme.",
+          "label": "CraigSneyd",
+          "order": 3,
+          "value": "CraigSneyd"
+        },
+        {
+          "description": "ModifiedCraigSneyd is one of the values the ORE code accepts for Scheme.",
+          "label": "ModifiedCraigSneyd",
+          "order": 4,
+          "value": "ModifiedCraigSneyd"
+        },
+        {
+          "description": "ImplicitEuler is one of the values the ORE code accepts for Scheme.",
+          "label": "ImplicitEuler",
+          "order": 5,
+          "value": "ImplicitEuler"
+        },
+        {
+          "description": "ExplicitEuler is one of the values the ORE code accepts for Scheme.",
+          "label": "ExplicitEuler",
+          "order": 6,
+          "value": "ExplicitEuler"
+        },
+        {
+          "description": "MethodOfLines is one of the values the ORE code accepts for Scheme.",
+          "label": "MethodOfLines",
+          "order": 7,
+          "value": "MethodOfLines"
+        },
+        {
+          "description": "TrBDF2 is one of the values the ORE code accepts for Scheme.",
+          "label": "TrBDF2",
+          "order": 8,
+          "value": "TrBDF2"
+        }
+      ]
+    },
+    "seed": {
+      "description": "The values the seed setting accepts.",
+      "is_ordered": false,
+      "name": "seed",
+      "source_kind": "integer"
+    },
+    "sensitivitydecomposition": {
+      "description": "The values the SensitivityDecomposition setting accepts.",
+      "is_ordered": false,
+      "name": "Sensitivity Decomposition",
+      "source_kind": "text"
+    },
+    "sensitivitytemplate": {
+      "description": "The values the SensitivityTemplate setting accepts.",
+      "is_ordered": false,
+      "name": "Sensitivity Template",
+      "source_kind": "text"
+    },
+    "separatecallputvols": {
+      "description": "The values the SeparateCallPutVols setting accepts.",
+      "is_ordered": false,
+      "name": "Separate Call Put Vols",
+      "source_kind": "text"
+    },
+    "sequencetype": {
+      "description": "The values the SequenceType setting accepts.",
+      "is_ordered": false,
+      "name": "Sequence Type",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "MersenneTwister is one of the values the ORE code accepts for SequenceType.",
+          "label": "MersenneTwister",
+          "order": 0,
+          "value": "MersenneTwister"
+        },
+        {
+          "description": "MersenneTwisterAntithetic is one of the values the ORE code accepts for SequenceType.",
+          "label": "MersenneTwisterAntithetic",
+          "order": 1,
+          "value": "MersenneTwisterAntithetic"
+        },
+        {
+          "description": "Sobol is one of the values the ORE code accepts for SequenceType.",
+          "label": "Sobol",
+          "order": 2,
+          "value": "Sobol"
+        },
+        {
+          "description": "SobolBrownianBridge is one of the values the ORE code accepts for SequenceType.",
+          "label": "SobolBrownianBridge",
+          "order": 3,
+          "value": "SobolBrownianBridge"
+        },
+        {
+          "description": "Burley2020SobolBrownianBridge is one of the values the ORE code accepts for SequenceType.",
+          "label": "Burley2020SobolBrownianBridge",
+          "order": 4,
+          "value": "Burley2020SobolBrownianBridge"
+        }
+      ]
+    },
+    "shifthorizon": {
+      "description": "The values the ShiftHorizon setting accepts.",
+      "is_ordered": false,
+      "name": "Shift Horizon",
+      "source_kind": "number"
+    },
+    "singleswaptionthreshold": {
+      "description": "The values the singleSwaptionThreshold setting accepts.",
+      "is_ordered": false,
+      "name": "single Swaption Threshold",
+      "source_kind": "number"
+    },
+    "soboldirectionintegers": {
+      "description": "The values the SobolDirectionIntegers setting accepts.",
+      "is_ordered": false,
+      "name": "Sobol Direction Integers",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Unit is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "Unit",
+          "order": 0,
+          "value": "Unit"
+        },
+        {
+          "description": "Jaeckel is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "Jaeckel",
+          "order": 1,
+          "value": "Jaeckel"
+        },
+        {
+          "description": "SobolLevitan is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "SobolLevitan",
+          "order": 2,
+          "value": "SobolLevitan"
+        },
+        {
+          "description": "SobolLevitanLemieux is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "SobolLevitanLemieux",
+          "order": 3,
+          "value": "SobolLevitanLemieux"
+        },
+        {
+          "description": "JoeKuoD5 is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "JoeKuoD5",
+          "order": 4,
+          "value": "JoeKuoD5"
+        },
+        {
+          "description": "JoeKuoD6 is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "JoeKuoD6",
+          "order": 5,
+          "value": "JoeKuoD6"
+        },
+        {
+          "description": "JoeKuoD7 is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "JoeKuoD7",
+          "order": 6,
+          "value": "JoeKuoD7"
+        },
+        {
+          "description": "Kuo is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "Kuo",
+          "order": 7,
+          "value": "Kuo"
+        },
+        {
+          "description": "Kuo2 is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "Kuo2",
+          "order": 8,
+          "value": "Kuo2"
+        },
+        {
+          "description": "Kuo3 is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "Kuo3",
+          "order": 9,
+          "value": "Kuo3"
+        }
+      ]
+    },
+    "sobolordering": {
+      "description": "The values the SobolOrdering setting accepts.",
+      "is_ordered": false,
+      "name": "Sobol Ordering",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Factors is one of the values the ORE code accepts for SobolOrdering.",
+          "label": "Factors",
+          "order": 0,
+          "value": "Factors"
+        },
+        {
+          "description": "Steps is one of the values the ORE code accepts for SobolOrdering.",
+          "label": "Steps",
+          "order": 1,
+          "value": "Steps"
+        },
+        {
+          "description": "Diagonal is one of the values the ORE code accepts for SobolOrdering.",
+          "label": "Diagonal",
+          "order": 2,
+          "value": "Diagonal"
+        }
+      ]
+    },
+    "spreadonincomecurve": {
+      "description": "The values the SpreadOnIncomeCurve setting accepts.",
+      "is_ordered": false,
+      "name": "Spread On Income Curve",
+      "source_kind": "text"
+    },
+    "sqrtsmoothingforderivatives": {
+      "description": "The values the SqrtSmoothingForDerivatives setting accepts.",
+      "is_ordered": false,
+      "name": "Sqrt Smoothing For Derivatives",
+      "source_kind": "text"
+    },
+    "stategridpoints": {
+      "description": "The values the StateGridPoints setting accepts.",
+      "is_ordered": false,
+      "name": "State Grid Points",
+      "source_kind": "integer"
+    },
+    "steps": {
+      "description": "The values the steps setting accepts.",
+      "is_ordered": false,
+      "name": "steps",
+      "source_kind": "integer"
+    },
+    "strikespread": {
+      "description": "The values the StrikeSpread setting accepts.",
+      "is_ordered": false,
+      "name": "Strike Spread",
+      "source_kind": "text"
+    },
+    "sx": {
+      "description": "The values the sx setting accepts.",
+      "is_ordered": false,
+      "name": "sx",
+      "source_kind": "number"
+    },
+    "sy": {
+      "description": "The values the sy setting accepts.",
+      "is_ordered": false,
+      "name": "sy",
+      "source_kind": "number"
+    },
+    "timegridminimumsize": {
+      "description": "The values the TimeGridMinimumSize setting accepts.",
+      "is_ordered": false,
+      "name": "Time Grid Minimum Size",
+      "source_kind": "integer"
+    },
+    "timegridperyear": {
+      "description": "The values the TimeGridPerYear setting accepts.",
+      "is_ordered": false,
+      "name": "Time Grid Per Year",
+      "source_kind": "integer"
+    },
+    "timestepperiod": {
+      "description": "The values the TimestepPeriod setting accepts.",
+      "is_ordered": false,
+      "name": "Timestep Period",
+      "source_kind": "text"
+    },
+    "timestepsperyear": {
+      "description": "The values the TimeStepsPerYear setting accepts.",
+      "is_ordered": false,
+      "name": "Time Steps Per Year",
+      "source_kind": "integer"
+    },
+    "timingadjustment": {
+      "description": "The values the TimingAdjustment setting accepts.",
+      "is_ordered": false,
+      "name": "Timing Adjustment",
+      "source_kind": "text"
+    },
+    "tolerance": {
+      "description": "The values the Tolerance setting accepts.",
+      "is_ordered": false,
+      "name": "Tolerance",
+      "source_kind": "number"
+    },
+    "training_basisfunction": {
+      "description": "The values the Training.BasisFunction setting accepts.",
+      "is_ordered": false,
+      "name": "Training Basis Function",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Monomial is one of the values the ORE code accepts for Training.BasisFunction.",
+          "label": "Monomial",
+          "order": 0,
+          "value": "Monomial"
+        },
+        {
+          "description": "Laguerre is one of the values the ORE code accepts for Training.BasisFunction.",
+          "label": "Laguerre",
+          "order": 1,
+          "value": "Laguerre"
+        },
+        {
+          "description": "Hermite is one of the values the ORE code accepts for Training.BasisFunction.",
+          "label": "Hermite",
+          "order": 2,
+          "value": "Hermite"
+        },
+        {
+          "description": "Hyperbolic is one of the values the ORE code accepts for Training.BasisFunction.",
+          "label": "Hyperbolic",
+          "order": 3,
+          "value": "Hyperbolic"
+        },
+        {
+          "description": "Legendre is one of the values the ORE code accepts for Training.BasisFunction.",
+          "label": "Legendre",
+          "order": 4,
+          "value": "Legendre"
+        },
+        {
+          "description": "Chebyshev is one of the values the ORE code accepts for Training.BasisFunction.",
+          "label": "Chebyshev",
+          "order": 5,
+          "value": "Chebyshev"
+        },
+        {
+          "description": "Chebyshev2nd is one of the values the ORE code accepts for Training.BasisFunction.",
+          "label": "Chebyshev2nd",
+          "order": 6,
+          "value": "Chebyshev2nd"
+        }
+      ]
+    },
+    "training_basisfunctionorder": {
+      "description": "The values the Training.BasisFunctionOrder setting accepts.",
+      "is_ordered": false,
+      "name": "Training Basis Function Order",
+      "source_kind": "integer"
+    },
+    "training_samples": {
+      "description": "The values the Training.Samples setting accepts.",
+      "is_ordered": false,
+      "name": "Training Samples",
+      "source_kind": "integer"
+    },
+    "training_seed": {
+      "description": "The values the Training.Seed setting accepts.",
+      "is_ordered": false,
+      "name": "Training Seed",
+      "source_kind": "integer"
+    },
+    "training_sequence": {
+      "description": "The values the Training.Sequence setting accepts.",
+      "is_ordered": false,
+      "name": "Training Sequence",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "MersenneTwister is one of the values the ORE code accepts for Training.Sequence.",
+          "label": "MersenneTwister",
+          "order": 0,
+          "value": "MersenneTwister"
+        },
+        {
+          "description": "MersenneTwisterAntithetic is one of the values the ORE code accepts for Training.Sequence.",
+          "label": "MersenneTwisterAntithetic",
+          "order": 1,
+          "value": "MersenneTwisterAntithetic"
+        },
+        {
+          "description": "Sobol is one of the values the ORE code accepts for Training.Sequence.",
+          "label": "Sobol",
+          "order": 2,
+          "value": "Sobol"
+        },
+        {
+          "description": "SobolBrownianBridge is one of the values the ORE code accepts for Training.Sequence.",
+          "label": "SobolBrownianBridge",
+          "order": 3,
+          "value": "SobolBrownianBridge"
+        },
+        {
+          "description": "Burley2020SobolBrownianBridge is one of the values the ORE code accepts for Training.Sequence.",
+          "label": "Burley2020SobolBrownianBridge",
+          "order": 4,
+          "value": "Burley2020SobolBrownianBridge"
+        }
+      ]
+    },
+    "trainingsamples": {
+      "description": "The values the TrainingSamples setting accepts.",
+      "is_ordered": false,
+      "name": "Training Samples",
+      "source_kind": "text"
+    },
+    "trainingseed": {
+      "description": "The values the TrainingSeed setting accepts.",
+      "is_ordered": false,
+      "name": "Training Seed",
+      "source_kind": "integer"
+    },
+    "trainingsequencetype": {
+      "description": "The values the TrainingSequenceType setting accepts.",
+      "is_ordered": false,
+      "name": "Training Sequence Type",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "MersenneTwister is one of the values the ORE code accepts for TrainingSequenceType.",
+          "label": "MersenneTwister",
+          "order": 0,
+          "value": "MersenneTwister"
+        },
+        {
+          "description": "MersenneTwisterAntithetic is one of the values the ORE code accepts for TrainingSequenceType.",
+          "label": "MersenneTwisterAntithetic",
+          "order": 1,
+          "value": "MersenneTwisterAntithetic"
+        },
+        {
+          "description": "Sobol is one of the values the ORE code accepts for TrainingSequenceType.",
+          "label": "Sobol",
+          "order": 2,
+          "value": "Sobol"
+        },
+        {
+          "description": "SobolBrownianBridge is one of the values the ORE code accepts for TrainingSequenceType.",
+          "label": "SobolBrownianBridge",
+          "order": 3,
+          "value": "SobolBrownianBridge"
+        },
+        {
+          "description": "Burley2020SobolBrownianBridge is one of the values the ORE code accepts for TrainingSequenceType.",
+          "label": "Burley2020SobolBrownianBridge",
+          "order": 4,
+          "value": "Burley2020SobolBrownianBridge"
+        }
+      ]
+    },
+    "treatsecurityspreadascreditspread": {
+      "description": "The values the TreatSecuritySpreadAsCreditSpread setting accepts.",
+      "is_ordered": false,
+      "name": "Treat Security Spread As Credit Spread",
+      "source_kind": "text"
+    },
+    "upperlimit": {
+      "description": "The values the UpperLimit setting accepts.",
+      "is_ordered": false,
+      "name": "Upper Limit",
+      "source_kind": "number"
+    },
+    "usead": {
+      "description": "The values the UseAD setting accepts.",
+      "is_ordered": false,
+      "name": "Use AD",
+      "source_kind": "text"
+    },
+    "useindexcdspricer": {
+      "description": "The values the useIndexCDSPricer setting accepts.",
+      "is_ordered": false,
+      "name": "use Index CDSPricer",
+      "source_kind": "text"
+    },
+    "useindexcurveforindexcds": {
+      "description": "The values the useIndexCurveForIndexCDS setting accepts.",
+      "is_ordered": false,
+      "name": "use Index Curve For Index CDS",
+      "source_kind": "text"
+    },
+    "variancestategridpoints": {
+      "description": "The values the VarianceStateGridPoints setting accepts.",
+      "is_ordered": false,
+      "name": "Variance State Grid Points",
+      "source_kind": "integer"
+    },
+    "vegaratio": {
+      "description": "The values the VegaRatio setting accepts.",
+      "is_ordered": false,
+      "name": "Vega Ratio",
+      "source_kind": "number"
+    },
+    "volatility": {
+      "description": "The values the Volatility setting accepts.",
+      "is_ordered": false,
+      "name": "Volatility",
+      "source_kind": "number"
+    },
+    "volatilitytimes": {
+      "description": "The values the VolatilityTimes setting accepts.",
+      "is_ordered": false,
+      "name": "Volatility Times",
+      "source_kind": "number"
+    },
+    "volatilitytype": {
+      "description": "The values the VolatilityType setting accepts.",
+      "is_ordered": false,
+      "name": "Volatility Type",
+      "source_kind": "text"
+    },
+    "xgrid": {
+      "description": "The values the XGrid setting accepts.",
+      "is_ordered": false,
+      "name": "XGrid",
+      "source_kind": "integer"
+    },
+    "yieldcurvemodel": {
+      "description": "The values the YieldCurveModel setting accepts.",
+      "is_ordered": false,
+      "name": "Yield Curve Model",
+      "source_kind": "text"
+    }
+  }
+}

@@ -59,6 +59,7 @@ export type KnownTemplate = PricingVocabulary['templates'][number];
 
 /** A vocabulary that knows nothing, for a screen that has not read one yet. */
 export const EMPTY_VOCABULARY: PricingVocabulary = {
+    valueSets: {},
     globals: [],
     types: [],
     pairs: [],
@@ -90,6 +91,15 @@ export function pairsFor(vocabulary: PricingVocabulary, typeCode: string): reado
 }
 
 /** The pair ORE's examples use most for a product type, when there is one. */
+/** The words a person reads for a product type, and its code when it has none. */
+export function typeName(
+    vocabulary: PricingVocabulary | undefined,
+    typeCode: string,
+): string {
+    const type = vocabulary?.types.find((candidate) => candidate.code === typeCode);
+    return type !== undefined && type.description !== '' ? type.description : typeCode;
+}
+
 export function usualPair(vocabulary: PricingVocabulary, typeCode: string): KnownPair | undefined {
     return pairsFor(vocabulary, typeCode).find((pair) => pair.usual);
 }

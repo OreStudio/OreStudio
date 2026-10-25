@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 3E1AFCC9-7A5D-52DC-825E-869C2589C60F
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the ore_parameter_value_sets commands from the shell?
+#+description: Every command the ore_parameter_value_sets submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:ore_parameter_value_sets:
+
+This file documents the ore_parameter_value_sets resource at the shell, one section per command. Every command is a subcommand of =ore_parameter_value_sets=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 36072B8C-2621-5BCB-AA11-B40061BD575E
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_sets list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_sets.list=.
+
+#+name: ore_parameter_value_sets-list
+#+begin_src ores-shell :tangle ore_parameter_value_sets-list.ores :exports none
+ore_parameter_value_sets list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 537FF91C-A6C0-5D59-A148-A59D3E69EAE6
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_sets get <code>
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_sets.get=.
+
+#+name: ore_parameter_value_sets-get
+#+begin_src ores-shell :tangle ore_parameter_value_sets-get.ores :exports none
+ore_parameter_value_sets get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 728EB62A-0E9E-51C2-B24D-2E7B41C15363
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_sets get-many <code>
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_sets.get_many=.
+
+#+name: ore_parameter_value_sets-get-many
+#+begin_src ores-shell :tangle ore_parameter_value_sets-get-many.ores :exports none
+ore_parameter_value_sets get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 215F1B48-F057-5A30-B85D-008CE1D18F31
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_sets add <code> <name> <description> <source_kind> <catalogue_code> <minimum> <maximum> <pattern> <is_ordered> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_sets.put=.
+
+#+name: ore_parameter_value_sets-add
+#+begin_src ores-shell :tangle ore_parameter_value_sets-add.ores :exports none
+ore_parameter_value_sets add __none__ __none__ __none__ __none__ __none__ - - __none__ false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 43CF7F0D-B09D-572D-AF14-24894B299694
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_sets set <code> <name> <description> <source_kind> <catalogue_code> <minimum> <maximum> <pattern> <is_ordered> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_sets.put=.
+
+#+name: ore_parameter_value_sets-set
+#+begin_src ores-shell :tangle ore_parameter_value_sets-set.ores :exports none
+ore_parameter_value_sets set __none__ __none__ __none__ __none__ __none__ - - __none__ false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 22B5FE47-FAB0-5E0D-80DF-A2D7ED26C9B3
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_sets put-many --count <n> <code> <name> <description> <source_kind> <catalogue_code> <minimum> <maximum> <pattern> <is_ordered> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_sets.put_many=.
+
+#+name: ore_parameter_value_sets-put-many
+#+begin_src ores-shell :tangle ore_parameter_value_sets-put-many.ores :exports none
+ore_parameter_value_sets put-many --count 1 __none__ __none__ __none__ __none__ __none__ - - __none__ false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: BDC081B5-F8B7-5233-94BF-CC026B0E70E6
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_sets delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_sets.delete=.
+
+#+name: ore_parameter_value_sets-delete
+#+begin_src ores-shell :tangle ore_parameter_value_sets-delete.ores :exports none
+ore_parameter_value_sets delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: A5E1537F-3448-59B4-BC95-166E18BFA15A
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_sets delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_sets.delete_many=.
+
+#+name: ore_parameter_value_sets-delete-many
+#+begin_src ores-shell :tangle ore_parameter_value_sets-delete-many.ores :exports none
+ore_parameter_value_sets delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9544E727-26ED-5E43-839D-AAF89C2B0857
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_sets versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_sets_versions.list=.
+
+#+name: ore_parameter_value_sets-versions
+#+begin_src ores-shell :tangle ore_parameter_value_sets-versions.ores :exports none
+ore_parameter_value_sets versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: BEF51298-C1ED-5A3D-8F59-2C4178BDCCC8
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+ore_parameter_value_sets version <code> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.ore_parameter_value_sets_versions.get=.
+
+#+name: ore_parameter_value_sets-version
+#+begin_src ores-shell :tangle ore_parameter_value_sets-version.ores :exports none
+ore_parameter_value_sets version __none__ --version 1
+#+end_src
+

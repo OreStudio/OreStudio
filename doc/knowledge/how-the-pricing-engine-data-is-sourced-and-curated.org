@@ -30,8 +30,9 @@ The pricing engine data is extracted from the ORE guide and source by a script, 
 |-------+----------+---------|
 | Source | ORE guide chapter and source, at a recorded commit | The facts |
 | Extract | =extract_vocabulary.py=, =pricing_vocabulary.json= | Product types, pairs, setting names, guide text |
+| Type | =extract_parameter_types.py=, =curation/value-sets.json= | A setting's type and its enumerated values |
 | Curate | =curation/*.json= (this methodology) | Authored texts, name fixes, instrument mappings |
-| Generate | =generate_vocabulary_sql.py=, =generate_ore_parameters_dataset.py= | Deterministic SQL |
+| Generate | =generate_vocabulary_sql.py=, =generate_ore_parameters_dataset.py=, =generate_value_sets.py= | Deterministic SQL |
 | Store | Analytics tables, =ore_parameters= | The data the API reads |
 | Serve | =/api/reporting/pricing-engines/vocabulary= | The view a screen reads |
 | Render | The screen | Nothing but the view |
@@ -43,6 +44,52 @@ The current seed was measured at ORE commit =3d75a6908=. Recording the commit be
 =extract_vocabulary.py= reads =Docs/UserGuide/pricing/pricingengines.tex= and splits it on each =Product Type:= subsection. For each product type it records the trade type in =used_by=, the model and engine pairs, and for each pair the settings with their scope, name, kind, usual value, options, required flag and the guide text. The result is =pricing_vocabulary.json=, a derived file, not a hand-edited one.
 
 The extraction does not decide an instrument code. It records the trade type it read, which is the input to the mapping in curation.
+
+** The value sets
+
+The guide states a setting's allowed values for some settings and omits them for
+the rest. The code always states the type: every =engineParameter= or
+=modelParameter= call is wrapped in a parser, and an enumerated parser maps the
+document's string to a C++ enum, so its map is the enum's own list of values.
+
+=extract_parameter_types.py= reads that in one pass over the ORE source. It
+records, for every parameter name, the scope, the parser, the source file and
+line, and for an enumerated parser the strings its map lists, in the map's
+order. It types 226 parameters today: 50 boolean, 43 integer, 56 real, 4 period,
+13 enumerated and 60 text.
+
+The rules, all mechanical:
+
+- =parseBool= gives a flag set; the setting is one of the two switch values.
+- =parseInteger=, =parseReal= and =parsePeriod= give a set whose source kind
+  states the type (integer, number or text) and carries no values. The screen
+  draws the field from it and the check refuses a value that is not of the type.
+- An enumerated parser, such as =parsePolynomType=, =parseSequenceType=,
+  =parseRegressorModel= or =parseSalvagingAlgorithmType=, gives an enumerated set
+  whose values are the parser's map keys, in order.
+- =parseListOfValues= takes its type from the inner parser named after the list.
+
+=--merge= writes =curation/value-sets-code.json=. The code's file is rewritten
+on every extraction; the guide's =value-sets.json= is a person's file. The seed
+generator composes them, the code over the guide: a code set replaces the guide's
+set of the same name, and a guide set no setting names after that is dropped
+because its link now points at the set the code states. The generator then
+refuses a set no setting names, an enumerated set with no values, or a link to an
+unknown set. Writing the code's file whole is what keeps a re-extraction from
+leaving a stale link behind.
+
+The extraction is build-time evidence. The rows it produces are written by the
+seed, and the screen and the write path read the rows. Nothing reads the parser,
+the code or the guide at run time.
+
+The parser must wrap the parameter call directly. A wider window let one parser
+claim a parameter that a later call in the same statement reads, and the first
+run of this script typed =ReferenceCalibrationGrid=, a calibration grid, as a
+boolean for that reason; the trigger then refused the grid during provisioning.
+That failure is the gate working. A parameter a compound call reads, such as a
+ternary that chooses between two names, is not matched and keeps the guide's set
+or none; the review catches it by comparing the typed count with the parameter
+count.
 
 ** The curation
 
@@ -58,6 +105,8 @@ Curation is data, not code. It lives in =projects/ores.seeder/datasets/ore_prici
 | =engines.json= | the description, the detail and the source of an engine |
 | =templates.json= | the asset class, the method and the description of a sensitivity template |
 | =globals.json= | a global parameter: its domain, default, label, help and description |
+| =value-sets.json= | each guide value set, its values, the catalogues it draws on and the setting that names it |
+| =value-sets-code.json= | the sets the type extractor writes, one per type and enum it finds |
 
 #+begin_src json
 "AmericanSwaption_XCcy": {
@@ -112,18 +161,23 @@ Some gates are live. The parameter generator fails on a parameter without a text
 - a description is only the humanised code and the type has no curated documentation;
 - a global parameter has no domain or no text;
 - the same leaf would be written twice;
+- a value set has no values, or no setting names it;
+- a setting's usual value is not in its set;
 - =--check= finds the committed SQL differs from the generated SQL.
+
+=ores.shell ore_parameter_settings check= reads the contract and the four value set tables over the reporting subjects and prints the count with a set, the links outside the contract and any enumerated set with no values, then OK or FAIL. =ore_parameter_settings list= prints every parameter with its type and choices, and =ore_parameter_settings show <name>= prints one. The command is the live gate a person runs against an environment; the SQL view is the same facts for a query.
 
 The coverage report prints, per run: types mapped, types unmapped, settings documented, globals documented, and the rows whose text is authored rather than extracted. A reviewer reads the report before the diff.
 
 ** Review
 
-1. Run the extractor against the recorded ORE commit.
+1. Run the extractor against the recorded ORE commit, then the type extractor with =--merge= and read the counts it reports.
 2. Read the coverage report: every count that moved is explained.
 3. Read the curation diff: every entry has a reason, a source and a source reference.
 4. Spot-check one product from each asset class against the guide.
 5. Run the generator and =--check=.
-6. Run the screens' tests; the vocabulary fixtures are built from the same data shape.
+6. Run =generate_value_sets.py --check= and read the set and link counts.
+7. Run the screens' tests; the vocabulary fixtures are built from the same data shape.
 
 ** Current state and gaps
 

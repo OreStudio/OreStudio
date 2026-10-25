@@ -56,6 +56,7 @@
 \ir ./workflow/workflow_create.sql
 \ir ./marketdata/marketdata_create.sql
 \ir ./analytics/analytics_create.sql
+\ir ./reporting/reporting_ore_parameter_value_set_catalogue_views_create.sql
 \ir ./synthetic/synthetic_create.sql
 \ir ./inbox/inbox_create.sql
 

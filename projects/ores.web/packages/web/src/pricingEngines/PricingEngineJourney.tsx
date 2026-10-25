@@ -64,6 +64,7 @@ import {
     EMPTY_VOCABULARY,
 } from './model.js';
 import { DifferenceList, FindingsList, ModelEnginePanels, SettingValue } from './parts.js';
+import { typeName } from './model.js';
 import { writeOf } from './SaveDialog.js';
 
 /** Where the list of configurations is cached, which the name check and the copy read. */
@@ -354,7 +355,9 @@ function EnginesStep({
                 return (
                     <li key={product.id} className="space-y-2 py-3">
                         <div className="flex flex-wrap items-baseline justify-between gap-2">
-                            <span className="font-medium">{product.typeCode}</span>
+                            <span className="font-medium">
+                                {typeName(vocabulary, product.typeCode)}
+                            </span>
                             {!known && product.model !== '' && product.engine !== '' && (
                                 <Tag tone="warn">{t('pricingEngines.author.engines.unknown')}</Tag>
                             )}
@@ -465,7 +468,7 @@ function SettingsOfProduct({
     return (
         <li className="space-y-3 py-3">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="font-medium">{product.typeCode}</span>
+                <span className="font-medium">{typeName(vocabulary, product.typeCode)}</span>
                 <span className="font-mono text-xs">
                     {product.model} / {product.engine}
                 </span>

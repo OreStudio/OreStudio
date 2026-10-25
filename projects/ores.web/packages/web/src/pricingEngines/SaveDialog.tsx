@@ -65,6 +65,7 @@ export function SaveDialog({
     vocabulary,
     onClose,
     onSaved,
+    onlyProductId,
     children,
 }: {
     readonly title: string;
@@ -74,6 +75,8 @@ export function SaveDialog({
     readonly vocabulary: PricingVocabulary;
     readonly onClose: () => void;
     readonly onSaved?: () => void;
+    /** Report findings for one product only, when a dialog changes just that one. */
+    readonly onlyProductId?: string;
     /** The editor itself. */
     readonly children: ReactNode;
 }): ReactNode {
@@ -81,7 +84,12 @@ export function SaveDialog({
     const queries = useQueryClient();
     const before = draftOf(document);
     const changes = difference(before, after);
-    const findings = check(after, vocabulary);
+    const findings = check(after, vocabulary).filter(
+        (finding) =>
+            onlyProductId === undefined ||
+            finding.productId === undefined ||
+            finding.productId === onlyProductId,
+    );
     const reason = useReason('amend', changes.length > 0);
     const [commentary, setCommentary] = useState('');
     const [conflict, setConflict] = useState(false);
@@ -95,12 +103,17 @@ export function SaveDialog({
                 document.version,
                 writeOf(after, { reason_code: reason.code, commentary: commentary.trim() }),
             ),
-        onSuccess: async () => {
+        onSuccess: () => {
             setConflict(false);
-            await queries.invalidateQueries({ queryKey: ['pricing-engine'] });
-            await queries.invalidateQueries({ queryKey: ['records', 'pricing-engines'] });
             onSaved?.();
+            /*
+             * Close before the refetch. A dialog left open after a save invites a
+             * second save from the same, now stale, document, and the service
+             * refuses that with a duplicate name rather than a conflict.
+             */
             onClose();
+            void queries.invalidateQueries({ queryKey: ['pricing-engine'] });
+            void queries.invalidateQueries({ queryKey: ['records', 'pricing-engines'] });
         },
         onError: (error) => {
             setConflict(error instanceof ApiFailure && error.status === 409);

@@ -125,6 +125,68 @@ const DOCUMENT: PricingDocument = {
 };
 
 const VOCABULARY: PricingVocabulary = {
+    valueSets: {
+        'ModelParameters|Calibration': {
+            valueSet: 'calibration',
+            sourceKind: 'enumerated',
+            choices: [
+                { value: 'Bootstrap', label: 'Bootstrap calibration' },
+                { value: 'BestFit', label: 'Best fit' },
+            ],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+        },
+        'EngineParameters|TimeSteps': {
+            valueSet: 'timesteps',
+            sourceKind: 'range',
+            choices: [],
+            minimum: 1,
+            maximum: 500,
+            pattern: '',
+        },
+        'EngineParameters|Training.Samples': {
+            valueSet: 'training_samples',
+            sourceKind: 'integer',
+            choices: [],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+        },
+        'EngineParameters|Training.Sequence': {
+            valueSet: 'training_sequence',
+            sourceKind: 'enumerated',
+            choices: [
+                { value: 'MersenneTwister', label: 'MersenneTwister' },
+                { value: 'SobolBrownianBridge', label: 'SobolBrownianBridge' },
+            ],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+        },
+        'EngineParameters|SensitivityTemplate': {
+            valueSet: 'sensitivity_template',
+            sourceKind: 'catalogue',
+            choices: [
+                { value: 'IR_FD', label: 'IR_FD' },
+                { value: 'IR_Analytical', label: 'IR_Analytical' },
+            ],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+        },
+        'EngineParameters|TimestepPeriod': {
+            valueSet: 'tenor',
+            sourceKind: 'catalogue',
+            choices: [
+                { value: '3M', label: '3M' },
+                { value: '6M', label: '6M' },
+            ],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+        },
+    },
     globals: [],
     types: [
         {
@@ -175,6 +237,82 @@ const VOCABULARY: PricingVocabulary = {
             required: true,
             help: 'The step of the grid.',
             description: 'The step of the grid.',
+        },
+        {
+            typeCode: 'BermudanSwaption',
+            model: 'LGM',
+            engine: 'Grid',
+            scope: 'model',
+            name: 'Calibration',
+            kind: 'select',
+            usual: 'Bootstrap',
+            options: ['Bootstrap', 'BestFit'],
+            valueSet: 'calibration',
+            sourceKind: 'enumerated',
+            choices: [
+                { value: 'Bootstrap', label: 'Bootstrap calibration' },
+                { value: 'BestFit', label: 'Best fit' },
+            ],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+            required: false,
+            help: 'How the model is fitted.',
+            description: 'How the model is fitted.',
+        },
+        {
+            typeCode: 'BermudanSwaption',
+            model: 'LGM',
+            engine: 'Grid',
+            scope: 'engine',
+            name: 'TimeSteps',
+            kind: 'number',
+            usual: '100',
+            options: [],
+            valueSet: 'timesteps',
+            sourceKind: 'range',
+            choices: [],
+            minimum: 1,
+            maximum: 500,
+            pattern: '',
+            required: false,
+        },
+        {
+            typeCode: '',
+            model: '',
+            engine: '',
+            scope: 'engine',
+            name: 'Training.Sequence',
+            kind: 'text',
+            usual: 'SobolBrownianBridge',
+            options: [],
+            valueSet: 'training_sequence',
+            sourceKind: 'enumerated',
+            choices: [
+                { value: 'MersenneTwister', label: 'MersenneTwister' },
+                { value: 'SobolBrownianBridge', label: 'SobolBrownianBridge' },
+            ],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+            required: false,
+        },
+        {
+            typeCode: 'BermudanSwaption',
+            model: 'LGM',
+            engine: 'Grid',
+            scope: 'engine',
+            name: 'Training.Samples',
+            kind: 'text',
+            usual: '1024',
+            options: [],
+            valueSet: 'training_samples',
+            sourceKind: 'integer',
+            choices: [],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+            required: false,
         },
     ],
     models: [
@@ -534,5 +672,75 @@ describe('the value of a setting', () => {
             'IR · Finite difference. Interest rate products priced on a grid.',
         );
         expect(textOf(html)).not.toContain('required');
+    });
+
+    it('draws the choices of a setting as a select of their labels', () => {
+        const html = renderRecords(
+            '/setting',
+            [],
+            <Route
+                path="/setting"
+                element={
+                    <SettingValue
+                        vocabulary={VOCABULARY}
+                        typeCode="BermudanSwaption"
+                        model="LGM"
+                        engine="Grid"
+                        name="Calibration"
+                        scope="model"
+                        value="Bootstrap"
+                        onChange={() => undefined}
+                    />
+                }
+            />,
+            () => undefined,
+        );
+        expect(html).toContain(
+            '<option value="Bootstrap" selected="">Bootstrap calibration</option>',
+        );
+        expect(html).toContain('<option value="BestFit">Best fit</option>');
+    });
+
+    it('keeps a value the set no longer offers selectable', () => {
+        const html = renderRecords(
+            '/setting',
+            [],
+            <Route
+                path="/setting"
+                element={
+                    <SettingValue
+                        vocabulary={VOCABULARY}
+                        typeCode="BermudanSwaption"
+                        model="LGM"
+                        engine="Grid"
+                        name="Calibration"
+                        scope="model"
+                        value="Legacy"
+                        onChange={() => undefined}
+                    />
+                }
+            />,
+            () => undefined,
+        );
+        expect(html).toContain('<option value="Legacy" selected="">Legacy</option>');
+    });
+
+    it('bounds a number by the range its value set states', () => {
+        const html = setting('TimeSteps', '100');
+        expect(html).toContain('type="number"');
+        expect(html).toContain('min="1"');
+        expect(html).toContain('max="500"');
+    });
+
+    it('draws a setting the guide does not list from its own value set', () => {
+        const html = setting('Training.Sequence', 'SobolBrownianBridge');
+        expect(html).toContain('<option value="SobolBrownianBridge" selected="">');
+        expect(html).toContain('<option value="MersenneTwister">MersenneTwister</option>');
+    });
+
+    it('draws an integer as a whole-number field from the set', () => {
+        const html = setting('Training.Samples', '1024');
+        expect(html).toContain('type="number"');
+        expect(html).toContain('step="1"');
     });
 });

@@ -133,6 +133,35 @@ def setting_rows():
     return out
 
 
+def code_setting_rows():
+    """The settings the ORE code reads that the guide never lists.
+
+    They have no product type, so they carry none: a pair never chooses one, and
+    a screen reaches the text by the setting's name.
+    """
+    releases_by_name = releases()
+    rows = []
+    for name, entry in CURATED.code_settings.items():
+        scope = "ModelParameters" if entry["scope"] == "model" else "EngineParameters"
+        path = "Model" if entry["scope"] == "model" else "Engine"
+        rows.append({
+            "scope": scope,
+            "subtype": "",
+            "name": name,
+            "domain": "string",
+            "required": False,
+            "label": humanise(name),
+            "help": first_sentence(entry["description"]),
+            "description": entry["description"],
+            "default_text": "The code's own default.",
+            "format": "A value the ORE code reads for this model or engine.",
+            "introduced_in": releases_by_name.get(name) or "1.8.0.7 or earlier",
+            "removed_in": None,
+            "xpath": f"/PricingEngines/Product/{path}Parameters/Parameter[@name='{name}']",
+        })
+    return rows
+
+
 def global_rows():
     releases_by_name = releases()
     out = []
@@ -281,11 +310,61 @@ def type_rows():
     return rows
 
 
+CURATION_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "ores.seeder", "datasets",
+    "ore_pricing_engines", "curation")
+PARAMETER_SCOPES = {"ModelParameters", "EngineParameters", "GlobalParameters"}
+DOMAIN_OF_SET_KIND = {
+    "boolean": "boolean",
+    "integer": "integer",
+    "number": "double",
+    "range": "double",
+    "text": "string",
+    "enumerated": "string",
+    "catalogue": "string",
+    "regex": "string",
+}
+
+
+def domain_of_value_set():
+    """The storage domain the value set states, by the parameter's (scope, name).
+
+    The set is the one statement of a parameter's type. The guide's kind is a
+    reading of its prose and defaults to a string; where a set exists, it wins.
+    """
+    sets = {}
+    links = {}
+    for name in ("value-sets.json", "value-sets-code.json", "value-sets-review.json"):
+        path = os.path.join(CURATION_DIR, name)
+        if not os.path.exists(path):
+            continue
+        with open(path) as handle:
+            data = json.load(handle)
+        sets.update(data.get("sets", {}))
+        links.update(data.get("links", {}))
+    domains = {}
+    for key, code in links.items():
+        kind = sets.get(code, {}).get("source_kind")
+        if kind in DOMAIN_OF_SET_KIND:
+            domains[key] = DOMAIN_OF_SET_KIND[kind]
+    by_name = {}
+    for key, domain in domains.items():
+        by_name.setdefault(key.partition("|")[2], set()).add(domain)
+    settled = {name: next(iter(found)) for name, found in by_name.items() if len(found) == 1}
+    return domains, settled
+
+
 def rows():
+    stated, stated_by_name = domain_of_value_set()
     out = []
     for position, row in enumerate(
-        setting_rows() + global_rows() + model_rows() + pair_rows() + type_rows(), start=1
+        setting_rows() + global_rows() + model_rows() + pair_rows() + type_rows()
+        + code_setting_rows(), start=1
     ):
+        stated_domain = stated.get(f"{row.get('scope')}|{row.get('name')}") or stated_by_name.get(
+            row.get("name"))
+        if stated_domain is not None and row.get("scope") in PARAMETER_SCOPES:
+            row = {**row, "domain": stated_domain}
         out.append({**row, "position": position})
     return out
 

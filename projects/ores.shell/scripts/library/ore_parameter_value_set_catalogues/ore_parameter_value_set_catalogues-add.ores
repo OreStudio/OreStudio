@@ -1,0 +1,6 @@
+# =add=
+#
+# GENERATED from doc/recipes/shell/ore_parameter_value_set_catalogues/ore_parameter_value_set_catalogue.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+ore_parameter_value_set_catalogues add __none__ __none__ __none__ __none__ false system.new_record generated_script

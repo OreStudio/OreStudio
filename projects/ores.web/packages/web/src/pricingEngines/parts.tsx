@@ -235,10 +235,53 @@ export function ModelEnginePanels({
 }
 
 /**
- * One setting's value, drawn for the kind the vocabulary gives it: a select for a
- * list of values, a tenor or a sensitivity template, and a field for the rest. The
- * meaning of the setting stands under the field.
+ * The choices a value set states, as a select of their labels. A value the set
+ * no longer offers stays selectable, so a save never drops it unasked.
  */
+export function ChoiceSelect({
+    choices,
+    value,
+    label,
+    onChange,
+}: {
+    readonly choices: readonly { readonly value: string; readonly label: string }[];
+    readonly value: string;
+    readonly label?: string;
+    readonly onChange: (value: string) => void;
+}): ReactNode {
+    return (
+        <Select
+            {...(label !== undefined ? { 'aria-label': label } : {})}
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+        >
+            {[
+                ...choices,
+                ...(choices.some((choice) => choice.value === value)
+                    ? []
+                    : [{ value, label: value }]),
+            ].map((choice) => (
+                <option key={choice.value} value={choice.value}>
+                    {choice.label}
+                </option>
+            ))}
+        </Select>
+    );
+}
+
+/**
+ * One setting's value, drawn for the values the vocabulary gives it: a select
+ * for a list the value set states, a tenor or a sensitivity template, a number
+ * bounded by the range, and a field for the rest. The meaning of the setting
+ * stands under the field.
+ */
+export /** The scope a link row uses for a setting's scope in the contract. */
+function linkScope(scope: string): string {
+    if (scope === 'model') return 'ModelParameters';
+    if (scope === 'engine') return 'EngineParameters';
+    return scope;
+}
+
 export function SettingValue({
     vocabulary,
     typeCode,
@@ -259,16 +302,25 @@ export function SettingValue({
     readonly onChange: (value: string) => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const setting = settingsFor(vocabulary, typeCode, model, engine).find(
-        (candidate) => candidate.name === name && candidate.scope === scope,
-    );
+    /*
+     * The value model is the contract's: the link table names one set for every
+     * (scope, name), and the reply serves them all in one map. The setting row
+     * supplies the words, never the values.
+     */
+    const setting =
+        settingsFor(vocabulary, typeCode, model, engine).find(
+            (candidate) => candidate.name === name && candidate.scope === scope,
+        ) ??
+        vocabulary.settings.find(
+            (candidate) => candidate.name === name && candidate.scope === scope,
+        ) ??
+        vocabulary.settings.find((candidate) => candidate.name === name);
+    const allowed = vocabulary.valueSets[`${linkScope(scope)}|${name}`];
     const kind = setting?.kind ?? 'text';
-    const options =
-        kind === 'tenor'
-            ? vocabulary.tenors.map((tenor) => tenor.code)
-            : kind === 'reference'
-              ? vocabulary.templates.map((template) => template.code)
-              : (setting?.options ?? []);
+    const choices = allowed?.choices ?? [];
+    const sourceKind = allowed?.sourceKind ?? '';
+    const ranged = sourceKind === 'range';
+    const numeric = ranged || sourceKind === 'integer' || sourceKind === 'number';
     const template = kind === 'reference' ? templateInfo(vocabulary, value) : undefined;
     const meaning =
         template === undefined
@@ -277,18 +329,27 @@ export function SettingValue({
     const label = `${name} (${scope})${setting?.required === true ? ` · ${t('pricingEngines.fields.required')}` : ''}`;
     return (
         <Field label={label} {...(meaning !== '' ? { hint: meaning } : {})}>
-            {options.length > 0 ? (
-                <Select value={value} onChange={(event) => onChange(event.target.value)}>
-                    {[...new Set([...options, value])].map((entry) => (
-                        <option key={entry} value={entry}>
-                            {entry}
-                        </option>
-                    ))}
-                </Select>
+            {choices.length > 0 ? (
+                <ChoiceSelect choices={choices} value={value} onChange={onChange} />
             ) : (
                 <Input
                     value={value}
-                    {...(kind === 'number' ? { inputMode: 'decimal' as const } : {})}
+                    {...(numeric ? { type: 'number' as const } : {})}
+                    {...(ranged && allowed?.minimum !== null && allowed?.minimum !== undefined
+                        ? { min: allowed.minimum }
+                        : {})}
+                    {...(ranged && allowed?.maximum !== null && allowed?.maximum !== undefined
+                        ? { max: allowed.maximum }
+                        : {})}
+                    {...(numeric ? { step: sourceKind === 'integer' ? 1 : ('any' as const) } : {})}
+                    {...(numeric
+                        ? {
+                              inputMode:
+                                  sourceKind === 'integer'
+                                      ? ('numeric' as const)
+                                      : ('decimal' as const),
+                          }
+                        : {})}
                     onChange={(event) => onChange(event.target.value)}
                 />
             )}

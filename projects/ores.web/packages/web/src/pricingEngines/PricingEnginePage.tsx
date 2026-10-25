@@ -69,7 +69,8 @@ import {
     type ParameterDocumentation,
 } from '../ui/OreParameter.js';
 import { PRICING_ENGINES_EVENTS } from './PricingEnginesPage.js';
-import { ModelEnginePanels, SettingValue } from './parts.js';
+import { ChoiceSelect, ModelEnginePanels, SettingValue } from './parts.js';
+import { typeName } from './model.js';
 import { SaveDialog } from './SaveDialog.js';
 import {
     documentationOf,
@@ -337,6 +338,42 @@ function DetailsTab({ document }: { readonly document: PricingDocument }): React
     );
 }
 
+/**
+ * One global parameter's field: the choices its value set states, the built-in
+ * pair of a boolean, or free text. A value the set no longer offers stays
+ * selectable, so editing another parameter never drops it.
+ */
+function GlobalValueField({
+    vocabulary,
+    parameter,
+    doc,
+    value,
+    onChange,
+}: {
+    readonly vocabulary: PricingVocabulary | undefined;
+    readonly parameter: PricingParameter;
+    readonly doc: PricingVocabulary['globals'][number] | undefined;
+    readonly value: string;
+    readonly onChange: (value: string) => void;
+}): ReactNode {
+    const label = doc?.label ?? parameter.name;
+    const allowed = vocabulary?.valueSets[`GlobalParameters|${parameter.name}`];
+    const choices = allowed?.choices ?? [];
+    if (choices.length > 0) {
+        return <ChoiceSelect choices={choices} value={value} label={label} onChange={onChange} />;
+    }
+    const numeric = allowed?.sourceKind === 'number' || allowed?.sourceKind === 'integer';
+    return (
+        <Input
+            aria-label={label}
+            {...(numeric ? { type: 'number' as const } : {})}
+            inputMode={numeric ? 'numeric' : 'text'}
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+        />
+    );
+}
+
 /** The parameters of the whole document, with their documentation under them. */
 function GlobalParametersTab({
     document,
@@ -397,45 +434,18 @@ function GlobalParametersTab({
                                             {docOf(parameter.name)?.label ?? parameter.name}
                                         </span>
                                         <div className="text-sm">
-                                            {docOf(parameter.name)?.domain === 'boolean' ? (
-                                                <Select
-                                                    aria-label={
-                                                        docOf(parameter.name)?.label ??
-                                                        parameter.name
-                                                    }
-                                                    value={values[parameter.id] ?? parameter.value}
-                                                    onChange={(event) =>
-                                                        setValues({
-                                                            ...values,
-                                                            [parameter.id]: event.target.value,
-                                                        })
-                                                    }
-                                                >
-                                                    <option value="true">true</option>
-                                                    <option value="false">false</option>
-                                                </Select>
-                                            ) : (
-                                                <Input
-                                                    aria-label={
-                                                        docOf(parameter.name)?.label ??
-                                                        parameter.name
-                                                    }
-                                                    inputMode={
-                                                        docOf(parameter.name)?.domain ===
-                                                            'double' ||
-                                                        docOf(parameter.name)?.domain === 'integer'
-                                                            ? 'numeric'
-                                                            : 'text'
-                                                    }
-                                                    value={values[parameter.id] ?? parameter.value}
-                                                    onChange={(event) =>
-                                                        setValues({
-                                                            ...values,
-                                                            [parameter.id]: event.target.value,
-                                                        })
-                                                    }
-                                                />
-                                            )}
+                                            <GlobalValueField
+                                                vocabulary={vocabulary}
+                                                parameter={parameter}
+                                                doc={docOf(parameter.name)}
+                                                value={values[parameter.id] ?? parameter.value}
+                                                onChange={(next) =>
+                                                    setValues({
+                                                        ...values,
+                                                        [parameter.id]: next,
+                                                    })
+                                                }
+                                            />
                                         </div>
                                     </div>
                                     <ParameterDocuments
@@ -647,7 +657,7 @@ function ProductsTab({
                                         <button
                                             key={product.id}
                                             type="button"
-                                            title={product.typeCode}
+                                            title={typeName(vocabulary, product.typeCode)}
                                             onClick={() => {
                                                 if (
                                                     editingId !== null &&
@@ -669,7 +679,7 @@ function ProductsTab({
                                                     : 'block w-full rounded border-l-2 border-transparent px-2 py-1 text-left text-sm break-words text-ink-muted hover:text-ink [overflow-wrap:anywhere]'
                                             }
                                         >
-                                            {product.typeCode}
+                                            {typeName(vocabulary, product.typeCode)}
                                         </button>
                                     ))}
                                 </div>
@@ -804,7 +814,9 @@ function Workbench({
             <section className="card space-y-2 p-4">
                 <header className="flex flex-wrap items-baseline justify-between gap-2">
                     <div>
-                        <h2 className="text-lg font-semibold">{product.typeCode}</h2>
+                        <h2 className="text-lg font-semibold">
+                            {typeName(vocabulary, product.typeCode)}
+                        </h2>
                         <p className="text-xs text-ink-faint">
                             {[
                                 assetClassLabel(assetClassOf(vocabulary, product.typeCode)),
@@ -896,7 +908,9 @@ function Workbench({
             )}
             {saving !== null && vocabulary !== undefined && (
                 <SaveDialog
-                    title={t('pricingEngines.change.productTitle', { type: product.typeCode })}
+                    title={t('pricingEngines.change.productTitle', {
+                        type: typeName(vocabulary, product.typeCode),
+                    })}
                     document={document}
                     after={saving}
                     vocabulary={vocabulary}
@@ -1283,7 +1297,9 @@ function ProductEditor({
         <div className="space-y-4">
             <section className="card space-y-2 p-4">
                 <div>
-                    <h2 className="text-lg font-semibold">{product.typeCode}</h2>
+                    <h2 className="text-lg font-semibold">
+                        {typeName(vocabulary, product.typeCode)}
+                    </h2>
                     <p className="text-xs text-ink-faint">
                         {[
                             assetClassLabel(assetClassOf(vocabulary, product.typeCode)),
@@ -1599,9 +1615,31 @@ function AddProductDialog({
     );
     const [typeCode, setTypeCode] = useState(free[0]?.code ?? '');
     const [id] = useState(newId);
+    const pairs = vocabulary.pairs.filter((pair) => pair.typeCode === typeCode);
+    const knownModels = [...new Set(pairs.map((pair) => pair.model))];
+    const models =
+        knownModels.length > 0 ? knownModels : vocabulary.models.map((entry) => entry.code);
+    const [model, setModel] = useState(pairs.find((pair) => pair.usual)?.model ?? models[0] ?? '');
+    const chosenModel = model !== '' ? model : (models[0] ?? '');
+    const knownEngines = [
+        ...new Set(pairs.filter((pair) => pair.model === chosenModel).map((pair) => pair.engine)),
+    ];
+    const engines =
+        knownEngines.length > 0 ? knownEngines : vocabulary.methods.map((entry) => entry.code);
+    const [engine, setEngine] = useState(
+        pairs.find((pair) => pair.usual)?.engine ?? engines[0] ?? '',
+    );
+    const chosenEngine = engine !== '' ? engine : (engines[0] ?? '');
     const position = Math.max(-1, ...start.products.map((entry) => entry.position)) + 1;
     const added: PricingProduct | undefined =
-        typeCode === '' ? undefined : { ...newProduct(vocabulary, typeCode, position), id };
+        typeCode === ''
+            ? undefined
+            : {
+                  ...newProduct(vocabulary, typeCode, position),
+                  id,
+                  ...(chosenModel !== '' ? { model: chosenModel } : {}),
+                  ...(chosenEngine !== '' ? { engine: chosenEngine } : {}),
+              };
     const settings =
         added === undefined
             ? []
@@ -1633,20 +1671,69 @@ function AddProductDialog({
             document={document}
             after={after}
             vocabulary={vocabulary}
+            onlyProductId={id}
             onClose={onClose}
         >
             {free.length === 0 ? (
                 <Notice tone="info">{t('pricingEngines.change.everyTypeHeld')}</Notice>
             ) : (
-                <Field label={t('pricingEngines.fields.type')}>
-                    <Select value={typeCode} onChange={(event) => setTypeCode(event.target.value)}>
-                        {free.map((type) => (
-                            <option key={type.code} value={type.code}>
-                                {type.code}
-                            </option>
-                        ))}
-                    </Select>
-                </Field>
+                <>
+                    <Field label={t('pricingEngines.fields.type')}>
+                        <Select
+                            value={typeCode}
+                            onChange={(event) => {
+                                const next = event.target.value;
+                                setTypeCode(next);
+                                const pair = vocabulary.pairs
+                                    .filter((candidate) => candidate.typeCode === next)
+                                    .find((candidate) => candidate.usual);
+                                setModel(pair?.model ?? '');
+                                setEngine(pair?.engine ?? '');
+                            }}
+                        >
+                            {free.map((type) => (
+                                <option key={type.code} value={type.code}>
+                                    {type.description !== '' ? type.description : type.code}
+                                </option>
+                            ))}
+                        </Select>
+                    </Field>
+                    {models.length > 0 && (
+                        <Field label={t('pricingEngines.fields.model')}>
+                            <Select
+                                value={model}
+                                onChange={(event) => {
+                                    const next = event.target.value;
+                                    setModel(next);
+                                    const pair = pairs.find(
+                                        (candidate) => candidate.model === next,
+                                    );
+                                    setEngine(pair?.engine ?? '');
+                                }}
+                            >
+                                {models.map((entry) => (
+                                    <option key={entry} value={entry}>
+                                        {entry}
+                                    </option>
+                                ))}
+                            </Select>
+                        </Field>
+                    )}
+                    {engines.length > 0 && (
+                        <Field label={t('pricingEngines.fields.engine')}>
+                            <Select
+                                value={engine}
+                                onChange={(event) => setEngine(event.target.value)}
+                            >
+                                {engines.map((entry) => (
+                                    <option key={entry} value={entry}>
+                                        {entry}
+                                    </option>
+                                ))}
+                            </Select>
+                        </Field>
+                    )}
+                </>
             )}
         </SaveDialog>
     );
@@ -1674,7 +1761,9 @@ function RemoveProductDialog({
     };
     return (
         <SaveDialog
-            title={t('pricingEngines.change.removeTitle', { type: product?.typeCode ?? '' })}
+            title={t('pricingEngines.change.removeTitle', {
+                type: product === undefined ? '' : typeName(vocabulary, product.typeCode),
+            })}
             document={document}
             after={after}
             vocabulary={vocabulary}

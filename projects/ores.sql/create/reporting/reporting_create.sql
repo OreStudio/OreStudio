@@ -48,6 +48,15 @@
 \ir ./reporting_ore_parameter_value_domains_notify_trigger_create.sql
 \ir ./reporting_ore_parameters_create.sql
 \ir ./reporting_ore_parameters_notify_trigger_create.sql
+\ir ./reporting_ore_parameter_value_set_catalogues_create.sql
+\ir ./reporting_ore_parameter_value_set_catalogues_notify_trigger_create.sql
+\ir ./reporting_ore_parameter_value_validate_fn_create.sql
+\ir ./reporting_ore_parameter_value_sets_create.sql
+\ir ./reporting_ore_parameter_value_sets_notify_trigger_create.sql
+\ir ./reporting_ore_parameter_value_set_values_create.sql
+\ir ./reporting_ore_parameter_value_set_values_notify_trigger_create.sql
+\ir ./reporting_ore_parameter_setting_value_sets_create.sql
+\ir ./reporting_ore_parameter_setting_value_sets_notify_trigger_create.sql
 \ir ./reporting_configuration_parameters_create.sql
 \ir ./reporting_configuration_parameters_notify_trigger_create.sql
 \ir ./reporting_configurations_create.sql
@@ -90,3 +99,6 @@
 \ir ./reporting_resolve_book_ids_fn_create.sql
 \ir ./reporting_configuration_analytics_fn_create.sql
 \ir ./reporting_publish_from_dq_create.sql
+
+-- The parameter settings view reads every value set table, so it comes last.
+\ir ./reporting_ore_parameter_settings_view_create.sql

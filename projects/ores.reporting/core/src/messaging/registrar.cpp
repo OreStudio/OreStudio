@@ -38,7 +38,11 @@
 #include "ores.reporting.core/messaging/engine_settings_registrar.hpp"
 #include "ores.reporting.core/messaging/file_type_registrar.hpp"
 #include "ores.reporting.core/messaging/ore_parameter_registrar.hpp"
+#include "ores.reporting.core/messaging/ore_parameter_setting_value_set_registrar.hpp"
 #include "ores.reporting.core/messaging/ore_parameter_value_domain_registrar.hpp"
+#include "ores.reporting.core/messaging/ore_parameter_value_set_catalogue_registrar.hpp"
+#include "ores.reporting.core/messaging/ore_parameter_value_set_registrar.hpp"
+#include "ores.reporting.core/messaging/ore_parameter_value_set_value_registrar.hpp"
 #include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.reporting.core/messaging/report_configuration_registrar.hpp"
 #include "ores.reporting.core/messaging/report_definition_handler.hpp"
@@ -421,6 +425,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
     for (auto& sub : register_ore_parameter_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
     for (auto& sub : register_ore_parameter_value_domain_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_ore_parameter_value_set_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_ore_parameter_value_set_value_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_ore_parameter_value_set_catalogue_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_ore_parameter_setting_value_set_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
 
     return subs;

@@ -325,7 +325,7 @@ The form is drawn from the field table. One control per field kind:
 | =record= | The searchable picker over another record kind (=RecordPicker=), showing name and code, and the flag when the field names a flag source | The key |
 | =image= | The image field (=ImageField=): the image, large, opening the image chooser | The image's identifier |
 | =cron= | The cron field (=CronField=), which says in words when the expression fires | The expression |
-| =longtext= | A text area that spans the form's width (decided 2026-10-25; the control is the capture Add a long text field kind) | A string |
+| =longtext= | A text area that spans the form's width. Not built yet: the control is the capture Add a long text field kind (decided 2026-10-25) | A string |
 
 - A field that names another record or a classification is always a select,
   never free text.
@@ -367,14 +367,16 @@ needed. Each rule names the part that carries it.
   change and not the record.
 - /Two columns./ The fields stand in a grid of two columns from the small
   breakpoint and one column below it (=grid gap-3 sm:grid-cols-2=). A =longtext=
-  field spans both columns. A field is never wider or narrower than its column.
+  field spans both columns, and apart from it a field is never wider or
+  narrower than its column.
 - /Each field./ The label stands above the control, in sentence case, with no
   colon (=Field=). Under the control stands one line of small faint text when
   there is something to say: the field's help, or what its value means
   (=means=), or why it is fixed. A wrong field shows its message under it when
   the person leaves it, in place of that line.
 - /Required and optional./ Nothing marks a required field. A required field
-  left empty says Required under it when the person leaves it, and Save waits.
+  left empty shows Required under it when the person leaves it, which is the
+  message of the rule above on a field that fails its check, and Save waits.
   An optional select offers a dash as its empty choice; an optional picker
   offers Clear, as the Entity screen specification says. No label carries the
   word optional.

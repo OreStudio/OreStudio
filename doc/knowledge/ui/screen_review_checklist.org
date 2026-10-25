@@ -95,7 +95,8 @@ CFG is the [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen stand
 - [ ] Under a control stands one line of help, meaning or why it is fixed, replaced by the message when the field is wrong. (RSS The form's layout)
 - [ ] Nothing marks a required field; an empty one says Required when left. (RSS The form's layout)
 - [ ] The footer holds Cancel, then Add or Save, at the right, each with its icon. Delete is not in the form. (RSS The form's layout)
-- [ ] Escape asks the closing guard; Enter does not save. (RSS The form's layout)
+- [ ] Escape asks the closing guard; Enter does not save; Tab moves through the fields in the field table's order. (RSS The form's layout)
+- [ ] The dialog says under its title when its record was loaded and warns of a newer version above the form. (RSS The form's layout; ESS An edit in progress)
 
 ** Create and delete
 

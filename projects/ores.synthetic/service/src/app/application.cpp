@@ -304,6 +304,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     });
 
     constexpr auto market_period = std::chrono::milliseconds(100);
+<<<<<<< HEAD
     std::jthread market_owner([&market, &intensity, market_period](const std::stop_token& stop) {
         while (!stop.stop_requested()) {
             std::this_thread::sleep_for(market_period);
@@ -311,6 +312,15 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             intensity.fade(std::chrono::duration<double>(market_period).count());
         }
     });
+=======
+    ores::platform::concurrency::jthread market_owner(
+        [&market, market_period](ores::platform::concurrency::stop_token stop) {
+            while (!stop.stop_requested()) {
+                std::this_thread::sleep_for(market_period);
+                market.advance_to_now();
+            }
+        });
+>>>>>>> dda496e19b ([synthetic] Use the platform's stoppable thread for the market owner)
 
     // The simulator is an adapter of the market data service for each simulated source. It
     // serves the system collections of the provider of the source, and it starts a generator for

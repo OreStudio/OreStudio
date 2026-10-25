@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :check_every_record_screen_against_the_ux_language:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/record-the-baseline
+#+pr: 3778
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The first run of the harness is a measurement, not a fix. Each screen family has
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -41,9 +41,14 @@ The first run of the harness is a measurement, not a fix. Each screen family has
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Run the harness over every screen on the rebuilt environment, twice, so a
+failure that moves between runs is timing and not the screen. Read each failing
+check's screenshot and snapshot once per rule to say whether the screen or the
+check is wrong; fix the check where it is, and record the screen where it is.
+Fold the JSON report into the table by script, write the page around the table
+with the judgement of each rule, and file one capture per rule in the next
+bucket, so the topic that owns a screen picks the gap up with the measurement
+behind it.
 
 * Measurements
 
@@ -57,7 +62,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Screens and checks | 32 screens, 21 checks | =harness_baseline.py= over the JSON report | b6698c1818 |
+| Outcomes | 477 passed, 67 failed, 128 skipped | =npm run harness -- --workers 4=, 19.9 min | b6698c1818 |
+| Rules carrying every failure | 4 | =harness_baseline.py=, the summary by rule | b6698c1818 |
+| Checks corrected during the baseline | 2 | the breadcrumb's last crumb and the skip on a row that opens nothing | b6698c1818 |
+| Captures filed | 4 | =compass list --type capture --tag baseline= | this branch |
 
 * Notes
 
@@ -76,12 +85,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3778][#3778]] | [docs] Record the baseline of today's record screens |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: docs class | doc/knowledge/ui, product_backlog/next | Accept | =compass check= 8/8 at 3172e3ae4e (site-page, backlog-indexes, lint, org-links, rule-identifiers, structure-notes, pattern-uses, prototypes); misspell clean; the table is the script's output and each capture names its rule, its screens and the page |
+| 2 | PR 3778 review: the RS-WRITE-20 pass count, ES-REFRESH-06 absent from the table, the ES-REFRESH-16 wording, a thin Review row | record_screen_baseline.org, this task | Accept | The reviewer re-counted the totals (672 = 32 × 21, 67 = 27 + 23 + 12 + 5) and they held. Its count of 11 passing RS-WRITE-20 dialogs was off by one: 10 pass, 12 fail and calendar type skipped the check on a row that did not open. The page now says so, states that ES-REFRESH-06 is read through the ES-REFRESH-16 column, and names the 27 pages as the record column does |
 
 * Result
+
+The record screen baseline page holds the run of 2026-10-25 at commit
+b6698c1818 of the harness: 32 screens, 21 checks, 477 passed, 67 failed and 128
+skipped with a stated reason, in a table a later run replaces. Every failure is
+the screen's, in four rules, each judged on the page and filed as a capture in
+the next bucket: the record and classification pages draw no Refresh with its
+load time, no dialog says when its record was loaded, twelve dialogs are titled
+by the key, and the five read-only classification lists open nothing on a
+click. Two checks were wrong and were corrected before the baseline was taken.
+The UX hub links the page.

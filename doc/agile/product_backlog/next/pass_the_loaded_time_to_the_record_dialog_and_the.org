@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 383D727E-5A20-4E94-9B51-B2D4F3E6B842
+:END:
+#+title: Pass the loaded time to the record and classification dialogs
+#+description: No dialog says when its record was loaded; RecordDialog opens Dialog without loadedAt. RS-WRITE-16, 23 dialogs.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:refdata:harness:baseline:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Pass the loaded time to the record dialog and the classification row dialogs. RS-WRITE-16 and ES-REFRESH-28 say a dialog over a record says under its title when the record it started from was loaded. The harness baseline of 2026-10-25 finds no dialog does: RecordDialog and the classification row dialog open the shared Dialog without its loadedAt. 23 dialogs.
+
+* Why
+
+The harness measured every record screen before the screen pipeline changed
+any, so each topic starts from a known gap and the sign off has a before and an
+after. This is one of the four rules the baseline found broken.
+
+* References
+
+- [[id:10ECDD95-0C8C-4BFF-A94A-FCBFAAC8F25A][The record screen baseline]] — the run, the table and the judgement.
+- [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] — the rule behind the identifier.
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders the UX cluster.

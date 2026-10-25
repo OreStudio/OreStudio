@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 10ECDD95-0C8C-4BFF-A94A-FCBFAAC8F25A
+:END:
+#+title: The record screen baseline
+#+description: What the harness found on every record screen before the pipeline started: the rules each screen passes, fails or skips, and the work filed.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:ui:ux:web:harness:baseline:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+* Summary
+
+Before the screen pipeline changes any screen, the harness measured every record
+screen the registries name against the structural rules of the standards. On
+2026-10-25, at commit =b6698c1818= of the harness over the web of
+=brave_hopper= with Acme provisioned, 32 screens ran 21 checks each: 477 passed,
+67 failed and 128 were skipped with a stated reason. Every failure is the
+screen's and not the check's, and they fall into four rules. No record page
+draws the load time (ES-REFRESH-16, 27 pages: the four record pages and the
+row page of each of the 23 classification kinds whose list opens one); those
+pages draw no Refresh button either, so ES-REFRESH-06 is broken on the same 27,
+read through the same check. No dialog says when its record was loaded
+(RS-WRITE-16, 23 dialogs).
+Twelve dialogs are titled by the key and not the display field (RS-WRITE-20).
+The five read-only classification lists open nothing when a row is clicked
+(RS-LIST-10). Each of the four is a capture in the next bucket, so the topic
+that owns the screen picks it up with the measurement behind it.
+
+This page is a measurement, not a work list. The table is the output of
+=projects/ores.web/scripts/harness_baseline.py --org= over the JSON report a
+run writes, and a later run replaces it. Read the
+[[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] for what
+each identifier means.
+
+* Detail
+
+** How the baseline was taken
+
+The environment was rebuilt from the checkout, the database recreated and in
+sync, the services started and the Acme tenant provisioned, as the recipe
+[[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]
+says. Then =npm run harness -- --workers 4= in =projects/ores.web= ran the
+harness described in
+[[id:D8BD9068-113A-4324-894C-06D74D34813E][How do I run the browser harness against the environment?]].
+The run took 19.9 minutes. A second run on the same day gave the same four
+rules with the same counts, so the failures are stable and not timing.
+
+The checks are the structural rules the
+[[id:F4EF9042-0EC2-4B64-95E7-7DEBF273F2F7][Audit of the UX standards]] named as
+machine checkable: on the list, the breadcrumb, the lead, the header actions,
+the load time, the search box, the hidden audit columns, the pager and the row
+that opens a record; on the record page, the breadcrumb and title, the lead
+line, the tab order, the labels, the access mark, the load time and the
+last-changed line; on the Edit dialog, the title, the load time, no tabs, the
+labels, the footer order and the closing guard.
+
+** What each mark means
+
+| Mark | Meaning |
+|------+---------|
+| ✓ | The screen meets the rule |
+| ✗ | The screen breaks the rule; the failure's screenshot, snapshot and trace were read |
+| – | The check did not run on this screen, for a reason the test states: the pager on a classification list, which RS-EXCEPT-01 reads whole; the record checks of a list whose row opens no page, which RS-LIST-10 already reports; the dialog checks of a record that offers no Edit, under RS-WRITE-33 |
+| blank | The check does not apply to this part of the screen |
+
+A rule checked on two parts of a screen, the load time on the list and on the
+record page, has one column per part.
+
+** The table
+
+# begin baseline
+| Screen | =ES-REFRESH-16 list= | =ES-REFRESH-16 record= | =RS-FEEDBACK-02= | =RS-LIST-01= | =RS-LIST-02= | =RS-LIST-03= | =RS-LIST-04= | =RS-LIST-10= | =RS-LIST-13= | =RS-LIST-17= | =RS-PAGE-01= | =RS-PAGE-02= | =RS-PAGE-05= | =RS-PAGE-09= | =RS-PAGE-10= | =RS-WRITE-09= | =RS-WRITE-12= | =RS-WRITE-14= | =RS-WRITE-16= | =RS-WRITE-20= | =RS-WRITE-24= |
+|---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---|
+| classification asset-class-code | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | – |
+| classification book-purpose-type | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ |
+| classification book-status | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ |
+| classification business-day-convention-type | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | – | – | – | – | – | – |
+| classification calendar-name | ✓ | ✗ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | – | – | – | – | – | – |
+| classification calendar-type | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | – | ✓ |
+| classification contact-type | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ |
+| classification currency-market-tier | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | – | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ |
+| classification currency-pair-classification | ✓ | – | – | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | – | – | – | – | – | – | – | – | – | – | – | – |
+| classification curve-role | ✓ | – | – | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | – | – | – | – | – | – | – | – | – | – | – | – |
+| classification day-count-fraction-type | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ |
+| classification day-counter | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | – | – | – | – | – | – | – |
+| classification derivation-kind | ✓ | – | – | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | – | – | – | – | – | – | – | – | – | – | – | – |
+| classification diary-entry-type | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ |
+| classification floating-index-type | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | – | – | – | – | – | – |
+| classification ledger-feed-type | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ |
+| classification leg-type | ✓ | – | – | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | – | – | – | – | – | – | – | – | – | – | – | – |
+| classification monetary-nature | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ |
+| classification party-status | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✗ | ✓ | ✓ |
+| classification party-type | ✓ | ✗ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✗ | ✓ | ✓ |
+| classification purpose-type | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ |
+| classification regulatory-book-type | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ |
+| classification rounding-type | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | – | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ |
+| classification series-subclass-code | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ |
+| classification tenor-anchor | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ |
+| classification tenor-kind | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ |
+| classification tenor-resolution-algorithm | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ |
+| classification tenor-unit | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ |
+| record calendars | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | – | – | – | – | – | – |
+| record currencies | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✓ |
+| record currency-groups | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ |
+| record currency-pairs | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ |
+# end baseline
+
+** The failures, judged
+
+| Rule | Screens | What the screens do | Where it goes |
+|------+---------+---------------------+---------------|
+| ES-REFRESH-16 | 27: the record pages of currencies, desk groups, currency pairs and calendars, and the row page of each of the 23 classification kinds whose list opens one | The list screens draw Refresh and the load time through =RecordList=, and the list column passes everywhere. The record pages and the classification row pages use =PageHeader= directly and draw no Refresh at all, so ES-REFRESH-06 is broken on the same 27 pages; the harness has no separate column for it | Capture: Give the record page and the classification pages the shared Refresh button with its load time |
+| RS-WRITE-16 | 23: every dialog that opened | =RecordDialog= and the classification row dialog open the shared =Dialog= without its =loadedAt=, so no dialog says when its record was loaded | Capture: Pass the loaded time to the record dialog and the classification row dialogs |
+| RS-WRITE-20 | 12: the currency dialog and 11 classification row dialogs | The dialog is titled by the key, Edit AED, where the page is titled by the display field, UAE Dirham. Of the 23 dialogs that opened, 12 fail and 10 pass; the 10 that pass, the desk group and currency pair dialogs among them, are kinds whose key is also their display name. The 23rd, calendar type, skipped this one check because its row did not open on that attempt, while its other dialog checks ran | Capture: Title the Edit dialog with the display field and not the key |
+| RS-LIST-10 | 5: business day convention type, currency pair classification, curve role, derivation kind, leg type | The read-only lists open nothing when a row is clicked. Either a read-only record page with its history is wanted, as RS-WRITE-33 describes, or the standard names the exception | Capture: Decide what a row of a read-only classification list opens |
+
+Two checks were corrected during the baseline and are not findings. The
+breadcrumb check first demanded the display field as the last crumb; the
+standard's sketch ends the crumb at the key, so the check accepts the key or the
+title. The record checks of a list whose row opens nothing first failed one by
+one; they now skip with the reason, because RS-LIST-10 reports the list once.
+
+** What the harness does not reach yet
+
+- The conventions screen, whose kinds have no record page to check.
+- The five kinds in the registry with no screen: countries, business centres,
+  business unit types, party id schemes and counterparties.
+- The parties and organisation screens, which live outside the reference data
+  area and are not in the route table yet.
+- Continuous integration: the harness needs a started environment with Acme
+  provisioned, and no workflow starts one. This is the gap the sign off recipe
+  task states, and a later story closes it.
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders this cluster.
+- [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] — the rule behind each identifier.
+- [[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]] — the other measurement of the same screens, from the Qt side.
+- [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][The screen pipeline topics]] — the topics that will pick the failures up.
+- [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Story: Check every record screen against the UX language]] — the story this page answers.

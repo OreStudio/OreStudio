@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: CA4912C3-AD6A-4175-A73B-FC7E433C0EE4
+:END:
+#+title: Give the record page and the classification pages Refresh with its load time
+#+description: Twenty seven record and classification pages draw no Refresh and no load time; the list screens do. ES-REFRESH-06, 16.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:refdata:harness:baseline:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give the record page and the classification pages the shared Refresh button with its load time. ES-REFRESH-06 and ES-REFRESH-16 say every list and record page has Refresh in the header with the load time under it. The harness baseline of 2026-10-25 finds the record pages of currencies, desk groups, currency pairs and calendars and every classification list and row page draw neither: the list screens have it through RecordList, the record pages and the classification screens use PageHeader directly. 27 screens.
+
+* Why
+
+The harness measured every record screen before the screen pipeline changed
+any, so each topic starts from a known gap and the sign off has a before and an
+after. This is one of the four rules the baseline found broken.
+
+* References
+
+- [[id:10ECDD95-0C8C-4BFF-A94A-FCBFAAC8F25A][The record screen baseline]] — the run, the table and the judgement.
+- [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] — the rule behind the identifier.
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders the UX cluster.

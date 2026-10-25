@@ -8,7 +8,7 @@
 #+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_26:sprint_29:v0:
 #+owner: marco
 #+branch: feature/prove-the-run-end-to-end
-#+pr: 3733
+#+pr: 3739
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -147,6 +147,7 @@ environment's grid, so they are not part of this proof.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3739][#3739]] | [agile] Correct what the gate does to the developer database |
 | [[https://github.com/OreStudio/OreStudio/pull/3733][#3733]] | [ore] Fail a run whose engine reports a failed analytic |
 
 * Review

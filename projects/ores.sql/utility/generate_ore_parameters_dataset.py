@@ -19,7 +19,8 @@
 The dataset ore.parameter_value_domains holds the kinds of value a parameter can have. The
 dataset ore.parameters holds the documentation of every leaf of ore.xml that a screen shows:
 the engine settings of the Setup block, the other parameters of the Setup, Logging and Markets
-blocks, and the parameters of the analytics. The rows come from the row modules and the texts
+blocks, and the parameters of the analytics; the parameters of the pricing engine document;
+and the terms of the conventions document. The rows come from the row modules and the texts
 they read. Both datasets are members of the system_core and base bundles, and a publication
 writes them to the tenant that the bundle names.
 
@@ -39,6 +40,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import analytic_parameter_rows  # noqa: E402
+import convention_parameter_rows  # noqa: E402
 import pricing_parameter_rows  # noqa: E402
 import block_parameter_rows  # noqa: E402
 import setup_parameter_rows  # noqa: E402
@@ -152,7 +154,8 @@ PARAMETER_COLUMNS = (
 
 def rows():
     out = (setup_parameter_rows.rows() + block_parameter_rows.rows()
-           + analytic_parameter_rows.rows() + pricing_parameter_rows.rows())
+           + analytic_parameter_rows.rows() + pricing_parameter_rows.rows()
+           + convention_parameter_rows.rows())
     ids = [parameter_id(r) for r in out]
     if len(set(ids)) != len(ids):
         raise ValueError("two parameters document the same leaf")
@@ -166,7 +169,8 @@ def missing():
     return (setup_parameter_rows.missing(setup_parameter_rows.rows())
             + block_parameter_rows.missing(block_parameter_rows.rows())
             + analytic_parameter_rows.missing(analytic_parameter_rows.rows())
-            + pricing_parameter_rows.missing(pricing_parameter_rows.rows()))
+            + pricing_parameter_rows.missing(pricing_parameter_rows.rows())
+            + convention_parameter_rows.missing(convention_parameter_rows.rows()))
 
 
 def render(all_rows):
@@ -207,6 +211,9 @@ def main():
         print(f"{len(undocumented)} parameters have no text, for example "
               f"{', '.join(undocumented[:5])}.", file=sys.stderr)
         return 1
+    gaps = convention_parameter_rows.undocumented()
+    print(f"{len(gaps)} convention terms have no text yet and are not written, for example "
+          f"{', '.join(gaps[:3])}.", file=sys.stderr)
     content = render(all_rows)
     if args.check:
         current = ""

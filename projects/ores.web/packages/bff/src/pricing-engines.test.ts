@@ -739,6 +739,62 @@ describe('pricing engine routes', () => {
         expect(calls.map((call) => call.subject)).toContain('reporting.v1.configurations.delete');
     });
 
+    it('answers 400 carrying the problems a refused save states', async () => {
+        const { server, sessionId } = buildTestServer({
+            'reporting.v1.configurations.put': { result: ok },
+            'reporting.v1.configurations.delete': { result: ok },
+            'analytics.v1.pricing_engines_documents.put': {
+                success: false,
+                message: 'The document has 2 problems.',
+                id: '',
+                problems: [
+                    {
+                        code: 'name_missing',
+                        product_id: '',
+                        parameter_scope: '',
+                        parameter_name: '',
+                        message: 'The configuration has no name.',
+                    },
+                    {
+                        code: 'model_missing',
+                        product_id: PRODUCT_ID,
+                        parameter_scope: '',
+                        parameter_name: '',
+                        message: 'The BermudanSwaption product has no model.',
+                    },
+                ],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/reporting/pricing-engines',
+            body,
+        );
+        expect(response.statusCode).toBe(400);
+        expect(response.json()).toEqual({
+            code: 'invalid-request',
+            message: 'The document has 2 problems.',
+            problems: [
+                {
+                    code: 'name_missing',
+                    productId: '',
+                    parameterScope: '',
+                    parameterName: '',
+                    message: 'The configuration has no name.',
+                },
+                {
+                    code: 'model_missing',
+                    productId: PRODUCT_ID,
+                    parameterScope: '',
+                    parameterName: '',
+                    message: 'The BermudanSwaption product has no model.',
+                },
+            ],
+        });
+    });
+
     it('saves the version it was read at and answers 409 for a stale one', async () => {
         const { server, sessionId, calls } = buildTestServer({
             ...reads,

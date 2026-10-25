@@ -364,10 +364,30 @@ function rowsOf(
     };
 }
 
+/** One reason the service refused a document, as the service states it. */
+const problemReply = z.looseObject({
+    code: z.string(),
+    product_id: z.string().default(''),
+    parameter_scope: z.string().default(''),
+    parameter_name: z.string().default(''),
+    message: z.string().default(''),
+});
+
+/** One reason the service refused a document, as the browser reads it. */
+export interface DocumentProblem {
+    readonly code: string;
+    /** The product the problem is about, empty when it is about no product. */
+    readonly productId: string;
+    readonly parameterScope: string;
+    readonly parameterName: string;
+    readonly message: string;
+}
+
 const saveReply = z.looseObject({
     success: z.boolean().default(false),
     message: z.string().default(''),
     id: z.string().default(''),
+    problems: z.array(problemReply).default([]),
 });
 
 /** Saves the document, or throws what the service said. */
@@ -381,19 +401,31 @@ async function save(
         saveReply,
     );
     if (!reply.success) {
-        throw saveFailure(reply.message);
+        throw saveFailure(
+            reply.message,
+            reply.problems.map((problem) => ({
+                code: problem.code,
+                productId: problem.product_id,
+                parameterScope: problem.parameter_scope,
+                parameterName: problem.parameter_name,
+                message: problem.message,
+            })),
+        );
     }
 }
 
-/** The status a refused save is told as. A stale version is a conflict, and the rest a bad request. */
-function saveFailure(message: string): HttpFailure {
+/**
+ * The status a refused save is told as. A stale version is a conflict, and the
+ * rest a bad request, which carries the problems the document must fix.
+ */
+function saveFailure(message: string, problems: readonly DocumentProblem[]): HttpFailure {
     if (/version[_ ]conflict|does not match|stale/i.test(message)) {
         return new HttpFailure(409, { code: 'conflict', message });
     }
     if (/denied|not permitted|permission/i.test(message)) {
         return notPermitted(message);
     }
-    return invalidRequest(message);
+    return invalidRequest(message, problems.length > 0 ? { problems } : {});
 }
 
 /** A tenor a time setting offers: a count of days, weeks, months or years. */

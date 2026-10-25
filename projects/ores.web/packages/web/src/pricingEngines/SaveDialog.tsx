@@ -23,6 +23,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ApiFailure } from '../api/transport.js';
 import {
     pricingEngines,
+    refusalsIn,
     type PricingDocument,
     type PricingVocabulary,
     type PricingWrite,
@@ -31,8 +32,8 @@ import { useTranslation } from '../i18n/Provider.js';
 import { LeavingFooter, useCloseGuard } from '../refdata/records.js';
 import { ReasonFields, useReason } from '../refdata/shared.js';
 import { Button, Dialog, Notice } from '../ui/Primitives.js';
-import { blocked, check, difference, draftOf, type Draft } from './model.js';
-import { DifferenceList, FindingsList } from './parts.js';
+import { blocked, check, difference, draftOf, refused, type Draft } from './model.js';
+import { DifferenceList, FindingsList, findingText } from './parts.js';
 
 /** The write a draft makes, with the reason it is made for. */
 export function writeOf(
@@ -124,6 +125,16 @@ export function SaveDialog({
         onClose();
     };
     const ready = changes.length > 0 && !blocked(findings) && !missing && !conflict;
+    /*
+     * The service checks the document again and is the check of record, so a
+     * refusal names what this screen let through. Its problems are said in the
+     * words the checks use, one line each; a refusal this screen cannot word is
+     * shown in the service's own sentence.
+     */
+    const refusals =
+        save.isError && save.error instanceof ApiFailure
+            ? refused(refusalsIn(save.error.payload), after.products)
+            : [];
 
     return (
         <Dialog
@@ -162,7 +173,21 @@ export function SaveDialog({
                         </Button>
                     </Notice>
                 )}
-                {save.isError && !conflict && <Notice tone="error">{save.error.message}</Notice>}
+                {save.isError && !conflict && (
+                    <Notice tone="error">
+                        {refusals.length === 0 ? (
+                            save.error.message
+                        ) : (
+                            <ul className="space-y-1">
+                                {refusals.map((finding, index) => (
+                                    <li key={`${finding.code}-${index}`}>
+                                        {findingText(t, finding)}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </Notice>
+                )}
                 {children}
                 <DifferenceList changes={changes} />
                 <FindingsList findings={findings} />

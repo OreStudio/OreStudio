@@ -107,16 +107,89 @@ using ores::testing::decode_reply;
 using ores::testing::error_of;
 using ores::testing::request;
 
+namespace {
+
+const std::vector<std::string> save_permissions = {"analytics::pricing_model_configs:read",
+                                                   "analytics::pricing_model_configs:write"};
+
+/**
+ * A document ORE can run: a named configuration, one product that names its
+ * pair, and one setting of that product that carries a value.
+ *
+ * The name carries the configuration's id because a name is unique within the
+ * party that owns the document and the rows a run leaves behind stay in the
+ * test tenant. Two cases of one run, or two runs, would otherwise collide on
+ * the name and be refused for the wrong reason.
+ */
+pricing_engines_document valid_document(ores::utility::generation::generation_context& gen) {
+    pricing_engines_document doc;
+    doc.config = ores::analytics::generators::generate_synthetic_pricing_model_config(gen);
+    doc.config.name = "ACME end of day pricing " + boost::uuids::to_string(doc.config.id);
+    doc.config.change_reason_code = "system.test";
+    doc.config.configuration_id = boost::uuids::random_generator()();
+
+    auto product = ores::analytics::generators::generate_synthetic_pricing_model_product(gen);
+    product.pricing_model_config_id = doc.config.id;
+    product.pricing_engine_type_code = "Swap";
+    product.model = "DiscountedCashflows";
+    product.engine = "DiscountingSwapEngine";
+    product.position = 0;
+    product.change_reason_code = "system.test";
+    doc.products = {product};
+
+    auto parameter =
+        ores::analytics::generators::generate_synthetic_pricing_model_product_parameter(gen);
+    parameter.pricing_model_config_id = doc.config.id;
+    parameter.pricing_model_product_id = product.id;
+    parameter.parameter_scope = "model";
+    parameter.parameter_name = "Tolerance";
+    parameter.parameter_value = "0.0001";
+    parameter.position = 0;
+    parameter.change_reason_code = "system.test";
+    doc.parameters = {parameter};
+    return doc;
+}
+
+save_pricing_engines_document_response
+save_document(fixture& f, const std::string& token, const pricing_engines_document& doc) {
+    const auto reply = decode_reply<save_pricing_engines_document_response>(
+        request(f.nats,
+                subject("save_pricing_engines_document"),
+                token,
+                save_pricing_engines_document_request{.document = doc}));
+    REQUIRE(reply);
+    INFO(reply->message);
+    return *reply;
+}
+
+/** Whether a document fills the configuration it names, as a read finds it. */
+bool stored(fixture& f, const std::string& token, const pricing_engines_document& doc) {
+    const auto reply = decode_reply<get_pricing_engines_document_response>(
+        request(f.nats,
+                subject("get_pricing_engines_document"),
+                token,
+                get_pricing_engines_document_request{
+                    .configuration_id = boost::uuids::to_string(doc.config.configuration_id)}));
+    REQUIRE(reply);
+    return reply->success;
+}
+
+std::vector<std::string> codes_of(const std::vector<pricing_engines_document_problem>& problems) {
+    std::vector<std::string> codes;
+    for (const auto& problem : problems)
+        codes.push_back(problem.code);
+    return codes;
+}
+
+}
+
 TEST_CASE("a pricing engines document saves, reads back and deletes by its configuration", tags) {
     fixture f;
     const auto token = f.token({"analytics::pricing_model_configs:read",
                                 "analytics::pricing_model_configs:write",
                                 "analytics::pricing_model_configs:delete"});
     auto gen = ores::testing::make_generation_context(f.db);
-    ores::analytics::messaging::pricing_engines_document doc;
-    doc.config = ores::analytics::generators::generate_synthetic_pricing_model_config(gen);
-    doc.config.change_reason_code = "system.test";
-    doc.config.configuration_id = boost::uuids::random_generator()();
+    auto doc = valid_document(gen);
     const auto configuration = boost::uuids::to_string(doc.config.configuration_id);
 
     const auto saved = decode_reply<save_pricing_engines_document_response>(
@@ -258,4 +331,134 @@ TEST_CASE("a caller without the permission is refused", tags) {
                                token,
                                save_pricing_engines_document_request{});
     CHECK(error_of(reply) == "forbidden");
+}
+
+TEST_CASE("a valid document still saves", tags) {
+    fixture f;
+    const auto token = f.token(save_permissions);
+    auto gen = ores::testing::make_generation_context(f.db);
+    auto doc = valid_document(gen);
+
+    const auto saved = save_document(f, token, doc);
+    CHECK(saved.problems.empty());
+    REQUIRE(saved.success);
+    CHECK(stored(f, token, doc));
+}
+
+TEST_CASE("a save with no name is refused", tags) {
+    fixture f;
+    const auto token = f.token(save_permissions);
+    auto gen = ores::testing::make_generation_context(f.db);
+    auto doc = valid_document(gen);
+    doc.config.name = "  ";
+
+    const auto saved = save_document(f, token, doc);
+    CHECK_FALSE(saved.success);
+    CHECK(saved.message == "The document has 1 problem.");
+    REQUIRE(codes_of(saved.problems) == std::vector<std::string>{"name_missing"});
+    CHECK(saved.problems.front().product_id.empty());
+    CHECK_FALSE(stored(f, token, doc));
+}
+
+TEST_CASE("a save with no products is refused", tags) {
+    fixture f;
+    const auto token = f.token(save_permissions);
+    auto gen = ores::testing::make_generation_context(f.db);
+    auto doc = valid_document(gen);
+    doc.products.clear();
+    doc.parameters.clear();
+
+    const auto saved = save_document(f, token, doc);
+    CHECK_FALSE(saved.success);
+    REQUIRE(codes_of(saved.problems) == std::vector<std::string>{"no_products"});
+    CHECK_FALSE(stored(f, token, doc));
+}
+
+TEST_CASE("a product with no model is refused", tags) {
+    fixture f;
+    const auto token = f.token(save_permissions);
+    auto gen = ores::testing::make_generation_context(f.db);
+    auto doc = valid_document(gen);
+    doc.products.front().model = "";
+
+    const auto saved = save_document(f, token, doc);
+    CHECK_FALSE(saved.success);
+    REQUIRE(codes_of(saved.problems) == std::vector<std::string>{"model_missing"});
+    CHECK(saved.problems.front().product_id == boost::uuids::to_string(doc.products.front().id));
+    CHECK_FALSE(stored(f, token, doc));
+}
+
+TEST_CASE("a product with no engine is refused", tags) {
+    fixture f;
+    const auto token = f.token(save_permissions);
+    auto gen = ores::testing::make_generation_context(f.db);
+    auto doc = valid_document(gen);
+    doc.products.front().engine = "";
+
+    const auto saved = save_document(f, token, doc);
+    CHECK_FALSE(saved.success);
+    REQUIRE(codes_of(saved.problems) == std::vector<std::string>{"engine_missing"});
+    CHECK(saved.problems.front().product_id == boost::uuids::to_string(doc.products.front().id));
+    CHECK_FALSE(stored(f, token, doc));
+}
+
+TEST_CASE("a product that states the same setting twice is refused", tags) {
+    fixture f;
+    const auto token = f.token(save_permissions);
+    auto gen = ores::testing::make_generation_context(f.db);
+    auto doc = valid_document(gen);
+    auto repeat = doc.parameters.front();
+    repeat.id = boost::uuids::random_generator()();
+    repeat.position = 1;
+    doc.parameters.push_back(repeat);
+
+    const auto saved = save_document(f, token, doc);
+    CHECK_FALSE(saved.success);
+    REQUIRE(codes_of(saved.problems) == std::vector<std::string>{"parameter_repeated"});
+    const auto& problem = saved.problems.front();
+    CHECK(problem.product_id == boost::uuids::to_string(doc.products.front().id));
+    CHECK(problem.parameter_scope == "model");
+    CHECK(problem.parameter_name == "Tolerance");
+    CHECK_FALSE(stored(f, token, doc));
+}
+
+TEST_CASE("a setting with no value is refused", tags) {
+    fixture f;
+    const auto token = f.token(save_permissions);
+    auto gen = ores::testing::make_generation_context(f.db);
+    auto doc = valid_document(gen);
+    doc.parameters.front().parameter_value = "";
+
+    const auto saved = save_document(f, token, doc);
+    CHECK_FALSE(saved.success);
+    CHECK(saved.message == "The document has 1 problem.");
+    REQUIRE(codes_of(saved.problems) == std::vector<std::string>{"parameter_value_missing"});
+    const auto& problem = saved.problems.front();
+    CHECK(problem.product_id == boost::uuids::to_string(doc.products.front().id));
+    CHECK(problem.parameter_scope == "model");
+    CHECK(problem.parameter_name == "Tolerance");
+    CHECK_FALSE(stored(f, token, doc));
+}
+
+TEST_CASE("every problem of a save is refused at once", tags) {
+    fixture f;
+    const auto token = f.token(save_permissions);
+    auto gen = ores::testing::make_generation_context(f.db);
+    auto doc = valid_document(gen);
+    doc.config.name = "";
+    doc.products.front().engine = "";
+    doc.parameters.front().parameter_value = "";
+    auto repeat = doc.parameters.front();
+    repeat.id = boost::uuids::random_generator()();
+    repeat.position = 1;
+    repeat.parameter_value = "0.0002";
+    doc.parameters.push_back(repeat);
+
+    const auto saved = save_document(f, token, doc);
+    CHECK_FALSE(saved.success);
+    CHECK(saved.message == "The document has 4 problems.");
+    REQUIRE(codes_of(saved.problems) ==
+            std::vector<std::string>{
+                "name_missing", "engine_missing", "parameter_value_missing", "parameter_repeated"});
+    CHECK_FALSE(stored(f, token, doc));
 }

@@ -21,6 +21,7 @@
 #include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.analytics.core/service/pricing_engines_document_service.hpp"
 #include "ores.analytics.core/service/todays_market_document_service.hpp"
+#include "ores.analytics.core/validation/pricing_engines_document_validation.hpp"
 #include "ores.service/messaging/authorise.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -42,6 +43,14 @@ boost::uuids::uuid parse_id(const std::string& text) {
     } catch (const std::exception&) {
         throw std::invalid_argument("Not an id: " + text);
     }
+}
+
+/**
+ * The sentence a refused save leads with, which a client shows before the
+ * problems themselves.
+ */
+std::string problem_summary(std::size_t count) {
+    return "The document has " + std::to_string(count) + (count == 1 ? " problem." : " problems.");
 }
 
 }
@@ -67,6 +76,18 @@ void configuration_document_handler::save_pricing_engines_document(ores::nats::m
     }
     try {
         require_party(*ctx);
+        // A document is written whole, so a document ORE cannot run is refused
+        // before the first row reaches the tables, and every reason comes back.
+        const auto problems = validation::problems_of(req->document);
+        if (!problems.empty()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << msg.subject << " refused: " << problems.size() << " problems";
+            reply(nats_,
+                  msg,
+                  save_pricing_engines_document_response{
+                      .message = problem_summary(problems.size()), .problems = problems});
+            return;
+        }
         service::pricing_engines_document_service(*ctx).save(req->document);
         reply(nats_,
               msg,

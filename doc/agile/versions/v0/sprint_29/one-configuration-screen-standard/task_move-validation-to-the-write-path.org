@@ -7,64 +7,87 @@
 #+level: s1
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-validation-to-the-write-path
+#+pr: 3836
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Move the checks in the web's =check()= to the write path, so a client cannot
+save what the dialog refuses and every client gets the same answer. The errors
+move; the warnings and information findings stay on the screen and do not block
+a save.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
 
--
+- The analytics handler refuses a pricing engines document that breaks a rule,
+  before it writes a row, and reports every problem it found.
+- Each problem carries a code from ={name_missing, no_products, model_missing,
+  engine_missing, parameter_repeated, parameter_value_missing}=, the product id
+  when it is about a product, the setting's scope and name when it is about a
+  parameter, and a short message.
+- The save response carries the problems beside =success= and =message=, and
+  the message counts them.
+- The BFF answers a refused save with 400 and the problems in the body. A
+  version conflict stays 409 and a permission refusal stays 403.
+- The web dialog names the problems in a person's words, one line each.
+- The warnings and information findings of =check()= stay on the screen.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The protocol is generated from
+[[proj:projects/ores.analytics/modeling/ores.analytics.configuration_document_messages.org][the operation model]], so the problem struct and the field on the save response
+were added there and the C++ and TypeScript protocols regenerated.
+
+The rules live in one pure function,
+=ores::analytics::validation::problems_of=, which the pricing engines save
+calls before it hands the document to the service. The handler also serves
+today's market documents, and each kind has its own subject and its own save,
+so only the pricing engines save is validated.
+
+The BFF turns the problems into =invalidRequest= details, and the web turns
+them back into the findings =check()= produces, so one set of translated words
+says the same problem whichever side found it.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
+| What                                  | Value        | Command                                                       | Commit     |
+|---------------------------------------+--------------+---------------------------------------------------------------+------------|
+| Analytics handler suite               | 12 cases, 93 assertions | =ores.analytics.core.tests "[configuration_document]"= | 8bf09e806e |
+| Analytics core suite                  | 76 cases, 75 pass | =ores.analytics.core.tests=                            | 8bf09e806e |
+| BFF pricing suite                     | 18 tests     | =npx vitest run packages/bff/src/pricing-engines.test.ts=      | 8bf09e806e |
+| Web pricing suites                    | 62 tests     | =npx vitest run packages/web/src/pricingEngines=               | 8bf09e806e |
+| Latest pricing rows in the seeded data | 23 configurations, 517 products, 1256 settings, none breaking a rule | =compass sql= | 8bf09e806e |
 
 * Notes
 
-* Test Scenarios
+- The BFF reads a name before the service does, so a blank name is refused
+  there: the server's =name_missing= rule is proven by the handler suite rather
+  than through the BFF.
+- =read_all_pricing_model_product_parameter_history= in the analytics core
+  suite fails on a freshly recreated database, and no commit on this branch
+  touches it: the numeric value-set guard added at f1c17918b8 refuses the
+  synthetic value with =_v2= appended.
 
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
+* Test Scenarios
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -74,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3836][#3836]] | [analytics] Validate a pricing engines document before it is written |
 
 * Review
 
@@ -83,3 +106,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A document with a product that names no model is refused through the BFF with
+400 and ={"code":"invalid-request","message":"The document has 1 problem.","problems":[{"code":"model_missing","productId":"...","message":"The Swap product has no model."}]}=.
+A document whose product states the same setting twice and leaves its value
+empty is refused with 400 and two problems, =parameter_repeated= and
+=parameter_value_missing=, each naming the product, the scope and the setting.
+A valid document creates with 201 and amends with 200. A refused save writes no
+configuration header and no pricing row.
+

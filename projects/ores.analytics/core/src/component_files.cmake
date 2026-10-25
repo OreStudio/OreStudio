@@ -202,6 +202,7 @@ set(files
     "service/todays_market_configuration_service.cpp"
     "service/todays_market_document_service.cpp"
     "service/todays_market_entry_service.cpp"
+    "validation/pricing_engines_document_validation.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -415,4 +416,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/todays_market_configuration_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/todays_market_document_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/todays_market_entry_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/validation/pricing_engines_document_validation.hpp"
 )

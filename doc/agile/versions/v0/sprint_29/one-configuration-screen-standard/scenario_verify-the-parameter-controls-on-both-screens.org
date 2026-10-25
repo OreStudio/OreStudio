@@ -32,7 +32,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 | Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
 | Target screen | Reporting → Product pricing, and Reporting → Engine run settings, on http://localhost:21002 |
 | Clients       |                                          |
-| State         | PENDING                                  |
+| State         | PASSED |
 
 
 
@@ -49,7 +49,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Open a configuration and edit a product
 
@@ -63,7 +63,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** A sequence is a list of words
 
@@ -76,7 +76,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** A curve set is a list
 
@@ -88,7 +88,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** A whole number is a whole number
 
@@ -101,7 +101,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** A bounded number states its bounds
 
@@ -113,7 +113,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** A flag is true and false
 
@@ -125,7 +125,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** A required parameter says so
 
@@ -137,7 +137,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** The engine run settings draw the same controls
 
@@ -150,7 +150,7 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Both screens save
 
@@ -162,30 +162,32 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 * Results
 
 | Step | Status | Notes |
 |------+--------+-------|
-| Log in as the tenant administrator | PENDING | |
-| Open a configuration and edit a product | PENDING | |
-| A sequence is a list of words | PENDING | |
-| A curve set is a list | PENDING | |
-| A whole number is a whole number | PENDING | |
-| A bounded number states its bounds | PENDING | |
-| A flag is true and false | PENDING | |
-| A required parameter says so | PENDING | |
-| The engine run settings draw the same controls | PENDING | |
-| Both screens save | PENDING | |
+| Log in as the tenant administrator | PASS | |
+| Open a configuration and edit a product | PASS | |
+| A sequence is a list of words | PASS | |
+| A curve set is a list | PASS | |
+| A whole number is a whole number | PASS | |
+| A bounded number states its bounds | PASS | |
+| A flag is true and false | PASS | |
+| A required parameter says so | PASS | |
+| The engine run settings draw the same controls | PASS | |
+| Both screens save | PASS | |
+| Status        | PASSED |
+| Completed at  | 2026-10-25T22:03:12Z |
 
 ** Verdict
 
 | Field  | Value |
 |--------+-------|
-| Result | PENDING |
-| Tester |   |
-| Date   |   |
+| Result | PASS |
+| Tester | marco |
+| Date   | 2026-10-25 |
 
 * Notes
 

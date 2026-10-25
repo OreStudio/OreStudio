@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -83,3 +83,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered and signed off. A ControlModel union states the control a value needs, two mappers fill it from the pricing value set and from the engine settings row, and ParameterControl and ParameterRow are shared by both screens. No BFF, API or stored data changed, and no existing assertion changed.
+
+The scenario [[file:scenario_verify-the-parameter-controls-on-both-screens.org][Verify the parameter controls on both screens]] passed on the provisioned environment, and the suites pass: 145 tests across pricing, engine settings and parameters.
+
+The edit lifecycle was deliberately not extracted. The pricing screen saves the whole document and the engine settings screen saves one group, so a shared hook would reconcile two save shapes rather than extract one. The control and the row are the part the screens genuinely share.

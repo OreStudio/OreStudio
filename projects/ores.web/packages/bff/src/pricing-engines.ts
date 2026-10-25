@@ -454,35 +454,70 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
                 xpath: text(doc?.['xpath']),
             };
         }),
-        settings: settings.map((row) => {
-            const scope = text(row['scope']);
-            const typeCode = text(row['pricing_engine_type_code']);
-            const doc = docOf(
-                scope === 'model' ? 'ModelParameters' : 'EngineParameters',
-                typeCode,
-                text(row['name']),
-            );
-            return {
-                typeCode,
-                model: text(row['model']),
-                engine: text(row['engine']),
-                scope,
-                name: text(row['name']),
-                kind: text(row['kind']),
-                usual: text(row['usual_value']),
-                options: text(row['options']) === '' ? [] : text(row['options']).split(','),
-                required: row['is_required'] === true,
-                documented: doc !== undefined,
-                label: text(doc?.['label']),
-                help: text(doc?.['help']),
-                description: text(doc?.['description']),
-                defaultText: text(doc?.['default_text']),
-                format: text(doc?.['format']),
-                introducedIn: text(doc?.['introduced_in']),
-                removedIn: text(doc?.['removed_in']),
-                xpath: text(doc?.['xpath']),
-            };
-        }),
+        /*
+         * A setting the code reads but the guide never lists has no pair of its
+         * own. Its row stands with no type, so it is never a choice for a pair
+         * and only ever answers a lookup by name.
+         */
+        settings: [
+            ...settings.map((row) => {
+                const scope = text(row['scope']);
+                const typeCode = text(row['pricing_engine_type_code']);
+                const doc = docOf(
+                    scope === 'model' ? 'ModelParameters' : 'EngineParameters',
+                    typeCode,
+                    text(row['name']),
+                );
+                return {
+                    typeCode,
+                    model: text(row['model']),
+                    engine: text(row['engine']),
+                    scope,
+                    name: text(row['name']),
+                    kind: text(row['kind']),
+                    usual: text(row['usual_value']),
+                    options: text(row['options']) === '' ? [] : text(row['options']).split(','),
+                    required: row['is_required'] === true,
+                    documented: doc !== undefined,
+                    label: text(doc?.['label']),
+                    help: text(doc?.['help']),
+                    description: text(doc?.['description']),
+                    defaultText: text(doc?.['default_text']),
+                    format: text(doc?.['format']),
+                    introducedIn: text(doc?.['introduced_in']),
+                    removedIn: text(doc?.['removed_in']),
+                    xpath: text(doc?.['xpath']),
+                };
+            }),
+            ...docs
+                .filter(
+                    (row) =>
+                        text(row['schema_name']) === 'ore.xsd' &&
+                        text(row['subtype']) === '' &&
+                        (text(row['scope']) === 'ModelParameters' ||
+                            text(row['scope']) === 'EngineParameters'),
+                )
+                .map((row) => ({
+                    typeCode: '',
+                    model: '',
+                    engine: '',
+                    scope: text(row['scope']) === 'ModelParameters' ? 'model' : 'engine',
+                    name: text(row['name']),
+                    kind: 'text',
+                    usual: '',
+                    options: [],
+                    required: false,
+                    documented: true,
+                    label: text(row['label']),
+                    help: text(row['help']),
+                    description: text(row['description']),
+                    defaultText: text(row['default_text']),
+                    format: text(row['format']),
+                    introducedIn: text(row['introduced_in']),
+                    removedIn: text(row['removed_in']),
+                    xpath: text(row['xpath']),
+                })),
+        ],
         globals: docs
             .filter(
                 (row) =>

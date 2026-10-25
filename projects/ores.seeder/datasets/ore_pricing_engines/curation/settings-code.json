@@ -1,0 +1,974 @@
+{
+  "Accuracy": {
+    "scope": "engine",
+    "description": "The relative accuracy that the generalised replicating variance swap engine solves to. Lower values give a more precise replication; the default is 1E-5.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/varianceswap.hpp:128",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AdditionalResultsPathLevel": {
+    "scope": "engine",
+    "description": "When true, the scripted trade also reports additional results at path level. Optional, default false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:559",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ApplyConvexityAdjustment": {
+    "scope": "engine",
+    "description": "When true, the quanto equity coupon pricer applies a convexity adjustment for the currency pairs listed in QuantoCurrencyPairs. Optional, default false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/equity.cpp:70",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ApplySimmExemptions": {
+    "scope": "engine",
+    "description": "When true, simple cashflows are excluded from the delta and gamma additional results for physically settled, non-resettable cross-currency swaps and FX forwards. Optional, default false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/deltagammaengines.hpp:94",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BaseCcy": {
+    "scope": "model",
+    "description": "The base currency of the scripted trade model, used as the domestic currency for model currencies and FX indices. Required; it is overridden by the single FX target currency unless EnforceBaseCcy is true.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:524",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Bootstrap.MesherConcentration": {
+    "scope": "engine",
+    "description": "Concentration of finite difference grid points around critical points in the mesher used to bootstrap the convertible bond model. Optional and empty by default, which disables concentration.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/convertiblebond.cpp:71",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Bootstrap.TimeStepsPerYear": {
+    "scope": "engine",
+    "description": "Number of time steps per year in the finite difference grid used to bootstrap the convertible bond model. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/convertiblebond.cpp:67",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BootstrapTolerance": {
+    "scope": "engine",
+    "description": "Calibration error threshold for the Gaussian CAM model; the LGM calibration logs a warning when its target function value exceeds this value. Required when the model is GaussianCam.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:579",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Bounds": {
+    "scope": "engine",
+    "description": "Selects how the variance swap replication range is set: Fixed uses FixedMinStdDevs and FixedMaxStdDevs, PriceThreshold widens the range until the replication price falls below PriceThreshold. Allowed values are Fixed and PriceThreshold; default PriceThreshold.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/varianceswap.hpp:108",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BucketTimes": {
+    "scope": "engine",
+    "description": "Times in years at which delta and gamma buckets are reported by the discounting swap and FX forward delta-gamma engines. Required, and must be non-empty when delta or gamma is computed.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/deltagammaengines.hpp:62",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BucketTimesDeltaGamma": {
+    "scope": "engine",
+    "description": "Times in years at which delta and gamma buckets are reported for European options and swaptions. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/deltagammaengines.cpp:35",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BucketTimesVega": {
+    "scope": "engine",
+    "description": "Times in years at which vega buckets are reported for European vanilla options. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/deltagammaengines.hpp:131",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BucketTimesVegaOpt": {
+    "scope": "engine",
+    "description": "Times in years at which option vega buckets are reported for European swaptions. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/deltagammaengines.cpp:36",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BucketTimesVegaUnd": {
+    "scope": "engine",
+    "description": "Times in years at which underlying vega buckets are reported for European swaptions. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/deltagammaengines.cpp:37",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CalibrationInstrumentSpacing": {
+    "scope": "model",
+    "description": "Spacing between the coterminal calibration instruments used to calibrate the LGM model for the T-Lock risk participation agreement grid engine. Required and must not be zero.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/riskparticipationagreement.cpp:250",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CalibrationMoneyness": {
+    "scope": "engine",
+    "description": "List of moneyness levels at which the local volatility or Heston model is calibrated to option quotes. Required for LocalVolAndreasenHuge; for Heston the default is -2.0,-1.5,-1.0,-0.5,0.0,0.5,1.0,1.5,2.0.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:583",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CashflowGeneration.OnCpnAddSimTimesCutoff": {
+    "scope": "engine",
+    "description": "Period after the evaluation date up to which additional overnight coupon fixing dates are added as simulation times; later fixings are ignored. Optional, default 0D.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/callablebond.cpp:481",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CashflowGeneration.OnCpnMaxSimTimes": {
+    "scope": "engine",
+    "description": "Maximum number of overnight coupon fixing dates used as simulation times per cashflow; 0 uses all relevant fixings. Optional, default 1.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/callablebond.cpp:480",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ComputeBPS": {
+    "scope": "engine",
+    "description": "Reserved for BPS sensitivity calculation in the delta-gamma swap engine. The code hardcodes BPS computation off, so this setting has no effect.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/deltagammaengines.hpp:65",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ComputeDelta": {
+    "scope": "engine",
+    "description": "When true, the delta-gamma engine computes delta sensitivities. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/deltagammaengines.hpp:63",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ComputeDeltaVega": {
+    "scope": "engine",
+    "description": "When true, the European option and swaption delta-gamma engines compute delta and vega sensitivities. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/deltagammaengines.cpp:38",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ComputeGamma": {
+    "scope": "engine",
+    "description": "When true, the delta-gamma engine computes gamma sensitivities. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/deltagammaengines.cpp:39",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Credit_VolatilityTimes": {
+    "scope": "model",
+    "description": "Times in years at which the piecewise constant credit LGM volatility changes. One fewer time than the number of Credit_Volatility values is required; empty means a constant credit volatility.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/callablebond.cpp:282",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Displacement": {
+    "scope": "model",
+    "description": "Shift added to the underlying price or rate when its volatility is specified as shifted lognormal. Optional per-asset model setting, default 0.0.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/vanillaoption.hpp:164",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EnableCgOptimization": {
+    "scope": "engine",
+    "description": "When true, optimisations are enabled when the computation graph for the scripted trade is built. Optional, default false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:561",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EnforceBaseCcy": {
+    "scope": "model",
+    "description": "When true, BaseCcy is always used as the model base currency instead of inferring it from the single FX index target or pay currency. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:526",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Engine": {
+    "scope": "engine",
+    "description": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:125",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ErrorTolerance": {
+    "scope": "engine",
+    "description": "Relative tolerance of the CBO Monte Carlo engine's internal NPV reconciliation check; the engine throws when the tranche and fee NPVs differ from the basket value by more than this. Optional, default 1.0e-6.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/cbo.cpp:48",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ExternalComputeDevice": {
+    "scope": "engine",
+    "description": "Name of the external compute device context selected when the scripted trade runs on an external device. Optional, empty by default.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:543",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ExternalDeviceCompatibilityMode": {
+    "scope": "engine",
+    "description": "When true, random numbers are generated in the same order as on external devices so results can be reconciled. Optional, default false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:545",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FixedMaxStdDevs": {
+    "scope": "engine",
+    "description": "Upper bound of the variance swap replication range in standard deviations from the forward when Bounds is Fixed. Optional, default 5.0.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/varianceswap.hpp:135",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FixedMinStdDevs": {
+    "scope": "engine",
+    "description": "Lower bound of the variance swap replication range in standard deviations from the forward when Bounds is Fixed. Optional, default -5.0.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/varianceswap.hpp:134",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FullDynamicFx": {
+    "scope": "model",
+    "description": "When true, the scripted trade model builds a dynamic FX process for every model currency, not only for currencies referenced by an FX index. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:525",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FullDynamicIr": {
+    "scope": "model",
+    "description": "When true, the GaussianCam scripted trade model builds a dynamic IR process for every model currency, not only for currencies referenced by an IR index. Required for GaussianCam.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:578",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxVolIsStatic": {
+    "scope": "engine",
+    "description": "When true, the FX volatility used to triangulate the quanto equity volatility in the convertible bond model is treated as static instead of time dependent. Optional, default false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/convertiblebond.cpp:228",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FxVolatilityTimes": {
+    "scope": "model",
+    "description": "Times in years at which the piecewise constant FX volatility changes. One fewer time than the number of FxVolatility values is required; empty means a constant FX volatility.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/swaption.cpp:612",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "GlobalModel": {
+    "scope": "model",
+    "description": "When true, a single global model is built for the whole FlexiSwap basket; otherwise a separate model is built for each constituent. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/flexiswap.cpp:205",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "GridCoarsening": {
+    "scope": "model",
+    "description": "Rule that coarsens schedule date grids in the scripted trade model, written as term pairs such as 10Y(1M),20Y(3M). Required, but an empty value means no coarsening.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:527",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Heston.CalibrationExpiries": {
+    "scope": "engine",
+    "description": "Option expiries used to calibrate the Heston model. Optional; when empty the effective simulation dates are used.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:590",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Heston.CalibrationMethod": {
+    "scope": "engine",
+    "description": "Heston calibration method. Allowed values are ConstantBestFit, None, PiecewiseBootstrap and PiecewiseBestFit; default ConstantBestFit.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:606",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Heston.CalibrationVarianceTerms": {
+    "scope": "engine",
+    "description": "Variance swap terms used to calibrate theta, kappa and v0 to the market variance curve before the option calibration. Optional and empty by default.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:592",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Heston.EarlyExitThreshold": {
+    "scope": "engine",
+    "description": "RMSE below which the Heston calibration stops restarting with new initial values. Optional, default 0.005.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:608",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Heston.FixedValues": {
+    "scope": "engine",
+    "description": "Five comma-separated booleans (Y/N) marking which Heston parameters theta, kappa, sigma, rho and v0 are held fixed during calibration. Optional, default N,N,N,N,N.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:597",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Heston.InitialValues": {
+    "scope": "engine",
+    "description": "Initial Heston parameters in the order theta, kappa, sigma, rho, v0. Optional, default 0.04,1.0,0.5,-0.5,0.04.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:594",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Heston.MaxAcceptableError": {
+    "scope": "engine",
+    "description": "Maximum acceptable RMSE of the Heston calibration; a structured model warning is logged when it is exceeded. Optional, default 0.05.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:610",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Heston.MaxCalibrationAttempts": {
+    "scope": "engine",
+    "description": "Number of random restarts of the Heston calibration after the first attempt; 0 means a single attempt. Optional, default 0.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:601",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Heston.MaximumInitialValues": {
+    "scope": "engine",
+    "description": "Upper bounds for theta, kappa, sigma, rho and v0 used to draw random initial values for Heston calibration restarts. Optional, default 0.1,20,3,0.9,0.1.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:603",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Heston.ProcessDiscretization": {
+    "scope": "engine",
+    "description": "Discretisation scheme for the Heston process. Default QuadraticExponential; allowed values include PartialTruncation, FullTruncation, Reflection, NonCentralChiSquareVariance, QuadraticExponential, QuadraticExponentialMartingale and the BroadieKaya exact schemes.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:612",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Heston.QuantoProcessDiscretization": {
+    "scope": "engine",
+    "description": "Discretisation scheme for the quanto Heston process; defaults to the value of Heston.ProcessDiscretization.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:617",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Heston.RelaxedFellerConstraint": {
+    "scope": "engine",
+    "description": "Minimum value of the Feller ratio 2*kappa*theta/sigma^2 enforced during Heston calibration. Optional, default 0.25.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:599",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "IndicatorSmoothingForDerivatives": {
+    "scope": "engine",
+    "description": "Smoothing width applied to indicator functions in derivative calculations of the AMC engine. Defaults to 0.0 for AMC-CG swaptions and 0.2 for scripted trades.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/swaption.cpp:129",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "IndicatorSmoothingForValues": {
+    "scope": "engine",
+    "description": "Smoothing width applied to indicator functions in value calculations of the AMC engine. Optional, default 0.0.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/swaption.cpp:128",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "InfDkVolatility": {
+    "scope": "model",
+    "description": "Fixed volatility of the inflation index process when InfModelType is DK. Optional, default 0.0050.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:1732",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "InfJyIndexVol": {
+    "scope": "model",
+    "description": "Piecewise constant CPI index volatilities for the JY inflation model, given at the times in InfJyTimes. Required when InfJyTimes is set.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:1751",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "InfJyRealRateReversion": {
+    "scope": "model",
+    "description": "Real rate reversion for the JY inflation model. Required when InfJyTimes is set.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:1752",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "InfJyRealRateVol": {
+    "scope": "model",
+    "description": "Piecewise constant real rate volatilities for the JY inflation model, given at the times in InfJyTimes. Required when InfJyTimes is set.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:1750",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "InfJyRealToNominalVolRatio": {
+    "scope": "model",
+    "description": "Multiplier applied to the nominal rate volatility to obtain the real rate volatility when the JY model calibrates the CPI index process. Optional, default 1.0.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:1778",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "InfJyTimes": {
+    "scope": "model",
+    "description": "Times in years for the piecewise constant real rate and CPI index volatilities of the JY inflation model. Optional; when empty the CPI index process is calibrated to CPI cap and floor quotes.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:1748",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "InfModelType": {
+    "scope": "model",
+    "description": "Inflation model used with GaussianCam: DK or JY. Optional, default DK.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:580",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "IrReversion": {
+    "scope": "model",
+    "description": "Hull-White reversion rate used for the IR processes of the GaussianCam scripted trade model when no IrReversion_CCY entry exists for a currency. Optional in code, but required for every currency that has no per-currency entry.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:1157",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "IrReversion_": {
+    "scope": "model",
+    "description": "Hull-White reversion rate for one currency in the GaussianCam scripted trade model, with the currency code appended to the parameter name. It takes precedence over IrReversion.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:1155",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "IrVolatilityType": {
+    "scope": "model",
+    "description": "Volatility type of the IR LGM component: Hagan or HullWhite. Optional, default Hagan.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:1637",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "LinearInZero": {
+    "scope": "engine",
+    "description": "When true, discount delta and gamma buckets are computed with respect to zero rates; otherwise they are converted to forward rate buckets. Optional, default true.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/deltagammaengines.hpp:95",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "LowerLimit": {
+    "scope": "engine",
+    "description": "Lower integration limit of the numerical Hagan CMS coupon pricer. Required by the NumericalHagan builder.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/cms.cpp:71",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MaxCPRMultiplier": {
+    "scope": "model",
+    "description": "Upper bound for the multiplier applied to the market CPR in the balance guaranteed swap engine. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/balanceguaranteedswap.cpp:187",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MaxIterations": {
+    "scope": "engine",
+    "description": "Maximum number of iterations for the Gauss-Lobatto integration used by the variance swap replication engine. Optional, default 1000.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/varianceswap.hpp:129",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MaxPriceThresholdSteps": {
+    "scope": "engine",
+    "description": "Maximum number of widening steps used to search the replication range when Bounds is PriceThreshold. Optional, default 100.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/varianceswap.hpp:132",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MesherConcentration": {
+    "scope": "engine",
+    "description": "Concentration of finite difference grid points around the calibration strikes. Optional, default 0.1.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:656",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MesherMaxConcentratingPoints": {
+    "scope": "engine",
+    "description": "Maximum number of calibration strikes on which the finite difference mesher concentrates grid points. Optional, default 9999.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:658",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MesherScaling": {
+    "scope": "engine",
+    "description": "Scaling factor for the finite difference mesher; larger values widen the grid around the spot. Optional, default 1.5.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:654",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MinCPRMultiplier": {
+    "scope": "model",
+    "description": "Lower bound for the multiplier applied to the market CPR in the balance guaranteed swap engine. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/balanceguaranteedswap.cpp:186",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Model": {
+    "scope": "model",
+    "description": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:523",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "PolynomType": {
+    "scope": "engine",
+    "description": "Polynomial basis used in the Monte Carlo regression. Allowed values are Monomial, Laguerre, Hermite, Hyperbolic, Legendre, Chebyshev and Chebyshev2nd; default Monomial.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:627",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Precision": {
+    "scope": "engine",
+    "description": "Numerical integration precision of the numerical Hagan CMS coupon pricer. Required by the NumericalHagan builder.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/cms.cpp:73",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "PriceThresholdStep": {
+    "scope": "engine",
+    "description": "Multiplicative step, as a fraction, by which the replication range is widened in each search iteration when Bounds is PriceThreshold. Optional, default 0.1.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/varianceswap.hpp:133",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Pricing.ConversionRatioDiscretisationGrid": {
+    "scope": "engine",
+    "description": "Grid of conversion ratios used to discretise the conversion option in the convertible bond finite difference engine. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/convertiblebond.cpp:89",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "QuantoCurrencyPairs": {
+    "scope": "engine",
+    "description": "Comma-separated list of six-character currency pairs for which the quanto convexity adjustment is applied. Read only when ApplyConvexityAdjustment is true; empty by default.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/equity.cpp:72",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "RecalibrateOnStickyCloseOutDates": {
+    "scope": "engine",
+    "description": "When true, the engine also builds path values on a simulation grid remapped to the sticky close-out dates, which is used to revalue trades on those dates in sticky runs. Optional, default false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/callablebond.cpp:478",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ReevaluateExerciseInStickyRun": {
+    "scope": "engine",
+    "description": "When true, exercise decisions are recomputed during a sticky close-out run instead of reusing the exercise indicators saved from the calibration run. Optional, default false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/callablebond.cpp:479",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Regression.MaxSimTimesEQ": {
+    "scope": "engine",
+    "description": "Maximum number of simulation times per equity state variable used as regression variables; 0 uses all relevant times. Optional, default 0.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/callablebond.cpp:484",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Regression.MaxSimTimesFX": {
+    "scope": "engine",
+    "description": "Maximum number of simulation times per FX state variable used as regression variables; 0 uses all relevant times. Optional, default 0.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/callablebond.cpp:483",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Regression.MaxSimTimesIR": {
+    "scope": "engine",
+    "description": "Maximum number of simulation times per IR state variable used as regression variables; 0 uses all relevant times. Optional, default 0.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/callablebond.cpp:482",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Regression.VarGroupMode": {
+    "scope": "engine",
+    "description": "Grouping of regression variables: Global uses one regression across all variables, Trivial regresses each variable separately. Allowed values are Global and Trivial; default Global.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/callablebond.cpp:485",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "RegressionVarianceCutoff": {
+    "scope": "engine",
+    "description": "Fraction of total regressor variance that may be discarded when the regression variables are projected onto principal components. Optional and empty by default, which disables the projection.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/callablebond.cpp:477",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "SequenceType": {
+    "scope": "engine",
+    "description": "Sequence type of the Monte Carlo path generator. Allowed values are MersenneTwister, MersenneTwisterAntithetic, Sobol, SobolBrownianBridge and Burley2020SobolBrownianBridge; default SobolBrownianBridge.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:625",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "SobolOrdering": {
+    "scope": "engine",
+    "description": "Ordering used by the Sobol Brownian generator. Allowed values are Factors, Steps and Diagonal; default Steps.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:631",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "SqrtSmoothingForDerivatives": {
+    "scope": "engine",
+    "description": "Smoothing width applied to the square root function in derivative calculations of the AMC engine. Defaults to 0.0 for AMC-CG swaptions and 1E-8 for scripted trades.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/swaption.cpp:130",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "StaticNpvMem": {
+    "scope": "engine",
+    "description": "When true, the NPV() regression coefficients stored in the model are kept between valuations instead of being reset before each calculation. Optional, default false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:548",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "StaticTodaysSpot": {
+    "scope": "model",
+    "description": "When true, the variance swap engine caches today's spot after the first valuation and reuses it, keeping it static across subsequent valuations. Optional, default false; only read for run types other than Exposure.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/varianceswap.hpp:140",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Steps": {
+    "scope": "engine",
+    "description": "Number of integration steps per segment used by the segment integration scheme of the variance swap replication engine. Optional, default 100.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/varianceswap.hpp:130",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "SurvivalWeightedFundingReturnCashflows": {
+    "scope": "model",
+    "description": "When true, the funding return cashflows of a bond total return swap are weighted by the survival probability. Optional, default false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/bondtotalreturnswap.cpp:31",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "TimeGridPerYear": {
+    "scope": "engine",
+    "description": "Number of finite difference time steps per year; the total number of steps is this value times the time to horizon, with a minimum of TimeGridMinimumSize. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/utilities.cpp:35",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "TimingAdjustment": {
+    "scope": "engine",
+    "description": "Timing adjustment method used by the cap and floor coupon pricer. Allowed values are Black76 and BivariateLognormal; default Black76.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/capfloorediborleg.cpp:65",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "TrainingSamples": {
+    "scope": "engine",
+    "description": "Number of paths in the separate training phase used for NPV() regression. Optional and empty by default, in which case no separate training phase is run.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:634",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "TrainingSeed": {
+    "scope": "engine",
+    "description": "Seed of the training phase path generator; read only when TrainingSamples is set. Optional, default 43.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:637",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "TrainingSequenceType": {
+    "scope": "engine",
+    "description": "Sequence type of the training phase path generator. Allowed values are the same as SequenceType; default MersenneTwister.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:629",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "UpperLimit": {
+    "scope": "engine",
+    "description": "Upper integration limit of the numerical Hagan CMS coupon pricer. Required by the NumericalHagan builder.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/cms.cpp:72",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "UseAD": {
+    "scope": "engine",
+    "description": "Enables automatic differentiation in the computation graph engine. For AMC-CG swaptions it also turns on cached sensitivities during SensitivityDelta runs; the scripted trade builder defaults it to false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/swaption.cpp:125",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "UseCG": {
+    "scope": "engine",
+    "description": "When true, the scripted trade is priced with the computation graph engine. It is set to true automatically when UseAD or UseExternalComputeDevice is true; default false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:537",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "UseDoublePrecisionForExternalCalculation": {
+    "scope": "engine",
+    "description": "When true, calculations on the external compute device use double precision instead of single precision. Optional, default false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:542",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "UseExternalComputeDevice": {
+    "scope": "engine",
+    "description": "When true, the scripted trade is evaluated on an external compute device, which also implies UseCG. Optional, default false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:540",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "VarianceStateGridPoints": {
+    "scope": "engine",
+    "description": "Number of grid points in the variance dimension of the finite difference grid for the Heston model. Required when the Heston model uses the FD engine.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:648",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "VolatilityTimes": {
+    "scope": "model",
+    "description": "Times in years at which the piecewise constant LGM volatility changes. One fewer time than the number of Volatility values is required; empty means a constant volatility.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/callablebond.cpp:48",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "YieldCurveModel": {
+    "scope": "engine",
+    "description": "Yield curve model used by the Hagan CMS coupon pricer. Allowed values are Standard, ExactYield, ParallelShifts and NonParallelShifts. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/cms.cpp:50",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ZeroVolatility": {
+    "scope": "engine",
+    "description": "When true, pricers use a zero volatility surface instead of market volatilities. Optional, default false.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/durationadjustedcms.cpp:46",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "calibrationIndexTerms": {
+    "scope": "engine",
+    "description": "Index tenor periods intended for calibrating the constituent credit curves of an index tranche. Optional and empty by default, and not currently consumed by a pricing engine.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/cdo.hpp:81",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "method": {
+    "scope": "engine",
+    "description": "Method used by the LGM grid engine for a balance guaranteed FlexiSwap. Allowed values are SingleSwaptions, SwaptionArray and Automatic; required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/balanceguaranteedswap.cpp:175",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "singleSwaptionThreshold": {
+    "scope": "engine",
+    "description": "In Automatic mode, the effective number of full swaptions below which the engine prices single swaptions; above it the swaption array method is used. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/balanceguaranteedswap.cpp:184",
+    "curator": "marco",
+    "date": "2026-10-25"
+  }
+}

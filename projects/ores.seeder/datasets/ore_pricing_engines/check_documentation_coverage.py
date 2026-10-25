@@ -44,6 +44,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 VOCABULARY = os.path.join(HERE, "pricing_vocabulary.json")
 TYPES = os.path.join(HERE, "curation", "types.json")
+CODE_SETTINGS = os.path.join(HERE, "curation", "settings-code.json")
 
 CALL = re.compile(r'(?:engine|model)Parameter\("([A-Za-z0-9_.]+)"')
 # A name the code chooses at run time, or reads from the parameter map, is not
@@ -104,6 +105,9 @@ def report(ore, check):
     code, literals = code_settings(ore)
     documented = guide_settings(vocabulary)
     documented_names = set().union(*documented.values()) if documented else set()
+    # A setting the guide does not list is documented when the curation states it.
+    if os.path.exists(CODE_SETTINGS):
+        documented_names |= set(read_json(CODE_SETTINGS))
 
     pairs = sum(len(entry.get("pairs", [])) for entry in vocabulary.values())
     settings = sum(len(pair.get("settings", []))

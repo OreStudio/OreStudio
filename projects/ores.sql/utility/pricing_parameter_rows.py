@@ -133,6 +133,35 @@ def setting_rows():
     return out
 
 
+def code_setting_rows():
+    """The settings the ORE code reads that the guide never lists.
+
+    They have no product type, so they carry none: a pair never chooses one, and
+    a screen reaches the text by the setting's name.
+    """
+    releases_by_name = releases()
+    rows = []
+    for name, entry in CURATED.code_settings.items():
+        scope = "ModelParameters" if entry["scope"] == "model" else "EngineParameters"
+        path = "Model" if entry["scope"] == "model" else "Engine"
+        rows.append({
+            "scope": scope,
+            "subtype": "",
+            "name": name,
+            "domain": "string",
+            "required": False,
+            "label": humanise(name),
+            "help": first_sentence(entry["description"]),
+            "description": entry["description"],
+            "default_text": "The code's own default.",
+            "format": "A value the ORE code reads for this model or engine.",
+            "introduced_in": releases_by_name.get(name) or "1.8.0.7 or earlier",
+            "removed_in": None,
+            "xpath": f"/PricingEngines/Product/{path}Parameters/Parameter[@name='{name}']",
+        })
+    return rows
+
+
 def global_rows():
     releases_by_name = releases()
     out = []
@@ -284,7 +313,8 @@ def type_rows():
 def rows():
     out = []
     for position, row in enumerate(
-        setting_rows() + global_rows() + model_rows() + pair_rows() + type_rows(), start=1
+        setting_rows() + global_rows() + model_rows() + pair_rows() + type_rows()
+        + code_setting_rows(), start=1
     ):
         out.append({**row, "position": position})
     return out

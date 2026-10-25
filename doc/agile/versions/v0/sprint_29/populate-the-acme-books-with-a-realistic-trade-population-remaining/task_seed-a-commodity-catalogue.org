@@ -51,13 +51,20 @@ A commodity trade names its commodity in free text, and nothing holds the set of
    quoted in and a display order. The profile brings the version, the
    audit tail and the tenant isolation the neighbouring catalogues have.
 
-2. The DQ side comes from the model. =refdata.calendar_type= turns its
-   artefact on with one property in the file drawer,
-   =:ores.sql.schema.domain_entity_artefact_create.enabled: true=, and the
-   generator then emits the artefact table's create script and
-   =ores_refdata_publish_<entity>_from_dq_fn=. Commodity takes the same
-   property, so the artefact table, the publish function and its contract
-   are generated rather than written.
+2. Half the DQ side comes from the model, and half does not.
+   =refdata.calendar_type= turns its artefact on with one property in the
+   file drawer, =:ores.sql.schema.domain_entity_artefact_create.enabled:
+   true=, and the generator then emits
+   =ores_dq_calendar_types_artefact_tbl=. Commodity takes the same
+   property and gets =ores_dq_commodities_artefact_tbl= the same way.
+
+   The publish function is not generated. =refdata_publish_from_dq_create.sql=
+   carries forty-nine of them as hand-written SQL, with no generation marker
+   and a history of hand edits. Commodity's function is written there by
+   hand, copied from =ores_refdata_publish_calendar_types_from_dq_fn=. Its
+   C++ counterpart is enumerated in
+   =ores.refdata.publish_operations.org=, which lists one operation per
+   publish, so commodity adds an entry there too.
 
 3. The dataset and its rows are seeded the way calendar types are, in
    =refdata_calendar_types_seed_populate.sql=: register a catalog, register
@@ -109,6 +116,23 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** What the generator does and does not make
+
+Declaring the entity with =:ores.sql.schema.domain_entity_artefact_create.enabled:
+true= and the =simple-lookup= profile generates both tables and the whole
+surface around them: the create and drop scripts for
+=ores_refdata_commodities_tbl= and =ores_dq_commodities_artefact_tbl=, the
+domain type, the JSON and table I/O, the protocol, the repository, the
+handler, the registrar, the history provider, the shell commands, the event
+mapping and the web wire types. The generated tables carry all five
+declared columns.
+
+It does not generate the publish function. That file carries a
+hand-written header and forty-nine hand-written functions, and =git log=
+shows it edited by hand. So the publish is written, not declared, and the
+plan says so after measuring rather than assuming.
+
 
 The catalogue arrives through DQ rather than a generated populate script,
 and the tree says why. Both mechanisms are live, and they split by who

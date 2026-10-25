@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 980F3F69-0F7B-553A-84F3-8F5962FE5709
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the commodities commands from the shell?
+#+description: Every command the commodities submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:commodities:
+
+This file documents the commodities resource at the shell, one section per command. Every command is a subcommand of =commodities=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 281400C8-CB66-54E0-9DC8-E88DFDAE054A
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodities list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodities.list=.
+
+#+name: commodities-list
+#+begin_src ores-shell :tangle commodities-list.ores :exports none
+commodities list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0F5360A9-9439-5D6F-9301-3555B912781D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodities get <code>
+#+end_example
+
+It is addressed at =refdata.v1.commodities.get=.
+
+#+name: commodities-get
+#+begin_src ores-shell :tangle commodities-get.ores :exports none
+commodities get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: D9E97F94-9CAE-531A-B67C-F3727C7E0CDB
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodities get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.commodities.get_many=.
+
+#+name: commodities-get-many
+#+begin_src ores-shell :tangle commodities-get-many.ores :exports none
+commodities get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D4ACB455-C9B6-59F1-B99F-2A477AC6549F
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodities add <code> <name> <description> <unit_code> <quotation_currency_code> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodities.put=.
+
+#+name: commodities-add
+#+begin_src ores-shell :tangle commodities-add.ores :exports none
+commodities add __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 87C4E643-4059-5F31-9A05-FD1B471BED0C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodities set <code> <name> <description> <unit_code> <quotation_currency_code> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodities.put=.
+
+#+name: commodities-set
+#+begin_src ores-shell :tangle commodities-set.ores :exports none
+commodities set __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 0B468124-37E5-587B-9B98-6A1EB9351C41
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodities put-many --count <n> <code> <name> <description> <unit_code> <quotation_currency_code> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodities.put_many=.
+
+#+name: commodities-put-many
+#+begin_src ores-shell :tangle commodities-put-many.ores :exports none
+commodities put-many --count 1 __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: DA57C77D-5F8E-5ACE-8C86-8D991054E606
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodities delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.commodities.delete=.
+
+#+name: commodities-delete
+#+begin_src ores-shell :tangle commodities-delete.ores :exports none
+commodities delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: C46F85D3-A9F0-576B-9097-891DBDF11416
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodities delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.commodities.delete_many=.
+
+#+name: commodities-delete-many
+#+begin_src ores-shell :tangle commodities-delete-many.ores :exports none
+commodities delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 6F79CA82-DBC6-5D72-B783-965396126D6D
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodities versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.commodities_versions.list=.
+
+#+name: commodities-versions
+#+begin_src ores-shell :tangle commodities-versions.ores :exports none
+commodities versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: E54CB60C-18ED-5D14-BE46-E69BCAE96284
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+commodities version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.commodities_versions.get=.
+
+#+name: commodities-version
+#+begin_src ores-shell :tangle commodities-version.ores :exports none
+commodities version __none__ --version 1
+#+end_src
+

@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-trade-list-and-trade-page
-#+pr: 3808
+#+pr: 3820
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -88,6 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3820][#3820]] | [agile] Close the trade list and page |
 | [[https://github.com/OreStudio/OreStudio/pull/3808][#3808]] | [web] Show a trade's instrument terms |
 | [[https://github.com/OreStudio/OreStudio/pull/3806][#3806]] | [web] Keep the list table in step with main |
 | [[https://github.com/OreStudio/OreStudio/pull/3804][#3804]] | [compass] Ignore a lock a killed browser left behind |

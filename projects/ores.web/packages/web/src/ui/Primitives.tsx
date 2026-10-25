@@ -167,10 +167,17 @@ export function Field({
         <label className={cx('block', className)}>
             <span className="mb-1.5 block text-sm font-medium text-ink-muted">{label}</span>
             {children}
-            {hint !== undefined && (
-                <span className="mt-1 block text-xs text-ink-faint">{hint}</span>
+            {/* One line under the control: the error takes the hint's place, so a message never moves the form (RS-WRITE-05). */}
+            {(hint !== undefined || error !== undefined) && (
+                <span
+                    className={cx(
+                        'mt-1 block min-h-4 text-xs',
+                        error === undefined ? 'text-ink-faint' : 'text-down',
+                    )}
+                >
+                    {error ?? hint}
+                </span>
             )}
-            {error !== undefined && <span className="mt-1 block text-xs text-down">{error}</span>}
         </label>
     );
 }

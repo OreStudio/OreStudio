@@ -31,9 +31,9 @@ first.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The journeys are signed off with the Import and Export pair decided; the prototype is next. |
+| Now           | The prototype is signed off; the build moves the three screens and adds the Import and Export pair's server side. |
 | Waiting on    | Nothing. |
-| Next          | Prototype the screens of the currencies topic, with the pair on the currencies list. |
+| Next          | Build the screens of the currencies topic. |
 | Last touched  | 2026-10-25                               |
 
 * Acceptance
@@ -49,8 +49,8 @@ first.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:9C4A21C6-6B7E-41A3-AB03-E2D3A8BB9939][Extract the journeys of the currencies topic]] | DONE | 2026-10-25 | 2026-10-25 | Find or write the journeys of currencies, groups and pairs, judge each step as the standard screen, an own action, a view or a workflow, and get the owner's sign off. |
-| [[id:958AA2EF-041E-4266-AFE8-A57A6C345F6E][Prototype the screens of the currencies topic]] | STARTED | 2026-10-25 | | Prototype each screen of the topic to the settled standard with its design note, every state at an address, and get the owner's sign off before any code. |
-| [[id:31086D9C-507A-4748-BEBF-12D90775D130][Build the screens of the currencies topic]] | BACKLOG | | | Move the currencies, desk groups and currency pairs screens to the signed off prototype through the shared parts, with the harness checks and the strings in three languages. |
+| [[id:958AA2EF-041E-4266-AFE8-A57A6C345F6E][Prototype the screens of the currencies topic]] | DONE | 2026-10-25 | 2026-10-25 | Prototype each screen of the topic to the settled standard with its design note, every state at an address, and get the owner's sign off before any code. |
+| [[id:31086D9C-507A-4748-BEBF-12D90775D130][Build the screens of the currencies topic]] | STARTED | 2026-10-25 | | Move the currencies, desk groups and currency pairs screens to the signed off prototype through the shared parts, with the harness checks and the strings in three languages. |
 | [[id:1592D684-2DC9-46B5-B348-032470DFDC08][Test and sign off the screens of the currencies topic]] | BACKLOG | | | Write and drive the test scenario on a fresh database, run the harness and the sheet, file the gaps, and record the owner's sign off. |
 
 * Decisions
@@ -69,6 +69,9 @@ first.
   "import and export sounds good, keep it simple").
 - The earlier proposal to drop the import of one currency file is superseded
   by the pair.
+- The prototype was signed off on 2026-10-25 with no correction. The owner
+  noted that the live currencies screens are not modernised and still draw the
+  legacy history panel; the build task moves them (owner, 2026-10-25).
 
 * Out of scope
 

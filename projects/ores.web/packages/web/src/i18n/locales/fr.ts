@@ -2660,7 +2660,7 @@ const fr: SourceCatalogue = {
         gaps: 'Ce que cet historique ne peut pas montrer',
         gapFor: {
             record_parts_removed:
-                "Une règle, une exception ou un événement supprimé de l'enregistrement n'est pas dans ce flux : l'écran lit l'historique des parties que l'enregistrement détient maintenant.",
+                "Une partie supprimée de l'enregistrement n'est pas dans ce flux : l'écran lit l'historique des parties que l'enregistrement détient maintenant.",
             party_country:
                 'Les pays où elle opère n’ont pas pu être lus, donc l’ajout ou le retrait d’un pays n’apparaît pas.',
             party_currency:
@@ -4230,8 +4230,6 @@ const fr: SourceCatalogue = {
             countries: 'Pays',
             calendars: 'Calendriers',
             groups: 'Groupes de devises',
-            oreExport:
-                "L'export des devises en configuration ORE exige une opération serveur qui n'existe pas encore.",
             removeWarning:
                 'Rien ne vérifie si des opérations, livres ou paires utilisent encore cette devise. Un enregistrement qui la cite encore échouera à sa prochaine sauvegarde.',
         },
@@ -4286,6 +4284,7 @@ const fr: SourceCatalogue = {
             lead: 'Les paires que le desk négocie, avec leur cotation, leur affichage et leur règlement.',
             add: 'Ajouter une paire',
             addTitle: 'Ajouter une paire de devises',
+            pairGroup: 'La paire',
             codeLine: 'Code de la paire : {code}',
             sameLegs: 'Les devises de base et de cotation doivent être différentes.',
             convention: 'Convention de cotation',

@@ -16,18 +16,20 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- *
  */
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
+import { useEntityChanges } from '../events/useEntityChanges.js';
+import { useLoadState } from '../events/useLoadState.js';
 import { currencyPath } from './currencies.js';
-import { HistoryPanel } from './HistoryPanel.js';
 import { RecordList, useRecordSource } from './RecordList.js';
+import { RecordTimeline } from './RecordTimeline.js';
 import {
     LinkPanel,
     RecordDetails,
@@ -37,14 +39,17 @@ import {
     RemoveRecordDialog,
     RevertDialog,
     show,
+    useRecord,
     useRecordPermissions,
     useRecordTabs,
     useRecords,
+    useRegistry,
     type FieldSpec,
 } from './records.js';
 
 const RESOURCE = 'currency-groups';
 const MEMBERSHIPS = 'currency-memberships';
+const ENTITY = 'ores.refdata.currency_group';
 
 const GROUP_FIELDS: readonly FieldSpec[] = [
     { field: 'code', history: 'Code', kind: { kind: 'text', max: 100 }, fixed: true },
@@ -124,7 +129,7 @@ export function DeskGroupPage(): ReactNode {
     const { code } = useParams();
     return (
         <RecordGate resource={RESOURCE} recordKey={code ?? ''} listPath={deskGroupPath()}>
-            {(row) => <DeskGroupBody row={row} />}
+            {(row) => <DeskGroupBody key={show(row['code'])} row={row} />}
         </RecordGate>
     );
 }
@@ -132,14 +137,34 @@ export function DeskGroupPage(): ReactNode {
 function DeskGroupBody({ row }: { readonly row: RecordRow }): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const queries = useQueryClient();
+    const registry = useRegistry();
     const code = show(row['code']);
+    const name = show(row['name']) || code;
     const may = useRecordPermissions(RESOURCE);
     const { tab, bar } = useRecordTabs({ label: code, tabs: ['details', 'members', 'history'] });
+    const record = useRecord(RESOURCE, code);
     const currencies = useRecords('currencies');
     const memberships = useRecords(MEMBERSHIPS);
     const [editing, setEditing] = useState(false);
     const [removing, setRemoving] = useState(false);
     const [reverting, setReverting] = useState<HistoryVersion | null>(null);
+    // The page never reloads by itself: a change the server tells of turns Refresh gold (ES-REFRESH-15).
+    const pageKeys = [
+        ['records', RESOURCE, 'key', code],
+        ['records', MEMBERSHIPS],
+        ['history', ENTITY, code],
+    ];
+    const load = useLoadState(pageKeys);
+    const watches = (registry.data ?? [])
+        .filter((entry) => [RESOURCE, MEMBERSHIPS].includes(entry.key))
+        .flatMap((entry) => (entry.events === undefined ? [] : [entry.events]));
+    const news = useEntityChanges(watches, load);
+    const refresh = (): void => {
+        for (const key of pageKeys) {
+            void queries.invalidateQueries({ queryKey: key });
+        }
+    };
 
     return (
         <div className="space-y-4">
@@ -149,9 +174,10 @@ function DeskGroupBody({ row }: { readonly row: RecordRow }): ReactNode {
                     { label: t('refdata.deskGroups.title'), to: deskGroupPath() },
                     { label: code },
                 ]}
-                title={show(row['name'])}
+                title={name}
                 recordKey={code}
                 version={row.version}
+                refresh={{ onClick: refresh, load, news }}
                 onEdit={may.write ? () => setEditing(true) : undefined}
                 onDelete={may.remove ? () => setRemoving(true) : undefined}
             />
@@ -174,27 +200,26 @@ function DeskGroupBody({ row }: { readonly row: RecordRow }): ReactNode {
                 />
             )}
             {tab === 'history' && (
-                <HistoryPanel
-                    entityType="ores.refdata.currency_group"
+                <RecordTimeline
+                    entityType={ENTITY}
                     entityId={code}
-                    {...(may.write
-                        ? { onRevert: (version: HistoryVersion) => setReverting(version) }
-                        : {})}
+                    {...(may.write ? { onRevert: setReverting } : {})}
                 />
             )}
             {editing && (
                 <RecordDialog
-                    title={t('refdata.records.editTitle', { code })}
+                    title={t('refdata.records.editTitle', { code: name })}
                     resource={RESOURCE}
                     specs={GROUP_FIELDS}
                     row={row}
+                    loadedAt={record.dataUpdatedAt}
                     onClose={() => setEditing(false)}
                 />
             )}
             {removing && (
                 <RemoveRecordDialog
                     resource={RESOURCE}
-                    title={t('refdata.records.deleteTitle', { code })}
+                    title={t('refdata.records.deleteTitle', { code: name })}
                     warning={t('refdata.deskGroups.removeWarning')}
                     recordKey={{ code }}
                     version={row.version}

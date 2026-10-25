@@ -2649,7 +2649,7 @@ const pt: SourceCatalogue = {
         gaps: 'O que este histórico não pode mostrar',
         gapFor: {
             record_parts_removed:
-                'Uma regra, exceção ou evento de agenda apagado do registo não está neste fluxo: o ecrã lê o histórico das partes que o registo tem agora.',
+                'Uma parte apagada do registo não está neste fluxo: o ecrã lê o histórico das partes que o registo tem agora.',
             party_country:
                 'Os países em que opera não puderam ser lidos, por isso não se mostra quando um é adicionado ou removido.',
             party_currency:
@@ -4204,8 +4204,6 @@ const pt: SourceCatalogue = {
             countries: 'Países',
             calendars: 'Calendários',
             groups: 'Grupos de moedas',
-            oreExport:
-                'Exportar as moedas como configuração ORE exige uma operação do servidor que ainda não existe.',
             removeWarning:
                 'Nada verifica se operações, livros ou pares ainda usam esta moeda. Um registo que ainda a indique falhará na próxima gravação.',
         },
@@ -4259,6 +4257,7 @@ const pt: SourceCatalogue = {
             lead: 'Os pares que a mesa negoceia, com a forma como cada um cota, se apresenta e liquida.',
             add: 'Adicionar par',
             addTitle: 'Adicionar um par de moedas',
+            pairGroup: 'O par',
             codeLine: 'Código do par: {code}',
             sameLegs: 'As moedas base e de cotação têm de ser diferentes.',
             convention: 'Convenção de cotação',

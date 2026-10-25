@@ -30,11 +30,11 @@ off before any code.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]] |
-| Now          | The prototype is drawn, rendered in every state, and the PR is raised. |
+| Now          | Nothing. |
 | Waiting on   | The owner's sign off of the prototype. |
-| Next         | [[id:31086D9C-507A-4748-BEBF-12D90775D130][Build the screens of the currencies topic]], once the owner signs off. |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance

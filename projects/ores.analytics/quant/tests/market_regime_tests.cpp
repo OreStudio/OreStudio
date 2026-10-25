@@ -17,9 +17,12 @@
  *
  */
 #include "ores.analytics.quant/domain/market_regime.hpp"
+#include <atomic>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <stdexcept>
+#include <thread>
 
 using ores::analytics::quant::domain::market_regime;
 
@@ -74,4 +77,27 @@ TEST_CASE("market_regime refuses parameters that cannot describe a market", "[ma
 
     market_regime regime;
     CHECK_THROWS_AS(regime.advance(-1.0), std::invalid_argument);
+}
+
+TEST_CASE("market_regime moves with wall time, not once per caller", "[market_regime]") {
+    // Two callers share one market, as two feeds' clocks do. Each calls
+    // synchronise() in a tight loop for about a tenth of a second; the market
+    // must advance by about that much, not by twice it.
+    market_regime regime(1e-6, 1e-6, 3.0);
+    const double before = regime.remaining_seconds();
+
+    std::atomic<bool> stop{false};
+    auto spin = [&] {
+        while (!stop.load())
+            regime.synchronise();
+    };
+    std::thread a(spin);
+    std::thread b(spin);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    stop.store(true);
+    a.join();
+    b.join();
+
+    const double advanced = before - regime.remaining_seconds();
+    CHECK(advanced == Catch::Approx(0.1).margin(0.06));
 }

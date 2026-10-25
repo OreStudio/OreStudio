@@ -99,10 +99,14 @@ public:
             // unspecified integer; a zero gap means "tick without waiting",
             // which a periodic process at a very high rate legitimately asks
             // for.
-            // The market decides how busy the feed is before it asks for a gap,
-            // and the row's sensitivity decides how much of the market it takes.
-            if (market_)
+            // The market moves with wall time rather than with this feed, so
+            // several clocks can share one: whichever asks first advances it and
+            // the rest find it already advanced. The row's sensitivity then says
+            // how much of the market this feed takes.
+            if (market_) {
+                market_->synchronise();
                 arrivals_.set_baseline_multiplier(market_->multiplier() * sensitivity_);
+            }
 
             const double gap_seconds = arrivals_.next_gap();
             const bool usable = std::isfinite(gap_seconds) && gap_seconds > 0.0;
@@ -117,11 +121,6 @@ public:
 
             if (stop_flag_.load(std::memory_order_relaxed))
                 break;
-
-            // The state the gap was drawn in held for the gap, so the market
-            // moves on by exactly the time that passed.
-            if (market_ && std::isfinite(gap_seconds) && gap_seconds > 0.0)
-                market_->advance(gap_seconds);
 
             try {
                 const auto summary = body(usable ? gap_seconds : 0.0);

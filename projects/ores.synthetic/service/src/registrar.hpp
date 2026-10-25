@@ -22,6 +22,7 @@
 
 #include "feed_controller.hpp"
 #include "feed_kind_registry.hpp"
+#include "ores.analytics.quant/domain/market_regime.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -54,7 +55,8 @@ public:
                       std::shared_ptr<ores::synthetic::feed::fault_state> faults,
                       ores::database::context ctx,
                       std::optional<ores::security::jwt::jwt_authenticator> verifier,
-                      const feed_kind_registry& registry);
+                      const feed_kind_registry& registry,
+                      ores::analytics::quant::domain::market_regime* market = nullptr);
 };
 
 }

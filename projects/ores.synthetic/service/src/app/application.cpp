@@ -278,10 +278,15 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // control-plane verb reads.
     const auto registry = make_default_feed_kind_registry();
 
+    // One market for the whole run: every feed built here consults it, so a
+    // busy market lifts all of them together.
+    ores::analytics::quant::domain::market_regime market;
+
     // The simulator is an adapter of the market data service for each simulated source. It
     // serves the system collections of the provider of the source, and it starts a generator for
     // each id that the demand names.
-    const ores::synthetic::feed::feed_build_context adapter_build{nats, svc_nats};
+    const ores::synthetic::feed::feed_build_context adapter_build{
+        .nats = nats, .auth_nats = svc_nats, .market = &market};
     const auto faults = std::make_shared<ores::synthetic::feed::fault_state>();
     adapter_fleet fleet(nats, svc_nats, db_ctx, registry, adapter_build, faults);
 
@@ -290,10 +295,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         std::move(db_ctx),
         "ores.synthetic.service",
-        [ctrl, faults, &svc_nats, &registry](auto& n, auto c, auto v) {
+        [ctrl, faults, &svc_nats, &registry, &market](auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
             auto market_subs = ores::synthetic::service::registrar::register_handlers(
-                n, svc_nats, ctrl, faults, c, v, registry);
+                n, svc_nats, ctrl, faults, c, v, registry, &market);
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));

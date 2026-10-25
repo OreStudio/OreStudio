@@ -26,7 +26,7 @@ The trade anchor holds origin and origin_reference. The booking request carries 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                           |
+| State        | DONE                           |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |

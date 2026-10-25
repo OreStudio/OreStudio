@@ -7,30 +7,32 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/configure-the-market-regime-from-the-feeds-screen
 #+pr:
+#+pr: 3795
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A user sets and sees the market regime from the feeds screen, and a tester
+forces it with a switch that takes effect on the next tick.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Started: the clock is proven to drive every feed and count it. The screen is not touched. |
+| Waiting on   | The work in flight on the screen and market-data trees. |
+| Next         | The regime verb, then the screen. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -79,6 +81,10 @@ via its "Verifies task" field.
 |          |       |       |
 
 * PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3795][#3795]] | [synthetic] Prove one clock drives every feed |
 
 | PR | Title |
 |----+-------|

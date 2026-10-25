@@ -449,3 +449,38 @@ TEST_CASE("two feeds register with one scheduler and leave it on stop", tags) {
     second->stop();
     CHECK(scheduler.size() == 0);
 }
+
+TEST_CASE("one clock drives every feed and each counts what it ticks", tags) {
+    // The defect this pins: a feed's publish count used to come from a clock it
+    // no longer runs, so it read zero however many ticks the scheduler made.
+    ores::analytics::quant::service::tick_scheduler scheduler;
+    const auto context = feed_build_context{
+        .nats = nats(), .auth_nats = auth_nats(), .scheduler = &scheduler};
+
+    const auto factory = make_default_feed_factory();
+    auto eur = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};
+
+    auto other = make_fx_config();
+    other.base_currency_code = "GBP";
+    other.quote_currency_code = "USD";
+    other.oresmd_uri = "oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD";
+    other.source_name = "gbp_usd_test";
+    auto gbp = fx_spot_feed_build_input{other, {make_component(0.0, 0.1, 1.0)}};
+
+    const auto first = factory.make(std::string(fx_spot_feed_kind), context, eur);
+    const auto second = factory.make(std::string(fx_spot_feed_kind), context, gbp);
+    first->start();
+    second->start();
+
+    constexpr int ticks = 20;
+    for (int i = 0; i < ticks; ++i)
+        REQUIRE(scheduler.step().has_value());
+
+    // One series ticks per step, so the two counts add up to the steps taken.
+    CHECK(first->publish_count() + second->publish_count() == ticks);
+    CHECK(first->publish_count() > 0);
+    CHECK(second->publish_count() > 0);
+
+    first->stop();
+    second->stop();
+}

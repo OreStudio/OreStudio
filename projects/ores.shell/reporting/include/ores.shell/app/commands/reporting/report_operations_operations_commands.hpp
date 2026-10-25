@@ -71,6 +71,13 @@ public:
                                                 const std::vector<std::string>& args);
 
     /**
+     * @brief get-run-health <report_instance_id>
+     */
+    static void process_get_run_health(std::ostream& out,
+                                       ores::nats::service::nats_client& session,
+                                       const std::vector<std::string>& args);
+
+    /**
      * @brief schedule-report-definitions <ids>
      */
     static void process_schedule_report_definitions(std::ostream& out,

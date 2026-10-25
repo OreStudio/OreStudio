@@ -55,6 +55,47 @@ struct trigger_report_instance_response {
     std::string report_instance_id;
 };
 
+/**
+ * @brief Reads one run's health word and the state it was derived from.
+ *
+ * The run is named rather than scoped to the caller's party: the answer is
+ * scoped by row-level security on the tables, as the web's read of the same
+ * runs is.
+ */
+struct get_run_health_request {
+    using response_type = struct get_run_health_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.get_run_health";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** @brief The run to state the health of. */
+    boost::uuids::uuid report_instance_id;
+};
+
+struct get_run_health_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief The name of the run's lifecycle state, as the store holds it.
+     *
+     * Empty when the run has no state, or when the session cannot read the
+     * state. The word is then empty too, so a caller is told what the word was
+     * derived from rather than left guessing.
+     */
+    std::string state_name;
+    /**
+     * @brief One of =failed=, =completed with errors=, =running= or
+     * =completed clean=, or empty when the state has no word.
+     *
+     * =never run= is not a word here: a run that never started has no run to
+     * ask about.
+     */
+    std::string health;
+};
+
 struct schedule_report_definitions_request {
     using response_type = struct schedule_report_definitions_response;
     static constexpr std::string_view nats_subject = "reporting.v1.ops.schedule_report_definitions";

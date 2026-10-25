@@ -53,6 +53,7 @@
 #include "ores.reporting.core/messaging/report_execution_handler.hpp"
 #include "ores.reporting.core/messaging/report_instance_handler.hpp"
 #include "ores.reporting.core/messaging/report_instance_trigger_handler.hpp"
+#include "ores.reporting.core/messaging/report_run_health_handler.hpp"
 #include "ores.reporting.core/messaging/report_scheduling_handler.hpp"
 #include "ores.reporting.core/messaging/report_type_handler.hpp"
 #include "ores.reporting.core/messaging/run_document_handler.hpp"
@@ -293,6 +294,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.push_back(nats.queue_subscribe(
             trigger_report_instance_request::nats_subject, group, [rith](ores::nats::message msg) {
                 rith->trigger(std::move(msg));
+            }));
+    }
+
+    // ----------------------------------------------------------------
+    // A run's health as the shell asks it (hand-crafted handler — not
+    // codegen). It answers from the read the web already asks.
+    // ----------------------------------------------------------------
+    {
+        auto rrhh = std::make_shared<report_run_health_handler>(nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            get_run_health_request::nats_subject, group, [rrhh](ores::nats::message msg) {
+                rrhh->get_run_health(std::move(msg));
             }));
     }
 

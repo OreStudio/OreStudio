@@ -28,6 +28,11 @@ definition belongs to rather than deriving it from the caller's own privilege.
 The acting identity is still the caller's. The scheduler presents its own
 service account, and the permission check reads that account's roles.
 
+=get_run_health= asks one run's health: the word the screen draws and the
+lifecycle state it was derived from. The web asks the same read, so the shell
+answers what the web answers. The word is the server's to state, which is why
+this operation declares no mapping of its own.
+
 * Includes
 
 #+begin_src cpp :name includes
@@ -103,6 +108,68 @@ with, so a caller reads one result convention across the component.
 
 The instance the trigger created, empty when it created none. A caller that asked for
 a =package= instance reads it to find the instance and the packages it stores.
+
+** get_run_health_request
+:PROPERTIES:
+:subject: reporting.v1.ops.get_run_health
+:response: get_run_health_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads one run's health word and the state it was derived from.
+ *
+ * The run is named rather than scoped to the caller's party: the answer is
+ * scoped by row-level security on the tables, as the web's read of the same
+ * runs is.
+ */
+#+end_src
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief The run to state the health of. */
+#+end_src
+
+** get_run_health_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** state_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+    /**
+     * @brief The name of the run's lifecycle state, as the store holds it.
+     *
+     * Empty when the run has no state, or when the session cannot read the
+     * state. The word is then empty too, so a caller is told what the word was
+     * derived from rather than left guessing.
+     */
+#+end_src
+
+*** health
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+    /**
+     * @brief One of =failed=, =completed with errors=, =running= or
+     * =completed clean=, or empty when the state has no word.
+     *
+     * =never run= is not a word here: a run that never started has no run to
+     * ask about.
+     */
+#+end_src
 
 ** schedule_report_definitions_request
 :PROPERTIES:

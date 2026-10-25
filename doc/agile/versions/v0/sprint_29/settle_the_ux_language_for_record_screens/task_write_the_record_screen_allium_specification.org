@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :settle_the_ux_language_for_record_screens:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-the-record-screen-allium-spec
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2][Settle the UX language for record screens]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The behaviour rules of a record screen are a specification a tool can validate a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2][Settle the UX language for record screens]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

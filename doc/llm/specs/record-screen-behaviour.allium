@@ -1,0 +1,581 @@
+-- allium: 3
+-- record-screen-behaviour.allium
+
+-- Scope: the behaviour of an ores.web record screen, as the Record screen
+-- standard (RS) and the Entity screen specification (ES) state it. The
+-- look of a screen stays in those pages; this spec carries the rules that
+-- are a state and the events that move it, so a test can be propagated
+-- from each. Every rule names the identifiers it encodes, in the form
+-- the pages carry them, such as RS-WRITE-23.
+-- Includes:
+--   - The stale rule: a load, a change heard after it, Refresh gold, a
+--     reload that clears it, and nothing reloading by itself
+--     (ES-REFRESH-05, 07, 10, 11, 15)
+--   - The edit in progress: a dialog open on one version, a newer version
+--     heard, the warning, Keep my edit or Take the new values, and the
+--     base moving (ES-REFRESH-24, 25, 26, 27, 28)
+--   - The stale write: a save that claims a version the record has left
+--     is refused, the dialog stays open and offers to reload
+--     (RS-WRITE-23, RS-WRITE-27, ES-EDIT-04)
+--   - The reasons that follow the change (RS-WRITE-21, 22, ES-EDIT-03)
+--   - Create (RS-WRITE-17, 18, 19), delete (RS-WRITE-25 to 30), revert
+--     (RS-HIST-02, RS-FEEDBACK-05) and the closing guard (RS-WRITE-24,
+--     ES-EDIT-05)
+--   - A link is removed and has no history; a part is deleted and keeps
+--     its history (RS-RELATED-03, RS-RELATED-05, RS-RELATED-06)
+--   - No silent write (RS-FEEDBACK-06) and the access rule that an action
+--     the person may not take is not drawn (RS-FEEDBACK-01, 03)
+-- Excludes:
+--   - Layout, words, colours and icons: prose rules with identifiers,
+--     checked in the browser by the harness
+--   - The transport of change news to the browser (Change notification):
+--     the spec sees a change as an event that reached the screen
+--   - The server's own checks: the version precondition and the key
+--     uniqueness are the server's; the spec states what the screen does
+--     with the refusal
+-- External inputs: the record store's reads and writes, the change
+-- events the browser hears, the person's actions on the screen.
+
+config {
+    -- Decisions (2026-10-25), from the audit of the UX standards:
+    --   A save never reloads the page; the person presses Refresh.
+    --   A save with no field change is allowed and carries the one
+    --     reason that applies to it.
+    new_record_reason: String = "system.new_record"
+    non_material_reason: String = "common.non_material_update"
+    -- How long a changed row stays marked after a reload (MARK_MS).
+    changed_row_mark: Duration = 4.seconds
+}
+
+-- ------------------------------------------------------------
+-- Entities
+-- ------------------------------------------------------------
+
+-- The person at the screen. Permissions come from the session.
+entity Person {
+    name: String
+    may_write: Boolean
+    may_delete: Boolean
+}
+
+-- One record of one kind, as the server holds it. The version moves
+-- with every accepted write, and a write names the version it read.
+entity Record {
+    kind: String
+    key: String
+    version: Integer
+    exists: Boolean
+    -- A link joins two records and has no versions; a part belongs to
+    -- one parent and has its own versions (RS Words).
+    shape: own | link | part
+    parent: Record?
+
+    versions: Version with record = this
+    current: versions where is_current
+}
+
+-- One accepted change of a record: what the history shows.
+entity Version {
+    record: Record
+    number: Integer
+    reason: String
+    commentary: String
+    -- Whether the screen offers Revert on this entry (RS-HIST-02).
+    revert_offered: Boolean
+    is_current: number = record.version
+}
+
+-- A change the browser heard about a kind of record. The screen compares
+-- when it arrived with when its own load began, both on the browser's
+-- clock, because the server's clock differs (ES-REFRESH-05).
+entity ChangeNews {
+    kind: String
+    keys: Set<String>
+    names_keys: Boolean
+    arrived_at: Timestamp
+}
+
+-- A screen that shows records of one kind: a list, or the page of one
+-- record. It is stale when news arrived after its load began, and it
+-- never reloads by itself.
+entity Screen {
+    kind: String
+    record: Record?
+    person: Person
+    load_began_at: Timestamp
+    loaded_at: Timestamp?
+    stale: Boolean
+    refresh_gold: Boolean
+    -- The rows marked after a reload, and when the mark goes.
+    marked_rows: Set<String>
+    marks_expire_at: Timestamp?
+    -- The actions the screen draws for this person (RS-FEEDBACK-01).
+    add_drawn: Boolean
+    edit_drawn: Boolean
+    delete_drawn: Boolean
+
+    -- The news that concerns this screen: any change of its kind for a
+    -- list, and for a record page a change that names its record or
+    -- names none (ES-REFRESH-04).
+    concerns: ChangeNews where kind = this.kind
+        and (this.record = null or not names_keys or this.record.key in keys)
+    heard_after_load: concerns where arrived_at > this.load_began_at
+    is_stale: heard_after_load.count > 0
+}
+
+-- The record dialog, open over a screen on one record or on none.
+-- It holds the version the edit started from, and never reloads under
+-- the person (ES-REFRESH-24).
+entity Dialog {
+    screen: Screen
+    record: Record?
+    base_version: Integer?
+    loaded_at: Timestamp?
+    -- The key the person entered on a create.
+    key_entered: String?
+    changed: Boolean
+    complete: Boolean
+    reason: String?
+    reason_needs_commentary: Boolean
+    commentary: String
+    newer_version_seen: Boolean
+    state: open | leaving | closed
+    last_refusal: none | stale_version | key_exists | server_words
+
+    is_create: record = null
+    is_amend: record != null
+
+    -- The reasons the dialog offers follow the change (RS-WRITE-22).
+    offers_non_material: is_amend and not changed
+    offers_other_reasons: is_amend and changed
+
+    -- Save waits for a complete form, a reason on an amend, and a
+    -- commentary where the reason needs one (RS-WRITE-21, ES-EDIT-03).
+    -- A save with no field change is allowed.
+    can_save: complete
+        and (is_create or reason != null)
+        and not (reason_needs_commentary and commentary = "")
+
+    transitions state {
+        open -> leaving
+        leaving -> open
+        leaving -> closed
+        open -> closed
+        terminal: closed
+    }
+}
+
+-- ------------------------------------------------------------
+-- Rules: the stale rule and Refresh
+-- ------------------------------------------------------------
+
+-- ES-REFRESH-05, ES-REFRESH-07, ES-REFRESH-11: news that arrives after
+-- the load began makes the screen stale and turns Refresh gold. The
+-- screen's loaded time does not move, because nothing reloads.
+rule NewsMakesScreenStale {
+    when: news: ChangeNews.created
+    for screen in Screens where kind = news.kind
+            and (record = null or not news.names_keys or record.key in news.keys)
+            and news.arrived_at > load_began_at:
+        ensures: screen.stale = true
+        ensures: screen.refresh_gold = true
+}
+
+-- ES-REFRESH-07: gold means stale and nothing else. A screen is gold
+-- exactly when news arrived after its load began.
+invariant GoldMeansStale {
+    for screen in Screens:
+        screen.refresh_gold = screen.is_stale
+}
+
+-- ES-REFRESH-10, ES-REFRESH-21, ES-REFRESH-22: Refresh reads again what
+-- the screen shows and clears the gold. The rows that were not on the
+-- page before, or whose content is not what it was, are marked, and the
+-- mark has an end.
+rule PersonPressesRefresh {
+    when: RefreshPressed(person, screen)
+    requires: screen.person = person
+    ensures: screen.load_began_at = now
+    ensures: screen.loaded_at = now
+    ensures: screen.stale = false
+    ensures: screen.refresh_gold = false
+    ensures: screen.marks_expire_at = now + config.changed_row_mark
+    @guidance
+        -- The marked rows are found by comparing the page with the same
+        -- page read before, with no clock. A first load marks nothing.
+}
+
+-- ES-REFRESH-21: the mark goes after a moment.
+rule RowMarksExpire {
+    when: screen: Screen.marks_expire_at <= now
+    requires: screen.marked_rows.count > 0
+    ensures: screen.marked_rows = {}
+    ensures: screen.marks_expire_at = null
+}
+
+-- ES-REFRESH-15: a save turns Refresh gold through its own change event,
+-- like any other change. The surface guarantee below says the page does
+-- not reload for it.
+
+-- ------------------------------------------------------------
+-- Rules: the edit in progress
+-- ------------------------------------------------------------
+
+-- RS-WRITE-20, ES-EDIT-02, ES-REFRESH-28: Edit opens the dialog on the
+-- current values, with the version the edit starts from and when that
+-- record was loaded.
+rule PersonOpensEdit {
+    when: EditPressed(person, screen, record)
+    requires: person.may_write and record.exists and screen.edit_drawn
+    ensures: Dialog.created(
+        screen: screen,
+        record: record,
+        base_version: record.version,
+        loaded_at: screen.loaded_at,
+        key_entered: null,
+        changed: false,
+        complete: true,
+        reason: null,
+        reason_needs_commentary: false,
+        commentary: "",
+        newer_version_seen: false,
+        state: open,
+        last_refusal: none
+    )
+}
+
+-- ES-REFRESH-24, ES-REFRESH-25: while the dialog is open it listens, and
+-- a newer version of its record raises the warning. The form's values
+-- are the person's and stay.
+rule NewerVersionWarnsTheDialog {
+    when: news: ChangeNews.created
+    for dialog in Dialogs where state != closed and record != null
+            and record.kind = news.kind
+            and (not news.names_keys or record.key in news.keys)
+            and record.version > base_version:
+        ensures: dialog.newer_version_seen = true
+}
+
+-- ES-REFRESH-27: Keep my edit makes the newest version the base, so the
+-- save replaces it knowingly. The person's values stay.
+rule PersonKeepsTheirEdit {
+    when: KeepMyEditChosen(person, dialog)
+    requires: dialog.newer_version_seen and dialog.state = open
+    ensures: dialog.base_version = dialog.record.version
+    ensures: dialog.loaded_at = now
+    ensures: dialog.newer_version_seen = false
+}
+
+-- ES-REFRESH-25: Take the new values replaces the form's values with the
+-- newest version and moves the base to it.
+rule PersonTakesTheNewValues {
+    when: TakeTheNewValuesChosen(person, dialog)
+    requires: dialog.newer_version_seen and dialog.state = open
+    ensures: dialog.base_version = dialog.record.version
+    ensures: dialog.loaded_at = now
+    ensures: dialog.changed = false
+    ensures: dialog.newer_version_seen = false
+}
+
+-- ------------------------------------------------------------
+-- Rules: saving
+-- ------------------------------------------------------------
+
+-- RS-WRITE-22: the reasons follow the change. A field that changed
+-- removes the non material reason; no change leaves only it.
+invariant ReasonsFollowTheChange {
+    for dialog in Dialogs where state != closed and record != null:
+        (dialog.changed implies dialog.reason != config.non_material_reason)
+        and (not dialog.changed implies
+            (dialog.reason = null or dialog.reason = config.non_material_reason))
+}
+
+-- RS-WRITE-23, ES-EDIT-04, ES-REFRESH-26, RS-FEEDBACK-06: a save claims
+-- the version the edit started from and carries a reason. The server
+-- accepts it when the record is still at that version: a new version is
+-- written and the dialog closes.
+rule SaveAccepted {
+    when: SavePressed(person, dialog)
+    requires: dialog.state = open and dialog.can_save
+        and dialog.is_amend
+        and dialog.record.version = dialog.base_version
+    ensures: Version.created(
+        record: dialog.record,
+        number: dialog.record.version + 1,
+        reason: dialog.reason,
+        commentary: dialog.commentary,
+        revert_offered: false
+    )
+    ensures: dialog.record.version = dialog.record.version + 1
+    ensures: dialog.state = closed
+}
+
+-- RS-WRITE-23, ES-REFRESH-26: a save against a version the record has
+-- left is refused. The dialog stays open, says so and offers to reload.
+rule SaveRefusedAsStale {
+    when: SavePressed(person, dialog)
+    requires: dialog.state = open and dialog.can_save
+        and dialog.is_amend
+        and dialog.record.version != dialog.base_version
+    ensures: dialog.state = open
+    ensures: dialog.last_refusal = stale_version
+}
+
+-- RS-FEEDBACK-07: the server's own words show in the dialog, which stays
+-- open, for any other refusal.
+rule SaveRefusedWithWords {
+    when: ServerRefusedSave(dialog, words)
+    requires: dialog.state = open
+    ensures: dialog.state = open
+    ensures: dialog.last_refusal = server_words
+}
+
+-- RS-WRITE-24, ES-EDIT-05: closing with changes asks first; closing
+-- without changes closes.
+rule PersonClosesTheDialog {
+    when: ClosePressed(person, dialog)
+    requires: dialog.state = open
+    ensures:
+        if dialog.changed or dialog.commentary != "":
+            dialog.state = leaving
+        else:
+            dialog.state = closed
+}
+
+rule PersonStays {
+    when: StayChosen(person, dialog)
+    requires: dialog.state = leaving
+    ensures: dialog.state = open
+}
+
+rule PersonLeaves {
+    when: LeaveChosen(person, dialog)
+    requires: dialog.state = leaving
+    ensures: dialog.state = closed
+}
+
+-- ------------------------------------------------------------
+-- Rules: create, delete and revert
+-- ------------------------------------------------------------
+
+-- RS-WRITE-17, RS-WRITE-18: Add opens the dialog on no record. The one
+-- reason that applies is stated and not asked.
+rule PersonOpensAdd {
+    when: AddPressed(person, screen)
+    requires: person.may_write and screen.add_drawn
+    ensures: Dialog.created(
+        screen: screen,
+        record: null,
+        base_version: null,
+        loaded_at: null,
+        key_entered: null,
+        changed: false,
+        complete: false,
+        reason: config.new_record_reason,
+        reason_needs_commentary: false,
+        commentary: "",
+        newer_version_seen: false,
+        state: open,
+        last_refusal: none
+    )
+}
+
+-- RS-WRITE-18, RS-WRITE-19: a new record is written with must_not_exist.
+-- When the key is free the record exists at version one and the screen
+-- opens its page.
+rule CreateAccepted {
+    when: SavePressed(person, dialog)
+    requires: dialog.state = open and dialog.can_save and dialog.is_create
+        and dialog.key_entered != null
+        and (Records where kind = dialog.screen.kind and key = dialog.key_entered).count = 0
+    ensures: Record.created(
+        kind: dialog.screen.kind,
+        key: dialog.key_entered,
+        version: 1,
+        exists: true,
+        shape: own,
+        parent: null
+    )
+    ensures: dialog.state = closed
+    ensures: PageOpened(dialog.screen, dialog.key_entered)
+}
+
+-- RS-WRITE-18: adding a key that exists is refused, and the refusal
+-- names the key. The dialog stays open.
+rule CreateRefusedAsDuplicate {
+    when: SavePressed(person, dialog)
+    requires: dialog.state = open and dialog.can_save and dialog.is_create
+        and dialog.key_entered != null
+        and (Records where kind = dialog.screen.kind and key = dialog.key_entered).count > 0
+    ensures: dialog.state = open
+    ensures: dialog.last_refusal = key_exists
+}
+
+-- RS-WRITE-25 to RS-WRITE-30, RS-FEEDBACK-04: Delete confirms, names the
+-- record, says what is lost, asks a reason, claims the version read,
+-- deletes the parts that belong only to this record first with the same
+-- reason, and returns to the list.
+rule DeleteAccepted {
+    when: DeleteConfirmed(person, record, version_read, reason)
+    requires: person.may_delete and record.exists
+        and record.version = version_read and reason != ""
+    let own_parts = Records where parent = record and shape = part
+    ensures:
+        for p in own_parts:
+            p.exists = false
+    ensures: record.exists = false
+    ensures: ListOpened(record.kind)
+}
+
+-- RS-WRITE-27: a delete against a version the record has left is
+-- refused, and the record stays.
+rule DeleteRefusedAsStale {
+    when: DeleteConfirmed(person, record, version_read, reason)
+    requires: person.may_delete and record.exists
+        and record.version != version_read
+    ensures: record.exists = true
+}
+
+-- RS-WRITE-29: the parts and the record are deleted one after another.
+-- If a part fails, the record itself is not deleted, so a retry finishes
+-- the work.
+rule DeleteStopsWhenAPartFails {
+    when: PartDeleteFailed(record, part)
+    requires: record.exists and part.parent = record
+    ensures: record.exists = true
+}
+
+-- RS-HIST-02, RS-FEEDBACK-05: Revert is offered on any version but the
+-- current one. It writes the old values as a new version, with a reason,
+-- against the current version. No version is lost.
+rule RevertAccepted {
+    when: RevertConfirmed(person, version, reason)
+    requires: person.may_write and not version.is_current
+        and version.record.exists and reason != ""
+    ensures: Version.created(
+        record: version.record,
+        number: version.record.version + 1,
+        reason: reason,
+        commentary: "",
+        revert_offered: false
+    )
+    ensures: version.record.version = version.record.version + 1
+}
+
+-- ES-HIST-11, RS-HIST-02: the current version offers no Revert, because
+-- there is nothing to revert to; every older version offers it to a
+-- person who may write.
+invariant NoRevertOnTheCurrentVersion {
+    for version in Versions where is_current:
+        not version.revert_offered
+}
+
+-- RS-FEEDBACK-05: a revert never loses a version. The versions of a
+-- record are numbered without a gap.
+invariant NoVersionIsLost {
+    for record in Records:
+        record.versions.count = record.version
+}
+
+-- ------------------------------------------------------------
+-- Rules: links and parts
+-- ------------------------------------------------------------
+
+-- RS-RELATED-03: a link is removed with Remove, not Delete, because the
+-- linked record stays. A link has no history.
+rule LinkRemoved {
+    when: RemoveConfirmed(person, link)
+    requires: person.may_write and link.shape = link and link.exists
+    ensures: link.exists = false
+}
+
+invariant LinksHaveNoHistory {
+    for record in Records where shape = link:
+        record.versions.count = 0
+}
+
+-- RS-RELATED-05, RS-RELATED-06: a part is deleted through the remove
+-- dialog and keeps its history; its versions stay readable.
+invariant PartsKeepTheirHistory {
+    for record in Records where shape = part and not exists:
+        record.versions.count >= 1
+}
+
+-- ------------------------------------------------------------
+-- Rules: access
+-- ------------------------------------------------------------
+
+-- RS-FEEDBACK-01, RS-FEEDBACK-03: an action the person may not take is
+-- not drawn. The server still decides every write.
+invariant ActionsNotDrawnWithoutPermission {
+    for screen in Screens:
+        (screen.add_drawn implies screen.person.may_write)
+        and (screen.edit_drawn implies screen.person.may_write)
+        and (screen.delete_drawn implies screen.person.may_delete)
+}
+
+-- RS-FEEDBACK-06: every write carries a change reason.
+invariant NoSilentWrite {
+    for version in Versions:
+        version.reason != ""
+}
+
+-- ------------------------------------------------------------
+-- Surfaces
+-- ------------------------------------------------------------
+
+surface RecordPage {
+    facing viewer: Person
+
+    context screen: Screen where person = viewer and record != null
+
+    exposes:
+        screen.record.key
+        screen.record.version
+        screen.refresh_gold
+        screen.loaded_at
+        for v in screen.record.versions:
+            v.number
+            v.reason
+            v.is_current
+            v.revert_offered
+
+    provides:
+        RefreshPressed(viewer, screen)
+        EditPressed(viewer, screen, screen.record)
+            when screen.edit_drawn and screen.record.exists
+        DeleteConfirmed(viewer, screen.record, screen.record.version, reason)
+            when screen.delete_drawn and screen.record.exists
+        RevertConfirmed(viewer, version, reason)
+            when viewer.may_write and not version.is_current
+
+    @guarantee RefreshIsTheOnlyReload
+        -- The page reads again only on RefreshPressed. News, a save, the
+        -- window's focus and the network never read for the person
+        -- (ES-REFRESH-11, ES-REFRESH-12, ES-REFRESH-15).
+    @guarantee TheDialogIsNeverReloaded
+        -- An open dialog keeps the person's values through any news; it
+        -- warns and offers Keep my edit or Take the new values
+        -- (ES-REFRESH-24, ES-REFRESH-25).
+}
+
+surface RecordList {
+    facing viewer: Person
+
+    context screen: Screen where person = viewer and record = null
+
+    exposes:
+        screen.refresh_gold
+        screen.loaded_at
+        screen.marked_rows
+
+    provides:
+        RefreshPressed(viewer, screen)
+        AddPressed(viewer, screen)
+            when screen.add_drawn
+
+    @guarantee RefreshIsTheOnlyReload
+        -- The list reads again only on RefreshPressed (ES-REFRESH-11).
+}
+
+open question "Does the list return to the first page on every Refresh after a write, or only when the sort could have moved the record? RS Paging says the first page."

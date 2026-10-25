@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: B0ED2679-4BAF-4797-AB4D-AC2359BEC9C2
+:END:
+#+title: Delete the per-feed clock now that one scheduler drives a run
+#+description: Both feeds still carry a tick_clock and a clock_.run branch for the case where no scheduler was given. It is unreachable in production, since every feed_build_context sets a scheduler, and no test exercises it — so it is dead code that exists only because the feed tests and the adapter runner construct feeds without a scheduler and expect the feed to tick itself. Removing it means making the scheduler a required feed dependency and migrating those callers: the five service-test fixtures (folder cascade, config handler, selection, registry stub) and the adapter test each need their own scheduler and a thread running it, generator_runner needs the run's scheduler in the test, and the remaining tick_clock cases move to the scheduler before the clock is deleted. Attempted on 2026-10-25: everything compiled and the quant and API suites passed, but the service suite hung under ctest, so the attempt was reverted rather than shipped.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:arrival:scheduler:tests:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 9FAC8BCB-3267-41AB-88CA-F5AD477EAC65
+:END:
+#+title: Task: Order the Qt topics for the screen pipeline
+#+description: Group the Qt entities into topics, judge each as standard CRUD or a workflow, and order them for the pipeline.
+#+type: task
+#+level: s1
+#+filetags: :inventory_the_qt_screens_and_audit_the_ux_standards:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The pipeline has a queue. Each topic names its entities, the journeys it needs, whether a standard record screen is enough or a workflow is needed, the server side work it implies, and its place in the order. The first topic is chosen and the reason is recorded.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- Every entity of the matrix belongs to exactly one topic.
+- Each topic is judged as standard CRUD or as needing a workflow, with the reason.
+- The topics are ordered and the first topic is named with its reason, and the fourth story's description is updated to name it.
+- Topics after the first are filed as captures in the next bucket, one per topic, so each becomes a story when its turn comes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

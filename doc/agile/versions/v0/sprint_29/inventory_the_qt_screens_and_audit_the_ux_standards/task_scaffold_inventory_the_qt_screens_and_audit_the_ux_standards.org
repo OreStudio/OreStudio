@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 7AC77315-757B-49FF-8009-BAB3568E4B55
+:END:
+#+title: Task: Scaffold story: Inventory the Qt reference data screens and audit the UX standards
+#+description: Epic scaffolding rides this task: stories, tasks, sprint wiring and the scaffold PR. Close it before merging.
+#+type: task
+#+level: s1
+#+filetags: :inventory_the_qt_screens_and_audit_the_ux_standards:sprint_29:v0:
+#+owner: marco
+#+branch: feature/ux-language-for-entity-forms
+#+pr: 3742
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The epic One UX language for every screen exists in the sprint with its four stories and their tasks, and the owner has agreed the arc.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- The four stories and their tasks exist and are wired into the sprint under the epic heading.
+- The scaffold PR is merged with this task closed.
+
+* Plan
+
+Agree the arc with the owner first, then scaffold. The arc was proposed as five
+stories and settled as four: the Qt parity gaps and the later areas of the
+application fold into the per-topic pipeline instead of standing alone. Every
+story and task is scaffolded with =compass add=, wired into the sprint under an
+epic heading, and the owner's decisions are recorded on the first story. The
+descriptions are brought under the 120 character cap by a script with a guard,
+because each description also sits in a parent table row.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Stories under the epic | 4 | =ls -d doc/agile/versions/v0/sprint_29/{inventory_the_qt*,settle_the_ux*,check_every_record*,take_the_first_refdata*}= | ea0ab6ee09 |
+| Tasks under the epic | 17 | =find <the four story folders> -name 'task_*.org' \vert wc -l= | ea0ab6ee09 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3742][#3742]] | [agile] Scaffold the epic One UX language for every screen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review of the docs class: no findings | doc/agile/versions/v0/sprint_29 | Accept | compass check 6/6, misspell-fixer clean, no placeholder left outside the template Plan text of BACKLOG tasks |
+| 2 | Task is DONE while the PR is open | task_scaffold | Decline | The documented order: bookkeeping closes before the PR is raised, so no bookkeeping commit follows a green review |
+| 3 | Measurements table left empty while the Result states counts | task_scaffold | Accept | The two counts recorded with their command and commit |
+| 4 | Story Next names a BACKLOG task | story | Decline | Consistent at the time; the task moved to STARTED on its own branch |
+| 5 | The Plan says five stories became four and no decision says why | story | Accept | Decision added: the parity gaps fold into the per-topic pipeline |
+
+* Result
+
+The epic One UX language for every screen exists in sprint 29 with four stories
+and seventeen tasks. The first story holds the owner's five decisions on the arc.
+The three later stories state what they wait on. The local check gate passed on
+the docs class, and no description exceeds the cap.

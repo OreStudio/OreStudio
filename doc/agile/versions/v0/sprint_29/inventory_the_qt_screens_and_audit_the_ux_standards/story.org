@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA
+:END:
+#+title: Story: Inventory the Qt reference data screens and audit the UX standards
+#+description: Build the Qt-to-web matrix of the reference data screens, audit the UX standards for gaps, and order the topics.
+#+type: story
+#+level: s2
+#+filetags: :ux:web:refdata:qt:analysis:sprint_29:v0:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The epic starts from facts. One document says, per reference data entity, what the Qt client offered and what ores.web offers today, at the level of fields, child records, history and actions. A second document says where the Record screen standard and the Entity screen specification disagree, which rules the form layout lacks, and which rules have no stable identifier. A third lists the Qt topics in the order the screen pipeline takes them.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | The arc is agreed and the four stories of the epic are scaffolded. |
+| Waiting on    | Nothing.                               |
+| Next          | Build the Qt to web reference data matrix. |
+| Last touched  | 2026-10-25                               |
+
+* Acceptance
+
+- A matrix names every Qt reference data screen (list, detail, history, child tables) and the web screen that covers it, or states that none does, with the field and capability gaps per entity.
+- An audit lists every contradiction between the Record screen standard, the Entity screen specification and UX Language, and every form layout question the standards leave open: field grouping, widget per field kind, button placement, history layout and refresh.
+- The audit judges the Screen review checklist as a review instrument and says what a checkable rule needs that it lacks.
+- The Qt topics are grouped and ordered for the screen pipeline, and each group names the journeys it needs.
+- Findings that are work and not analysis are filed as captures.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7AC77315-757B-49FF-8009-BAB3568E4B55][Scaffold story: Inventory the Qt reference data screens and audit the UX standards]] | DONE | 2026-10-25 | 2026-10-25 | Epic scaffolding rides this task: stories, tasks, sprint wiring and the scaffold PR. Close it before merging. |
+| [[id:43D56BE9-F0FE-4566-94D1-F62EB70AF75D][Build the Qt to web reference data matrix]] | BACKLOG | | | Record what each Qt reference data screen offered against what ores.web shows: fields, children, actions, history. |
+| [[id:C07590C7-3A95-42B3-9CD2-B3A08C82EC18][Audit the UX standards for contradictions and gaps]] | BACKLOG | | | Read the UX standards in full and list the contradictions, the open layout questions and the rules no check can name. |
+| [[id:9FAC8BCB-3267-41AB-88CA-F5AD477EAC65][Order the Qt topics for the screen pipeline]] | BACKLOG | | | Group the Qt entities into topics, judge each as standard CRUD or a workflow, and order them for the pipeline. |
+
+* Decisions
+
+- 2026-10-25: /The Qt client names the topics; the web standards rule the
+  form./ A Qt screen says what a person needed to do. It does not say how the
+  web screen looks. The pipeline per topic is: extract the user journeys,
+  prototype to the settled standard and sign the prototype off, build with any
+  server side extension, write the test scenario, test the screen, sign it
+  off. A journey is judged by common sense: a CRUD variation uses the standard
+  record screen, and a complex goal becomes a workflow the screen offers under
+  Workflows. The journey makes sure the use cases are teased out and the work
+  stays user centric; it does not map one to one onto a form.
+- 2026-10-25: /One epic, four stories first./ The epic One UX language for
+  every screen holds the arc in the sprint. Later topics and the other areas of
+  the application join it as their own stories.
+- 2026-10-25: /The Qt parity gaps are not a story of their own./ The arc was
+  proposed with a fifth story that closed the parity gaps. It folds into the
+  per-topic pipeline, because a gap is only known once the topic's journeys say
+  what a person needs, and a screen built to close a gap without a journey is
+  the Qt dialog again.
+- 2026-10-25: /The checks go in before the screens change./ The harness story
+  precedes the first topic story, so the first screen work proves the checks.
+- 2026-10-25: /Playwright is the first harness./ Rendering checks run in a real
+  browser against the environment. If it falls short the gap is recorded and
+  the approach is revisited.
+- 2026-10-25: /Allium for behaviour, prose for look, no OpenSpec./ The record
+  screen behaviour is an Allium specification beside the prose standards.
+  OpenSpec is not adopted: compass stories, tasks and captures already carry
+  the change proposal workflow.
+
+* Out of scope
+
+- Any code change. This story reads and records; the stories after it change
+  the standards, the checks and the screens.
+- The screens outside reference data. They join the epic as their own stories
+  once the pipeline has run on the first topic.

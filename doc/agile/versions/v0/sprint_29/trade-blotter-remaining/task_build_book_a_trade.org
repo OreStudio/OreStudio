@@ -89,6 +89,18 @@ I would take the first. It is not a screen change and should not be bundled with
 =projects/ores.refdata/client= holds a cache and no typed read for a book, so the port's implementation cannot call a ready-made client method. It has to make the request itself, in the shape =trading_trade_population_writer= already uses when it calls other services over NATS: encode the list request, read the reply, and treat a refusal as "unknown" rather than as "open".
 
 That makes the change a half-window one rather than a small edit: an interface, its implementation, the wiring in two places, and a test that a frozen book is refused. It is worth starting a fresh window with, not finishing at the end of one.
+
+** The real obstacle: the read must travel as the caller
+
+Three attempts at the bus-backed port each fell one layer lower, and the last one named the actual problem.
+
+- The component did not depend on the refdata API. Fixed: =ores.refdata.api.lib= is declared in the component's model and the generated CMake carries it.
+- The request needed rfl's uuid registration. Fixed the same way other code does it: =ores.utility/rfl/reflectors.hpp=, which the trade population writer includes for exactly this.
+- Then the obstacle: =ores::nats::service::client= offers =request_sync= with hand-made headers, and the booking service holds no caller token. A read made by the service would be anonymous, and refdata would refuse it — correctly, because a book's visibility is the caller's, not the service's.
+
+So the port's signature is wrong, not its body. It needs the caller's session token, which means either the port takes one and the booking service's signature carries it, or the read happens in the adapter that already holds the request context. That is a design decision I am not going to take in the last minutes of a window, having already reverted three times.
+
+The dependency and the rfl registration stay: they are correct and were missing, and the next attempt starts from them rather than rediscovering them.
 ** What the form needs to read
 
 The books the party may book into, the counterparties it may trade with, the trade types with their product type (which decides the instrument table), the identifier schemes, and the instrument's terms for the chosen type. All of these are reads that exist; the books read needs the open rule above to be useful.

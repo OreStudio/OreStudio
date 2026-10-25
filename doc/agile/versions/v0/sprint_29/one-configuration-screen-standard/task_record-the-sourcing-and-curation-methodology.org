@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/record-the-sourcing-and-curation-methodology
+#+pr: 3741
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Review.                                |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3741][#3741]] | [doc] Record the pricing data sourcing and curation methodology |
 
 * Review
 
@@ -83,3 +83,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The methodology is written at
+[[file:../../../knowledge/how-the-pricing-engine-data-is-sourced-and-curated.org][How the pricing engine data is sourced and curated]].
+It states six principles, the seven layers and their artefacts, the curation
+file schema with reason, source, curator and date, the per-row provenance
+fields, the generator gates and the review a curator follows. It records what
+the DQ pipeline carries and what it does not: the source commit, the curation
+version, the coverage counts and the methodology link go on the DQ dataset;
+the value rules stay in the data model and the write path.
+
+Review addressed two claims that read as present fact: the ORE commit is
+measured at =3d75a6908= but is not yet recorded on the dataset, and the
+provenance columns are a target. Both now say so. The curation path is marked
+as a target, because the directory does not exist yet.
+
+Merged in #3741.

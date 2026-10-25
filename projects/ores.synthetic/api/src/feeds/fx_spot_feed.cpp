@@ -158,7 +158,9 @@ fx_spot_feed::fx_spot_feed(
     , quote_uri_(std::move(quote_uri))
     , source_name_(std::move(source_name))
     , process_(std::move(process))
-    , clock_(ticks_per_hour)
+    , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(
+          "periodic", ticks_per_hour))
+    , clock_(*arrivals_)
     , nats_subject_(std::move(nats_subject))
     , adapter_(std::move(adapter)) {
 

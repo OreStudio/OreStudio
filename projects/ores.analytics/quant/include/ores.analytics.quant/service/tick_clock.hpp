@@ -9,45 +9,54 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_API_FEEDS_TICK_CLOCK_HPP
-#define ORES_SYNTHETIC_API_FEEDS_TICK_CLOCK_HPP
+#ifndef ORES_ANALYTICS_QUANT_SERVICE_TICK_CLOCK_HPP
+#define ORES_ANALYTICS_QUANT_SERVICE_TICK_CLOCK_HPP
 
+#include "ores.analytics.quant/domain/i_arrival_process.hpp"
+#include "ores.analytics.quant/export.hpp"
 #include <atomic>
 #include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <exception>
 #include <functional>
 #include <string>
 #include <thread>
 
-namespace ores::synthetic::feed {
+namespace ores::analytics::quant::service {
 
 /**
- * @brief The one fixed-mode tick clock every producer runs on: a ticks-per-hour
- * rate turned into a stop-responsive sleep loop that counts published batches.
+ * @brief The one clock every producer runs on: an arrival process turned into a
+ * stop-responsive sleep loop that counts published batches.
  *
- * The period, the sleep sliced so stop() is observed promptly (a period can be
- * minutes long), the stop check and the catch-and-continue guard around one
- * tick live here once. A producer supplies only what one tick does: advance its
- * process and publish its datum(s).
+ * Before each tick it asks the arrival process for the gap to the next arrival,
+ * in seconds, and sleeps for that gap. The sleep is sliced so stop() is seen
+ * promptly, because a gap can be minutes long. The stop check and the
+ * catch-and-continue guard around one tick live here once; a producer supplies
+ * only what one tick does.
  *
  * The guard covers the whole tick, including the process step: a throw from
  * either is logged through on_failed and the tick skipped, because a tick-loop
- * thread has no caller to propagate to and an uncaught throw would terminate
- * the service, taking every other feed and NATS handler with it.
+ * thread has no caller to propagate to and an uncaught throw would terminate the
+ * service, taking every other feed and NATS handler with it.
+ *
+ * The clock holds no database, messaging or logging code, only the arrival
+ * process interface and the standard library, so it keeps the rule of
+ * ores.analytics.quant. The arrival process is borrowed and must outlive the
+ * clock.
  */
-class tick_clock final {
+class ORES_ANALYTICS_QUANT_EXPORT tick_clock final {
 public:
-    explicit tick_clock(double ticks_per_hour)
-        : ticks_per_hour_(ticks_per_hour) {}
+    /// @param arrivals The process that draws each gap, in seconds.
+    explicit tick_clock(ores::analytics::quant::domain::i_arrival_process& arrivals)
+        : arrivals_(arrivals) {}
 
     /// @brief Emits one tick and returns a short summary of it for the log line.
     using tick_body = std::function<std::string()>;
@@ -55,7 +64,7 @@ public:
     using failure_hook = std::function<void(const std::exception&)>;
 
     /**
-     * @brief Runs one tick per period until stop(). Blocks the calling thread.
+     * @brief Runs one tick per gap until stop(). Blocks the calling thread.
      *
      * @p on_published receives the 1-based count of successful ticks; a throw
      * from @p body is passed to @p on_failed and the tick is skipped.
@@ -64,17 +73,20 @@ public:
     run(const tick_body& body, const published_hook& on_published, const failure_hook& on_failed) {
         using namespace std::chrono;
 
-        const auto period_us =
-            duration_cast<microseconds>(hours(1)) / static_cast<long long>(ticks_per_hour_);
-
         constexpr auto slice = milliseconds(100);
 
-        // stop_flag_ is false from the member initialiser and is deliberately
-        // not reset here: a stop() that arrives between thread spawn and this
-        // point would otherwise be clobbered, and the loop and its join() would
-        // hang forever.
+        // A gap of zero is legal: a periodic process at an enormous rate. The
+        // loop then ticks without sleeping, which is what the caller asked for.
         while (!stop_flag_.load(std::memory_order_relaxed)) {
-            auto remaining = duration_cast<microseconds>(period_us);
+            // A negative or non-finite gap would spin the loop or convert to an
+            // unspecified integer; a zero gap means "tick without waiting",
+            // which a periodic process at a very high rate legitimately asks
+            // for.
+            const double gap_seconds = arrivals_.next_gap();
+            const bool usable = std::isfinite(gap_seconds) && gap_seconds > 0.0;
+            auto remaining =
+                duration_cast<microseconds>(duration<double>(usable ? gap_seconds : 0.0));
+
             while (remaining.count() > 0 && !stop_flag_.load(std::memory_order_relaxed)) {
                 const auto nap = remaining < slice ? remaining : duration_cast<microseconds>(slice);
                 std::this_thread::sleep_for(nap);
@@ -103,10 +115,11 @@ public:
     }
 
 private:
-    double ticks_per_hour_;
+    ores::analytics::quant::domain::i_arrival_process& arrivals_;
     std::atomic<bool> stop_flag_{false};
     std::atomic<std::uint64_t> publish_count_{0};
 };
 
 }
+
 #endif

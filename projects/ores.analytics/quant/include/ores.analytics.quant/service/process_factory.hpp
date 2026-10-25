@@ -20,6 +20,7 @@
 #ifndef ORES_ANALYTICS_QUANT_SERVICE_PROCESS_FACTORY_HPP
 #define ORES_ANALYTICS_QUANT_SERVICE_PROCESS_FACTORY_HPP
 
+#include "ores.analytics.quant/domain/i_arrival_process.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/export.hpp"
@@ -95,6 +96,37 @@ public:
                              double initial_rate,
                              std::uint32_t seed = 42,
                              double dt = 1.0);
+
+    /**
+     * @brief Build the arrival process for the chosen mode.
+     *
+     * @param mode "periodic" (equal gaps), "poisson" (exponential gaps) or
+     *        "hawkes" (gaps that cluster). Any other value throws
+     *        std::invalid_argument -- there is no silent fallback to a periodic
+     *        timer, because a mistyped mode would then hide as a feed that
+     *        quietly stays regular.
+     * @param ticks_per_hour The long-run mean rate, in the unit the generation
+     *        config uses. It keeps its meaning in every mode, so switching mode
+     *        keeps the same load on the pipeline and changes only how that load
+     *        is spread. The factory converts it once, to the arrivals per
+     *        second that every arrival process takes.
+     * @param branching_ratio For "hawkes": the expected number of further
+     *        arrivals one arrival causes. At least zero and strictly below one.
+     *        Ignored by the other modes.
+     * @param decay For "hawkes": how fast a burst fades, in units of one over a
+     *        second. Ignored by the other modes.
+     * @param seed Seed of the random engine, so a run is reproducible.
+     *
+     * The parameters are validated by
+     * ores::analytics::quant::domain::validate_arrival_process_parameters
+     * before anything is built; its message is the exception text.
+     */
+    static std::unique_ptr<ores::analytics::quant::domain::i_arrival_process>
+    make_arrival_process(const std::string& mode,
+                         double ticks_per_hour,
+                         double branching_ratio = 0.0,
+                         double decay = 1.0,
+                         std::uint32_t seed = 42);
 };
 
 }

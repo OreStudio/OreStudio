@@ -12,11 +12,13 @@
 * Summary
 
 =ores.analytics.quant= is the library that holds the price and short-rate
-processes the synthetic producers step. Its two interfaces are
-=i_stochastic_process= in =ores.analytics.quant/domain/i_stochastic_process.hpp=
-and =i_yield_curve_process= beside it, and its entry point is
-=process_factory::make_process= in
-=ores.analytics.quant/service/process_factory.hpp=.
+processes the synthetic producers step, and the arrival processes that decide
+when a producer ticks. Its three interfaces are =i_stochastic_process= in
+=ores.analytics.quant/domain/i_stochastic_process.hpp=, =i_yield_curve_process=
+beside it, and =i_arrival_process= beside them. Its entry point is
+=process_factory= in =ores.analytics.quant/service/process_factory.hpp=, which
+has one method for each family: =make_process=, =make_yield_curve_process= and
+=make_arrival_process=.
 
 * Detail
 

@@ -21,7 +21,9 @@
 #define ORES_SYNTHETIC_API_FEEDS_IR_CURVE_FEED_HPP
 
 #include "ir_curve_template_resolver.hpp"
+#include "ores.analytics.quant/domain/i_arrival_process.hpp"
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
+#include "ores.analytics.quant/service/tick_clock.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/domain/market_clock.hpp"
 #include "ores.nats/service/client.hpp"
@@ -30,7 +32,6 @@
 #include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
 #include "ores.synthetic.api/export.hpp"
-#include "ores.synthetic.api/feeds/tick_clock.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <functional>
@@ -137,7 +138,8 @@ private:
     std::vector<std::string> series_uris_;
     std::vector<std::string> datum_uris_;
     std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process_;
-    tick_clock clock_;
+    std::unique_ptr<ores::analytics::quant::domain::i_arrival_process> arrivals_;
+    ores::analytics::quant::service::tick_clock clock_;
     std::vector<ir_curve_resolved_entry> entries_;
 };
 

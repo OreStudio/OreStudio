@@ -96,6 +96,31 @@ validate_yield_curve_process_parameters(const std::string& process_type,
                                         double sigma,
                                         double initial_rate);
 
+/**
+ * @brief Validate the raw (mode, ticks_per_hour, branching ratio, decay) tuple
+ * for an arrival process, independent of both the UI and the construction
+ * machinery.
+ *
+ * A third function rather than another overload, for the same reason as the
+ * second: an arrival process has a genuinely different parameter shape.
+ *
+ * The rules are the ones the tick arrival note states:
+ *
+ * - the mode is "periodic", "poisson" or "hawkes";
+ * - the rate is positive and finite;
+ * - for "hawkes", the branching ratio is at least zero and strictly below one,
+ *   and the decay is positive and finite;
+ * - "periodic" and "poisson" ignore the branching ratio and the decay.
+ *
+ * A branching ratio of one or more gives a stream that does not settle, so it
+ * is refused rather than left to produce gaps that shrink without bound.
+ */
+ORES_ANALYTICS_QUANT_EXPORT process_parameter_validation_result
+validate_arrival_process_parameters(const std::string& mode,
+                                    double ticks_per_hour,
+                                    double branching_ratio,
+                                    double decay);
+
 }
 
 #endif

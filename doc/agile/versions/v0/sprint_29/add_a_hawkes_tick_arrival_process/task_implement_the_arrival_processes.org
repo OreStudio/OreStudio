@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :add_a_hawkes_tick_arrival_process:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-the-arrival-processes
+#+pr: 3731
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
 #+updated: 2026-10-24
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A caller can build a periodic, Poisson or Hawkes arrival process from a mode nam
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-23                               |
+| Now          | Nothing. |
+| Waiting on   | The PR.                                |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
 
 * Acceptance
 
@@ -42,9 +42,24 @@ A caller can build a periodic, Poisson or Hawkes arrival process from a mode nam
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Put the interface beside the value processes: one method, =next_gap()=,
+   returning seconds. A point process decides when, so folding it into
+   =i_stochastic_process= would make every value process carry a clock it never
+   uses.
+2. Implement the three modes. Periodic returns one gap. Poisson draws an
+   exponential. Hawkes uses direct inversion, which is exact for the exponential
+   kernel and never rejects, rather than thinning, which is the general method
+   and the first extension when a power-law kernel is wanted.
+3. Refuse what cannot settle. A branching ratio of one or more has no stationary
+   rate, so the Hawkes constructor refuses it and the rules refuse it first.
+4. Keep one conversion. The config speaks ticks per hour, the processes speak
+   arrivals per second, and the factory is the only place that divides by 3600.
+   An unknown mode throws rather than falling back to a periodic timer.
+5. Move =tick_clock= into the quant component and drive it from the process.
+   The feeds build a periodic process for now, which reproduces their old
+   behaviour; reading the mode from the config is the next task.
+6. Test the laws, not snapshots: mean rate, Fano factor, time rescaling, the
+   refusal, the conversion, and the clock with a scripted process.
 
 * Measurements
 
@@ -58,9 +73,32 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Headers and sources the task adds | 5 headers, 3 sources | =git show --stat af6cb5f934= | af6cb5f934 |
+| Test files it adds | 2 | the same | af6cb5f934 |
+| Test cases in those files | 13 | =grep -c "^TEST_CASE"= on the two files | af6cb5f934 |
+| Affected suites that pass | 3 of 3 | =compass test run -- -R "ores\.(analytics\.quant\|synthetic\.api\|synthetic\.service)\.tests"= | af6cb5f934 |
 
 * Notes
+
+** Units
+
+The arrival process works in seconds. The generation config speaks ticks per
+hour, and =make_arrival_process= divides once. A caller that built a process by
+hand passes arrivals per second, which the process docstrings say.
+
+** Direct inversion, not thinning
+
+The Hawkes note gives both. Direct inversion draws two uniforms per event and
+never rejects, and it is exact for the exponential kernel, which is the only
+kernel the story allows. Thinning is the general method and the way to extend to
+a power law, so the note keeps it as the first extension.
+
+** The tests are statistical
+
+A stream has no fixed answer, so the tests assert the law: the long-run mean
+rate, the Fano factor of the counts over windows ten bursts long, and the mean
+and variance of the time-rescaled gaps being one. Tolerances are wide enough to
+survive a different seed and narrow enough to catch a wrong parametrisation.
 
 * Test Scenarios
 
@@ -77,12 +115,48 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3731][#3731]] | [analytics] Add the periodic, Poisson and Hawkes arrival processes |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The Poisson distribution was built before the rate was validated, so zero or a NaN reached a precondition | =poisson_arrival_process.cpp= | Accepted | The check runs in the member initialiser now, and the same shape guards the other two |
+| 2 | The Hawkes comment claimed the draw was on (0, 1] when it is on (0, 1), with the wrong reason | =hawkes_arrival_process.cpp= | Accepted | The comment now says what the distribution does and why both logs are finite |
+| 3 | A negative or non-finite gap would spin the clock or convert to an unspecified integer | =tick_clock.hpp= | Accepted | The gap is clamped to zero unless it is finite and positive |
+| 4 | The clock's docstring said it needs only the standard library, and the note repeated it | =tick_clock.hpp=, =tick_arrival.org= | Accepted | Both now say it needs the arrival process interface and the standard library |
+| 5 | The note said the factory turns the triple into mu and alpha; the Hawkes class does | =tick_arrival.org= | Accepted | The sentence names the class |
+| 6 | The three sources did not say they are inspired by tick, and no file pointed at the note | the three =.cpp= files, their headers | Accepted | Each source carries the line, and the headers name =doc/knowledge/external/tick.org= |
+| 7 | The Poisson test asserted only the mean, so a constant gap passed | =arrival_process_tests.cpp= | Accepted | Added a Fano-factor test: the counts must be Poisson, not merely at the right rate |
+| 8 | The clock test asserted =calls() >= 3= | =tick_clock_tests.cpp= | Accepted | It asserts exactly three, one gap per tick |
+| 9 | Accessors with no caller (Speculative Generality) | the three process headers | Accepted | Removed; =baseline()= and =jump()= stay because the tests use them |
+| 10 | The factory fell through to Hawkes for any mode the validation did not know, and prefixed its message where the siblings do not | =process_factory.cpp= | Accepted | One branch per mode and a final throw; the message is the validation's own |
+| 11 | The component overview listed the validation result twice | =component_overview.org= | Accepted | The new bullet names the arrival rule function once |
+| 12 | The task page had two Notes headings, cited a commit the rebase orphaned, and called a new test file moved | this page | Accepted | Merged, re-cited at =af6cb5f934=, reworded |
+| 13 | The tick arrival note describes =next(elapsed)=, a cap on events and a config-driven mode that do not exist yet | the note | Declined | The note is tagged =design= and states the target; those belong to the two open tasks |
+| 14 | The tests carried a logger nobody reads | both test files | Accepted | Removed; the rest of the suite has none |
+| 15 | The clock allows a zero gap, which spins | =tick_clock.hpp= | Declined | The old clock had the same edge at an extreme rate; it is now documented rather than hidden |
 
 * Result
+
+A caller can build a periodic, Poisson or Hawkes arrival process from a mode
+name and plain numbers, draw gaps in seconds, and pace a =tick_clock= with them.
+
+What is in:
+
+- =domain::i_arrival_process= with =next_gap()=, beside the value processes.
+- =periodic_arrival_process=, =poisson_arrival_process= and
+  =hawkes_arrival_process= under =service/processes/=.
+- =process_factory::make_arrival_process=, which converts the rate and refuses an
+  unknown mode.
+- =validate_arrival_process_parameters=, beside the value-process rules.
+- =service/tick_clock.hpp=, moved out of =ores.synthetic.api=, taking its gaps
+  from the process.
+
+The evidence: the three affected suites pass, including the statistical tests
+for the mean rate, the Fano factor, the time rescaling and the branching-ratio
+refusal.
+
+Left for the next task: the feeds still build a periodic process. Reading the
+mode, the branching ratio and the decay from the generation config is "Pace a
+synthetic feed by an arrival process".

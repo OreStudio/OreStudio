@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.quant/domain/process_parameter_validation.hpp"
+#include <cmath>
 
 namespace ores::analytics::quant::domain {
 
@@ -102,6 +103,29 @@ validate_yield_curve_process_parameters(const std::string& process_type,
     // "vasicek" and "hull_white" (Gaussian): no sign constraint on kappa or
     // initial_rate — a negative short rate is economically unusual but not
     // structurally invalid for a Gaussian model.
+    return {};
+}
+
+process_parameter_validation_result validate_arrival_process_parameters(const std::string& mode,
+                                                                        double ticks_per_hour,
+                                                                        double branching_ratio,
+                                                                        double decay) {
+
+    if (mode != "periodic" && mode != "poisson" && mode != "hawkes")
+        return invalid("Unknown arrival mode '" + mode +
+                       "'. Use periodic, poisson or hawkes.");
+
+    if (!std::isfinite(ticks_per_hour) || ticks_per_hour <= 0.0)
+        return invalid("The tick rate must be greater than zero.");
+
+    if (mode != "hawkes")
+        return {};
+
+    if (!std::isfinite(branching_ratio) || branching_ratio < 0.0 || branching_ratio >= 1.0)
+        return invalid("The branching ratio must be at least zero and strictly below one.");
+    if (!std::isfinite(decay) || decay <= 0.0)
+        return invalid("The decay must be greater than zero.");
+
     return {};
 }
 

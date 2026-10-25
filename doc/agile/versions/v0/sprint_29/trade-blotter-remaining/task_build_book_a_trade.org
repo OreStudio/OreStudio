@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-book-a-trade
-#+pr: 3837
+#+pr: 3838
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -153,6 +153,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3838][#3838]] | [web] Give the browser cases one way to sign in |
 | [[https://github.com/OreStudio/OreStudio/pull/3837][#3837]] | [trading] Prove the booking rule over a real bus |
 | [[https://github.com/OreStudio/OreStudio/pull/3832][#3832]] | [trading] Ask for the book's status as the caller |
 | [[https://github.com/OreStudio/OreStudio/pull/3822][#3822]] | [agile] Map the booking write before the screen |

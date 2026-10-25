@@ -102,6 +102,8 @@
 
 \ir ./trading_entry_channel_types_create.sql
 \ir ./trading_entry_channel_types_notify_trigger_create.sql
+\ir ./trading_origin_types_create.sql
+\ir ./trading_origin_types_notify_trigger_create.sql
 
 \ir ./trading_counterparty_scope_types_create.sql
 \ir ./trading_counterparty_scope_types_notify_trigger_create.sql

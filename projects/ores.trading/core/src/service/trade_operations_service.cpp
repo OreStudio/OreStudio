@@ -46,6 +46,7 @@
 #include <optional>
 #include <rfl.hpp>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::service {
 
@@ -147,6 +148,43 @@ std::string join(const std::vector<std::string>& names) {
 
 }
 
+namespace {
+
+/**
+ * @brief Why a caller may not state a trade's origin, or nothing when it may.
+ *
+ * A trade's origin is a claim about who first wrote it down, so only the
+ * caller that owns a path may state it. A person at a screen and an API
+ * client are the two open origins. The synthetic population and the ORE
+ * import are reachable only from the services that run them, which the
+ * session names in its service account.
+ */
+std::string refuse_origin(ores::trading::domain::origin origin,
+                          const ores::database::context& ctx) {
+    const auto& account = ctx.service_account();
+    const auto served_by = [&account](std::string_view needle) {
+        return account.find(needle) != std::string::npos;
+    };
+
+    switch (origin) {
+        case ores::trading::domain::origin::ux:
+        case ores::trading::domain::origin::api:
+            return {};
+        case ores::trading::domain::origin::synthetic:
+            if (served_by("synthetic"))
+                return {};
+            return "A client may not state the synthetic origin; only the trade population "
+                   "generator may.";
+        case ores::trading::domain::origin::ore_import:
+            if (served_by("ore_service"))
+                return {};
+            return "A client may not state the ore_import origin; only the ORE import may.";
+    }
+    return "The origin is unknown.";
+}
+
+}
+
 messaging::book_trade_response
 trade_operations_service::book_trade(const messaging::book_trade_request& request) {
     using ores::database::repository::unit_of_work;
@@ -162,6 +200,17 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     BOOST_LOG_SEV(lg(), debug) << "Booking trade " << anchor.id;
 
     messaging::book_trade_response response;
+
+    /*
+     * The origin is checked before anything is written, because a caller that
+     * may not state one has not been refused until no row exists.
+     */
+    if (auto refusal = refuse_origin(anchor.origin, ctx_); !refusal.empty()) {
+        response.result.outcome = outcome::failed;
+        response.result.code = "origin_not_permitted";
+        response.result.message = std::move(refusal);
+        return response;
+    }
 
     if (const auto misrouted = service::misrouted_arrays(request.instruments, anchor.trade_type);
         !misrouted.empty()) {

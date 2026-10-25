@@ -428,6 +428,13 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
     book_req.anchor.counterparty_scope = ores::trading::domain::counterparty_scope::external;
     book_req.anchor.booking_nature = ores::trading::domain::booking_nature::actual;
     book_req.anchor.entry_channel = ores::trading::domain::entry_channel::stp;
+    /*
+     * The population states its own origin and the config it came from, so a
+     * report or a rollback separates a generated trade from one a person
+     * entered, and names the recipe that produced it.
+     */
+    book_req.anchor.origin = ores::trading::domain::origin::synthetic;
+    book_req.anchor.origin_reference = boost::uuids::to_string(scope.config_id);
     book_req.anchor.modified_by = slot.trader_username;
     book_req.anchor.performed_by = slot.trader_username;
     book_req.anchor.change_reason_code = std::string(population_reason);

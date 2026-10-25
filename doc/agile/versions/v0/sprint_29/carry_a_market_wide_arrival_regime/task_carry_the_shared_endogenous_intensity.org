@@ -28,9 +28,9 @@ Any tick anywhere raises a shared intensity that decays, so a panic spreads inst
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Slices 1 and 2 are in and the coupling is live. The single clock is not. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The one clock: aggregate thinning over every registered feed. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -79,7 +79,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Events kept under four recorders and one fader | every one, exactly | =shared_intensity keeps every event under concurrency= | 357f9443c9 |
+| Counts of two series sharing heat | correlated above 0.2 | =two series on one heat move together and separately without it= | 59a28138e1 |
+| The same two series with the factor off | within 0.1 of zero | same | 59a28138e1 |
+| The three affected suites | 3 of 3 pass, with the marketdata service stopped | =ctest -R "ores.(synthetic.api\|synthetic.service\|analytics.quant).tests"= | 59a28138e1 |
 
 * Notes
 
@@ -106,4 +109,15 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
-* Result
+* Result, so far
+
+The heat exists, any event feeds it, and it reaches every rate: a series'
+intensity is =sensitivity * (mean_rate * S + C)=, which the four numbers in one
+=market_link= carry from the row to the process. Two series that share heat have
+counts correlated above 0.2; the same two with the factor off stay within 0.1 of
+zero. That is the statistic the per-series tests cannot see.
+
+The single clock is not built. With per-feed clocks a gap is drawn from the rate
+at its start, so the coupling is right in expectation but not exact, and two
+events never advance one another mid-gap. The scheduler, with aggregate thinning
+over every feed, is the remaining slice of this task.

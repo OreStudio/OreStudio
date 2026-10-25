@@ -13,7 +13,25 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+Make `book_trade` check the permission that a trade's origin requires.
+
+RBAC is in place and is the right instrument: 9,366 permissions named
+`<component>::<entity>:<action>`, an `authorise(nats, base, msg, verifier,
+permission)` helper that builds the context from the verified JWT and replies
+`forbidden` when `has_permission` fails, and permissions for the trade tables
+already seeded, including `trading::trades:write`.
+
+What trading does not do is call it. There is no `authorise(` anywhere under
+`projects/ores.trading`, and `book_trade` is registered straight onto its
+subject with no permission argument, so the only gate on that operation is
+the NATS subject ACL. Analytics does call it, passing permissions such as
+`analytics::pricing_model_configs:write`, which shows the pattern to copy.
+
+Two things follow. Stating a service origin needs a permission of its own,
+granted to the generator's and the import's roles and to nobody else, and the
+handler must check it with `authorise`. Then the claim is verified against the
+token rather than trusted from the payload, and it is unforgeable for the same
+reason every other permission is.
 
 * Why
 

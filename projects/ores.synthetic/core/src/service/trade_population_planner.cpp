@@ -601,6 +601,25 @@ namespace {
  * whole catalogue, because a leg in a currency with no index of its own is
  * still better stated than refused.
  */
+/*
+ * The index a cross currency swap resets on: one of a currency other than the
+ * book's, because two legs in one currency are not a cross currency swap. A
+ * catalogue with no such index falls back to the whole set, and the leg then
+ * states the book's currency rather than pretending to be cross currency.
+ */
+const std::string* foreign_index_for(const domain::trade_generation_scope& scope,
+                                     std::uint32_t slot) {
+    const auto own = std::string(scope.currency_code) + "-";
+    std::vector<const std::string*> foreign;
+    for (const auto& code : scope.floating_index_codes) {
+        if (!code.starts_with(own))
+            foreign.push_back(&code);
+    }
+    if (foreign.empty())
+        return nullptr;
+    return foreign[slot % foreign.size()];
+}
+
 const std::string& index_for(const domain::trade_generation_scope& scope, std::uint32_t slot) {
     const auto own = std::string(scope.currency_code) + "-";
     std::vector<const std::string*> matching;
@@ -646,7 +665,9 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
          * to reach a type always states it and the coverage claim is testable.
          */
         const auto& type = rate_types[slot % rate_type_count];
-        const auto& index = index_for(scope, slot);
+        const auto* foreign = (type == "CrossCurrencySwap") ? foreign_index_for(scope, slot)
+                                                           : nullptr;
+        const auto& index = foreign != nullptr ? *foreign : index_for(scope, slot);
 
         const auto span = max_years - min_years + 1;
         const auto drawn =
@@ -679,6 +700,18 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         terms.fixed_payment_frequency_code = "Annual";
         terms.floating_index_code = index;
         terms.spread = std::round(draw(name, 3) * 50.0) / 10000.0;
+        if (foreign != nullptr)
+            terms.floating_currency = foreign->substr(0, foreign->find('-'));
+        if (type == "CapFloor")
+            terms.strike = std::round((0.01 + 0.05 * draw(name, 4)) * 10000.0) / 10000.0;
+        if (type == "Swaption") {
+            /*
+             * An option is exercised after the population is written and
+             * before the swap it opens matures, so its expiry sits a year in.
+             */
+            terms.expiry_date = add_years(terms.start_date, 1);
+            terms.strike = terms.fixed_rate;
+        }
         terms.floating_day_count_fraction_code = "ActAct(ISDA)";
         terms.floating_business_day_convention_code = "ModifiedFollowing";
         terms.floating_payment_frequency_code = "Semiannual";

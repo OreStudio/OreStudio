@@ -555,7 +555,8 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
                                    const std::string& index,
                                    std::string_view rate_role,
                                    double value,
-                                   bool payer) {
+                                   bool payer,
+                                   const std::string& currency) {
             ores::trading::domain::swap_leg leg;
             leg.identity.leg_number = number;
             leg.payer = payer;
@@ -564,12 +565,7 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             leg.business_day_convention_code = business_day;
             leg.payment_frequency_code = frequency;
             leg.floating_index_code = index;
-            leg.currency = rate->currency;
-            /*
-             * A leg group is null for an ordinary swap. The column's check
-             * names the groups a credit linked swap states, and an ordinary
-             * fixed against floating leg is none of them.
-             */
+            leg.currency = currency;
             leg.audit.change_reason_code = std::string(population_reason);
             leg.audit.change_commentary = "Generated trade population.";
             book_req.instruments.swap_legs.push_back(leg);
@@ -602,7 +598,8 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
                   std::string(),
                   "fixed",
                   rate->fixed_rate,
-                  true);
+                  true,
+                  rate->currency);
         write_leg(2,
                   "Floating",
                   rate->floating_day_count_fraction_code,
@@ -611,7 +608,8 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
                   rate->floating_index_code,
                   "spread",
                   rate->spread,
-                  false);
+                  false,
+                  rate->floating_currency.empty() ? rate->currency : rate->floating_currency);
         /*
          * The fact row says which product the legs belong to. It is not
          * decoration: the store rebuilds a rates instrument from a header and
@@ -634,9 +632,22 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
         } else if (type == "CapFloor") {
             book_req.instruments.cap_floor_instruments.push_back(
                 ores::trading::domain::cap_floor_instrument{});
+            /*
+             * A cap or a floor without a strike pays nothing: the strike is
+             * the whole of its economics, and the export reads it from the
+             * instrument strike rows the schema keeps beside the leg.
+             */
+            if (rate->strike.has_value()) {
+                ores::trading::domain::instrument_strike row;
+                row.strike_role = "cap";
+                row.sequence_number = 1;
+                row.bare_value = money(*rate->strike);
+                row.bare_currency = rate->currency;
+                book_req.instruments.instrument_strikes.push_back(row);
+            }
         } else if (type == "Swaption") {
             ores::trading::domain::swaption_instrument leaf;
-            leaf.expiry_date = rate->start_date;
+            leaf.expiry_date = rate->expiry_date.value_or(rate->start_date);
             leaf.exercise_type = "European";
             leaf.settlement_type = "Cash";
             leaf.long_short = direction;

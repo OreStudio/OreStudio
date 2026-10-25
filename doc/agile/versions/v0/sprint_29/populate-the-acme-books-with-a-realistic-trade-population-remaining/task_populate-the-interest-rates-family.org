@@ -86,10 +86,13 @@ arm. It has neither.
   =inflation_swap_instruments= and the inflation market data on top.
 - *D2 — the leg shape.* Every routed type books a =rate_instruments= header
   with two =swap_legs=, and each leg one =swap_leg_amount= and one
-  =swap_leg_rate=. A vanilla fixed-float swap is the shape all ten reduce to,
-  and the specialised arrays (=vanilla_swap_instruments=, =cap_floor_instruments=
-  and the rest) stay empty until a pricing need justifies them. The leg type is
-  data, so one model carries the variety.
+  =swap_leg_rate=: a fixed leg against a floating one, whatever the type. The
+  plan originally said the specialised arrays could stay empty until a pricing
+  need justified them, and an exporter test proved that wrong — the store
+  rebuilds an instrument from the header *and* one fact row, so the writer
+  states the fact row its trade type needs. The fields that fact row carries are
+  the ones the type requires and no more: a settlement lag, an exercise style, a
+  barrier, a reference security.
 - *D3 — the unrouted types.* RateDigitalOption, SwaptionStraddle and
   ForwardVolatilityAgreement appear in the routing table not at all, so a
   request carrying any instrument array for them is refused as misrouted. Two
@@ -120,7 +123,10 @@ Each step ends in a state that can be checked on its own.
    =swap_leg_rates= from =rate_terms= in the population writer.
 5. *The routing.* Route RateDigitalOption and SwaptionStraddle to
    =rate_instrument=, and record ForwardVolatilityAgreement and CashPosition as
-   out of scope with their reasons.
+   out of scope with their reasons. *Resolved the other way*: routing alone does
+   not make a type bookable, because a product with no fact row cannot be
+   rebuilt for export. All three are out of scope, each with the reason stated
+   in the Notes.
 6. *The profile.* Give ACME's seed profile a rate population, so a provisioning
    run produces the family without a hand edit.
 7. *The proof.* Run a generation, then measure: every routed type present at
@@ -142,7 +148,7 @@ Measured on 2026-10-25 against a recreated database and a full provisioning run.
 | Legs, amounts and rates | 24, 24, 24 | =select count(*) from ores_trading_swap_legs_tbl= | 1abe6da879 |
 | Floating indices drawn | =GBP-LIBOR-3M=, =GBP-LIBOR-6M=, =GBP-SONIA=, the book's own currency | =select distinct floating_index_code ...= | 1abe6da879 |
 | Rate roles | fixed 12, spread 12 | =select rate_role, count(*) from ores_trading_swap_leg_rates_tbl= | 1abe6da879 |
-| Fact rows | 12, one per trade: vanilla 4, fra 2, cap floor 1, swaption 1, callable 1, knock out 1, flexi 1, guaranteed 1 | =select count(*) from ores_trading_vanilla_swap_instruments_tbl= | 1abe6da879 |
+| Fact rows | 12, one per trade: vanilla 4, fra 2, cap floor 1, swaption 1, callable 1, knock out 1, flexi 1, guaranteed 1 | one count per fact table, summed: =select count(*) from ores_trading_vanilla_swap_instruments_tbl= and the seven others | 1abe6da879 |
 | Provenance of the population | =synthetic= and =system.new_record= on 44 of 44 trades | =select origin, change_reason_code, count(*)...= | 1abe6da879 |
 | The class share | rates 12 of 44 (27%), bonds 32 of 44 (73%) | =select count(*) ...= | 1abe6da879 |
 | The exporter, with a fact row | the trade writes =SwapData=, its index and its legs | =ores.ore.core.tests= | 1abe6da879 |

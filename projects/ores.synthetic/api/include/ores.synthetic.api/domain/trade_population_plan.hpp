@@ -86,13 +86,16 @@ struct trade_generation_scope final {
      */
     std::vector<commodity_reference> commodities;
     /**
-     * @brief The benchmark rates the tenant holds, from which a floating leg's
-     * index is drawn.
+     * @brief The floating indices the tenant holds, from which a floating
+     * leg's index is drawn.
      *
-     * A benchmark rate is the tenant's reference data and not this
-     * configuration's, in the way the commodity catalogue is. A population
-     * whose set is empty cannot state a floating leg at all, so the planner
-     * refuses rather than naming an index the store does not hold.
+     * An index is the tenant's reference data and not this configuration's, in
+     * the way the commodity catalogue is. It is the floating index catalogue
+     * and not the benchmark rate set: a leg states the FpML name of an index,
+     * such as =GBP-SONIA=, and the store refuses anything outside that
+     * vocabulary. A population whose set is empty cannot state a floating leg
+     * at all, so the planner refuses rather than naming an index the store does
+     * not hold.
      */
     std::vector<std::string> floating_index_codes;
     std::vector<boost::uuids::uuid> book_ids;
@@ -199,13 +202,6 @@ struct commodity_terms final {
 };
 
 /**
- * @brief The terms of one slot, in the shape its asset class states them.
- *
- * The slot carries the keys every family shares and this carries the rest, so
- * a reader of a bond slot sees bond facts and a reader of another family never
- * has to ask what a security is.
- */
-/**
  * @brief The facts a rate slot carries and no other family does.
  *
  * An interest rate trade reduces to one fixed leg against one floating leg,
@@ -228,8 +224,8 @@ struct rate_terms final {
     std::string fixed_business_day_convention_code;
     std::string fixed_payment_frequency_code;
     /**
-     * @brief The index the floating leg resets on, as the benchmark catalogue
-     * spells it, such as =SOFR= or =SONIA=.
+     * @brief The index the floating leg resets on, as the floating index
+     * catalogue spells it, such as =USD-SOFR= or =GBP-SONIA=.
      */
     std::string floating_index_code;
     /// What the floating leg pays over that index, as a decimal.
@@ -237,8 +233,32 @@ struct rate_terms final {
     std::string floating_day_count_fraction_code;
     std::string floating_business_day_convention_code;
     std::string floating_payment_frequency_code;
+
+    /**
+     * @brief The currency the floating leg is denominated in, when it differs
+     * from the fixed leg's. Empty for a trade in one currency, which is most
+     * of them: only a cross currency swap states two.
+     */
+    std::string floating_currency;
+    /// The strike a cap, a floor or a swaption states, as a decimal.
+    std::optional<double> strike;
+    /**
+     * @brief The date a swaption may be exercised.
+     *
+     * It belongs to the trade and not to the maturity, and it falls after the
+     * as-of date: an option that expired before the population was written
+     * exercises nothing.
+     */
+    std::optional<std::chrono::year_month_day> expiry_date;
 };
 
+/**
+ * @brief The terms of one slot, in the shape its asset class states them.
+ *
+ * The slot carries the keys every family shares and this carries the rest, so
+ * a reader of a bond slot sees bond facts and a reader of another family never
+ * has to ask what a security is.
+ */
 using trade_terms = std::variant<bond_terms, commodity_terms, rate_terms>;
 
 /**

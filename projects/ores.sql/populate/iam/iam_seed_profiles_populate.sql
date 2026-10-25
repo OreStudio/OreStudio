@@ -209,7 +209,7 @@ cross join (values
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
          "min_notional": "100000", "max_notional": "10000000", "seed": 42, "trades_per_book": 8},
         {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK rates population",
-         "description": "The interest rate trades ACME UK plc books, generated from its own books, counterparties, staff and benchmark catalogue. Twelve a book so every routed type appears at least once and four appear twice.",
+         "description": "The interest rate trades ACME UK plc books, generated from its own books, counterparties, staff and benchmark catalogue. Twelve a book so each of the nine routed types appears at least once and three appear twice.",
          "asset_class_code": "interest_rates", "book": "GBP Vanilla Swaps",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
          "min_notional": "1000000", "max_notional": "50000000", "seed": 43, "trades_per_book": 12}

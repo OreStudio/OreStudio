@@ -123,6 +123,18 @@ trade_link_service::list_trade_links(const messaging::list_trade_links_request& 
                                  {.entity = "trade links", .field = request.order.field});
         return response;
     }
+    if (request.filter && request.filter->from_trade_id_one_of &&
+        request.filter->from_trade_id_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "from_trade_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->to_trade_id_one_of &&
+        request.filter->to_trade_id_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "to_trade_id_one_of", .limit = "1000"});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -134,8 +146,9 @@ trade_link_service::list_trade_links(const messaging::list_trade_links_request& 
             return response;
         }
     }
-    response.links = repo_.read_latest(ctx_, request.offset, request.limit, request.order, as_of);
-    response.total = repo_.get_total_link_count(ctx_, as_of);
+    response.links = repo_.read_latest(
+        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
+    response.total = repo_.get_total_link_count(ctx_, request.filter, as_of);
     return response;
 }
 

@@ -318,7 +318,8 @@ export function RecordList<Row>({
     readonly lead: string;
     readonly crumbs: readonly { readonly label: string; readonly to?: string }[];
     readonly columns: readonly ListColumn<Row>[];
-    readonly pathOf?: (row: Row) => string;
+    /** The page a row opens, or nothing when the row has no page of its own. */
+    readonly pathOf?: (row: Row) => string | undefined;
     readonly keyOf?: (row: Row) => string;
     /** What the screen says above the table before any read, such as why the list is read only. */
     readonly notes?: readonly ListNote[];
@@ -396,7 +397,8 @@ export function RecordTable<Row>({
     /** The records' plural, as the empty states name them. */
     readonly plural: string;
     readonly columns: readonly ListColumn<Row>[];
-    readonly pathOf?: (row: Row) => string;
+    /** The page a row opens, or nothing when the row has no page of its own. */
+    readonly pathOf?: (row: Row) => string | undefined;
     readonly keyOf?: (row: Row) => string;
     readonly notes?: readonly ListNote[];
     readonly add?: { readonly label: string; readonly onAdd: () => void };
@@ -462,7 +464,15 @@ export function RecordTable<Row>({
 
     const sortBy = (field: string): void =>
         state.order(field, state.sort === field ? !state.descending : false);
-    const open = pathOf === undefined ? undefined : (row: Row): void => void navigate(pathOf(row));
+    const open =
+        pathOf === undefined
+            ? undefined
+            : (row: Row): void => {
+                  const page = pathOf(row);
+                  if (page !== undefined) {
+                      void navigate(page);
+                  }
+              };
     /* A link or control inside a row does its own thing; the row opens only from the rest of it. */
     const fromControl = (event: MouseEvent | KeyboardEvent): boolean =>
         event.target instanceof Element &&

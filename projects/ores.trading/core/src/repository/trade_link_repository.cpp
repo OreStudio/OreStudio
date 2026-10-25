@@ -25,11 +25,13 @@
 #include "ores.trading.core/repository/trade_link_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/trade_link.hpp"
 #include "ores.trading.api/domain/trade_link_json_io.hpp" // IWYU pragma: keep.
+#include "ores.trading.api/messaging/trade_link_protocol.hpp"
 #include "ores.trading.core/repository/trade_link_entity.hpp"
 #include "ores.trading.core/repository/trade_link_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -42,7 +44,9 @@
 #include <optional>
 #include <set>
 #include <sqlgen/delete_from.hpp>
+#include <sqlgen/dynamic/Condition.hpp>
 #include <sqlgen/dynamic/OrderBy.hpp>
+#include <sqlgen/dynamic/Value.hpp>
 #include <sqlgen/limit.hpp>
 #include <sqlgen/literals.hpp>
 #include <sqlgen/offset.hpp>
@@ -91,6 +95,34 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
                                     ".");
     return make_order(
         {order.field}, order.descending, {"from_trade_id", "to_trade_id", "link_type"});
+}
+
+/*
+ * The conditions the filter record sets. Every member is optional, and the
+ * members a request sets must all hold.
+ */
+std::optional<sqlgen::dynamic::Condition>
+filter_condition(const std::optional<messaging::trade_links_filter>& filter) {
+    if (!filter)
+        return std::nullopt;
+    std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->from_trade_id)
+        r.push_back(equals("from_trade_id", filter_value(*filter->from_trade_id)));
+    if (filter->to_trade_id)
+        r.push_back(equals("to_trade_id", filter_value(*filter->to_trade_id)));
+    if (filter->from_trade_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->from_trade_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("from_trade_id", std::move(values)));
+    }
+    if (filter->to_trade_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->to_trade_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("to_trade_id", std::move(values)));
+    }
+    return all_of(std::move(r));
 }
 
 }
@@ -306,6 +338,7 @@ trade_link_repository::read_latest(context ctx,
                                    std::uint32_t offset,
                                    std::uint32_t limit,
                                    const ores::utility::domain::order& order,
+                                   const std::optional<messaging::trade_links_filter>& filter,
                                    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade links with offset: " << offset
                                << " and limit: " << limit;
@@ -317,21 +350,27 @@ trade_link_repository::read_latest(context ctx,
         ctx,
         query,
         list_order(order, {"from_trade_id", "to_trade_id", "link_type"}, false),
-        narrowed(valid_at(as_of), std::nullopt),
+        narrowed(valid_at(as_of), filter_condition(filter)),
         [](const auto& entities) { return trade_link_mapper::map(entities); },
         lg(),
         "Reading latest trade links with pagination.");
 }
 
-std::uint32_t trade_link_repository::get_total_link_count(context ctx,
-                                                          const std::optional<std::string>& as_of) {
+std::uint32_t trade_link_repository::get_total_link_count(
+    context ctx,
+    const std::optional<messaging::trade_links_filter>& filter,
+    const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade link count";
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_link_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<trade_link_entity>(
-        ctx, query, narrowed(valid_at(as_of), std::nullopt), lg(), "Counting trade links");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), filter_condition(filter)),
+        lg(),
+        "Counting trade links");
 }
 
 std::vector<domain::trade_link>

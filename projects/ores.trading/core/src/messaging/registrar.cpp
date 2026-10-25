@@ -108,6 +108,8 @@
 #include "ores.trading.core/messaging/trade_id_type_registrar.hpp"
 #include "ores.trading.core/messaging/trade_identifier_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_identifier_registrar.hpp"
+#include "ores.trading.core/messaging/trade_link_registrar.hpp"
+#include "ores.trading.core/messaging/trade_link_type_registrar.hpp"
 #include "ores.trading.core/messaging/trade_operations_handler.hpp"
 #include "ores.trading.core/messaging/trade_party_role_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_party_role_registrar.hpp"
@@ -206,6 +208,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_trade_booking_handlers(nats, ctx, verifier));
     append(register_trade_id_type_handlers(nats, ctx, verifier));
     append(register_trade_identifier_handlers(nats, ctx, verifier));
+    append(register_trade_link_handlers(nats, ctx, verifier));
+    append(register_trade_link_type_handlers(nats, ctx, verifier));
     append(register_trade_party_role_handlers(nats, ctx, verifier));
     append(register_trade_state_handlers(nats, ctx, verifier));
     append(register_trade_summary_handlers(nats, ctx, verifier));

@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-trade-list-and-trade-page
-#+pr: 3789
+#+pr: 3793
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -88,6 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3793][#3793]] | [web] Show one trade on its own page |
 | [[https://github.com/OreStudio/OreStudio/pull/3789][#3789]] | [refdata] Serve the counterparty business centre lists |
 | [[https://github.com/OreStudio/OreStudio/pull/3788][#3788]] | [web] Complete a list request from the protocol |
 | [[https://github.com/OreStudio/OreStudio/pull/3784][#3784]] | [web] State every list member the service decodes |
@@ -153,3 +154,25 @@ Two rounds have landed. The first settled the prototype: the list draws a portfo
 The second round shipped the list itself. The Trades area reads a page of the trade summary read model through the BFF, which enriches the page with the identifier, the book and counterparty names and the two versions. The screen is the shared record list, so the pager, the column menu, the search, the filters and the states are the standard ones, and the area is offered from the menu and the home folders with messages in the three catalogues.
 
 What is not in it, and why: the portfolio tree waits on a count-per-book read of its own, and the investigation says the two existing lists are enough until a party's tree passes a page; the composite and leg markers wait on the same reads; the type and counterparty filters wait on a catalogue read and a pick list; the trade page is the next task, so a row does not open yet and a structure row states its kind rather than linking to a route that answers nothing. Book a trade is the area's Add once that screen exists.
+
+* The trade page, built
+
+The page is at =/trades/:id=, opened by a row. Five tabs, as the prototype settled them: Details, Instrument, Identifiers and roles, Links and History.
+
+- *Details* shows what the list already knew plus the booking's own terms: the identifier, the instrument type, the state, the authorisation, the trade date, the counterparty, the book, the version pair, the booking date and the execution instant.
+- *Identifiers and roles* reads =trade_identifiers= and =trade_party_roles= by trade.
+- *Links* reads both ends, because a link names the trade it starts at and the trade it ends at and nothing lets one read be either.
+- *History* reads the trade's versions by key.
+- *Instrument* states that the read is not built. The instrument table depends on the trade type, and routing a type to its table is its own piece of work: the prototype carries the same state, so this is the prototype's honesty and not a gap invented here.
+
+The route that feeds it, =GET /api/trades/:id=, makes those six reads and returns one payload, so a tab never reaches for a list of its own.
+
+* What the work needed that did not exist
+
+- =trade_links= had no filter at all, so one trade's links could not be asked for. =from_trade_id= and =to_trade_id= are now =:filterable: true=, and the filter offers both, with a one-of for each.
+- The trading service never registered the =trade_link= handlers: =trading.v1.trade_links.list= had no subscriber at all. Both the link and the link type are now registered beside their siblings.
+- Trading held no =trading::trade_party_roles:read=, because the blotter's grant block was written before the role tab existed. The four blotter roles now hold it.
+
+* Proved
+
+=GET /api/trades/:id= answers 200 for a Trading persona with the identifier, one identifier row, the booking, and five versions. The browser opens the list, clicks the first row, and walks all five tabs; its labels resolve and the tab list is announced. The BFF suite passes 949 tests, including the page route's shape and a 404 for a trade that does not exist.

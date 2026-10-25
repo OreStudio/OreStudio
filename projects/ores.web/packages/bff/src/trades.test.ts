@@ -200,6 +200,68 @@ describe('trade list route', () => {
         });
     });
 
+    it('reads one trade with its parts, its links at both ends and its history', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [listSummaries]: SUMMARIES,
+            'trading.v1.trade_identifiers.list': {
+                result: ok,
+                identifiers: [
+                    { id: 'a', trade_id: TRADE, id_type: 'Internal', id_value: 'ACME-1' },
+                ],
+            },
+            'trading.v1.trade_party_roles.list': {
+                result: ok,
+                roles: [{ trade_id: TRADE, party_id: COUNTERPARTY, role_type: 'buyer' }],
+            },
+            'trading.v1.trade_bookings.list': {
+                result: ok,
+                trade_bookings: [
+                    { trade_id: TRADE, trade_date: '2026-01-02', execution_timestamp: null },
+                ],
+            },
+            'trading.v1.trade_links.list': {
+                result: ok,
+                links: [],
+            },
+            'trading.v1.trades_versions.list': {
+                result: ok,
+                versions: [{ id: TRADE, version: 2 }],
+                total: 1,
+            },
+            'refdata.v1.books.list': { result: ok, books: [{ id: BOOK, name: 'EMEA Rates' }] },
+            'refdata.v1.counterparties.list': {
+                result: ok,
+                counterparties: [{ id: COUNTERPARTY, full_name: 'Northwind Capital Ltd' }],
+            },
+            'trading.v1.trades.list': {
+                result: ok,
+                trades: [{ id: TRADE, version: 2, external_version: 0 }],
+            },
+        });
+
+        const body = (await send(server, sessionId, `/api/trades/${TRADE}`)).json();
+
+        expect(body.trade).toMatchObject({ id: TRADE, identifier: 'ACME-1' });
+        expect(body.identifiers).toHaveLength(1);
+        expect(body.roles).toHaveLength(1);
+        expect(body.booking).toMatchObject({ trade_date: '2026-01-02' });
+        expect(body.links).toEqual({ from: [], to: [] });
+        expect(body.history).toHaveLength(1);
+        // Both ends of the links are read, which is how one trade's links are found.
+        const linkCalls = calls.filter((call) => call.subject === 'trading.v1.trade_links.list');
+        expect(linkCalls).toHaveLength(2);
+    });
+
+    it('answers not found for a trade that does not exist', async () => {
+        const { server, sessionId } = buildTestServer({
+            [listSummaries]: { result: ok, trade_summaries: [], total: 0 },
+        });
+
+        const reply = await send(server, sessionId, `/api/trades/${TRADE}`);
+
+        expect(reply.statusCode).toBe(404);
+    });
+
     it('reads a structure row without a trade behind it', async () => {
         const { server, sessionId } = buildTestServer({
             [listSummaries]: SUMMARIES,

@@ -198,6 +198,22 @@ def is_call_argument(text: str, start: int, end: int) -> bool:
     return not after.startswith(":")
 
 
+def read_all_spans(text: str) -> list[tuple[int, int]]:
+    """The character span of every readAll call, which completes its payload."""
+    spans = []
+    for match in re.finditer(r"\breadAll\(", text):
+        depth = 0
+        for index in range(match.end() - 1, len(text)):
+            if text[index] == "(":
+                depth += 1
+            elif text[index] == ")":
+                depth -= 1
+                if depth == 0:
+                    spans.append((match.start(), index))
+                    break
+    return spans
+
+
 def check_file(path: Path, requests_by_name: dict[str, Request], structs: dict[str, str]) -> list[str]:
     text = path.read_text()
     problems: list[str] = []
@@ -220,6 +236,10 @@ def check_file(path: Path, requests_by_name: dict[str, Request], structs: dict[s
         # resource to its subjects names the same constant with no literal after
         # it, so this keeps the two apart without guessing at layout.
         if not keys or not REQUEST_KEYS.intersection(keys):
+            continue
+        # readAll completes the payload from the generated table, so a call that
+        # goes through it need not state every member at the call site.
+        if any(start <= match.start() <= end for start, end in read_all_spans(text)):
             continue
         if request.as_of and "as_of" not in keys:
             problems.append(

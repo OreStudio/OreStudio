@@ -53,6 +53,7 @@
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
+#include "ores.trading.api/domain/origin.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -264,6 +265,33 @@ TEST_CASE("a_booking_that_fails_writes_no_anchor", tags) {
     CHECK(ores::trading::repository::trade_repository()
               .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
               .empty());
+}
+
+TEST_CASE("a_client_may_not_state_a_generated_origin", tags) {
+    fixture f;
+    auto req = f.request();
+    req.anchor.origin = ores::trading::domain::origin::synthetic;
+    req.anchor.origin_reference = "11111111-2222-3333-4444-555555555555";
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "origin_not_permitted");
+    CHECK(ores::trading::repository::trade_repository()
+              .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
+              .empty());
+}
+
+TEST_CASE("a_client_may_not_state_an_import_origin", tags) {
+    fixture f;
+    auto req = f.request();
+    req.anchor.origin = ores::trading::domain::origin::ore_import;
+    req.anchor.origin_reference = "ORE-TRADE-1";
+
+    const auto response = trade_operations_service(f.ctx).book_trade(req);
+
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "origin_not_permitted");
 }
 
 TEST_CASE("put_bond_issue_composite_writes_the_issue_and_its_children", tags) {

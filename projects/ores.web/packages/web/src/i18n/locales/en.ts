@@ -1855,6 +1855,16 @@ export const en: SourceCatalogue = {
                 },
             },
             reportRun: {
+                results: 'Results',
+                resultsEmpty: 'This run produced no results to read.',
+                resultsTrades: 'Trades',
+                resultsTotalNpv: 'Total NPV',
+                resultsTrade: 'Trade',
+                resultsType: 'Type',
+                resultsNpv: 'NPV',
+                resultsNpvBase: 'NPV (base)',
+                resultsNotional: 'Notional',
+                resultsCounterparty: 'Counterparty',
                 title: 'Report run',
                 description:
                     'The run of a report that dispatched a batch: its state, its times and the batch it made.',

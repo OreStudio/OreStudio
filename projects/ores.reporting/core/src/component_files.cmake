@@ -248,6 +248,7 @@ set(files
     "service/run_document_generator.cpp"
     "service/run_document_service.cpp"
     "service/run_requirements.cpp"
+    "service/run_results.cpp"
     "service/scheduling_plan.cpp"
 )
 
@@ -520,5 +521,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/run_document_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/run_document_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/run_requirements.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/run_results.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/scheduling_plan.hpp"
 )

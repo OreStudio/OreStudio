@@ -552,6 +552,108 @@ function Links({ run }: { readonly run: GridReportRunView }): ReactNode {
     );
 }
 
+/** One trade's result, as the engine wrote it. */
+type RunResultRow = {
+    readonly tradeId: string;
+    readonly tradeType: string;
+    readonly npv: string;
+    readonly npvBase: string;
+    readonly notional: string;
+    readonly counterparty: string;
+};
+
+const toResultRow = (raw: unknown): RunResultRow => {
+    const row = raw as Record<string, unknown>;
+    return {
+        tradeId: asText(row['trade_id']),
+        tradeType: asText(row['trade_type']),
+        npv: asText(row['npv']),
+        npvBase: asText(row['npv_base']),
+        notional: asText(row['notional']),
+        counterparty: asText(row['counterparty']),
+    };
+};
+
+/**
+ * What the run produced, figures first: the count and the sum, then the rows.
+ *
+ * A first draft of variant A of the "read what a run produced" prototype. The
+ * comparison against a previous run, the book tree and the plots are not here
+ * yet; the figures and the per-trade rows are.
+ */
+function RunResults({ id }: { readonly id: string }) {
+    const { t } = useTranslation();
+    const results = useQuery({
+        queryKey: ['report-run-results', id],
+        queryFn: () => api.gridReportRunResults(id),
+        meta: { quiet: true },
+    });
+    if (results.isPending) {
+        return null;
+    }
+    const rows = (results.data?.rows ?? []).map(toResultRow);
+    const total = rows.reduce((sum, row) => sum + (Number.parseFloat(row.npv) || 0), 0);
+    return (
+        <section className="card space-y-3 p-6">
+            <h2 className="text-lg font-medium">{t(`${FIELD}.results`)}</h2>
+            {rows.length === 0 ? (
+                <p className="text-sm text-ink-muted">
+                    {results.data?.message === ''
+                        ? t(`${FIELD}.resultsEmpty`)
+                        : (results.data?.message ?? t(`${FIELD}.resultsEmpty`))}
+                </p>
+            ) : (
+                <>
+                    <dl className="flex flex-wrap gap-8">
+                        <div>
+                            <dt className="text-xs text-ink-faint">
+                                {t(`${FIELD}.resultsTrades`)}
+                            </dt>
+                            <dd className="font-mono text-sm">{rows.length}</dd>
+                        </div>
+                        <div>
+                            <dt className="text-xs text-ink-faint">
+                                {t(`${FIELD}.resultsTotalNpv`)}
+                            </dt>
+                            <dd className="font-mono text-sm">{total.toFixed(2)}</dd>
+                        </div>
+                    </dl>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                            <thead>
+                                <tr className="text-xs uppercase tracking-wide text-ink-faint">
+                                    <th className="px-2 py-1">{t(`${FIELD}.resultsTrade`)}</th>
+                                    <th className="px-2 py-1">{t(`${FIELD}.resultsType`)}</th>
+                                    <th className="px-2 py-1">{t(`${FIELD}.resultsNpv`)}</th>
+                                    <th className="px-2 py-1">{t(`${FIELD}.resultsNpvBase`)}</th>
+                                    <th className="px-2 py-1">{t(`${FIELD}.resultsNotional`)}</th>
+                                    <th className="px-2 py-1">
+                                        {t(`${FIELD}.resultsCounterparty`)}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rows.map((row) => (
+                                    <tr key={row.tradeId} className="border-t border-line-subtle">
+                                        <td className="px-2 py-1 font-mono text-xs">
+                                            {row.tradeId.slice(0, 8)}…
+                                        </td>
+                                        <td className="px-2 py-1">{row.tradeType}</td>
+                                        <td className="px-2 py-1 font-mono">{row.npv}</td>
+                                        <td className="px-2 py-1 font-mono">{row.npvBase}</td>
+                                        <td className="px-2 py-1 font-mono">{row.notional}</td>
+                                        <td className="px-2 py-1">{row.counterparty}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
+            )}
+        </section>
+    );
+}
+
 /** The report run page. */
 export function GridReportRunPage(): ReactNode {
     const { t } = useTranslation();
@@ -605,6 +707,7 @@ export function GridReportRunPage(): ReactNode {
                                 rows={rows}
                                 onShowErrors={() => setSearchParams({ tab: 'errors' })}
                             />
+                            <RunResults id={run.data.id} />
                             <Run run={run.data} />
                             <Links run={run.data} />
                         </>

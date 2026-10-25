@@ -56,6 +56,31 @@ struct trigger_report_instance_response {
 };
 
 /**
+ * @brief Reads the per-trade results one run produced.
+ *
+ * The figures the engine wrote into the run's output archive, read as text so
+ * that the screen shows the numbers the engine wrote rather than a rendering
+ * this service chose. A run whose archive holds no npv.csv answers with an
+ * empty set and a message saying so, which is a fact about the run.
+ */
+struct get_run_results_request {
+    using response_type = struct get_run_results_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.get_run_results";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string report_instance_id;
+};
+
+struct get_run_results_response {
+    std::string rows;
+};
+
+/**
  * @brief Reads one run's health word and the state it was derived from.
  *
  * The run is named rather than scoped to the caller's party: the answer is

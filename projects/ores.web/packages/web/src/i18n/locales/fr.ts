@@ -1876,6 +1876,16 @@ const fr: SourceCatalogue = {
                 },
             },
             reportRun: {
+                results: 'Résultats',
+                resultsEmpty: "Cette exécution n'a produit aucun résultat à lire.",
+                resultsTrades: 'Transactions',
+                resultsTotalNpv: 'VAN totale',
+                resultsTrade: 'Transaction',
+                resultsType: 'Type',
+                resultsNpv: 'VAN',
+                resultsNpvBase: 'VAN (base)',
+                resultsNotional: 'Notionnel',
+                resultsCounterparty: 'Contrepartie',
                 title: 'Exécution de rapport',
                 description:
                     'L’exécution d’un rapport qui a envoyé un lot : son état, ses heures et le lot qu’elle a créé.',

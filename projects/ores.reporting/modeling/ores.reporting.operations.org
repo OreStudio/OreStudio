@@ -116,6 +116,39 @@ with, so a caller reads one result convention across the component.
 The instance the trigger created, empty when it created none. A caller that asked for
 a =package= instance reads it to find the instance and the packages it stores.
 
+** get_run_results_request
+:PROPERTIES:
+:subject: reporting.v1.ops.get_run_results
+:response: get_run_results_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the per-trade results one run produced.
+ *
+ * The figures the engine wrote into the run's output archive, read as text so
+ * that the screen shows the numbers the engine wrote rather than a rendering
+ * this service chose. A run whose archive holds no npv.csv answers with an
+ * empty set and a message saying so, which is a fact about the run.
+ */
+#+end_src
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The run whose results to read.
+
+** get_run_results_response
+
+*** rows
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The per-trade rows as a JSON array, or empty when the run produced no result.
+
 ** get_run_health_request
 :PROPERTIES:
 :subject: reporting.v1.ops.get_run_health

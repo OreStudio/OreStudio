@@ -1867,6 +1867,16 @@ const pt: SourceCatalogue = {
                 },
             },
             reportRun: {
+                results: 'Resultados',
+                resultsEmpty: 'Esta execução não produziu resultados para ler.',
+                resultsTrades: 'Transações',
+                resultsTotalNpv: 'VAL total',
+                resultsTrade: 'Transação',
+                resultsType: 'Tipo',
+                resultsNpv: 'VAL',
+                resultsNpvBase: 'VAL (base)',
+                resultsNotional: 'Notional',
+                resultsCounterparty: 'Contraparte',
                 title: 'Execução de relatório',
                 description:
                     'A execução de um relatório que enviou um lote: o seu estado, as suas horas e o lote que criou.',

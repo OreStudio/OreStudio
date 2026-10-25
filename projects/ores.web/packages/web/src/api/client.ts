@@ -2428,6 +2428,14 @@ export const api = {
         return reply.trade ?? null;
     },
 
+    /** The per-trade results a run produced, or why it produced none. */
+    async gridReportRunResults(id: string): Promise<{ rows: readonly unknown[]; message: string }> {
+        const reply = (await request(`/api/operations/grid/report-runs/${id}/results`, {
+            method: 'GET',
+        })) as { rows?: readonly unknown[]; message?: string };
+        return { rows: reply.rows ?? [], message: reply.message ?? '' };
+    },
+
     /** The errors a report run recorded. */
     async gridReportRunErrors(id: string): Promise<readonly unknown[]> {
         const reply = (await request(`/api/operations/grid/report-runs/${id}/errors`, {

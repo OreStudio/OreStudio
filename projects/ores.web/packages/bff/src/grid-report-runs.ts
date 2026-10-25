@@ -74,7 +74,7 @@ async function readRuns(
     return reply.instances;
 }
 
-async function readRun(session: LiveSession, id: string): Promise<Record<string, unknown> | null> {
+export async function readRun(session: LiveSession, id: string): Promise<Record<string, unknown> | null> {
     return (await readRuns(session, [id]))[0] ?? null;
 }
 

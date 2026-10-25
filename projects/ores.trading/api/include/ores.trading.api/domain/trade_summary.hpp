@@ -102,7 +102,7 @@ struct trade_summary final {
      * @brief The number of trades the row stands for: one for a trade, the member count for a
      * structure.
      */
-    int trade_count = 0;
+    int trade_count;
 
     /**
      * @brief Every identifier of the trade as one text, which the list searches.

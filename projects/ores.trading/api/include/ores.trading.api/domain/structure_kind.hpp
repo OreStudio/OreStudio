@@ -70,7 +70,7 @@ struct structure_kind final {
      * trade by trade, which is what a package does: it binds its legs to nothing economic, so each
      * leg is its own confirmation.
      */
-    bool confirms_as_whole = false;
+    bool confirms_as_whole;
 
     /**
      * @brief Username of the person who last modified this structure kind.

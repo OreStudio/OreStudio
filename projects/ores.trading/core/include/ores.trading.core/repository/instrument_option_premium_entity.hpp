@@ -50,7 +50,7 @@ struct instrument_option_premium_entity {
     std::string amount;
     std::string currency;
     std::string pay_date;
-    bool has_settlement = false;
+    bool has_settlement;
     std::optional<std::string> settlement_pay_currency;
     std::optional<std::string> settlement_fx_index;
     std::optional<std::string> settlement_fixing_date;

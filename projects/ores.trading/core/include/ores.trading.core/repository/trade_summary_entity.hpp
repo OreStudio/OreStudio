@@ -52,7 +52,7 @@ struct trade_summary_entity {
     std::optional<std::string> status;
     std::string authorisation_status;
     std::optional<std::string> trade_date;
-    int trade_count = 0;
+    int trade_count;
     std::string search_text;
 };
 

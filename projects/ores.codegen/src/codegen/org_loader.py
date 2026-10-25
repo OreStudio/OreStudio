@@ -931,6 +931,31 @@ def _column_node_to_dict(node: OrgNode) -> dict[str, Any]:
         for key in ("default", "default_value"):
             if key in out and isinstance(out[key], str):
                 out[key] = _sql_quote_default(out[key])
+
+    # The default feeds two templates with different syntaxes: the SQL create
+    # script wants a quoted literal, and the C++ domain wants a C++ expression.
+    # One value cannot be both, so the C++ form is derived here: an enum keeps
+    # its scoped expression, a string becomes a C++ string literal, and
+    # anything else (a number, a bool, a written-out expression) passes through.
+    # Both keys feed the initialiser: the templates render whichever the model
+    # states, and a column may declare only :default:. :default_value: wins
+    # when both are present.
+    for key in ("default_value", "default"):
+        if key not in out or not isinstance(out[key], str):
+            continue
+        value = out[key]
+        quoted = len(value) >= 2 and value[0] == "'" and value[-1] == "'"
+        if out.get("is_enum") or not quoted:
+            # An enum's default is a scoped expression, and anything that is not
+            # SQL-quoted is already a C++ expression the author wrote out -- a
+            # tenant_id factory, a date, a number -- so it passes through.
+            cpp = value
+        else:
+            bare = value[1:-1].replace("''", "'")
+            cpp = '"' + bare.replace('\\', '\\\\').replace('"', '\\"') + '"'
+
+        out["default_cpp"] = cpp
+        break
     description, detail = _description_and_detail(node)
     if description:
         out["description"] = description

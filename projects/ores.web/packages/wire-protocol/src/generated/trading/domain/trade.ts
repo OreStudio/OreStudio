@@ -40,7 +40,7 @@ export interface Trade {
     counterparty_scope: string;
     booking_nature: string;
     entry_channel: string;
-    origin: Origin;
+    origin: string;
     origin_reference: string;
     external_version: number;
     economic_digest: string;

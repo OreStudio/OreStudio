@@ -65,15 +65,15 @@ struct instrument_option_entity {
     std::optional<std::string> exercise_fee_settlement_calendar;
     std::optional<std::string> exercise_fee_settlement_convention;
     std::optional<std::string> automatic_exercise;
-    bool has_exercise_data = false;
+    bool has_exercise_data;
     std::optional<std::string> exercise_date;
     std::optional<std::string> exercise_price;
-    bool has_payment_data = false;
+    bool has_payment_data;
     std::optional<std::int64_t> payment_lag;
     std::optional<std::string> payment_calendar;
     std::optional<std::string> payment_convention;
     std::optional<std::string> payment_relative_to;
-    bool has_settlement_data = false;
+    bool has_settlement_data;
     std::optional<std::string> settlement_pay_currency;
     std::optional<std::string> settlement_fx_index;
     std::optional<std::string> settlement_fixing_date;

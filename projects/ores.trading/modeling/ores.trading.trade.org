@@ -170,7 +170,7 @@ ores::trading::domain::entry_channel::manual
 :cpp_type:      ores::trading::domain::origin
 :is_enum:       true
 :nullable:      false
-:default_value: ores::trading::domain::origin::api
+:default_value: api
 :economic:      false
 :END:
 
@@ -179,7 +179,7 @@ Which system first wrote the trade down: =ux=, =api=, =ore_import= or
 economic digest: the same trade imported twice is one trade.
 
 #+begin_src cpp :name generator
-ores::trading::domain::origin::api
+std::string("api")
 #+end_src
 
 ** origin_reference
@@ -357,7 +357,6 @@ counterparty to: a database pin can only name a key, and the primary key
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
-#include "ores.trading.api/domain/origin.hpp"
 #+end_src
 
 ** Conventions

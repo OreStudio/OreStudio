@@ -46,12 +46,12 @@ struct instrument_identity {
     /**
      * @brief Version number for optimistic locking and change tracking.
      */
-    int version = 0;
+    int version;
 
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    utility::uuid::tenant_id tenant_id;
 
     /**
      * @brief ORE product type code (soft FK to ores_trading_trade_types_tbl).

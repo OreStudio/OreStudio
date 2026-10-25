@@ -31,10 +31,8 @@ namespace ores::trading::domain {
  * @brief Which system first wrote a trade down.
  *
  * The values match the codes in @c ores_trading_origin_types_tbl, which a trade
- * anchor references with a database foreign key.
- *
- * Origin is provenance and not economics: a trade imported twice is one trade,
- * so it stays out of the economic digest.
+ * anchor references with a database foreign key. Origin is provenance and not
+ * economics: a trade imported twice is one trade.
  */
 enum class origin {
     ux,         ///< A person entered the trade at a screen.

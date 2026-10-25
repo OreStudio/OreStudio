@@ -46,7 +46,7 @@ struct structure_kind_entity {
     std::string tenant_id;
     int version = 0;
     std::optional<std::string> description;
-    bool confirms_as_whole = false;
+    bool confirms_as_whole;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

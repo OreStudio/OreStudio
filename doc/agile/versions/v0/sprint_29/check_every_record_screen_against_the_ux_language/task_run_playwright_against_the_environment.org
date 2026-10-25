@@ -8,7 +8,7 @@
 #+filetags: :check_every_record_screen_against_the_ux_language:sprint_29:v0:
 #+owner: marco
 #+branch: feature/run-playwright-against-the-environment
-#+pr:
+#+pr: 3771
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3771][#3771]] | [web] Run Playwright against the environment |
 
 * Review
 

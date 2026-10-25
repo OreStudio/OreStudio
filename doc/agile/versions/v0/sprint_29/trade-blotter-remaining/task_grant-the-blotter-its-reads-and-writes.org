@@ -26,11 +26,11 @@ A person holding a seeded role opens every Trade Blotter screen, and every code 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -213,3 +213,22 @@ The calls to make it are now known, and the run fails one step before the permis
 - The shell's own =-l= is ambiguous with =--log-level= and must be written =--load=; that only matters outside =compass shell=, which passes it correctly.
 
 So the next step is to provision a tenant and its party before the proof, not to change any permission. The proof itself is then two scripted runs: =joshua.brown= reading the summaries, and a write refused for =kathryn.haynes=.
+
+* The proof, done
+
+ACME was provisioned first: =bootstrap setup= with the =acme_demo= profile created the tenant, the party, the LEI hierarchy, the staff with their passwords, and the market data subscriptions. It then failed at the last step, =generate_trades=, with "value 2167221318 is out of range for type integer" while recording a trade generation config; that is filed as its own capture, because it blocks the trade population and not this task.
+
+With the tenant up, both cases ran through =compass shell=:
+
+| Case | Account | Command | Result |
+|---|---|---|---|
+| Positive | =joshua.brown=, a =Trading= account | =trade_summaries list= | ={"outcome":"ok"}= with an empty list, because no trades were generated |
+| Negative | =kathryn.haynes=, a =Viewer= account | =trade_identifiers delete <id> <version> <reason> <commentary>= | =forbidden= from =trading.v1.trade_identifiers.delete= |
+
+The empty list is the generated population missing, not the read failing: the same command answered =ok=, and before this split no human role held =trade_summaries:read= at all, so it would have been refused. The negative case is a write a =Viewer= must not make, and it is refused at the service, not in the screen.
+
+The split is in the seed, the grants are in the database, and both proof cases ran: a =Trading= account reads the summaries and a =Viewer= is refused a write.
+
+Two defects came out of the work and are recorded where they belong: the assign function is not idempotent, so a second populate duplicates every assignment, and the =acme_demo= profile's trade generation config overflows an int, which is filed as its own capture.
+
+What this task did not do: it did not decide whether a blotter belongs to =Trading= in a house where a trader may also be an =Operations= user; the split is a first cut that a later task may move.

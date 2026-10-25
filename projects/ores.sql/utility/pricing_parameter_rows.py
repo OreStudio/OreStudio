@@ -332,28 +332,37 @@ def domain_of_value_set():
     The set is the one statement of a parameter's type. The guide's kind is a
     reading of its prose and defaults to a string; where a set exists, it wins.
     """
-    domains = {}
+    sets = {}
+    links = {}
     for name in ("value-sets.json", "value-sets-code.json", "value-sets-review.json"):
         path = os.path.join(CURATION_DIR, name)
         if not os.path.exists(path):
             continue
         with open(path) as handle:
             data = json.load(handle)
-        for key, code in data.get("links", {}).items():
-            kind = data.get("sets", {}).get(code, {}).get("source_kind")
-            if kind in DOMAIN_OF_SET_KIND:
-                domains[key] = DOMAIN_OF_SET_KIND[kind]
-    return domains
+        sets.update(data.get("sets", {}))
+        links.update(data.get("links", {}))
+    domains = {}
+    for key, code in links.items():
+        kind = sets.get(code, {}).get("source_kind")
+        if kind in DOMAIN_OF_SET_KIND:
+            domains[key] = DOMAIN_OF_SET_KIND[kind]
+    by_name = {}
+    for key, domain in domains.items():
+        by_name.setdefault(key.partition("|")[2], set()).add(domain)
+    settled = {name: next(iter(found)) for name, found in by_name.items() if len(found) == 1}
+    return domains, settled
 
 
 def rows():
-    stated = domain_of_value_set()
+    stated, stated_by_name = domain_of_value_set()
     out = []
     for position, row in enumerate(
         setting_rows() + global_rows() + model_rows() + pair_rows() + type_rows()
         + code_setting_rows(), start=1
     ):
-        stated_domain = stated.get(f"{row.get('scope')}|{row.get('name')}")
+        stated_domain = stated.get(f"{row.get('scope')}|{row.get('name')}") or stated_by_name.get(
+            row.get("name"))
         if stated_domain is not None and row.get("scope") in PARAMETER_SCOPES:
             row = {**row, "domain": stated_domain}
         out.append({**row, "position": position})

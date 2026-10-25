@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 87effda4-50a8-4ff5-ab5b-5ff346554395
+:END:
+#+title: ores.reporting.engine_settings_group
+#+description: Codegen entity model for the reporting =engine_settings_group= table. One group of engine settings, such as fixings, building or execution.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: A group of engine settings a configuration holds as one part.
+#+entity_singular: engine_settings_group
+#+entity_plural: engine_settings_groups
+#+entity_title: Engine Settings Group
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+The engine settings a screen draws come in groups, and a configuration keeps one
+row of each group it sets. The group states the code the screen and the service
+travel the part under, the words a person reads and the place it takes in the
+screen. The settings of the group are rows of =engine_settings_group_setting=.
+
+Until this table held the groups, a list of them lived in the browser's server
+code, so a new group of settings took a change of code. The list is data now, so
+the screen draws the groups the data holds, in the order the data states.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 reporting
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:tablename: ores_reporting_engine_settings_groups_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+The stable code of the group, and the word the part of a configuration travels
+under, for example =fixings=.
+
+** name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The name a person reads, for example =Fixings=.
+
+** description
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+What the settings of this group decide.
+
+** position
+:PROPERTIES:
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:END:
+
+Where the group sits in the screen, counting from zero.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_engine_settings_groups_tbl
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                       |
+|----------------------+-------------------------------------------|
+| change_reason_code   | ores_dq_validate_change_reason_fn         |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:service_find_prefix:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: group
+:entity_plural_short:   groups
+:entity_singular_words: engine settings group
+:entity_plural_words:   engine settings groups
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: esg
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| name        | Name        |
+| position    | Position    |

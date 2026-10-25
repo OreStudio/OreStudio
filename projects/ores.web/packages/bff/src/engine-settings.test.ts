@@ -186,6 +186,158 @@ const execution = {
     change_commentary: '',
 };
 
+type SettingRow = {
+    readonly column_name: string;
+    readonly ore_name: string;
+    readonly kind: 'flag' | 'whole' | 'choice';
+    readonly changes_numbers: boolean;
+    readonly options?: readonly string[];
+    readonly minimum?: number;
+    readonly maximum?: number;
+};
+
+/** The rows of one group's settings, in the order the group shows them. */
+function settingsOf(
+    groupCode: string,
+    settings: readonly SettingRow[],
+): {
+    code: string;
+    group_code: string;
+    column_name: string;
+    ore_name: string;
+    kind: string;
+    changes_numbers: boolean;
+    options: string;
+    minimum: number | null;
+    maximum: number | null;
+    position: number;
+}[] {
+    return settings.map((setting, position) => ({
+        code: `${groupCode}:${setting.column_name}`,
+        group_code: groupCode,
+        column_name: setting.column_name,
+        ore_name: setting.ore_name,
+        kind: setting.kind,
+        changes_numbers: setting.changes_numbers,
+        options: (setting.options ?? []).join(','),
+        minimum: setting.minimum ?? null,
+        maximum: setting.maximum ?? null,
+        position,
+    }));
+}
+
+const groups = [
+    { code: 'fixings', name: 'Fixings', description: '', position: 0 },
+    { code: 'building', name: 'Building', description: '', position: 1 },
+    { code: 'execution', name: 'Execution', description: '', position: 2 },
+];
+
+const settings = [
+    ...settingsOf('fixings', [
+        {
+            column_name: 'imply_todays_fixings',
+            ore_name: 'implyTodaysFixings',
+            kind: 'flag',
+            changes_numbers: true,
+        },
+        {
+            column_name: 'include_todays_cash_flows',
+            ore_name: 'includeTodaysCashFlows',
+            kind: 'flag',
+            changes_numbers: true,
+        },
+        {
+            column_name: 'include_reference_date_events',
+            ore_name: 'includeReferenceDateEvents',
+            kind: 'flag',
+            changes_numbers: true,
+        },
+        {
+            column_name: 'enrich_index_fixings',
+            ore_name: 'enrichIndexFixings',
+            kind: 'flag',
+            changes_numbers: true,
+        },
+        {
+            column_name: 'ignore_fixing_lag',
+            ore_name: 'ignoreFixingLag',
+            kind: 'whole',
+            changes_numbers: true,
+            minimum: 0,
+        },
+        {
+            column_name: 'ignore_fixing_lead',
+            ore_name: 'ignoreFixingLead',
+            kind: 'whole',
+            changes_numbers: true,
+            minimum: 0,
+        },
+    ]),
+    ...settingsOf('building', [
+        {
+            column_name: 'observation_model',
+            ore_name: 'observationModel',
+            kind: 'choice',
+            changes_numbers: false,
+            options: ['None', 'Disable', 'Defer', 'Unregister'],
+        },
+        {
+            column_name: 'lazy_market_building',
+            ore_name: 'lazyMarketBuilding',
+            kind: 'flag',
+            changes_numbers: false,
+        },
+        {
+            column_name: 'build_failed_trades',
+            ore_name: 'buildFailedTrades',
+            kind: 'flag',
+            changes_numbers: true,
+        },
+        {
+            column_name: 'continue_on_error',
+            ore_name: 'continueOnError',
+            kind: 'flag',
+            changes_numbers: true,
+        },
+        {
+            column_name: 'use_at_par_coupons_curves',
+            ore_name: 'useAtParCouponsCurves',
+            kind: 'flag',
+            changes_numbers: true,
+        },
+        {
+            column_name: 'use_at_par_coupons_trades',
+            ore_name: 'useAtParCouponsTrades',
+            kind: 'flag',
+            changes_numbers: true,
+        },
+    ]),
+    ...settingsOf('execution', [
+        {
+            column_name: 'n_threads',
+            ore_name: 'nThreads',
+            kind: 'whole',
+            changes_numbers: false,
+            minimum: 1,
+        },
+        {
+            column_name: 'log_mask',
+            ore_name: 'logMask',
+            kind: 'whole',
+            changes_numbers: false,
+            minimum: 0,
+        },
+        {
+            column_name: 'gzip_compression_level',
+            ore_name: 'gzipCompressionLevel',
+            kind: 'whole',
+            changes_numbers: false,
+            minimum: 0,
+            maximum: 9,
+        },
+    ]),
+];
+
 const reads = {
     'iam.v1.ops.get_my_parties': {
         result: ok,
@@ -201,6 +353,8 @@ const reads = {
         ],
     },
     'reporting.v1.engine_settings.list': { result: ok, settings: [central] },
+    'reporting.v1.engine_settings_groups.list': { result: ok, groups },
+    'reporting.v1.engine_settings_group_settings.list': { result: ok, settings },
     'reporting.v1.engine_settings_fixings.list': { result: ok, engine_settings_fixings: [] },
     'reporting.v1.engine_settings_building.list': { result: ok, engine_settings_building: [] },
     'reporting.v1.engine_settings_execution.list': {
@@ -277,6 +431,7 @@ describe('engine settings routes', () => {
 
     it('takes the wording of each setting from its ore parameter and marks one with none', async () => {
         const { server, sessionId } = buildTestServer({
+            ...reads,
             'reporting.v1.ore_parameters.list': {
                 result: ok,
                 parameters: [
@@ -332,6 +487,130 @@ describe('engine settings routes', () => {
             options: ['None', 'Disable', 'Defer', 'Unregister'],
         });
         expect(threads).toMatchObject({ changesNumbers: false, min: 1, max: null });
+    });
+
+    it('takes a group and its settings from the tables, with the bounds and the words each states', async () => {
+        const { server, sessionId } = buildTestServer({
+            'reporting.v1.engine_settings_groups.list': {
+                result: ok,
+                groups: [
+                    { code: 'execution', name: 'Execution', description: '', position: 0 },
+                    { code: 'building', name: 'Building', description: '', position: 1 },
+                ],
+            },
+            'reporting.v1.engine_settings_group_settings.list': {
+                result: ok,
+                settings: [
+                    ...settingsOf('execution', [
+                        {
+                            column_name: 'n_threads',
+                            ore_name: 'nThreads',
+                            kind: 'whole',
+                            changes_numbers: true,
+                            minimum: 2,
+                            maximum: 8,
+                        },
+                    ]),
+                    ...settingsOf('building', [
+                        {
+                            column_name: 'observation_model',
+                            ore_name: 'observationModel',
+                            kind: 'choice',
+                            changes_numbers: false,
+                            options: ['None', 'Simple'],
+                        },
+                    ]),
+                ],
+            },
+            'reporting.v1.ore_parameters.list': { result: ok, parameters: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/engine-settings/documentation',
+        );
+        expect(response.statusCode).toBe(200);
+        const documented = response.json().groups as {
+            id: string;
+            changesNumbers: boolean;
+            settings: {
+                column: string;
+                kind: string;
+                options: string[];
+                min: number | null;
+                max: number | null;
+                changesNumbers: boolean;
+            }[];
+        }[];
+        expect(documented.map((group) => group.id)).toEqual(['execution', 'building']);
+        expect(documented[0]).toMatchObject({
+            changesNumbers: true,
+            settings: [
+                { column: 'n_threads', kind: 'whole', min: 2, max: 8, changesNumbers: true },
+            ],
+        });
+        expect(documented[1]).toMatchObject({
+            changesNumbers: false,
+            settings: [
+                {
+                    column: 'observation_model',
+                    kind: 'choice',
+                    options: ['None', 'Simple'],
+                    changesNumbers: false,
+                },
+            ],
+        });
+    });
+
+    it('accepts a value the tables state and refuses one outside their bounds', async () => {
+        const tables = {
+            'reporting.v1.engine_settings_groups.list': {
+                result: ok,
+                groups: [{ code: 'execution', name: 'Execution', description: '', position: 0 }],
+            },
+            'reporting.v1.engine_settings_group_settings.list': {
+                result: ok,
+                settings: settingsOf('execution', [
+                    {
+                        column_name: 'n_threads',
+                        ore_name: 'nThreads',
+                        kind: 'whole',
+                        changes_numbers: false,
+                        minimum: 2,
+                        maximum: 8,
+                    },
+                ]),
+            },
+            'reporting.v1.engine_settings_execution.list': {
+                result: ok,
+                engine_settings_execution: [],
+            },
+            'reporting.v1.engine_settings.list': { result: ok, settings: [central] },
+            'iam.v1.ops.get_my_parties': reads['iam.v1.ops.get_my_parties'],
+            'reporting.v1.engine_settings_execution.put': { result: ok },
+        };
+        const written = buildTestServer(tables);
+        const accepted = await send(
+            written.server,
+            written.sessionId,
+            'PUT',
+            `/api/reporting/engine-settings/${SETTINGS_ID}/groups/execution`,
+            { version: null, values: { n_threads: 8 }, intent: INTENT },
+        );
+        expect(accepted.statusCode).toBe(200);
+        expect(written.calls.some((call) => call.subject.endsWith('execution.put'))).toBe(true);
+
+        const refused = buildTestServer(tables);
+        const response = await send(
+            refused.server,
+            refused.sessionId,
+            'PUT',
+            `/api/reporting/engine-settings/${SETTINGS_ID}/groups/execution`,
+            { version: null, values: { n_threads: 9 }, intent: INTENT },
+        );
+        expect(response.statusCode).toBe(400);
+        expect(refused.calls.some((call) => call.subject.endsWith('execution.put'))).toBe(false);
     });
 
     it('writes a group against the version the person read', async () => {

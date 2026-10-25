@@ -1,0 +1,200 @@
+:PROPERTIES:
+:ID: 15b838bb-9106-47fc-82b1-2df0ec300ec4
+:END:
+#+title: ores.reporting.engine_settings_group_setting
+#+description: Codegen entity model for the reporting =engine_settings_group_setting= table. One setting of one group of engine settings, with the kind of value it takes.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: One setting of a group of engine settings.
+#+entity_singular: engine_settings_group_setting
+#+entity_plural: engine_settings_group_settings
+#+entity_title: Engine Settings Group Setting
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+One setting of one group, as the screen draws it: the column its value travels
+under, the ORE parameter that documents it, the kind of control it takes, and
+the range or the list of words the value must be one of. The group's settings are
+what a screen shows and what a write to the group accepts, so a setting is data
+here and no longer a list in the browser's server code.
+
+Whether a setting changes the numbers a run computes is stated here, so the
+screen can warn a person before a write that moves them.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 reporting
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:tablename: ores_reporting_engine_settings_group_settings_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+The group and the column joined with a colon, for example
+=fixings:imply_todays_fixings=.
+
+** group_code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The group this setting belongs to. Soft foreign key to
+=ores_reporting_engine_settings_groups_tbl=.
+
+** column_name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The column of the part the value travels under, for example
+=imply_todays_fixings=.
+
+** ore_name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The parameter as ORE writes it, which names the ore parameter that documents the
+setting, for example =implyTodaysFixings=.
+
+** kind
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The control the screen draws and the values the setting accepts: =flag=,
+=whole= or =choice=.
+
+** changes_numbers
+:PROPERTIES:
+:type:         boolean
+:cpp_type:     bool
+:nullable:     false
+:END:
+
+Whether the setting changes the numbers a run computes, and is not only
+operational.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** options
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The words a choice setting accepts, comma separated, in the order the screen
+lists them. Empty for a setting that is not a choice.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** minimum
+:PROPERTIES:
+:type:         double precision
+:cpp_type:     std::optional<double>
+:nullable:     true
+:END:
+
+The lowest value a whole setting accepts. Empty when it has no floor.
+
+** maximum
+:PROPERTIES:
+:type:         double precision
+:cpp_type:     std::optional<double>
+:nullable:     true
+:END:
+
+The highest value a whole setting accepts. Empty when it has no ceiling.
+
+** position
+:PROPERTIES:
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:END:
+
+Where the setting sits in its group, counting from zero.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_engine_settings_group_settings_tbl
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                       |
+|----------------------+-------------------------------------------|
+| change_reason_code   | ores_dq_validate_change_reason_fn         |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:service_find_prefix:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: setting
+:entity_plural_short:   settings
+:entity_singular_words: engine settings group setting
+:entity_plural_words:   engine settings group settings
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: egs
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| group_code      | Group       |
+| column_name     | Column      |
+| ore_name        | ORE         |
+| kind            | Kind        |
+| position        | Position    |

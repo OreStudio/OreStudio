@@ -1,0 +1,122 @@
+{
+  "groups": [
+    {
+      "code": "fixings",
+      "name": "Fixings",
+      "description": "Which fixings a run reads, and how it handles the fixings of the day it runs.",
+      "settings": [
+        {
+          "column": "imply_todays_fixings",
+          "ore": "implyTodaysFixings",
+          "kind": "flag",
+          "changes_numbers": true
+        },
+        {
+          "column": "include_todays_cash_flows",
+          "ore": "includeTodaysCashFlows",
+          "kind": "flag",
+          "changes_numbers": true
+        },
+        {
+          "column": "include_reference_date_events",
+          "ore": "includeReferenceDateEvents",
+          "kind": "flag",
+          "changes_numbers": true
+        },
+        {
+          "column": "enrich_index_fixings",
+          "ore": "enrichIndexFixings",
+          "kind": "flag",
+          "changes_numbers": true
+        },
+        {
+          "column": "ignore_fixing_lag",
+          "ore": "ignoreFixingLag",
+          "kind": "whole",
+          "changes_numbers": true,
+          "minimum": 0
+        },
+        {
+          "column": "ignore_fixing_lead",
+          "ore": "ignoreFixingLead",
+          "kind": "whole",
+          "changes_numbers": true,
+          "minimum": 0
+        }
+      ]
+    },
+    {
+      "code": "building",
+      "name": "Building",
+      "description": "How a run builds its market data, and what it does with a trade that fails to build.",
+      "settings": [
+        {
+          "column": "observation_model",
+          "ore": "observationModel",
+          "kind": "choice",
+          "changes_numbers": false,
+          "options": ["None", "Disable", "Defer", "Unregister"]
+        },
+        {
+          "column": "lazy_market_building",
+          "ore": "lazyMarketBuilding",
+          "kind": "flag",
+          "changes_numbers": false
+        },
+        {
+          "column": "build_failed_trades",
+          "ore": "buildFailedTrades",
+          "kind": "flag",
+          "changes_numbers": true
+        },
+        {
+          "column": "continue_on_error",
+          "ore": "continueOnError",
+          "kind": "flag",
+          "changes_numbers": true
+        },
+        {
+          "column": "use_at_par_coupons_curves",
+          "ore": "useAtParCouponsCurves",
+          "kind": "flag",
+          "changes_numbers": true
+        },
+        {
+          "column": "use_at_par_coupons_trades",
+          "ore": "useAtParCouponsTrades",
+          "kind": "flag",
+          "changes_numbers": true
+        }
+      ]
+    },
+    {
+      "code": "execution",
+      "name": "Execution",
+      "description": "How many threads a run uses, what it writes to its log, and how much it compresses its output.",
+      "settings": [
+        {
+          "column": "n_threads",
+          "ore": "nThreads",
+          "kind": "whole",
+          "changes_numbers": false,
+          "minimum": 1
+        },
+        {
+          "column": "log_mask",
+          "ore": "logMask",
+          "kind": "whole",
+          "changes_numbers": false,
+          "minimum": 0
+        },
+        {
+          "column": "gzip_compression_level",
+          "ore": "gzipCompressionLevel",
+          "kind": "whole",
+          "changes_numbers": false,
+          "minimum": 0,
+          "maximum": 9
+        }
+      ]
+    }
+  ]
+}

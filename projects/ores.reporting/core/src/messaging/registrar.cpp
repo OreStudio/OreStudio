@@ -35,6 +35,8 @@
 #include "ores.reporting.core/messaging/engine_settings_building_registrar.hpp"
 #include "ores.reporting.core/messaging/engine_settings_execution_registrar.hpp"
 #include "ores.reporting.core/messaging/engine_settings_fixings_registrar.hpp"
+#include "ores.reporting.core/messaging/engine_settings_group_registrar.hpp"
+#include "ores.reporting.core/messaging/engine_settings_group_setting_registrar.hpp"
 #include "ores.reporting.core/messaging/engine_settings_registrar.hpp"
 #include "ores.reporting.core/messaging/file_type_registrar.hpp"
 #include "ores.reporting.core/messaging/ore_parameter_registrar.hpp"
@@ -421,6 +423,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     for (auto& sub : register_engine_settings_execution_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
     for (auto& sub : register_engine_settings_fixings_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_engine_settings_group_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_engine_settings_group_setting_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
     for (auto& sub : register_ore_parameter_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));

@@ -31,6 +31,8 @@ set(files
     "engine_settings_commands_tests.cpp"
     "engine_settings_execution_commands_tests.cpp"
     "engine_settings_fixings_commands_tests.cpp"
+    "engine_settings_group_commands_tests.cpp"
+    "engine_settings_group_setting_commands_tests.cpp"
     "file_type_commands_tests.cpp"
     "main.cpp"
     "ore_parameter_commands_tests.cpp"

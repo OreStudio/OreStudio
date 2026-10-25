@@ -1144,6 +1144,27 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::concurrency_policies:delete', 'Delete concurrency policies');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::concurrency_policies:read', 'View concurrency policies');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::*', 'Full access to all reporting operations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_sets:read', 'View parameter value sets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_sets:write', 'Create and modify parameter value sets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_sets:delete', 'Delete parameter value sets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_set_values:read', 'View the values a parameter value set offers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_set_values:write', 'Create and modify the values a parameter value set offers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_set_values:delete', 'Delete the values a parameter value set offers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_set_catalogues:read', 'View the catalogues a value set may draw on');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_set_catalogues:write', 'Create and modify the catalogues a value set may draw on');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_value_set_catalogues:delete', 'Delete the catalogues a value set may draw on');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_setting_value_sets:read', 'View the value set each parameter setting names');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_setting_value_sets:write', 'Create and modify the value set each parameter setting names');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::ore_parameter_setting_value_sets:delete', 'Delete the value set each parameter setting names');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings_groups:read', 'View engine settings groups');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings_groups:write', 'Create and modify engine settings groups');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings_groups:delete', 'Delete engine settings groups');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings_group_settings:read', 'View the settings of an engine settings group');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings_group_settings:write', 'Create and modify the settings of an engine settings group');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::engine_settings_group_settings:delete', 'Delete the settings of an engine settings group');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::origin_types:read', 'View origin types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::origin_types:write', 'Create and modify origin types');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::origin_types:delete', 'Delete origin types');
 
     -- =============================================================================
     -- Trading Component Permissions

@@ -90,6 +90,10 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Local review of the docs class: no findings | doc/knowledge/ui, product_backlog/next | Accept | compass check green, misspell-fixer clean; the ten captures carry a short title, a capped description, tags, bucket, Why and References |
+| 2 | The tenor convention is in two topics, so the entities sum to 64 | screen_pipeline_topics.org | Accept | Removed from conventions; it belongs to tenors |
+| 3 | "Seven kinds list ids only" has no source | screen_pipeline_topics.org | Accept | The row names the matrix section |
+| 4 | The captures keep an empty See also bullet | product_backlog/next | Accept | Each links the UX hub |
+| 5 | Open decisions in rows 2 and 10 are carried by the captures | screen_pipeline_topics.org | Accept | No action; the review agrees |
 
 * Result
 

@@ -89,6 +89,12 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Local review of the docs class: no findings | doc/knowledge/ui | Accept | compass check green, misspell-fixer clean; every edit carries its date and names the page it derives from |
+| 2 | Three edited paragraphs were left over the line width | ESS, checklist | Accept | Re-filled |
+| 3 | The paging exception sat between the rule and its list | ESS Paging | Accept | The exception now follows the list |
+| 4 | "A write reloads nothing" read against the reload sentence | RSS Paging | Accept | Reworded as the review proposed |
+| 5 | Confirm the four seconds against the code | RSS Recency | Accept | MARK_MS is 4000 in changedRows.ts and the animation runs three cycles of 900 ms; the page names both |
+| 6 | The checklist's Save line should say what is offered | checklist | Accept | Reworded |
+| 7 | The UX Language note should link the Journey runtime page | UXL | Accept | Linked by id |
 
 * Result
 

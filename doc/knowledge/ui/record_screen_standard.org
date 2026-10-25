@@ -205,9 +205,9 @@ repeats.
   a cap, so it keeps the rule in
   [[id:92F755EA-5FA9-48DF-82F2-FF3E8F2236C7][Lists are always paged]].
 - A new search, a new filter, a new order or a new page size returns to the
-  first page. A write reloads nothing; it turns Refresh gold. The reload that
-  follows a write returns to the first page, because the changed record may
-  have moved.
+  first page. A write reloads nothing and turns Refresh gold. When the person presses
+  Refresh after a write, the list returns to the first page, because the
+  changed record may have moved.
 - The page, page size, search and order are held in the address, so a link and
   the browser's back button restore the list.
 
@@ -227,7 +227,8 @@ repeats.
 When a change notification says a record of this kind changed, the list marks
 Refresh as stale. After a reload, a row that was not on the page before, or
 whose content is not what it was, gets a gold left edge and pulses three times,
-and the mark goes after four seconds. The comparison is with the same page read
+and the mark goes after four seconds (=MARK_MS= in =refdata/changedRows.ts=,
+three cycles of 900 ms in =styles.css=). The comparison is with the same page read
 before and uses no clock, so the first load marks nothing and moving to another
 page marks nothing. There is no control to turn the mark off (decided
 2026-10-25; the rule is the Entity screen specification's Rows and entries that

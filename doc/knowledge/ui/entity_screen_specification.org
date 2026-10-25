@@ -216,8 +216,8 @@ Each aspect that a person can change is one card.
   is drawn only for a person who may change that card.
 - Edit opens a dialog with the current values. The dialog is titled Edit
   followed by the card's title, the entity's shape of the Record screen
-  standard's Amend rule. It asks for the change reason and the commentary. The card itself asks for
-  neither, and shows no reason field beside its values.
+  standard's Amend rule. It asks for the change reason and the commentary. The
+  card itself asks for neither, and shows no reason field beside its values.
 - Save is enabled once the form is complete, and a save with no field change
   is allowed: it writes a version that carries only its reason, which the history
   model keeps (decided 2026-10-25; the rule is the Record screen standard's
@@ -384,12 +384,13 @@ The paging on the screen must match the paging of the data requests.
 - A search is sent when the typing pauses, not on every key.
 - The default page is 15 rows, and the sizes are those of the record standard. No
   screen sets its own.
-- An entity is never read whole. The one exception is the classification list
-  of the Record screen standard's Exceptions, which is short, reordered as a
-  whole and bounded by the Load all rule of 1000 rows (decided 2026-10-25).
-  That includes the lists a screen needs only to draw something else: the permissions of a role, the people who hold a role, the
-  roles a person holds, the people a name is resolved against. Each of them is a
-  page, or a lookup of the few rows the screen draws.
+- An entity is never read whole. That includes the lists a screen needs only
+  to draw something else: the permissions of a role, the people who hold a
+  role, the roles a person holds, the people a name is resolved against. Each
+  of them is a page, or a lookup of the few rows the screen draws. The one
+  exception is the classification list of the Record screen standard's
+  Exceptions, which is short, reordered as a whole and bounded by the Load all
+  rule of 1000 rows (decided 2026-10-25).
 - A count that a screen needs, such as how many people hold a role, is part of
   the answer to the page, not a second read of everything.
 - A thing that is not a list but looks like one to the reader, such as the

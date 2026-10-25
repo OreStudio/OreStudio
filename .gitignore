@@ -20,6 +20,14 @@ build/docker-stage
 # scratch downloads and comparisons from the compute end-to-end runbook
 build/e2e
 
+# Playwright's browser builds, downloaded by the UI tests on first use
+build/playwright
+
+# npm's cache and logs, when they are pointed inside the workspace because the
+# home directory is not writable
+build/npm-cache
+build/npm-logs
+
 # generated systemd/Quadlet units (compass systemd generate/quadlet) --
 # per-environment, absolute-path-baked-in output, not portable across
 # checkouts

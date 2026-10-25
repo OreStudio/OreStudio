@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 5C7E1D92-4A38-4B06-9F51-2D8E6A0B3C74
+:END:
+#+title: A multi-party sign-in keeps the sign-in page in the address
+#+description: Discarded. The client asks which party to work in, and the page snapshot that suggested otherwise was taken after a test navigated away too early.
+#+type: capture
+#+level: cross
+#+filetags: :web:iam:session:sign-in:bug:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+* Why this was discarded
+
+It reported that a multi-party account stays on the sign-in page. That is wrong.
+A Playwright run against the running fleet shows the app does what it should:
+
+  URL after sign in      : http://127.0.0.1:20802/login
+  choose-a-party visible : true
+  headings               : ['Choose a party']
+
+So the client asks which party to work in, as designed, and the address stays on
+=/login= until the choice is made. The earlier snapshot was the sign-in form
+because the test navigated to =/trades= before making the choice, and the app
+sent it back to sign in.
+
+* What is worth keeping from it
+
+=POST /api/session= answers =outcome: active= for an account in one party and
+=outcome: party-required= with =availableParties= for an account in several, and
+the chooser keeps the =/login= address. A UI test must therefore wait for the
+chooser rather than assert on the URL.

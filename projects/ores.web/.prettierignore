@@ -9,3 +9,8 @@ package-lock.json
 # story — the clean-refdata branch renders 499 files across the component, C++
 # included. The exclusion goes when that lands.
 packages/wire-protocol/src/generated/refdata/protocol/
+
+# Playwright writes its run output here, and the UI tests are a development
+# instrument rather than a source file.
+tools/ui-tests/test-results/
+tools/ui-tests/playwright-report/

@@ -251,3 +251,63 @@ def test_fresh_refuses_to_delete_outside_the_persona_directory(tmp_path, monkeyp
 def test_a_workspace_below_one_is_refused():
     with pytest.raises(SystemExit):
         open_as.run(["name", "adrian", "--workspace", "0"], ROOT)
+
+
+class RecordingTools:
+    """A DevTools client that records what was asked of it."""
+
+    def __init__(self, pages, calls):
+        self.pages = pages
+        self.calls = calls
+
+    def __call__(self, ws_url):
+        return self
+
+    def call(self, method, params=None):
+        self.calls.append((method, params))
+        if method == "Page.navigate":
+            for page in self.pages:
+                page["url"] = params["url"]
+        return {}
+
+    def evaluate(self, expression):
+        return True
+
+    def close(self):
+        pass
+
+
+def test_a_session_without_the_app_page_is_navigated_to_it(tmp_path, monkeypatch):
+    """Chrome restores chrome://newtab, so no page is on the app's origin."""
+    pages = [{"url": "about:blank", "webSocketDebuggerUrl": "ws://page"}]
+    calls = []
+    monkeypatch.setattr(open_as, "devtools_pages", lambda _: pages)
+    monkeypatch.setattr(open_as, "browser_gone", lambda *_: False)
+    monkeypatch.setattr(open_as, "DevTools", RecordingTools(pages, calls))
+
+    socket_url = open_as.app_page(tmp_path, "http://localhost:20802/", timeout=5)
+
+    assert socket_url == "ws://page"
+    assert ("Page.navigate", {"url": "http://localhost:20802/"}) in calls
+    assert calls[-1] == ("Page.bringToFront", None)
+
+
+def test_a_page_already_on_the_app_is_raised_and_not_navigated(tmp_path, monkeypatch):
+    pages = [{"url": "http://localhost:20802/login",
+              "webSocketDebuggerUrl": "ws://page"}]
+    calls = []
+    monkeypatch.setattr(open_as, "devtools_pages", lambda _: pages)
+    monkeypatch.setattr(open_as, "browser_gone", lambda *_: False)
+    monkeypatch.setattr(open_as, "DevTools", RecordingTools(pages, calls))
+
+    socket_url = open_as.app_page(tmp_path, "http://localhost:20802/", timeout=5)
+
+    assert socket_url == "ws://page"
+    assert calls == [("Page.bringToFront", None)]
+
+
+def test_a_session_with_no_page_at_all_is_given_up_on(tmp_path, monkeypatch):
+    monkeypatch.setattr(open_as, "devtools_pages", lambda _: [])
+    monkeypatch.setattr(open_as, "browser_gone", lambda *_: False)
+
+    assert open_as.app_page(tmp_path, "http://localhost:20802/", timeout=1) is None

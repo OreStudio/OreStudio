@@ -26,16 +26,16 @@ import { AreaTrail } from '../../shell/AreaTrail.js';
 import { PageHeader } from '../../ui/Primitives.js';
 import { useTabs } from '../../ui/Tabs.js';
 import { DashboardTab } from './DashboardTab.js';
-import { FeedTreeTab } from './FeedTreeTab.js';
+import { ProviderTab } from './ProviderTab.js';
 
-const TABS = ['dashboard', 'tree'] as const;
+const TABS = ['dashboard', 'provider'] as const;
 
 /**
  * Synthetic: the feeds the platform generates rather than receives, on one screen
- * with two tabs. The dashboard says what runs by provider; the feed tree lists
- * every feed and starts and stops a selection of them. Both read through the
- * synthetic store, so the providers and the folders come from the synthetic
- * service.
+ * with two tabs. The dashboard says what runs by provider; the Provider screen
+ * lists one provider's feeds, grouped by a property of the feed, and starts and
+ * stops the provider's feeds. Both read through the synthetic store, so the
+ * providers and the collections come from the synthetic service.
  */
 export function SyntheticScreen(): ReactNode {
     const { t } = useTranslation();
@@ -55,7 +55,7 @@ export function SyntheticScreen(): ReactNode {
                     />
                 </div>
                 {bar}
-                {tab === 'tree' ? <FeedTreeTab /> : <DashboardTab />}
+                {tab === 'provider' ? <ProviderTab /> : <DashboardTab />}
             </div>
         </RecordStoreProvider>
     );

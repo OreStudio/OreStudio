@@ -176,12 +176,12 @@ describe('the market data area', () => {
         expect(html).toContain('href="/market-data/synthetic"');
     });
 
-    it('draws the Synthetic screen with its dashboard and its feed tree', () => {
+    it('draws the Synthetic screen with its dashboard and its provider screen', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(html).toContain('>Dashboard<');
-        expect(html).toContain('>Feeds<');
+        expect(html).toContain('>Provider<');
         expect(html).not.toContain('IR curve feeds');
     });
 

@@ -22,13 +22,11 @@
 import { describe, expect, it } from 'vitest';
 import type { AdapterStatus } from '../../api/client.js';
 import {
-    demandedNotRunning,
-    demandedNotRunningAll,
-    servedTotals,
+    demandedNotServed,
+    demandedNotServedAll,
     servesFeeds,
     sourcesOf,
 } from './adapterStatus.js';
-import type { Totals } from './totals.js';
 
 function adapter(provider: string, state: string, demanded: number): AdapterStatus {
     return {
@@ -47,8 +45,6 @@ function adapter(provider: string, state: string, demanded: number): AdapterStat
         rejected: [],
     };
 }
-
-const FEEDS: Totals = { fx: 13, ir: 4, running: 0 };
 
 describe('the state of a provider source', () => {
     it('serves its feeds when it is serving and was demanded at least one id', () => {
@@ -71,21 +67,20 @@ describe('the state of a provider source', () => {
 
     it('counts the ids a provider was demanded and does not get served', () => {
         const sources = sourcesOf([adapter('b', 'ready', 17), adapter('o', 'serving', 4)]);
-        expect(demandedNotRunning(sources.get('b'))).toBe(17);
-        expect(demandedNotRunning(sources.get('o'))).toBe(0);
-        expect(demandedNotRunningAll(sources)).toBe(17);
+        expect(demandedNotServed(sources.get('b'))).toBe(17);
+        expect(demandedNotServed(sources.get('o'))).toBe(0);
+        expect(demandedNotServedAll(sources)).toBe(17);
     });
 
-    it('reads a provider with two sources as serving while one serves, and counts the demand none serves', () => {
+    it('reads a provider with two sources as serving while one serves, and serves all its demand', () => {
         const sources = sourcesOf([adapter('b', 'serving', 2), adapter('b', 'ready', 3)]);
-        expect(sources.get('b')).toEqual({ serving: true, demanded: 5, notRunning: 3 });
-        expect(demandedNotRunningAll(sources)).toBe(3);
+        expect(sources.get('b')).toEqual({ serving: true, demanded: 5, ticksPerMinute: 120 });
+        expect(demandedNotServed(sources.get('b'))).toBe(0);
+        expect(demandedNotServedAll(sources)).toBe(0);
     });
 
-    it('runs every feed a node holds while its source serves, and none while it does not', () => {
-        const served = sourcesOf([adapter('b', 'serving', 17), adapter('o', 'stale', 17)]);
-        expect(servedTotals(FEEDS, served.get('b'))).toEqual({ fx: 13, ir: 4, running: 17 });
-        expect(servedTotals(FEEDS, served.get('o'))).toEqual({ ...FEEDS, running: 0 });
-        expect(servedTotals(FEEDS, undefined)).toEqual({ ...FEEDS, running: 0 });
+    it('adds the ticks the sources of a provider published in the last minute', () => {
+        const sources = sourcesOf([adapter('b', 'serving', 1), adapter('b', 'serving', 2)]);
+        expect(sources.get('b')?.ticksPerMinute).toBe(120);
     });
 });

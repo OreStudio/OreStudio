@@ -39,13 +39,13 @@ describe('the screens of Synthetic', () => {
         const text = source('SyntheticScreen.tsx');
         expect(text).toContain('<RecordStoreProvider store={syntheticStore}>');
         expect(text).toContain('<DashboardTab />');
-        expect(text).toContain('<FeedTreeTab />');
+        expect(text).toContain('<ProviderTab />');
     });
 
-    for (const name of ['DashboardTab.tsx', 'FeedTreeTab.tsx']) {
+    for (const name of ['DashboardTab.tsx', 'ProviderTab.tsx']) {
         it(`${name} reads records and leaves the store to the screen that holds it`, () => {
             const text = source(name);
-            expect(text).toMatch(/useRecords\(/);
+            expect(text).toMatch(/useRecords\(|useProviderFacts\(/);
             expect(text).not.toContain('RecordStoreProvider');
         });
     }

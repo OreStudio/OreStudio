@@ -21,7 +21,6 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { api, type AdapterStatus } from '../../api/client.js';
-import { totalOf, type Totals } from './totals.js';
 
 /** The key of every read of the market data service's adapters, so one refresh renews them all. */
 export const ADAPTERS_KEY = ['marketdata-adapters'] as const;
@@ -46,18 +45,13 @@ export interface Source {
     readonly serving: boolean;
     /** How many ids the service demanded of the provider's sources. */
     readonly demanded: number;
-    /** How many of those ids were demanded of a source that does not serve them. */
-    readonly notRunning: number;
+    /** How many ticks the provider's sources published in the last minute. */
+    readonly ticksPerMinute: number;
 }
 
 /** Only an adapter that is serving publishes what it was asked for. */
 export function isServing(adapter: AdapterStatus): boolean {
     return adapter.state === 'serving';
-}
-
-/** Whether one adapter serves the demand it was given. */
-function adapterServes(adapter: AdapterStatus): boolean {
-    return isServing(adapter) && adapter.demanded_count > 0;
 }
 
 /** The sources, by the provider each one serves. */
@@ -66,40 +60,37 @@ export function sourcesOf(adapters: readonly AdapterStatus[]): ReadonlyMap<strin
     for (const adapter of adapters) {
         const held = sources.get(adapter.provider_code);
         sources.set(adapter.provider_code, {
-            serving: (held?.serving ?? false) || adapterServes(adapter),
+            serving: (held?.serving ?? false) || isServing(adapter),
             demanded: (held?.demanded ?? 0) + adapter.demanded_count,
-            notRunning:
-                (held?.notRunning ?? 0) + (adapterServes(adapter) ? 0 : adapter.demanded_count),
+            ticksPerMinute: (held?.ticksPerMinute ?? 0) + adapter.ticks_last_minute,
         });
     }
     return sources;
 }
 
 /**
- * Whether the feeds of a provider are served: a source of it publishes what it
- * was asked for. A provider with several sources reads as serving while any of
- * them serves; the demand none of them serves shows in its count.
+ * The one rule of the screen: a feed serves when its provider's source serves
+ * and the service demands at least one id of it. A provider with several sources
+ * reads as serving while any of them serves.
  */
 export function servesFeeds(source: Source | undefined): boolean {
     return source !== undefined && source.serving && source.demanded > 0;
 }
 
-/** How many ids the service demanded of a provider and does not get served. */
-export function demandedNotRunning(source: Source | undefined): number {
-    return source?.notRunning ?? 0;
+/**
+ * The ids the service demanded of a provider and does not get served: all of
+ * them while the provider does not serve, and none while it does.
+ */
+export function demandedNotServed(source: Source | undefined): number {
+    if (source === undefined || servesFeeds(source)) {
+        return 0;
+    }
+    return source.demanded;
 }
 
 /** The ids the service demanded of every provider and does not get served. */
-export function demandedNotRunningAll(sources: ReadonlyMap<string, Source>): number {
-    return [...sources.values()].reduce((count, source) => count + demandedNotRunning(source), 0);
-}
-
-/**
- * What runs under a node once its source has the last word: every feed it holds
- * runs while its provider's source serves, and none runs while it does not.
- */
-export function servedTotals(totals: Totals, source: Source | undefined): Totals {
-    return { ...totals, running: servesFeeds(source) ? totalOf(totals) : 0 };
+export function demandedNotServedAll(sources: ReadonlyMap<string, Source>): number {
+    return [...sources.values()].reduce((count, source) => count + demandedNotServed(source), 0);
 }
 
 /** The sources of every adapter the service tracks, or undefined until it answers. */

@@ -8,7 +8,7 @@
 #+filetags: :draw_every_ore_leaf_the_same_way:sprint_29:v0:
 #+owner: marco
 #+branch: feature/draw-every-ore-leaf-the-same-way
-#+pr:
+#+pr: 3814
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3814][#3814]] | [doc] Write the ORE element and leaf screen standard and its spec |
 
 * Review
 

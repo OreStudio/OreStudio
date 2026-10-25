@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -83,3 +83,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered. Two reporting entities hold the groups and their settings, generated from their models and wired into the reporting service. A curation file carries what the constant held, row for row, and a generator writes the idempotent populate script with a --check mode. The BFF deletes GROUPS and reads both tables in stored order; the NATS subjects and row keys stay in a transport map keyed by group code. A group the data holds but the transport does not name is not offered, by design.
+
+Verified. BFF engine 40 tests and web engine settings 55 tests pass, the build links, and the recreated environment holds 3 groups and 15 settings matching the constant, with the record page showing 6, 6 and 3 settings. Playwright proved the data drives the page: changing a row changed the API response with no code change, then the change was reverted.
+
+The review added: the six handler permission codes of the new entities and the twelve of the value set handlers seeded, the generated shell scripts and recipe inventory committed, the reporting service component list regenerated, the value set trigger created or replaced, the diagrams regenerated, and a pricing fixture corrected to the type's words. The remaining local-check failures are the pre-existing ones: the synthetic component list, the synthetic protocol twin, and the strict ER parse warnings for tables that lack row level security, two of which are these new tables and the rest predate them.

@@ -1859,6 +1859,7 @@ export const en: SourceCatalogue = {
                     'The run of a report that dispatched a batch: its state, its times and the batch it made.',
                 loading: 'Reading the report run...',
                 run: 'Run',
+                errors: 'Errors',
                 name: 'Name',
                 kind: 'Kind',
                 state: 'State',

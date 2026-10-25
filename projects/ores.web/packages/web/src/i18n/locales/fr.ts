@@ -1880,6 +1880,7 @@ const fr: SourceCatalogue = {
                     'L’exécution d’un rapport qui a envoyé un lot : son état, ses heures et le lot qu’elle a créé.',
                 loading: 'Lecture de l’exécution de rapport...',
                 run: 'Exécution',
+                errors: 'Erreurs',
                 name: 'Nom',
                 kind: 'Type',
                 state: 'État',

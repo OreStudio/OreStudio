@@ -220,6 +220,18 @@ subject_id =28e6d1c3-…=. One row remains the report-level sentence about the j
 engine names the trade id, not the version it read. Filling them means the
 gather recording the trade versions it exported, which is the next piece.
 
+*The screen in the app, 2026-10-25.* Two tabs on the report run page. =Run=
+states the run, then a line naming what is missing, the date the run priced at,
+and a link into the errors. =Errors= carries the filters and the two views:
+=Grouped= one card per curve that failed, with its trades as versioned links,
+and =Split= the distinct reasons as rows with the selected one in a pane.
+
+A browser check walks it: =node tmp/validate_errors.cjs= signs in, reads the run,
+follows the link, and asserts the heading, the cards, the row count and the trade
+links, writing =tmp/run_tab.png=, =tmp/grouped.png= and =tmp/split.png=.
+Against instance =47e0dd4c= it reports four curves, thirty-three recorded
+errors, seventeen distinct reasons, and the GBP card holding eight trades.
+
 * Test Scenarios
 
 | Scenario | State | Notes |

@@ -129,6 +129,31 @@ Both were found by a provisioning run and neither by a compile.
   benchmark *rate* names instead. It now loads the floating index types and the
   planner prefers the indices of the book's own currency.
 
+** A rate trade without a fact row does not export
+
+The plan said the specialised fact arrays could stay empty until a pricing need
+justified them. That was wrong, and an exporter test caught it.
+
+The store rebuilds a rates instrument from a header *and* one fact row per
+product: =rebuild_instrument= looks for the header in =rate_instruments= and
+then for a leaf in =fra_instruments=, =vanilla_swap_instruments=, or one of the
+seven others. A trade that states a header and legs and no leaf rebuilds
+nothing, and the exporter writes it as its trade type alone — no =SwapData=, no
+legs, no index. The trade books, queries and reports, and the engine would have
+nothing to price.
+
+Two exporter cases now hold both sides of that. One states a header and legs
+and asserts the document carries no instrument; the other adds the fact row and
+asserts the legs and the index come out. The writer states the fact row its
+trade type needs, and a query over a live population counts twelve fact rows for
+twelve rate trades.
+
+** The inflation swap leaves this family
+
+Its fact row states an inflation index code, and this generator has no
+vocabulary for one. Booking it here would have meant inventing a code the store
+does not hold. The inflation task owns it, and this family books the other nine.
+
 ** The class share is not yet the weight
 
 The measured share is 27%, against a weight of 42%. That is expected and not a

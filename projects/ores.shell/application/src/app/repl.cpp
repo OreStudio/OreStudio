@@ -75,6 +75,8 @@
 #include "ores.shell/app/commands/reporting/engine_settings_commands.hpp"
 #include "ores.shell/app/commands/reporting/engine_settings_execution_commands.hpp"
 #include "ores.shell/app/commands/reporting/engine_settings_fixings_commands.hpp"
+#include "ores.shell/app/commands/reporting/engine_settings_group_commands.hpp"
+#include "ores.shell/app/commands/reporting/engine_settings_group_setting_commands.hpp"
 #include "ores.shell/app/commands/reporting/file_type_commands.hpp"
 #include "ores.shell/app/commands/reporting/ore_parameter_commands.hpp"
 #include "ores.shell/app/commands/reporting/ore_parameter_value_domain_commands.hpp"
@@ -177,6 +179,8 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     engine_settings_execution_commands::register_commands(*root, session_);
     engine_settings_building_commands::register_commands(*root, session_);
     engine_settings_commands::register_commands(*root, session_);
+    engine_settings_group_commands::register_commands(*root, session_);
+    engine_settings_group_setting_commands::register_commands(*root, session_);
     configuration_type_commands::register_commands(*root, session_);
     configuration_parameter_commands::register_commands(*root, session_);
     configuration_commands::register_commands(*root, session_);

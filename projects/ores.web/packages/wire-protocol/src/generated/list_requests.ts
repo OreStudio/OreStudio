@@ -3593,6 +3593,26 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'reporting.v1.engine_settings_group_settings.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['settings'],
+    },
+    'reporting.v1.engine_settings_group_settings_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'reporting.v1.engine_settings_groups.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['groups'],
+    },
+    'reporting.v1.engine_settings_groups_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'reporting.v1.engine_settings_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],

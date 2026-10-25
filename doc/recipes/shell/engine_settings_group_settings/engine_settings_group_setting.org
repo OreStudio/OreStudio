@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: E30BEB88-9B40-5FD2-9F07-E36E082B2518
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the engine_settings_group_settings commands from the shell?
+#+description: Every command the engine_settings_group_settings submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:engine_settings_group_settings:
+
+This file documents the engine_settings_group_settings resource at the shell, one section per command. Every command is a subcommand of =engine_settings_group_settings=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1A2D7767-294B-5B07-9DC0-E6B0E746C899
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_group_settings list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_group_settings.list=.
+
+#+name: engine_settings_group_settings-list
+#+begin_src ores-shell :tangle engine_settings_group_settings-list.ores :exports none
+engine_settings_group_settings list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 34D8C5D0-FE36-5E66-82E9-E7D6436E5B0B
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_group_settings get <code>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_group_settings.get=.
+
+#+name: engine_settings_group_settings-get
+#+begin_src ores-shell :tangle engine_settings_group_settings-get.ores :exports none
+engine_settings_group_settings get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: BD525099-FE98-5E99-822A-FC1F89D152D5
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_group_settings get-many <code>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_group_settings.get_many=.
+
+#+name: engine_settings_group_settings-get-many
+#+begin_src ores-shell :tangle engine_settings_group_settings-get-many.ores :exports none
+engine_settings_group_settings get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 2F5B1DA4-BC6B-5067-8A32-E07D8A5062E4
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_group_settings add <code> <group_code> <column_name> <ore_name> <kind> <changes_numbers> <options> <minimum> <maximum> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_group_settings.put=.
+
+#+name: engine_settings_group_settings-add
+#+begin_src ores-shell :tangle engine_settings_group_settings-add.ores :exports none
+engine_settings_group_settings add __none__ __none__ __none__ __none__ __none__ false __none__ - - 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: BCB08FC6-1FA8-513F-BA88-BDB6ECE4423A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_group_settings set <code> <group_code> <column_name> <ore_name> <kind> <changes_numbers> <options> <minimum> <maximum> <position> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_group_settings.put=.
+
+#+name: engine_settings_group_settings-set
+#+begin_src ores-shell :tangle engine_settings_group_settings-set.ores :exports none
+engine_settings_group_settings set __none__ __none__ __none__ __none__ __none__ false __none__ - - 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 287501E7-16D8-5AF4-A2F8-263AB80280F1
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_group_settings put-many --count <n> <code> <group_code> <column_name> <ore_name> <kind> <changes_numbers> <options> <minimum> <maximum> <position> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_group_settings.put_many=.
+
+#+name: engine_settings_group_settings-put-many
+#+begin_src ores-shell :tangle engine_settings_group_settings-put-many.ores :exports none
+engine_settings_group_settings put-many --count 1 __none__ __none__ __none__ __none__ __none__ false __none__ - - 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 17681CA8-CDAE-5138-9FBB-EC3641C32BD2
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_group_settings delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_group_settings.delete=.
+
+#+name: engine_settings_group_settings-delete
+#+begin_src ores-shell :tangle engine_settings_group_settings-delete.ores :exports none
+engine_settings_group_settings delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: F13852F3-1413-5E0B-B35C-429FFE3A6B85
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_group_settings delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_group_settings.delete_many=.
+
+#+name: engine_settings_group_settings-delete-many
+#+begin_src ores-shell :tangle engine_settings_group_settings-delete-many.ores :exports none
+engine_settings_group_settings delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 04C28DE2-00A7-5079-AD3E-2A414AE10385
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_group_settings versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_group_settings_versions.list=.
+
+#+name: engine_settings_group_settings-versions
+#+begin_src ores-shell :tangle engine_settings_group_settings-versions.ores :exports none
+engine_settings_group_settings versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 9A6AD7BF-3C36-522E-AB8C-5E23613463C8
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+engine_settings_group_settings version <code> --version <n>
+#+end_example
+
+It is addressed at =reporting.v1.engine_settings_group_settings_versions.get=.
+
+#+name: engine_settings_group_settings-version
+#+begin_src ores-shell :tangle engine_settings_group_settings-version.ores :exports none
+engine_settings_group_settings version __none__ --version 1
+#+end_src
+

@@ -47,7 +47,7 @@ This page is the top of the tree and the only inventory.
 | [[file:books/][Books and portfolios]] | The book structure: portfolios that hold books, the classification a book carries, and the rights that decide who may see it | 1 |
 | [[file:conventions/][Conventions]] | The market terms an instrument is built on, the reference data lists each convention picks from, and how conventions are found, grouped into sets, retired and approved | 6 |
 | [[file:tenors/][Tenors]] | Tenor codes and the resolution the system computes from them | 1 |
-| [[file:market_data/][Market data]] | Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time | 23 |
+| [[file:market_data/][Market data]] | Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time | 22 |
 | [[file:trades/][Trades]] | What a person does with a trade: structure-based booking and pricing, amending, reading, ORE import and export, lifecycle events, and structures and packages | 5 |
 | [[file:reporting/][Reporting]] | The reports a party runs, what each produced, what went wrong, when the next one starts, and how a report is created and changed, how the analytics it runs are managed, and which named convention set it chooses, and how the pricing engine configurations and the engine run settings it binds are seen, authored, changed, brought in and signed off | 17 |
 | [[file:testing/][Testing]] | Working through a test scenario in the browser, what waits for a tester, and the agile tree | 2 |

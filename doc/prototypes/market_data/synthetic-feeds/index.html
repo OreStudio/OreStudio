@@ -201,6 +201,7 @@ function feedScreen(){
       '<span class="muted">' + f.underlying + ' · ' + f.engine + '</span><span style="margin-left:auto"></span>' +
       '<button class="btn" ' + (s ? 'disabled' : '') + '>Start (test)</button><button class="btn" ' + (s ? '' : 'disabled') + '>Stop (test)</button><button class="btn">Edit</button></div>' +
     '<div class="tabs">' + tabs.map(x => '<button class="tab ' + (x === tab ? 'on' : '') + '" data-tab="' + x + '">' + labels[x] + '</button>').join('') + '</div>' +
+    '<div class="alert"><span>Stand-in. The product keeps the existing detailed feed screen, its tabs and its process editor. This page is here only to show where a feed opens.</span></div>' +
     body;
 }
 

@@ -67,5 +67,14 @@ provisioned tenant.
 
 * Verdict
 
-Awaiting sign-off. The dashboard totals and the Provider tab are the design
-questions. The feed page and the process tab are carried over unchanged.
+Signed off on 2026-10-25 for the dashboard totals, the Provider screen with its
+grouping, the sources board and subscriptions.
+
+The feed page is excluded from this prototype. The product keeps the existing
+detailed feed screen: the record page and its tabs, the Price behaviour and
+Process tabs with their parameter list, previews, unsaved marks and dialogs, as
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and
+[[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][the feed screen standard]] draw it,
+and as the [[file:author-an-fx-price-feed.org][FX]] and
+[[file:author-an-ir-curve-feed.org][IR]] authoring prototypes show it. The feed
+screen in this prototype is a stand-in and not the design to build.

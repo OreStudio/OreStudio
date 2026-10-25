@@ -8,7 +8,7 @@
 #+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 3810
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3810][#3810]] | [reporting] Store a run's errors once, and keep the rows the vocabulary names |
 
 * Review
 

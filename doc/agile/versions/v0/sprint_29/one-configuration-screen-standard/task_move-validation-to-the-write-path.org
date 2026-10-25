@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-validation-to-the-write-path
-#+pr:
+#+pr: 3836
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -97,7 +97,7 @@ says the same problem whichever side found it.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3836][#3836]] | [analytics] Validate a pricing engines document before it is written |
 
 * Review
 

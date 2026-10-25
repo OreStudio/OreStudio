@@ -2,7 +2,7 @@
 :ID: F8CA3B52-F299-4A92-84A0-CF4F9A2694F0
 :END:
 #+title: Task: Move the convention kind metadata into data
-#+description: Move the asset class and the holder of each convention kind out of conventionKinds.ts, and the term labels out of the codegen models, into data the screen reads, so the screen restates nothing about a kind.
+#+description: Move the asset class and the holder of each convention kind out of conventionKinds.ts, and the term labels out of the codegen models, into data the screen reads, so the screen restates nothing about a kind; and map each refdata convention column to the term it holds, so the write path can check a value against the term's set.
 #+type: task
 #+level: s1
 #+filetags: :draw_every_ore_leaf_the_same_way:sprint_29:v0:

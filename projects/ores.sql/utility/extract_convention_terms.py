@@ -44,6 +44,7 @@ import subprocess
 
 DEFAULT_ORE = os.environ.get("ORES_ORE_ENGINE", "/home/marco/Vault/Development/ORE/Engine")
 SOURCE = "OREData/ored/configuration/conventions.cpp"
+PARSERS = "OREData/ored/utilities/parsers.cpp"
 GUIDE = "Docs/UserGuide/parameterisation/conventions.tex"
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "convention_terms.json")
 
@@ -79,7 +80,40 @@ TYPE_OF = {
     "parseCompounding": "compounding",
     "parseSubPeriodsCouponType": "enumerated",
     "parseRateCutoff": "integer",
+    "parseAndValidateFrequency": "frequency",
 }
+
+
+PARSER_DEF = re.compile(r"^[\w:<>]+ (parse\w+)\(const (?:std::)?string& \w+\)")
+MAP_KEY = re.compile(r'\{\s*"([^"]+)"\s*,\s*([\w:]+)')
+COMPARED = re.compile(r'\(\s*\w+\s*==\s*"([^"]+)"\s*\)\s*\{?\s*return\s+([\w:]+)')
+
+
+def parser_values(text, relative):
+    """The strings each parser accepts, in its own order, with its line.
+
+    A parser states them in one of two ways: a static map at its head, or a chain of
+    comparisons, each returning an enumerator. The whole body is read, to its closing
+    brace, so neither form depends on how long it is. Each string is recorded with the
+    value it means, the last part of that enumerator, so "A" means Annual and a person
+    reads the word, not the code. A parser that states neither, such as one that reads
+    a number, has no entry.
+    """
+    out = {}
+    lines = text.split("\n")
+    for index, line in enumerate(lines):
+        match = PARSER_DEF.match(line)
+        if not match or line.rstrip().endswith("}"):
+            continue
+        end = index + 1
+        while end < len(lines) and not lines[end].startswith("}"):
+            end += 1
+        body = "\n".join(lines[index + 1:end])
+        found = [{"value": value, "means": target.rsplit("::", 1)[-1]}
+                 for value, target in MAP_KEY.findall(body) + COMPARED.findall(body)]
+        if found:
+            out[match.group(1)] = {"values": found, "source_ref": f"{relative}:{index + 1}"}
+    return out
 
 
 def git_head(root):
@@ -249,7 +283,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--ore", default=DEFAULT_ORE, help="an ORE checkout")
     args = parser.parse_args()
-    for needed in (SOURCE, GUIDE):
+    for needed in (SOURCE, GUIDE, PARSERS):
         if not os.path.exists(os.path.join(args.ore, needed)):
             parser.error(f"{os.path.join(args.ore, needed)} does not exist; pass --ore or set "
                          "ORES_ORE_ENGINE to an ORE checkout")
@@ -284,7 +318,13 @@ def main():
             term["guide_optional"] = words.get("optional")
             term["guide_ref"] = words.get("guide_ref", "")
         conventions[c["element"]] = {"class": cls, "source_ref": c["source_ref"], "terms": terms}
+    maps = {}
+    for relative in (SOURCE, PARSERS):
+        with open(os.path.join(args.ore, relative)) as f:
+            maps.update(parser_values(f.read(), relative))
+    used = {t["parser"] for c in conventions.values() for t in c["terms"] if t["parser"]}
     result = {"ore_commit": git_head(args.ore), "source": SOURCE, "guide": GUIDE,
+              "parsers": {name: maps[name] for name in sorted(used) if name in maps},
               "conventions": conventions}
     with open(OUT, "w") as f:
         json.dump(result, f, indent=2, sort_keys=True)

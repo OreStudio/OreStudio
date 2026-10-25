@@ -2,62 +2,68 @@
 :ID: 47D039AC-300C-4FE9-86EA-7FB473F07692
 :END:
 #+title: Task: Give the convention terms their value sets
-#+description: Link every convention term to a value set: a calendar, a currency, a business day convention, a day counter, a frequency or an index draws on a catalogue of refdata, and the other terms on their type or the values the ORE parser maps, so the screen draws the control from it and the write path refuses a value outside it.
+#+description: Link every documented convention term to a value set: a business day convention, a day counter or a currency draws on a refdata catalogue, a value an ORE parser maps takes that parser's list, and the rest their type, so a screen draws the control from it.
 #+type: task
 #+level: s1
 #+filetags: :draw_every_ore_leaf_the_same_way:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-the-convention-terms-their-value-sets
+#+pr: 3830
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Give every convention term the contract documents a value set, so a convention screen draws the control from data, as product pricing does. The set follows from the type the ORE parser gives the term, and a catalogue is used only where it holds the values the seeded conventions use.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
 
--
+- Every convention term the contract documents is linked to one value set, and no term takes two.
+- A business day convention, a day counter and a currency draw on the refdata catalogue of their kind; a value an ORE parser maps takes that parser's list, each string with the word it means; a flag, a whole number, a number and a period take their type's set.
+- A catalogue is used only where the seeded conventions' values are in it, measured, and every exception is recorded.
+- No pricing set, value or link changes, and a gate fails when the committed script differs from its sources.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Read each parser's own map from =parsers.cpp=: the strings it accepts and the enumerator each one means.
+2. Measure, across every convention table, how many distinct values of each kind a catalogue would refuse, before choosing a catalogue.
+3. Write the convention sets and links in their own module, and merge them after the pricing links are resolved, so the name fallback in =resolve= never reaches them and pricing stays as it is.
+4. Gate the populate script with =--check=.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Distinct convention values a catalogue refuses | business day convention 0 of 5; day counter 0 of 6; currency 2 of 18 (MXV, CLF); calendar 226 of 254 | a query over every =*_conventions_tbl= column named for the kind, against the four catalogue views, on a database recreated from this branch | 4b186d9b51 |
+| Convention terms linked | 238, to 19 sets | =convention_value_sets.data()= | 3e780825b0 |
+| Sets added; their values; catalogues registered | 16; 79; 3 | the same | 3e780825b0 |
+| Value set rows before and after; rows lost | 520, 856; 0 | the populate script on =origin/main= against this branch, row by row | 3e780825b0 |
 
 * Notes
+
+- *A calendar is text.* ORE reads a joint calendar such as =US,MWK= and a currency code such as =JPY= as a calendar, and the refdata calendar catalogue holds 28 of the 254 calendar values the seeded conventions use. A catalogue would mark good conventions as invalid. A calendar set needs ORE's calendar grammar, not a list.
+- *Two currency fund codes are missing from refdata.* =MXV= and =CLF= are ISO 4217 codes that conventions use and the currency catalogue lacks, so a screen marks those values until refdata holds them.
+- *The pricing type extractor misses these parsers.* =extract_parameter_types.py= looks for =const std::string&=, and =parsers.cpp= writes =const string&=, so it reads no map of =parseFrequency=, =parseCompounding= or the rest. The convention extractor reads both. The pricing extractor is unchanged, because a fix would change the pricing sets.
+- *No write is checked yet.* The value check guards only the pricing parameters. Refusing a bad value in a convention needs the map from a refdata column to its term, which is [[id:F8CA3B52-F299-4A92-84A0-CF4F9A2694F0][Move the convention kind metadata into data]].
+- *An index is text.* No catalogue holds ORE's index names.
+- *A fixed window cut a parser short.* The first map reader scanned 60 lines past a parser's head and read 59 of the 72 day counters =parseDayCounter= accepts. It now reads the body to its closing brace, and the chained comparison form, so =parseAveragingDataPeriod=, =parseInflationSwapPublicationRoll= and =parseSubPeriodsCouponType= have lists too. The pricing type extractor still scans a fixed window.
 
 * Test Scenarios
 
@@ -74,12 +80,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3830][#3830]] | [sql] Give the convention terms their value sets |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The clash check's exclusion is dead | generate_value_sets.py | Accept | The exclusion is gone, and a convention link that names a set no one holds is a problem; validate also refuses a link to an unknown set. |
+| 2 | A parser with no map falls back to text silently | convention_value_sets.py | Accept | Only a calendar, an index or text may take text with no list; any other parser with none stops the generator and names the term and its source line. |
+| 3 | The map scan depends on ORE's formatting | extract_convention_terms.py | Accept | The reader takes the parser's body to its closing brace, not a fixed window, and reads the comparison chain form as well; a list of fewer than two values stops the generator. The old window had cut parseDayCounter from 72 values to 59. |
+| 4 | A conflicting duplicate wins by first place | convention_value_sets.py | Accept | A string the parser maps to two meanings stops the generator. |
+| 5 | Does rows_of take the registry as a dict | generate_value_sets.py | No change | rows_of converts a list and reads a dict; the script renders five catalogues, two of pricing and three of conventions. |
+| 6 | The docstring and the catalogue descriptions read oddly | convention_value_sets.py | Accept | Reworded, naming MXV and CLF. |
+| 7 | Confirm the failing checks on main | none | Accept | No file they read changes in this branch; the same four failed on the previous PR's branch. Shown from the content, not by a run on a main checkout. |
 
 * Result
+
+Every convention term the contract documents now has a value set. 238 terms are linked to 19 sets, and the populate script grew from 520 to 856 rows with no pricing row changed.
+
+- =convention_value_sets.py= chooses each set from the type the ORE parser gives the term: a business day convention, a day counter and a currency draw on refdata catalogues, which the conventions' values were measured against; a frequency, a compounding rule, a date generation rule, a month, a weekday and the option enums take the parser's own map, each string labelled with the word it means; a flag, a whole number, a number and a period take their type's set; a calendar, an index and any other term are text.
+- The extractor now reads each parser's map and the enumerator each string means; the generator merges the convention sets after the pricing links are resolved, and refuses a code or a link that pricing holds.
+- The new =ore-parameter-value-sets= gate fails when the committed script differs from its sources.
+
+The calendar stays text because the refdata calendar catalogue holds 28 of the 254 calendar values the seeded conventions use. Two currency fund codes, MXV and CLF, are missing from refdata. No write is checked yet: that needs the column-to-term map of the next task.
+
+The local gate passes both generator checks, the database recreate and the ticks smoke test. Four checks fail on what this change does not touch, as on the previous PR: =er-diagram=, on warnings of the strict validator; the build, where =messaging_trade_origin_handler_tests.cpp= calls a =trade_operations_handler= constructor that no longer exists; =ctest=, on that trading suite and on =ores.analytics.core.tests= and its value set refusal; and pgTAP, on the XPath test's 108 pricing code settings and the trading anchor tests.

@@ -1251,7 +1251,7 @@
           ],
           "read": "getChildValue",
           "source_ref": "OREData/ored/configuration/conventions.cpp:2066",
-          "type": "text"
+          "type": "frequency"
         },
         {
           "conditional": false,
@@ -1268,7 +1268,7 @@
           ],
           "read": "getChildValue",
           "source_ref": "OREData/ored/configuration/conventions.cpp:2067",
-          "type": "text"
+          "type": "frequency"
         },
         {
           "conditional": true,
@@ -5240,5 +5240,870 @@
   },
   "guide": "Docs/UserGuide/parameterisation/conventions.tex",
   "ore_commit": "3d75a6908",
+  "parsers": {
+    "parseAtmType": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:810",
+      "values": [
+        {
+          "means": "AtmNull",
+          "value": "AtmNull"
+        },
+        {
+          "means": "AtmSpot",
+          "value": "AtmSpot"
+        },
+        {
+          "means": "AtmFwd",
+          "value": "AtmFwd"
+        },
+        {
+          "means": "AtmDeltaNeutral",
+          "value": "AtmDeltaNeutral"
+        },
+        {
+          "means": "AtmVegaMax",
+          "value": "AtmVegaMax"
+        },
+        {
+          "means": "AtmGammaMax",
+          "value": "AtmGammaMax"
+        },
+        {
+          "means": "AtmPutCall50",
+          "value": "AtmPutCall50"
+        }
+      ]
+    },
+    "parseAveragingDataPeriod": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:1212",
+      "values": [
+        {
+          "means": "PreviousMonth",
+          "value": "PreviousMonth"
+        },
+        {
+          "means": "ExpiryToExpiry",
+          "value": "ExpiryToExpiry"
+        }
+      ]
+    },
+    "parseBondPriceType": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:405",
+      "values": [
+        {
+          "means": "Clean",
+          "value": "Clean"
+        },
+        {
+          "means": "Dirty",
+          "value": "Dirty"
+        }
+      ]
+    },
+    "parseBool": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:153",
+      "values": [
+        {
+          "means": "true",
+          "value": "Y"
+        },
+        {
+          "means": "true",
+          "value": "YES"
+        },
+        {
+          "means": "true",
+          "value": "TRUE"
+        },
+        {
+          "means": "true",
+          "value": "True"
+        },
+        {
+          "means": "true",
+          "value": "true"
+        },
+        {
+          "means": "true",
+          "value": "1"
+        },
+        {
+          "means": "false",
+          "value": "N"
+        },
+        {
+          "means": "false",
+          "value": "NO"
+        },
+        {
+          "means": "false",
+          "value": "FALSE"
+        },
+        {
+          "means": "false",
+          "value": "False"
+        },
+        {
+          "means": "false",
+          "value": "false"
+        },
+        {
+          "means": "false",
+          "value": "0"
+        }
+      ]
+    },
+    "parseBusinessDayConvention": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:182",
+      "values": [
+        {
+          "means": "Following",
+          "value": "F"
+        },
+        {
+          "means": "Following",
+          "value": "Following"
+        },
+        {
+          "means": "Following",
+          "value": "FOLLOWING"
+        },
+        {
+          "means": "ModifiedFollowing",
+          "value": "MF"
+        },
+        {
+          "means": "ModifiedFollowing",
+          "value": "ModifiedFollowing"
+        },
+        {
+          "means": "ModifiedFollowing",
+          "value": "Modified Following"
+        },
+        {
+          "means": "ModifiedFollowing",
+          "value": "MODIFIEDF"
+        },
+        {
+          "means": "ModifiedFollowing",
+          "value": "MODFOLLOWING"
+        },
+        {
+          "means": "Preceding",
+          "value": "P"
+        },
+        {
+          "means": "Preceding",
+          "value": "Preceding"
+        },
+        {
+          "means": "Preceding",
+          "value": "PRECEDING"
+        },
+        {
+          "means": "ModifiedPreceding",
+          "value": "MP"
+        },
+        {
+          "means": "ModifiedPreceding",
+          "value": "ModifiedPreceding"
+        },
+        {
+          "means": "ModifiedPreceding",
+          "value": "Modified Preceding"
+        },
+        {
+          "means": "ModifiedPreceding",
+          "value": "MODIFIEDP"
+        },
+        {
+          "means": "Unadjusted",
+          "value": "U"
+        },
+        {
+          "means": "Unadjusted",
+          "value": "Unadjusted"
+        },
+        {
+          "means": "Unadjusted",
+          "value": "INDIFF"
+        },
+        {
+          "means": "HalfMonthModifiedFollowing",
+          "value": "HalfMonthModifiedFollowing"
+        },
+        {
+          "means": "HalfMonthModifiedFollowing",
+          "value": "HMMF"
+        },
+        {
+          "means": "HalfMonthModifiedFollowing",
+          "value": "Half Month Modified Following"
+        },
+        {
+          "means": "HalfMonthModifiedFollowing",
+          "value": "HALFMONTHMF"
+        },
+        {
+          "means": "HalfMonthModifiedFollowing",
+          "value": "HalfMonthMF"
+        },
+        {
+          "means": "Nearest",
+          "value": "NEAREST"
+        },
+        {
+          "means": "Unadjusted",
+          "value": "NONE"
+        },
+        {
+          "means": "Unadjusted",
+          "value": "NotApplicable"
+        }
+      ]
+    },
+    "parseCompounding": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:389",
+      "values": [
+        {
+          "means": "Simple",
+          "value": "Simple"
+        },
+        {
+          "means": "Compounded",
+          "value": "Compounded"
+        },
+        {
+          "means": "Continuous",
+          "value": "Continuous"
+        },
+        {
+          "means": "SimpleThenCompounded",
+          "value": "SimpleThenCompounded"
+        }
+      ]
+    },
+    "parseDateGenerationRule": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:339",
+      "values": [
+        {
+          "means": "Backward",
+          "value": "Backward"
+        },
+        {
+          "means": "Forward",
+          "value": "Forward"
+        },
+        {
+          "means": "Zero",
+          "value": "Zero"
+        },
+        {
+          "means": "ThirdWednesday",
+          "value": "ThirdWednesday"
+        },
+        {
+          "means": "Twentieth",
+          "value": "Twentieth"
+        },
+        {
+          "means": "TwentiethIMM",
+          "value": "TwentiethIMM"
+        },
+        {
+          "means": "OldCDS",
+          "value": "OldCDS"
+        },
+        {
+          "means": "CDS2015",
+          "value": "CDS2015"
+        },
+        {
+          "means": "CDS",
+          "value": "CDS"
+        },
+        {
+          "means": "LastWednesday",
+          "value": "LastWednesday"
+        },
+        {
+          "means": "NthBusinessDay",
+          "value": "NthBusinessDay"
+        },
+        {
+          "means": "EighthBusinessDay",
+          "value": "EighthBusinessDay"
+        }
+      ]
+    },
+    "parseDayCounter": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:218",
+      "values": [
+        {
+          "means": "Actual360",
+          "value": "A360"
+        },
+        {
+          "means": "Actual360",
+          "value": "Actual/360"
+        },
+        {
+          "means": "Actual360",
+          "value": "ACT/360"
+        },
+        {
+          "means": "Actual360",
+          "value": "Act/360"
+        },
+        {
+          "means": "Actual360",
+          "value": "A360 (Incl Last)"
+        },
+        {
+          "means": "Actual360",
+          "value": "Actual/360 (Incl Last)"
+        },
+        {
+          "means": "Actual360",
+          "value": "ACT/360 (Incl Last)"
+        },
+        {
+          "means": "Actual360",
+          "value": "Act/360 (Incl Last)"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "A365"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "A365F"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "Actual/365 (Fixed)"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "Actual/365 (fixed)"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "ACT/365.FIXED"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "ACT/365"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "ACT/365L"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "Act/365"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "Act/365L"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "Act/365 (Canadian Bond)"
+        },
+        {
+          "means": "Thirty360",
+          "value": "T360"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30/360"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30/360 US"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30/360 (US)"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30/360 NASD"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30U/360"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30US/360"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30/360 (Bond Basis)"
+        },
+        {
+          "means": "Thirty360",
+          "value": "ACT/nACT"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30E/360 (Eurobond Basis)"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30/360 AIBD (Euro)"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30E/360.ICMA"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30E/360 ICMA"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30E/360"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30E/360E"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30E/360.ISDA"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30E/360 ISDA"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30/360 German"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30/360 (German)"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30/360 Italian"
+        },
+        {
+          "means": "Thirty360",
+          "value": "30/360 (Italian)"
+        },
+        {
+          "means": "ActualActual",
+          "value": "ActActISDA"
+        },
+        {
+          "means": "ActualActual",
+          "value": "ACT/ACT.ISDA"
+        },
+        {
+          "means": "ActualActual",
+          "value": "Actual/Actual (ISDA)"
+        },
+        {
+          "means": "ActualActual",
+          "value": "ActualActual (ISDA)"
+        },
+        {
+          "means": "ActualActual",
+          "value": "ACT/ACT"
+        },
+        {
+          "means": "ActualActual",
+          "value": "Act/Act"
+        },
+        {
+          "means": "ActualActual",
+          "value": "ACT29"
+        },
+        {
+          "means": "ActualActual",
+          "value": "ACT"
+        },
+        {
+          "means": "ActualActual",
+          "value": "ActActISMA"
+        },
+        {
+          "means": "ActualActual",
+          "value": "Actual/Actual (ISMA)"
+        },
+        {
+          "means": "ActualActual",
+          "value": "ActualActual (ISMA)"
+        },
+        {
+          "means": "ActualActual",
+          "value": "ACT/ACT.ISMA"
+        },
+        {
+          "means": "ActualActual",
+          "value": "ActActICMA"
+        },
+        {
+          "means": "ActualActual",
+          "value": "Actual/Actual (ICMA)"
+        },
+        {
+          "means": "ActualActual",
+          "value": "ActualActual (ICMA)"
+        },
+        {
+          "means": "ActualActual",
+          "value": "ACT/ACT.ICMA"
+        },
+        {
+          "means": "ActualActual",
+          "value": "ActActAFB"
+        },
+        {
+          "means": "ActualActual",
+          "value": "ACT/ACT.AFB"
+        },
+        {
+          "means": "ActualActual",
+          "value": "Actual/Actual (AFB)"
+        },
+        {
+          "means": "OneDayCounter",
+          "value": "1/1"
+        },
+        {
+          "means": "Business252",
+          "value": "BUS/252"
+        },
+        {
+          "means": "Business252",
+          "value": "Business/252"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "Actual/365 (No Leap)"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "Act/365 (NL)"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "NL/365"
+        },
+        {
+          "means": "Actual365Fixed",
+          "value": "Actual/365 (JGB)"
+        },
+        {
+          "means": "SimpleDayCounter",
+          "value": "Simple"
+        },
+        {
+          "means": "YearCounter",
+          "value": "Year"
+        },
+        {
+          "means": "Actual364",
+          "value": "A364"
+        },
+        {
+          "means": "Actual364",
+          "value": "Actual/364"
+        },
+        {
+          "means": "Actual364",
+          "value": "Act/364"
+        },
+        {
+          "means": "Actual364",
+          "value": "ACT/364"
+        },
+        {
+          "means": "MonthCounter",
+          "value": "Month"
+        }
+      ]
+    },
+    "parseDeltaType": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:827",
+      "values": [
+        {
+          "means": "Spot",
+          "value": "Spot"
+        },
+        {
+          "means": "Fwd",
+          "value": "Fwd"
+        },
+        {
+          "means": "PaSpot",
+          "value": "PaSpot"
+        },
+        {
+          "means": "PaFwd",
+          "value": "PaFwd"
+        }
+      ]
+    },
+    "parseFrequency": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:361",
+      "values": [
+        {
+          "means": "Once",
+          "value": "Z"
+        },
+        {
+          "means": "Once",
+          "value": "Once"
+        },
+        {
+          "means": "Annual",
+          "value": "A"
+        },
+        {
+          "means": "Annual",
+          "value": "Annual"
+        },
+        {
+          "means": "Semiannual",
+          "value": "S"
+        },
+        {
+          "means": "Semiannual",
+          "value": "Semiannual"
+        },
+        {
+          "means": "Quarterly",
+          "value": "Q"
+        },
+        {
+          "means": "Quarterly",
+          "value": "Quarterly"
+        },
+        {
+          "means": "Bimonthly",
+          "value": "B"
+        },
+        {
+          "means": "Bimonthly",
+          "value": "Bimonthly"
+        },
+        {
+          "means": "Monthly",
+          "value": "M"
+        },
+        {
+          "means": "Monthly",
+          "value": "Monthly"
+        },
+        {
+          "means": "EveryFourthWeek",
+          "value": "L"
+        },
+        {
+          "means": "EveryFourthWeek",
+          "value": "Lunarmonth"
+        },
+        {
+          "means": "Weekly",
+          "value": "W"
+        },
+        {
+          "means": "Weekly",
+          "value": "Weekly"
+        },
+        {
+          "means": "Daily",
+          "value": "D"
+        },
+        {
+          "means": "Daily",
+          "value": "Daily"
+        }
+      ]
+    },
+    "parseInflationSwapPublicationRoll": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:1099",
+      "values": [
+        {
+          "means": "None",
+          "value": "None"
+        },
+        {
+          "means": "OnPublicationDate",
+          "value": "OnPublicationDate"
+        },
+        {
+          "means": "AfterPublicationDate",
+          "value": "AfterPublicationDate"
+        }
+      ]
+    },
+    "parseMonth": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:658",
+      "values": [
+        {
+          "means": "January",
+          "value": "Jan"
+        },
+        {
+          "means": "February",
+          "value": "Feb"
+        },
+        {
+          "means": "March",
+          "value": "Mar"
+        },
+        {
+          "means": "April",
+          "value": "Apr"
+        },
+        {
+          "means": "May",
+          "value": "May"
+        },
+        {
+          "means": "June",
+          "value": "Jun"
+        },
+        {
+          "means": "July",
+          "value": "Jul"
+        },
+        {
+          "means": "August",
+          "value": "Aug"
+        },
+        {
+          "means": "September",
+          "value": "Sep"
+        },
+        {
+          "means": "October",
+          "value": "Oct"
+        },
+        {
+          "means": "November",
+          "value": "Nov"
+        },
+        {
+          "means": "December",
+          "value": "Dec"
+        },
+        {
+          "means": "January",
+          "value": "January"
+        },
+        {
+          "means": "February",
+          "value": "February"
+        },
+        {
+          "means": "March",
+          "value": "March"
+        },
+        {
+          "means": "April",
+          "value": "April"
+        },
+        {
+          "means": "May",
+          "value": "May"
+        },
+        {
+          "means": "June",
+          "value": "June"
+        },
+        {
+          "means": "July",
+          "value": "July"
+        },
+        {
+          "means": "August",
+          "value": "August"
+        },
+        {
+          "means": "September",
+          "value": "September"
+        },
+        {
+          "means": "October",
+          "value": "October"
+        },
+        {
+          "means": "November",
+          "value": "November"
+        },
+        {
+          "means": "December",
+          "value": "December"
+        }
+      ]
+    },
+    "parseOptionType": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:526",
+      "values": [
+        {
+          "means": "Put",
+          "value": "Put"
+        },
+        {
+          "means": "Call",
+          "value": "Call"
+        }
+      ]
+    },
+    "parseSubPeriodsCouponType": {
+      "source_ref": "OREData/ored/configuration/conventions.cpp:46",
+      "values": [
+        {
+          "means": "Compounding",
+          "value": "Compounding"
+        },
+        {
+          "means": "Averaging",
+          "value": "Averaging"
+        }
+      ]
+    },
+    "parseWeekday": {
+      "source_ref": "OREData/ored/utilities/parsers.cpp:644",
+      "values": [
+        {
+          "means": "Sunday",
+          "value": "Sun"
+        },
+        {
+          "means": "Monday",
+          "value": "Mon"
+        },
+        {
+          "means": "Tuesday",
+          "value": "Tue"
+        },
+        {
+          "means": "Wednesday",
+          "value": "Wed"
+        },
+        {
+          "means": "Thursday",
+          "value": "Thu"
+        },
+        {
+          "means": "Friday",
+          "value": "Fri"
+        },
+        {
+          "means": "Saturday",
+          "value": "Sat"
+        }
+      ]
+    }
+  },
   "source": "OREData/ored/configuration/conventions.cpp"
 }

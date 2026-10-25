@@ -99,19 +99,44 @@ The doctrine's verdict stands, and the legacy sharpens six points.
 2. *The hierarchy is refdata's and the count is trading's.* The legacy read both from one client, which is the same two-read split this investigation recommends.
 3. *The count per node is summed in the client*, as the legacy did, so no recursive aggregate belongs in a view. What the legacy got wrong is the batching: one request per book is per-object where the sixth axiom asks for batch. The count read must be one call returning a row per book.
 4. *A typed filter, not an opaque node id.* The legacy's =node_id= string is a primitive standing in for two different keys, which the wire rules forbid. The new read names its members: =book_id= for a book and a portfolio member for a portfolio.
-5. *The party belongs in the tree.* The legacy nests parties by =parent_party_id=, and the relationship-view rule agrees: "A group is a party, nested by its own parent". The new prototype draws a single party root and is the poorer for it, so the tree model must carry party nodes too.
+5. *The party belongs in the tree.* The legacy nests parties by =parent_party_id=, and the relationship-view rule agrees: "A group is a party, nested by its own parent". The prototype drew a single party root; it now nests parties and carries three node kinds, so the model and the screen agree.
 6. *The open question is now only size.* Whether the hierarchy is read lazily or as whole lists depends on how large a party's tree is, which is one measurement, not a design choice.
+
+* The measurement of a party's tree
+
+Taken on 2026-10-24 from the provisioned dataset, because no database was running in this worktree. The source is the ACME seeder dataset, which is what a fresh provision installs.
+
+| What | Value | Command |
+|---|---|---|
+| Parties | 4, of which one is a holding company; each carries =parent_code= and =is_holding= | =jq length projects/ores.seeder/datasets/acme_corporation/companies.json= |
+| Portfolios | 48, of which 20 are virtual and 4 are roots | =jq length .../portfolios.json= |
+| Books | 38 | =jq length .../books.json= |
+| Portfolios per party | group 1, UK 21, US 13, HK 13 | =jq '[.[].company_code] | group_by(.) | map({(.[0]): length}) | add' .../portfolios.json= |
+| Books per party | group 2, UK 20, US 8, HK 8 | the same over =books.json= |
+| Largest party tree | 41 nodes: 21 portfolios and 20 books, plus the party | derived |
+| Whole-group tree | 90 nodes: 4 parties, 48 portfolios, 38 books | derived |
+
+* What the measurement decides
+
+A party's tree is *tens* of nodes. The largest is 41, and the whole holding company is 90. At that size the node read model is premature: one page of the two existing lists draws the whole tree, which is exactly what the legacy did and why it got away with it.
+
+Two consequences, and both are cheap:
+
+- *Read whole, then guard the ceiling.* The BFF reads =portfolios.list= and =books.list= at a page size above the tree size, zips them, and refuses to draw a tree that came back truncated: it compares =total= against the rows it holds and says the tree is partial rather than silently showing a subset.
+- *The party filter is still missing.* Neither filter carries =party_id=, and the party is applied by erasing other parties' rows after the pager, so =total= counts the tenant. At 90 nodes this reads acceptably, and the erase is the defect to fix when either list is touched.
+
+The node read model therefore becomes the answer to a *measured* threshold rather than the first step: when a tenant's tree passes the page size, or when a lazy tree is wanted for its own sake, the =portfolio_tree_node= read model is the shape to build, and this page already states it.
 
 * Recommendations
 
 1. Write the classification down on the checklist before building: a read model spanning refdata entities, assembled on the server for display.
-2. Carry three node kinds in the read model, as the legacy did: party, portfolio and book, with the party nested by =parent_party_id=.
-3. Build the refdata read first, with no count: =portfolio_tree_node= with =node_kind=, =parent_id=, =party_id=, =sandbox_id=, label and order, a =list= filtered by =parent_id= and =sandbox_id=, and paged so a lazy tree can ask for one node's children.
-4. Read the count as one batch, never one call per book: a trading read model with a row per book, filtered by =book_id_one_of=, which is the filter the list already carries.
+2. Carry three node kinds, as the legacy did: party, portfolio and book, with the party nested by =parent_code=.
+3. *Draw the tree from the two existing lists for now*, because the measurement says a party's tree is tens of nodes. The BFF reads both lists at a page size above that, zips them into party, portfolio and book nodes, and refuses to draw a tree whose =total= exceeds the rows it holds.
+4. Read the count as one batch, never one call per book: the trading count read with a row per book, filtered by =book_id_one_of=, which the list already carries.
 5. Sum the subtree in the client, as the legacy did, and never aggregate it in a view.
-6. Measure a party's tree once to decide lazy or whole: if the tree is dozens of nodes, the two lists zipped in the BFF are enough and the node read waits.
-7. Fix the erase-after-paging defect in both refdata repositories whichever shape wins, because it makes every paged read disagree with its own total.
-8. Do not build the tree in the list's PR. The list is settled and shippable without it; the tree is a read model of its own, with its own task.
+6. Build the =portfolio_tree_node= read model when the tree passes the page size, or when a lazy tree is wanted for its own sake. The shape is stated above and does not change.
+7. Fix the erase-after-paging defect in both refdata repositories the next time either list is touched, because it makes every paged read disagree with its own total.
+8. Do not build the tree in the list's PR. The list is settled and shippable without it; the tree is its own task.
 
 * See also
 

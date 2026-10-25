@@ -490,9 +490,10 @@ rules, exceptions and diary events. The parts panel:
 
 - *RS-RELATED-04* lists the parts in their natural order, with the columns the kind declares;
 - *RS-RELATED-05* offers /History/, /Edit/ and /Delete/ on each row, and /Add/ under the table;
-- *RS-RELATED-06* opens the record dialog for add and edit, with the parent given, the history
-  panel in a wide dialog that draws the shared timeline for the one part
-  (=HistoryPanel=), and the remove dialog for delete.
+- *RS-RELATED-06* opens the record dialog for add and edit, with the parent given, the shared
+  timeline (=Timeline=) in a wide dialog for the one part, and the remove dialog
+  for delete. The two-pane compare of =HistoryPanel= is the legacy shape and is
+  not what this rule names (decided 2026-10-25).
 
 Neither panel edits in the table. Neither offers Add while the parent is being
 created: the parent is saved first, and its page then offers the panel.

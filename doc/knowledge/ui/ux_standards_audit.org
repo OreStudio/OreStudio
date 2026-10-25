@@ -104,7 +104,7 @@ of the footer, and no page states any of that.
 | 6 | Long text | RSS: long text is a text area; no field kind carries it | The commentary is a text area; no field table can ask for one | PartyContactInformation, CalendarRule |
 | 7 | Field kinds the table lacks | RSS names text, int, decimal, bool, date, choice, classification, record, image | No timestamp, time, long text, multi select, percentage or amount | TenorSchedule, CalendarEvent dates, convention terms |
 | 8 | The details layout | RSS draws a grid in its sketch and states no rule for columns, wrapping or long values | =RecordDetails= draws a grid | Any record page |
-| 9 | History in a dialog | RSS Parts: the history panel opens in a dialog | =HistoryPanel= in a wide dialog | Calendar rules, events and exceptions |
+| 9 | History in a dialog | RSS Parts: the shared timeline opens in a wide dialog | =HistoryPanel= in a wide dialog, which is the legacy two-pane compare and not the =Timeline= the ESS draws; every reference data screen still draws it (captured 2026-10-25) | Calendar rules, events and exceptions |
 | 10 | Keyboard | RSS: a row opens on Enter; nothing for the dialog | Escape closes through the guard; Enter does not save | Every dialog |
 | 11 | Refresh on a form | ESS: the dialog says when its record was loaded and warns of a newer version. CN says the same | Built | None; Qt did not tell the form |
 

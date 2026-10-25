@@ -138,14 +138,28 @@ const BASE_HOLIDAYS = {
     TARGET: ['2026-01-01', '2026-04-03', '2026-04-06', '2026-05-01', '2026-12-25'],
 };
 
+/* The history of a record is one stream of events, newest first, as the Entity
+   screen specification's History and the timeline section draws it. */
 const HISTORY = {
     'Acme.Desk': [
-        { version: 4, by: 'priya.natarajan', when: '4 days ago', reason: 'user.booking_error', words: 'The spring bank holiday rule was a week out.', changes: [['Name', 'Acme desk', 'Acme desk calendar']] },
-        { version: 3, by: 'priya.natarajan', when: '2 weeks ago', reason: 'business.data_not_updated', words: 'Added the summer bank holiday.', changes: [['Calendar type', 'financial_centre', 'public_holiday']] },
-        { version: 2, by: 'adrian.vance', when: '3 weeks ago', reason: 'user.booking_error', words: 'Wrong country.', changes: [['Country', 'IE', 'GB']] },
-        { version: 1, by: 'adrian.vance', when: '3 weeks ago', reason: 'system.new_record', words: '', changes: [] },
+        { version: 4, kind: 'Changed', at: '2026-10-21T09:12:40Z', by: 'priya.natarajan', service: false, reason: 'user.booking_error', note: 'The spring bank holiday rule was a week out.', changes: [['Name', 'Acme desk', 'Acme desk calendar']] },
+        { version: 3, kind: 'Changed', at: '2026-10-09T16:02:11Z', by: 'priya.natarajan', service: false, reason: 'business.data_not_updated', note: 'Added the summer bank holiday.', changes: [['Calendar type', 'financial_centre', 'public_holiday']] },
+        { version: 2, kind: 'Changed', at: '2026-10-02T11:30:05Z', by: 'adrian.vance', service: false, reason: 'user.booking_error', note: 'Wrong country.', changes: [['Country', 'IE', 'GB']] },
+        { version: 1, kind: 'Created', at: '2026-10-02T11:14:52Z', by: 'adrian.vance', service: false, reason: 'system.new_record', note: '', changes: [] },
+    ],
+    'Acme.London': [
+        { version: 2, kind: 'Changed', at: '2026-10-18T15:40:19Z', by: 'ores_brave_hopper_refdata_service', service: true, reason: 'system.external_data_import', note: 'Bumped by child calendar_exception: Christmas Eve, office closed', changes: [] },
+        { version: 1, kind: 'Created', at: '2026-10-18T15:38:02Z', by: 'adrian.vance', service: false, reason: 'system.new_record', note: 'Derived from UnitedKingdom.Settlement', changes: [] },
     ],
 };
+const PART_HISTORY = {
+    r5: [
+        { version: 2, kind: 'Changed', at: '2026-10-21T09:11:58Z', by: 'priya.natarajan', service: false, reason: 'user.booking_error', note: 'The spring bank holiday is the last Monday, not the first.', changes: [['Occurrence', '1st', '—'], ['Kind', 'Nth weekday of the month', 'Last weekday of the month']] },
+        { version: 1, kind: 'Created', at: '2026-10-02T11:20:30Z', by: 'adrian.vance', service: false, reason: 'system.new_record', note: '', changes: [] },
+    ],
+};
+const SEED_EVENT = { version: 1, kind: 'Created', at: '2026-10-25T11:04:42Z', by: 'ores_brave_hopper_refdata_service', service: true, reason: 'system.external_data_import', note: 'Imported from DQ dataset: QuantLib calendars', changes: [] };
+const KIND_COLOUR = { Created: '#8957e5', Changed: '#58a6ff' };
 
 const CALENDAR_TYPES = { public_holiday: 'Public holiday', financial_centre: 'Financial centre', central_bank_meeting: 'Central bank meeting' };
 const DIARY_TYPES = { central_bank_meeting: 'Central bank meeting', fixing: 'Fixing', other: 'Other' };
@@ -217,6 +231,9 @@ function madeOf(c) {
     return `${c.base_calendar_code}, with exceptions`;
 }
 function find(code) { return ALL.find((c) => c.code === code); }
+/* ES-REF-01: a code that names another record is a link to its page, with its flag.
+   The country page is the address the countries record kind will answer at. */
+function countryHref(code) { return `/refdata/countries/${encodeURIComponent(code)}`; }
 function tabsOf(c) {
     const s = shapeOf(c);
     if (s === 'quantlib') return ['details', 'events', 'history'];
@@ -334,7 +351,7 @@ function renderList() {
               <td class="code"><span class="cell-flag">${flag(c.country_code, true)}${esc(c.code)}</span></td>
               <td>${esc(c.name)}</td>
               <td>${esc(CALENDAR_TYPES[c.calendar_type] ?? c.calendar_type)}</td>
-              <td class="code"><span class="cell-flag">${flag(c.country_code, true)}${esc(c.country_code)}</span></td>
+              <td><span class="cell-flag">${flag(c.country_code, true)}<a href="${countryHref(c.country_code)}" onclick="event.stopPropagation()">${esc(COUNTRIES[c.country_code] ?? c.country_code)}</a></span></td>
               <td class="muted">${esc(madeOf(c))}</td>
             </tr>`).join('')}</tbody>
         </table></div>
@@ -415,7 +432,7 @@ function details(c) {
           <div><dt>Code</dt><dd><span class="cell-flag">${flag(c.country_code, true)}<span class="mono">${esc(c.code)}</span></span><span class="help">Set when the record was made, and never changed here.</span></dd></div>
           <div><dt>Name</dt><dd>${esc(c.name)}</dd></div>
           <div><dt>Calendar type</dt><dd><a href="#">${esc(CALENDAR_TYPES[c.calendar_type] ?? c.calendar_type)}</a></dd></div>
-          <div><dt>Country</dt><dd><span class="cell-flag">${flag(c.country_code, true)}<a href="#">${esc(COUNTRIES[c.country_code] ?? c.country_code)}</a></span></dd></div>
+          <div><dt>Country</dt><dd><span class="cell-flag">${flag(c.country_code, true)}<a href="${countryHref(c.country_code)}" title="Open ${esc(COUNTRIES[c.country_code] ?? c.country_code)}">${esc(COUNTRIES[c.country_code] ?? c.country_code)}</a></span></dd></div>
           <div><dt>Holidays from</dt><dd>${made}</dd></div>
           <div><dt>Flag</dt><dd>${flag(c.country_code)}</dd></div>
         </dl></div>
@@ -486,23 +503,80 @@ function daysPanel(c) {
       <p class="small faint">A day in green is a business day an exception opened. A day in italics is a holiday of the compared calendar only. A rebuild adds the days not built yet; a change to a rule or an exception shows once the year is rebuilt.</p>`;
 }
 
+/* The shared timeline: the event chart, then the rail of entries, newest first.
+   Drawn here for one record; the same rail draws one part in its dialog. */
+function timeline({ record, events, fields, canRevert, gaps }) {
+    const hide = q.get('sys') === 'hide';
+    const shown = hide ? events.filter((e) => !e.service) : events;
+    const newest = events[0];
+    const dayOf = (at) => at.slice(0, 10);
+    const longDay = (d) => new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).toUpperCase();
+    const clock = (at) => at.slice(11, 19);
+    const stamp = (at) => new Date(at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+
+    // The chart: one bar per day from the first entry to the last, each split by kind.
+    const days = [];
+    if (shown.length) {
+        const first = new Date(dayOf(shown[shown.length - 1].at) + 'T00:00:00Z');
+        const last = new Date(dayOf(shown[0].at) + 'T00:00:00Z');
+        for (let d = first; d <= last; d = addDays(d, 1)) days.push(iso(d));
+    }
+    const counts = Object.fromEntries(days.map((d) => [d, {}]));
+    for (const e of shown) counts[dayOf(e.at)][e.kind] = (counts[dayOf(e.at)][e.kind] ?? 0) + 1;
+    const max = Math.max(1, ...Object.values(counts).map((k) => Object.values(k).reduce((a, b) => a + b, 0)));
+    const kinds = {};
+    for (const e of shown) kinds[e.kind] = (kinds[e.kind] ?? 0) + 1;
+    const chart = `<div class="chart card">
+        <div class="bars" style="--max:${max}">${days.map((d) => { const k = counts[d]; const total = Object.values(k).reduce((a, b) => a + b, 0); return `<div class="bar" title="${d}: ${total} ${total === 1 ? 'entry' : 'entries'}" style="--n:${total}">${Object.entries(k).map(([kind, n]) => `<span style="flex:${n};background:${KIND_COLOUR[kind]}" title="${kind} ${n}"></span>`).join('')}</div>`; }).join('')}</div>
+        <div class="chart-foot"><span>${days.length ? stamp(shown[shown.length - 1].at) : ''}</span><span>${days.length ? stamp(shown[0].at) : ''}</span></div>
+        <div class="legend">${Object.entries(kinds).map(([k, n]) => `<span><i style="background:${KIND_COLOUR[k]}"></i>${k} ${n}</span>`).join('')}</div>
+      </div>`;
+
+    // The rail.
+    let day = '';
+    const rows = shown.map((e, i) => {
+        const before = events.find((x) => x.version === e.version - 1);
+        const current = e === newest;
+        const divider = dayOf(e.at) !== day ? `<li class="day">${longDay(dayOf(e.at))}</li>` : '';
+        day = dayOf(e.at);
+        const changedNames = e.changes.map(([f]) => f).join(', ');
+        const detail = e.changes.length > 0
+            ? `<details><summary>Details</summary><table class="changes"><thead><tr><th>Field</th><th>Was</th><th>Now</th></tr></thead><tbody>${e.changes.map(([f, a, b]) => `<tr><td>${esc(f)}</td><td class="old">${esc(a)}</td><td class="new">${esc(b)}</td></tr>`).join('')}</tbody></table></details>`
+            : e.kind === 'Changed' ? `<p class="small faint">No changes</p>`
+            : `<details><summary>Details</summary><table class="changes"><tbody>${fields.map(([f, v]) => `<tr><td>${esc(f)}</td><td class="new">${esc(v)}</td></tr>`).join('')}</tbody></table></details>`;
+        const revert = canRevert && !current ? `<div class="entry-actions"><a class="btn sm" href="${href({ dialog: 'revert', v: e.version })}">${icon('revert')} Revert</a></div>` : '';
+        return `${divider}<li class="entry">
+          <div class="gutter"><span class="mono">${clock(e.at)}</span>${current ? `<span class="current" role="img" aria-label="Current version" title="Current version">✓</span>` : ''}</div>
+          <div class="rail"><span class="dot" style="border-color:${KIND_COLOUR[e.kind]}"></span></div>
+          <div class="body">
+            <div class="entry-head">
+              <span class="avatar${e.service ? ' service' : ''}" title="${esc(e.by)}">${e.service ? '⚙' : esc(e.by.split('.').map((p) => p[0]).join('').toUpperCase())}</span>
+              <span class="kind" style="border-color:${KIND_COLOUR[e.kind]};color:${KIND_COLOUR[e.kind]}">${e.kind}</span>
+              <span class="mono muted">${esc(record)} v${e.version}</span>
+              <span class="reason">${esc(e.reason)}</span>
+              <a href="#" class="actor">${esc(e.by)}</a>
+              ${changedNames ? `<span class="muted">${esc(changedNames)}</span>` : ''}
+              <span class="when faint small">${stamp(e.at)}</span>
+            </div>
+            ${e.note ? `<p class="note">${esc(e.note)}</p>` : ''}
+            ${detail}
+            ${revert}
+          </div>
+        </li>`;
+    }).join('');
+    const gapBox = gaps.length ? `<div class="notice"><strong class="small">What this history cannot show</strong><ul class="small">${gaps.map((g) => `<li>${esc(g)}</li>`).join('')}</ul></div>` : '';
+    return `<div class="timeline">
+      <div class="tl-bar"><a class="btn ${hide ? '' : 'primary'}" href="${href({ sys: hide ? '' : 'hide' })}">${hide ? 'Show system activity' : 'Hide system activity'}</a></div>
+      ${chart}
+      <ol class="entries">${rows || '<li class="small muted">Every entry is system activity, and it is hidden.</li>'}</ol>
+      ${gapBox}</div>`;
+}
+
 function historyPanel(c) {
-    const versions = HISTORY[c.code] ?? [{ version: c.version, by: c.modified_by, when: '3 hours ago', reason: 'system.external_data_import', words: 'Imported from DQ dataset: QuantLib calendars', changes: [] }];
-    const sel = Number(q.get('v') ?? versions[0].version);
-    const v = versions.find((x) => x.version === sel) ?? versions[0];
-    const prev = versions.find((x) => x.version === v.version - 1);
-    return `<section class="card history">
-      <div class="versions">${versions.map((x) => `<div class="version" aria-selected="${x.version === v.version}" onclick="go({v:${x.version}})">
-          <span class="v">v${x.version} <span class="muted small">${x.when}</span> ${x.version === versions[0].version ? '<span class="badge">current</span>' : ''}</span>
-          <span class="mono muted">${esc(x.reason)}</span>
-          ${x.words ? `<span class="note">“${esc(x.words)}”</span>` : ''}
-          <span class="who"><span class="avatar">${esc(x.by.slice(0, 2).toUpperCase())}</span> Modified by <a href="#">${esc(x.by)}</a></span>
-        </div>`).join('')}</div>
-      <div class="compare">
-        <div class="compare-head"><h3>${prev ? `Compare v${prev.version} → v${v.version}` : `v${v.version}, the first version`}</h3>
-          ${admin && shapeOf(c) !== 'quantlib' && v.version !== versions[0].version ? `<a class="btn sm" href="${href({ dialog: 'revert', v: v.version })}">${icon('revert')} Revert to v${v.version}</a>` : ''}</div>
-        ${v.changes.length === 0 ? `<p class="muted small">${prev ? 'No field changed; the reason and the commentary are the change.' : 'Every field was set in this version.'}</p>` : `<div class="diff">${v.changes.map(([f, a, b]) => `<p class="small muted">${esc(f)}</p><div class="line old"><span class="sign">−</span><span>${esc(a)}</span></div><div class="line new"><span class="sign">+</span><span>${esc(b)}</span></div>`).join('')}</div>`}
-      </div></section>`;
+    const events = HISTORY[c.code] ?? [{ ...SEED_EVENT, version: c.version }];
+    const fields = [['Code', c.code], ['Name', c.name], ['Calendar type', CALENDAR_TYPES[c.calendar_type] ?? c.calendar_type], ['Country', c.country_code], ['Source', c.source], ['Editable', c.is_editable ? 'Yes' : 'No'], ['Base calendar', c.base_calendar_code ?? '—']];
+    const gaps = shapeOf(c) === 'quantlib' ? ['The holidays QuantLib supplies are not versioned here, so a change to them does not appear.'] : [];
+    return timeline({ record: `calendar ${c.code}`, events, fields, canRevert: admin && shapeOf(c) !== 'quantlib', gaps });
 }
 
 // ---------------------------------------------------------------------------
@@ -622,7 +696,12 @@ function dialogs(c) {
         case 'add-part': return dialogShell({ title: esc(p.add), body: partForm(c, kind, null), foot: `${cancelLink()}${saveLink('Add', 'add', 'added')}` });
         case 'edit-part': return dialogShell({ title: `Edit ${esc(kind === 'rules' ? ruleWords(row) : kind === 'exceptions' ? row.exception_date : row.name)}`, loaded: LOADED, body: partForm(c, kind, row), foot: `${cancelLink()}${saveLink('Save', 'save', 'saved')}` });
         case 'remove-part': return dialogShell({ narrow: true, title: `Remove this ${esc(p.title)}?`, body: `<p class="muted small">${esc(kind === 'rules' ? ruleWords(row) : kind === 'exceptions' ? row.exception_date : row.name)}. The row closes. Its history stays.</p><div class="form-grid">${reasonFields(false)}</div>`, foot: `${cancelLink()}<a class="btn danger" href="${href({ dialog: '', part: '', done: 'removed' })}">${icon('delete')} Remove</a>` });
-        case 'part-history': return dialogShell({ title: `History of ${esc(kind === 'rules' ? ruleWords(row) : kind === 'exceptions' ? row.exception_date : row.name)}`, body: `<div class="card history"><div class="versions"><div class="version" aria-selected="true"><span class="v">v${row.version} <span class="muted small">2 weeks ago</span> <span class="badge">current</span></span><span class="mono muted">system.new_record</span><span class="who"><span class="avatar">PN</span> Modified by <a href="#">priya.natarajan</a></span></div></div><div class="compare"><h3>v${row.version}, the first version</h3><p class="muted small">Every field was set in this version.</p></div></div>`, foot: `<a class="btn" href="${href({ dialog: '', part: '' })}">Close</a>` });
+        case 'part-history': {
+            const name = kind === 'rules' ? ruleWords(row) : kind === 'exceptions' ? row.exception_date : row.name;
+            const events = PART_HISTORY[row.id] ?? [{ version: 1, kind: 'Created', at: '2026-10-02T11:20:30Z', by: 'adrian.vance', service: false, reason: 'system.new_record', note: '', changes: [] }];
+            const fields = Object.entries(row).filter(([k]) => !['id', 'version'].includes(k)).map(([k, v]) => [k.replace(/_/g, ' '), v === null || v === '' ? '—' : String(v)]);
+            return dialogShell({ title: `History of ${esc(name)}`, body: timeline({ record: `${p.title} ${row.id}`, events, fields, canRevert: true, gaps: [] }), foot: `<a class="btn" href="${href({ dialog: '', part: '', sys: '' })}">Close</a>` });
+        }
         case 'revert': return dialogShell({ narrow: true, title: `Revert to v${esc(q.get('v'))}?`, body: `<p class="muted small">A new version is written with the values of v${esc(q.get('v'))}. Nothing is deleted.</p><div class="form-grid">${reasonFields(false)}</div>`, foot: `${cancelLink()}<a class="btn primary" href="${href({ dialog: '', done: 'reverted', v: '' })}">${icon('revert')} Revert</a>` });
         default: layer.innerHTML = '';
     }

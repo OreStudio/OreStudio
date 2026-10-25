@@ -82,9 +82,9 @@ Not checked on every line marked walk, and the Note with what was seen.
 | *History* | | | | |
 | History is the versions of one record. A log of events is Audit and has Refresh only. | UXL History and Audit |  | Meets | v1 to v5 of EUR |
 | The tab is named History, never Timeline. | ES-HIST-40 |  | Meets |  |
-| The shared timeline draws it. Headers are one line, details open on demand. | ES-HIST-18, ES-HIST-09 |  | Meets | one header per version at the left, the compare of v4 and v5 at the right |
-| The author's photo stands at the left of each entry. The note is on its own line. | ES-HIST-08, ES-HIST-07 |  | Meets | the author is the Reference Data Service, drawn with a service icon at the left; the note stands on its own line |
-| The newest version carries the current-version emblem and no Revert. | ES-HIST-11 |  | Meets | v5 is marked current with no Revert |
+| The shared timeline draws it. Headers are one line, details open on demand. | ES-HIST-18, ES-HIST-09 |  | Gap | the tab draws HistoryPanel, a version list at the left and a compare of two versions at the right, not the shared Timeline; corrected on 2026-10-25 after the owner caught the same shape in the calendars prototype |
+| The author's photo stands at the left of each entry. The note is on its own line. | ES-HIST-08, ES-HIST-07 |  | Gap | the legacy panel draws the author under the version, not at the left of a one-line header; corrected on 2026-10-25 |
+| The newest version carries the current-version emblem and no Revert. | ES-HIST-11 |  | Gap | v5 carries a current badge, but on the legacy panel and not as the timeline's emblem in the gutter; corrected on 2026-10-25 |
 | A gap in the history is stated in words. It is never an empty list. | ES-HIST-39, ES-HIST-38, ES-HIST-37 |  | Not checked | EUR has no gap |
 | *Refresh and live updates* | | | | |
 | The header has the shared Refresh button, with the load time under it. | ES-REFRESH-06, ES-REFRESH-16 | ES-REFRESH-16 list ✓, ES-REFRESH-16 record ✗ | Gap | the harness does not check ES-REFRESH-06; the list has Refresh and the load time; the record page has neither |
@@ -134,4 +134,4 @@ Not checked on every line marked walk, and the Note with what was seen.
 
 The harness marks 18 lines, 3 of them with a failure; 98 lines need the person, 92 of them with no harness mark at all.
 
-*Verdict: not signed off.* The harness marks 3 lines with a failure. The person found 17 gaps, met 31 lines, set 24 aside as N/A and could not check 26. The three harness failures are the baseline's captures; the gaps the walk added are the badges and colours, the identifiers shown for names, the free-text classification fields, the number controls, the Escape guard, the optional field with no Clear, the title case in History, the order missing from the address and the notice that explains an absent export. They go to the currencies topic of the screen pipeline.
+*Verdict: not signed off.* The harness marks 3 lines with a failure. The person found 20 gaps, met 28 lines, set 24 aside as N/A and could not check 26; three History lines were first marked Meets on the legacy panel and corrected to Gap on 2026-10-25. The three harness failures are the baseline's captures; the gaps the walk added are the badges and colours, the identifiers shown for names, the free-text classification fields, the number controls, the Escape guard, the optional field with no Clear, the title case in History, the order missing from the address and the notice that explains an absent export. They go to the currencies topic of the screen pipeline.

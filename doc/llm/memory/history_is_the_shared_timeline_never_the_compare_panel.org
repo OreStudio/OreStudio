@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: EFC77BFA-BF5D-4FA7-A55F-1D09EB0932AD
+:END:
+#+title: History is the shared timeline, never the compare panel
+#+description: Every history a screen or a prototype draws is the Timeline of the Entity screen specification; HistoryPanel's two-pane compare is legacy and is not copied.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+When a screen, a prototype, a spec or a test shows a record's history, draw it as the shared Timeline of the Entity screen specification's History and the timeline section (ES-HIST-01 to 18): the event chart, one line per entry with the note below and the detail on demand, the current-version emblem, Hide system activity, Revert on older versions. Never draw or specify the two-pane compare of refdata/HistoryPanel.tsx, and never copy a history from an older prototype or from a live reference data screen without checking it against that section.
+
+*Why:* On 2026-10-25 the calendars prototype copied the compare shape from the classifications prototype note and from the live currencies page, both legacy, and the owner caught it at sign off. Encoding that shape in a prototype, and then in Allium rules and tests, would have made the legacy design the standard.
+
+*How to apply:* Before drawing a history, open the Entity screen specification's History and the timeline section and the live person page's Timeline tab, and build from those. Treat HistoryPanel, Compare, All fields and Only changes as signs of the legacy shape. When a document describes that shape as the design, mark it superseded rather than copying it.

@@ -30,3 +30,23 @@ test('a trade opens its own page and every tab answers', async ({ page }) => {
         await expect(page.getByRole('tab', { name: tab })).toHaveAttribute('aria-selected', 'true');
     }
 });
+
+test('the instrument issue links to its calendar', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel(/username/i).fill(USERNAME);
+    await page.getByLabel(/password/i).fill(PASSWORD);
+    await page.getByRole('button', { name: /sign in/i }).click();
+    await expect(page).not.toHaveURL(/\/login$/);
+
+    await page.goto('/trading/trades');
+    const row = page.locator('tbody tr').first();
+    await row.waitFor({ state: 'visible' });
+    await row.locator('td').first().click();
+    await page.getByRole('tab', { name: 'Instrument' }).click();
+
+    const calendar = page.getByRole('link', { name: /^[A-Z]{2,}$/ }).first();
+    const code = (await calendar.innerText()).trim();
+    await calendar.click();
+    await expect(page).toHaveURL(new RegExp(`/refdata/calendars/${code}$`));
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(code);
+});

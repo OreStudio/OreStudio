@@ -29,6 +29,7 @@
  */
 export const PATHS = {
     refdata: '/refdata',
+    calendars: '/refdata/calendars',
     counterparties: '/refdata/counterparties',
     books: '/refdata/books',
     trading: '/trading',

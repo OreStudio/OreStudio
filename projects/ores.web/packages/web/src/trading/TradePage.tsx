@@ -169,7 +169,18 @@ function InstrumentTab({ record }: { readonly record: TradePageRecord }): ReactN
                             label={t('trading.page.settlementDays')}
                             value={text(issue['settlement_days'])}
                         />
-                        <Fact label={t('trading.page.calendar')} value={text(issue['calendar'])} />
+                        <Fact label={t('trading.page.calendar')}>
+                            {text(issue['calendar']) === '' ? (
+                                '—'
+                            ) : (
+                                <Link
+                                    className="text-accent hover:text-accent-bright"
+                                    to={`${PATHS.calendars}/${encodeURIComponent(text(issue['calendar']))}`}
+                                >
+                                    {text(issue['calendar'])}
+                                </Link>
+                            )}
+                        </Fact>
                         <Fact
                             label={t('trading.page.creditGroup')}
                             value={text(issue['credit_group'])}

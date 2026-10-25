@@ -3575,6 +3575,13 @@ const pt: SourceCatalogue = {
             lead: 'As transações que uma mesa lê e escreve, e os livros onde se encontram.',
         },
         trades: {
+            asReadTitle: 'A transação como a execução a leu',
+            asReadVersion: 'Versão {version}',
+            asReadLoading: 'A ler a transação...',
+            asReadMissing: 'Nenhuma versão {version} desta transação lhe é visível.',
+            asReadNotCurrent:
+                'Esta é a versão lida pela execução. O blotter mostra a versão atual.',
+            asReadDismiss: 'Voltar ao blotter',
             areaLead: 'As transações e estruturas que pode ver, e os livros onde se encontram.',
             title: 'Transações',
             lead: 'As transações e estruturas da sua parte, e os livros onde se encontram.',

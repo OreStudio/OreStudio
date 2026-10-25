@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 0A76FA11-7E9D-4D1A-B94C-7D3C03113914
+:END:
+#+title: Story: Configure every seeded report from the ORE examples
+#+description: Every report ACME is seeded with needs a risk report configuration that ORE can actually run: the right engine settings, market data bindings and portfolio scope, built from the ORE examples. This was a task inside Prove the report grid run end to end, and it is its own story because it is authoring work over dozens of reports, not chain work, and the chain can be proven without it.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-25                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|---|---|---|---|---|
+| [[id:CAE6E2DF-02A0-4977-8F66-4DC246EAE5E9][Configure every seeded report from the ORE examples]] | STARTED | | | Every report ACME is seeded with needs a risk report configuration ORE can run, built from the ORE examples. |

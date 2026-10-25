@@ -3549,6 +3549,13 @@ export const en: SourceCatalogue = {
             lead: 'The trades a desk reads and writes, and the books they sit in.',
         },
         trades: {
+            asReadTitle: 'The trade as the run read it',
+            asReadVersion: 'Version {version}',
+            asReadLoading: 'Reading the trade...',
+            asReadMissing: 'No version {version} of this trade is visible to you.',
+            asReadNotCurrent:
+                'This is the version the run read. The blotter shows the current one.',
+            asReadDismiss: 'Back to the blotter',
             areaLead: 'The trades and structures you may see, and the books they sit in.',
             title: 'Trades',
             lead: 'The trades and structures of your party, and the books they sit in.',

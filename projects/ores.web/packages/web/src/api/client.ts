@@ -2420,6 +2420,14 @@ export const api = {
         );
     },
 
+    /** One trade as it stood at one version, which is what a run records. */
+    async tradeVersion(id: string, version: number): Promise<unknown | null> {
+        const reply = (await request(`/api/trades/${id}/versions/${version}`, {
+            method: 'GET',
+        })) as { trade?: unknown | null };
+        return reply.trade ?? null;
+    },
+
     /** The errors a report run recorded. */
     async gridReportRunErrors(id: string): Promise<readonly unknown[]> {
         const reply = (await request(`/api/operations/grid/report-runs/${id}/errors`, {

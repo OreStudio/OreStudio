@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0A76FA11-7E9D-4D1A-B94C-7D3C03113914][Configure every seeded report from the ORE examples]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -41,7 +41,7 @@ carry none.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | STARTED                              |
-| Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Parent story | [[id:0A76FA11-7E9D-4D1A-B94C-7D3C03113914][Configure every seeded report from the ORE examples]] |
 | Now          | The scope half is settled, and a pricing run showed that ORE recognises the analytic codes. That run stopped because the package carries no quotes for the run's as-of date.                       |
 | Waiting on   | Market data at the run's as-of date, then a run per analytic family.                               |
 | Next         | Make the gathered market data cover the as-of date, then run one report per family and record the engine's verdict for each code.                  |

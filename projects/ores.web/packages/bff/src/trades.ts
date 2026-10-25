@@ -29,7 +29,7 @@ import { subjects as linkSubjects } from '@ores/wire-protocol/generated/trading/
 import { subjects as partyRoleSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_party_role_protocol';
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
-import { notFound } from './errors.js';
+import { invalidRequest, notFound } from './errors.js';
 import { input, readAll, refusal, resultSchema, row, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
@@ -142,6 +142,28 @@ export function registerTradeRoutes(
 ): void {
     registerTradePageRoute(server, requireSession);
 
+    server.get('/api/trades/:id/versions/:version', async (request) => {
+        const session = requireSession(request);
+        const parsed = tradeVersionParamsSchema.safeParse(request.params);
+        if (!parsed.success) {
+            throw invalidRequest('The address does not name a trade id and a version.');
+        }
+        const reply = await session.client.callAuthenticated(
+            tradeSubjects.get_trade_version_request,
+            { key: { trade: { id: parsed.data.id }, version: parsed.data.version } },
+            z.looseObject({ result: resultSchema, version: row.nullable().optional() }),
+        );
+        // A version the trade never had is an answer to the question, not a
+        // refusal of it: the screen says the version is not there.
+        if (reply.result.outcome === 'missing') {
+            return { trade: null };
+        }
+        if (reply.result.outcome !== 'ok') {
+            throw refusal(reply.result);
+        }
+        return { trade: reply.version ?? null };
+    });
+
     server.get('/api/trades', async (request) => {
         const session = requireSession(request);
         const query = input(tradeListQuerySchema, request.query);
@@ -232,6 +254,18 @@ function registerTradePageRoute(
         };
     });
 }
+
+/**
+ * One trade as it stood at one version.
+ *
+ * A run records the version of a trade it read, and the error screen links to
+ * it. The trade page answers for the current row, so the version is read from
+ * the trade itself rather than filtered out of a list.
+ */
+const tradeVersionParamsSchema = z.object({
+    id: z.uuid(),
+    version: z.coerce.number().int().min(1),
+});
 
 /** One page of summary rows with the names, references and versions of the trades it names. */
 async function enrich(

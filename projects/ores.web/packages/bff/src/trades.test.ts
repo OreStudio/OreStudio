@@ -312,3 +312,41 @@ describe('trade list route', () => {
         expect(reply.statusCode).toBe(400);
     });
 });
+
+describe('GET /api/trades/:id/versions/:version', () => {
+    it('serves the trade as it stood at the version a run recorded', async () => {
+        const { server, sessionId } = buildTestServer({
+            'trading.v1.trades_versions.get': {
+                result: ok,
+                version: {
+                    id: TRADE,
+                    version: 3,
+                    instrument_type: 'Bond',
+                    status: 'live',
+                    trade_date: '2026-05-05',
+                },
+            },
+        });
+
+        const reply = await send(server, sessionId, `/api/trades/${TRADE}/versions/3`);
+
+        expect(reply.statusCode).toBe(200);
+        expect(reply.json()).toMatchObject({
+            trade: { id: TRADE, version: 3, instrument_type: 'Bond' },
+        });
+    });
+
+    it('answers for a version that is not there with no trade', async () => {
+        const { server, sessionId } = buildTestServer({
+            'trading.v1.trades_versions.get': {
+                result: { ...ok, outcome: 'missing', code: 'not_found' },
+                version: null,
+            },
+        });
+
+        const reply = await send(server, sessionId, `/api/trades/${TRADE}/versions/9`);
+
+        expect(reply.statusCode).toBe(200);
+        expect(reply.json()).toEqual({ trade: null });
+    });
+});

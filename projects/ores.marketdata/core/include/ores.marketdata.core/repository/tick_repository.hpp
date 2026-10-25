@@ -46,9 +46,10 @@ struct tick final {
 /**
  * @brief The reads of the tick table.
  *
- * The tick table is append-only and has one index, on the series and the time, so a read
- * of one series in a span of time is one probe of that index. The party policy of the table
- * decides which ticks a session sees.
+ * The tick table is append-only and has one index, on the stream, the coordinate and the time,
+ * so a read of one stream in a span of time starts from that index. The table carries no
+ * tenant and no party policy: the caller has already checked that the session may read the
+ * series, and the stream it names is shared by every party.
  */
 class ORES_MARKETDATA_CORE_EXPORT tick_repository {
 private:
@@ -64,18 +65,18 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief The ticks of @p series_id from @p from, inclusive, to @p to, exclusive.
+     * @brief The ticks of @p stream_id from @p from, inclusive, to @p to, exclusive.
      *
-     * The order is by time and then by the number of the coordinate in the series dictionary.
-     * The read stops after @p limit ticks, so a caller that asks for one more than its ceiling
-     * can tell that the span holds more. The cut is by time alone, so when the span holds more
-     * than @p limit ticks, which ticks of the last instant are in the answer is not defined.
-     * A span that holds no more than @p limit ticks is answered whole.
+     * The order is by time and then by the number of the coordinate in the stream's
+     * dictionary. The read stops after @p limit ticks, so a caller that asks for one more than
+     * its ceiling can tell that the span holds more. The cut is by time alone, so when the span
+     * holds more than @p limit ticks, which ticks of the last instant are in the answer is not
+     * defined. A span that holds no more than @p limit ticks is answered whole.
      *
      * @param coordinates The coordinate URIs to read, or empty for every coordinate.
      */
     std::vector<tick> read_range(context ctx,
-                                 const boost::uuids::uuid& series_id,
+                                 const boost::uuids::uuid& stream_id,
                                  std::chrono::system_clock::time_point from,
                                  std::chrono::system_clock::time_point to,
                                  const std::vector<std::string>& coordinates,

@@ -20,9 +20,11 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
+#include "ores.marketdata.api/generators/subscription_generator.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/messaging/series_ticks_handler.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/subscription_repository.hpp"
 #include "ores.marketdata.core/repository/tick_coords_repository.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -79,6 +81,8 @@ struct handler_fixture {
     boost::uuids::uuid party;
     ores::database::context owner;
     boost::uuids::uuid series;
+    std::string provider;
+    boost::uuids::uuid stream;
     std::string curve = ores::marketdata::tests::fresh_curve_id();
     int number;
 
@@ -86,15 +90,40 @@ struct handler_fixture {
         : nats(ores::testing::make_nats_options())
         , party(system_party_of_the_test_tenant(db))
         , owner(db.context().with_party(db.tenant_id(), party, {party}, db.db_user()))
-        , series(boost::uuids::random_generator{}())
-        , number(ores::marketdata::repository::tick_coords_repository{}.resolve(
-              owner, party, series, "oresmd://test/series_ticks_handler")) {
+        , series(boost::uuids::random_generator{}()) {
         auto generation = ores::testing::make_generation_context(db);
         auto row = ores::marketdata::generators::generate_synthetic_market_series(generation);
         row.id = series;
         row.party_id = party;
         row.oresmd_uri = ores::marketdata::tests::zero_uri(curve);
         ores::marketdata::repository::market_series_repository{}.write(db.context(), row);
+        provider = row.provider_code;
+        stream = ores::marketdata::tests::stream_of(provider, row.oresmd_uri);
+        number = ores::marketdata::repository::tick_coords_repository{}.resolve(
+            owner, stream, "oresmd://test/series_ticks_handler");
+
+        // The history read returns a tick only to a party that may display the provider's feeds.
+        // The suite reuses its tenant and the system party, and a party holds one subscription
+        // to a provider, so a later case finds the first case's row.
+        const auto existing = ores::marketdata::repository::subscription_repository{}
+                                  .read_latest_by_provider_code(owner, provider);
+        if (existing.empty()) {
+            auto entitlement =
+                ores::marketdata::generators::generate_synthetic_subscription(generation);
+            entitlement.tenant_id = db.tenant_id();
+            entitlement.party_id = party;
+            entitlement.provider_code = provider;
+            entitlement.display = true;
+            entitlement.non_display = false;
+            entitlement.derived = false;
+            entitlement.modified_by = db.db_user();
+            entitlement.performed_by = db.db_user();
+            entitlement.change_reason_code = "system.test";
+            entitlement.change_commentary = "Test subscription";
+            ores::marketdata::repository::subscription_repository{}.write(db.context(),
+                                                                          entitlement);
+        }
+
         nats.connect();
         REQUIRE(nats.is_connected());
         verifier = ores::security::jwt::jwt_authenticator::create_hs256(
@@ -146,8 +175,8 @@ TEST_CASE("a_token_with_the_read_permission_gets_the_ticks_over_nats",
           "[series_ticks_handler][integration]") {
     handler_fixture f;
     const auto t0 = now_second();
-    ores::marketdata::tests::insert_tick(f.owner, f.party, f.series, f.number, t0, 1.25);
-    ores::marketdata::tests::insert_tick(f.owner, f.party, f.series, f.number, t0 + 3s, 2.5);
+    ores::marketdata::tests::insert_tick(f.owner, f.stream, f.number, t0, 1.25);
+    ores::marketdata::tests::insert_tick(f.owner, f.stream, f.number, t0 + 3s, 2.5);
 
     const auto reply = f.request(f.span(t0 - 1s, t0 + 1min),
                                  f.token({boost::uuids::to_string(f.party)}, {read_permission}));
@@ -167,7 +196,7 @@ TEST_CASE("a_token_without_the_read_permission_is_refused_forbidden",
           "[series_ticks_handler][integration]") {
     handler_fixture f;
     const auto t0 = now_second();
-    ores::marketdata::tests::insert_tick(f.owner, f.party, f.series, f.number, t0, 1.0);
+    ores::marketdata::tests::insert_tick(f.owner, f.stream, f.number, t0, 1.0);
 
     const auto reply =
         f.request(f.span(t0 - 1s, t0 + 1min),
@@ -192,7 +221,7 @@ TEST_CASE("a_token_that_sees_another_party_gets_an_empty_reply",
           "[series_ticks_handler][integration]") {
     handler_fixture f;
     const auto t0 = now_second();
-    ores::marketdata::tests::insert_tick(f.owner, f.party, f.series, f.number, t0, 1.0);
+    ores::marketdata::tests::insert_tick(f.owner, f.stream, f.number, t0, 1.0);
 
     const auto stranger = boost::uuids::to_string(boost::uuids::random_generator{}());
     const auto reply =
@@ -207,7 +236,7 @@ TEST_CASE("a_token_that_sees_no_party_is_answered_party_required",
           "[series_ticks_handler][integration]") {
     handler_fixture f;
     const auto t0 = now_second();
-    ores::marketdata::tests::insert_tick(f.owner, f.party, f.series, f.number, t0, 1.0);
+    ores::marketdata::tests::insert_tick(f.owner, f.stream, f.number, t0, 1.0);
 
     const auto reply = f.request(f.span(t0 - 1s, t0 + 1min), f.token({}, {read_permission}));
 

@@ -31,9 +31,15 @@ namespace ores::marketdata::service {
 /**
  * @brief Reads every tick of one series in a span of time, in one reply.
  *
- * The reader decides three things before it reads: the session has a party, the span does not
- * end before it starts, and the span holds no more ticks than the ceiling. It reports each as an
- * outcome in the reply. It never returns part of a span as if it were the whole.
+ * The reader decides four things before it reads: the session has a party, the party holds a
+ * subscription to the series' provider with display or non-display, the span does not end before
+ * it starts, and the span holds no more ticks than the ceiling. It reports each as an outcome in
+ * the reply. It never returns part of a span as if it were the whole.
+ *
+ * The ticks are shared by every party of the series' provider, and the store filters no row by
+ * party, so the subscription check is the door to them. The series names the shared stream
+ * through its provider code and its series URI, and the id of the stream is derived from those
+ * two values and stored nowhere.
  *
  * The reply states the coordinate URIs once, the first instant once, and then a gap in
  * microseconds, a coordinate index and a value for each tick. The client adds the gaps up to

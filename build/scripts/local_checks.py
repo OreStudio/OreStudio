@@ -869,10 +869,20 @@ CATALOGUE: tuple[Check, ...] = (
         phase=HEAVY,
         timeout=7200,
     ),
+    # The marketdata and synthetic suites share the bus (and several subjects)
+    # with the services of the same name, so a live service steals the test's
+    # own messages. Stop those two before the suites; the smoke starts the fleet
+    # again afterwards.
     Check(
         id="ctest",
         title="Every test suite passes",
-        argv=("./compass.sh", "test", "run", "--preset", "{preset}"),
+        argv=(
+            "bash",
+            "-c",
+            "./compass.sh services stop ores.marketdata.service || true;"
+            " ./compass.sh services stop ores.synthetic.service || true;"
+            " ./compass.sh test run --preset {preset}",
+        ),
         classes=("cpp", "services", "sql"),
         phase=HEAVY,
         timeout=7200,
@@ -929,7 +939,11 @@ CATALOGUE: tuple[Check, ...] = (
     Check(
         id="step-consumers",
         title="Every step stream carries one consumer, and the claim's own numbers",
-        argv=("python3", "build/scripts/check_step_consumers.py"),
+        argv=(
+            "bash",
+            "-c",
+            "./compass.sh services start; python3 build/scripts/check_step_consumers.py",
+        ),
         classes=("cpp", "services"),
         phase=HEAVY,
         timeout=300,

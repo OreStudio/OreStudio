@@ -1612,6 +1612,12 @@ synthetic_commands::plan_fx(const std::string& sub_config_id,
     write.enabled = true;
     write.auto_start = false;
     write.folder_id = boost::lexical_cast<boost::uuids::uuid>(folder_id);
+    // The setup flow authors a periodic feed, so it states the arrival
+    // defaults the store would otherwise apply from the domain.
+    write.arrival_mode = "periodic";
+    write.branching_ratio = 0.0;
+    write.decay = 1.0;
+    write.sensitivity = 1.0;
 
     synthetic_ms::put_fx_spot_generation_config_request config_req;
     config_req.change.write = write;
@@ -1679,6 +1685,12 @@ std::vector<synthetic_commands::setup_row> synthetic_commands::plan_ir(
     // Not consulted for Deposit entries, but required and validated, and the
     // Swap entries the resolver builds need it.
     write.fixed_leg_payment_frequency_code = "Annual";
+    // The setup flow authors a periodic feed, so it states the arrival
+    // defaults the store would otherwise apply from the domain.
+    write.arrival_mode = "periodic";
+    write.branching_ratio = 0.0;
+    write.decay = 1.0;
+    write.sensitivity = 1.0;
 
     synthetic_ms::put_ir_curve_generation_config_request config_req;
     config_req.change.write = write;

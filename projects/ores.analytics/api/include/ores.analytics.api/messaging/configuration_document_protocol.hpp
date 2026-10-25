@@ -60,6 +60,37 @@ struct todays_market_document {
 };
 
 /**
+ * @brief One reason a save is refused, named so a client can act on it.
+ *
+ * A refused save reports every problem it found, not the first, so a person
+ * fixes them in one pass. Every field but code and message is empty when the
+ * problem is not about a product or a parameter.
+ */
+struct pricing_engines_document_problem {
+    /**
+     * @brief Which rule the document broke: name_missing, no_products, model_missing,
+     * engine_missing, parameter_repeated or parameter_value_missing.
+     */
+    std::string code;
+    /**
+     * @brief The product the problem is about, when it is about one.
+     */
+    std::string product_id;
+    /**
+     * @brief The scope of the setting the problem is about, when it is about one.
+     */
+    std::string parameter_scope;
+    /**
+     * @brief The name of the setting the problem is about, when it is about one.
+     */
+    std::string parameter_name;
+    /**
+     * @brief The problem in a sentence a person reads.
+     */
+    std::string message;
+};
+
+/**
  * @brief Stores a pricing engines document.
  *
  * The session must act for a party, which owns every row. The header carries the reporting
@@ -85,6 +116,11 @@ struct save_pricing_engines_document_response {
     bool success = false;
     std::string message;
     std::string id;
+    /**
+     * @brief Every reason the save was refused, in the order a person reads them. Empty when it
+     * saved.
+     */
+    std::vector<pricing_engines_document_problem> problems;
 };
 
 /**

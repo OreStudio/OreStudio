@@ -52,6 +52,37 @@ export interface TodaysMarketDocument {
 }
 
 /**
+ * @brief One reason a save is refused, named so a client can act on it.
+ *
+ * A refused save reports every problem it found, not the first, so a person
+ * fixes them in one pass. Every field but code and message is empty when the
+ * problem is not about a product or a parameter.
+ */
+export interface PricingEnginesDocumentProblem {
+    /**
+     * @brief Which rule the document broke: name_missing, no_products, model_missing,
+     * engine_missing, parameter_repeated or parameter_value_missing.
+     */
+    code: string;
+    /**
+     * @brief The product the problem is about, when it is about one.
+     */
+    product_id: string;
+    /**
+     * @brief The scope of the setting the problem is about, when it is about one.
+     */
+    parameter_scope: string;
+    /**
+     * @brief The name of the setting the problem is about, when it is about one.
+     */
+    parameter_name: string;
+    /**
+     * @brief The problem in a sentence a person reads.
+     */
+    message: string;
+}
+
+/**
  * @brief Stores a pricing engines document.
  *
  * The session must act for a party, which owns every row. The header carries the reporting
@@ -68,6 +99,10 @@ export interface SavePricingEnginesDocumentResponse {
     success: boolean;
     message: string;
     id: string;
+    /**
+     * @brief Every reason the save was refused, in the order a person reads them. Empty when it saved.
+     */
+    problems: PricingEnginesDocumentProblem[];
 }
 
 /**

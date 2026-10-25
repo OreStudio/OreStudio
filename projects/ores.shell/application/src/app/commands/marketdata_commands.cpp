@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/commands/marketdata/adapter_status_commands.hpp"
 #include "ores.shell/app/commands/marketdata/market_fixing_commands.hpp"
 #include "ores.shell/app/commands/marketdata/market_observation_commands.hpp"
 #include "ores.shell/app/commands/marketdata/market_series_asset_class_commands.hpp"
@@ -166,6 +167,7 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
 
     // Import has no modelled operation family yet, so it stays hand-written.
     auto marketdata_menu = std::make_unique<cli::Menu>("marketdata");
+    adapter_status_commands::register_commands(*marketdata_menu, session);
 
     marketdata_menu->Insert(
         "import",

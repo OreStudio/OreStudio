@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.marketdata.service/app/adapter_supervisor.hpp"
+#include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -55,11 +56,13 @@ public:
         ores::nats::service::client& nats,
         ores::database::context ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier,
-        std::shared_ptr<ores::marketdata::service::app::adapter_supervisor> supervisor)
+        std::shared_ptr<ores::marketdata::service::app::adapter_supervisor> supervisor,
+        std::shared_ptr<ores::marketdata::service::app::feed_ingest_loop> ingest = nullptr)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier))
-        , supervisor_(std::move(supervisor)) {}
+        , supervisor_(std::move(supervisor))
+        , ingest_(std::move(ingest)) {}
 
     void list(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
@@ -77,6 +80,17 @@ public:
 
         list_adapter_status_response resp;
         resp.adapters = supervisor_->status();
+        // The supervisor knows the demand; only the ingest loop knows what arrived.
+        if (ingest_) {
+            const auto health = ingest_->health();
+            for (auto& adapter : resp.adapters) {
+                if (const auto found = health.find(adapter.adapter_id);
+                    found != health.end()) {
+                    adapter.ticks_last_minute = found->second.ticks_last_minute;
+                    adapter.last_tick_age_ms = found->second.last_tick_age_ms;
+                }
+            }
+        }
         resp.success = true;
         ores::service::messaging::reply(nats_, msg, resp);
     }
@@ -86,6 +100,7 @@ private:
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     std::shared_ptr<ores::marketdata::service::app::adapter_supervisor> supervisor_;
+    std::shared_ptr<ores::marketdata::service::app::feed_ingest_loop> ingest_;
 };
 
 }

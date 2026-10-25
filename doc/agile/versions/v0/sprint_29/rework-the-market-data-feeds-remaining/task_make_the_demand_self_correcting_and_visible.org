@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/make-the-demand-self-correcting-and-visible
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A missed change event delays demand by at most one interval, and an operator see
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,16 @@ A missed change event delays demand by at most one interval, and an operator see
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Re-read the catalogue and the routes every minute in the supervisor, and
+   re-read them every minute in the ingest loop, so a missed change event
+   delays a demand or a route by one interval instead of freezing it.
+2. Count the routes each adapter's source has, and keep the count on the
+   snapshot the supervisor already reads.
+3. Give the adapter status the routes, the ticks the ingest received in the
+   last minute and the age of the last tick, and merge the ingest's health
+   into the status reply.
+4. Print one row per adapter from a shell command.
+5. Warn once when an adapter is up, routes name it, and its demand is empty.
 
 * Measurements
 
@@ -84,4 +91,30 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Live adapter status | bloomberg-a serving, 5 routes, 26 demanded, 26 accepted, 298 ticks/min, last tick 0.0s | =marketdata adapters status= | 0e26b3156c-pending |
+| Adapters with no routes | demo-a and lseg-a, 0 routes and 0 demand | same | same |
+
 * Result
+
+The demand is self-correcting and visible.
+
+- The supervisor re-reads the catalogue and the routes every minute, and the
+  ingest loop re-reads them every minute from its status thread. A missed
+  change event now delays a demand set by one interval and never loses it.
+- The adapter status carries the routes that name the adapter's source, the
+  ticks the ingest received from it in the last minute, and the age of its last
+  tick. The handler merges the ingest's health into the supervisor's reply.
+- =marketdata adapters status= prints one row per adapter. Against the live
+  system: =bloomberg-a= serving, 5 routes, 26 demanded and accepted, 298
+  ticks/min, last tick 0.0s; =demo-a= and =lseg-a= ready with no routes and no
+  demand.
+- The supervisor warns once when an adapter is up, routes name its source, and
+  the demand set it answers is empty, which is the shape of the 2026-10-23
+  failure.
+- The old feed screen still reports the controller's run list, which is not the
+  demand path. This status is the honest view until the screens task replaces
+  it.

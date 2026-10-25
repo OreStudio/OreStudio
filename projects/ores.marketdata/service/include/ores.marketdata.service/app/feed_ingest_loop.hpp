@@ -158,7 +158,19 @@ public:
     void start();
 
     /// Reads the routes and the catalogue again, and drops what was cached from them.
+    /// The loop also calls this on a timer, so a missed change event delays a refresh by
+    /// one interval and never loses it.
     void refresh();
+
+    /// What the ingest received from one adapter: the ticks of the current minute and the
+    /// age of the last one.
+    struct adapter_health {
+        std::uint64_t ticks_last_minute = 0;
+        std::int64_t last_tick_age_ms = -1;
+    };
+
+    /// The tick health of every adapter the loop has received a tick from, by adapter id.
+    [[nodiscard]] std::map<std::string, adapter_health> health() const;
 
     /**
      * @brief The translator of the ticks of adapters, as the last refresh() built it.
@@ -341,6 +353,13 @@ private:
     /// Series ids by series URI, then by tenant, party and provider, cleared by refresh().
     std::unordered_map<std::string, std::vector<series_entry>> series_ids_;
     std::map<consumer_key, std::shared_ptr<feed_stats>> stats_;
+    /// What arrived from each adapter, for the health read.
+    struct adapter_arrivals {
+        std::chrono::steady_clock::time_point last_arrival{};
+        std::int64_t minute_bucket = -1;
+        std::uint64_t minute_count = 0;
+    };
+    std::map<std::string, adapter_arrivals> arrivals_;
     /// Classifiers by tenant id, cleared by refresh().
     std::map<std::string, std::shared_ptr<const core::series_classifier>> classifiers_;
     /// Sources and URIs already reported as dropped, so each is reported once

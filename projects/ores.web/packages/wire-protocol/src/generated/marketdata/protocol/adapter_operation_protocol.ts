@@ -127,6 +127,9 @@ export interface AdapterStatus {
     served_count: number;
     unknown_count: number;
     demanded_count: number;
+    routes_seen: number;
+    ticks_last_minute: number;
+    last_tick_age_ms: number;
     accepted: VendorId[];
     rejected: RejectedId[];
 }

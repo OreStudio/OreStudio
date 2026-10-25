@@ -246,7 +246,37 @@ feed_ingest_loop::accept_adapter_tick(std::string_view adapter_id,
         return reason;
     }
     queue_.push(std::move(translated->tick));
+    {
+        std::lock_guard lock(mu_);
+        auto& arrivals = arrivals_[std::string(adapter_id)];
+        arrivals.last_arrival = std::chrono::steady_clock::now();
+        const auto minute = std::chrono::duration_cast<std::chrono::minutes>(
+                                std::chrono::system_clock::now().time_since_epoch())
+                                .count();
+        if (arrivals.minute_bucket != minute) {
+            arrivals.minute_bucket = minute;
+            arrivals.minute_count = 0;
+        }
+        ++arrivals.minute_count;
+    }
     return std::nullopt;
+}
+
+std::map<std::string, feed_ingest_loop::adapter_health> feed_ingest_loop::health() const {
+    using namespace std::chrono;
+    std::lock_guard lock(mu_);
+    const auto now = steady_clock::now();
+    const auto minute = duration_cast<minutes>(system_clock::now().time_since_epoch()).count();
+    std::map<std::string, adapter_health> out;
+    for (const auto& [adapter, arrivals] : arrivals_) {
+        adapter_health h;
+        h.ticks_last_minute = arrivals.minute_bucket == minute ? arrivals.minute_count : 0;
+        if (arrivals.last_arrival != steady_clock::time_point{})
+            h.last_tick_age_ms =
+                duration_cast<milliseconds>(now - arrivals.last_arrival).count();
+        out.emplace(adapter, h);
+    }
+    return out;
 }
 
 void feed_ingest_loop::on_adapter_tick(const ores::nats::message& msg) {
@@ -894,6 +924,13 @@ void feed_ingest_loop::status_loop() {
     while (!stop_flag_.load(std::memory_order_relaxed)) {
         std::this_thread::sleep_for(slice);
         if (steady_clock::now() >= next) {
+            // The router, the sources and the mapping change under the loop; a timer
+            // refresh keeps a missed event from freezing the path.
+            try {
+                refresh();
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn) << "Periodic refresh failed: " << e.what();
+            }
             log_status();
             next = steady_clock::now() + status_interval_;
         }

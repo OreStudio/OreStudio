@@ -137,6 +137,9 @@ struct adapter_status {
     std::uint32_t served_count = 0;
     std::uint32_t unknown_count = 0;
     std::uint32_t demanded_count = 0;
+    std::uint32_t routes_seen = 0;
+    std::uint64_t ticks_last_minute = 0;
+    std::int64_t last_tick_age_ms = -1;
     std::vector<vendor_id> accepted;
     std::vector<rejected_id> rejected;
 };

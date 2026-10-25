@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "app/commands/marketdata/adapter_status_commands.cpp"
     "app/commands/marketdata/composite_commands.cpp"
     "app/commands/marketdata/composite_input_commands.cpp"
     "app/commands/marketdata/delivery_count_commands.cpp"
@@ -43,6 +44,7 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/adapter_status_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/composite_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/composite_input_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/marketdata/delivery_count_commands.hpp"

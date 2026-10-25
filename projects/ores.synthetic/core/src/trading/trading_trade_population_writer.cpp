@@ -23,7 +23,7 @@
 #include "ores.iam.api/messaging/account_role_protocol.hpp"
 #include "ores.iam.api/messaging/role_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
-#include "ores.refdata.api/messaging/benchmark_rate_protocol.hpp"
+#include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/commodity_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
@@ -195,15 +195,16 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
             .quotation_currency = commodity.quotation_currency_code});
 
     /*
-     * The benchmark catalogue is the tenant's own too, and a floating leg names
-     * an index from it. As with commodities, an empty set is the planner's to
-     * refuse, because a leg that named an index the store cannot resolve would
-     * book and then fail to price.
+     * A floating leg names an index from the floating index catalogue, which
+     * is the tenant's own. It is not the benchmark rate set: a leg states
+     * =GBP-SONIA=, the FpML name of the index, and the store refuses anything
+     * outside that vocabulary. An empty set is the planner's to refuse, because
+     * a leg naming an unheld index would book and then fail to price.
      */
-    ores::refdata::messaging::list_benchmark_rates_request rate_req;
-    rate_req.limit = page;
-    for (const auto& benchmark : read(rate_req).rates)
-        scope.floating_index_codes.push_back(benchmark.code);
+    ores::refdata::messaging::list_floating_index_types_request index_req;
+    index_req.limit = page;
+    for (const auto& index : read(index_req).types)
+        scope.floating_index_codes.push_back(index.code);
 
     ores::refdata::messaging::list_counterparties_request cp_req;
     cp_req.limit = page;
@@ -556,7 +557,11 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             leg.payment_frequency_code = frequency;
             leg.floating_index_code = index;
             leg.currency = rate->currency;
-            leg.leg_group = std::string("main");
+            /*
+             * A leg group is null for an ordinary swap. The column's check
+             * names the groups a credit linked swap states, and an ordinary
+             * fixed against floating leg is none of them.
+             */
             leg.audit.change_reason_code = std::string(population_reason);
             leg.audit.change_commentary = "Generated trade population.";
             book_req.instruments.swap_legs.push_back(leg);

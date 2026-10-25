@@ -589,6 +589,31 @@ constexpr std::size_t fixed_day_count_count =
 
 }
 
+
+namespace {
+
+/*
+ * The index a slot resets on. A catalogue code carries its currency as a
+ * prefix, such as =GBP-SONIA=, so a population denominated in one currency
+ * picks from the indices of that currency rather than from every currency the
+ * tenant holds. A set with no index of the scope's currency falls back to the
+ * whole catalogue, because a leg in a currency with no index of its own is
+ * still better stated than refused.
+ */
+const std::string& index_for(const domain::trade_generation_scope& scope, std::uint32_t slot) {
+    const auto own = std::string(scope.currency_code) + "-";
+    std::vector<const std::string*> matching;
+    for (const auto& code : scope.floating_index_codes) {
+        if (code.starts_with(own))
+            matching.push_back(&code);
+    }
+    if (!matching.empty())
+        return *matching[slot % matching.size()];
+    return scope.floating_index_codes[slot % scope.floating_index_codes.size()];
+}
+
+}
+
 std::string_view rate_trade_planner::asset_class_code() const { return "interest_rates"; }
 
 domain::trade_population_plan
@@ -620,7 +645,7 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
          * to reach a type always states it and the coverage claim is testable.
          */
         const auto& type = rate_types[slot % rate_type_count];
-        const auto& index = scope.floating_index_codes[slot % scope.floating_index_codes.size()];
+        const auto& index = index_for(scope, slot);
 
         const auto span = max_years - min_years + 1;
         const auto drawn =

@@ -172,5 +172,5 @@ TEST_CASE("a non-periodic arrival needs a value process that can step by elapsed
     const auto refused =
         ores::analytics::quant::domain::validate_step_compatibility("poisson", false);
     CHECK_FALSE(refused.valid);
-    CHECK(refused.message.find("periodic") != std::string::npos);
+    CHECK(refused.message.contains("periodic"));
 }

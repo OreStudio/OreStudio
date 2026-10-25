@@ -76,7 +76,7 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | The three affected suites | 3 of 3 pass | =compass test run -- -R "ores.(synthetic.api\|synthetic.service\|analytics.quant).tests"= | fbec022ce0 |
-| New cases for the elapsed step | 11 across five test files | same run | fbec022ce0 |
+| New cases for the elapsed step | 13 across six test files | same run | fbec022ce0 |
 
 * Notes
 
@@ -101,17 +101,32 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | The clock hands the body a gap, and the feed divided it by a different double than the arrival process used, so a periodic feed landed one ulp off one tick and a fixed-step process threw on every tick | =i_stochastic_process.hpp=, both feeds | Accepted | The default now accepts a neighbour of one tick within 1e-9, and the feed multiplies by the same rate the factory divides by |
+| 2 | The mixtures scaled one component over the whole step, which grows the between-component variance with the square of the step | both mixture processes | Accepted | One draw per tick, with the fractional remainder scaled; the tests now use a two-component mixture |
+| 3 | The `0.0` sentinel for an unusable gap turns a documented legal path into a failure | both feeds | Accepted | An unusable gap advances one nominal tick, as it did before |
+| 4 | `find(...) != npos`, a missing `<cmath>`, a duplicated `supports_variable_step` | tests, arithmetic process | Accepted | Fixed |
+| 5 | The IR screen offered arrivals its engines cannot follow, so a user could save a config that throws at feed construction | =irFeeds.tsx= | Accepted | The screen offers the periodic mode only, with the reason in the help text |
+| 6 | Throwing where the checklist prefers `std::expected` | =i_stochastic_process.hpp= | Declined | Asking a one-tick process for a longer step is a misuse of the interface, not an expected outcome; the builders refuse the pairing before a caller can try |
+| 7 | `supports_variable_step()` duplicates what the default already knows | =i_stochastic_process.hpp= | Declined | The flag is needed before construction, where the throw cannot be observed without doing the work |
+| 8 | No test covers a feed stepping a value process by a real gap | both feeds | Partially accepted | The builders are covered; a feed test needs a running clock and is deferred to the regime story, which will exercise the path |
+
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
 * Result
 
 A value process now takes a step measured in nominal ticks, and one tick is
-still exactly the old step: the same seed gives the same prices, and the
-existing tests pass unchanged.
+still exactly the old step: the same seed gives the same prices. The existing
+tests keep their assertions; four of them only gain the elapsed argument in
+their lambda, which is a signature change rather than a behaviour change.
 
-The mixtures scale the mean with the time and the spread with its square root,
-so a year of returns has the same variance whether it arrives in many small
-steps or few large ones — the test measures that on 400 paths. The
+The mixtures draw one component per tick, so a year of returns has the same
+variance whether it arrives in many small steps or few large ones — the test
+measures that on 400 paths of a two-component mixture, which is the case where
+scaling a single draw over the whole step would have over-dispersed by the
+square of the step. The first cut did exactly that and the review caught it. The
 Ornstein-Uhlenbeck process needed only its elapsed time in place of the tick
 length, because its transition was already exact.
 

@@ -101,7 +101,7 @@ TEST_CASE("gaussian_mixture_model_process rejects a non-positive initial price",
                     std::invalid_argument);
 }
 
-TEST_CASE("gaussian_mixture_model_process: a step of one tick is the old step",
+TEST_CASE("gaussian_mixture_model_process: next() is next(1.0)",
           "[gaussian_mixture_model_process]") {
     gaussian_mixture_model_process one_tick({0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3}, 100.0, 7);
     gaussian_mixture_model_process explicit_tick({0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3}, 100.0, 7);
@@ -118,7 +118,7 @@ TEST_CASE("gaussian_mixture_model_process: the spread over a span does not depen
         std::vector<double> returns;
         returns.reserve(paths);
         for (int seed = 0; seed < paths; ++seed) {
-            gaussian_mixture_model_process p({0.0}, {0.01}, {1.0}, 100.0, seed);
+            gaussian_mixture_model_process p({0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3}, 100.0, seed);
             for (int i = 0; i < steps; ++i)
                 p.next(each);
             returns.push_back(std::log(p.current() / 100.0));

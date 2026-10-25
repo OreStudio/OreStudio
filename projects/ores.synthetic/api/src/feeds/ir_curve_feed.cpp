@@ -69,7 +69,7 @@ ir_curve_feed::ir_curve_feed(
     , process_(std::move(process))
     , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(arrival))
     , clock_(*arrivals_)
-    , period_seconds_(3600.0 / arrival.ticks_per_hour)
+    , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
     , entries_(std::move(entries)) {
 
     if (!process_)
@@ -94,11 +94,9 @@ ir_curve_feed::ir_curve_feed(
 void ir_curve_feed::start() {
     clock_.run(
         [this](double elapsed_seconds) {
-            const auto elapsed_ticks = elapsed_seconds / period_seconds_;
-            if (elapsed_ticks == 1.0)
-                process_->next();
-            else
-                process_->next(elapsed_ticks);
+            const auto elapsed_ticks =
+                elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0;
+            process_->next(elapsed_ticks);
             const auto now = std::chrono::system_clock::now();
 
             for (std::size_t i = 0; i < entries_.size(); ++i) {

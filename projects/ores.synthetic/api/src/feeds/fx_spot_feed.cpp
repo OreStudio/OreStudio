@@ -168,7 +168,7 @@ fx_spot_feed::fx_spot_feed(
     , process_(std::move(process))
     , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(arrival))
     , clock_(*arrivals_)
-    , period_seconds_(3600.0 / arrival.ticks_per_hour)
+    , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
     , nats_subject_(std::move(nats_subject))
     , adapter_(std::move(adapter)) {
 
@@ -201,12 +201,13 @@ const std::string& fx_spot_feed::role() const {
 void fx_spot_feed::start() {
     clock_.run(
         [this](double elapsed_seconds) {
-            // One tick is 1/rate seconds, so the elapsed time in ticks is the gap
-            // times the rate. A periodic feed always sees one, and then the
-            // process advances by exactly its old step.
-            const auto elapsed_ticks = elapsed_seconds / period_seconds_;
-            const auto value = std::format(
-                "{}", elapsed_ticks == 1.0 ? process_->next() : process_->next(elapsed_ticks));
+            // The same rate the arrival process divides by, so a periodic feed
+            // turns its own gap back into one tick rather than one-ulp-off one.
+            // An unusable gap (the clock's zero) still publishes a tick, so it
+            // advances the process by one nominal tick, as it always did.
+            const auto elapsed_ticks =
+                elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0;
+            const auto value = std::format("{}", process_->next(elapsed_ticks));
             const auto now = std::chrono::system_clock::now();
             const auto& codec = ores::nats::default_wire_codec();
             // A quote is perishable, so it goes out on core NATS without a wait for an

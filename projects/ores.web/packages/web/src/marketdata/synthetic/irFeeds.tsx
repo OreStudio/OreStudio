@@ -44,7 +44,13 @@ export const PARAMETER_VALUES = 'ir-parameter-values';
 export const TEMPLATE_ENTRIES = 'ir-template-entries';
 
 const ROLES = ['self_discounting', 'discount', 'projection'];
-const ARRIVAL_MODES = ['periodic', 'poisson', 'hawkes'] as const;
+/*
+ * Every yield-curve engine precomputes its step from dt, so none of them can
+ * follow an arrival that gives ticks of different lengths. The service refuses
+ * the pairing when the feed starts; offering only the periodic mode here means a
+ * user cannot author it in the first place.
+ */
+const ARRIVAL_MODES = ['periodic'] as const;
 
 const PRICE_SOURCES = ['fixed', 'vintage'];
 

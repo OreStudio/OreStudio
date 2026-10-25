@@ -20,6 +20,7 @@
 #ifndef ORES_ANALYTICS_QUANT_DOMAIN_I_STOCHASTIC_PROCESS_HPP
 #define ORES_ANALYTICS_QUANT_DOMAIN_I_STOCHASTIC_PROCESS_HPP
 
+#include <cmath>
 #include <stdexcept>
 
 namespace ores::analytics::quant::domain {
@@ -54,9 +55,14 @@ public:
      * have a time-scaled law override both this and supports_variable_step().
      */
     virtual double next(double elapsed_ticks) {
-        if (elapsed_ticks == 1.0)
+        // One tick arrives from a division on one side and a multiplication on
+        // the other, so the two spellings differ in the last bit for about a
+        // quarter of all rates. Anything within this tolerance is one tick.
+        constexpr double one_tick_tolerance = 1e-9;
+        if (std::abs(elapsed_ticks - 1.0) <= one_tick_tolerance)
             return next();
-        throw std::invalid_argument("this process cannot step by other than one nominal tick");
+        throw std::invalid_argument(
+            "this process cannot step by other than one nominal tick");
     }
 
     /**

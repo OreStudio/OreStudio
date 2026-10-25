@@ -165,5 +165,5 @@ TEST_CASE("tick_clock hands the body the gap it waited", tags) {
 
     REQUIRE(gaps.size() == 3);
     for (const double gap : gaps)
-        CHECK(gap == Catch::Approx(0.001).epsilon(0.5));
+        CHECK(gap == Catch::Approx(0.001).epsilon(1e-12));
 }

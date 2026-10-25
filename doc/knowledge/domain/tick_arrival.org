@@ -159,9 +159,10 @@ type that does not support it. The IR curve feed is periodic, and its
 ** What validation guards
 
 =validate_process_parameters= and its arrival companions
-(=validate_arrival_process_parameters=, =validate_step_compatibility=) are the
-one rule set that the service and the web client share. They hold the arrival
-rules:
+(=validate_arrival_process_parameters=, =validate_step_compatibility=) hold the
+arrival rules. The service applies them when a feed is built; the editors offer
+only what a process can follow, so the curve screens offer the periodic mode
+alone.
 
 - the rate is positive and finite;
 - the decay is positive and finite;

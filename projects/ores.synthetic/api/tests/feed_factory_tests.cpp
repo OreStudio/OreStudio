@@ -397,3 +397,22 @@ TEST_CASE("a config row's arrival mode reaches the feed it builds", tags) {
     CHECK_THROWS_AS(factory.make(std::string(fx_spot_feed_kind), make_build_context(), refused),
                     std::invalid_argument);
 }
+
+TEST_CASE("a process that cannot step by elapsed time is refused a non-periodic arrival",
+          tags) {
+    const auto factory = make_default_feed_factory();
+    auto f = make_ir_fixture();
+    f.config.arrival_mode = "poisson";
+
+    const auto refused =
+        ir_curve_feed_build_input{f.config, f.entries, f.values, f.definitions, f.refctx};
+    CHECK_THROWS_AS(factory.make(std::string(ir_curve_feed_kind), make_build_context(), refused),
+                    std::invalid_argument);
+
+    // The same curve on a periodic arrival builds, so the refusal names the
+    // pairing rather than the config.
+    f.config.arrival_mode = "periodic";
+    const auto accepted =
+        ir_curve_feed_build_input{f.config, f.entries, f.values, f.definitions, f.refctx};
+    CHECK(factory.make(std::string(ir_curve_feed_kind), make_build_context(), accepted));
+}

@@ -88,7 +88,7 @@ TEST_CASE("arithmetic_gaussian_mixture_model_process rejects a non-positive init
                     std::invalid_argument);
 }
 
-TEST_CASE("arithmetic_gaussian_mixture_model_process: a step of one tick is the old step",
+TEST_CASE("arithmetic_gaussian_mixture_model_process: next() is next(1.0)",
           "[arithmetic_gaussian_mixture_model_process]") {
     arithmetic_gaussian_mixture_model_process one_tick(
         {0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3}, 100.0, 7);
@@ -106,7 +106,8 @@ TEST_CASE("arithmetic_gaussian_mixture_model_process: the spread over a span doe
         std::vector<double> changes;
         changes.reserve(paths);
         for (int seed = 0; seed < paths; ++seed) {
-            arithmetic_gaussian_mixture_model_process p({0.0}, {0.01}, {1.0}, 100.0, seed);
+            arithmetic_gaussian_mixture_model_process p({0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3},
+                                                        100.0, seed);
             for (int i = 0; i < steps; ++i)
                 p.next(each);
             changes.push_back(p.current() - 100.0);

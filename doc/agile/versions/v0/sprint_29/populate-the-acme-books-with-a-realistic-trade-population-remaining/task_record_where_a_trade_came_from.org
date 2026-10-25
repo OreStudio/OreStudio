@@ -26,7 +26,7 @@ The trade anchor holds origin and origin_reference. The booking request carries 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | STARTED                           |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
@@ -35,19 +35,30 @@ The trade anchor holds origin and origin_reference. The booking request carries 
 
 * Acceptance
 
-- A lookup holds ux, api, ore_import and synthetic.
-- The anchor refuses an origin that is not in the lookup.
-- Synthetic and the ORE import state their origin. The reason code no longer marks generated data.
+- A lookup holds ux, api, ore_import and synthetic. *Met.* The table is
+  installation-wide, keyed by code, and seeded.
+- The anchor refuses an origin that is not in the lookup. *Met.* The model
+  declares a soft foreign key with =:target_column: code= and
+  =:use_no_tenant: true=, so the insert trigger checks the code against the
+  lookup and raises =23503= for anything else.
+- Synthetic and the ORE import state their origin. The reason code no longer
+  marks generated data. *Met.* The population states =synthetic= with its
+  config id and =system.new_record=; the import states =ore_import= with the
+  ORE trade id.
 - The service refuses an origin that the authenticated client may not state.
-  *Deferred, and the reason corrected.* The platform does have in-service
-  RBAC: 9,366 permissions, an =authorise= helper that checks =has_permission=
-  against the verified JWT and replies =forbidden=, and
-  =trading::trades:write= already seeded. What trading does not do is call it
-  — there is no =authorise(= anywhere under =projects/ores.trading= — so
-  =book_trade='s only gate is the NATS subject ACL. The refusal is therefore
-  buildable with the existing machinery, and the successor is captured as
-  =book_trade_cannot_validate_an_origin=.
-- A database-backed test proves the refusal.
+  *Met, as a narrowing.* =book_trade= already required
+  =trading::trades:write=. Stating =synthetic= or =ore_import= now also needs
+  =trading::trades:write_service_origin=, which is seeded and granted to the
+  =Trading= role. It narrows who may claim a service origin without proving
+  who did: the generator authenticates as the party it books for, so the
+  permission it holds is held by that party's users. Making the claim
+  unforgeable needs the generator to authenticate as itself, which is
+  captured as =book_trade_cannot_validate_an_origin=.
+- A database-backed test proves the refusal. *Met.* Four cases over real
+  NATS prove both directions: a token with only the write permission is
+  refused for each service origin and writes no row, a token holding the
+  second permission books and stores the origin, and a token without it may
+  still state =api=.
 
 * Plan
 
@@ -84,22 +95,19 @@ The trade anchor holds origin and origin_reference. The booking request carries 
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+Measured on 2026-10-25 against the committed tree.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The trading suite, with the refusal cases | 220 cases passed, 1391 assertions | =publish/bin/ores.trading.core.tests= | 122f9c93dd |
-| The synthetic suite, unchanged | 66 cases passed, 1459 assertions | =publish/bin/ores.synthetic.core.tests= | 122f9c93dd |
-| The build | exit 0, 7876 targets | =compass build= | 122f9c93dd |
-| The codegen gate | no drift | =check_component_drift.py --all= | 122f9c93dd |
-| The cmake list gate | exit 0 | =regenerate_cmake_component_files.py --all --check= | 122f9c93dd |
-|      |       |         |        |
+| The build | exit 0, 7876 targets | =compass build= | 358765a62c |
+| The codegen gate | no drift | =check_component_drift.py --all= | 358765a62c |
+| The cmake list gate | exit 0 | =regenerate_cmake_component_files.py --all --check= | 358765a62c |
+| The trading core suite | 218 cases, 1386 assertions | =ores.trading.core.tests= | 358765a62c |
+| The trading service suite, with the origin gate | 14 cases, 43 assertions | =ores.trading.service.tests= | 358765a62c |
+| The synthetic suite | 66 cases, 1459 assertions | =ores.synthetic.core.tests= | 358765a62c |
+| The population run | 9 planned, 1 written, 8 already present | =synthetic generate-trades= | 358765a62c |
+| The stored row | =origin= synthetic, reference the config id, reason =system.new_record= | =select ... from ores_trading_trades_tbl= | 358765a62c |
+| The provisioning run | 9 of 9 steps completed | =compass shell -l ...acme...ores= | 358765a62c |
 
 * Notes
 
@@ -113,17 +121,20 @@ regression rather than a gap.
   fixed at startup and preserved across requests. Both the population writer
   and the ORE import reach =book_trade= through that service, so their context
   is the trading service's, and both would have been refused — the very paths
-  this task made state an origin. The refusal is withdrawn until it can key on
-  the token's roles instead.
-- *There is no foreign key.* The model adds =origin= under Columns but no
-  entry under Foreign keys, so codegen emits neither a constraint nor the
-  trigger check =entry_channel= and =booking_nature= get. The Result's claim
-  that the anchor references the lookup with a foreign key is false. An
-  unmappable code now throws on read rather than being prevented on write.
+  this task made state an origin. The check was replaced: =book_trade= now
+  asks for =trading::trades:write_service_origin=, which every caller reaches
+  through its own token rather than through the process it lands on.
+- *There was no foreign key.* The model added =origin= under Columns but no
+  entry under Foreign keys, so codegen emitted neither a constraint nor the
+  trigger check =entry_channel= and =booking_nature= get, and the Result of
+  the time claimed one existed. The entry is declared now, with the target
+  column and the installation scope, and a live provisioning run failing on
+  the generated check is what proved the earlier claim wrong.
 - *Origin is a server-owned field in a client payload.* =trade_write= carries
   it, so a client states its own provenance. The service could derive it from
   the session, which would remove the refusal problem entirely.
-- The reason-code clause is still deferred, and nothing states =ux=.
+- *The reason code.* It is =system.new_record= now, so the origin marks
+  generated data. Nothing states =ux=, because no screen books a trade.
 
 ** The token check is not a database check
 
@@ -177,22 +188,22 @@ via its "Verifies task" field.
 
 A trade states where it came from and what that origin refers to. The lookup
 holds =ux=, =api=, =ore_import= and =synthetic=; the anchor references it with
-a foreign key, and the C++ type is an enum registered as a custom value type,
-so an unknown code cannot be constructed on either side.
+a soft foreign key that the insert trigger enforces, and the C++ type is an
+enum registered as a custom value type, so an unknown code cannot be built on
+either side.
 
-=book_trade= refuses an origin the caller may not state, before it writes
-anything: a client may state =ux= or =api=, while =synthetic= and
-=ore_import= belong to the services that own those paths, which the session
-names in its service account. Two database-backed cases prove it.
+=book_trade= requires =trading::trades:write_service_origin= before it writes
+anything that states a service origin. The population writer states
+=synthetic= and its config id, the ORE import states =ore_import= and the ORE
+trade id, and the reason the population stamps is =system.new_record= so that
+origin, not the reason, marks generated data.
 
-The population writer states =synthetic= and its config id; the ORE import
-states =ore_import= and the ORE trade id. The screens have no booking path
-yet, so nothing states =ux=, and every other caller falls to =api=.
+Four cases over real NATS prove both directions of the gate. A provisioning run
+completes all nine steps, and a population run against one config writes a
+trade that the database reports as =synthetic= with that config as its
+reference.
 
-The change reason still marks generated data. The acceptance asked for that
-to move to the origin, and origin now carries it, but the reason is read by
-the digest fold to decide whether an amendment moved the external version, so
-changing it would alter that logic. It is recorded here as deliberate rather
-than done.
-
-* Result
+What this is not: the origin is unforgeable only up to the permission. The
+generator authenticates as the party it books for, so a holder of the =Trading=
+role can state a service origin on their own trade. Closing that needs the
+generator to authenticate as itself, which is captured rather than pretended.

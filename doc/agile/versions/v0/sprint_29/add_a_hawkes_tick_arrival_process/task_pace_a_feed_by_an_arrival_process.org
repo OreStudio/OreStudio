@@ -8,7 +8,7 @@
 #+filetags: :add_a_hawkes_tick_arrival_process:sprint_29:v0:
 #+owner: marco
 #+branch: feature/pace-a-feed-by-an-arrival-process
-#+pr: 3743
+#+pr: 3753
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
@@ -108,6 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3753][#3753]] | [synthetic] Pace a feed by an arrival regime |
 | [[https://github.com/OreStudio/OreStudio/pull/3743][#3743]] | [synthetic] Pace a feed by its own arrival regime |
 
 * Review

@@ -113,6 +113,24 @@ seam task cannot close while holding a family that needs a catalogue it
 does not own, and a task that waits on another belongs in the backlog
 beside it, not inside a refactor.
 
+** The size column is `integer` and the C++ is `std::uint32_t`
+
+A real defect found by running the provision, not by reading it. Recording a
+trade generation config fails with:
+
+=value "2167221318" is out of range for type integer=
+
+=trades_per_book= is declared =:type: integer= with =:cpp_type:
+std::uint32_t= in the config model. The SQL column is =int4= and the C++
+type is unsigned, so the value the writer sends does not fit and the insert
+is refused. The neighbouring integer entity fields use =int=, which is what
+the SQL is.
+
+The fix is to declare =int= in the model, regenerate, and carry =int=
+through the scope, the planner and the seed. Until then every tenant
+provision stops at =generate_trades=, so no population of any asset class
+can be booked.
+
 ** How the booking proof is run
 
 Recorded so the steps survive an interruption. The environment is brought up

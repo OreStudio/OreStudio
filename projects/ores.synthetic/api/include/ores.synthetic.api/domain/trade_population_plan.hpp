@@ -57,6 +57,18 @@ struct commodity_reference final {
     std::string quotation_currency;
 };
 
+/**
+ * @brief One currency pair the tenant's reference data holds.
+ *
+ * A pair is the tenant's own, in the way a commodity is, and it states the two
+ * currencies in the order the catalogue states them: the base is bought and the
+ * quote sold when the rate is quoted the way the market quotes it.
+ */
+struct currency_pair_reference final {
+    std::string base;
+    std::string quote;
+};
+
 struct trade_generation_scope final {
     boost::uuids::uuid config_id;
     boost::uuids::uuid party_id;
@@ -98,6 +110,15 @@ struct trade_generation_scope final {
      * not hold.
      */
     std::vector<std::string> floating_index_codes;
+    /**
+     * @brief The currency pairs the tenant's reference data holds.
+     *
+     * A pair is the tenant's own and not this configuration's, in the way the
+     * commodity catalogue is. A population whose set is empty cannot state an
+     * FX trade at all, so the planner refuses rather than inventing a pair the
+     * store does not hold.
+     */
+    std::vector<currency_pair_reference> currency_pairs;
     std::vector<boost::uuids::uuid> book_ids;
     std::vector<boost::uuids::uuid> counterparty_ids;
     /**
@@ -259,7 +280,71 @@ struct rate_terms final {
  * a reader of a bond slot sees bond facts and a reader of another family never
  * has to ask what a security is.
  */
-using trade_terms = std::variant<bond_terms, commodity_terms, rate_terms>;
+
+/**
+ * @brief The facts an FX slot carries and no other family does.
+ *
+ * The sixteen routed types reach seven tables, and the tables state three
+ * idioms: a bought currency against a sold one, a digital payoff struck against
+ * a foreign and a domestic currency, and an index with a reference notional.
+ * One payload states all three with the fields a type does not use left empty,
+ * which is the shape @c commodity_terms already takes for its eight.
+ */
+struct fx_terms final {
+    /// The currency bought, and how much of it.
+    std::string bought_currency;
+    double bought_amount = 0.0;
+    /// The currency sold, and how much of it.
+    std::string sold_currency;
+    double sold_amount = 0.0;
+    /// The date a forward settles on.
+    std::chrono::year_month_day value_date;
+    /// How the trade settles: =Cash= or =Physical=.
+    std::string settlement;
+
+    /// The side an option or a one-directional trade takes.
+    std::string option_type;
+    /// =European=, =American= or =Bermudan=.
+    std::string exercise_style;
+    /// The date an option expires or a term starts.
+    std::chrono::year_month_day expiry_date;
+    /// =Long= or =Short=.
+    std::string long_short;
+    /// The strike an option, a variance swap or an accumulator states.
+    std::optional<double> strike;
+
+    /// The barrier a knock-out or a knock-in trade states.
+    std::string barrier_type;
+    std::optional<double> lower_barrier;
+    std::optional<double> upper_barrier;
+
+    /// The currencies a digital states, and the payoff it makes.
+    std::string foreign_currency;
+    std::string domestic_currency;
+    std::string payoff_currency;
+    std::optional<double> payoff_amount;
+
+    /// The index and notional an average forward, a variance swap or an
+    /// accumulator is written on.
+    std::string underlying_code;
+    std::string fx_index;
+    std::string reference_currency;
+    double reference_notional = 0.0;
+    std::string settlement_currency;
+    double settlement_notional = 0.0;
+    /// The currencies and amounts an accumulator fixes against.
+    std::string currency;
+    double fixing_amount = 0.0;
+    std::optional<double> target_amount;
+    std::chrono::year_month_day start_date;
+    std::chrono::year_month_day end_date;
+    std::optional<std::chrono::year_month_day> payment_date;
+    std::optional<double> knock_out_barrier;
+    /// =Variance= or =Volatility=, the moment a variance swap states.
+    std::string moment_type;
+};
+
+using trade_terms = std::variant<bond_terms, commodity_terms, rate_terms, fx_terms>;
 
 /**
  * @brief One trade the population states, with every reference already

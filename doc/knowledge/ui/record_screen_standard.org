@@ -38,12 +38,12 @@ record screens. So are the tenant, party and role screens.
 
 These are not record screens, and this standard does not govern them:
 
-- an Audit screen, which reads a log of events that happened, such as sign-ins
+- *RS-SCOPE-01* an Audit screen, which reads a log of events that happened, such as sign-ins
   or publications (see the History and Audit rule in
   [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]);
-- a wizard step that collects input for one operation, such as provisioning a
+- *RS-SCOPE-02* a wizard step that collects input for one operation, such as provisioning a
   tenant;
-- a dashboard or an area page of tiles.
+- *RS-SCOPE-03* a dashboard or an area page of tiles.
 
 A journey can hold record screens and other steps together. The
 [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] rule still holds:
@@ -117,7 +117,7 @@ adding that part is the first task.
 | =/<area>/<plural>/:key= | The record page, on its first tab |
 | =/<area>/<plural>/:key?tab=<tab>= | The record page on one tab, so a link reopens it there |
 
-Add and Edit open a dialog over the page they start from; they have no address
+*RS-ADDR-01* Add and Edit open a dialog over the page they start from; they have no address
 of their own. A record kind with a key of more than one field encodes the key in
 one path segment, as the pair code =EUR/USD= is.
 
@@ -139,11 +139,11 @@ one path segment, as the pair code =EUR/USD= is.
 
 *** Header
 
-- The breadcrumb (=Crumbs=), whose shape is the
+- *RS-LIST-01* The breadcrumb (=Crumbs=), whose shape is the
   [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] page's, then the
   plural as the title, in sentence case (=PageHeader=).
-- One sentence that says what the records are.
-- At the right, /Refresh/, then /Workflows/, then /Add/. Add is the primary
+- *RS-LIST-02* One sentence that says what the records are.
+- *RS-LIST-03* At the right, /Refresh/, then /Workflows/, then /Add/. Add is the primary
   button and is drawn only for a person who may write. Workflows is a menu of the
   guided workflows that act on this kind of record, such as onboarding a party.
   It lists only those the person may start, and is not drawn when there are none.
@@ -152,40 +152,40 @@ one path segment, as the pair code =EUR/USD= is.
 
 *** Search and filter
 
-- A search box over the display field and the key. The search goes to the
+- *RS-LIST-04* A search box over the display field and the key. The search goes to the
   server through the list contract's filter, so it searches every record, not
   the page on the screen. A filter over the rows on one page is not a search.
-- Where a kind has a natural classification, such as a tier or a type, a
+- *RS-LIST-05* Where a kind has a natural classification, such as a tier or a type, a
   filter select beside the search. Where a kind hides some records by default,
   such as test tenants, a toggle that shows them. A filter is a =ListFilter= of
   the list's source; its value is held in the address as =f.<id>= and sent with
   the page.
-- What the list says about the page sits above the table as a note: what the
+- *RS-LIST-06* What the list says about the page sits above the table as a note: what the
   server's answer adds, such as how many records a filter hides, and what the
   screen knows before any read, such as why the list is read only.
-- Where the generated list contract has no filter for a field the search needs,
+- *RS-LIST-07* Where the generated list contract has no filter for a field the search needs,
   the contract is extended. The screen never reads every row to filter them
   itself. See [[id:92F755EA-5FA9-48DF-82F2-FF3E8F2236C7][Lists are always paged]].
-- A filter that matches nothing says "No <plural> match the search." and offers
+- *RS-LIST-08* A filter that matches nothing says "No <plural> match the search." and offers
   to clear it.
 
 *** The table
 
-- The columns come from one column list per kind. The display field or the key
+- *RS-LIST-09* The columns come from one column list per kind. The display field or the key
   is the first column.
-- One row opens the record page on a click, and on Enter when the row has focus.
+- *RS-LIST-10* One row opens the record page on a click, and on Enter when the row has focus.
   The table is reachable from the keyboard.
-- Selection is single. Bulk changes are a separate feature, not a table mode.
-- Every column sorts on the server through the list contract's =order=, on the
+- *RS-LIST-11* Selection is single. Bulk changes are a separate feature, not a table mode.
+- *RS-LIST-12* Every column sorts on the server through the list contract's =order=, on the
   value, not on the text shown. The default order is the kind's natural order:
   the display order, then the name, for reference data; most recent first for
   records that accumulate.
-- The audit columns (=version=, =modified_by=, =performed_by=, =recorded_at=,
+- *RS-LIST-13* The audit columns (=version=, =modified_by=, =performed_by=, =recorded_at=,
   =change_reason_code=, =change_commentary=) are hidden by default and offered
   in a column menu. =tenant_id= and an =id= that is a UUID are never shown.
-- Which columns show, and in what order, is remembered per person in the
+- *RS-LIST-14* Which columns show, and in what order, is remembered per person in the
   browser, under a key that carries the column set's version.
-- A cell follows the cell rules in [[*Icons and cells][Icons and cells]].
+- *RS-LIST-15* A cell follows the cell rules in [[*Icons and cells][Icons and cells]].
 
 *** Paging
 
@@ -193,25 +193,27 @@ Every list pages on the server. This is the rule the Qt standard had, and the
 memory [[id:92F755EA-5FA9-48DF-82F2-FF3E8F2236C7][Lists are always paged]]
 repeats.
 
-- A list reads one page with =offset=, =limit= and the server's =total=, through
+- *RS-LIST-16* A list reads one page with =offset=, =limit= and the server's =total=, through
   the generated list contract. It never reads with a large fixed limit, and it
   never pages to the end to show everything.
-- The footer is the shared =Pager=: the count first ("1–15 of 168"), then
+- *RS-LIST-17* The footer is the shared =Pager=: the count first ("1–15 of 168"), then
   /First/, /Previous/, /Next/, /Last/, then /Page size/ with 15, 25, 50, 100,
   200 and 500. Every paged list starts at 15 rows, about one screen
   (=DEFAULT_PAGE_SIZE=); no screen sets its own default.
-- /Load all/ is offered only when the server's total is 1000 or less, and then
+- *RS-LIST-18* /Load all/ is offered only when the server's total is 1000 or less, and then
   reads that total in one page. It is the whole list by the server's count, never
   a cap, so it keeps the rule in
   [[id:92F755EA-5FA9-48DF-82F2-FF3E8F2236C7][Lists are always paged]].
-- A new search, a new filter, a new order or a new page size returns to the
+- *RS-LIST-19* A new search, a new filter, a new order or a new page size returns to the
   first page. A write reloads nothing and turns Refresh gold. When the person presses
   Refresh after a write, the list returns to the first page, because the
   changed record may have moved.
-- The page, page size, search and order are held in the address, so a link and
+- *RS-LIST-20* The page, page size, search and order are held in the address, so a link and
   the browser's back button restore the list.
 
 *** States
+
+*RS-LIST-21* The list shows one of these states and never a blank table:
 
 | State | What the list shows |
 |-------+---------------------|
@@ -224,8 +226,8 @@ repeats.
 
 *** Recency
 
-When a change notification says a record of this kind changed, the list marks
-Refresh as stale. After a reload, a row that was not on the page before, or
+*RS-LIST-22* When a change notification says a record of this kind changed, the
+list marks Refresh as stale. After a reload, a row that was not on the page before, or
 whose content is not what it was, gets a gold left edge and pulses three times,
 and the mark goes after four seconds (=MARK_MS= in =refdata/changedRows.ts=,
 three cycles of 900 ms in =styles.css=). The comparison is with the same page read
@@ -254,12 +256,12 @@ changed). The notifications come from
 
 *** Header
 
-- The breadcrumb, then the display field as the title.
-- The lead line reads "<key> · version <n>" (=refdata.records.lead=).
-- The actions at the right, in this order: the kind's own actions (such as
+- *RS-PAGE-01* The breadcrumb, then the display field as the title.
+- *RS-PAGE-02* The lead line reads "<key> · version <n>" (=refdata.records.lead=).
+- *RS-PAGE-03* The actions at the right, in this order: the kind's own actions (such as
   /Derive a calendar/), then /Edit/, then /Delete/. Each is drawn only for a
   person who may take it, and only when the record allows it.
-- Edit stands on the thing it changes, and the version stands beside the thing
+- *RS-PAGE-04* Edit stands on the thing it changes, and the version stands beside the thing
   it versions. A record of one kind is one card, so both stand in its header. An
   entity is a card per record, so both stand on each card, as the
   [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] draws
@@ -267,7 +269,7 @@ changed). The notifications come from
 
 *** Tabs
 
-The tabs are held in the address (=useRecordTabs=). In this order:
+*RS-PAGE-09* The tabs are held in the address (=useRecordTabs=). In this order:
 
 | Tab | Shown when | Holds |
 |-----+------------+-------|
@@ -282,21 +284,21 @@ and its Add.
 
 *** Fields
 
-- A label above each value, in sentence case, with no colon.
-- The values stand in a grid of one column, two from the small breakpoint and
+- *RS-PAGE-05* A label above each value, in sentence case, with no colon.
+- *RS-PAGE-06* The values stand in a grid of one column, two from the small breakpoint and
   four from the large one (=RecordDetails=, =grid gap-4 sm:grid-cols-2
   lg:grid-cols-4=), in the field table's order, so a value stands where its
   field stands in the form. Under a value stands what it means or why it is
   fixed, in one line of small faint text, when there is something to say
   (decided 2026-10-25).
-- A value with nothing in it shows a muted dash, so a blank is not taken for a
+- *RS-PAGE-07* A value with nothing in it shows a muted dash, so a blank is not taken for a
   failure to load.
-- A classification shows its label (=ClassifiedValue=). A code that names
+- *RS-PAGE-08* A classification shows its label (=ClassifiedValue=). A code that names
   another record is a link to that record's page.
 
 *** Last changed
 
-The Details tab ends with the provenance of the current version, in this order:
+*RS-PAGE-10* The Details tab ends with the provenance of the current version, in this order:
 version, modified by, performed by, recorded at, change reason, commentary.
 When =modified_by= and =performed_by= are the same person, the line names them
 once; otherwise it reads "<modified by> for <performed by>". The time follows the
@@ -305,13 +307,13 @@ value on hover. A record with no versions has no last-changed line.
 
 ** Writes
 
-Every write goes through one of three dialogs: the record dialog for create and
+*RS-WRITE-31* Every write goes through one of three dialogs: the record dialog for create and
 amend (=RecordDialog=), the remove dialog for delete (=RemoveRecordDialog=),
 and the revert dialog (=RevertDialog=). A screen does not build its own.
 
 *** The form
 
-The form is drawn from the field table. One control per field kind:
+*RS-WRITE-32* The form is drawn from the field table. One control per field kind:
 
 | Field kind | Control | Writes |
 |------------+---------+--------|
@@ -327,28 +329,28 @@ The form is drawn from the field table. One control per field kind:
 | =cron= | The cron field (=CronField=), which says in words when the expression fires | The expression |
 | =longtext= | A text area that spans the form's width. Not built yet: the control is the capture Add a long text field kind (decided 2026-10-25) | A string |
 
-- A field that names another record or a classification is always a select,
+- *RS-WRITE-01* A field that names another record or a classification is always a select,
   never free text.
-- An =optional= field writes null when it is empty. A field with =when= is asked
+- *RS-WRITE-02* An =optional= field writes null when it is empty. A field with =when= is asked
   for only while the other values meet it, and writes null otherwise, as the
   rule form does for each rule kind.
-- The key is entered when the record is created and is fixed after that
+- *RS-WRITE-03* The key is entered when the record is created and is fixed after that
   (=fixed=). So is a field that changes what the record is.
-- A field the server needs but the person does not edit, such as an image, is
+- *RS-WRITE-04* A field the server needs but the person does not edit, such as an image, is
   carried over from the record (=keep=). A field the screen sets, such as the
   parent of a part, is given by the screen (=given=).
-- A field that fails its check shows the message under it when the person leaves
+- *RS-WRITE-05* A field that fails its check shows the message under it when the person leaves
   it, and focus moves to the first such field on save. Save is disabled until the
   form is complete.
-- Long text, such as commentary, is a text area, and a field table asks for
+- *RS-WRITE-06* Long text, such as commentary, is a text area, and a field table asks for
   one with the =longtext= kind. A field kind this table lacks, such as a time, a
   multiple choice, a percentage or an amount, is added to the table and to
   =FieldInput= before a screen uses it, as an icon is added to the icon table
   (decided 2026-10-25).
-- A field that follows from others, such as a key derived from two codes, is
+- *RS-WRITE-07* A field that follows from others, such as a key derived from two codes, is
   not asked for. The dialog fills it before the write (=complete=), and a
   revert fills it the same way.
-- A rule across fields, such as two codes that must differ, is said in the
+- *RS-WRITE-08* A rule across fields, such as two codes that must differ, is said in the
   dialog before the save (=check=), and Save waits on it.
 
 *** The form's layout
@@ -356,89 +358,89 @@ The form is drawn from the field table. One control per field kind:
 Decided 2026-10-25, from what the shared dialog does and what the Qt dialogs
 needed. Each rule names the part that carries it.
 
-- /One dialog, no tabs./ A form is one scrolling dialog (=Dialog= with =wide=,
+- *RS-WRITE-09* /One dialog, no tabs./ A form is one scrolling dialog (=Dialog= with =wide=,
   which is 48 rem). It never splits its fields over tabs, as the Qt currency
   dialog did. A kind with many fields declares /groups/ in its field table, and a
   group is a titled section inside the one dialog, in the field table's order. A
   form with twelve fields or fewer declares no group.
-- /Order./ The fields stand in the field table's order: the key first, then the
+- *RS-WRITE-10* /Order./ The fields stand in the field table's order: the key first, then the
   display field, then the rest in the order a person reads the record. The
   reason and the commentary come after every field, because they are about the
   change and not the record.
-- /Two columns./ The fields stand in a grid of two columns from the small
+- *RS-WRITE-11* /Two columns./ The fields stand in a grid of two columns from the small
   breakpoint and one column below it (=grid gap-3 sm:grid-cols-2=). A =longtext=
   field spans both columns, and apart from it a field is never wider or
   narrower than its column.
-- /Each field./ The label stands above the control, in sentence case, with no
+- *RS-WRITE-12* /Each field./ The label stands above the control, in sentence case, with no
   colon (=Field=). Under the control stands one line of small faint text when
   there is something to say: the field's help, or what its value means
   (=means=), or why it is fixed. A wrong field shows its message under it when
   the person leaves it, in place of that line.
-- /Required and optional./ Nothing marks a required field. A required field
+- *RS-WRITE-13* /Required and optional./ Nothing marks a required field. A required field
   left empty shows Required under it when the person leaves it, which is the
   message of the rule above on a field that fails its check, and Save waits.
   An optional select offers a dash as its empty choice; an optional picker
   offers Clear, as the Entity screen specification says. No label carries the
   word optional.
-- /Buttons./ The dialog's footer holds Cancel, then the primary button, Add or
+- *RS-WRITE-14* /Buttons./ The dialog's footer holds Cancel, then the primary button, Add or
   Save, at the right. Each carries its icon. Delete is never in the form: it is
   an action of the record page with its own dialog. While the closing guard is
   up, the footer holds Stay and Leave instead.
-- /Keyboard./ Escape asks the closing guard when there are changes and closes
+- *RS-WRITE-15* /Keyboard./ Escape asks the closing guard when there are changes and closes
   when there are none. Enter in a field does not save, because a save carries a
   reason the person must have chosen. Tab moves through the fields in the
   field table's order.
-- /The dialog says when its record was loaded/, under its title, and warns of a
+- *RS-WRITE-16* /The dialog says when its record was loaded/, under its title, and warns of a
   newer version above the form, as the Entity screen specification's An edit in
   progress says. This standard adds nothing to it.
 
 *** Create
 
-- The dialog is titled "Add <thing>" and its button is /Add/.
-- A new record is written with the reason =system.new_record=, the only reason
+- *RS-WRITE-17* The dialog is titled "Add <thing>" and its button is /Add/.
+- *RS-WRITE-18* A new record is written with the reason =system.new_record=, the only reason
   that applies to a new record, so the dialog states it in a note instead of
   asking. It is written with =must_not_exist=: adding a key that exists is
   refused, and the refusal names the key.
-- After the write the screen opens the new record's page.
+- *RS-WRITE-19* After the write the screen opens the new record's page.
 
 *** Amend
 
-- /Edit/ opens the record dialog with the current values. Its title is Edit
+- *RS-WRITE-20* /Edit/ opens the record dialog with the current values. Its title is Edit
   followed by the title of the page, which is the display field, so the dialog
   and the page name the record the same way; a card's dialog is Edit followed
   by the card's title (decided 2026-10-25). Its button is /Save/.
-- The person picks a change reason from the server's reasons for an amendment
+- *RS-WRITE-21* The person picks a change reason from the server's reasons for an amendment
   (=useReason('amend')=), and writes a commentary when the reason needs one.
-- The reasons follow the change. When a field changed, =common.non_material_update=
+- *RS-WRITE-22* The reasons follow the change. When a field changed, =common.non_material_update=
   is not offered. When no field changed, only that reason is offered. The set is
   worked out from the difference between the form and the record.
-- The write claims the version read (=must_match_version=). A record that
+- *RS-WRITE-23* The write claims the version read (=must_match_version=). A record that
   changed since is refused with 409, and the screen says so and offers to reload.
-- Leaving the dialog with changes asks "You have unsaved changes. Close anyway?"
+- *RS-WRITE-24* Leaving the dialog with changes asks "You have unsaved changes. Close anyway?"
 
 *** Delete
 
-- /Delete/ opens the remove dialog. Its title is "Delete <key>?" and it says
+- *RS-WRITE-25* /Delete/ opens the remove dialog. Its title is "Delete <key>?" and it says
   what is lost, and whether history stays: a versioned record keeps its
   history; a link does not have one.
-- The person picks a reason for a deletion (=useReason('delete')=) and writes a
+- *RS-WRITE-26* The person picks a reason for a deletion (=useReason('delete')=) and writes a
   commentary when the reason needs one.
-- The write claims the version read. A record that changed since is refused
+- *RS-WRITE-27* The write claims the version read. A record that changed since is refused
   with 409.
-- Parts that belong only to this record are deleted first, with the same
+- *RS-WRITE-28* Parts that belong only to this record are deleted first, with the same
   reason, and the dialog says so. Links from other records are not deleted, and
   the dialog says so.
-- The parts and the record are deleted one after another, because the server
+- *RS-WRITE-29* The parts and the record are deleted one after another, because the server
   has no operation that deletes them together. If one fails, the dialog stays
   open and says which failed; the record itself is not deleted, so a retry
   finishes the work. A server operation that deletes a record with its parts in
   one transaction replaces this.
-- After the delete the screen returns to the list.
+- *RS-WRITE-30* After the delete the screen returns to the list.
 
 *** Read-only records
 
-A record the server does not let a person change, such as a QuantLib calendar
-or a country, shows no Edit and no Delete, and says why in one notice on the
+*RS-WRITE-33* A record the server does not let a person change, such as a QuantLib
+calendar or a country, shows no Edit and no Delete, and says why in one notice on the
 Details tab. Its kind may still offer an action that makes a writable record
 from it, as /Derive a calendar/ does.
 
@@ -449,15 +451,15 @@ The History tab is the shared timeline (=Timeline=), defined once in the
 History and the timeline. A record screen draws it as that section says and adds
 two things:
 
-- The stream is the record's own versions, read through the generic history request
+- *RS-HIST-01* The stream is the record's own versions, read through the generic history request
   (=GET /api/history=, =refdata.v1.history.get=).
-- /Revert/ is offered on any version but the current one, to a person who may write.
+- *RS-HIST-02* /Revert/ is offered on any version but the current one, to a person who may write.
   It opens the revert dialog, which says that the values of version /n/ are written
   back as a new version and that no version is lost. It asks for a reason, and
   writes against the current version.
 
-A screen that shows a log of events is an Audit screen, not History. It has
-Refresh and no comparison or revert.
+*RS-HIST-03* A screen that shows a log of events is an Audit screen, not History. It
+has Refresh and no comparison or revert.
 
 ** Related records
 
@@ -469,11 +471,11 @@ are two kinds of related records, and each has one panel.
 A link joins two records and has no versions, such as a currency's countries
 or a desk group's members. The links panel (=LinkPanel=):
 
-- lists the linked records by key and name; a name opens the linked record's
+- *RS-RELATED-01* lists the linked records by key and name; a name opens the linked record's
   page;
-- adds a link by picking a record that is not linked yet, and writes it with
+- *RS-RELATED-02* adds a link by picking a record that is not linked yet, and writes it with
   =system.new_record=;
-- removes a link with /Remove/, not /Delete/, because the linked record stays.
+- *RS-RELATED-03* removes a link with /Remove/, not /Delete/, because the linked record stays.
 
 A link has no history, so the panel has none.
 
@@ -482,9 +484,9 @@ A link has no history, so the panel has none.
 A part belongs to one parent and has its own versions, such as a calendar's
 rules, exceptions and diary events. The parts panel:
 
-- lists the parts in their natural order, with the columns the kind declares;
-- offers /History/, /Edit/ and /Delete/ on each row, and /Add/ under the table;
-- opens the record dialog for add and edit, with the parent given, the history
+- *RS-RELATED-04* lists the parts in their natural order, with the columns the kind declares;
+- *RS-RELATED-05* offers /History/, /Edit/ and /Delete/ on each row, and /Add/ under the table;
+- *RS-RELATED-06* opens the record dialog for add and edit, with the parent given, the history
   panel in a wide dialog that draws the shared timeline for the one part
   (=HistoryPanel=), and the remove dialog for delete.
 
@@ -496,25 +498,25 @@ created: the parent is saved first, and its page then offers the panel.
 A screen never works out a flag itself. Flags come from one place, as they did
 in the desktop client's image cache.
 
-- /The flag sources./ A currency and a country have their own image. A calendar
+- *RS-FLAG-01* /The flag sources./ A currency and a country have their own image. A calendar
   has its own, or else its country's. A business centre has its country's. A
   currency pair draws both of its currencies' flags. A code with no image draws
   the placeholder flag, the image with the code =xx=, so a missing image shows
   as missing.
-- /One map./ =GET /api/image-map= answers which image every flagged code uses
+- *RS-FLAG-02* /One map./ =GET /api/image-map= answers which image every flagged code uses
   (=readImageMap=). The browser reads it once (=useImageMap=), keeps it for five
   minutes, and reads it again after any record write, so a table of a hundred
   flags costs one read.
-- /Images fetched once./ Each image's bytes are read from its own address,
+- *RS-FLAG-03* /Images fetched once./ Each image's bytes are read from its own address,
   =/api/images/:id=. The BFF keeps them in its tenant image cache, and the
   browser keeps them for a year, because an image's identifier is its identity.
-- /Declared, not drawn./ A screen names the flag source and the shared parts
+- *RS-FLAG-04* /Declared, not drawn./ A screen names the flag source and the shared parts
   draw the flag: =flag= on a field (=FieldSpec=), on a list column
   (=ListColumn=), on a links panel (=LinkPanel=) and on a record header
   (=RecordHeader=). The parts use =FlagOf=, =FlaggedCode= and =Flag= from
   =web/src/images/flags.tsx=; a screen that draws a flag outside them, such as
   a party list whose rows carry their own flag, still uses =FlaggedCode=.
-- /Choosing an image./ A record that names an image, such as a currency's
+- *RS-FLAG-05* /Choosing an image./ A record that names an image, such as a currency's
   flag, edits it with the image field, which opens the image chooser
   (=ImageChooser=): a server search by code and description over a page of the
   tenant's images, with Clear. Adding images belongs to the storage screens.
@@ -527,7 +529,7 @@ in the desktop client's image cache.
 
 ** Icons and cells
 
-Icons come from the one Fluent set in
+*RS-ICON-01* Icons come from the one Fluent set in
 [[id:46F465EE-7693-4852-B125-12C56290B695][Icon reference]], at 20 pixels in
 buttons and 16 pixels in tables, monochrome and coloured by the theme. A
 standard action carries its icon beside its word; an icon never stands alone
@@ -548,11 +550,13 @@ where its meaning is not plain.
 | Filter | =filter= | (the filter select) |
 | Copy | =copy= | Copy |
 
-=arrow_clockwise= and =link_dismiss= joined the asset set from the Fluent set for
-this table; Refresh does not borrow =arrow_rotate_counterclockwise=, which is
-Revert. An action this table lacks is added to it and to the icon
+*RS-ICON-02* =arrow_clockwise= and =link_dismiss= joined the asset set from the
+Fluent set for this table; Refresh does not borrow =arrow_rotate_counterclockwise=,
+which is Revert. An action this table lacks is added to it and to the icon
 reference before it is used, so two screens never draw one idea with two icons,
 and no icon carries two ideas.
+
+*RS-ICON-03* A cell is drawn as this table says:
 
 | Cell | How it is drawn |
 |------+-----------------|
@@ -580,25 +584,26 @@ and no icon carries two ideas.
 | The session ended | That it ended, and a way to sign in again |
 | The server cannot be reached | That it cannot be reached, and Retry |
 
-Every message says what happened and what to do. "Error" on its own is not a
-message.
+*RS-FEEDBACK-07* Every message says what happened and what to do. "Error" on its
+own is not a message, and the server's own words are shown where a write was
+refused.
 
 *** Access
 
-- An action a person may not take is not drawn, rather than drawn disabled.
+- *RS-FEEDBACK-01* An action a person may not take is not drawn, rather than drawn disabled.
   =useRecordPermissions= decides from the registry and the person's roles.
-- Whether the person may change a record is shown by the access mark, Editable
+- *RS-FEEDBACK-02* Whether the person may change a record is shown by the access mark, Editable
   or Read only, in the record header and beside a form panel's title, as
   [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] sets it. A screen
   never shows a permission code.
-- The server decides; the screen only hides what the server would refuse. A
+- *RS-FEEDBACK-03* The server decides; the screen only hides what the server would refuse. A
   refusal is shown as a refusal, not as a failure.
 
 *** Safety
 
-- Delete always confirms, names the record, and says what is lost.
-- Revert always writes a new version and says so.
-- Every write carries a change reason; there is no silent write.
+- *RS-FEEDBACK-04* Delete always confirms, names the record, and says what is lost.
+- *RS-FEEDBACK-05* Revert always writes a new version and says so.
+- *RS-FEEDBACK-06* Every write carries a change reason; there is no silent write.
 
 ** Naming
 
@@ -615,15 +620,18 @@ message.
 | Shared words | =refdata.records.*= | =refdata.records.save= |
 | Interface words | Sentence case | "Calendar type" |
 
-The verbs are Add, Edit, Save, Delete, Remove (for a link only), Revert,
+*RS-NAME-01* Interface words are in sentence case, as the table says.
+
+*RS-NAME-02* The verbs are Add, Edit, Save, Delete, Remove (for a link only), Revert,
 Refresh, Cancel and Propose. This is the one list; the Entity screen
 specification points here. A kind's own action is a verb and its object, such
 as /Derive a calendar/ or /Rebuild business days/.
 
 ** Exceptions
 
-Some record kinds are not regular. The exception is named on the kind's screen
-and in its journey, never found later.
+*RS-EXCEPT-01* Some record kinds are not regular. The exception is named on the
+kind's screen and in its journey, never found later, and the list of how today's
+screens conform names each part a screen lacks and why.
 
 | Kind | What differs |
 |------+--------------|
@@ -636,8 +644,8 @@ and in its journey, never found later.
 | /Accumulating/ | Most recent first; Delete usually refused |
 | /Mixture/ | A set of parts that are read and judged as one, such as an FX feed's Gaussians. The tab lists the set across the full width, with the previews it implies side by side below it and the engine's note under them. A row opens the part in a dialog; each row moves up or down and is deleted from the set; Add opens the dialog empty. What is not saved is marked: a new row, a changed cell, a moved row, and a deleted row kept struck through with Undo, with a count beside Save. Save is one button beside Add, enabled while there are changes; it opens a dialog that asks the reason and says when the parent uses the change. The part's history is not offered row by row: the parent's History tab is one stream of the parent and every part, the timeline of the entity screen specification, with Revert on each older version |
 
-An exception decides which parts exist and which actions show. It never changes
-the layout of a part, and it never brings a new icon or a new word for an
+*RS-EXCEPT-02* An exception decides which parts exist and which actions show. It
+never changes the layout of a part, and it never brings a new icon or a new word for an
 existing idea.
 
 ** The shared components
@@ -695,7 +703,8 @@ differences.
 
 ** Building a record screen
 
-Work in this order. Each step ends in something to check.
+*RS-BUILD-01* Work in this order. Each step ends in something to check, and the
+last step tries the screen on the running server.
 
 1. Name the record kind, its key, its display field and its natural order. Say
    whether it is versioned and writable, and whether it is an exception.

@@ -83,6 +83,19 @@ page rules for a configuration.
 the pages above, to tick off when a screen is built or reviewed. It adds no rule.
 Each line names the section that states it.
 
+** How a rule is named
+
+Every rule of the record screen standard and the entity screen specification
+carries an identifier at the start of its bullet, such as =*RS-LIST-03*=: the
+page's code, RS or ES, the code of the section the rule was born in, and a
+number that is never reused. The identifier is permanent. A rule that moves
+keeps it, so the section code says where it was born and not where it lives,
+and a reader follows the identifier rather than the page. The checklist cites
+identifiers, and a check reports one, so a reviewer and a test point at the
+same rule. =build/scripts/check_rule_identifiers.py= gives a new rule its
+identifier with =--assign= and refuses a rule without one, a duplicate, and a
+checklist line that cites an unknown one.
+
 ** What the screens are for
 
 [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the goal each

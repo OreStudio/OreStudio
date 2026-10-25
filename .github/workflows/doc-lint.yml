@@ -24,6 +24,7 @@ on:  # yamllint disable-line rule:truthy
       - '**.mustache'
       - 'build/scripts/generate_skill*.py'
       - 'build/scripts/check_pattern_uses.py'
+      - 'build/scripts/check_rule_identifiers.py'
       - 'build/scripts/check_prototype_inventory.py'
       - 'doc/prototypes/**'
       - 'projects/ores.lisp/src/ores-build-site.el'
@@ -100,6 +101,11 @@ jobs:
         # A pattern names its uses and a use names its pattern, so a reader
         # who lands on either page finds the other.
         run: python3 build/scripts/check_pattern_uses.py
+
+      - name: Check every UX rule carries one identifier and the checklist cites them
+        # A check and a reviewer point at the same rule only when the rule has
+        # a name that survives an edit of the page.
+        run: python3 build/scripts/check_rule_identifiers.py
 
       - name: Check every prototype is in the inventory
         # The inventory is the only place a prototype is registered, and a

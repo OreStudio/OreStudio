@@ -180,6 +180,30 @@ TEST_CASE("finalisation needs no result from the phase before it", tags) {
     CHECK(cmd->report_instance_id == "instance");
 }
 
+TEST_CASE("the bundle is told the version of each trade the run read", tags) {
+    const auto json = run_request("execute", "", "execute");
+    const auto steps = steps_for(json);
+    REQUIRE(steps[2].name == "assemble_bundle");
+
+    msg::gather_trades_result trades;
+    trades.storage_key = "trades";
+    trades.trade_count = 2;
+    trades.trade_versions = R"({"033b4053-fe1d-5901-bc2f-7d95afe91f00":3})";
+    msg::gather_market_data_result market_data;
+    market_data.storage_key = "market";
+    market_data.fixings_storage_key = "fixings";
+    const std::vector<svc::workflow_step_result> prev{
+        {.name = "gather_trades", .response_json = rfl::json::write(trades)},
+        {.name = "gather_market_data", .response_json = rfl::json::write(market_data)}};
+
+    const auto cmd =
+        rfl::json::read<msg::assemble_bundle_request>(steps[2].build_command(json, prev));
+    REQUIRE(cmd.has_value());
+    // The manifest is the only record of which trade versions the run priced,
+    // so the gather step's answer has to reach the bundle unchanged.
+    CHECK(cmd->trade_versions == R"({"033b4053-fe1d-5901-bc2f-7d95afe91f00":3})");
+}
+
 TEST_CASE("packaging names the report definition the run belongs to", tags) {
     const auto json = run_request("execute", "", "execute");
     const auto steps = steps_for(json);

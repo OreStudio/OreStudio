@@ -444,6 +444,23 @@ Step 0: gather trades from the trading service.
 :cpp_type: std::string
 :END:
 
+*** trade_versions
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The version of each trade the export wrote, as a JSON object keyed by
+ * trade id. Empty when the export wrote none.
+ *
+ * The trades themselves stay in object storage, so only this manifest travels
+ * with the run. A command line cannot fill a map, and the run carries the
+ * manifest to the bundle unchanged, so the JSON text is what both messages
+ * state.
+ */
+#+end_src
+
 ** gather_market_data_request
 :PROPERTIES:
 :subject: reporting.v1.ops.gather_market_data
@@ -570,6 +587,22 @@ Step 2: assemble and persist the report input bundle.
 :cpp_type: int
 :default: 0
 :END:
+
+*** trade_versions
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The version of each trade the run read, as the JSON object the gather
+ * step received. Empty when the run read no trades.
+ *
+ * The bundle stores it in its own column, because an error the engine raises for
+ * a trade names the version of the trade the engine was given.
+ */
+#+end_src
 
 *** series_count
 :PROPERTIES:

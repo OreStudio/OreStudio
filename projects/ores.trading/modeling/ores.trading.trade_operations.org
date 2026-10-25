@@ -29,6 +29,7 @@ generates no service handler.
 * Includes
 
 #+begin_src cpp :name includes
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
@@ -567,6 +568,22 @@ generates no service handler.
 #+begin_src cpp :name comment
 /**
  * @brief The key written, echoed from the request.
+ */
+#+end_src
+
+*** trade_versions
+:PROPERTIES:
+:cpp_type: std::map<std::string, int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The version of each trade written, keyed by trade id.
+ *
+ * The blob holds the trades, so a reader of it needs no manifest to read them.
+ * This is for the caller that holds a trade id and has to say which version of
+ * that trade the export read: a report run writes the errors its engine raises,
+ * and an error about a trade names the version the engine was given.
  */
 #+end_src
 

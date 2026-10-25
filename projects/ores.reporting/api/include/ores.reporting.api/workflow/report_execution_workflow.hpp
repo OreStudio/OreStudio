@@ -238,6 +238,7 @@ template <typename Command>
                                     .market_data_storage_key = market_data.storage_key,
                                     .fixings_storage_key = market_data.fixings_storage_key,
                                     .trade_count = trades.trade_count,
+                                    .trade_versions = trades.trade_versions,
                                     .series_count = market_data.series_count});
     };
 

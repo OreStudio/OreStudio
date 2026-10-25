@@ -17,10 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.reporting.api/generators/report_instance_generator.hpp"
 #include "ores.reporting.core/repository/report_error_event_repository.hpp"
+#include "ores.reporting.core/repository/report_input_bundle_entity.hpp"
+#include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
 #include "ores.reporting.core/repository/report_instance_kind_repository.hpp"
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
 #include "ores.reporting.core/service/report_error_recorder.hpp"
@@ -29,9 +32,12 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "report_instance_test_fixture.hpp"
 #include <boost/json.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -68,17 +74,21 @@ write_test_party_and_scope_context(scoped_database_helper& h,
  * @brief Stores a report instance and answers its id.
  *
  * A report error names the run it belongs to with a real foreign key, so the
- * run has to exist before the recorder is given anything to write.
+ * run has to exist before the recorder is given anything to write. A run that
+ * priced carries the date it priced at, which the errors of its trades inherit.
  */
-std::string write_instance(const ores::database::context& party_ctx,
-                           const std::string& db_user,
-                           ores::utility::generation::generation_context& gen) {
+std::string
+write_instance(const ores::database::context& party_ctx,
+               const std::string& db_user,
+               ores::utility::generation::generation_context& gen,
+               std::optional<std::chrono::system_clock::time_point> priced_at = std::nullopt) {
     const auto& ctx = party_ctx;
     auto instance = ores::reporting::generators::generate_synthetic_report_instance(gen);
     // The run and the trigger that admits it are party-scoped, so both carry
     // the session party: a run owned by another party is a run this session
     // cannot see, and the trigger's insert is refused.
     instance.party_id = *party_ctx.party_id();
+    instance.priced_at = priced_at;
 
     // The kind catalogue is system-tenant reference data, so it is read under
     // that tenant: the row's own tenant sees the seeded vocabulary only
@@ -93,6 +103,34 @@ std::string write_instance(const ores::database::context& party_ctx,
 
     ores::reporting::repository::report_instance_repository().write(ctx, instance);
     return boost::uuids::to_string(instance.id);
+}
+
+/**
+ * @brief Stores the run's input bundle and answers its id.
+ *
+ * The bundle is what the gather step wrote: the storage keys of the gathered
+ * trades, and the manifest that names the version of each trade the run read.
+ */
+std::string write_bundle(const ores::database::context& ctx,
+                         const std::string& instance_id,
+                         const std::string& trade_versions) {
+    ores::reporting::repository::report_input_bundle_entity bundle;
+    bundle.id = boost::uuids::to_string(boost::uuids::random_generator()());
+    bundle.tenant_id = ctx.tenant_id().to_string();
+    bundle.report_instance_id = instance_id;
+    bundle.definition_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    bundle.trades_storage_key = instance_id + "/trades.msgpack";
+    bundle.market_data_storage_key = instance_id + "/market_data.msgpack";
+    bundle.fixings_storage_key = instance_id + "/fixings.msgpack";
+    bundle.trade_count = 3;
+    bundle.trade_versions = trade_versions;
+    bundle.series_count = 2;
+    bundle.created_at =
+        ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now());
+
+    ores::reporting::repository::report_input_bundle_repository bundles;
+    bundles.create(ctx, bundle);
+    return bundle.id.value();
 }
 
 std::vector<ores::reporting::domain::report_error_event>
@@ -159,6 +197,70 @@ TEST_CASE("a run that failed its analytics carries one error row per trade it co
     CHECK(analytic->subject_id == "PRICING");
     REQUIRE(ctx.party_id().has_value());
     CHECK(analytic->party_id == *ctx.party_id());
+}
+
+TEST_CASE("an error about a trade carries the version the run read and the date it read it at",
+          tags) {
+    scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto priced_at =
+        ores::platform::time::datetime::from_db_string("2026-05-05 00:00:00.000000");
+    const auto instance_id = write_instance(ctx, h.db_user(), gen, priced_at);
+    const std::string trade_id = "033b4053-fe1d-5901-bc2f-7d95afe91f00";
+    write_bundle(ctx, instance_id, std::string{"{\""} + trade_id + "\":3}");
+
+    ores::reporting::service::report_error_recorder recorder(ctx);
+    const std::vector<ores::reporting::service::engine_log_error> errors{
+        {.severity = "error",
+         .scope = "Trade",
+         .message = "did not find object of type yield curve",
+         .subject = "trade",
+         .subject_id = trade_id,
+         .detail = {}}};
+    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
+
+    const auto rows = errors_of(ctx, instance_id);
+    REQUIRE(rows.size() == 1);
+    const auto& trade = rows.front();
+    CHECK(trade.subject_id == std::optional<std::string>(trade_id));
+    CHECK(trade.subject_version == std::optional<int>(3));
+    REQUIRE(trade.subject_as_of.has_value());
+    // The date says when the version the engine was handed was current, which
+    // is the run's own pricing date, not the day the error was written.
+    CHECK(ores::platform::time::datetime::to_db_string(*trade.subject_as_of) ==
+          "2026-05-05 00:00:00.000000");
+}
+
+TEST_CASE("an error about a trade the manifest does not name is recorded with no version", tags) {
+    scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto instance_id = write_instance(
+        ctx,
+        h.db_user(),
+        gen,
+        ores::platform::time::datetime::from_db_string("2026-05-05 00:00:00.000000"));
+    write_bundle(ctx, instance_id, R"({"033b4053-fe1d-5901-bc2f-7d95afe91f07":3})");
+
+    ores::reporting::service::report_error_recorder recorder(ctx);
+    const std::vector<ores::reporting::service::engine_log_error> errors{
+        {.severity = "error",
+         .scope = "Trade",
+         .message = "did not find object of type yield curve",
+         .subject = "trade",
+         .subject_id = "033b4053-fe1d-5901-bc2f-7d95afe91f00",
+         .detail = {}}};
+    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
+
+    const auto rows = errors_of(ctx, instance_id);
+    REQUIRE(rows.size() == 1);
+    // The trade is what the reader needs, and the manifest cannot say which
+    // version it was, so the row says nothing rather than guessing.
+    CHECK(rows.front().subject_id ==
+          std::optional<std::string>("033b4053-fe1d-5901-bc2f-7d95afe91f00"));
+    CHECK_FALSE(rows.front().subject_version.has_value());
+    CHECK_FALSE(rows.front().subject_as_of.has_value());
 }
 
 TEST_CASE("a run the platform could not complete carries a report-scoped error and no subject",

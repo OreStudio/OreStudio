@@ -115,7 +115,7 @@ public:
     /**
      * @brief assemble-bundle <report_instance_id> <definition_id> <tenant_id> <correlation_id>
      * <trades_storage_key> <market_data_storage_key> <fixings_storage_key> [--trade_count <v>]
-     * [--series_count <v>]
+     * [--trade_versions <v>] [--series_count <v>]
      */
     static void process_assemble_bundle(std::ostream& out,
                                         ores::nats::service::nats_client& session,

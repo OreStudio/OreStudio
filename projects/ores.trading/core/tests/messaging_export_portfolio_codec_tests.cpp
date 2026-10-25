@@ -36,6 +36,7 @@ using ores::nats::wire_codec;
 using ores::nats::wire_format;
 using ores::trading::domain::bond_instrument_data;
 using ores::trading::messaging::export_portfolio_response;
+using ores::trading::messaging::export_trades_to_storage_response;
 using ores::trading::messaging::trade_export_item;
 
 const std::string_view test_suite("ores.trading.tests");
@@ -142,4 +143,27 @@ TEST_CASE("export_portfolio_response_carries_the_envelope", tags) {
     REQUIRE(decoded->items[0].envelope.has_value());
     CHECK(decoded->items[0].envelope->counter_party == "CPTY");
     CHECK(decoded->items[0].envelope->netting_set_id == "NS-1");
+}
+
+TEST_CASE("export_trades_to_storage_response_survives_the_codec_with_its_versions", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    const auto codec = wire_codec{wire_format::msgpack};
+
+    export_trades_to_storage_response sent;
+    sent.success = true;
+    sent.trade_count = 2;
+    sent.storage_key = "reporting/runs/0b1e/trades.msgpack";
+    sent.trade_versions["033b4053-fe1d-5901-bc2f-7d95afe91f00"] = 3;
+    sent.trade_versions["033b4053-fe1d-5901-bc2f-7d95afe91f01"] = 7;
+
+    const auto decoded = codec.decode<export_trades_to_storage_response>(codec.encode(sent));
+    REQUIRE(decoded.has_value());
+    CHECK(decoded->trade_count == 2);
+    CHECK(decoded->storage_key == "reporting/runs/0b1e/trades.msgpack");
+    // The caller looks a trade up by the id the engine named, so the codec has
+    // to carry the key as well as the version.
+    REQUIRE(decoded->trade_versions.size() == 2);
+    CHECK(decoded->trade_versions.at("033b4053-fe1d-5901-bc2f-7d95afe91f00") == 3);
+    CHECK(decoded->trade_versions.at("033b4053-fe1d-5901-bc2f-7d95afe91f01") == 7);
 }

@@ -29,10 +29,11 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
+#include "ores.trading.api/domain/origin.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
-#include "ores.trading.api/domain/origin.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <optional>
 #include <rfl/msgpack.hpp>
@@ -258,6 +259,11 @@ public:
             resp.success = true;
             resp.trade_count = trade_count;
             resp.storage_key = req->storage_key;
+            // The caller writes an error for each trade its engine failed on, and
+            // the version the engine was handed is the only version that error is
+            // about, so the answer names each trade it wrote.
+            for (const auto& item : payload.items)
+                resp.trade_versions[boost::uuids::to_string(item.anchor.id)] = item.anchor.version;
             resp.message = "Exported " + std::to_string(trade_count) + " trades to storage.";
             BOOST_LOG_SEV(trade_operations_handler_lg(), info)
                 << "export_trades_to_storage: exported " << trade_count << " trades, "

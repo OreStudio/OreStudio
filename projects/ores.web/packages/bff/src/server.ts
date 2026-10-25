@@ -33,6 +33,7 @@ import { registerCounterpartyRoutes } from './counterparties.js';
 import { registerReportingRoutes } from './reporting.js';
 import { registerBookChangeRoutes } from './book-changes.js';
 import { registerBookRoutes } from './books.js';
+import { registerTradeRoutes } from './trades.js';
 import { registerConventionRoutes } from './conventions.js';
 import { registerEngineSettingsRoutes } from './engine-settings.js';
 import { registerPricingEngineRoutes } from './pricing-engines.js';
@@ -2664,6 +2665,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerCounterpartyRoutes(server, requireSession);
     registerReportingRoutes(server, requireSession);
     registerBookRoutes(server, requireSession);
+    registerTradeRoutes(server, requireSession);
     registerBookChangeRoutes(server, requireSession);
     registerConventionRoutes(server, requireSession);
     registerPricingEngineRoutes(server, requireSession);

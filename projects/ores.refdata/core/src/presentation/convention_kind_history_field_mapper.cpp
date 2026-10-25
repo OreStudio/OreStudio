@@ -40,6 +40,8 @@ render_convention_kind_fields(const domain::convention_kind& v) {
     fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Description", .value = v.description});
+    fields.push_back({.name = "Asset Class", .value = v.asset_class});
+    fields.push_back({.name = "Ore Element", .value = v.ore_element.value_or(std::string{})});
     fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

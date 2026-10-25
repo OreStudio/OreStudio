@@ -61,6 +61,7 @@ set(files
     "configuration_document_handler_tests.cpp"
     "contact_type_eventing_integration_tests.cpp"
     "convention_kind_eventing_integration_tests.cpp"
+    "convention_kind_term_eventing_integration_tests.cpp"
     "conventions_bundle_service_tests.cpp"
     "counterparty_change_eventing_integration_tests.cpp"
     "counterparty_contact_information_eventing_integration_tests.cpp"

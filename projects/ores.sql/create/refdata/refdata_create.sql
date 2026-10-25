@@ -248,6 +248,8 @@
 -- shares, and the parts each kind's family names.
 \ir ./refdata_convention_kinds_create.sql
 \ir ./refdata_convention_kinds_notify_trigger_create.sql
+\ir ./refdata_convention_kind_terms_create.sql
+\ir ./refdata_convention_kind_terms_notify_trigger_create.sql
 \ir ./refdata_conventions_create.sql
 \ir ./refdata_conventions_notify_trigger_create.sql
 

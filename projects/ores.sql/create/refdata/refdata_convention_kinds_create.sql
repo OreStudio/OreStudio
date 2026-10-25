@@ -43,6 +43,8 @@ create table if not exists "ores_refdata_convention_kinds_tbl" (
     "version" integer not null,
     "name" text not null,
     "description" text not null,
+    "asset_class" text not null,
+    "ore_element" text null,
     "display_order" integer not null default 0,
     "modified_by" text not null,
     "performed_by" text not null,

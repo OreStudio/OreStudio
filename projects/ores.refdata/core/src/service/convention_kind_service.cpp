@@ -99,6 +99,8 @@ domain::convention_kind to_domain(const messaging::convention_kind_write& write)
     v.code = write.code;
     v.name = write.name;
     v.description = write.description;
+    v.asset_class = write.asset_class;
+    v.ore_element = write.ore_element;
     v.display_order = write.display_order;
     return v;
 }

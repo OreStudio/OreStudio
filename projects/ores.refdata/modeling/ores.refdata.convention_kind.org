@@ -14,7 +14,7 @@
 #+image_id: false
 #+brief: The coded catalogue of the convention kinds a central convention row may name.
 #+created: 2026-10-14
-#+updated: 2026-10-14
+#+updated: 2026-10-25
 
 The coded catalogue of convention kinds, one row per convention an ORE
 conventions document can carry. A central =convention= row names its kind with
@@ -79,6 +79,37 @@ One-line description of the convention kind.
 std::string(faker::lorem::sentence())
 #+end_src
 
+** asset_class
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The asset class of the product model the kind serves: =interest-rates=, =fx=,
+=inflation=, =credit=, =commodity= or =bond=. A screen groups the kinds by it, so
+the grouping is data and not a table in the screen.
+
+#+begin_src cpp :name generator
+std::string("interest-rates")
+#+end_src
+
+** ore_element
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The element that writes the kind in ORE's conventions document, such as =Swap= or
+=TenorBasisSwap=. Empty for a kind ORE Studio keeps that the document does not
+carry, such as =TENOR=. With the terms of
+=convention_kind_term=, it ties the kind to the ORE parameter contract.
+
+#+begin_src cpp :name generator
+std::optional<std::string>("Swap")
+#+end_src
+
 ** display_order
 :PROPERTIES:
 :type:     integer
@@ -138,12 +169,14 @@ drop function if exists ores_refdata_validate_convention_kind_fn;
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
 #+end_src
 
 ** Entity includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
 #include "sqlgen/Timestamp.hpp"
 #+end_src
@@ -160,6 +193,8 @@ drop function if exists ores_refdata_validate_convention_kind_fn;
 | code          | Code          |
 | name          | Name          |
 | description   | Description   |
+| asset_class   | Asset Class   |
+| ore_element   | ORE Element   |
 | display_order | Display Order |
 | modified_by   | Modified By   |
 | version       | Version       |
@@ -202,3 +237,4 @@ drop function if exists ores_refdata_validate_convention_kind_fn;
 
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
 - [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][ores.refdata.convention]] — the central row this catalogue codes.
+- [[id:0A0FCEEC-D4B0-410B-86EA-888C11097FA9][ores.refdata.convention_kind_term]] — the terms of each kind, each tied to the ORE parameter contract.

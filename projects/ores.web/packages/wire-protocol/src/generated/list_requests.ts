@@ -1935,6 +1935,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.convention_kind_terms.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['terms'],
+    },
+    'refdata.v1.convention_kind_terms_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.convention_kinds.list': {
         asOf: true,
         filter: ['code_one_of'],

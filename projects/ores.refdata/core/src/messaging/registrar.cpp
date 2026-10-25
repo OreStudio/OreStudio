@@ -61,6 +61,7 @@
 #include "ores.refdata.core/messaging/configuration_document_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_registrar.hpp"
 #include "ores.refdata.core/messaging/convention_kind_registrar.hpp"
+#include "ores.refdata.core/messaging/convention_kind_term_registrar.hpp"
 #include "ores.refdata.core/messaging/convention_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_business_centre_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_change_registrar.hpp"
@@ -186,6 +187,7 @@
 #include "ores.refdata.core/messaging/commodity_volatility_config_registrar.hpp"
 #include "ores.refdata.core/messaging/contact_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/convention_kind_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/convention_kind_term_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_business_centre_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_change_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_contact_information_history_provider_registrar.hpp"
@@ -375,6 +377,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_contact_type_handlers(nats, ctx, verifier));
     append(register_convention_handlers(nats, ctx, verifier));
     append(register_convention_kind_handlers(nats, ctx, verifier));
+    append(register_convention_kind_term_handlers(nats, ctx, verifier));
     append(register_counterparty_handlers(nats, ctx, verifier));
     append(register_counterparty_change_handlers(nats, ctx, verifier));
     append(register_counterparty_business_centre_handlers(nats, ctx, verifier));
@@ -619,6 +622,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_cds_convention_history_provider(hist_registry);
         register_contact_type_history_provider(hist_registry);
         register_convention_kind_history_provider(hist_registry);
+        register_convention_kind_term_history_provider(hist_registry);
         register_counterparty_history_provider(hist_registry);
         register_counterparty_change_history_provider(hist_registry);
         register_country_history_provider(hist_registry);

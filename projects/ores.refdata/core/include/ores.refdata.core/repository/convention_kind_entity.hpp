@@ -49,6 +49,8 @@ struct convention_kind_entity {
     std::string name;
 
     std::string description;
+    std::string asset_class;
+    std::optional<std::string> ore_element;
     int display_order = 0;
     std::string modified_by;
     std::string performed_by;

@@ -8,7 +8,7 @@
 #+filetags: :add_a_hawkes_tick_arrival_process:sprint_29:v0:
 #+owner: marco
 #+branch: feature/step-a-value-process-by-the-elapsed-time
-#+pr:
+#+pr: 3762
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3762][#3762]] | [analytics] Step a value process by the elapsed time |
 
 * Review
 

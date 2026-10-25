@@ -1,0 +1,39 @@
+#+title: UI tests
+
+Browser tests of a running ORE Studio web, driven by Playwright.
+
+These are a development instrument. Nothing installs this package in CI, and no
+pipeline runs it: the directory sits outside the =packages/*= workspaces, so the
+root =npm ci= never sees it. Use it to see a screen working against a real
+fleet instead of inferring it.
+
+* Run them
+
+#+begin_example
+cd projects/ores.web/tools/ui-tests
+npm install
+npx playwright install chromium
+ORES_UI_PASSWORD=<the shared password> npx playwright test
+#+end_example
+
+=ORES_UI_BASE_URL= sets the address, =http://127.0.0.1:20802= by default.
+=ORES_UI_USERNAME= sets the person, =diane.kay@acme_corporation= by default: a
+Trading persona, which signs in without choosing a party and holds every
+blotter read.
+
+* Where the browsers go
+
+Playwright downloads its browsers to =~/.cache/ms-playwright=. Point
+=PLAYWRIGHT_BROWSERS_PATH= at =build/playwright= instead when the home directory
+is not writable, as it is not inside the agent sandbox. The same applies to
+npm's cache, which can be moved with =npm_config_cache= and =npm_config_logs_dir=.
+
+* What is here
+
+- =specs/trades.spec.ts= signs a Trading persona in and asserts the trade list
+  answers. Its list case is parked with the reason in the capture it names.
+
+* A spec that is parked
+
+A case blocked by a known defect is marked =test.fixme= with the capture that
+records the defect, so the suite stays honest rather than red.

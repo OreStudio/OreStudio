@@ -1,0 +1,14 @@
+{
+  "name": "@ores/ui-tests",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Browser tests driven by Playwright, for a running ORE Studio web.",
+  "scripts": {
+    "browsers": "playwright install chromium",
+    "test": "playwright test",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}

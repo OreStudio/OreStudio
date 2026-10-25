@@ -57,6 +57,11 @@ The page [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the inf
 
 ** The open decision
 
+*Decided on 2026-10-25*: store one tick for each source, owned by the system
+tenant, and check the subscription at read time. The measurement and the
+reasoning are in [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared tick or one copy for each party]]. The text
+below records the question as it stood before the decision.
+
 Today the ingest writes a copy of each tick for each party that routes to the source. The other shape stores one copy for each source, as shared reference data, and decides at read time whether a party may see it.
 
 | | One copy for each party (today) | One copy for each source |

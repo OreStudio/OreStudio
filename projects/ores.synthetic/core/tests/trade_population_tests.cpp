@@ -28,6 +28,7 @@
 #include <chrono>
 #include <map>
 #include <set>
+#include <sstream>
 #include <string>
 #include <variant>
 
@@ -60,6 +61,11 @@ domain::trade_population_plan plan_of(const domain::trade_generation_scope& scop
 const domain::bond_terms& bond_of(const domain::trade_population_slot& slot) {
     return std::get<domain::bond_terms>(slot.terms);
 }
+
+const domain::rate_terms& rate_of(const domain::trade_population_slot& slot) {
+    return std::get<domain::rate_terms>(slot.terms);
+}
+
 
 const boost::uuids::uuid config_id =
     boost::uuids::string_generator()("0cd68b09-6ebc-4180-a298-0cc386590f31");
@@ -98,6 +104,18 @@ domain::trade_generation_scope bond_scope() {
     scope.issuer_ids = {bank, second_bank};
     scope.trader_usernames = {"trader.one"};
     scope.currency_code = "EUR";
+    return scope;
+}
+
+/*
+ * A scope of the rate family. The seven trade types the router sends to
+ * rate_instrument are nine here, and the catalogue is the tenant's own, so the
+ * scope states three indices of one currency and one of another.
+ */
+domain::trade_generation_scope rate_scope() {
+    auto scope = bond_scope();
+    scope.asset_class_code = "interest_rates";
+    scope.floating_index_codes = {"EUR-EURIBOR-6M", "EUR-EONIA", "EUR-ESTR", "USD-SOFR"};
     return scope;
 }
 
@@ -304,10 +322,97 @@ TEST_CASE("a_scope_naming_no_book_counterparty_or_trader_is_refused", tags) {
 }
 
 TEST_CASE("a_family_the_generator_does_not_cover_is_refused_by_name", tags) {
-    auto rates = bond_scope();
-    rates.asset_class_code = "interest_rates";
+    // Equity has no planner, so it is the class the registry refuses by name.
+    auto equity = bond_scope();
+    equity.asset_class_code = "equity";
 
-    CHECK_THROWS_WITH(plan_of(rates), Catch::Matchers::ContainsSubstring("interest_rates"));
+    CHECK_THROWS_WITH(plan_of(equity), Catch::Matchers::ContainsSubstring("equity"));
+}
+
+/*
+ * The fields every planner states through the shared envelope, rendered in a
+ * fixed order. Two plans render the same exactly when they agree on the
+ * envelope, which is what shows that extracting it changed nothing.
+ */
+std::string render_envelope(const domain::trade_population_plan& plan) {
+    std::ostringstream s;
+    for (const auto& slot : plan.slots) {
+        s << slot.slot << ' ' << boost::uuids::to_string(slot.trade_id) << ' '
+          << boost::uuids::to_string(slot.book_id) << ' '
+          << boost::uuids::to_string(slot.counterparty_id) << ' '
+          << (slot.netting_set_id ? boost::uuids::to_string(*slot.netting_set_id) : "-") << ' '
+          << slot.trader_username << ' ' << slot.trade_type_code << ' '
+          << slot.internal_identifier << ' ' << slot.trade_date << ' ' << slot.notional << ' '
+          << slot.currency << '\n';
+    }
+    return s.str();
+}
+
+/*
+ * A 64-bit FNV-1a over the envelope, so the recorded value is one number rather
+ * than a paragraph. A collision would have to be found on purpose to pass a
+ * plan the extraction changed.
+ */
+std::uint64_t envelope_hash(const std::string& rendered) {
+    std::uint64_t hash = 1469598103934665603ULL;
+    for (const auto character : rendered) {
+        hash ^= static_cast<std::uint64_t>(static_cast<unsigned char>(character));
+        hash *= 1099511628211ULL;
+    }
+    return hash;
+}
+
+TEST_CASE("the_envelope_of_a_bond_plan_is_the_one_that_was_agreed", tags) {
+    // Recorded from the planner as it stood before the envelope was extracted,
+    // so this case fails if the extraction changed anything a slot states.
+    CHECK(envelope_hash(render_envelope(plan_of(bond_scope()))) == 9368398884618711992ULL);
+}
+
+TEST_CASE("a_rate_population_states_two_legs_of_one_currency", tags) {
+    const auto scope = rate_scope();
+    const auto plan = plan_of(scope);
+
+    REQUIRE(!plan.slots.empty());
+    for (const auto& slot : plan.slots) {
+        const auto& terms = rate_of(slot);
+        REQUIRE(terms.start_date < terms.maturity_date);
+        CHECK(terms.fixed_rate > 0.0);
+        CHECK(terms.fixed_rate < 0.1);
+        CHECK_FALSE(terms.floating_index_code.empty());
+        CHECK(terms.notional >= scope.min_notional);
+        CHECK(terms.notional <= scope.max_notional);
+        if (slot.trade_type_code == "CrossCurrencySwap") {
+            // Two legs of one currency are not a cross currency swap, so the
+            // floating side states a currency the book does not.
+            CHECK_FALSE(terms.floating_currency.empty());
+            CHECK(terms.floating_currency != scope.currency_code);
+        } else {
+            CHECK(terms.floating_currency.empty());
+        }
+        if (slot.trade_type_code == "Swaption") {
+            REQUIRE(terms.expiry_date.has_value());
+            CHECK(*terms.expiry_date > scope.as_of_date);
+        }
+    }
+}
+
+TEST_CASE("every_routed_rate_type_appears_in_a_population_of_that_length", tags) {
+    const auto scope = rate_scope();
+    const auto plan = plan_of(scope);
+
+    std::set<std::string> types;
+    for (const auto& slot : plan.slots)
+        types.insert(slot.trade_type_code);
+
+    // The nine the router sends to rate_instrument, less the inflation swap.
+    CHECK(types.size() == 9);
+}
+
+TEST_CASE("a_rate_population_without_an_index_catalogue_is_refused", tags) {
+    auto scope = rate_scope();
+    scope.floating_index_codes.clear();
+
+    CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
 
 TEST_CASE("the_notional_of_every_slot_sits_in_the_band", tags) {

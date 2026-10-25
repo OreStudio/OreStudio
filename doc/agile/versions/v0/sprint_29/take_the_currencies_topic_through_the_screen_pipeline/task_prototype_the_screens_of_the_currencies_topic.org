@@ -7,41 +7,61 @@
 #+level: s1
 #+filetags: :take_the_currencies_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/prototype-the-screens-of-the-currencies-topic
+#+pr: 3833
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+One prototype under =doc/prototypes/currencies/= that draws the currencies,
+desk groups and currency pairs screens as the record screen standard settles
+them, with the standard Import and Export pair on the currencies list, every
+state at an address, a design note that cites the rules, and the owner's sign
+off before any code.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The prototype is drawn, rendered in every state, and the PR is raised. |
+| Waiting on   | The owner's sign off of the prototype. |
+| Next         | [[id:31086D9C-507A-4748-BEBF-12D90775D130][Build the screens of the currencies topic]], once the owner signs off. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
 
--
+- The prototype opens with no build and no session, and every screen, dialog
+  and step of the three journeys has an address.
+- The design note cites the rule identifier each state follows, lists the
+  states and says what is fake.
+- The group page and the top page list it, and the prototype inventory check
+  passes.
+- Every state renders with no script error.
+- The owner signs it off.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Step 2 of the screen pipeline runbook. Reuse the calendars prototype's
+shell, tokens and shapes, so the review is about the topic: the list, the
+record head, the tabs, the details grid, the link panel, the timeline, the
+dialog shell and the closing guard. Add what the topic needs: the three
+kinds' data from the Acme seed; the pair dialog of two groups with its
+derived code and its refused legs; the Export operation dialog; the Import
+steps page with the web's journey rail, four steps for a table kind, the
+refused file, the three lists of unknowns each drawn only when not empty,
+and the difference with Keep it as the default. Render every state with a
+Playwright script kept as evidence, read the screenshots against the
+checklist, then write the design note, the group page and the inventory row,
+link it from the three journeys, and stop for the owner.
 
 * Measurements
 
@@ -55,9 +75,39 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| States rendered | 41, 0 with a script error | =node evidence/render_currencies_prototype.mjs=, log in =evidence/render_currencies_prototype_2026-10-25.log= | this PR |
+| Prototypes in the inventory | 90 in 22 groups, all listed | =python3 build/scripts/check_prototype_inventory.py= | this PR |
+| Rule identifiers | 309, 0 problems | =python3 build/scripts/check_rule_identifiers.py= | this PR |
 
 * Notes
+
+Decided while drawing, for the standard and the build:
+
+- The Import steps are a page at their own address, not a dialog: a table
+  kind has four steps and no target to choose. RS-ORE-05 and RS-ORE-07 say
+  so now.
+- Day basis and ORE currency type are selects over lists the server does not
+  hold yet; the build adds the two classifications.
+- A reader sees Export and not Import, as RS-ORE-02 says.
+- Two script faults the render found before the screenshots: the seed import
+  event dated after the user's edits, and a chart that took the first and
+  last entry by position instead of by date.
+
+From the journeys' judgement, for this task:
+
+- The pair's create dialog is the shared record dialog with two groups, the
+  pair and its convention, and a derived pair code; the two writes behind it
+  are the server's gap, [[id:56C6A5CA-1A0D-435A-9AC5-1263CBB29485][Write a currency pair and its convention together, and check the pair code]], and the dialog must say what a failed second write leaves.
+- The currency's Day basis and ORE currency type are free text today; the
+  prototype decides their kinds. The numbers are text inputs.
+- The currencies list shows codes where the page shows names; the prototype
+  draws the names.
+- The currencies list header draws the standard Import and Export pair of the
+  record screen standard's Import and Export section, between Refresh and
+  Add: the Export dialog that names the document and its count, and the
+  Import dialog of five steps on the server's preview. Both are the shared
+  =OreExchange= the build adds; the prototype draws every state of both at an
+  address.
 
 * Test Scenarios
 
@@ -74,12 +124,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3833][#3833]] | [docs] Prototype the currencies, desk groups and pairs screens |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: docs class | the prototype | Accept | Every state rendered by the script; two script faults fixed before the screenshots |
+| 2 | PR 3833 review: six findings | prototype.js, the render script | Accept all | The import counts reconcile (11 held, 2 changed, 1 new of 14); a reader's address with a write dialog draws no dialog, and two reader states joined the render; the data comment counts; the dead code goes; the script resolves Playwright from the web workspace and takes its paths from the command line; a disabled Next has no href |
 
 * Result
+
+The prototype is drawn under =doc/prototypes/currencies/= with its design
+note, listed on the group page and the inventory, linked from the three
+journeys, and rendered in 41 states with no script error. It draws the
+standard Import and Export pair on the currencies list, Export as an
+operation dialog and Import as the steps at their own address, and the pair
+dialog of two groups with its derived code. The task stays open until the
+owner walks it; their sign off, and any correction, lands on this task.

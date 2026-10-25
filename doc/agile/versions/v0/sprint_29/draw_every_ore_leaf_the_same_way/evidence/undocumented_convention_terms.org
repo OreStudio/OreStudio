@@ -1,0 +1,65 @@
+#+title: The convention terms the contract holds no text for
+#+description: The 58 leaves of conventions.xsd that the ORE source reads and neither the guide nor the curation describes, as generate_ore_parameters_dataset.py reports them.
+
+Measured at ORE commit 3d75a6908 with =python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py=. Each term is read by the source line beside it; a text for it is a curation entry in =projects/ores.sql/utility/convention_term_curation.json=.
+
+| XPath | Read at |
+|-------+---------|
+| =/Conventions/BMABasisSwap/LiborIndex= | =OREData/ored/configuration/conventions.cpp:904= |
+| =/Conventions/BMABasisSwap/BMAPaymentCalendar= | =OREData/ored/configuration/conventions.cpp:910= |
+| =/Conventions/BMABasisSwap/BMAPaymentConvention= | =OREData/ored/configuration/conventions.cpp:911= |
+| =/Conventions/BMABasisSwap/BMAPaymentLag= | =OREData/ored/configuration/conventions.cpp:912= |
+| =/Conventions/BMABasisSwap/OvernightLockouDays= | =OREData/ored/configuration/conventions.cpp:921= |
+| =/Conventions/BondSpread/TenorBased= | =OREData/ored/configuration/conventions.cpp:1556= |
+| =/Conventions/BondSpread/DayCounter= | =OREData/ored/configuration/conventions.cpp:1559= |
+| =/Conventions/BondSpread/CompoundingFrequency= | =OREData/ored/configuration/conventions.cpp:1560= |
+| =/Conventions/BondSpread/Compounding= | =OREData/ored/configuration/conventions.cpp:1561= |
+| =/Conventions/BondSpread/TenorCalendar= | =OREData/ored/configuration/conventions.cpp:1563= |
+| =/Conventions/BondSpread/SpotLag= | =OREData/ored/configuration/conventions.cpp:1564= |
+| =/Conventions/BondSpread/SpotCalendar= | =OREData/ored/configuration/conventions.cpp:1565= |
+| =/Conventions/BondSpread/RollConvention= | =OREData/ored/configuration/conventions.cpp:1566= |
+| =/Conventions/BondSpread/EOM= | =OREData/ored/configuration/conventions.cpp:1567= |
+| =/Conventions/BondYield/Accuracy= | =OREData/ored/configuration/conventions.cpp:2725= |
+| =/Conventions/BondYield/MaxEvaluations= | =OREData/ored/configuration/conventions.cpp:2726= |
+| =/Conventions/BondYield/Guess= | =OREData/ored/configuration/conventions.cpp:2727= |
+| =/Conventions/CDS/UsesReferenceData= | =OREData/ored/configuration/conventions.cpp:1372= |
+| =/Conventions/CDS/UpfrontSettlementDays= | =OREData/ored/configuration/conventions.cpp:1376= |
+| =/Conventions/CommodityFuture/AnchorDay/WeeklyDayOfTheWeek= | =OREData/ored/configuration/conventions.cpp:2077= |
+| =/Conventions/CommodityFuture/AnchorDay/NthWeekday/Nth= | =OREData/ored/configuration/conventions.cpp:2088= |
+| =/Conventions/CommodityFuture/AnchorDay/NthWeekday/Weekday= | =OREData/ored/configuration/conventions.cpp:2089= |
+| =/Conventions/CommodityFuture/AnchorDay/DayOfMonth= | =OREData/ored/configuration/conventions.cpp:2090= |
+| =/Conventions/CommodityFuture/AnchorDay/CalendarDaysBefore= | =OREData/ored/configuration/conventions.cpp:2093= |
+| =/Conventions/CommodityFuture/AnchorDay/LastWeekday= | =OREData/ored/configuration/conventions.cpp:2096= |
+| =/Conventions/CommodityFuture/AnchorDay/BusinessDaysAfter= | =OREData/ored/configuration/conventions.cpp:2099= |
+| =/Conventions/CommodityFuture/OptionNthWeekday/Nth= | =OREData/ored/configuration/conventions.cpp:2161= |
+| =/Conventions/CommodityFuture/OptionNthWeekday/Weekday= | =OREData/ored/configuration/conventions.cpp:2162= |
+| =/Conventions/CommodityFuture/IndexName= | =OREData/ored/configuration/conventions.cpp:2271= |
+| =/Conventions/CommodityFuture/BalanceOfTheMonth= | =OREData/ored/configuration/conventions.cpp:2276= |
+| =/Conventions/CommodityFuture/BalanceOfTheMonthPricingCalendar= | =OREData/ored/configuration/conventions.cpp:2278= |
+| =/Conventions/CommodityFuture/OffPeakPowerIndexData/OffPeakIndex= | =OREData/ored/configuration/conventions.cpp:1840= |
+| =/Conventions/CommodityFuture/OffPeakPowerIndexData/PeakIndex= | =OREData/ored/configuration/conventions.cpp:1841= |
+| =/Conventions/CommodityFuture/OffPeakPowerIndexData/OffPeakHours= | =OREData/ored/configuration/conventions.cpp:1842= |
+| =/Conventions/CommodityFuture/OffPeakPowerIndexData/PeakCalendar= | =OREData/ored/configuration/conventions.cpp:1843= |
+| =/Conventions/Deposit/SettlementDays= | =OREData/ored/configuration/conventions.cpp:211= |
+| =/Conventions/FRA/Index= | =OREData/ored/configuration/conventions.cpp:300= |
+| =/Conventions/FRA/EndDateConvention= | =OREData/ored/configuration/conventions.cpp:303= |
+| =/Conventions/FxOption/LongTermAtmType= | =OREData/ored/configuration/conventions.cpp:2579= |
+| =/Conventions/FxOption/LongTermDeltaType= | =OREData/ored/configuration/conventions.cpp:2580= |
+| =/Conventions/FxOptionTimeWeighting/WeekdayWeights/Monday= | =OREData/ored/configuration/conventions.cpp:2621= |
+| =/Conventions/FxOptionTimeWeighting/WeekdayWeights/Tuesday= | =OREData/ored/configuration/conventions.cpp:2622= |
+| =/Conventions/FxOptionTimeWeighting/WeekdayWeights/Wednesday= | =OREData/ored/configuration/conventions.cpp:2623= |
+| =/Conventions/FxOptionTimeWeighting/WeekdayWeights/Thursday= | =OREData/ored/configuration/conventions.cpp:2624= |
+| =/Conventions/FxOptionTimeWeighting/WeekdayWeights/Friday= | =OREData/ored/configuration/conventions.cpp:2625= |
+| =/Conventions/FxOptionTimeWeighting/WeekdayWeights/Saturday= | =OREData/ored/configuration/conventions.cpp:2626= |
+| =/Conventions/FxOptionTimeWeighting/WeekdayWeights/Sunday= | =OREData/ored/configuration/conventions.cpp:2627= |
+| =/Conventions/FxOptionTimeWeighting/TradingCenters/TradingCenter/Name= | =OREData/ored/configuration/conventions.cpp:2634= |
+| =/Conventions/FxOptionTimeWeighting/TradingCenters/TradingCenter/Calendar= | =OREData/ored/configuration/conventions.cpp:2635= |
+| =/Conventions/FxOptionTimeWeighting/TradingCenters/TradingCenter/Weight= | =OREData/ored/configuration/conventions.cpp:2636= |
+| =/Conventions/FxOptionTimeWeighting/Events/Event/Description= | =OREData/ored/configuration/conventions.cpp:2644= |
+| =/Conventions/FxOptionTimeWeighting/Events/Event/Date= | =OREData/ored/configuration/conventions.cpp:2645= |
+| =/Conventions/FxOptionTimeWeighting/Events/Event/Weight= | =OREData/ored/configuration/conventions.cpp:2646= |
+| =/Conventions/TenorBasisSwap/LongIndex= | =OREData/ored/configuration/conventions.cpp:732= |
+| =/Conventions/TenorBasisSwap/ShortIndex= | =OREData/ored/configuration/conventions.cpp:741= |
+| =/Conventions/TenorBasisSwap/LongPayTenor= | =OREData/ored/configuration/conventions.cpp:749= |
+| =/Conventions/TenorBasisSwap/SpreadOnShort= | =OREData/ored/configuration/conventions.cpp:763= |
+| =/Conventions/ZeroInflationIndex/RebasingEvents/Event= | =OREData/ored/configuration/conventions.cpp:2794= |

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :web:ux:standards:reporting:configuration:
 #+created: 2026-10-24
-#+updated: 2026-10-24
+#+updated: 2026-10-25
 
 * Summary
 
@@ -385,7 +385,11 @@ gap on the kind's conformance line.
 
 ** Import
 
-The import of a configuration file follows five steps, on the standard steps UI.
+The import of a configuration file is the standard /Import/ of the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]], section Import and Export: one button on the list
+header, one shared dialog, and the server's =ore.v1.ops.preview_<document>_import=
+and =import_<document>= behind it (decided 2026-10-25). It follows five steps,
+on the standard steps UI.
 
 1. *Choose the file.* The screen accepts the kind's root element. A file of
    another kind is refused, and the refusal names the root element it found.
@@ -408,8 +412,10 @@ drop is named in the review.
 
 ** Export
 
-The export writes the kind's ORE document from the configuration, in the order
-the rows carry.
+The export is the standard /Export/ of the record screen standard, on the record
+header, because a configuration is one document: the server's
+=ore.v1.ops.export_<document>= writes the kind's ORE document from the
+configuration, in the order the rows carry, and the browser saves it.
 
 A configuration never names its own file. The run document names it, through the
 parameter that =configuration_type.run_parameter= records.

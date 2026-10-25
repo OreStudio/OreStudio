@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 4B0865F7-84BC-499C-A99B-5CBA4C1E4A87
+:END:
+#+title: Currencies and FX prototypes
+#+description: The prototypes that answer to the Currencies and FX journeys: what each argues, and the Gemini review where one exists.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:currencies:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+* Summary
+
+Currencies with their countries, calendars and desk groups, the desk groups
+themselves, and currency pairs with their quoting conventions.
+
+One prototype answers to this group. It is a static page under
+=doc/prototypes/=, opens with no build and no session, and reads mock data
+only. The table below opens it and says what it argues. Where a prototype
+carries a Gemini review, the last column opens it: a review is a generated
+alternative kept beside the agreed design, never instead of it.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* The prototypes
+
+#+ATTR_HTML: :class hug-leading
+| Prototype | What it argues | Open it | Review |
+|-----------+----------------+---------+--------|
+| [[file:currencies-desk-groups-and-pairs.org][Currencies, desk groups and pairs]] | The three screens as the record screen standard settles them: the lists with their labels, one record of each kind with its link panels and its history on the shared timeline, the pair dialog of two groups with its derived code, and the standard Import and Export pair on the currencies list, Export as an operation dialog and Import as the steps at their own address. | [[file:currencies-desk-groups-and-pairs/][prototype]] | none |
+
+* Adding a prototype
+
+Create =doc/prototypes/currencies/<name>/= with an =index.html=, and a
+=prototype.css= and =prototype.js= when it needs them. Open the page with
+the links table every prototype carries, and leave its review row at
+=none=. Add a row to the table above, with the design note beside the
+prototype when there is one. Stop there: the site build finds every
+prototype under this tree, so no build file names it.
+
+A review goes at =doc/prototypes/currencies/<name>/review/=, with an
+=index.html= that lists its screens. The row names it, and the
+prototype's review row points at it. [[file:../index.org][Prototypes]] states the
+whole method and the rules that hold for every group.
+
+* See also
+
+- [[file:../index.org][Prototypes]] — the top page: the groups, and the one way to add a prototype.
+- [[file:../../knowledge/journeys/currencies/currencies.org][Currencies and FX journeys]] — the journeys these prototypes answer.

@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 8EBC26FE-5004-4EC5-90F7-745C9E2B1AB4
+:END:
+#+title: Task: Factor out the shared planner loop
+#+description: The bond, commodity and interest rate planners each carry a verbatim copy of the slot loop: the book, counterparty and trader lookups, the identifiers, the trade date and the netting set scan. A fourth family would copy it again. Extract the envelope every family shares, so a planner states only what its family adds.
+#+type: task
+#+level: s1
+#+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/factor-out-the-shared-planner-loop
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One planner states its family's facts and nothing the families share. Every planner builds its slots from one helper, the netting set scan exists once, and the bond, commodity and interest rate populations are unchanged down to their identifiers.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- One helper states the envelope every family shares: the book, the counterparty, the trader, the identifiers, the trade date and the netting set.
+- The bond, commodity and interest rate planners call it, and none of them scans the netting sets itself.
+- The three suites pass unchanged, and a plan of each family is identical to the plan the same scope produced before the change.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The build | exit 0, 7638 targets | =compass build= | 18486173db |
+| The synthetic suite | 1581 assertions in 70 cases | =ores.synthetic.core.tests= | 18486173db |
+| The codegen gate | no drift | =check_component_drift.py --all= | 18486173db |
+| The planner, net | 40 lines added, 65 removed | =git show d971d92493 -- ...trade_population_planner.cpp= | 18486173db |
+| The netting set scan | 1 occurrence, down from 3 | =grep -c netting_sets ...trade_population_planner.cpp= | 18486173db |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+The bond, commodity and interest rate planners state the envelope of a slot
+once. =common_slot= sets the book, the counterparty, the trader, the two
+identifiers, the trade date and the netting set, and =slot_count= states how
+many slots a scope holds, so each planner now says only what its family adds:
+the trade type, the notional and the terms. The netting set scan exists once
+instead of three times, and the planner file is twenty-five lines shorter.
+
+The extraction is known to be inert by measurement. A digest of a bond plan's
+envelope, hashed, was recorded from the planner as it stood before the change;
+the refactored planner produces the same value and a case asserts it. That case
+also pins the determinism the interface promises, so a later edit that moves a
+slot field fails a test rather than quietly changing a population.
+
+What this does not do: the dispatch on =trade_type_code= still appears in the
+planner, in the writer and in the routing table. Collapsing it needs the payload
+to state the product, which touches both sides of the rate family, so it stays
+its own change.
+

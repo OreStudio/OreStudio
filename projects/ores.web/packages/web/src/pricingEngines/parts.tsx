@@ -21,7 +21,10 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import type { PricingVocabulary } from '../api/pricingEngines.js';
-import { Field, Input, Notice, Select, Tag } from '../ui/Primitives.js';
+import { ParameterControl } from '../parameters/ParameterControl.js';
+import { ParameterRow } from '../parameters/ParameterRow.js';
+import { controlOfValueSet } from '../parameters/control.js';
+import { Field, Notice, Select, Tag } from '../ui/Primitives.js';
 import {
     methodInfo,
     modelInfo,
@@ -271,9 +274,9 @@ export function ChoiceSelect({
 
 /**
  * One setting's value, drawn for the values the vocabulary gives it: a select
- * for a list the value set states, a tenor or a sensitivity template, a number
- * bounded by the range, and a field for the rest. The meaning of the setting
- * stands under the field.
+ * for a list the value set states, a number bounded by the range or by a whole
+ * number, and a field for the rest. The meaning of the setting stands under the
+ * field, and a reference states the template it names instead of its help.
  */
 export /** The scope a link row uses for a setting's scope in the contract. */
 function linkScope(scope: string): string {
@@ -301,7 +304,6 @@ export function SettingValue({
     readonly value: string;
     readonly onChange: (value: string) => void;
 }): ReactNode {
-    const { t } = useTranslation();
     /*
      * The value model is the contract's: the link table names one set for every
      * (scope, name), and the reply serves them all in one map. The setting row
@@ -317,42 +319,24 @@ export function SettingValue({
         vocabulary.settings.find((candidate) => candidate.name === name);
     const allowed = vocabulary.valueSets[`${linkScope(scope)}|${name}`];
     const kind = setting?.kind ?? 'text';
-    const choices = allowed?.choices ?? [];
-    const sourceKind = allowed?.sourceKind ?? '';
-    const ranged = sourceKind === 'range';
-    const numeric = ranged || sourceKind === 'integer' || sourceKind === 'number';
     const template = kind === 'reference' ? templateInfo(vocabulary, value) : undefined;
     const meaning =
         template === undefined
             ? (setting?.help ?? '')
             : `${template.assetClass} · ${template.method}. ${template.description}`;
-    const label = `${name} (${scope})${setting?.required === true ? ` · ${t('pricingEngines.fields.required')}` : ''}`;
+    const label = `${name} (${scope})`;
     return (
-        <Field label={label} {...(meaning !== '' ? { hint: meaning } : {})}>
-            {choices.length > 0 ? (
-                <ChoiceSelect choices={choices} value={value} onChange={onChange} />
-            ) : (
-                <Input
-                    value={value}
-                    {...(numeric ? { type: 'number' as const } : {})}
-                    {...(ranged && allowed?.minimum !== null && allowed?.minimum !== undefined
-                        ? { min: allowed.minimum }
-                        : {})}
-                    {...(ranged && allowed?.maximum !== null && allowed?.maximum !== undefined
-                        ? { max: allowed.maximum }
-                        : {})}
-                    {...(numeric ? { step: sourceKind === 'integer' ? 1 : ('any' as const) } : {})}
-                    {...(numeric
-                        ? {
-                              inputMode:
-                                  sourceKind === 'integer'
-                                      ? ('numeric' as const)
-                                      : ('decimal' as const),
-                          }
-                        : {})}
-                    onChange={(event) => onChange(event.target.value)}
-                />
-            )}
-        </Field>
+        <ParameterRow
+            label={label}
+            required={setting?.required === true}
+            {...(meaning === '' ? {} : { hint: meaning })}
+        >
+            <ParameterControl
+                model={controlOfValueSet(allowed)}
+                value={value}
+                label={label}
+                onChange={onChange}
+            />
+        </ParameterRow>
     );
 }

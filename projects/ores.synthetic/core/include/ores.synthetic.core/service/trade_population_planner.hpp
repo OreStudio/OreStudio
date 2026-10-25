@@ -113,6 +113,27 @@ public:
 };
 
 /**
+ * @brief The planner for an interest rate population.
+ *
+ * The routing table sends ten trade types to @c rate_instrument, and every one
+ * of them reduces to a fixed leg against a floating leg: the type decides the
+ * exercise features the specialised tables hold, and the legs are what all ten
+ * share. The planner states those legs, drawing the index from the tenant's
+ * benchmark catalogue and the conventions from the reference data's own codes.
+ *
+ * It refuses when the tenant holds no benchmark rate, because a floating leg
+ * that named an index the store cannot resolve would book and then fail to
+ * price.
+ */
+class ORES_SYNTHETIC_CORE_EXPORT rate_trade_planner final : public trade_planner {
+public:
+    [[nodiscard]] domain::trade_population_plan
+    plan(const domain::trade_generation_scope& scope) const override;
+
+    [[nodiscard]] std::string_view asset_class_code() const override;
+};
+
+/**
  * @brief The planner registered for an asset class.
  *
  * A class with no planner is refused by name rather than falling back to one,
@@ -136,6 +157,25 @@ ORES_SYNTHETIC_CORE_EXPORT std::vector<std::string_view> planned_asset_classes()
  * @throws trade_population_error naming the input that does not hold.
  */
 ORES_SYNTHETIC_CORE_EXPORT void validate_scope(const domain::trade_generation_scope& scope);
+
+/**
+ * @brief The number of slots a scope states.
+ *
+ * The config states a count per book, so a scope over four books states four
+ * times that count. It is a function of the scope alone.
+ */
+ORES_SYNTHETIC_CORE_EXPORT std::uint32_t slot_count(const domain::trade_generation_scope& scope);
+
+/**
+ * @brief States the envelope every family shares for one slot.
+ *
+ * The book, the counterparty, the trader, the identifiers, the trade date and
+ * the netting set are the same for all of them, so a planner states what its
+ * family adds and nothing else. A planner that computed these itself would be
+ * a copy, and the copies drift.
+ */
+ORES_SYNTHETIC_CORE_EXPORT domain::trade_population_slot
+common_slot(const domain::trade_generation_scope& scope, std::uint32_t slot);
 
 /**
  * @brief Derives the id a trade slot carries.

@@ -1,0 +1,42 @@
+ok   list                 ORE Studio Currencies            Home › Reference data › Currencies Currencies The currencies the tenant works in, with the
+ok   list-reader          ORE Studio Currencies            Home › Reference data › Currencies Currencies The currencies the tenant works in, with the
+ok   list-search-none     ORE Studio Currencies            Home › Reference data › Currencies Currencies The currencies the tenant works in, with the
+ok   list-add             ORE Studio Currencies            Home › Reference data › Currencies Currencies The currencies the tenant works in, with the
+ok   export               ORE Studio Currencies            Home › Reference data › Currencies Currencies The currencies the tenant works in, with the
+ok   exported             ORE Studio Currencies            Home › Reference data › Currencies Currencies The currencies the tenant works in, with the
+ok   eur                  ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
+ok   eur-countries        ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
+ok   eur-calendars        ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
+ok   eur-groups           ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
+ok   eur-history          ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
+ok   eur-edit             ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
+ok   eur-delete           ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
+ok   eur-add-country      ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
+ok   eur-remove-country   ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
+ok   eur-revert           ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
+ok   eur-reader           ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
+ok   groups               ORE Studio Desk groups           Home › Reference data › Desk groups Desk groups Groups of currencies the desk names, such 
+ok   g11                  ORE Studio G11                   Home › Reference data › Desk groups › G11 G11 G11 · version 2 Refresh 2026-10-25T14:20:11+
+ok   g11-members          ORE Studio G11                   Home › Reference data › Desk groups › G11 G11 G11 · version 2 Refresh 2026-10-25T14:20:11+
+ok   g11-history          ORE Studio G11                   Home › Reference data › Desk groups › G11 G11 G11 · version 2 Refresh 2026-10-25T14:20:11+
+ok   g11-edit             ORE Studio G11                   Home › Reference data › Desk groups › G11 G11 G11 · version 2 Refresh 2026-10-25T14:20:11+
+ok   groups-add           ORE Studio Desk groups           Home › Reference data › Desk groups Desk groups Groups of currencies the desk names, such 
+ok   pairs                ORE Studio Currency pairs        Home › Reference data › Currency pairs Currency pairs The pairs the desk trades, with how 
+ok   eurusd               ORE Studio EUR/USD               Home › Reference data › Currency pairs › EUR/USD EUR/USD EUR/USD EUR/USD · version 2 Refre
+ok   eurusd-calendars     ORE Studio EUR/USD               Home › Reference data › Currency pairs › EUR/USD EUR/USD EUR/USD EUR/USD · version 2 Refre
+ok   eurusd-history       ORE Studio EUR/USD               Home › Reference data › Currency pairs › EUR/USD EUR/USD EUR/USD EUR/USD · version 2 Refre
+ok   eurusd-edit          ORE Studio EUR/USD               Home › Reference data › Currency pairs › EUR/USD EUR/USD EUR/USD EUR/USD · version 2 Refre
+ok   pairs-add            ORE Studio Currency pairs        Home › Reference data › Currency pairs Currency pairs The pairs the desk trades, with how 
+ok   pairs-add-same       ORE Studio Currency pairs        Home › Reference data › Currency pairs Currency pairs The pairs the desk trades, with how 
+ok   import-1             ORE Studio Import currencies     Home › Reference data › Currencies › Import Import currencies Bring an ORE currency config
+ok   import-1-wrong       ORE Studio Import currencies     Home › Reference data › Currencies › Import Import currencies Bring an ORE currency config
+ok   import-2             ORE Studio Import currencies     Home › Reference data › Currencies › Import Import currencies Bring an ORE currency config
+ok   import-3             ORE Studio Import currencies     Home › Reference data › Currencies › Import Import currencies Bring an ORE currency config
+ok   import-3-clean       ORE Studio Import currencies     Home › Reference data › Currencies › Import Import currencies Bring an ORE currency config
+ok   import-4             ORE Studio Import currencies     Home › Reference data › Currencies › Import Import currencies Bring an ORE currency config
+ok   import-reader        ORE Studio Import currencies     Only a person who may write currencies can import them. Back to the currencies
+ok   imported             ORE Studio Currencies            Home › Reference data › Currencies Currencies The currencies the tenant works in, with the
+ok   guard                ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
+ok   eur-edit-reader      ORE Studio Euro                  Home › Reference data › Currencies › EUR EUR Euro EUR · version 3 Refresh 2026-10-25T14:20
+ok   list-add-reader      ORE Studio Currencies            Home › Reference data › Currencies Currencies The currencies the tenant works in, with the
+41 states, 0 with errors

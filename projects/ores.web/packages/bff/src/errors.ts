@@ -74,8 +74,19 @@ export function invalidCredentials(message: string): HttpFailure {
     });
 }
 
-export function invalidRequest(message: string): HttpFailure {
-    return new HttpFailure(400, { code: 'invalid-request', message });
+/**
+ * The request cannot be read, or it asks for something the rules refuse.
+ *
+ * A refusal can carry the values that let the caller act on it, such as the
+ * problems a document must fix before it saves. They travel beside the code
+ * and the message rather than as a second response, so one status stays one
+ * answer.
+ */
+export function invalidRequest(
+    message: string,
+    details: Readonly<Record<string, unknown>> = {},
+): HttpFailure {
+    return new HttpFailure(400, { code: 'invalid-request', message }, details);
 }
 
 /**

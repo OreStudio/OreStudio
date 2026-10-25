@@ -554,8 +554,11 @@ void report_execution_handler::record_engine_errors(const std::string& tenant_id
                                       << " were not read: " << read.error;
             return;
         }
-        if (read.errors.empty())
+        if (read.errors.empty()) {
+            BOOST_LOG_SEV(lg(), warn) << "The output of report instance " << instance_id
+                                      << " was read and stated no errors.";
             return;
+        }
 
         service::report_error_recorder recorder(
             ores::database::service::tenant_context::with_tenant(ctx_, tenant_id));

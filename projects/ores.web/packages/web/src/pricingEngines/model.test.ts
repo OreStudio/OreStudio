@@ -42,6 +42,7 @@ import {
     pairsFor,
     settingKey,
     settingsFor,
+    refused,
     startsWith,
     templateInfo,
     usualPair,
@@ -286,6 +287,36 @@ describe('check', () => {
             typeCode: 'BermudanSwaption',
             detail: '2',
         });
+    });
+
+    it('says a refusal of the service in the words the checks use', () => {
+        const products = draftOf(document).products;
+        const findings = refused(
+            [
+                { code: 'name_missing', productId: '', parameterScope: '', parameterName: '' },
+                {
+                    code: 'parameter_repeated',
+                    productId: 'p1',
+                    parameterScope: 'model',
+                    parameterName: 'Calibration',
+                },
+                { code: 'model_missing', productId: 'p1', parameterScope: '', parameterName: '' },
+                {
+                    code: 'a_rule_from_the_future',
+                    productId: '',
+                    parameterScope: '',
+                    parameterName: '',
+                },
+            ],
+            products,
+        );
+        expect(findings.map((finding) => finding.code)).toEqual([
+            'nameMissing',
+            'parameterRepeated',
+            'modelMissing',
+        ]);
+        expect(findings[1]).toMatchObject({ level: 'error', typeCode: 'BermudanSwaption' });
+        expect(findings[1]?.detail).toBe('Calibration');
     });
 });
 

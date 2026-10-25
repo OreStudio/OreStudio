@@ -92,6 +92,74 @@ it stores.
 :cpp_type: std::vector<ores::analytics::domain::todays_market_configuration_binding>
 :END:
 
+** pricing_engines_document_problem
+
+#+begin_src cpp :name comment
+/**
+ * @brief One reason a save is refused, named so a client can act on it.
+ *
+ * A refused save reports every problem it found, not the first, so a person
+ * fixes them in one pass. Every field but code and message is empty when the
+ * problem is not about a product or a parameter.
+ */
+#+end_src
+
+*** code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Which rule the document broke: name_missing, no_products, model_missing,
+ * engine_missing, parameter_repeated or parameter_value_missing.
+ */
+#+end_src
+
+*** product_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The product the problem is about, when it is about one.
+ */
+#+end_src
+
+*** parameter_scope
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The scope of the setting the problem is about, when it is about one.
+ */
+#+end_src
+
+*** parameter_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The name of the setting the problem is about, when it is about one.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The problem in a sentence a person reads.
+ */
+#+end_src
+
 ** save_pricing_engines_document_request
 :PROPERTIES:
 :subject: analytics.v1.pricing_engines_documents.put
@@ -135,6 +203,17 @@ it stores.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+*** problems
+:PROPERTIES:
+:cpp_type: std::vector<pricing_engines_document_problem>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Every reason the save was refused, in the order a person reads them. Empty when it saved.
+ */
+#+end_src
 
 ** get_pricing_engines_document_request
 :PROPERTIES:

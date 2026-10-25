@@ -1,0 +1,11 @@
+{
+  "*/Id": {
+    "label": "Identifier",
+    "description": "The unique identifier of the convention. A curve segment, a quote or another convention refers to the convention by it.",
+    "reason": "The guide describes Id once, in the introduction to the chapter, and lists it in no section. The second sentence is ours: curve segments and the other conventions name a convention by its Id.",
+    "source": "authored",
+    "source_ref": "Docs/UserGuide/parameterisation/conventions.tex:9",
+    "curator": "marco",
+    "date": "2026-10-25"
+  }
+}

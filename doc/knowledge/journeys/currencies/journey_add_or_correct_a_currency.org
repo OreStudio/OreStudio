@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:refdata:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-25
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A reference data administrator adds a currency or corrects one, with its countries, calendars and desk groups on one screen.
@@ -68,8 +68,11 @@ person leaves the currency.
 8. *Revert a change.* The person chooses *Revert to this version* on an older
    version. The system writes the old values as a new version, with the change
    reason the person states. History is never rewritten.
-9. *Exchange with ORE.* The person exports the tenant's currencies as an ORE
-   =currencyconfig.xml=, or imports one. See /What is missing/.
+9. *Exchange with ORE.* The person presses *Export* on the list and saves the
+   tenant's currencies as an ORE =currencyconfig.xml=, or presses *Import* and
+   brings one in through the five steps of the standard import: the file, what
+   it holds, what the system does not know, and the difference to review before
+   anything is written. Both call the server; see /What is missing/.
 10. *Leave.* The person goes back to the list. Every screen that reads the
     currency now reads the corrected values.
 
@@ -85,6 +88,39 @@ to. The history is a panel on the same screen, not a separate dialog.
 #+caption: Currency: the currency panel, its countries, calendars and desk groups, and the history panel.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/currencies/wireframe_add_or_correct_a_currency.png]]
+
+** Each step, and the shape that serves it
+
+The screen pipeline judges a journey before its prototype: a step is a CRUD
+variation that the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] already draws, a kind's own action, a view no rule
+draws yet, a missing server operation, or a step that keeps state across a
+reply and needs a workflow under the Workflows menu. Judged on 2026-10-25,
+against the screen the web draws today, by the
+[[id:61C6B0A5-03A5-4424-8EA3-EE7E587629FD][screen pipeline runbook]].
+
+#+ATTR_HTML: :class hug-leading
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| 1 Find the currency | The record list: ISO code, name, symbol, monetary nature, market tier; search on the server | Standard list. The baseline's sheet found the list showing codes where the page shows names (ES-WORDS-06), for the prototype |
+| 2 Read the currency | The record page with Details, Countries, Calendars, Desk groups and History | Standard record page; the three link tabs are link panels (RS-RELATED-01 to 03) |
+| 3 Correct the currency | Edit in the header, the record dialog | Standard amend. Day basis and ORE currency type are free text where the standard asks a select for a classification (RS-WRITE-01), and the numbers are text inputs (RS-WRITE-32); the prototype decides their kinds |
+| 4 Set the countries | The Countries tab, a link panel with Add and Remove | Standard links; a country's name opens its page once the parties topic builds one (ES-REF-04 until then) |
+| 5 Set the calendars | The Calendars tab, a link panel | Standard links; a calendar's name opens the calendar page |
+| 6 Set the desk groups | The Desk groups tab, a link panel | Standard links |
+| 7 Check the history | The History tab | Standard history, drawn by the shared timeline once the build moves this screen off the legacy panel (RS-HIST-01); the links have no history |
+| 8 Revert a change | Revert on an older version | Standard (RS-HIST-02) |
+| 9a Export | Nothing today; the Details end with a notice that the export needs a server operation | Decided 2026-10-25: the standard /Export/ of the record screen standard's Import and Export section, on the list header, because the document is the whole table (RS-ORE-02); one reply from =ore.v1.ops.export_currency_config= (RS-ORE-04), not a workflow. The notice that explains the absent export goes (ES-WORDS-07) |
+| 9b Import | Nothing today | Decided 2026-10-25: the standard /Import/ on the list header (RS-ORE-02), the five steps on the server's preview and import of one currency configuration (RS-ORE-05, RS-ORE-06). The earlier proposal to drop the import of one file is superseded: the owner asked for one standard pair across the screens |
+| 10 Leave | The breadcrumb | Standard |
+
+The journey is a CRUD variation of the standard record screen with links, plus the standard Import and Export pair, which waits on the server's three operations; no step keeps state across a reply, so no workflow is needed. The owner signed off the judgement and the pair on 2026-10-25, with the words "import and export, keep it simple", and chose currencies as the kind that proves the pair.
+
+* Prototype
+
+[[id:E44A471B-E3FB-4B86-8DB3-E00C02C8BADF][Currencies, desk groups and pairs prototype]], under
+=doc/prototypes/currencies/=, draws every state of this journey's screens at
+an address, and its design note cites the rule identifiers each state follows
+and names what it leaves to the server.
 
 * Entities composed
 
@@ -131,8 +167,9 @@ junction inserts also check neither end of the link; see the
 | Set the desk groups | Add or remove a group | =refdata.v1.currency_currency_groups.put=, =.delete= | exists |
 | Check the history | Read every version with its diff | =refdata.v1.history.get= (=entity_type= =ores.refdata.currency=) | exists |
 | Revert a change | Write the old values as a new version | =refdata.v1.currencies.put= | exists |
-| Exchange with ORE | Export the currencies as ORE XML | none | missing |
-| Exchange with ORE | Import an ORE currency configuration | =ore.v1.ops.ore_import_execute= | partial |
+| Exchange with ORE | Export the currencies as ORE XML | =ore.v1.ops.export_currency_config= | missing |
+| Exchange with ORE | Preview what an ORE currency configuration would change | =ore.v1.ops.preview_currency_config_import= | missing |
+| Exchange with ORE | Import an ORE currency configuration | =ore.v1.ops.import_currency_config=; today only the bundle's =ore.v1.ops.ore_import_execute= | missing |
 
 The generic history request is the one =ores.history= defines: the subject is
 derived from the entity type, and the reply carries every version's full field
@@ -144,25 +181,32 @@ as it stood on a date.
 
 * What is missing
 
-1. *No server export of currencies as ORE XML.* The Qt client wrote
+1. *No server export of currencies as ORE XML.* Captured as [[id:196DC388-7700-4C25-8109-31A4657CE039][Export currencies and calendar adjustments as ORE documents on the server]]. The Qt client wrote
    =currencyconfig.xml= itself, with =ore::xml::exporter::export_currency_config=
-   linked into the desktop binary. A browser cannot do that. The candidate is a
-   =refdata.v1.currencies.export= operation that returns the document, in the
-   shape of =refdata.v1.ops.get_calendar_adjustments=. Until it exists, the screen
+   linked into the desktop binary. A browser cannot do that. Decided
+   2026-10-25: =ore.v1.ops.export_currency_config=, in the ORE component's
+   namespace as the messaging reference requires, returns the document as a
+   file with a name and a content, the shape of
+   =ore.v1.ops.export_run_configuration=; the ORE service reads the currencies
+   through refdata's messages and writes the document with the one exporter.
+   The build task of the currencies topic adds it. Until it exists, the screen
    offers no export.
 2. *Import is a whole ORE bundle, not one file.* =ore.v1.ops.ore_import_execute=
    imports an ORE directory, and its planner reads the currency configuration as
-   one part of it. The candidate is to let the import take a currency
-   configuration on its own. Until then, the screen links to the ORE import
-   instead of offering its own.
-3. *The =Operations= role cannot fill its own pickers.* It holds read, write and
+   one part of it. Decided 2026-10-25: two operations narrow it to one
+   document, =ore.v1.ops.preview_currency_config_import=, which parses the file
+   and returns what the import would do, and =ore.v1.ops.import_currency_config=,
+   which writes with the person's choices and the change reason. The build task
+   of the currencies topic adds them with the shared Import dialog. Until then,
+   the screen offers no import.
+3. *The =Operations= role cannot fill its own pickers.* Captured as [[id:BDA029F9-671D-4C08-B816-8CDB8068CDAB][No role below the tenant administrator can maintain reference data]]. It holds read, write and
    delete on currencies and the three junctions, but no read on countries,
    calendars, currency groups, rounding types, monetary natures or market tiers.
    An =Operations= member can change a currency but cannot see the values it
    must pick from. The candidate is to grant those reads to =Operations=, or to
    introduce a reference data role. Until then, only a tenant administrator can
    run this journey end to end.
-4. *Reverting is a client convention, not an operation.* There is no revert
+4. *Reverting is a client convention, not an operation.* Done as described: the revert dialog writes with =common.rectification= and names the version in the commentary. There is no revert
    subject; the screen writes the old values with =put=. This is enough, and it
    keeps history append-only. The seeded change reasons have no code for a
    revert. The candidate is =common.revert=. Until it exists, the screen uses

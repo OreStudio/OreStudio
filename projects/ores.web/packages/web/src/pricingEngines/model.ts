@@ -404,6 +404,62 @@ export function blocked(findings: readonly Finding[]): boolean {
     return findings.some((finding) => finding.level === 'error');
 }
 
+/** One reason the service refused a document, as the BFF states it beside the message. */
+export interface Refusal {
+    readonly code: string;
+    /** The product the refusal is about, empty when it is about no product. */
+    readonly productId: string;
+    readonly parameterScope: string;
+    readonly parameterName: string;
+}
+
+/**
+ * The finding each rule the service enforces is said with.
+ *
+ * The service owns the rules, so its refusal is the check of record; these are
+ * the same findings the screen already words, and a refusal arrives as one of
+ * them rather than as a second vocabulary. The setting code says whether the
+ * refusal names a setting, which is the detail the words put in the sentence.
+ */
+const REFUSED_AS: Readonly<
+    Record<string, { readonly code: Finding['code']; readonly setting: boolean }>
+> = {
+    name_missing: { code: 'nameMissing', setting: false },
+    no_products: { code: 'noProducts', setting: false },
+    model_missing: { code: 'modelMissing', setting: false },
+    engine_missing: { code: 'engineMissing', setting: false },
+    parameter_repeated: { code: 'parameterRepeated', setting: true },
+    parameter_value_missing: { code: 'parameterMissingValue', setting: true },
+};
+
+/**
+ * The refusals of a refused save, said the way the checks say the same problems.
+ *
+ * A person reads one set of words whether the check found the problem here or
+ * the service refused the save. A code this screen does not know is left out,
+ * because only the service can word it.
+ */
+export function refused(
+    problems: readonly Refusal[],
+    products: readonly PricingProduct[],
+): readonly Finding[] {
+    return problems.flatMap((problem) => {
+        const rule = REFUSED_AS[problem.code];
+        if (rule === undefined) return [];
+        const typeCode =
+            products.find((product) => product.id === problem.productId)?.typeCode ?? '';
+        return [
+            {
+                level: 'error' as const,
+                code: rule.code,
+                productId: problem.productId,
+                typeCode,
+                detail: rule.setting ? problem.parameterName : '',
+            },
+        ];
+    });
+}
+
 /** One line of the difference between two versions. */
 export interface Change {
     readonly kind: 'added' | 'removed' | 'changed';

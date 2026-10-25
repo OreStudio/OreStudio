@@ -59,6 +59,19 @@ task and name that file in the Command column.
 
 * Notes
 
+From the journeys' judgement, for this task:
+
+- The server side of the Import and Export pair: the first triple,
+  =ore.v1.ops.export_currency_config=, =preview_currency_config_import= and
+  =import_currency_config= in the ORE service, reading and writing currencies
+  through refdata's messages and using the exporter and the import planner
+  =ores.ore.core= already has; the three BFF routes under
+  =/api/refdata/currencies=; the shared =OreExchange= module with the two
+  buttons and the two dialogs; the =arrow_import= and =arrow_export= icons
+  registered in =Icon.tsx= (the artwork is in the asset set already). See the
+  record screen standard, section Import and Export, and the capture
+  [[id:196DC388-7700-4C25-8109-31A4657CE039][Export currencies and calendar adjustments as ORE documents on the server]].
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

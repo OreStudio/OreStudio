@@ -170,7 +170,7 @@ Sends =assemble_bundle_request= and prints =assemble_bundle_result=, so the shap
 The command is shaped like this:
 
 #+begin_example
-report_operations assemble-bundle <report_instance_id> <definition_id> <tenant_id> <correlation_id> <trades_storage_key> <market_data_storage_key> <fixings_storage_key> [--trade_count <v>] [--series_count <v>]
+report_operations assemble-bundle <report_instance_id> <definition_id> <tenant_id> <correlation_id> <trades_storage_key> <market_data_storage_key> <fixings_storage_key> [--trade_count <v>] [--trade_versions <v>] [--series_count <v>]
 #+end_example
 
 It is addressed at =reporting.v1.ops.assemble_bundle=.

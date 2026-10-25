@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:refdata:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-25
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A reference data administrator keeps a desk group of currencies, such as G11 or Scandies, and its members correct.
@@ -70,6 +70,36 @@ leaving the screen.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/currencies/wireframe_group_currencies_for_the_desk.png]]
 
+** Each step, and the shape that serves it
+
+The screen pipeline judges a journey before its prototype: a step is a CRUD
+variation that the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] already draws, a kind's own action, a view no rule
+draws yet, a missing server operation, or a step that keeps state across a
+reply and needs a workflow under the Workflows menu. Judged on 2026-10-25,
+against the screen the web draws today, by the
+[[id:61C6B0A5-03A5-4424-8EA3-EE7E587629FD][screen pipeline runbook]].
+
+#+ATTR_HTML: :class hug-leading
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| 1 See the groups | The record list: code, name, description, display order | Standard list; the member count waits on a read by group |
+| 2 Add or correct a group | Add in the header, Edit on the page, the record dialog | Standard create and amend; display order is a field of the dialog, not a reorder mode, because a desk group is a record and not a classification list |
+| 3 Open a group | The record page: Details, Members, History | Standard record page |
+| 4 Add a member | The Members tab, a link panel with Add | Standard links (RS-RELATED-02) |
+| 5 Remove a member | Remove on the row | Standard links (RS-RELATED-03) |
+| 6 Remove a group | Delete in the header, the remove dialog that closes the members first | Standard delete; the order of the two calls is the dialog's, as the calendar's delete does with its parts |
+| 7 Check the history | The History tab | Standard history on the shared timeline; links have none |
+| 8 Leave | The breadcrumb | Standard |
+
+The journey is a CRUD variation of the standard record screen with links; no own action, no workflow.
+
+* Prototype
+
+[[id:E44A471B-E3FB-4B86-8DB3-E00C02C8BADF][Currencies, desk groups and pairs prototype]], under
+=doc/prototypes/currencies/=, draws every state of this journey's screens at
+an address, and its design note cites the rule identifiers each state follows
+and names what it leaves to the server.
+
 * Entities composed
 
 #+ATTR_HTML: :class hug-leading
@@ -104,22 +134,22 @@ no history panel.
 
 * What is missing
 
-1. *Members cannot be read by group.* The membership filter takes currency
+1. *Members cannot be read by group.* Captured as [[id:4FB897EC-473A-4AF7-AC9D-ECE3947E6639][Read desk group members by group, and close them with their group]]. The membership filter takes currency
    codes only, and the only narrowed read is =list_by_currency_iso_code=.
    Listing one group's members, or counting them, means paging through every
    membership row in the tenant. The candidate is =list_by_currency_group_code=
    and a group filter. Until then the screen pages through the memberships
    once and groups them itself.
-2. *A membership is not checked against its ends.* The membership insert
+2. *A membership is not checked against its ends.* Captured as [[id:9408DF73-0C20-43E0-935F-EF6CB52A9258][Refdata junction inserts check neither end of the link]]. The membership insert
    checks the tenant only. It does not check that the currency or the group
    exists, so a row can name a currency or a group that is not there. The
    candidate is the same existence checks the other refdata writes make. Until
    then the screen offers only codes it has read from the two lists.
-3. *Removing a group leaves its members behind.* Closing a group does not close
+3. *Removing a group leaves its members behind.* Captured with the read by group, above. Closing a group does not close
    its membership rows. The candidate is to refuse the delete while members
    remain, or to close them with the group. Until then the screen removes the
    members first, as step 6 says.
-4. *=Operations= can change members but not see the groups.* It holds the
+4. *=Operations= can change members but not see the groups.* Captured as [[id:BDA029F9-671D-4C08-B816-8CDB8068CDAB][No role below the tenant administrator can maintain reference data]]. It holds the
    membership permissions and reads currencies, but holds no permission on
    =currency_groups=.
 

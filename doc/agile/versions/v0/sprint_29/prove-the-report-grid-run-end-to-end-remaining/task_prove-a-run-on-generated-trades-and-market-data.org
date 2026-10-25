@@ -8,7 +8,7 @@
 #+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 3826
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -74,7 +74,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3826][#3826]] | [reporting] Tell one analytic's failure from another's |
+| [[https://github.com/OreStudio/OreStudio/pull/3824][#3824]] | [reporting] Collapse a batch's repeated reasons |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :sprint_29:v0:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,18 +21,19 @@ the currency pair convention, with the classifications their pickers offer. The
 currencies screen is the richest the web has, so the topic proves the runbook on
 a screen that already conforms in most lines, and closes the gaps the
 [[id:10ECDD95-0C8C-4BFF-A94A-FCBFAAC8F25A][record screen baseline]] and the currencies sign off sheet found on it. The Qt
-import and export of currencies needs a decision in the journeys step: a
-workflow, or dropped.
+import and export of currencies became, in the journeys step, the standard
+Import and Export pair of the record screen standard, which this topic builds
+first.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing; the runbook and the harness are in place. |
-| Next          | Extract the journeys of the currencies topic, with the runbook's step 1. |
+| Now           | The journeys are signed off with the Import and Export pair decided; the prototype is next. |
+| Waiting on    | Nothing. |
+| Next          | Prototype the screens of the currencies topic, with the pair on the currencies list. |
 | Last touched  | 2026-10-25                               |
 
 * Acceptance
@@ -47,12 +48,27 @@ workflow, or dropped.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:9C4A21C6-6B7E-41A3-AB03-E2D3A8BB9939][Extract the journeys of the currencies topic]] | BACKLOG | | | Find or write the journeys of currencies, groups and pairs, judge each step as the standard screen, an own action, a view or a workflow, and get the owner's sign off. |
-| [[id:958AA2EF-041E-4266-AFE8-A57A6C345F6E][Prototype the screens of the currencies topic]] | BACKLOG | | | Prototype each screen of the topic to the settled standard with its design note, every state at an address, and get the owner's sign off before any code. |
+| [[id:9C4A21C6-6B7E-41A3-AB03-E2D3A8BB9939][Extract the journeys of the currencies topic]] | DONE | 2026-10-25 | 2026-10-25 | Find or write the journeys of currencies, groups and pairs, judge each step as the standard screen, an own action, a view or a workflow, and get the owner's sign off. |
+| [[id:958AA2EF-041E-4266-AFE8-A57A6C345F6E][Prototype the screens of the currencies topic]] | STARTED | 2026-10-25 | | Prototype each screen of the topic to the settled standard with its design note, every state at an address, and get the owner's sign off before any code. |
 | [[id:31086D9C-507A-4748-BEBF-12D90775D130][Build the screens of the currencies topic]] | BACKLOG | | | Move the currencies, desk groups and currency pairs screens to the signed off prototype through the shared parts, with the harness checks and the strings in three languages. |
 | [[id:1592D684-2DC9-46B5-B348-032470DFDC08][Test and sign off the screens of the currencies topic]] | BACKLOG | | | Write and drive the test scenario on a fresh database, run the harness and the sheet, file the gaps, and record the owner's sign off. |
 
 * Decisions
+
+- The three journeys of the topic were judged on 2026-10-25 as CRUD
+  variations of the standard record screen with links, a pair dialog with two
+  groups and a derived key, and a members panel; no workflow. Signed off by
+  the owner the same day.
+- Every kind that ORE reads as one document exchanges it through one standard
+  pair, /Import/ and /Export/, two buttons that call the server's three
+  operations per document in the ORE component's namespace,
+  =ore.v1.ops.export_<document>=, =preview_<document>_import= and
+  =import_<document>=; no XML in the browser, bare verbs, Export where the
+  document's scope is. Recorded as the Import and Export section of the
+  record screen standard. Currencies prove the pair first (owner, 2026-10-25:
+  "import and export sounds good, keep it simple").
+- The earlier proposal to drop the import of one currency file is superseded
+  by the pair.
 
 * Out of scope
 

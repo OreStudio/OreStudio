@@ -1462,7 +1462,13 @@ void write_fra(record_writer& trade, const swap_instrument_data& v) {
     // the leg rows survived. Its Index and Strike still come from those rows.
     set_spelling_or(data, "LongShort", fact.long_short, "Long", "long short");
 
-    if (!v.legs.empty())
+    // The fact row states the index the forward resets on. A leg only carries
+    // it when the document put it there, and the fixed leg states none, so
+    // reading the first leg would write an empty index for a trade whose legs
+    // are ordered fixed first.
+    if (!fact.rate_index.empty())
+        data.set_text("Index", fact.rate_index);
+    else if (!v.legs.empty())
         data.set_text("Index", v.legs.front().floating_index_code);
     for (const auto& rate : v.leg_rates)
         if (rate.rate_role == "fixed") {
@@ -1479,8 +1485,14 @@ void write_capfloor(record_writer& trade, const swap_instrument_data& v) {
     auto data = trade.child("CapFloorData");
     data.set_spelling("LongShort", "Long", "long short");
 
+    // A cap or a floor pays on the floating leg, so that is the leg the
+    // document states. Taking the first leg would write a fixed one for a
+    // trade whose fixed side happens to be numbered first.
+    const auto floating = std::find_if(v.legs.begin(), v.legs.end(), [](const auto& candidate) {
+        return candidate.leg_type_code == "Floating";
+    });
     if (!v.legs.empty()) {
-        const auto& row = v.legs.front();
+        const auto& row = floating != v.legs.end() ? *floating : v.legs.front();
         auto leg = data.child("LegData");
         set_spelling_or(leg, "LegType", row.leg_type_code, "Floating", "leg type");
         leg.set_spelling("Currency", row.currency, "currency");

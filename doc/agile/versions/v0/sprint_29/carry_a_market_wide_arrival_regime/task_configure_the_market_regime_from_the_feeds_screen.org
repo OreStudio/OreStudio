@@ -35,7 +35,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The feeds screen shows the market state in force: calm, active or forced.
+- A user sets the regime there: auto, pinned calm or pinned active, the
+  transition rate, and the shared intensity's jump and decay.
+- The same screen edits the per-feed sensitivity.
+- A manual switch forces the state at runtime, from the screen and from a shell
+  command, and takes effect on the next tick without a restart.
+- The switch reports what it forced, so a test can assert it.
+- Forcing is reversible: returning to auto hands control back to the state
+  machine.
 
 * Plan
 

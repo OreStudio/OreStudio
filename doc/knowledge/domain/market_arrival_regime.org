@@ -118,6 +118,10 @@ about what the simulator claims to model, not about effort.
   run from the screen, never from SQL. The panel is the same surface the
   sensitivity per feed is edited on, so one screen answers "how does the market
   behave" and "how much does this pair follow it".
+- As a switch, for testing: forcing the state takes effect on the next tick,
+  needs no restart, is available from the screen and from the shell, and reports
+  what it forced. A test that has to wait for a Markov chain to reach the active
+  state is not a test; it is a hope.
 
 * How to check it
 

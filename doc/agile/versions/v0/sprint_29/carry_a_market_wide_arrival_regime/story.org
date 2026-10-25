@@ -46,6 +46,8 @@ and the per-series laws survive it.
 - A control panel on the feeds screen shows the current state and sets the
   regime: auto, pinned calm or pinned active, the transition rate, and the shared
   intensity's jump and decay. A user does not edit a database row to do it.
+- A manual switch forces the state at runtime, from the screen and from the
+  shell, so a tester can trigger a panic mid-run and watch every series answer.
 
 * Tasks
 

@@ -138,8 +138,8 @@ std::string cause_of(const engine_log_error& error, const json::object& sub_fiel
         if (error.subject == "analytic")
             return error.subject_id;
         const auto* analytic = sub_fields.if_contains("analyticType");
-        return analytic != nullptr && analytic->is_string() ? std::string(analytic->as_string())
-                                                            : std::string{};
+        return analytic != nullptr && analytic->is_string() ? std::string(analytic->as_string()) :
+                                                              std::string{};
     }
     if (error.scope == "Configuration")
         return error.subject_id;

@@ -104,6 +104,10 @@ via its "Verifies task" field.
 | 9 | Unbound names in the surfaces | spec | Accept | The screen carries entered_reason; Revert iterates the versions |
 | 10 | The refused deletes ensure only what they require | spec | Accept | The screen's write_refusal says what happened |
 | 11 | Keep and Take use the server version at the click | spec | Accept | Said in the comment; the stale rule covers a later change |
+| 12 | RefreshKeepsThePage ensured a tautology | spec | Accept | The page the person asked for and the page shown are two fields; a guarantee says Refresh never changes the first, a rule shows the last page past the end, an invariant ties the two |
+| 13 | The first page rule of RS-LIST-19 was not modelled | spec | Accept | NarrowingReturnsToTheFirstPage |
+| 14 | The obligation summary still named an open question | evidence | Accept | It says none remains |
+| 15 | The guidance repeated the standard; the pr field holds the latest PR | spec, task | Accept | The guidance is gone; the pr field is compass's and holds the latest, the table holds all |
 
 * Result
 

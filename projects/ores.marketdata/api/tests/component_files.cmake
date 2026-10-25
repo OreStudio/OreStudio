@@ -35,6 +35,7 @@ set(files
     "curve_publish_protocol_codec_roundtrip_tests.cpp"
     "datum_market_datum_tests.cpp"
     "datum_market_reference_tests.cpp"
+    "datum_series_stream_tests.cpp"
     "datum_value_tests.cpp"
     "delivery_count_codec_roundtrip_tests.cpp"
     "delivery_count_protocol_codec_roundtrip_tests.cpp"

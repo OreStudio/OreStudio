@@ -8,7 +8,7 @@
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
 #+branch: feature/carry-a-shared-market-state
-#+pr:
+#+pr: 3773
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3773][#3773]] | [analytics] Carry a market-wide arrival regime |
 
 * Review
 

@@ -511,7 +511,9 @@ parse_market_data_arguments(const std::string& arguments_json) {
  *
  * The anchor is optional. A run that states none anchors on the day it runs,
  * because the population is meant to sit relative to the present: a recipe
- * that pinned a date would write a stale book every time it was used.
+ * that pinned a date would write a stale book every time it was used. The
+ * count per book is optional too, and a run that states none takes the
+ * generator's own.
  */
 struct trade_generation_assignment {
     std::string party = {};
@@ -525,6 +527,7 @@ struct trade_generation_assignment {
     std::optional<ores::utility::decimal::decimal> max_notional = {};
     std::optional<std::chrono::year_month_day> as_of_date = {};
     std::optional<std::uint64_t> seed = {};
+    std::optional<std::uint32_t> trades_per_book = {};
 };
 
 /// The configs a generate_trades step records, in the order it records them.
@@ -572,6 +575,9 @@ parse_trade_generation_assignments(const std::string& arguments_json) {
                                      "' states no notional band.");
         if (!entry.seed)
             throw std::runtime_error("The step's config '" + entry.name + "' states no seed.");
+        if (entry.trades_per_book && *entry.trades_per_book == 0)
+            throw std::runtime_error("The step's config '" + entry.name +
+                                     "' states a trades_per_book of 0.");
     }
     return result;
 }

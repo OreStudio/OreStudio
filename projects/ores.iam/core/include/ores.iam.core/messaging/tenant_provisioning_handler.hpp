@@ -1440,6 +1440,7 @@ private:
         request.change.write.max_notional = *entry.max_notional;
         request.change.write.as_of_date = trade_anchor_date(entry);
         request.change.write.seed = *entry.seed;
+        request.change.write.trades_per_book = entry.trades_per_book.value_or(8);
         request.change.write.enabled = true;
         request.change.write.reference_curve_id = reference_curve_id;
         request.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,

@@ -33,7 +33,7 @@ The session did the following. Confirm the system is in this state before you st
 | Parent story  | [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]]   |
 | Target screen | Reference data → Holiday calendars, =http://localhost:20402/refdata/calendars=, and one calendar's page under it |
 | Clients       |                                          |
-| State         | FAILED |
+| State         | PASSED |
 
 * Steps
 
@@ -229,7 +229,7 @@ PASS. adrian.vance sees Read only and Derive only on TARGET, a QuantLib calendar
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
+| Status        | PASSED: the owner's run of 17:00 failed steps 3 and 6; both were decided and fixed, and the owner signed the screen off at 17:50 |
 | Completed at  | 2026-10-25T17:09:06Z |
 | Branch        | feature/test-and-sign-off-the-screens-of-the-first-topic |
 | Commit        | aebd19b746, with main at the merge of PR 3790 built and served |
@@ -251,3 +251,6 @@ changes to the exceptions were not in the calendar's history; the build now
 merges every part's versions into the record's story (RS-HIST-01) and the step
 says so. Step 3 was marked failed with a screenshot and no words; the owner
 names what failed.
+
+The owner signed the calendars screen off on 2026-10-25 at 17:50 UTC, after step 6
+was fixed and step 3 was decided.

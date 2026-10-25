@@ -162,7 +162,7 @@ environment's grid, so they are not part of this proof.
 | 7 | A magic =.tests= literal hidden in the =.env= loop | CMakeLists.txt | Accepted in part | The suffix is a named =ORES_TEST_SUBJECT_SUFFIX=. The wider concern, that the test namespace is invisible to =nats purge=, is captured in [[id:4FABC503-2218-42FA-9086-1E94A367A638][Purge the streams a test run creates]]. |
 | 8 | The tangled script cannot run: no login, and literal placeholders | the recipe | Accepted | Step 2 states that =compass shell -f= signs in from =.env=, names the placeholders as the command does, and step 5 now downloads the output with =compute download-output=. |
 | 9 | Measurements cite a working tree, not a commit | this task | Accepted | The column names the base commit and says this branch changes no schema and no seed. |
-| 10 | The test suites write into the developer database | =.env= | New finding | Captured in [[id:0CF3B77E-557B-4976-98D8-3E6B5566DA12][Stop the test suites writing into the developer database]]. |
+| 10 | The test run shares the developer database, and the gate recreates it | =.env= and the gate | New finding | Captured in [[id:0CF3B77E-557B-4976-98D8-3E6B5566DA12][Give the test run its own database]] and [[id:CF6DE0F5-4013-4BDF-8188-5D5C98F5717E][The check gate recreates the developer database]]. |
 | 11 | The wrapper log says "produced no analytics" for a failed analytic | ores.compute/wrapper/src/app/application.cpp | Accepted | It now says "Engine run failed for". |
 | 12 | A log-only run that states a failed analytic still says "no analytics" | ores.ore/core/src/log/engine_run_verdict.cpp | Accepted | The engine's verdict is read before the files, whatever they are, and a test covers a log-only failure. |
 | 13 | The evidence names instances but no batch, workunit, result or output location | this task | Accepted | =* Notes= now names every id and both output locations for the working run and the failed one. |
@@ -201,5 +201,5 @@ The run works end to end, and the failure path now reports failure.
   provisioned again. Instance =25922e99= completed in ten seconds with outcome
   1, and the package with no portfolio, dispatched as batch
   =e2e-broken-portfolio-5=, returned outcome 3 carrying "The engine's analytic
-  failed." The rows the earlier runs left behind were replaced when the gate's
-  test suites wrote into the same database, which is captured above.
+  failed." The rows the earlier runs left behind were replaced when the gate
+  recreated the database, which is captured above.

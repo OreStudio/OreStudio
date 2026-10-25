@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
 #+branch: feature/acme-generate-trades-provisioning-step
-#+pr: 3372
+#+pr: 3755
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -74,6 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3755][#3755]] | [iam] State the count per book on a trade generation config |
 | [[https://github.com/OreStudio/OreStudio/pull/3372][#3372]] | [agile] Close the provisioning task and raise its three findings |
 | [[https://github.com/OreStudio/OreStudio/pull/3371][#3371]] | [iam] Generate the trade population from provisioning |
 

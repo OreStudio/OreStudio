@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/test-the-market-data-service-in-a-non-system-tenant
-#+pr:
+#+pr: 3738
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3738][#3738]] | [marketdata] Test the demand and ingest path outside the system tenant |
 
 * Review
 

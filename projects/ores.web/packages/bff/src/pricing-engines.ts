@@ -485,6 +485,7 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
             )
             .map((row) => ({
                 name: text(row['name']),
+                domain: text(row['ore_parameter_value_domain_code']),
                 label: text(row['label']),
                 help: text(row['help']),
                 description: text(row['description']),

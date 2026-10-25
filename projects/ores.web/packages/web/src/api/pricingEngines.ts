@@ -145,6 +145,7 @@ const vocabularySchema = z.object({
         .array(
             z.object({
                 name: z.string(),
+                domain: z.string().default('string'),
                 label: z.string().default(''),
                 help: z.string().default(''),
                 description: z.string().default(''),

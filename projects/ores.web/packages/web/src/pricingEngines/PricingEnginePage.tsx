@@ -71,6 +71,8 @@ import { SaveDialog } from './SaveDialog.js';
 import {
     draftOf,
     enginesFor,
+    templateInfo,
+    type KnownTemplate,
     isKnownPair,
     modelsFor,
     newId,
@@ -79,7 +81,6 @@ import {
     pairChange,
     settingsFor,
     startsWith,
-    templateInfo,
     EMPTY_VOCABULARY,
     parametersOf,
     settingKey,
@@ -413,18 +414,44 @@ function GlobalParametersTab({
                                             {docOf(parameter.name)?.label ?? parameter.name}
                                         </span>
                                         <div className="text-sm">
-                                            <Input
-                                                aria-label={
-                                                    docOf(parameter.name)?.label ?? parameter.name
-                                                }
-                                                value={values[parameter.id] ?? parameter.value}
-                                                onChange={(event) =>
-                                                    setValues({
-                                                        ...values,
-                                                        [parameter.id]: event.target.value,
-                                                    })
-                                                }
-                                            />
+                                            {docOf(parameter.name)?.domain === 'boolean' ? (
+                                                <Select
+                                                    aria-label={
+                                                        docOf(parameter.name)?.label ??
+                                                        parameter.name
+                                                    }
+                                                    value={values[parameter.id] ?? parameter.value}
+                                                    onChange={(event) =>
+                                                        setValues({
+                                                            ...values,
+                                                            [parameter.id]: event.target.value,
+                                                        })
+                                                    }
+                                                >
+                                                    <option value="true">true</option>
+                                                    <option value="false">false</option>
+                                                </Select>
+                                            ) : (
+                                                <Input
+                                                    aria-label={
+                                                        docOf(parameter.name)?.label ??
+                                                        parameter.name
+                                                    }
+                                                    inputMode={
+                                                        docOf(parameter.name)?.domain === 'double' ||
+                                                        docOf(parameter.name)?.domain === 'integer'
+                                                            ? 'numeric'
+                                                            : 'text'
+                                                    }
+                                                    value={values[parameter.id] ?? parameter.value}
+                                                    onChange={(event) =>
+                                                        setValues({
+                                                            ...values,
+                                                            [parameter.id]: event.target.value,
+                                                        })
+                                                    }
+                                                />
+                                            )}
                                         </div>
                                     </div>
                                     <ParameterDocuments
@@ -448,6 +475,7 @@ function GlobalParametersTab({
                                     key={parameter.id}
                                     parameter={parameter}
                                     doc={docOf(parameter.name)}
+                                    template={undefined}
                                     mode={mode}
                                 />
                             ),
@@ -784,6 +812,9 @@ function Workbench({
                 source={model?.source ?? ''}
                 parameters={modelParameters}
                 settingOf={settingOf}
+                templateOf={(value) =>
+                    vocabulary === undefined ? undefined : templateInfo(vocabulary, value)
+                }
             />
             <RoleCard
                 mode={mode}
@@ -795,6 +826,9 @@ function Workbench({
                 source={engine?.source ?? ''}
                 parameters={engineParameters}
                 settingOf={settingOf}
+                templateOf={(value) =>
+                    vocabulary === undefined ? undefined : templateInfo(vocabulary, value)
+                }
                 pairKnown={
                     vocabulary === undefined
                         ? undefined
@@ -868,6 +902,7 @@ function RoleCard({
     source,
     parameters,
     settingOf,
+    templateOf,
     mode,
     pairKnown,
 }: {
@@ -879,6 +914,7 @@ function RoleCard({
     readonly source: string;
     readonly parameters: readonly PricingParameter[];
     readonly settingOf: (scope: string, name: string) => SettingDoc | undefined;
+    readonly templateOf: (value: string) => KnownTemplate | undefined;
     readonly mode: EditingMode;
     readonly pairKnown?: boolean | undefined;
 }): ReactNode {
@@ -948,6 +984,7 @@ function RoleCard({
                                 key={parameter.id}
                                 parameter={parameter}
                                 doc={settingOf(parameter.scope, parameter.name)}
+                                template={templateOf(parameter.value)}
                                 mode={mode}
                             />
                         ))}
@@ -965,10 +1002,12 @@ function RoleCard({
 function ParameterRow({
     parameter,
     doc,
+    template,
     mode,
 }: {
     readonly parameter: PricingParameter;
     readonly doc: ParameterDoc | undefined;
+    readonly template: KnownTemplate | undefined;
     readonly mode: EditingMode;
 }): ReactNode {
     const label = doc?.label !== undefined && doc.label !== '' ? doc.label : parameter.name;
@@ -992,6 +1031,11 @@ function ParameterRow({
                     <span className="font-mono text-xs">{parameter.value}</span>
                 </div>
             </div>
+            {template !== undefined && (
+                <p className="text-xs text-ink-faint">
+                    {template.assetClass} · {template.method} — {template.description}
+                </p>
+            )}
             <ParameterDocuments doc={documentation} mode={mode} />
         </li>
     );
@@ -1156,7 +1200,9 @@ function ProductEditor({
                     aria-label={t('pricingEngines.fields.model')}
                     value={model}
                     onChange={(event) => {
-                        setModel(event.target.value);
+                        const next = event.target.value;
+                        setModel(next);
+                        setEngine(enginesFor(vocabulary, product.typeCode, next)[0] ?? '');
                         setDrop([]);
                         setAdd([]);
                     }}
@@ -1209,6 +1255,22 @@ function ProductEditor({
                                             />
                                         </div>
                                     </div>
+                                    {doc?.kind === 'reference' &&
+                                        templateInfo(vocabulary, parameter.value) !== undefined && (
+                                            <p className="text-xs text-ink-faint">
+                                                {
+                                                    templateInfo(vocabulary, parameter.value)
+                                                        ?.assetClass
+                                                }{' '}
+                                                ·{' '}
+                                                {templateInfo(vocabulary, parameter.value)?.method}{' '}
+                                                —{' '}
+                                                {
+                                                    templateInfo(vocabulary, parameter.value)
+                                                        ?.description
+                                                }
+                                            </p>
+                                        )}
                                     <ParameterDocuments
                                         doc={{
                                             documented: doc?.documented === true,
@@ -1288,6 +1350,22 @@ function ProductEditor({
                                             />
                                         </div>
                                     </div>
+                                    {doc?.kind === 'reference' &&
+                                        templateInfo(vocabulary, parameter.value) !== undefined && (
+                                            <p className="text-xs text-ink-faint">
+                                                {
+                                                    templateInfo(vocabulary, parameter.value)
+                                                        ?.assetClass
+                                                }{' '}
+                                                ·{' '}
+                                                {templateInfo(vocabulary, parameter.value)?.method}{' '}
+                                                —{' '}
+                                                {
+                                                    templateInfo(vocabulary, parameter.value)
+                                                        ?.description
+                                                }
+                                            </p>
+                                        )}
                                     <ParameterDocuments
                                         doc={{
                                             documented: doc?.documented === true,

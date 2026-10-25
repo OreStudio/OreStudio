@@ -62,6 +62,7 @@ binds.
 | [[id:5BF23494-E801-4B0A-8FE0-CEB8DE48BF13][Apply the standard to the pricing engine configuration]] | STARTED | 2026-10-24 | | Bring the pricing engine configuration list, page, dialogs, journey and import onto the standard. |
 | [[id:C9C764D9-99DF-4327-8FE6-87704D32B34C][Move the pricing engine documentation onto the one contract]] | STARTED | 2026-10-25 | | Extract the pricing engine pairs, models, engines and parameters from the ORE guide and source into the one documentation contract, with the format, the release and the XPath. |
 | [[id:4EC59CB6-0169-485F-9F85-889A9BFC0535][Put the numbers-changing engine run settings through sign-off]] | BACKLOG | | | A change to an engine run settings group that alters the numbers a run computes becomes a proposal, signed off by the kind's approval parts. |
+| [[id:9D5084F3-EF0B-4703-BF30-C1D915603CE9][Manage the sensitivity templates]] | BACKLOG | | | Give the sensitivity templates a screen: the codes a pricing parameter refers to, with their asset class, method and description, and the shifts the configuration sets. |
 
 * Decisions
 

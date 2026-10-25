@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :add_a_hawkes_tick_arrival_process:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/pace-a-feed-by-an-arrival-process
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-23
 #+updated: 2026-10-24
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A synthetic feed can run in periodic, Poisson or Hawkes mode, set from its confi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
-| Now          | Not yet started.                       |
+| Now          | Scoped. The regime is per config row, so per pair and per curve. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-23                               |
+| Next         | Add the three columns to the two config entities. |
+| Last touched | 2026-10-25                               |
 
 * Acceptance
 
@@ -41,9 +41,37 @@ A synthetic feed can run in periodic, Poisson or Hawkes mode, set from its confi
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The feeds already build their clock from =ores.analytics.quant= and keep no
+clock code, and a periodic process reproduces their behaviour. What is missing is
+the choice: the mode and its numbers live nowhere, so every feed is periodic.
+
+The unit of configuration is one row.
+
+- =fx_spot_generation_config= is keyed by (config, base currency, quote
+  currency), so every pair gets its own row.
+- =ir_curve_generation_config= is one row per currency and index, so every curve
+  gets its own row.
+- The two are separate entities, so FX and IR never share a regime.
+
+That is the granularity the design needs: a major pair, an emerging pair and an
+IR curve tick at different rates and cluster differently, and each already
+carries its own =ticks_per_hour=. The arrival parameters join it as three
+columns, and each feed builds its own process from its own row.
+
+1. Add =arrival_mode=, =branching_ratio= and =decay= to both config entities,
+   with defaults that keep today's behaviour (periodic, zero, a positive decay).
+2. Regenerate the C++ and TS domain types and protocols, the SQL create scripts,
+   the ER diagrams and the component diagrams.
+3. Build the process from the row in both feeds, replacing the hard-coded
+   =\"periodic\"=; the factory already converts the rate and refuses a bad mode.
+4. Carry the three fields through the Qt editor and the web editor, and refuse a
+   branching ratio of one or more in both, beside the rate rule they already
+   have.
+5. Seed one clustering regime on a liquid pair and leave the rest periodic, so a
+   smoke run proves two regimes can coexist.
+6. Test: a feed built from a Hawkes row owns a Hawkes process; a row with a
+   branching ratio of one is refused before the feed starts; periodic rows are
+   unchanged.
 
 * Measurements
 

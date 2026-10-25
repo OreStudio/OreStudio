@@ -213,7 +213,7 @@ async function readInstrument(
                   await readAll(
                       session,
                       bondIssueSubjects.list_bond_issues_request,
-                      'bond_issues',
+                      'issues',
                       {
                           filter: { issue_id_one_of: [issueId] },
                       },

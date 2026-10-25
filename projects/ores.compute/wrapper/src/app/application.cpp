@@ -724,7 +724,8 @@ void process_assignment(ores::nats::service::client& nats,
                     if (fs::is_directory(failed_output_dir) &&
                         fs::directory_iterator(failed_output_dir) != fs::directory_iterator{}) {
                         const fs::path output_archive = job_dir / "output.tar.gz";
-                        ores::storage::filesystem::archiver::pack(failed_output_dir, output_archive);
+                        ores::storage::filesystem::archiver::pack(failed_output_dir,
+                                                                  output_archive);
                         output_bytes = static_cast<std::int64_t>(fs::file_size(output_archive));
                         ores::storage::net::http_client::put(
                             make_url(cfg.http_base_url, evt.output_uri),
@@ -734,9 +735,8 @@ void process_assignment(ores::nats::service::client& nats,
                 } catch (const std::exception& upload) {
                     // The engine's verdict is the reason the run failed, and a
                     // failed upload of the log must not replace it.
-                    BOOST_LOG_SEV(lg, warn)
-                        << "The log of failed job " << evt.result_id << " was not uploaded: "
-                        << upload.what();
+                    BOOST_LOG_SEV(lg, warn) << "The log of failed job " << evt.result_id
+                                            << " was not uploaded: " << upload.what();
                 }
                 // ClientError.
                 outcome = 3;

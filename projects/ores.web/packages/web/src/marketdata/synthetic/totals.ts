@@ -24,16 +24,18 @@ import type { FeedFolder } from '../../api/client.js';
 /** What runs under a folder: running, stopped or some of its feeds. */
 export type RunState = 'running' | 'stopped' | 'partial' | 'empty';
 
-/** The feeds under a node, the sum of the folders it stands for. */
+/**
+ * The feeds under a node, the sum of the folders it stands for, and how many of
+ * them run. Only a provider's source states what runs, so `running` is what
+ * `servedTotals` makes of these counts and is otherwise zero.
+ */
 export interface Totals {
     readonly fx: number;
     readonly ir: number;
     readonly running: number;
-    /** Feeds that are enabled, start on their own, and are not running. */
-    readonly idle: number;
 }
 
-export const NO_FEEDS: Totals = { fx: 0, ir: 0, running: 0, idle: 0 };
+export const NO_FEEDS: Totals = { fx: 0, ir: 0, running: 0 };
 
 /** The feeds a node holds in all. */
 export function totalOf(totals: Totals): number {
@@ -58,8 +60,7 @@ export function totalsOf(folders: readonly FeedFolder[]): Totals {
         (out, folder) => ({
             fx: out.fx + folder.fx_feeds,
             ir: out.ir + folder.ir_feeds,
-            running: out.running + folder.running_feeds,
-            idle: out.idle + folder.idle_auto_feeds,
+            running: 0,
         }),
         NO_FEEDS,
     );

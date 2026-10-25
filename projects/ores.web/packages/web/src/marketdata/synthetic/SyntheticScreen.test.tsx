@@ -86,8 +86,6 @@ const ROOT: FeedFolder = {
     provider_code: '',
     fx_feeds: 26,
     ir_feeds: 4,
-    running_feeds: 13,
-    idle_auto_feeds: 17,
     has_children: true,
 };
 
@@ -97,8 +95,6 @@ function collection(
     provider: string,
     fx: number,
     ir: number,
-    running: number,
-    idle: number,
 ): FeedFolder {
     return {
         id,
@@ -108,14 +104,12 @@ function collection(
         provider_code: provider,
         fx_feeds: fx,
         ir_feeds: ir,
-        running_feeds: running,
-        idle_auto_feeds: idle,
         has_children: true,
     };
 }
 
-const BLOOMBERG = collection('b', 'Bloomberg', 'bloomberg', 13, 0, 13, 0);
-const ORE = collection('o', '2016 ORE Samples', 'ore', 13, 4, 0, 17);
+const BLOOMBERG = collection('b', 'Bloomberg', 'bloomberg', 13, 0);
+const ORE = collection('o', '2016 ORE Samples', 'ore', 13, 4);
 
 /** One adapter of the market data service, as it reports itself. */
 function adapter(provider: string, state: string, demanded: number): AdapterStatus {
@@ -239,18 +233,12 @@ describe('the Synthetic dashboard', () => {
         expect(html).not.toContain('demanded ids are not being served');
     });
 
-    it('reads a provider as running from its source, not from the controller that never started it', () => {
+    it('reads a provider as running from its source, not from its feed counts', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
-            // The controller reports nothing running for Bloomberg, and the ORE folder
-            // claims four running while its source was demanded nothing.
-            client.setQueryData(
-                [...FOLDERS_KEY, 'collections', ['r']],
-                [
-                    { ...BLOOMBERG, running_feeds: 0, idle_auto_feeds: 13 },
-                    { ...ORE, running_feeds: 4, idle_auto_feeds: 13 },
-                ],
-            );
+            // Bloomberg's source serves the ids it was demanded, and the ORE source
+            // serves nothing because it was demanded nothing.
+            client.setQueryData([...FOLDERS_KEY, 'collections', ['r']], [BLOOMBERG, ORE]);
             client.setQueryData(ADAPTERS_KEY, [
                 adapter('bloomberg', 'serving', 13),
                 adapter('ore', 'ready', 0),

@@ -135,6 +135,7 @@ function send(
 
 const ID = '55555555-5555-4555-8555-555555555555';
 const OTHER = '66666666-6666-4666-8666-666666666666';
+const COLLECTION_ID = '77777777-7777-4777-8777-777777777777';
 const COLLECTION = '88888888-8888-4888-8888-888888888888';
 const INTENT = { reason_code: 'common.correction', commentary: '' };
 const SYSTEM_TENANT = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
@@ -335,7 +336,11 @@ describe('synthetic resource routes', () => {
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.fx_spot_generation_configs.list': {
                 result: ok,
-                fx_spot_generation_configs: [{ id: ID }],
+                fx_spot_generation_configs: [{ id: ID, config_id: COLLECTION_ID }],
+            },
+            'synthetic.v1.market_data_generation_configs.list': {
+                result: ok,
+                market_data_generation_configs: [{ id: COLLECTION_ID, provider_code: 'bloomberg' }],
             },
         });
         const response = await send(server, sessionId, 'GET', `/api/synthetic/fx-feeds/key/${ID}`);
@@ -344,6 +349,48 @@ describe('synthetic resource routes', () => {
             id_one_of: [ID],
             search: null,
         });
+    });
+
+    it('names the provider of the collection a feed sits under, which the feed record does not carry', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ir_curve_generation_configs.list': {
+                result: ok,
+                ir_curve_generation_configs: [{ id: ID, config_id: COLLECTION_ID }],
+            },
+            'synthetic.v1.market_data_generation_configs.list': {
+                result: ok,
+                market_data_generation_configs: [{ id: COLLECTION_ID, provider_code: 'lseg' }],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/ir-curve-feeds/key/${ID}`,
+        );
+        expect(response.json().row).toEqual({
+            id: ID,
+            config_id: COLLECTION_ID,
+            provider_code: 'lseg',
+        });
+        expect(calls[1]?.body).toMatchObject({ filter: { id_one_of: [COLLECTION_ID] } });
+    });
+
+    it('reads a row that is not a feed without a provider, since only a feed sits under a collection', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.gmm_components.list': {
+                result: ok,
+                gmm_components: [{ id: ID, weight: 0.5 }],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/gmm-components/key/${ID}`,
+        );
+        expect(response.json().row).toEqual({ id: ID, weight: 0.5 });
+        expect(calls).toHaveLength(1);
     });
 
     it('reads a parameter definition by its id, never by the name types share', async () => {
@@ -587,18 +634,7 @@ describe('synthetic writes', () => {
 });
 
 describe('synthetic operations', () => {
-    it('reads the running source names', async () => {
-        const { server, sessionId } = buildTestServer({
-            'synthetic.v1.feed_configs.list': {
-                success: true,
-                running_source_names: ['fx.EURUSD'],
-            },
-        });
-        const response = await send(server, sessionId, 'GET', '/api/synthetic/running');
-        expect(response.json()).toEqual({ sourceNames: ['fx.EURUSD'] });
-    });
-
-    it('keeps the ticks of each running feed and serves the newest ones for a feed the session reads', async () => {
+    it('keeps the ticks of a feed the service publishes and serves the newest ones', async () => {
         const replies: Record<string, unknown> = {
             'synthetic.v1.feed_configs.list': {
                 success: true,
@@ -610,7 +646,7 @@ describe('synthetic operations', () => {
             },
         };
         const { server, sessionId, publish } = buildTestServer(replies);
-        await send(server, sessionId, 'GET', '/api/synthetic/running');
+        await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
 
         const subject = 'synthetic.v1.ops.tick.live.eurusd';
         publish(subject, { value: '1.1', observation_time: '2026-10-11 09:00:00Z' });
@@ -646,27 +682,27 @@ describe('synthetic operations', () => {
         };
         const { server, sessionId, publish } = buildTestServer(replies);
         const subject = 'synthetic.v1.ops.tick.live.eurusd';
-        await send(server, sessionId, 'GET', '/api/synthetic/running');
+        await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
         publish(subject, { value: '1.1', observation_time: '2026-10-11 09:00:00Z' });
 
         replies['synthetic.v1.feed_configs.list'] = { success: true, running_source_names: [] };
-        await send(server, sessionId, 'GET', '/api/synthetic/running');
-        publish(subject, { value: '9.9', observation_time: '2026-10-11 09:03:00Z' });
         const stopped = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
         expect(stopped.json().ticks).toEqual([]);
+        publish(subject, { value: '9.9', observation_time: '2026-10-11 09:03:00Z' });
 
         replies['synthetic.v1.feed_configs.list'] = {
             success: true,
             running_source_names: ['live.eurusd'],
         };
-        await send(server, sessionId, 'GET', '/api/synthetic/running');
+        await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
         publish(subject, { value: '1.5', observation_time: '2026-10-11 09:04:00Z' });
         const again = await send(server, sessionId, 'GET', `/api/synthetic/feeds/${ID}/ticks`);
         expect(again.json().ticks).toEqual([{ at: '2026-10-11 09:04:00Z', value: 1.5, uri: '' }]);
     });
 
-    it('starts no listening when a feed that is not running is read', async () => {
+    it('starts no listening when the service publishes no feed under the name', async () => {
         const { server, sessionId, publish } = buildTestServer({
+            'synthetic.v1.feed_configs.list': { success: true, running_source_names: [] },
             'synthetic.v1.fx_spot_generation_configs.list': {
                 result: ok,
                 fx_spot_generation_configs: [{ id: ID, source_name: 'live.eurusd' }],
@@ -704,7 +740,12 @@ describe('synthetic operations', () => {
             },
         };
         const { server, sessionId, publish, calls } = buildTestServer(replies);
-        await send(server, sessionId, 'GET', '/api/synthetic/running');
+        await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/synthetic/feeds/${ID}/ticks?resource=ir-curve-feeds`,
+        );
         const pillar = (end: string): string =>
             `oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=${end}`;
 
@@ -739,6 +780,7 @@ describe('synthetic operations', () => {
 
     it('reads a curve feed for a person who may read curve feeds and not FX feeds', async () => {
         const { server, sessionId } = buildTestServer({
+            'synthetic.v1.feed_configs.list': { success: true, running_source_names: [] },
             'synthetic.v1.fx_spot_generation_configs.list': {
                 result: { outcome: 'permission_denied', message: 'No FX feeds for you.' },
             },
@@ -944,8 +986,6 @@ describe('synthetic operations', () => {
             provider_code: '',
             fx_feeds: 26,
             ir_feeds: 33,
-            running_feeds: 20,
-            idle_auto_feeds: 4,
             has_children: true,
         };
         const { server, sessionId, calls } = buildTestServer({
@@ -999,7 +1039,6 @@ describe('synthetic operations', () => {
             engine: 'geometric',
             ticks_per_hour: 1800,
             auto_start: true,
-            running: true,
         };
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.ops.list_folder_feeds': {

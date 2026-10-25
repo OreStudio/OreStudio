@@ -48,7 +48,7 @@ function adapter(provider: string, state: string, demanded: number): AdapterStat
     };
 }
 
-const FEEDS: Totals = { fx: 13, ir: 4, running: 0, idle: 17 };
+const FEEDS: Totals = { fx: 13, ir: 4, running: 0 };
 
 describe('the state of a provider source', () => {
     it('serves its feeds when it is serving and was demanded at least one id', () => {
@@ -84,7 +84,7 @@ describe('the state of a provider source', () => {
 
     it('runs every feed a node holds while its source serves, and none while it does not', () => {
         const served = sourcesOf([adapter('b', 'serving', 17), adapter('o', 'stale', 17)]);
-        expect(servedTotals(FEEDS, served.get('b'))).toEqual({ ...FEEDS, running: 17 });
+        expect(servedTotals(FEEDS, served.get('b'))).toEqual({ fx: 13, ir: 4, running: 17 });
         expect(servedTotals(FEEDS, served.get('o'))).toEqual({ ...FEEDS, running: 0 });
         expect(servedTotals(FEEDS, undefined)).toEqual({ ...FEEDS, running: 0 });
     });

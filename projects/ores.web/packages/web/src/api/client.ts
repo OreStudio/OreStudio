@@ -358,12 +358,10 @@ const feedFolderSchema = z.object({
     provider_code: z.string(),
     fx_feeds: z.number(),
     ir_feeds: z.number(),
-    running_feeds: z.number(),
-    idle_auto_feeds: z.number(),
     has_children: z.boolean(),
 });
 
-/** A folder of the feed hierarchy with the feeds under it and how many run. */
+/** A folder of the feed hierarchy, with how many feeds of each kind it holds. */
 export type FeedFolder = z.infer<typeof feedFolderSchema>;
 
 const folderFeedSchema = z.object({
@@ -380,11 +378,21 @@ const folderFeedSchema = z.object({
     engine: z.string(),
     ticks_per_hour: z.number(),
     auto_start: z.boolean(),
-    running: z.boolean(),
 });
 
-/** A feed as the feed table lists it: what names it, what it prices and how it runs. */
+/** A feed as the feed table lists it: what names it, what it prices and how often it ticks. */
 export type FolderFeed = z.infer<typeof folderFeedSchema>;
+
+/**
+ * One feed as its page reads it: the record, with the provider of the collection
+ * it sits under. The feed's own record names no provider.
+ */
+export const feedRecordSchema = z.looseObject({
+    version: z.int().nonnegative(),
+    provider_code: z.string(),
+});
+
+export type FeedRecord = z.infer<typeof feedRecordSchema>;
 
 /**
  * The state of one adapter of the market data service. The state is announced,
@@ -1751,13 +1759,6 @@ export const api = {
         });
     },
 
-    /** The source names of the feeds running now. */
-    async runningFeeds(): Promise<readonly string[]> {
-        return z
-            .object({ sourceNames: z.array(z.string()) })
-            .parse(await request('/api/synthetic/running', { method: 'GET' })).sourceNames;
-    },
-
     /**
      * The state of every adapter the market data service tracks: which provider
      * each serves, whether it serves, and how many ids it was demanded.
@@ -1770,7 +1771,7 @@ export const api = {
 
     /**
      * The children of one folder, or the roots when none is named, each with the
-     * feeds under it at any depth and how many run. The service counts them.
+     * feeds under it at any depth and how many of each kind. The service counts them.
      */
     async feedFolders(parent = ''): Promise<readonly FeedFolder[]> {
         return z

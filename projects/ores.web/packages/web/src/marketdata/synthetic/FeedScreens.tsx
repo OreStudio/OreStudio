@@ -21,7 +21,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { api, type RecordRow } from '../../api/client.js';
+import { api, feedRecordSchema, type FeedRecord } from '../../api/client.js';
 import { useHeld } from '../../access/holds.js';
 import { PERMISSION } from '../../access/permissions.js';
 import { useTranslation } from '../../i18n/Provider.js';
@@ -40,7 +40,8 @@ import { RecordStoreProvider, syntheticStore } from '../../refdata/store.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
 import { PATHS } from '../../shell/paths.js';
 import { Button, Notice } from '../../ui/Primitives.js';
-import { FeedStatus, RunOutcomeText, useFeedRuns, useRunningFeeds } from './feedRuns.js';
+import { servesFeeds, useSources } from './adapterStatus.js';
+import { FeedStatus, RunOutcomeText, useFeedRuns } from './feedRuns.js';
 import { FeedHistory, type FeedPart } from './FeedHistory.js';
 import type { FeedKind } from './feedKind.js';
 import { folderChain, folderKey } from './feedTree.js';
@@ -59,7 +60,13 @@ export function FeedPage({ kind }: { readonly kind: FeedKind }): ReactNode {
                 recordKey={id ?? ''}
                 listPath={`${PATHS.synthetic}?tab=tree`}
             >
-                {(feed) => <FeedBody key={show(feed['id'])} kind={kind} feed={feed} />}
+                {(feed) => (
+                    <FeedBody
+                        key={show(feed['id'])}
+                        kind={kind}
+                        feed={feedRecordSchema.parse(feed)}
+                    />
+                )}
             </RecordGate>
         </RecordStoreProvider>
     );
@@ -91,7 +98,7 @@ function FeedBody({
     feed,
 }: {
     readonly kind: FeedKind;
-    readonly feed: RecordRow;
+    readonly feed: FeedRecord;
 }): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -117,7 +124,9 @@ function FeedBody({
         label: name,
         tabs: ['details', ...kind.tabs.map((one) => one.name), 'history'],
     });
-    const running = useRunningFeeds()?.has(show(feed['source_name']));
+    const sources = useSources();
+    const running =
+        sources === undefined ? undefined : servesFeeds(sources.get(feed.provider_code));
     const runs = useFeedRuns();
     const [editing, setEditing] = useState(false);
     const [removing, setRemoving] = useState(false);

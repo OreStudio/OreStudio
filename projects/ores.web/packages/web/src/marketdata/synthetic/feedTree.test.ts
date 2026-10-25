@@ -20,7 +20,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { FeedFolder } from '../../api/client.js';
+import type { AdapterStatus, FeedFolder } from '../../api/client.js';
+import { servedTotals, sourcesOf } from './adapterStatus.js';
 import {
     collectionOf,
     feedPageOf,
@@ -44,7 +45,6 @@ function folder(
     provider: string,
     fx = 0,
     ir = 0,
-    running = 0,
 ): FeedFolder {
     return {
         id,
@@ -54,27 +54,46 @@ function folder(
         provider_code: provider,
         fx_feeds: fx,
         ir_feeds: ir,
-        running_feeds: running,
-        idle_auto_feeds: fx + ir - running,
         has_children: kind !== 'instrument_type',
     };
 }
 
-const bloomberg = folder('b', 'Bloomberg', 'collection', 'bloomberg', 26, 29, 41);
-const samples = folder('s', '2016 ORE Samples', 'collection', 'ore', 13, 4, 0);
-const more = folder('m', 'Bloomberg Extra', 'collection', 'bloomberg', 1, 0, 0);
+const bloomberg = folder('b', 'Bloomberg', 'collection', 'bloomberg', 26, 29);
+const samples = folder('s', '2016 ORE Samples', 'collection', 'ore', 13, 4);
+const more = folder('m', 'Bloomberg Extra', 'collection', 'bloomberg', 1, 0);
+
+/** One adapter that serves every id it was demanded, so its provider's feeds run. */
+function serving(provider: string): AdapterStatus {
+    return {
+        adapter_id: `${provider}-sim`,
+        provider_code: provider,
+        state: 'serving',
+        last_heartbeat_at: '2026-10-25 15:00:00Z',
+        heartbeat_counter: 4,
+        served_count: 2,
+        unknown_count: 0,
+        demanded_count: 2,
+        routes_seen: 1,
+        ticks_last_minute: 0,
+        last_tick_age_ms: -1,
+        accepted: [],
+        rejected: [],
+    };
+}
+
+const SERVED = sourcesOf([serving('bloomberg')]);
 
 describe('the totals under a node', () => {
-    it('adds the folders and reads their state', () => {
+    it('adds the folders of each kind and reads their state from the provider source', () => {
         const totals = totalsOf([bloomberg, samples]);
         expect(totalOf(totals)).toBe(72);
-        expect(totals.running).toBe(41);
-        expect(totals.idle).toBe(31);
-        expect(stateOf(totals)).toBe('partial');
-        expect(stateOf(totalsOf([bloomberg]))).toBe('partial');
-        expect(stateOf(totalsOf([folder('x', 'x', 'collection', 'ore', 2, 0, 2)]))).toBe('running');
-        expect(stateOf(totalsOf([folder('x', 'x', 'collection', 'ore', 2, 0, 0)]))).toBe('stopped');
-        expect(stateOf(totalsOf([]))).toBe('empty');
+        expect(stateOf(servedTotals(totals, SERVED.get('bloomberg')))).toBe('running');
+        expect(stateOf(servedTotals(totals, SERVED.get('ore')))).toBe('stopped');
+        expect(stateOf(servedTotals(totalsOf([bloomberg]), SERVED.get('bloomberg')))).toBe(
+            'running',
+        );
+        expect(stateOf(servedTotals(totalsOf([bloomberg]), SERVED.get('ore')))).toBe('stopped');
+        expect(stateOf(servedTotals(totalsOf([]), SERVED.get('bloomberg')))).toBe('empty');
     });
 });
 

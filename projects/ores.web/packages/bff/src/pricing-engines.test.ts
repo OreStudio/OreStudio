@@ -464,6 +464,7 @@ describe('pricing engine routes', () => {
         expect(response.json().types[0]).toEqual({
             code: 'BermudanSwaption',
             description: 'Bermudan',
+            documentation: '',
             instrumentTypeCode: 'SWPTN',
             assetClass: 'interest_rates',
         });

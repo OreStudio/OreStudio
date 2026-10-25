@@ -1393,3 +1393,33 @@ TEST_CASE("a_fixing_of_yesterday_and_a_backfill_reach_the_fixings_and_not_the_ti
     CHECK(loop.translator()->drops(source,
                                    ores::marketdata::service::app::adapter_tick_drop::stale) == 0);
 }
+
+TEST_CASE("the_ingest_writes_one_row_for_two_consumers_of_the_same_source",
+          "[app][feed_ingest_loop]") {
+    auto writer = make_writer();
+    if (!writer)
+        SKIP("The tick writer role is not configured");
+    app_feed_ingest_loop_fixture f;
+    const auto bound_source = bound_prefix + run_tag();
+    const auto quote_uri = eur_usd_spot();
+    const auto other_party = f.add_party();
+    f.route(bound_source);
+    f.route(bound_source, other_party);
+    f.connect();
+
+    feed_ingest_loop loop(f.nats, f.h.context(), nullptr, writer);
+    loop.refresh();
+
+    REQUIRE_FALSE(loop.handle_tick(tick_from(bound_source, quote_uri)).has_value());
+
+    // Each party has its own series, because the classification and the asset classes are the
+    // party's. Both series name the same stream, and the source's tick is one row on it.
+    const auto first_series = f.series_for(quote_uri);
+    const auto second_series = f.series_for(quote_uri, other_party);
+    REQUIRE(first_series.size() == 1);
+    REQUIRE(second_series.size() == 1);
+    CHECK(first_series.front().id != second_series.front().id);
+    const auto stream = stream_text_of(first_series.front());
+    CHECK(stream == stream_text_of(second_series.front()));
+    CHECK(tick_rows_of(stream) == "1");
+}

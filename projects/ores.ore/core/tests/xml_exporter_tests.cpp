@@ -28,6 +28,7 @@
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
+#include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -429,6 +430,81 @@ TEST_CASE("a_rate_trade_that_states_its_fact_row_exports_its_legs", tags) {
     CHECK(xml.contains("<SwapData>"));
     CHECK(xml.contains("GBP-SONIA"));
     CHECK(xml.find("<LegData>") != std::string::npos);
+}
+
+TEST_CASE("a_forward_rate_agreement_exports_the_index_its_fact_row_states", tags) {
+    auto lg(make_logger(test_suite));
+
+    /*
+     * A forward states its index on the fact row, and the population orders the
+     * fixed leg first, where the index is empty. Reading the first leg wrote no
+     * index at all, so the document named a forward that resets on nothing.
+     */
+    const auto f = example_path("IR_Swap_Vanilla.xml");
+    const auto imported = importer::import_portfolio_with_context(f);
+    REQUIRE(!imported.empty());
+
+    const auto trade_id = boost::uuids::random_generator{}();
+    const auto activity_id = boost::uuids::random_generator{}();
+
+    trade_export_item item;
+    item.anchor = imported.front().anchor;
+    item.anchor.id = trade_id;
+    item.anchor.trade_type = "ForwardRateAgreement";
+    item.ore_id = imported.front().ore_id;
+
+    ores::trading::domain::instrument_batch instruments;
+    ores::trading::domain::rate_instrument header;
+    header.identity.trade_id = trade_id;
+    header.identity.trade_activity_id = activity_id;
+    header.identity.trade_type_code = "ForwardRateAgreement";
+    header.start_date = std::chrono::year{2026} / std::chrono::month{1} / std::chrono::day{15};
+    header.maturity_date = std::chrono::year{2026} / std::chrono::month{7} / std::chrono::day{15};
+    instruments.rate_instruments.push_back(header);
+
+    ores::trading::domain::fra_instrument facts;
+    facts.trade_id = trade_id;
+    facts.trade_activity_id = activity_id;
+    facts.currency = "GBP";
+    facts.rate_index = "GBP-SONIA";
+    facts.long_short = "Long";
+    facts.notional = ores::utility::decimal::decimal::from_double(5000000.0).value();
+    instruments.fra_instruments.push_back(facts);
+
+    ores::trading::domain::swap_leg fixed;
+    fixed.identity.trade_id = trade_id;
+    fixed.identity.trade_activity_id = activity_id;
+    fixed.identity.leg_number = 1;
+    fixed.leg_type_code = "Fixed";
+    fixed.day_count_fraction_code = "ActAct(ISDA)";
+    fixed.business_day_convention_code = "ModifiedFollowing";
+    fixed.payment_frequency_code = "Semiannual";
+    fixed.currency = "GBP";
+    instruments.swap_legs.push_back(fixed);
+
+    ores::trading::domain::swap_leg floating = fixed;
+    floating.identity.leg_number = 2;
+    floating.leg_type_code = "Floating";
+    floating.floating_index_code = "GBP-SONIA";
+    instruments.swap_legs.push_back(floating);
+
+    // A forward states the rate it fixes on the fixed side; the document
+    // refuses a forward that states none.
+    ores::trading::domain::swap_leg_rate strike;
+    strike.trade_id = trade_id;
+    strike.trade_activity_id = activity_id;
+    strike.leg_number = 1;
+    strike.rate_role = "fixed";
+    strike.sequence_number = 1;
+    strike.start_date = header.start_date;
+    strike.value = ores::utility::decimal::decimal::from_double(0.0425).value();
+    instruments.swap_leg_rates.push_back(strike);
+
+    const auto xml = exporter::export_portfolio({item}, instruments);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    CHECK(xml.contains("<ForwardRateAgreementData>"));
+    CHECK(xml.contains("GBP-SONIA"));
 }
 
 TEST_CASE("export_portfolio_keeps_a_cross_currency_swap_apart_from_a_swap", tags) {

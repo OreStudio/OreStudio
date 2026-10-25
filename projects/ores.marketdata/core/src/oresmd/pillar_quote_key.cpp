@@ -25,6 +25,24 @@
 
 namespace ores::marketdata::core {
 
+namespace {
+
+// A tenor a curve template names its pillar by: a count of days, weeks, months or years,
+// such as 1D, 3M or 2Y. A date is not one, and neither is a meeting code such as 1F.
+bool is_period_tenor_code(const std::string& code) {
+    if (code.size() < 2 || code.size() > 4)
+        return false;
+    if (code.front() < '1' || code.front() > '9')
+        return false;
+    for (std::size_t i = 1; i + 1 < code.size(); ++i)
+        if (code[i] < '0' || code[i] > '9')
+            return false;
+    const auto unit = code.back();
+    return unit == 'D' || unit == 'W' || unit == 'M' || unit == 'Y';
+}
+
+}
+
 pillar_quote_key make_pillar_quote_key(const std::string& ccy,
                                        const std::string& index_tenor,
                                        const std::string& start_tenor_code,
@@ -34,14 +52,16 @@ pillar_quote_key make_pillar_quote_key(const std::string& ccy,
     pillar_quote_key key;
     key.series_type = "IR_SWAP";
     key.metric = "RATE";
-    // ORE reads a swap's start and end as two periods or two dates, never one of each,
-    // so a pillar that starts at spot takes 0D in its start slot and one that starts
-    // anywhere else takes its start date -- and a dated pillar must then end on a date.
+    // ORE reads a swap's start and end as two periods or two dates, never one of each. A
+    // template that names both ends of its pillar names two periods, so the quote is the
+    // template's own tenors on every day it is read. That is the spot pillar, whose start slot
+    // holds 0D, and the pillar that starts at a later period, whose start slot holds it. A pillar
+    // the template names no period end for -- a meeting-dated pillar, or one that counts its
+    // days -- holds dates instead.
     if (start_tenor_code == "SPOT") {
         key.qualifier = ccy + "/0D/" + index_tenor;
-        // A spot pillar's point is the tenor its template names, so the key is the one a
-        // curve configuration writes down rather than the days this run's dates happen to
-        // span. A pillar the template names no tenor for still counts them.
+        // The point is the tenor the template names, so the key is the one a curve
+        // configuration writes down rather than the days this run's dates happen to span.
         if (!point_tenor_code.empty()) {
             key.point = point_tenor_code;
         } else {
@@ -54,6 +74,9 @@ pillar_quote_key make_pillar_quote_key(const std::string& ccy,
                     std::chrono::sys_days{start_date}));
             key.point = std::format("{}D", days.count());
         }
+    } else if (is_period_tenor_code(start_tenor_code) && is_period_tenor_code(point_tenor_code)) {
+        key.qualifier = ccy + "/" + start_tenor_code + "/" + index_tenor;
+        key.point = point_tenor_code;
     } else {
         key.qualifier = ccy + "/" + std::format("{:%Y%m%d}", start_date) + "/" + index_tenor;
         key.point = std::format("{:%Y%m%d}", end_date);

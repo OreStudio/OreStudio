@@ -209,6 +209,30 @@ export function Select({
     );
 }
 
+/**
+ * One fact of a record: its label and its value.
+ *
+ * The value is a string, because most are, and children stand in its place when
+ * the fact is drawn as a badge rather than as words.
+ */
+export function Fact({
+    label,
+    value,
+    children,
+}: {
+    readonly label: string;
+    readonly value?: string;
+    readonly children?: ReactNode;
+}): ReactNode {
+    const shown = children ?? (value === undefined || value === '' ? '—' : value);
+    return (
+        <div>
+            <dt className="text-xs uppercase tracking-wide text-ink-faint">{label}</dt>
+            <dd className="text-sm text-ink">{shown}</dd>
+        </div>
+    );
+}
+
 /** A short status marker, for a type, a label or a state. */
 export function Tag({
     children,

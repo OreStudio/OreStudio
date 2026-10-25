@@ -137,6 +137,28 @@ describe('book structure routes', () => {
         expect(response.json().books[0].name).toBe('RATES-1');
     });
 
+    it('reads one book with the portfolio it sits in', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.books.list': {
+                result: ok,
+                books: [{ id: PARTY, name: 'RATES-1', parent_portfolio_id: ID }],
+            },
+            'refdata.v1.portfolios.list': { result: ok, portfolios: [{ id: ID, name: 'Rates' }] },
+        });
+        const response = await send(server, sessionId, 'GET', `/api/books/${PARTY}`);
+        expect(response.statusCode).toBe(200);
+        expect(response.json().book.name).toBe('RATES-1');
+        expect(response.json().portfolio.name).toBe('Rates');
+    });
+
+    it('answers not found for a book that is not there', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.books.list': { result: ok, books: [] },
+        });
+        const response = await send(server, sessionId, 'GET', `/api/books/${PARTY}`);
+        expect(response.statusCode).toBe(404);
+    });
+
     it('reads the pick lists the screen draws', async () => {
         const rows = (field: string): unknown => ({
             result: ok,

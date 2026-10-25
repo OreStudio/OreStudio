@@ -189,3 +189,18 @@ The route that feeds it, =GET /api/trades/:id=, makes those six reads and return
 * Still open from the review
 
 - *Counterparty and book as links.* Neither entity has a page of its own: a counterparty is listed inside its party, and a book has only the structure authoring journey. Linking to a journey would be worse than plain text, so the links wait for the pages. That is the next piece after the instrument read.
+
+* The entity links, and the pages they needed
+
+The review asked for the counterparty and the book to be links. Neither had a page to link to, so the change builds both and the link follows:
+
+- =GET /api/counterparties/:id= reads the record and the identifiers it is known by; the page is at =/refdata/counterparties/:id=.
+- =GET /api/books/:id= reads the book and the portfolio it sits in; the page is at =/refdata/books/:id=.
+- The trade list's counterparty and book cells are links, and so are the two facts on the trade page. A row whose id is absent stays plain text, so a structure row keeps its usual rendering.
+- The =Fact= block the trade page had locally is now the shared one in the primitives, because three pages draw facts.
+
+Trading held no =refdata::counterparty_identifiers:read=, which the counterparty page needs for its identifiers table; the four blotter roles hold it now.
+
+* What this leaves
+
+The instrument read is the last piece of the task. The book page shows the book and its portfolio but not the trades booked in it, which is the read a person arrives wanting; that is the same instrument-and-population work.

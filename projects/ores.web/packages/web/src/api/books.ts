@@ -139,6 +139,14 @@ async function put<Row>(
 }
 
 export const books = {
+    /** One book with the portfolio it sits in, or null when that is not readable. */
+    async one(id: string): Promise<{ readonly book: Book; readonly portfolio: Portfolio | null }> {
+        const answer = z
+            .object({ book: z.looseObject({}), portfolio: rowOf<Portfolio>() })
+            .parse(await request(`/api/books/${encodeURIComponent(id)}`, { method: 'GET' }));
+        return { book: answer.book as unknown as Book, portfolio: answer.portfolio };
+    },
+
     /** Every portfolio and every book of the tenant. */
     async tree(): Promise<BookTree> {
         return z

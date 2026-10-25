@@ -164,6 +164,33 @@ describe('counterparty routes', () => {
         expect(calls[0]?.subject).toBe(list);
     });
 
+    it('reads one counterparty with the identifiers it is known by', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.counterparties.list': {
+                result: ok,
+                counterparties: [
+                    { id: ID, short_code: 'BAYLAN', full_name: 'BAYERISCHE LANDESBANK' },
+                ],
+            },
+            'refdata.v1.counterparty_identifiers.list': {
+                result: ok,
+                counterparty_identifiers: [{ id_scheme: 'BIC', id_value: 'BYLADEMMXXX' }],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', `/api/counterparties/${ID}`);
+        expect(response.statusCode).toBe(200);
+        expect(response.json().counterparty.full_name).toBe('BAYERISCHE LANDESBANK');
+        expect(response.json().identifiers).toHaveLength(1);
+    });
+
+    it('answers not found for a counterparty that is not there', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.counterparties.list': { result: ok, counterparties: [] },
+        });
+        const response = await send(server, sessionId, 'GET', `/api/counterparties/${ID}`);
+        expect(response.statusCode).toBe(404);
+    });
+
     it('reads the children of the named counterparties, one call per child type', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'refdata.v1.counterparty_identifiers.list': {

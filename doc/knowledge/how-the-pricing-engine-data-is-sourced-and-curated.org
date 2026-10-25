@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 0B141B6B-EA10-4FD1-AFD1-FD12F9F43435
+:END:
+#+title: How the pricing engine data is sourced and curated
+#+description: The methodology that turns the ORE guide and source into the pricing engine data: extraction, curation, generation, provenance, review and the gates that keep it clean.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:reporting:pricing:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+* Summary
+
+The pricing engine data is extracted from the ORE guide and source by a script, curated by a person, and generated into deterministic SQL. Every row records where it came from, what a person changed and why, so a reviewer can tell an extracted fact from an authored one. The generator refuses to write a row without a text, a value domain or a provenance, and the screens read the result rather than restating it.
+
+* Detail
+
+** Principles
+
+1. Extraction is mechanical. A person does not type what a script can read.
+2. Curation is explicit. Every authored value has a reason, a source, a curator and a date.
+3. Generation is deterministic. The same inputs write the same SQL, and =--check= fails on drift.
+4. Provenance is per row, not per file. A reader can tell an extracted value from a curated one.
+5. The data model owns the rules. The screen reads the valid values and the constraints; it does not restate them.
+6. One enforcement point. The write path applies the rules, so every client gets the same answer.
+
+** The layers
+
+| Layer | Artefact | Decides |
+|-------+----------+---------|
+| Source | ORE guide chapter and source, at a recorded commit | The facts |
+| Extract | =extract_vocabulary.py=, =pricing_vocabulary.json= | Product types, pairs, setting names, guide text |
+| Curate | =curation/*.json= (this methodology) | Authored texts, name fixes, instrument mappings, exemptions |
+| Generate | =generate_vocabulary_sql.py=, =generate_ore_parameters_dataset.py= | Deterministic SQL |
+| Store | Analytics tables, =ore_parameters= | The data the API reads |
+| Serve | =/api/reporting/pricing-engines/vocabulary= | The view a screen reads |
+| Render | The screen | Nothing but the view |
+
+The ORE commit measured for the current seed is recorded beside the data (today =3d75a6908=). A new extraction records the new commit, so a reader knows which source the rows describe.
+
+** The extraction
+
+=extract_vocabulary.py= reads =Docs/UserGuide/pricing/pricingengines.tex= and splits it on each =Product Type:= subsection. For each product type it records the trade type in =used_by=, the model and engine pairs, and for each pair the settings with their scope, name, kind, usual value, options, required flag and the guide text. The result is =pricing_vocabulary.json=, a derived file, not a hand-edited one.
+
+The extraction does not decide an instrument code. It records the trade type it read, which is the input to the mapping in curation.
+
+** The curation
+
+Curation is data, not code. It lives in =projects/ores.seeder/datasets/ore_pricing_engines/curation/=, one file per concern, each entry keyed by the row it changes:
+
+#+begin_src json
+{
+  "instrument": {
+    "AmericanSwaption_XCcy": {
+      "value": "SWPTN",
+      "reason": "A cross-currency swaption is a swaption; the pair table prices it with the swaption models.",
+      "source": "ore_guide: pricingengines.tex, Product Type: American-style Swaption, Cross Currency",
+      "curator": "marco",
+      "date": "2026-10-25"
+    }
+  },
+  "exempt": {
+    "CapFlooredAverageONIndexedCouponLeg": {
+      "reason": "A leg pricer, not a trade product; it moves to the instrument building blocks.",
+      "curator": "marco",
+      "date": "2026-10-25"
+    }
+  }
+}
+#+end_src
+
+The concerns are: =instrument= (the trade type a product maps to), =type_text= (a product description the guide does not give), =setting_text= (a setting text the guide gives only as a value list), =name= (a mis-spelling in the guide or the code), =global= (a document-level parameter and its text), =exempt= (a row that is deliberately not a product), and =release= (a release floor the tags cannot answer).
+
+A curation entry is reviewed like code: it appears in the diff, names its source and reason, and carries a person and a date.
+
+** Provenance on every row
+
+The ore parameter contract carries, beside the text: =source= (=ore_guide=, =ore_code=, =authored=), =source_ref= (the guide section or the source file and line), =curation_note= (what a person changed), =reviewed_by= and =reviewed_at=. The analytics tables carry the same on the rows that describe an ORE element. A row without a source is a bug, not a default.
+
+** The gates
+
+The generator fails, rather than writing a guess, when:
+
+- a parameter has no text;
+- a parameter has no value domain;
+- a product type has no instrument code and no =exempt= entry;
+- a description is only the humanised code and has no =type_text= entry;
+- a global parameter has no domain or no text;
+- the same leaf would be written twice;
+- =--check= finds the committed SQL differs from the generated SQL.
+
+The coverage report prints, per run: types mapped, types exempt, settings documented, globals documented, and the rows whose text is authored rather than extracted. A reviewer reads the report before the diff.
+
+** Review
+
+1. Run the extractor against the recorded ORE commit.
+2. Read the coverage report: every count that moved is explained.
+3. Read the curation diff: every entry has a reason and a source.
+4. Spot-check one product from each asset class against the guide.
+5. Run the generator and =--check=.
+6. Run the screens' tests; the vocabulary fixtures are built from the same data shape.
+
+** Current state and gaps
+
+The current seed curates inside Python literals (=descriptions.py=, =EXTRA_TYPES=, =GLOBAL_PARAMETERS=, =NAME_WORDS=), has no provenance columns yet, and lets the generator default an added product type to =NONE= for its instrument and to a humanised code for its description. The methodology above is the target; the tasks under the story move the current seed onto it.
+
+* See also
+
+- [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] — the story that applies this.
+- [[id:5BF23494-E801-4B0A-8FE0-CEB8DE48BF13][Apply the standard to the pricing engine configuration]] — the screen that reads the result.
+- [[id:C9C764D9-99DF-4327-8FE6-87704D32B34C][Move the pricing engine documentation onto the one contract]] — the contract the rows land in.

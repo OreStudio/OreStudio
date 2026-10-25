@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :take_the_first_refdata_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/extract-the-journeys-of-the-first-topic
+#+pr: 3781
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The topic is understood from the person's goal, not from the Qt dialog. Each jou
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The journey is judged and the PR is raised. |
+| Waiting on   | The owner's sign off of the journey before the prototype starts. |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -41,9 +41,19 @@ The topic is understood from the person's goal, not from the Qt dialog. Each jou
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The topic already has its journey: Keep a holiday calendar right, written on
+2026-10-04 in the existing form, with the calendar, its rules, exceptions,
+events and business days, and the calendar type and diary entry type pickers.
+So the task is not to write a journey but to judge the one that exists, step by
+step, against the standard the second story settled and the screen the web
+draws today: which steps the standard record screen with parts already covers,
+which are a kind's own action, which are a view the standard has no rule for,
+and whether any step keeps state across a reply and so needs a workflow. The
+judgement goes on the journey page, where the prototype reads it, with the
+missing Prototype section the document contract requires and a link from each
+gap in What is missing to the capture that carries it. The classification
+lists the pickers offer are another journey already, in the Classifications
+group, and the group page says so.
 
 * Measurements
 
@@ -57,7 +67,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Journeys of the topic | 1 own, 1 shared with classifications | =compass list --type user_journey=, the Calendars group | 1efc16515d |
+| Steps judged | 12: 9 standard, 2 own actions, 1 missing operation, 0 workflows | the table on the journey page | 1efc16515d |
+| Gaps linked to captures | 8 | What is missing, items 1 to 8 | 1efc16515d |
+| Qt calendar entities covered | 6 of 6: calendar, rule, exception, event, date, type | the matrix rows against the journey's entities | 1efc16515d |
 
 * Notes
 
@@ -76,12 +89,25 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3781][#3781]] | [docs] Judge the calendar journey for the screen pipeline |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: docs class | journeys/calendars | Accept | The judgement cites the identifiers it rests on; the two placements it leaves open, where Rebuild stands and how the Business days view is drawn, are named for the prototype rather than decided here |
 
 * Result
+
+The calendars topic has one journey of its own, Keep a holiday calendar right,
+and shares Maintain a classification list for its two pickers. Each of its
+twelve steps is judged on the journey page: nine are the standard record
+screen with parts, two are a kind's own actions (Derive a calendar and Rebuild
+business days), one is a missing server operation (the ORE export), and none
+keeps state across a reply, so no workflow is needed and the Workflows menu
+stays empty for calendars. The Business days tab is a derived view no rule of
+the standard draws yet; the prototype defines it and the standard gains the
+rule. Each gap in What is missing links to its capture, with an eighth added
+for the unenforced read-only calendar. The journey page gained the Prototype
+section the contract requires, pointing at the prototype task. The owner's
+sign off of the journey is the gate before the prototype starts.

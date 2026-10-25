@@ -26,11 +26,11 @@ A missed change event delays demand by at most one interval, and an operator see
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Live adapter status | bloomberg-a serving, 5 routes, 26 demanded, 26 accepted, 298 ticks/min, last tick 0.0s | =marketdata adapters status= | 0e26b3156c-pending |
+| Live adapter status | bloomberg-a serving, 5 routes, 26 demanded, 26 accepted, 298 ticks/min, last tick 0.0s | =marketdata adapters status= | 23b08e7612 |
 | Adapters with no routes | demo-a and lseg-a, 0 routes and 0 demand | same | same |
 
 * Result

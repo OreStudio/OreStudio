@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: 3D678112-589B-4DBA-A386-8E57B3BD945C
+:END:
+#+title: ores.reporting.ore_parameter_value_set
+#+description: Codegen entity model for the reporting =ore_parameter_value_set= table. The allowed values of a parameter, and where they come from.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: The set of values a parameter may hold.
+#+entity_singular: ore_parameter_value_set
+#+entity_plural: ore_parameter_value_sets
+#+entity_title: Ore Parameter Value Set
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+A parameter states its storage type in the value domain and its allowed values
+here. A set is enumerated, in which case its values are rows of
+=ore_parameter_value_set_value=, or it is a catalogue, in which case the values
+are the current rows of another ORE Studio catalogue named by
+=ore_parameter_value_set_catalogue=. A range and a regular expression carry
+their rules on the set itself. A boolean is the built-in pair true and false.
+
+The set is shared by every parameter that names it, so one list of values serves
+every product type and every pair that takes the setting.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 reporting
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:tablename: ores_reporting_ore_parameter_value_sets_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+The stable code of the set, for example =polynom_type= or =refdata.tenor=.
+
+** name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The name a person reads, for example =Basis function system=.
+
+** description
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+What the values of this set choose.
+
+** source_kind
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+Where the values come from: =enumerated=, =catalogue=, =range=, =regex= or
+=boolean=. The screen draws a combo, a bounded number field, a text field or a
+flag from it.
+
+#+begin_src cpp :name generator
+std::string("enumerated")
+#+end_src
+
+** catalogue_code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:END:
+
+The catalogue, when the kind is =catalogue=. Soft foreign key to
+=ores_reporting_ore_parameter_value_set_catalogues_tbl=.
+
+** minimum
+:PROPERTIES:
+:type:         double precision
+:cpp_type:     std::optional<double>
+:nullable:     true
+:END:
+
+The lowest value a range accepts. Empty when the range has no floor.
+
+** maximum
+:PROPERTIES:
+:type:         double precision
+:cpp_type:     std::optional<double>
+:nullable:     true
+:END:
+
+The highest value a range accepts. Empty when the range has no ceiling.
+
+** pattern
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     true
+:END:
+
+The regular expression a value must match, when the kind is =regex=.
+
+** is_ordered
+:PROPERTIES:
+:type:         boolean
+:cpp_type:     bool
+:nullable:     false
+:END:
+
+Whether the order of an enumerated set means something, so the screen keeps the
+order the values rows state.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_ore_parameter_value_sets_tbl
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                       |
+|----------------------+-------------------------------------------|
+| change_reason_code   | ores_dq_validate_change_reason_fn         |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:service_find_prefix:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: set
+:entity_plural_short:   sets
+:entity_singular_words: ore parameter value set
+:entity_plural_words:   ore parameter value sets
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pvs
+:END:
+
+** Table display
+
+| column       | header      |
+|--------------+-------------|
+| code         | Code        |
+| name         | Name        |
+| source_kind  | Source      |
+| catalogue_code | Catalogue |

@@ -87,5 +87,13 @@
 
 \ir ./reporting_ore_parameter_value_domains_notify_trigger_drop.sql
 \ir ./reporting_ore_parameter_value_domains_drop.sql
+\ir ./reporting_ore_parameter_setting_value_sets_notify_trigger_drop.sql
+\ir ./reporting_ore_parameter_setting_value_sets_drop.sql
+\ir ./reporting_ore_parameter_value_set_values_notify_trigger_drop.sql
+\ir ./reporting_ore_parameter_value_set_values_drop.sql
+\ir ./reporting_ore_parameter_value_sets_notify_trigger_drop.sql
+\ir ./reporting_ore_parameter_value_sets_drop.sql
+\ir ./reporting_ore_parameter_value_set_catalogues_notify_trigger_drop.sql
+\ir ./reporting_ore_parameter_value_set_catalogues_drop.sql
 
 \ir ./reporting_functions_drop.sql

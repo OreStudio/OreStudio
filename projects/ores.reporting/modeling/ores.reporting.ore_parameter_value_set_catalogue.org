@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 5F45F585-1C7B-4A09-A9DA-50D07D26CD9C
+:END:
+#+title: ores.reporting.ore_parameter_value_set_catalogue
+#+description: Codegen entity model for the reporting =ore_parameter_value_set_catalogue= table. The ORE Studio catalogues a parameter's allowed values may come from.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: A catalogue whose current rows are the allowed values of a parameter.
+#+entity_singular: ore_parameter_value_set_catalogue
+#+entity_plural: ore_parameter_value_set_catalogues
+#+entity_title: Ore Parameter Value Set Catalogue
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+A parameter whose values are other ORE Studio data names a catalogue here: the
+tenors, the currencies, the currency pairs, the sensitivity templates, the
+instrument codes, the calendars, the day counters, the conventions. The values
+are the catalogue's current rows, read through a view that presents the value
+and the label, so nothing is copied into the parameter tables and a row retired
+from the catalogue is refused by the same read.
+
+Only a registered relation can be read, and its shape is checked when the
+registry loads. A catalogue is data, so adding one is a row here and the view it
+names.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 reporting
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:tablename: ores_reporting_ore_parameter_value_set_catalogues_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+The catalogue's code, for example =refdata.tenor= or =analytics.sensitivity_template=.
+
+** name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The name a person reads, for example =Tenors=.
+
+** relation
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The view that presents the catalogue as values and labels, for example
+=ores_refdata_tenor_catalogue_v=. It must expose =value=, =label= and =is_active=.
+
+** description
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+What the catalogue holds and when a parameter draws on it.
+
+** is_active
+:PROPERTIES:
+:type:         boolean
+:cpp_type:     bool
+:nullable:     false
+:END:
+
+Whether a value set may still name the catalogue.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_ore_parameter_value_set_catalogues_tbl
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                       |
+|----------------------+-------------------------------------------|
+| change_reason_code   | ores_dq_validate_change_reason_fn         |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:service_find_prefix:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: catalogue
+:entity_plural_short:   catalogues
+:entity_singular_words: ore parameter value set catalogue
+:entity_plural_words:   ore parameter value set catalogues
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pvc
+:END:
+
+** Table display
+
+| column   | header   |
+|----------+----------|
+| code     | Code     |
+| name     | Name     |
+| relation | Relation |
+| is_active | Active  |

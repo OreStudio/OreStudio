@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: DF31FA34-3E9E-4886-A939-9706F370BB65
+:END:
+#+title: ores.reporting.ore_parameter_setting_value_set
+#+description: Codegen entity model for the reporting =ore_parameter_setting_value_set= table. The junction that gives one setting its allowed values.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: The value set one setting takes.
+#+entity_singular: ore_parameter_setting_value_set
+#+entity_plural: ore_parameter_setting_value_sets
+#+entity_title: Ore Parameter Setting Value Set
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+The junction between a setting and the set of values it allows. It is keyed by
+the setting, =(scope, name)=, and not by a parameter row, because the contract
+holds one row per product type and the allowed values are the same for all of
+them. A setting has one set today, so the pair is unique; the junction is a
+table so a setting may draw from more than one set later without a migration.
+
+The code is the scope and the name joined with a colon, for example
+=EngineParameters:Training.BasisFunction=.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 reporting
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:tablename: ores_reporting_ore_parameter_setting_value_sets_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+The scope and the setting name joined with a colon, for example
+=EngineParameters:Training.BasisFunction=.
+
+** scope
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The scope of the setting: =ModelParameters=, =EngineParameters= or
+=GlobalParameters=.
+
+** name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The setting's name as the ORE document holds it, for example
+=Training.BasisFunction=.
+
+** value_set_code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The set that states the setting's allowed values. Soft foreign key to
+=ores_reporting_ore_parameter_value_sets_tbl=.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_ore_parameter_setting_value_sets_tbl
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                       |
+|----------------------+-------------------------------------------|
+| change_reason_code   | ores_dq_validate_change_reason_fn         |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:service_find_prefix:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: setting_value_set
+:entity_plural_short:   setting_value_sets
+:entity_singular_words: ore parameter setting value set
+:entity_plural_words:   ore parameter setting value sets
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pss
+:END:
+
+** Table display
+
+| column         | header    |
+|----------------+-----------|
+| scope          | Scope     |
+| name           | Setting   |
+| value_set_code | Value set |

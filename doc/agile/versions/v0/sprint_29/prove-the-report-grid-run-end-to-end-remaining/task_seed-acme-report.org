@@ -8,7 +8,7 @@
 #+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_26:sprint_29:v0:
 #+owner: marco
 #+branch: feature/seed-acme-report
-#+pr:
+#+pr: 3745
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-27
@@ -62,7 +62,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3745][#3745]] | [agile] Close the seed task and record the analytic-switch gap |
 
 * Review
 

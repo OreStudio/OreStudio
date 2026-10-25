@@ -210,16 +210,13 @@ async function readInstrument(
         issueId === ''
             ? null
             : ((
-                  await readAll(
-                      session,
-                      bondIssueSubjects.list_bond_issues_request,
-                      'issues',
-                      {
-                          filter: { issue_id_one_of: [issueId] },
-                      },
-                  )
+                  await readAll(session, bondIssueSubjects.list_bond_issues_request, 'issues', {
+                      filter: { issue_id_one_of: [issueId] },
+                  })
               )[0] ?? null);
-    return { ...terms, issue_reference: issue === null ? '' : text(issue['security_id']) };
+    // The issue's own terms belong with the instrument's: for a bond they are
+    // most of what a person means by "the terms", so they travel together.
+    return { ...terms, issue };
 }
 
 /**

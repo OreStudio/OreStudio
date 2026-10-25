@@ -80,6 +80,20 @@ function PartTable({
     );
 }
 
+/**
+ * A value a person can read.
+ *
+ * An issuer is written as a free-text name, but the population writes a party id
+ * there. A uuid is not something to put on a screen, so it is left out with a
+ * dash and the fault is recorded rather than dressed up.
+ */
+function readable(value: string): string {
+    const looksLikeId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        value,
+    );
+    return looksLikeId ? '' : value;
+}
+
 /** The tone a state is drawn in, so the badge says more than the word does. */
 function stateTone(state: string): 'up' | 'warn' | 'muted' | 'neutral' {
     switch (state) {
@@ -116,19 +130,54 @@ function InstrumentTab({ record }: { readonly record: TradePageRecord }): ReactN
         return <Notice tone="info">{t('trading.page.instrumentNoTerms')}</Notice>;
     }
     const identity = terms['identity'] as Readonly<Record<string, unknown>> | undefined;
+    const issue = terms['issue'] as Readonly<Record<string, unknown>> | null | undefined;
     const notional = terms['notional'];
+    const text = (value: unknown): string =>
+        value === undefined || value === null ? '' : String(value);
     return (
-        <dl className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <Fact
-                label={t('trading.page.tradeTypeCode')}
-                value={identity === undefined ? '' : String(identity['trade_type_code'] ?? '')}
-            />
-            <Fact label={t('trading.page.issue')} value={String(terms['issue_reference'] ?? '')} />
-            <Fact
-                label={t('trading.page.notional')}
-                value={notional === undefined || notional === null ? '' : String(notional)}
-            />
-        </dl>
+        <div className="space-y-6">
+            <dl className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                <Fact
+                    label={t('trading.page.tradeTypeCode')}
+                    value={identity === undefined ? '' : text(identity['trade_type_code'])}
+                />
+                <Fact label={t('trading.page.notional')} value={text(notional)} />
+            </dl>
+            <section className="space-y-3">
+                <h2 className="text-sm font-medium text-ink">{t('trading.page.issue')}</h2>
+                {issue === null || issue === undefined ? (
+                    <Notice tone="info">{t('trading.page.issueMissing')}</Notice>
+                ) : (
+                    <dl className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                        <Fact
+                            label={t('trading.page.securityId')}
+                            value={text(issue['security_id'])}
+                        />
+                        <Fact
+                            label={t('trading.page.issuer')}
+                            value={readable(text(issue['issuer']))}
+                        />
+                        <Fact
+                            label={t('trading.page.faceValue')}
+                            value={text(issue['face_value'])}
+                        />
+                        <Fact
+                            label={t('trading.page.issueDate')}
+                            value={text(issue['issue_date'])}
+                        />
+                        <Fact
+                            label={t('trading.page.settlementDays')}
+                            value={text(issue['settlement_days'])}
+                        />
+                        <Fact label={t('trading.page.calendar')} value={text(issue['calendar'])} />
+                        <Fact
+                            label={t('trading.page.creditGroup')}
+                            value={text(issue['credit_group'])}
+                        />
+                    </dl>
+                )}
+            </section>
+        </div>
     );
 }
 

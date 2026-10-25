@@ -46,13 +46,19 @@ The decision is in [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared
 tick or one copy for each party]]. The slices, each verified before the next:
 
 1a. Bring the tick table under codegen. The generator already emits the
-   hypertable (partition column, chunk interval, retention). Add the three
-   knobs it lacks and tests for them: the scalar-subquery policy form, FORCE
-   row-level security, and the writer role with INSERT only and BYPASSRLS (the
-   grant either from the entity template or kept in the IAM grants with the
-   model naming the role). Model the tick table as a domain entity with
-   =:no_audit_columns:= and the hypertable knobs, and prove the generated SQL
-   matches the hand-written choices.
+   hypertable (partition column, chunk interval, retention). It lacks three
+   traits the tick table needs, and the model needs a fourth capability:
+   - =:rls_policy_style:= (default or hot_path). =hot_path= emits FORCE row
+     level security, the tenant policy in the scalar-subquery form, and the
+     restrictive select-only party policy without the null passthrough. One
+     typed style, not three booleans that must agree.
+   - =:writer_role:= (a psql variable). Emits =grant insert on <table> to
+     :<role>=, for a role that carries BYPASSRLS.
+   - =:sql_only:= at the model level. The model emits the SQL facet alone.
+     Without it, modelling the tick store also generates a domain type,
+     repository and service that duplicate the hand-written batch writer.
+   Model the tick table with =:no_audit_columns:=, the hypertable knobs and the
+   new traits, and prove the generated SQL matches the hand-written choices.
 1b. Model the shared point store: a tick belongs to a source and a datum, not a
    party, and every row sits under the system tenant. The per-party series
    keeps its classification and gains the key that finds the shared stream.

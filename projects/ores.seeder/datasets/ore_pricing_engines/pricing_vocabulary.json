@@ -738,9 +738,9 @@
      },
      {
       "scope": "engine",
-      "name": "BasisFunctionOrder",
-      "kind": "text",
-      "usual": null,
+      "name": "Training.BasisFunctionOrder",
+      "kind": "number",
+      "usual": "3",
       "options": [],
       "required": true,
       "text": "The order of the basis function system to be used."
@@ -1450,10 +1450,10 @@
       "text": "Which swaptions the fit uses: those that end with the deal and start at the money, those at the strike of the deal, or the delta gamma adjusted set."
      },
      {
-      "scope": "engine",
-      "name": "FXCalibration",
+      "scope": "model",
+      "name": "FxCalibration",
       "kind": "select",
-      "usual": null,
+      "usual": "Bootstrap",
       "options": [
        "None",
        "Bootstrap"
@@ -1606,9 +1606,9 @@
      },
      {
       "scope": "engine",
-      "name": "BasisFunctionOrder",
-      "kind": "text",
-      "usual": null,
+      "name": "Training.BasisFunctionOrder",
+      "kind": "number",
+      "usual": "6",
       "options": [],
       "required": true,
       "text": "The order of the basis function system to be used."
@@ -1753,10 +1753,10 @@
       "text": "Which swaptions the fit uses: those that end with the deal and start at the money, those at the strike of the deal, or the delta gamma adjusted set."
      },
      {
-      "scope": "engine",
-      "name": "FXCalibration",
+      "scope": "model",
+      "name": "FxCalibration",
       "kind": "select",
-      "usual": null,
+      "usual": "Bootstrap",
       "options": [
        "None",
        "Bootstrap"
@@ -1909,9 +1909,9 @@
      },
      {
       "scope": "engine",
-      "name": "BasisFunctionOrder",
-      "kind": "text",
-      "usual": null,
+      "name": "Training.BasisFunctionOrder",
+      "kind": "number",
+      "usual": "6",
       "options": [],
       "required": true,
       "text": "The order of the basis function system to be used."
@@ -2399,10 +2399,10 @@
       "text": "Which swaptions the fit uses: those that end with the deal and start at the money, those at the strike of the deal, or the delta gamma adjusted set."
      },
      {
-      "scope": "engine",
-      "name": "FXCalibration",
+      "scope": "model",
+      "name": "FxCalibration",
       "kind": "select",
-      "usual": null,
+      "usual": "Bootstrap",
       "options": [
        "None",
        "Bootstrap"
@@ -2555,9 +2555,9 @@
      },
      {
       "scope": "engine",
-      "name": "BasisFunctionOrder",
-      "kind": "text",
-      "usual": null,
+      "name": "Training.BasisFunctionOrder",
+      "kind": "number",
+      "usual": "6",
       "options": [],
       "required": true,
       "text": "The order of the basis function system to be used."
@@ -3028,10 +3028,10 @@
       "text": "Which swaptions the fit uses: those that end with the deal and start at the money, those at the strike of the deal, or the delta gamma adjusted set."
      },
      {
-      "scope": "engine",
-      "name": "FXCalibration",
+      "scope": "model",
+      "name": "FxCalibration",
       "kind": "select",
-      "usual": null,
+      "usual": "Bootstrap",
       "options": [
        "None",
        "Bootstrap"
@@ -3184,9 +3184,9 @@
      },
      {
       "scope": "engine",
-      "name": "BasisFunctionOrder",
-      "kind": "text",
-      "usual": null,
+      "name": "Training.BasisFunctionOrder",
+      "kind": "number",
+      "usual": "6",
       "options": [],
       "required": true,
       "text": "The order of the basis function system to be used."
@@ -3331,10 +3331,10 @@
       "text": "Which swaptions the fit uses: those that end with the deal and start at the money, those at the strike of the deal, or the delta gamma adjusted set."
      },
      {
-      "scope": "engine",
-      "name": "FXCalibration",
+      "scope": "model",
+      "name": "FxCalibration",
       "kind": "select",
-      "usual": null,
+      "usual": "Bootstrap",
       "options": [
        "None",
        "Bootstrap"
@@ -3487,9 +3487,9 @@
      },
      {
       "scope": "engine",
-      "name": "BasisFunctionOrder",
-      "kind": "text",
-      "usual": null,
+      "name": "Training.BasisFunctionOrder",
+      "kind": "number",
+      "usual": "6",
       "options": [],
       "required": true,
       "text": "The order of the basis function system to be used."
@@ -3960,10 +3960,10 @@
       "text": "Which swaptions the fit uses: those that end with the deal and start at the money, those at the strike of the deal, or the delta gamma adjusted set."
      },
      {
-      "scope": "engine",
-      "name": "FXCalibration",
+      "scope": "model",
+      "name": "FxCalibration",
       "kind": "select",
-      "usual": null,
+      "usual": "Bootstrap",
       "options": [
        "None",
        "Bootstrap"
@@ -4116,9 +4116,9 @@
      },
      {
       "scope": "engine",
-      "name": "BasisFunctionOrder",
-      "kind": "text",
-      "usual": null,
+      "name": "Training.BasisFunctionOrder",
+      "kind": "number",
+      "usual": "6",
       "options": [],
       "required": true,
       "text": "The order of the basis function system to be used."
@@ -4607,10 +4607,10 @@
       "text": "Which swaptions the fit uses: those that end with the deal and start at the money, those at the strike of the deal, or the delta gamma adjusted set."
      },
      {
-      "scope": "engine",
-      "name": "FXCalibration",
+      "scope": "model",
+      "name": "FxCalibration",
       "kind": "select",
-      "usual": null,
+      "usual": "Bootstrap",
       "options": [
        "None",
        "Bootstrap"
@@ -4763,9 +4763,9 @@
      },
      {
       "scope": "engine",
-      "name": "BasisFunctionOrder",
-      "kind": "text",
-      "usual": null,
+      "name": "Training.BasisFunctionOrder",
+      "kind": "number",
+      "usual": "6",
       "options": [],
       "required": true,
       "text": "The order of the basis function system to be used."
@@ -4910,10 +4910,10 @@
       "text": "Which swaptions the fit uses: those that end with the deal and start at the money, those at the strike of the deal, or the delta gamma adjusted set."
      },
      {
-      "scope": "engine",
-      "name": "FXCalibration",
+      "scope": "model",
+      "name": "FxCalibration",
       "kind": "select",
-      "usual": null,
+      "usual": "Bootstrap",
       "options": [
        "None",
        "Bootstrap"
@@ -5066,9 +5066,9 @@
      },
      {
       "scope": "engine",
-      "name": "BasisFunctionOrder",
-      "kind": "text",
-      "usual": null,
+      "name": "Training.BasisFunctionOrder",
+      "kind": "number",
+      "usual": "6",
       "options": [],
       "required": true,
       "text": "The order of the basis function system to be used."
@@ -5557,10 +5557,10 @@
       "text": "Which swaptions the fit uses: those that end with the deal and start at the money, those at the strike of the deal, or the delta gamma adjusted set."
      },
      {
-      "scope": "engine",
-      "name": "FXCalibration",
+      "scope": "model",
+      "name": "FxCalibration",
       "kind": "select",
-      "usual": null,
+      "usual": "Bootstrap",
       "options": [
        "None",
        "Bootstrap"
@@ -5713,9 +5713,9 @@
      },
      {
       "scope": "engine",
-      "name": "BasisFunctionOrder",
-      "kind": "text",
-      "usual": null,
+      "name": "Training.BasisFunctionOrder",
+      "kind": "number",
+      "usual": "6",
       "options": [],
       "required": true,
       "text": "The order of the basis function system to be used."
@@ -6737,18 +6737,18 @@
      },
      {
       "scope": "engine",
-      "name": "LowerRateNormal",
-      "kind": "text",
-      "usual": null,
+      "name": "LowerRateBoundNormal",
+      "kind": "number",
+      "usual": "-2.0000",
       "options": [],
       "required": true,
       "text": "Rate bounds for normal vol input."
      },
      {
       "scope": "engine",
-      "name": "UpperRateNormal",
-      "kind": "text",
-      "usual": null,
+      "name": "UpperRateBoundNormal",
+      "kind": "number",
+      "usual": "2.0000",
       "options": [],
       "required": true,
       "text": "Rate bounds for normal vol input."
@@ -6773,12 +6773,12 @@
      },
      {
       "scope": "engine",
-      "name": "BsStdDev",
-      "kind": "number",
-      "usual": "3.0",
+      "name": "BSStdDevs",
+      "kind": "text",
+      "usual": null,
       "options": [],
       "required": true,
-      "text": "The number of standard deviations that set the bounds of the replication when the policy is BsStdDev."
+      "text": "Std devs for BsStdDev."
      },
      {
       "scope": "engine",
@@ -7142,18 +7142,18 @@
      },
      {
       "scope": "engine",
-      "name": "LowerRateNormal",
-      "kind": "text",
-      "usual": null,
+      "name": "LowerRateBoundNormal",
+      "kind": "number",
+      "usual": "-2.0000",
       "options": [],
       "required": true,
       "text": "Rate bounds for normal vol input."
      },
      {
       "scope": "engine",
-      "name": "UpperRateNormal",
-      "kind": "text",
-      "usual": null,
+      "name": "UpperRateBoundNormal",
+      "kind": "number",
+      "usual": "2.0000",
       "options": [],
       "required": true,
       "text": "Rate bounds for normal vol input."
@@ -10387,9 +10387,9 @@
      },
      {
       "scope": "engine",
-      "name": "MaxDiscretizationPoints",
-      "kind": "text",
-      "usual": null,
+      "name": "MaxDiscretisationPoints",
+      "kind": "number",
+      "usual": "20",
       "options": [],
       "required": true,
       "text": "The maximum number of discretization points used for underlying representation."
@@ -10451,9 +10451,9 @@
      },
      {
       "scope": "engine",
-      "name": "MaxDiscretizationPoints",
-      "kind": "text",
-      "usual": null,
+      "name": "MaxDiscretisationPoints",
+      "kind": "number",
+      "usual": "20",
       "options": [],
       "required": true,
       "text": "The maximum number of discretization points used for underlying representation."
@@ -10635,9 +10635,9 @@
      },
      {
       "scope": "engine",
-      "name": "MaxDiscretizationPoints",
-      "kind": "text",
-      "usual": null,
+      "name": "MaxDiscretisationPoints",
+      "kind": "number",
+      "usual": "20",
       "options": [],
       "required": true,
       "text": "The maximum number of discretization points used for underlying representation."

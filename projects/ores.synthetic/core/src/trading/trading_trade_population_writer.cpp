@@ -50,12 +50,14 @@ using ores::utility::domain::outcome;
 constexpr std::uint32_t page = 10000;
 
 /*
- * The reason a generated trade states. It is a system reason and not a
- * customer's: the digest fold reads it to decide whether an amendment moved
- * the external version, and a population that claimed an agreement would
- * report every generated trade as customer-amended.
+ * The reason a generated trade states: that a record was created. It is the
+ * ordinary reason for a write and deliberately not a mark of generated data,
+ * because the origin says who wrote the trade and the reason says what the
+ * write was. It stays a system reason: the digest fold reads it to decide
+ * whether an amendment moved the external version, and a population claiming
+ * an agreement would report every generated trade as customer-amended.
  */
-constexpr std::string_view population_reason = "system.initial_load";
+constexpr std::string_view population_reason = "system.new_record";
 
 /*
  * The scheme the population's own identifier travels under. UTI and USI are

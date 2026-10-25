@@ -797,6 +797,12 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             row.long_short = fx->long_short;
             row.notional = money(fx->reference_notional);
             row.moment_type = fx->moment_type;
+            /*
+             * The store refuses a variance swap whose strike is absent or not
+             * positive: the strike is the level the swap pays out against, so a
+             * variance swap without one pays nothing.
+             */
+            row.strike = fx->strike.value_or(0.0);
             row.description = "Generated FX trade.";
             row.audit.change_reason_code = std::string(population_reason);
             row.audit.change_commentary = "Generated trade population.";
@@ -808,6 +814,7 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             row.underlying_code = fx->underlying_code;
             row.long_short = fx->long_short;
             row.start_date = fx->start_date;
+            row.strike = money(fx->strike.value_or(0.0));
             row.knock_out_barrier = maybe_money(fx->knock_out_barrier);
             row.description = "Generated FX trade.";
             row.audit.change_reason_code = std::string(population_reason);

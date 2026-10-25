@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 5C29E1B7-4A86-4D31-8F72-6E0D93B5C1A4
+:END:
+#+title: The identifier schemes live only in the system tenant
+#+description: The trade identifier schemes a booking names are system-tenant reference data, so a tenant session reads none of them, and the booking form has to fall back to what the tenant's own trades already use.
+#+type: capture
+#+level: cross
+#+filetags: :trading:seeding:bug:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+Booking a trade names its identifier by a scheme, and the service refuses a
+scheme it does not know:
+
+#+begin_example
+Invalid id_type: POP. No active trade id type found with this code.
+#+end_example
+
+The schemes are =ores_trading_trade_id_types_tbl= rows — four of them, =Internal=,
+=ORE=, =USI= and =UTI= — and every one carries the *system* tenant:
+
+#+begin_example
+select tenant_id, code from ores_trading_trade_id_types_tbl
+ where valid_to = ores_utility_infinity_timestamp_fn();
+-- ffffffff-… | UTI
+-- ffffffff-… | USI
+-- ffffffff-… | Internal
+-- ffffffff-… | ORE
+#+end_example
+
+A tenant session cannot see them: =trading.v1.trade_id_types.list= answers an
+empty array for =acme_corporation=, while the *write* accepts the same codes,
+because the insert function looks a code up without tenant scoping.
+
+So the booking form cannot offer the schemes from their own table. It offers the
+schemes the tenant's existing trades use — a read it can make, and a list that is
+never empty for a tenant that has ever traded — and a tenant with no trades yet
+has an empty picker and cannot book at all.
+
+Two ways out, and the first is probably right: copy the scheme reference data
+into each tenant at provisioning, as the rest of the trading reference data is
+copied; or make the schemes system-wide like a code list, which means an insert
+that validates against them should not be tenant-scoped either. The mismatch
+between the read and the write is the fault either way.

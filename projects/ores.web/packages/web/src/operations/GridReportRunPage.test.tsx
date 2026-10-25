@@ -208,7 +208,7 @@ describe('the report run page', () => {
             runView({
                 priced_at: '2026-05-05 00:00:00.000000Z' as GridReportRunView['priced_at'],
                 price_note:
-                    'The run asked for 2026-05-06 and the gathered market data ends at 2026-05-05, so the run priced at the data\'s date.',
+                    "The run asked for 2026-05-06 and the gathered market data ends at 2026-05-05, so the run priced at the data's date.",
             }),
         );
 

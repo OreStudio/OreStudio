@@ -91,7 +91,7 @@ const wireRun = {
     completed_at: null,
     priced_at: '2026-05-05 00:00:00.000000Z',
     price_note:
-        'The run asked for 2026-05-06 and the gathered market data ends at 2026-05-05, so the run priced at the data\'s date.',
+        "The run asked for 2026-05-06 and the gathered market data ends at 2026-05-05, so the run priced at the data's date.",
     modified_by: 'scheduler',
     performed_by: 'scheduler',
     change_reason_code: 'system.new_record',
@@ -205,7 +205,7 @@ describe('GET /api/operations/grid/report-runs/:id', () => {
             completed_at: null,
             priced_at: '2026-05-05 00:00:00.000000Z',
             price_note:
-                'The run asked for 2026-05-06 and the gathered market data ends at 2026-05-05, so the run priced at the data\'s date.',
+                "The run asked for 2026-05-06 and the gathered market data ends at 2026-05-05, so the run priced at the data's date.",
             definition_name: 'NPV',
             party_name: null,
         });

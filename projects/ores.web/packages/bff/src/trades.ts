@@ -100,7 +100,14 @@ const NO_FILTER = {
     search: null,
 } as const;
 
-/** The filter the page is read with: the set, with the screen's choices in the members it names. */
+/**
+ * The filter the page is read with: the set, with the screen's choices in the
+ * members it names.
+ *
+ * Every member is stated, absent ones as null. The service decodes the filter
+ * strictly and refuses a request that leaves a member out, so a filter built
+ * from only the screen's choices would work with no filter and fail with one.
+ */
 function filterOf(query: z.infer<typeof tradeListQuerySchema>) {
     return {
         ...NO_FILTER,
@@ -173,17 +180,26 @@ async function enrich(
     const identifiers = await readAll(
         session,
         identifierSubjects.list_trade_identifiers_request,
-        'trade_identifiers',
-        { filter: { trade_id: null, trade_id_one_of: ids } },
+        'identifiers',
+        {
+            filter: { trade_id: null, trade_id_one_of: ids, correlation_id: null },
+            as_of: null,
+        },
     );
     const books = await readAll(session, bookSubjects.list_books_request, 'books', {
-        filter: { parent_portfolio_id: null, id_one_of: bookIds, parent_portfolio_id_one_of: null },
+        filter: {
+            parent_portfolio_id: null,
+            id_one_of: bookIds,
+            parent_portfolio_id_one_of: null,
+            correlation_id: null,
+        },
+        as_of: null,
     });
     const counterparties = await readAll(
         session,
         counterpartySubjects.list_counterparties_request,
         'counterparties',
-        { filter: { id_one_of: counterpartyIds }, as_of: null },
+        { filter: { id_one_of: counterpartyIds, correlation_id: null }, as_of: null },
     );
     const trades =
         ids.length === 0
@@ -195,7 +211,12 @@ async function enrich(
                       counterparty_scope: null,
                       id_one_of: ids,
                       counterparty_id_one_of: null,
+                      trade_type_one_of: null,
+                      counterparty_scope_one_of: null,
+                      search: null,
+                      correlation_id: null,
                   },
+                  as_of: null,
               });
 
     const identifiersOf = bestIdentifier(identifiers);

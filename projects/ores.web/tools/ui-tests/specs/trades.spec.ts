@@ -16,6 +16,9 @@ async function signIn(page: import('@playwright/test').Page) {
     await page.getByLabel(/username/i).fill(USERNAME);
     await page.getByLabel(/password/i).fill(PASSWORD);
     await page.getByRole('button', { name: /sign in/i }).click();
+    // The app leaves the sign-in page once the session is established; navigating
+    // before that cancels the sign-in and every later page redirects back here.
+    await expect(page).not.toHaveURL(/\/login$/);
 }
 
 test('a Trading persona signs in and leaves the sign-in page', async ({ page }) => {
@@ -25,12 +28,6 @@ test('a Trading persona signs in and leaves the sign-in page', async ({ page }) 
 });
 
 test('the trade list answers and shows a row', async ({ page }) => {
-    test.fixme(
-        true,
-        'Blocked: the Trades route sends a request the service refuses. ' +
-            'doc/agile/product_backlog/inbox/the-trades-route-sends-a-request-the-service-refuses.org',
-    );
-
     const refusals: string[] = [];
     page.on('response', (response) => {
         if (response.url().includes('/api/trades') && response.status() >= 400) {

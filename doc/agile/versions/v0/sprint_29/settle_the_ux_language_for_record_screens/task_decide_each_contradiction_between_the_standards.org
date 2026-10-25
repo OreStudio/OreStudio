@@ -8,7 +8,7 @@
 #+filetags: :settle_the_ux_language_for_record_screens:sprint_29:v0:
 #+owner: marco
 #+branch: feature/decide-each-contradiction
-#+pr:
+#+pr: 3754
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3754][#3754]] | [docs] Decide each contradiction between the UX standards |
 
 * Review
 

@@ -27,11 +27,11 @@ import { useTranslation } from '../i18n/Provider.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { PATHS } from '../shell/paths.js';
-import { Notice } from '../ui/Primitives.js';
+import { Notice, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 
 /** The page's tabs, in the order the prototype settled: the trade first, then its parts. */
-const TABS = ['details', 'instrument', 'identifiers', 'links', 'history'] as const;
+const TABS = ['details', 'identifiers', 'links', 'history'] as const;
 
 /** One fact of the trade, as a label and a value. */
 function Fact({ label, value }: { readonly label: string; readonly value: string }): ReactNode {
@@ -90,7 +90,22 @@ function PartTable({
     );
 }
 
-/** The five tabs of one trade, drawn from the one read the page makes. */
+/** The tone a state is drawn in, so the badge says more than the word does. */
+function stateTone(state: string): 'up' | 'warn' | 'muted' | 'neutral' {
+    switch (state) {
+        case 'live':
+            return 'up';
+        case 'draft':
+            return 'warn';
+        case 'expired':
+        case 'cancelled':
+            return 'muted';
+        default:
+            return 'neutral';
+    }
+}
+
+/** The tabs of one trade, drawn from the one read the page makes. */
 export function TradePage(): ReactNode {
     const { t } = useTranslation();
     const { id = '' } = useParams();
@@ -106,6 +121,7 @@ export function TradePage(): ReactNode {
     });
     const trail = [
         { label: t('shell.menu.home'), to: '/' },
+        { label: t('shell.menu.trading'), to: PATHS.trading },
         { label: t('trading.trades.title'), to: PATHS.trades },
     ];
 
@@ -162,14 +178,28 @@ export function TradePage(): ReactNode {
                             label={t('trading.fields.instrumentType')}
                             value={trade.instrument_type}
                         />
-                        <Fact
-                            label={t('trading.page.state')}
-                            value={trade.status === null ? '' : t(`trading.states.${trade.status}`)}
-                        />
-                        <Fact
-                            label={t('trading.page.authorisation')}
-                            value={trade.authorisation_status}
-                        />
+                        <div>
+                            <dt className="text-xs uppercase tracking-wide text-ink-faint">
+                                {t('trading.page.state')}
+                            </dt>
+                            <dd className="text-sm text-ink">
+                                {trade.status === null ? (
+                                    '—'
+                                ) : (
+                                    <Tag tone={stateTone(trade.status)}>
+                                        {t(`trading.states.${trade.status}`)}
+                                    </Tag>
+                                )}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt className="text-xs uppercase tracking-wide text-ink-faint">
+                                {t('trading.page.authorisation')}
+                            </dt>
+                            <dd className="text-sm text-ink">
+                                <Tag tone="muted">{trade.authorisation_status}</Tag>
+                            </dd>
+                        </div>
                         <Fact
                             label={t('trading.fields.tradeDate')}
                             value={trade.trade_date ?? ''}
@@ -181,10 +211,15 @@ export function TradePage(): ReactNode {
                         <Fact label={t('trading.fields.book')} value={trade.book_name} />
                         <Fact
                             label={t('trading.fields.version')}
-                            value={t('trading.trades.versionPair', {
-                                version: String(trade.version ?? ''),
-                                external: String(trade.external_version ?? ''),
-                            })}
+                            value={trade.version === null ? '' : String(trade.version)}
+                        />
+                        <Fact
+                            label={t('trading.fields.externalVersion')}
+                            value={
+                                trade.external_version === null
+                                    ? ''
+                                    : String(trade.external_version)
+                            }
                         />
                         <Fact
                             label={t('trading.page.bookingDate')}
@@ -195,11 +230,6 @@ export function TradePage(): ReactNode {
                             value={record.booking?.execution_timestamp ?? ''}
                         />
                     </dl>
-                )}
-                {tabs.tab === 'instrument' && (
-                    <Notice tone="info">
-                        {t('trading.page.instrumentPending', { type: trade.instrument_type })}
-                    </Notice>
                 )}
                 {tabs.tab === 'identifiers' && (
                     <div className="space-y-4">

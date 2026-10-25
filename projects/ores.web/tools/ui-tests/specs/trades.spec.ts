@@ -36,7 +36,7 @@ test('the trade list answers and shows a row', async ({ page }) => {
     });
 
     await signIn(page);
-    await page.goto('/trades');
+    await page.goto('/trading/trades');
     await expect(page.getByRole('heading', { name: /trades/i })).toBeVisible();
 
     expect(refusals, `the trades route refused: ${refusals.join(' | ')}`).toHaveLength(0);

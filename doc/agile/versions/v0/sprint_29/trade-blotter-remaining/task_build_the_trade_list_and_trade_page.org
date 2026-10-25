@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-trade-list-and-trade-page
-#+pr: 3793
+#+pr: 3799
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -88,6 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3799][#3799]] | [web] Make Trading the area and Trades its card |
 | [[https://github.com/OreStudio/OreStudio/pull/3793][#3793]] | [web] Show one trade on its own page |
 | [[https://github.com/OreStudio/OreStudio/pull/3789][#3789]] | [refdata] Serve the counterparty business centre lists |
 | [[https://github.com/OreStudio/OreStudio/pull/3788][#3788]] | [web] Complete a list request from the protocol |
@@ -176,3 +177,14 @@ The route that feeds it, =GET /api/trades/:id=, makes those six reads and return
 * Proved
 
 =GET /api/trades/:id= answers 200 for a Trading persona with the identifier, one identifier row, the booking, and five versions. The browser opens the list, clicks the first row, and walks all five tabs; its labels resolve and the tab list is announced. The BFF suite passes 949 tests, including the page route's shape and a 404 for a trade that does not exist.
+
+* The review's points, in this change
+
+- *Trading is the area, Trades is a card in it.* The menu names the area, its page draws the cards, and the trade list is one of them. The list and the trade page now live at =/trading/trades=, and every trail reads Home, Trading, then the screen. Saying "Trades" in the menu named a screen where the person expects a place to work.
+- *State and authorisation are badges.* Both use the standard =Tag=, in the list and on the page, with the state's tone saying how alive the trade is.
+- *External version has its own field*, in the list and on the page. It was folded into one "v5 · ext 0" cell, which hid a field the desk reads on its own.
+- *The Instrument tab does not ship.* The page keeps four tabs and states no promise it cannot keep.
+
+* Still open from the review
+
+- *Counterparty and book as links.* Neither entity has a page of its own: a counterparty is listed inside its party, and a book has only the structure authoring journey. Linking to a journey would be worse than plain text, so the links wait for the pages. That is the next piece after the instrument read.

@@ -69,7 +69,7 @@ const fr: SourceCatalogue = {
         },
         account: 'Votre compte',
         menu: {
-            trades: 'Transactions',
+            trading: 'Trading',
             marketdata: 'Données de marché',
             home: 'Accueil',
             accounts: 'Comptes',
@@ -513,6 +513,7 @@ const fr: SourceCatalogue = {
             country: 'Pays',
             account: 'Compte',
             traffic: 'Envoyé / reçu',
+            authorisation: 'Autorisation',
             state: 'État',
             day: 'Jour',
         },
@@ -3585,6 +3586,10 @@ const fr: SourceCatalogue = {
     },
 
     trading: {
+        area: {
+            title: 'Trading',
+            lead: 'Les transactions qu’un desk lit et écrit, et les livres où elles se trouvent.',
+        },
         trades: {
             areaLead:
                 'Les transactions et structures que vous pouvez voir, et les livres où elles se trouvent.',
@@ -3606,7 +3611,6 @@ const fr: SourceCatalogue = {
             tabs: {
                 label: 'Sections de la transaction',
                 details: 'Détails',
-                instrument: 'Instrument',
                 identifiers: 'Identifiants et rôles',
                 links: 'Liens',
                 history: 'Historique',
@@ -3615,8 +3619,6 @@ const fr: SourceCatalogue = {
             authorisation: 'Autorisation',
             bookingDate: 'Date de réservation',
             execution: 'Exécutée à',
-            instrumentPending:
-                "La lecture de l'instrument n'est pas encore construite : les termes de cet {type} ne peuvent pas être affichés.",
             identifiers: 'Identifiants',
             idType: 'Schéma',
             idValue: 'Valeur',
@@ -3634,6 +3636,7 @@ const fr: SourceCatalogue = {
             noHistory: "Cette transaction n'a pas encore de version enregistrée.",
         },
         fields: {
+            externalVersion: 'Version externe',
             identifier: 'Id',
             instrumentType: 'Type',
             counterparty: 'Contrepartie',

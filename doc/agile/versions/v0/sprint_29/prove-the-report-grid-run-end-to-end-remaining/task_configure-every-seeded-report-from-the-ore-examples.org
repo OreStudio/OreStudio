@@ -42,10 +42,10 @@ carry none.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | The seed carries a risk report configuration for every party and switches an analytic on in each. Fidelity to the ORE examples and the root portfolio scope are not checked.                       |
-| Waiting on   | A read of the seeded configurations against =external/ore= examples.                               |
-| Next         | Compare the seeded configurations with the examples, then close or list the gaps.                  |
-| Last touched | 2026-10-21                               |
+| Now          | The scope half is settled: all 78 definitions resolve to books and the run used the root's subtree. The switches are not: seven analytic codes no example names, and only =portfolio_details= is witnessed against the engine.                       |
+| Waiting on   | A run per analytic family, or a mapping from each platform code to the ORE type it becomes.                               |
+| Next         | Run one report per analytic family and record the engine's verdict for each code.                  |
+| Last touched | 2026-10-25                               |
 
 - Every report definition =acme_demo= seeds for ACME either carries a
   configuration that resolves to at least one book, or is recorded as
@@ -118,6 +118,45 @@ every seeded report, each built from the matching =external/ore= example.
   a defined parent/child relation between the two. Whether that is a column on
   the portfolio, one on the book, or an existing hierarchy decides the method's
   shape, so it is the first thing to settle.
+
+*What the proof settled, and what it did not.* Read on 2026-10-25, after the
+report ran on a database built from nothing.
+
+Settled:
+
+- *Scope.* Every one of the 78 definitions resolves to at least one book through
+  its configuration (measured: 78 of 78, 46 portfolio scope rows, no unscoped
+  definition). The root relation exists as a portfolio parent, and
+  =ores_trading_get_book_ids_by_portfolio_fn= expands a root to its subtree;
+  =ores_reporting_resolve_book_ids_for_config_fn= uses it, and the run took 20
+  books from =Global Portfolio=.
+- *Ordering and the id relation.* The configuration is created in
+  =ores_reporting_publish_risk_report_configs_from_dq_fn=, alongside the
+  definition, so the ids line up by construction. The party's portfolios exist
+  by then, which is why the scope publishes.
+
+Not settled, and the reason this task stays open:
+
+- *The switches may not come from the examples.* The vendored examples use
+  eleven analytic types: =npv=, =cashflow=, =curves=, =xva=, =simulation=,
+  =sensitivity=, =stress=, =calibration=, =scenario=, =creditcurves=, =amc=.
+  The seed switches on codes no example names: =portfolio_details=, =saccr=,
+  =pfe=, =parametric_var=, =historical_var=, =credit_curves=, =pnl_explain=.
+  =ores.ore= holds no table mapping a platform code to an ORE type, so the code
+  is passed to the engine as written.
+- *Only one of those codes is witnessed.* The proof exercised =portfolio_details=
+  and the engine accepted it, writing =runtimes.csv= for PORTFOLIO_DETAILS. The
+  other six are unproven: either ORE 1.8.17 accepts them as analytic types, or
+  each needs a mapping (for example a =var= analytic with a parametric or
+  historical method, or =xva= with its sub-analytics) and the seed is wrong.
+
+*Next on this task.* Run one report per analytic family and record the engine's
+verdict for each code. The holding party's definitions cover
+=portfolio_details=, =npv=, =saccr=, =parametric_var= and =cashflow=; the legal
+entities' definitions cover =curves=, =credit_curves=, =sensitivity=,
+=simulation=, =pfe=, =xva= and =historical_var=, and reaching those needs a run
+grant for the entity's party. Close this task when every code has either a
+passing run or a mapping.
 
 * Test Scenarios
 

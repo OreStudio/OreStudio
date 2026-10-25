@@ -115,6 +115,7 @@ import { PricingEnginesPage } from './pricingEngines/PricingEnginesPage.js';
 import { PricingEnginePage } from './pricingEngines/PricingEnginePage.js';
 import { PricingEngineJourney } from './pricingEngines/PricingEngineJourney.js';
 import { ReportPage } from './reporting/ReportPage.js';
+import { ReportRunPage } from './reporting/ReportRunPage.js';
 import { ReportingPage } from './reporting/ReportingPage.js';
 import { ReportsPage } from './reporting/ReportsPage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
@@ -781,6 +782,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <ReportsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path="/reporting/runs/:id"
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ReportRunPage />
                     ),
                     'workspace',
                 )}

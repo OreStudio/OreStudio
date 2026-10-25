@@ -52,10 +52,9 @@ import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
-import { RunResultsPanel } from './RunResultsPanel.js';
 import { useTabs } from '../ui/Tabs.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
-import { PATHS, gridReportRunPath, reportPath } from '../shell/paths.js';
+import { PATHS, reportPath, reportRunPath } from '../shell/paths.js';
 import { AccessMark } from '../ui/AccessMark.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { Detail, Notice, Tag } from '../ui/Primitives.js';
@@ -305,12 +304,6 @@ function ReportBody(): ReactNode {
                 own={<RefreshButton onClick={reload} load={load} news={news} />}
             />
             {bar}
-            {tab === 'results' && (
-                <RunResultsPanel
-                    queryKey={['report-results', definition.id]}
-                    load={() => api.reportResults(definition.id)}
-                />
-            )}
             {tab === 'runs' && <ReportRuns definitionId={definition.id} />}
             {tab === 'definition' && (
                 <div className="space-y-4">
@@ -365,9 +358,12 @@ function ReportBody(): ReactNode {
 }
 
 /** The tabs of a report: the definition, its runs, and the results of its latest run. */
-const REPORT_TABS = ['definition', 'runs', 'results'] as const;
+const REPORT_TABS = ['definition', 'runs'] as const;
 
-/** The runs of one report, newest first, each opening the run it names. */
+/**
+ * The runs of one report, newest first, each with what the run reached and the
+ * two things a person does next: read the run, or read the results it produced.
+ */
 function ReportRuns({ definitionId }: { readonly definitionId: string }): ReactNode {
     const { t } = useTranslation();
     const runs = useQuery({
@@ -396,6 +392,8 @@ function ReportRuns({ definitionId }: { readonly definitionId: string }): ReactN
                         <th className="px-2 py-1">{t('reporting.runs.state')}</th>
                         <th className="px-2 py-1">{t('reporting.runs.started')}</th>
                         <th className="px-2 py-1">{t('reporting.runs.completed')}</th>
+                        <th className="px-2 py-1">{t('reporting.runs.pricedAt')}</th>
+                        <th className="px-2 py-1">{t('reporting.runs.actions')}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -403,22 +401,35 @@ function ReportRuns({ definitionId }: { readonly definitionId: string }): ReactN
                         const id = text(row['id']);
                         const started = text(row['started_at']);
                         const completed = text(row['completed_at']);
+                        const priced = text(row['priced_at']);
                         return (
                             <tr key={id} className="border-t border-line-subtle">
-                                <td className="px-2 py-1">
-                                    <Link
-                                        to={gridReportRunPath(id)}
-                                        className="text-accent hover:text-accent-bright"
-                                    >
-                                        {text(row['name']) || id.slice(0, 8)}
-                                    </Link>
-                                </td>
+                                <td className="px-2 py-1">{text(row['name']) || id.slice(0, 8)}</td>
                                 <td className="px-2 py-1">{text(row['state_name']) || '—'}</td>
                                 <td className="px-2 py-1">
                                     {started === '' ? '—' : <RelativeTime at={started} />}
                                 </td>
                                 <td className="px-2 py-1">
                                     {completed === '' ? '—' : <RelativeTime at={completed} />}
+                                </td>
+                                <td className="px-2 py-1 font-mono text-xs">
+                                    {priced === '' ? '—' : priced.slice(0, 10)}
+                                </td>
+                                <td className="px-2 py-1">
+                                    <span className="flex gap-3">
+                                        <Link
+                                            to={`${reportRunPath(id)}?tab=run`}
+                                            className="text-accent hover:text-accent-bright"
+                                        >
+                                            {t('reporting.runs.details')}
+                                        </Link>
+                                        <Link
+                                            to={`${reportRunPath(id)}?tab=results`}
+                                            className="text-accent hover:text-accent-bright"
+                                        >
+                                            {t('reporting.runs.results')}
+                                        </Link>
+                                    </span>
                                 </td>
                             </tr>
                         );
@@ -547,7 +558,7 @@ function LatestRun({
                 />
             </dl>
             <Link
-                to={gridReportRunPath(report.latestRun.id)}
+                to={reportRunPath(report.latestRun.id)}
                 className="text-sm text-accent hover:text-accent-bright"
             >
                 {t('reporting.detail.openRun')}

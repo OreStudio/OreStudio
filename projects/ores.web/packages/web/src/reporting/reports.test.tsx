@@ -552,12 +552,12 @@ describe('one report definition', () => {
         expect(page).toContain('common.non_material_update');
     });
 
-    it('draws the definition, the runs and the results as three tabs, and no History', () => {
+    it('draws the definition first and the runs beside it, and no History', () => {
         const page = detail();
         expect(page).toContain('role="tab"');
         expect(page).toContain('>Definition<');
         expect(page).toContain('>Runs<');
-        expect(page).toContain('>Results<');
+        expect(page).not.toContain('>Results<');
         expect(page).not.toContain('>History<');
     });
 
@@ -720,7 +720,7 @@ describe('the latest run on a report page', () => {
             },
         );
 
-        expect(html).toContain(`href="/operations/grid/report-runs/${RUN}"`);
+        expect(html).toContain(`href="/reporting/runs/${RUN}"`);
         expect(textOf(html)).toContain('Open the run');
     });
 });

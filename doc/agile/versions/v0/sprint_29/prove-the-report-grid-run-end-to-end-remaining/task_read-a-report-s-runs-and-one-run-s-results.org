@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: CACDECCE-638E-4F72-AF7E-D4EE1D238FD5
+:END:
+#+title: Task: Read a report's runs and one run's results
+#+description: The report page keeps the definition first and lists the runs beside it; a run's details and results live on the run's own page.
+#+type: task
+#+level: s1
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person opens a report, reads its definition first, then its runs, and opens one run to read both what it says about itself and the figures it produced.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- The report page draws Definition first, then Runs, and nothing else.
+- The Runs tab lists the report's runs newest first with state, times and priced date.
+- Each run offers Details and Results.
+- A run's page carries Run and Results, the run's message and output archive under Run.
+- A result is never shown without the run it came from.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A report now keeps its definition first and puts its runs beside it, and a
+result is only ever read on the run that produced it.
+
+The report page has two tabs. *Definition* is the record, and it is the tab that
+opens. *Runs* lists the report's runs newest first with the state each reached,
+when it started and finished, and the date it priced at. Each row offers two
+things: *Details*, the run's own page, and *Results*, the same page with the
+figures open.
+
+A run's page carries two tabs. *Run* states the report the run came from, its
+kind, its state, its times, the date it priced at with the note explaining a
+substituted date, what the run said when it finished, the output archive's key
+with a download, and the way to the run's errors. *Results* is the figures: the
+trade count, the total of each currency, then one row per trade.
+
+The run that shows it is =9ff0e92e-f21d-4137-bb24-ad4956fa99f0=, on the NPV
+definition of ACME Corporation HK Ltd. Its Run tab says =Report execution
+completed.= and names =reporting/runs/9ff0e92e-.../output.tar.gz=. Its Results
+tab shows eight bond trades and a total NPV of =31,607,092.99= HKD.
+
+The earlier task put results on the definition's own page, which read figures
+without the run that produced them and hid the definition behind them. This task
+replaces that.

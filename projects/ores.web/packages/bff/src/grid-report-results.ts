@@ -22,10 +22,10 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { gunzipSync } from 'node:zlib';
 import { z } from 'zod';
-import { subjects as instanceSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_instance_protocol';
 import { invalidRequest, notFound } from './errors.js';
 import { resultSchema, row, text } from './refdata-calls.js';
 import { fetchStored } from './grid-downloads.js';
+import { readRun, readRunStates } from './grid-report-runs.js';
 import type { LiveSession } from './sessions.js';
 
 /*
@@ -183,25 +183,6 @@ export function rowsOf(rawCsv: string): readonly RunResultRow[] | null {
         .filter((row) => row.trade_id !== '');
 }
 
-/** The run the report's results are read from: the one that started last. */
-async function latestRunOf(
-    session: LiveSession,
-    definitionId: string,
-): Promise<Record<string, unknown> | null> {
-    const reply = await session.client.callAuthenticated(
-        instanceSubjects.get_latest_report_instances_by_definition_request,
-        { definition_ids: [definitionId] },
-        z.looseObject({ result: resultSchema, instances: z.array(row).default([]) }),
-    );
-    if (reply.result.outcome !== 'ok') {
-        throw notFound('The report could not be read.');
-    }
-    const newest = [...reply.instances].sort((left, right) =>
-        text(left['started_at']).localeCompare(text(right['started_at'])),
-    );
-    return newest[newest.length - 1] ?? null;
-}
-
 /** The rows of a run's result, or the reason there are none. */
 async function resultsOfKey(session: LiveSession, key: string): Promise<ResultsAnswer> {
     if (key === '') {
@@ -226,17 +207,68 @@ export function registerGridReportResultsRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
-    /** The per-trade results of a report's latest run. */
-    server.get('/api/reporting/reports/:id/results', async (request): Promise<ResultsAnswer> => {
+    /** One reporting run, with the state it reached. */
+    server.get('/api/reporting/runs/:id', async (request) => {
         const session = requireSession(request);
         const parsed = runParamsSchema.safeParse(request.params);
         if (!parsed.success) {
             throw invalidRequest('The address names an id that is not a uuid.');
         }
-        const run = await latestRunOf(session, parsed.data.id);
+        const run = await readRun(session, parsed.data.id);
+        if (run === null) {
+            throw notFound('No report run has this id.');
+        }
+        const states = await readRunStates(session, [parsed.data.id]);
+        return {
+            id: text(run['id']),
+            name: text(run['name']),
+            party_id: text(run['party_id']),
+            definition_id: text(run['definition_id']),
+            kind: text(run['kind']),
+            state_name: states.get(parsed.data.id) ?? '',
+            started_at: text(run['started_at']),
+            completed_at: text(run['completed_at']),
+            priced_at: text(run['priced_at']),
+            price_note: text(run['price_note']),
+            output_message: text(run['output_message']),
+            output_storage_key: text(run['output_storage_key']),
+        };
+    });
+
+    /** The per-trade results of one run. */
+    server.get('/api/reporting/runs/:id/results', async (request): Promise<ResultsAnswer> => {
+        const session = requireSession(request);
+        const parsed = runParamsSchema.safeParse(request.params);
+        if (!parsed.success) {
+            throw invalidRequest('The address names an id that is not a uuid.');
+        }
+        const run = await readRun(session, parsed.data.id);
         if (run === null) {
             return { rows: [], reason: 'no-run' };
         }
         return resultsOfKey(session, text(run['output_storage_key']));
+    });
+
+    /** The output archive of one run, as the run stored it. */
+    server.get('/api/reporting/runs/:id/output', async (request, reply) => {
+        const session = requireSession(request);
+        const parsed = runParamsSchema.safeParse(request.params);
+        if (!parsed.success) {
+            throw invalidRequest('The address names an id that is not a uuid.');
+        }
+        const run = await readRun(session, parsed.data.id);
+        if (run === null) {
+            throw notFound('No report run has this id.');
+        }
+        const key = text(run['output_storage_key']);
+        if (key === '') {
+            throw notFound('This run produced no output.');
+        }
+        const archive = await fetchStored(session, key);
+        return reply
+            .header('Content-Type', 'application/gzip')
+            .header('Content-Disposition', 'attachment; filename="output.tar.gz"')
+            .header('Cache-Control', 'private, no-store')
+            .send(archive);
     });
 }

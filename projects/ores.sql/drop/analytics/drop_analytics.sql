@@ -27,6 +27,7 @@
 
 -- Drop in reverse dependency order (children before parents)
 \ir ./analytics_pricing_model_product_parameters_notify_trigger_drop.sql
+\ir ./analytics_pricing_model_product_parameters_value_set_trigger_drop.sql
 \ir ./analytics_pricing_model_product_parameters_drop.sql
 
 \ir ./analytics_pricing_model_products_notify_trigger_drop.sql

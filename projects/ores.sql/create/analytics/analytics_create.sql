@@ -64,6 +64,7 @@
 -- Pricing model product parameters (normalised key-value pairs)
 \ir ./analytics_pricing_model_product_parameters_create.sql
 \ir ./analytics_pricing_model_product_parameters_notify_trigger_create.sql
+\ir ./analytics_pricing_model_product_parameters_value_set_trigger_create.sql
 
 -- Credit simulation configuration (ORE credit simulation document root)
 \ir ./analytics_credit_simulation_configs_create.sql

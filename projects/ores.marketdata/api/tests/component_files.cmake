@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "datum_market_datum_tests.cpp"
+    "datum_series_stream_tests.cpp"
     "datum_value_tests.cpp"
     "domain_adapter_subjects_tests.cpp"
     "domain_market_clock_tests.cpp"

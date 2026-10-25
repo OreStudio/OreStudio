@@ -194,7 +194,14 @@ export function registerGridReportRunRoutes(
             }
             const reply = await session.client.callAuthenticated(
                 errorSubjects.list_by_report_instance_id_report_error_events_request,
-                { report_instance_id: parsed.data.id, limit: 500 },
+                {
+                    report_instance_id: parsed.data.id,
+                    scope: 'direct',
+                    offset: 0,
+                    limit: 500,
+                    order: { field: '', descending: false },
+                    filter: null,
+                },
                 z.looseObject({
                     result: resultSchema,
                     errors: z.array(row).default([]),

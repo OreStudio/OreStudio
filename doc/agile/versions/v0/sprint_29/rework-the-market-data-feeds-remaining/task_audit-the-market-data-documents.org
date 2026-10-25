@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/audit-the-market-data-documents
-#+pr:
+#+pr: 3809
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3809][#3809]] | [doc] State the market data documents for the service |
 
 * Review
 

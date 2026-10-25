@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: fix/green-the-baseline
-#+pr:
+#+pr: 3774
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3774][#3774]] | [codegen] Green the baseline the commodity merge left red |
 
 * Review
 

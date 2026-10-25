@@ -21,11 +21,11 @@ One reference data topic goes end to end through the pipeline, and the pipeline 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The calendars screen is signed off; the runbook is the last task. |
-| Waiting on    | The owner's sign off of the calendars screen. |
-| Next          | Write the screen pipeline runbook and scaffold the next topic. |
+| Now           | Done: the calendars screen is signed off and the runbook is written; the currencies topic is next. |
+| Waiting on    | Nothing. |
+| Next          | Nothing; the currencies topic story takes the runbook from here. |
 | Last touched  | 2026-10-25                               |
 
 * Acceptance
@@ -45,7 +45,7 @@ One reference data topic goes end to end through the pipeline, and the pipeline 
 | [[id:29F81FF8-6836-439E-8945-3AAB20850A6C][Prototype the screens of the first topic]] | STARTED | 2026-10-25 | | Prototype each screen of the topic to the settled standard, with its design note, and get it signed off before any code. |
 | [[id:E8CE97DD-CB32-4F94-81D6-A0C1B69C54FA][Build the screens of the first topic]] | DONE | 2026-10-25 | 2026-10-25 | Build the signed off screens from the shared record parts, with registry entries, field tables and server side work. |
 | [[id:5AC1321A-68CF-4C2B-8815-EF05E6E40BFF][Test and sign off the screens of the first topic]] | DONE | 2026-10-25 | 2026-10-25 | Write the test scenario, run it on a fresh environment, run the harness, walk the manual lines, record the sign off. |
-| [[id:04113E33-1D67-4C96-9318-0982BD788A48][Write the screen pipeline runbook]] | BACKLOG | | | Write the pipeline as a runbook, from journeys to sign off, and scaffold the next topic story from it. |
+| [[id:04113E33-1D67-4C96-9318-0982BD788A48][Write the screen pipeline runbook]] | DONE | 2026-10-25 | 2026-10-25 | Write the pipeline as a runbook, from journeys to sign off, and scaffold the next topic story from it. |
 
 * Decisions
 
@@ -64,6 +64,11 @@ One reference data topic goes end to end through the pipeline, and the pipeline 
   stated as a gap. RS-HIST-01 changed on 2026-10-25 when the owner's run of
   the calendars scenario looked for an exception's change in the calendar's
   history and did not find it.
+- The pipeline is a runbook of five steps, three of which stop for the owner;
+  each topic adds what it taught, and the next topic's story is scaffolded
+  from it at the close.
+- A supranational calendar carries its own flag from the seed; a national one
+  takes its country's on the screen (owner, 2026-10-25, for TARGET).
 
 * Out of scope
 

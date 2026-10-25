@@ -2,7 +2,7 @@
 :ID: 29DAA209-E62B-47C4-9220-51CA6622EC0C
 :END:
 #+title: Task: Populate the commodity family
-#+description: Folded into the seam task, which delivers the commodity planner whole. Kept as the record of why commodity came before the heavier classes.
+#+description: Book the twenty-five commodity trade types the catalogue routes, in the 5% share the weights page sets. No other class routes every type it declares.
 #+type: task
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining:sprint_29:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
-#+updated: 2026-10-24
+#+updated: 2026-10-25
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,11 +26,11 @@ ACME's books hold commodity trades across all twenty-five routed types, which no
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | ABANDONED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Nothing. |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Now          | Nothing. Reopened on 2026-10-25. |
+| Waiting on   | [[id:27FF4AA9-F6B8-460F-8BDD-043F1476C9EB][Seed a commodity catalogue]]. |
+| Next         | Begin once the catalogue names a commodity. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -63,6 +63,54 @@ task and name that file in the Command column.
 
 * Notes
 
+** The importer maps eight of the twenty-five shapes
+
+The catalogue routes all twenty-five commodity codes to
+=commodity_instrument=, but the ORE importer maps only eight shapes, at
+=projects/ores.ore/core/src/domain/commodity_instrument_projection.cpp=
+lines 50-53: =CommodityForward=, =CommodityOption=, =CommoditySwap=,
+=CommoditySwaption=, =CommodityVarianceSwap=,
+=CommodityAveragePriceOption=, =CommodityOptionStrip= and
+=CommodityBasketOption=.
+
+The other seventeen route to the table and no projection reads or writes
+them: =CommodityForwardVolatilityAgreement=, =IntradayPowerForward=,
+=CommodityDigitalOption=, =CommodityDigitalAveragePriceOption=,
+=CommodityAsianOption=, =CommoditySpreadOption=,
+=CommodityPairwiseVarianceSwap=, =CommodityBasketVarianceSwap=,
+=CommodityAccumulator=, =CommodityTaRF=, =CommodityWorstOfBasketSwap=,
+=CommodityBestEntryOption=, =CommodityWindowBarrierOption=,
+=CommodityGenericBarrierOption=, =CommodityRainbowOption=,
+=CommodityStrikeResettableOption= and =CommodityPosition=.
+
+So the planner books all twenty-five, because the table takes them, and
+the export-and-reverse-map proof covers the eight the importer maps. The
+seventeen are a gap in the importer and not in the planner.
+
+** The catalogue is a prerequisite
+
+Nothing in refdata names a commodity. =commodity_code= is free text with no
+foreign key, no commodity lookup table exists, and every commodity
+reference table is empty on a fresh database. The task [[id:27FF4AA9-F6B8-460F-8BDD-043F1476C9EB][Seed a commodity
+catalogue]] supplies the vocabulary. Until it lands this planner has
+nothing to draw from, and inventing a commodity is the one thing the
+generator may not do.
+
+** The curves are not this task's
+
+A commodity on no forward curve books, exports and then fails at pricing.
+The market data stories own the curves, so this task states which pricing
+it cannot prove instead of asserting a round trip it cannot show.
+
+** Why this task came back
+
+It was folded into [[id:E7AE8C2E-F1FF-4248-83AF-794722F1F105][Make the
+trade population plan family-neutral]] on 2026-10-24, on the argument that
+the seam needs a second family to prove it. It returned on 2026-10-25: the
+seam task cannot close while holding a family that needs a catalogue it
+does not own, and a task that waits on another belongs in the backlog
+beside it, not inside a refactor.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -87,14 +135,3 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
-
-Folded into [[id:E7AE8C2E-F1FF-4248-83AF-794722F1F105][Make the trade
-population plan family-neutral]] on 2026-10-24. That task needs a second
-planner to prove the seam, and commodity is the one class whose every
-declared type routes, so it is the only class that tests the plan without
-also testing routing work. Its acceptance now covers every commodity
-trade type, the class share and the export.
-
-Nothing was implemented under this task. Its branch,
-=feature/populate-the-commodity-family=, carries no commits and can be
-deleted.

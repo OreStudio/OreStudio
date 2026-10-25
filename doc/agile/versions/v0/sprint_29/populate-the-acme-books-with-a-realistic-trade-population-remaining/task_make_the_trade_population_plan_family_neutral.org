@@ -22,18 +22,22 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 Synthetic has one planner interface, one shared plan envelope and one shared writer. The plan carries a payload that belongs to its family, so a bond slot is a bond and a commodity slot is a commodity trade. The asset class a config names selects its planner, and a class with no planner is refused by name. The population size is a config field and not a constant.
 
-The bond planner is the first implementation. The commodity planner is the second, and it is delivered whole rather than as a stub: every commodity trade type books through it, its share matches its weight, and it exports and reverse-maps. Commodity is the proof because it is the one class whose every declared type routes, so the seam is tested on the plan alone and not on routing work.
+The bond planner is the first implementation. It is the only one this
+task delivers. A second family needs references and market data that this
+task cannot supply, so each family proves the seam in its own task, and
+the extension point is exercised by the bond population until the first of
+them lands.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Units one to three landed: the planner registry, a slot that carries its own family's terms, and the population size as a config column. The component suite and the drift check are green. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | The commodity planner, against the eight shapes the importer maps. |
-| Last touched | 2026-10-24                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
 
 * Acceptance
 
@@ -47,14 +51,8 @@ The bond planner is the first implementation. The commodity planner is the secon
   function is deleted.
 - Adding a family adds a payload type, a planner and one arm where the
   writer reads the payload. It changes no booking logic and no envelope.
-  The commodity planner books all twenty-five routed commodity trade
-  types.
-- The commodity share of the population matches its weight in Trade
-  Population Weights within tolerance.
-- The bond population, and the eight commodity shapes the importer maps,
-  export as the ORE portfolio the engine reads, and reverse-map without
-  loss. The other seventeen commodity codes book but have no round trip,
-  and the task names them as an importer gap.
+- The bond population exports as the ORE portfolio the engine reads, and
+  reverse-maps without loss.
 - The population size is a config field, and the =trades_per_book=
   constant is gone.
 - A second run of any planner books nothing.
@@ -102,17 +100,12 @@ The bond planner is the first implementation. The commodity planner is the secon
    header for a column on =ores.synthetic.trade_generation_config.org=,
    regenerated through codegen.
 
-8. The commodity planner is written against the eight shapes the ORE
-   importer already declares, at
-   =projects/ores.ore/core/src/domain/commodity_instrument_projection.cpp=
-   lines 250-370: forward, option, swap, swaption, variance swap,
-   average price option, option strip and basket option. The catalogue's
-   twenty-five commodity codes map onto those shapes, so the planner
-   states a shape and not twenty-five special cases.
-
-9. Delivery order, one verifiable commit each: the seam with bond; the
-   size in the config; then the commodity shapes one at a time, each
-   with the test that proves the rows it writes.
+8. Delivery order, one verifiable commit each: the planner interface and
+   registry with the bond planner behind it; then the payload, so a slot
+   carries its own family's terms; then the population size as a config
+   column, generated through codegen. A family of its own is a task of its
+   own, because it needs references and market data this task cannot
+   supply.
 
 * Measurements
 
@@ -141,67 +134,6 @@ no SQL default, so a fresh database has no value to fall back on. The C++
 side defaults to eight and the ACME seed states eight, which is what keeps
 the two in step; a new tenant's seed data has to state it too.
 
-
-The catalogue routes all twenty-five commodity codes to
-=commodity_instrument=, but the ORE importer maps only eight shapes, at
-=projects/ores.ore/core/src/domain/commodity_instrument_projection.cpp=
-lines 50-53: =CommodityForward=, =CommodityOption=, =CommoditySwap=,
-=CommoditySwaption=, =CommodityVarianceSwap=,
-=CommodityAveragePriceOption=, =CommodityOptionStrip= and
-=CommodityBasketOption=.
-
-The other seventeen codes route to the table and no projection reads or
-writes them. They are =CommodityForwardVolatilityAgreement=,
-=IntradayPowerForward=, =CommodityDigitalOption=,
-=CommodityDigitalAveragePriceOption=, =CommodityAsianOption=,
-=CommoditySpreadOption=, =CommodityPairwiseVarianceSwap=,
-=CommodityBasketVarianceSwap=, =CommodityAccumulator=, =CommodityTaRF=,
-=CommodityWorstOfBasketSwap=, =CommodityBestEntryOption=,
-=CommodityWindowBarrierOption=, =CommodityGenericBarrierOption=,
-=CommodityRainbowOption=, =CommodityStrikeResettableOption= and
-=CommodityPosition=.
-
-** There is no commodity catalogue, and no commodity curve
-
-Measured on a database rebuilt on 2026-10-24, and on the tree.
-
-=commodity_instrument.commodity_code= is free text with no foreign key. No
-commodity lookup table exists: =information_schema.tables= holds no
-=ores_refdata_commodities_tbl=, only the curve, convention, price-segment
-and volatility-config tables, and every one of those is empty.
-
-| Table | Rows |
-|---|---|
-| =ores_refdata_commodity_curve_configs_tbl= | 0 |
-| =ores_refdata_commodity_forward_conventions_tbl= | 0 |
-| =ores_refdata_commodity_volatility_configs_tbl= | 0 |
-| =ores_trading_commodity_instruments_tbl= | 0 |
-
-The conventions import stages commodity rows and publishes none of them:
-=ores_dq_commodity_future_conventions_artefact_tbl= holds 790 rows over 32
-distinct =index_name= values, and 756 of the 790 state no index name at
-all. =ores_dq_commodity_forward_conventions_artefact_tbl= holds 4 rows. The
-published tables above hold none, so nothing in refdata names a commodity a
-population could draw.
-
-The engine's own corpus names commodities as exchange-prefixed indices:
-=NYMEX:CL=, =NYMEX:NG=, =XLME:AH=, =PM:XAUUSD=, =NYMEX:CSX= and =NYMEX:A7Q=
-across =external/ore/examples/Products/Example_Trades/Commodity_*.xml=.
-That is the vocabulary a population has to speak for the engine to resolve
-anything.
-
-Two consequences follow, and neither is this task's to fix by writing a
-planner. A planner with no catalogue must invent a commodity name, which is
-the one thing the generator is not allowed to do. And a population on no
-curve books, exports and then fails at pricing, which the market data
-stories own.
-
-That decides what this task can claim. The planner books all twenty-five,
-because the table takes them, but the export-and-reverse-map proof covers
-the eight shapes the importer maps. The seventeen are a gap in the
-importer and not in the planner, and this task names them rather than
-asserting a round trip it cannot show.
-
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -226,3 +158,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Synthetic now has a planner interface, a registry keyed by the config's
+asset class, and a plan whose slot carries the terms its own family states.
+The free =plan_population=, which held the bond family inline and refused
+every other class by hand, is deleted. The bond planner implements the
+interface, and a class with no planner is refused by name.
+
+The population size left the planner header for a column on
+=ores_synthetic_trade_generation_configs_tbl=, generated through codegen,
+so a tenant sizes its own book. The bond population is unchanged apart from
+where it reads that count.
+
+Not done, and moved out deliberately: every other asset class. A family
+needs references and market data this task could not supply. Commodity
+became its own task and waits on the commodity catalogue.
+
+The extension point is therefore exercised and tested, but proven by one
+implementation. The first family task that lands proves the other half of
+the claim.

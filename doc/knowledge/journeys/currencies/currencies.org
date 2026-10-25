@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:user_journey:refdata:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-10-25
 
 A currency is reference data many other things lean on: amounts round by it,
 dates settle on its calendars, and desks group it. This group holds the
@@ -23,6 +23,14 @@ table.
 | [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]] | tenant administrator | A currency with its countries, calendars and desk groups, its history, and ORE exchange |
 | [[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][Set up a currency pair]] | tenant administrator | A pair with its quoting convention, settlement calendars and classification |
 | [[id:250CA101-1540-4A42-97F8-E73AA3400DA0][Group currencies for the desk]] | tenant administrator | Desk groups such as G11 or Scandies, in order, with their members |
+
+The three journeys were judged on 2026-10-25 for the
+[[id:61C6B0A5-03A5-4424-8EA3-EE7E587629FD][screen pipeline]]: each is a CRUD variation of the standard record screen
+with links, the pair's create dialog has two groups and a derived key, the
+ORE export is the one own action and waits on the server, and the Qt import of
+one file is dropped in favour of the ORE import area. No workflow is needed.
+The classifications the pickers offer are kept by
+[[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]].
 
 * Related
 

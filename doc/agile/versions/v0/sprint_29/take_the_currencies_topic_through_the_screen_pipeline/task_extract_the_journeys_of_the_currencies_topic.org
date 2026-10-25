@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :take_the_currencies_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/extract-the-journeys-of-the-currencies-topic
+#+pr: 3827
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The three journeys are judged and the PR is raised. |
+| Waiting on   | The owner's sign off of the judgement and of the import and export decision. |
+| Next         | [[id:958AA2EF-041E-4266-AFE8-A57A6C345F6E][Prototype the screens of the currencies topic]], once the owner signs off. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -39,9 +39,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Step 1 of the screen pipeline runbook. The three journeys of the topic exist,
+written on 2026-10-04, so the work is to judge each step against the standard
+and the screens the web draws today, as the calendars topic did: a table per
+journey of step, shape and judgement, the Prototype section the contract
+requires, and a link from each gap to its capture. Name for the owner the two
+decisions the topic carries, the ORE export and the Qt import of one file, with
+a proposal, and name the placements the prototype decides: the field kinds the
+currencies sheet found wrong, the pair's dialog with its two groups and derived
+key, and the member count of a desk group.
 
 * Measurements
 
@@ -55,7 +61,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Journeys of the topic | 3 own, 1 shared with classifications | the Currencies and FX group page | ad0cf13ae9 |
+| Steps judged | 26 rows, the export and the import counted apart: 23 standard, 1 own action waiting on the server, 1 missing operation, 0 workflows | the three tables | ad0cf13ae9 |
+| Gaps linked to captures | 9 of 13; 1 done since written, 3 without a capture yet | What is missing, the three pages | ad0cf13ae9 |
+| Decisions proposed to the owner | 2: export as an own action once the server returns the document; the Qt import of one file dropped | the currency journey, step 9 | ad0cf13ae9 |
 
 * Notes
 
@@ -74,12 +83,26 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3827][#3827]] | [docs] Judge the currencies journeys for the screen pipeline |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: docs class | journeys/currencies | Accept | Each judgement cites the identifier it rests on; the pair's own dialog is named against RS-WRITE-31 and left to the prototype to redraw as the shared one |
+| 2 | PR 3827 review: the measurements' commit, a pointer from the pair's step 4 to its capture for the prototype, the task's Next, the long step 9 cell | this task, the journey, the prototype task | Accept | The measurements name ad0cf13ae9; the prototype task's Notes point at the pair's write-together capture; step 9 is two rows, export and import, so the owner's two decisions read apart; Next names the prototype task |
 
 * Result
+
+The three journeys of the currencies topic are judged on their pages. Add or
+correct a currency is a CRUD variation of the standard record screen with
+three link tabs; its ORE export is the one own action and waits on the server,
+and the Qt import of one file is proposed dropped for the ORE import area. Set
+up a currency pair is a CRUD variation whose create dialog has two groups and a
+derived key, drawn today by a dialog of the screen's own against RS-WRITE-31,
+which the prototype redraws as the shared one; the convention is a part of the
+pair and joins its history under RS-HIST-01. Group currencies for the desk is a
+CRUD variation with a members link panel. No step keeps state across a reply,
+so no workflow is needed. Nine gaps link to their captures; one is done since
+the journey was written. The owner's sign off of the judgement and of the two
+decisions is the gate before the prototype.

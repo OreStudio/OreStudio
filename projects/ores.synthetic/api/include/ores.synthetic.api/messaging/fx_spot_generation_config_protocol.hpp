@@ -56,6 +56,10 @@ struct fx_spot_generation_config_write {
     std::string vintage_date;
     std::optional<boost::uuids::uuid> folder_id;
     std::string asset_class_code;
+    std::string arrival_mode;
+    double branching_ratio;
+    double decay;
+    double sensitivity;
 };
 
 struct fx_spot_generation_config_change {

@@ -53,6 +53,10 @@ export interface IrCurveGenerationConfig {
     source_name: string;
     folder_id: string | null;
     asset_class_code: string;
+    arrival_mode: string;
+    branching_ratio: number;
+    decay: number;
+    sensitivity: number;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

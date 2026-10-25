@@ -60,7 +60,9 @@ ir_curve_feed::ir_curve_feed(
     std::string role,
     std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
     const ores::analytics::quant::domain::arrival_spec& arrival,
-    std::vector<ir_curve_resolved_entry> entries)
+    std::vector<ir_curve_resolved_entry> entries,
+    ores::analytics::quant::domain::market_regime* market,
+    double sensitivity)
     : nats_(nats)
     , source_name_(std::move(source_name))
     , nats_subject_(std::move(nats_subject))
@@ -68,10 +70,12 @@ ir_curve_feed::ir_curve_feed(
     , role_(std::move(role))
     , process_(std::move(process))
     , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(arrival))
-    , clock_(*arrivals_)
+    , clock_(*arrivals_, market, sensitivity)
     , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
     , entries_(std::move(entries)) {
 
+    if (!std::isfinite(sensitivity) || sensitivity <= 0.0)
+        throw std::invalid_argument("ir_curve_feed: sensitivity must be finite and strictly positive");
     if (!process_)
         throw std::invalid_argument("ir_curve_feed: process must not be null");
     if (arrival.ticks_per_hour <= 0.0)
@@ -218,7 +222,9 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
         definitions,
     const ir_curve_refdata_context& refctx,
-    const ores::marketdata::domain::market_clock* clock) {
+    const ores::marketdata::domain::market_clock* clock,
+    ores::analytics::quant::domain::market_regime* market,
+    double sensitivity) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
 
     // "vintage" resolves the initial_rate parameter from a real market_observation, overriding
@@ -267,7 +273,9 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                            cfg.role,
                                            std::move(process),
                                            arrival,
-                                           std::move(resolved));
+                                           std::move(resolved),
+                                           market,
+                                           sensitivity);
 }
 
 }

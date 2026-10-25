@@ -72,6 +72,7 @@ public:
                            std::uint32_t seed = 42);
 
     double next_gap() override;
+    void set_baseline_multiplier(double multiplier) override;
 
     /// @brief The baseline rate mu, in arrivals per second.
     [[nodiscard]] double baseline() const {

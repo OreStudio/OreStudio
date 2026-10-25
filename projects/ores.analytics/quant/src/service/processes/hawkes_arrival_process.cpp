@@ -65,6 +65,16 @@ hawkes_arrival_process::hawkes_arrival_process(double mean_rate,
     , uniform_(std::nextafter(0.0, 1.0), 1.0)
     , rng_(seed) {}
 
+void hawkes_arrival_process::set_baseline_multiplier(double multiplier) {
+    if (!std::isfinite(multiplier) || multiplier <= 0.0)
+        throw std::invalid_argument("hawkes_arrival_process: multiplier must be finite and "
+                                    "strictly positive");
+    // mu scales and alpha does not: the branching ratio is the shape of a burst,
+    // which a busy market does not change. The excess decays on its own clock, so
+    // it is left alone.
+    baseline_ = mean_rate_ * (1.0 - branching_ratio_) * multiplier;
+}
+
 double hawkes_arrival_process::next_gap() {
     // The next event is the earlier of a baseline arrival and one from the
     // fading excess (Dassios and Zhao). uniform_ is drawn on [smallest positive

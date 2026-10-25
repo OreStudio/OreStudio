@@ -92,12 +92,21 @@ separate concern for named pair-to-pair contagion.
 The per-series design lets every feed own a clock and sleep. That cannot carry
 $C(t)$: a feed computing its own rate would need every other feed's events.
 
-So the shared factor forces a scheduler. One clock per run holds the factors and
-the per-series processes and decides which series ticks next. A feed stops being
-a thread with a sleep loop and becomes a body the clock drives: =start()=
-registers it, the clock calls its body, =stop()= deregisters it. The stop
-semantics, the failure hook and the "one tick body" seam built for the
-per-series clock survive; only the caller changes.
+The two factors make different demands, and it is worth being exact about which.
+
+The exogenous state is a function of time, so it does not need a scheduler. It
+needs a market that every feed reads cheaply and one thread that moves it on.
+The read is two relaxed atomics — the state and the multiplier — so tens of
+thousands of feeds read it without a lock, a shared write or a cache-line
+handover; one owner thread advances the chain a few times a second and publishes.
+That is the design, and it holds at the scale of a whole desk.
+
+The endogenous factor is the one that forces a scheduler. An event in one series
+must raise another series' rate, so some component has to see every event before
+it can compute any series' next gap, and a feed that sleeps on its own gap can
+never see another feed's events. There a feed stops being a thread with a sleep
+loop and becomes a body the clock drives: =start()= registers it, the clock calls
+its body, =stop()= deregisters it.
 
 The alternative is to keep per-feed clocks and accept an exogenous factor only.
 That is cheaper and still gives panic windows, but it cannot give contagion,

@@ -41,9 +41,11 @@ public:
     explicit periodic_arrival_process(double mean_rate);
 
     double next_gap() override;
+    void set_baseline_multiplier(double multiplier) override;
 
 private:
     double mean_rate_;
+    double multiplier_ = 1.0;
     double gap_;
 };
 

@@ -7,44 +7,76 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/carry-a-shared-market-state
+#+pr: 3773
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The market has a calm/active state that moves every feed's rate by its sensitivity, and one clock per run schedules them all.
+The market has a calm/active state that every feed follows through its own rate, and a scenario can pin it.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
 
 - A two-state chain with a transition rate, whose long-run occupancy matches the rate.
-- One clock per run drives every feed; a feed no longer owns a clock.
+- One market per run serves every feed, read on the tick path with no lock and no
+  shared write; the single clock thread is not required by a factor that is a
+  function of time, and belongs to the endogenous task.
 - A row's rate is multiplied by the state and by the row's sensitivity.
-- A scenario can pin the active state, and a per-series check still holds in it.
+- A scenario can pin the active state, and the per-series law survives it: the
+  mean gap moves with the multiplier and the Fano factor does not.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three slices, each verifiable on its own.
+
+1. *The state.* =domain::market_regime=, a two-state continuous-time chain: a
+   calm market turns active at one rate and back at another, so the share of time
+   spent active is fixed by the ratio. It exposes =current()=, =multiplier()=,
+   =advance(elapsed_seconds)=, =pin()= and =unpin()=. It keeps no clock of its
+   own, so a caller that sleeps in slices and one that jumps to the next event use
+   the same object, and a scenario pins a state without waiting for a draw.
+2. *The rate.* Every arrival process gains a baseline multiplier, applied to its
+   mean rate: the chain scales it, the row's sensitivity scales it again. The
+   multiplier touches the baseline and not the branching ratio, because a busy
+   market raises how often events arrive, not how strongly they excite.
+3. *The clock.* The clock consults the market before each gap, so every feed
+   follows it.
+
+   Two corrections, both forced by scale.
+
+   First, a single clock thread is *not* needed for the exogenous state: a state
+   that is a function of time can be shared. Second, sharing it must not cost a
+   lock — at ten thousand feeds a mutex on the tick path is the bottleneck the
+   factor exists to avoid. So the published view is two relaxed atomics that a
+   feed reads without a lock, and one owner thread advances the chain and
+   publishes, a few times a second. The clock re-rates its process only when the
+   multiplier changes, so a steady market costs one load and one comparison per
+   tick.
+
+   The strictly single clock becomes necessary only for the endogenous factor,
+   where an event in one series must reach another, and that is the next task.
+
+Tests follow the slices: the chain's occupancy against its own ratio, a pin that
+holds however much time passes, the multiplier reaching the rate, and the clock
+passing the factor to every feed.
 
 * Measurements
 
@@ -58,7 +90,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The three affected suites | 3 of 3 pass | =ctest -R "ores.(synthetic.api\|synthetic.service\|analytics.quant).tests"= | 4ca777568c |
+| New cases | 11 across three test files | same run | HEAD |
+| Long-run active share, measured over 200,000 one-second slices | 0.83 against the ratio's 0.83 | the market regime case | 2d47eb3458 |
+| Readers that saw a multiplier other than the two published values, one owner advancing | none | =market_regime advances with wall time under one owner= | 9bcf73e3f0 |
+| Long-run mean of the factor | one, by construction, at every rate pair | =market_regime keeps its long-run mean at one= | HEAD |
+| The three affected suites | 3 of 3 pass | =ctest -R "ores.(synthetic.api\|synthetic.service\|analytics.quant).tests"= | 7586a121d2 |
 
 * Notes
 
@@ -77,7 +114,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3773][#3773]] | [analytics] Carry a market-wide arrival regime |
 
 * Review
 
@@ -86,3 +123,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The market is one per run and every feed follows it. The application creates it
+and hands it to the adapter fleet and to every handler that builds a feed, so a
+config handler, the folder verbs and the selection verbs all produce feeds that
+consult the same state.
+
+The state itself is a two-state chain whose active share follows the ratio of its
+two rates, measured at 0.83 against 0.83 over 200,000 one-second slices. A
+scenario pins either state, so a demonstration or a test does not wait for a draw.
+
+Two things this task planned and then argued out of.
+
+The single clock thread: the exogenous state needs a shared *market*, not a shared
+*thread*.
+
+The mutex: at ten thousand feeds a lock on the tick path is the bottleneck the
+factor exists to avoid. The published view is two relaxed atomics that a feed
+loads, and one owner thread advances the chain and publishes. A reader cannot see
+a torn value, which the test asserts with four readers against one owner.
+
+The single clock is required by the endogenous factor, where an event in one
+series must reach another, and it belongs to the next task.

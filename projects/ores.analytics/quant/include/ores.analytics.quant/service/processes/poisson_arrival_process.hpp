@@ -46,6 +46,7 @@ public:
     explicit poisson_arrival_process(double mean_rate, std::uint32_t seed = 42);
 
     double next_gap() override;
+    void set_baseline_multiplier(double multiplier) override;
 
 private:
     double mean_rate_;

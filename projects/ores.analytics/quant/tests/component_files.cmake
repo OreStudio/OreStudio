@@ -40,6 +40,7 @@ set(files
     "hull_white_process_tests.cpp"
     "libor_market_model_process_tests.cpp"
     "main.cpp"
+    "market_regime_tests.cpp"
     "ornstein_uhlenbeck_process_tests.cpp"
     "process_factory_tests.cpp"
     "process_parameter_validation_tests.cpp"

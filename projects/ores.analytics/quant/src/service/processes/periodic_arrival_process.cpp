@@ -45,4 +45,12 @@ double periodic_arrival_process::next_gap() {
     return gap_;
 }
 
+void periodic_arrival_process::set_baseline_multiplier(double multiplier) {
+    if (!std::isfinite(multiplier) || multiplier <= 0.0)
+        throw std::invalid_argument("periodic_arrival_process: multiplier must be finite and "
+                                    "strictly positive");
+    multiplier_ = multiplier;
+    gap_ = 1.0 / (mean_rate_ * multiplier_);
+}
+
 }

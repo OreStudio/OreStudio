@@ -125,19 +125,30 @@ regression rather than a gap.
   the session, which would remove the refusal problem entirely.
 - The reason-code clause is still deferred, and nothing states =ux=.
 
-** The permission check fails open
+** The token check is not a database check
 
-=has_permission= returns true when =ctx.roles()= is empty, so a context that
-carries no roles passes every check in the platform. That is presumably how
-system and service contexts are meant to behave, and it is why the existing
-suite passes unchanged. It also means the new origin permission is enforced
-only for a caller whose context carries roles — the forwarded party token
-does, so the generator and the ordinary user are both judged, but any context
-that arrives without roles is unrestricted.
+=ores::service::messaging::has_permission= reads the token's =roles= claim and
+allows when the context carries no role list at all. That allowance is for the
+service's own context, not a caller's, and it is documented in
+=doc/knowledge/security/authorised-reads.org=: "No permission list -- allows:
+the context is the service's own, not a caller's."
 
-Two cases are still owed for criterion 5: a caller without
-=trading::trades:write_service_origin= stating =synthetic= is refused, and a
-caller holding it succeeds.
+A caller cannot reach it. Every JWT path calls =with_roles(claims->roles)=, so
+an authenticated request always carries a list; an empty list denies, because
+=grants= returns false for an empty span. A request with no =Authorization=
+header is refused as =unauthorized= whenever a verifier exists. Every running
+service has one: the verifier is created by value from the JWKS key fetched
+from IAM, and a service that cannot fetch the key shuts down. An unconfigured
+authenticator returns =invalid_token= rather than passing.
+
+The real caveats, both documented, are different from a bypass. The token's
+list is a snapshot taken at sign-in, so a role revoked mid-session still
+passes until the token is reissued. That is why the access reads use the
+database-backed =authorization_service::has_permission= instead, which denies
+on an empty list and has no pass-through.
+
+The origin check uses the token form, so it inherits the snapshot caveat and
+none of the pass-through.
 
 * Test Scenarios
 

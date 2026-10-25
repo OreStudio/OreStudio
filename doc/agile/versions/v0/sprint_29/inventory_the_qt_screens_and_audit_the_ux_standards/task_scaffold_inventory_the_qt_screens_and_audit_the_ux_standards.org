@@ -8,7 +8,7 @@
 #+filetags: :inventory_the_qt_screens_and_audit_the_ux_standards:sprint_29:v0:
 #+owner: marco
 #+branch: feature/ux-language-for-entity-forms
-#+pr:
+#+pr: 3742
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3742][#3742]] | [agile] Scaffold the epic One UX language for every screen |
 
 * Review
 

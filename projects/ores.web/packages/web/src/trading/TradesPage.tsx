@@ -24,6 +24,9 @@ import { trades, TRADE_SORTS, type TradeRow } from '../api/trades.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { RecordList, type ListSource } from '../refdata/RecordList.js';
 import { show } from '../refdata/records.js';
+import { useAreaParts } from '../shell/AreaTrail.js';
+import { PATHS } from '../shell/paths.js';
+import { Tag } from '../ui/Primitives.js';
 
 /** The trade types the filter offers. The read model holds the catalogue's code. */
 const TYPES = [
@@ -94,13 +97,10 @@ export function TradesPage(): ReactNode {
             source={source}
             title={t('trading.trades.title')}
             lead={t('trading.trades.lead')}
-            crumbs={[
-                { label: t('shell.menu.home'), to: '/' },
-                { label: t('trading.trades.title') },
-            ]}
+            crumbs={useAreaParts('trading', t('trading.trades.title'))}
             keyOf={(row) => row.id}
             // A structure has no page of its own yet, so only a trade opens.
-            pathOf={(row) => (row.row_kind === 'trade' ? `/trades/${row.id}` : undefined)}
+            pathOf={(row) => (row.row_kind === 'trade' ? `${PATHS.trades}/${row.id}` : undefined)}
             columns={[
                 {
                     id: 'identifier',
@@ -128,10 +128,17 @@ export function TradesPage(): ReactNode {
                     id: 'status',
                     header: t('trading.fields.state'),
                     cell: (row) =>
-                        row.status === null
-                            ? t('trading.trades.structureHolds', { count: row.trade_count })
-                            : stateLabel(t, row.status),
+                        row.status === null ? (
+                            t('trading.trades.structureHolds', { count: row.trade_count })
+                        ) : (
+                            <Tag tone={stateTone(row.status)}>{stateLabel(t, row.status)}</Tag>
+                        ),
                     sort: 'status',
+                },
+                {
+                    id: 'authorisation',
+                    header: t('trading.fields.authorisation'),
+                    cell: (row) => <Tag tone="muted">{row.authorisation_status}</Tag>,
                 },
                 {
                     id: 'trade_date',
@@ -142,19 +149,36 @@ export function TradesPage(): ReactNode {
                 {
                     id: 'version',
                     header: t('trading.fields.version'),
+                    cell: (row) => (row.version === null ? '' : String(row.version)),
+                    mono: true,
+                    numeric: true,
+                },
+                {
+                    id: 'external_version',
+                    header: t('trading.fields.externalVersion'),
                     cell: (row) =>
-                        row.version === null
-                            ? ''
-                            : t('trading.trades.versionPair', {
-                                  version: row.version,
-                                  external: row.external_version ?? 0,
-                              }),
+                        row.external_version === null ? '' : String(row.external_version),
                     mono: true,
                     numeric: true,
                 },
             ]}
         />
     );
+}
+
+/** The tone a state is drawn in: live runs, a draft waits, and a dead trade is muted. */
+function stateTone(state: string): 'up' | 'warn' | 'muted' | 'neutral' {
+    switch (state) {
+        case 'live':
+            return 'up';
+        case 'draft':
+            return 'warn';
+        case 'expired':
+        case 'cancelled':
+            return 'muted';
+        default:
+            return 'neutral';
+    }
 }
 
 /** The words for a state, and the code itself for one this screen does not know. */

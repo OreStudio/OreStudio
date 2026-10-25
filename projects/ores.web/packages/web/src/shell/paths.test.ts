@@ -32,7 +32,7 @@ describe('the addresses of the screens', () => {
     it('sit under their area', () => {
         for (const [name, path] of Object.entries(PATHS)) {
             expect(path, name).toMatch(
-                /^\/(refdata|organisation|operations|market-data|reporting|trades)(\/|$)/,
+                /^\/(refdata|organisation|operations|market-data|reporting|trading)(\/|$)/,
             );
         }
         expect(PATHS.parties).toBe('/refdata/parties');
@@ -40,7 +40,8 @@ describe('the addresses of the screens', () => {
         expect(PATHS.signIns).toBe('/operations/sign-ins');
         expect(PATHS.reporting).toBe('/reporting');
         expect(PATHS.reports).toBe('/reporting/reports');
-        expect(PATHS.trades).toBe('/trades');
+        expect(PATHS.trading).toBe('/trading');
+        expect(PATHS.trades).toBe('/trading/trades');
     });
 
     it('are named by one helper when they take a key', () => {

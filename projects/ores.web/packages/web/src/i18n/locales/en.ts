@@ -75,7 +75,7 @@ export const en: SourceCatalogue = {
         },
         account: 'Your account',
         menu: {
-            trades: 'Trades',
+            trading: 'Trading',
             marketdata: 'Market data',
             home: 'Home',
             accounts: 'Accounts',
@@ -516,6 +516,7 @@ export const en: SourceCatalogue = {
             country: 'Country',
             account: 'Account',
             traffic: 'Sent / received',
+            authorisation: 'Authorisation',
             state: 'State',
             day: 'Day',
         },
@@ -3543,6 +3544,10 @@ export const en: SourceCatalogue = {
     },
 
     trading: {
+        area: {
+            title: 'Trading',
+            lead: 'The trades a desk reads and writes, and the books they sit in.',
+        },
         trades: {
             areaLead: 'The trades and structures you may see, and the books they sit in.',
             title: 'Trades',
@@ -3563,7 +3568,6 @@ export const en: SourceCatalogue = {
             tabs: {
                 label: 'Trade sections',
                 details: 'Details',
-                instrument: 'Instrument',
                 identifiers: 'Identifiers and roles',
                 links: 'Links',
                 history: 'History',
@@ -3572,8 +3576,6 @@ export const en: SourceCatalogue = {
             authorisation: 'Authorisation',
             bookingDate: 'Booking date',
             execution: 'Executed at',
-            instrumentPending:
-                'The instrument read is not built yet, so the terms of this {type} cannot be shown.',
             identifiers: 'Identifiers',
             idType: 'Scheme',
             idValue: 'Value',
@@ -3591,6 +3593,7 @@ export const en: SourceCatalogue = {
             noHistory: 'This trade has no recorded version yet.',
         },
         fields: {
+            externalVersion: 'External version',
             identifier: 'Id',
             instrumentType: 'Type',
             counterparty: 'Counterparty',

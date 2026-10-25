@@ -61,11 +61,10 @@ export const MENU: readonly MenuItem[] = [
         ],
     },
     {
-        // The summary read alone, because it is the page: the identifiers, books and
-        // counterparties are its enrichment. No seeded role holds it yet, so the entry
-        // stays hidden rather than opening a screen the route refuses.
-        nameKey: 'shell.menu.trades',
-        to: PATHS.trades,
+        // The read the area's one screen needs. The area page draws its cards for
+        // whoever holds it, and the card itself needs the same read.
+        nameKey: 'shell.menu.trading',
+        to: PATHS.trading,
         permission: 'trading::trade_summaries:read',
     },
     { nameKey: 'shell.menu.requests', to: '/requests' },

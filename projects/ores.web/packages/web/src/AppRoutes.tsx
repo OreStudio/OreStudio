@@ -93,6 +93,7 @@ import { ClassificationsPage } from './refdata/ClassificationsPage.js';
 import { RefdataPage } from './refdata/RefdataPage.js';
 import { CurrenciesPage, CurrencyPage } from './refdata/currencies.js';
 import { TradePage } from './trading/TradePage.js';
+import { TradingPage } from './trading/TradingPage.js';
 import { TradesPage } from './trading/TradesPage.js';
 import { CalendarPage, CalendarsPage } from './refdata/calendars.js';
 import { TenorResolutionPage } from './refdata/TenorResolutionPage.js';
@@ -1012,7 +1013,19 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path="/trades"
+                path={PATHS.trading}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <TradingPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.trades}
                 element={signedIn(
                     gate.version,
                     session,
@@ -1024,7 +1037,7 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path="/trades/:id"
+                path={`${PATHS.trades}/:id`}
                 element={signedIn(
                     gate.version,
                     session,

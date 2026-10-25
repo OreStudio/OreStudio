@@ -74,7 +74,7 @@ const pt: SourceCatalogue = {
         },
         account: 'A sua conta',
         menu: {
-            trades: 'Transações',
+            trading: 'Trading',
             marketdata: 'Dados de mercado',
             home: 'Início',
             accounts: 'Contas',
@@ -512,6 +512,7 @@ const pt: SourceCatalogue = {
             country: 'País',
             account: 'Conta',
             traffic: 'Enviado / recebido',
+            authorisation: 'Autorização',
             state: 'Estado',
             day: 'Dia',
         },
@@ -3569,6 +3570,10 @@ const pt: SourceCatalogue = {
     },
 
     trading: {
+        area: {
+            title: 'Trading',
+            lead: 'As transações que uma mesa lê e escreve, e os livros onde se encontram.',
+        },
         trades: {
             areaLead: 'As transações e estruturas que pode ver, e os livros onde se encontram.',
             title: 'Transações',
@@ -3589,7 +3594,6 @@ const pt: SourceCatalogue = {
             tabs: {
                 label: 'Secções da transação',
                 details: 'Detalhes',
-                instrument: 'Instrumento',
                 identifiers: 'Identificadores e papéis',
                 links: 'Ligações',
                 history: 'Histórico',
@@ -3598,8 +3602,6 @@ const pt: SourceCatalogue = {
             authorisation: 'Autorização',
             bookingDate: 'Data de registo',
             execution: 'Executada em',
-            instrumentPending:
-                'A leitura do instrumento ainda não está construída, pelo que os termos deste {type} não podem ser mostrados.',
             identifiers: 'Identificadores',
             idType: 'Esquema',
             idValue: 'Valor',
@@ -3617,6 +3619,7 @@ const pt: SourceCatalogue = {
             noHistory: 'Esta transação ainda não tem versão registada.',
         },
         fields: {
+            externalVersion: 'Versão externa',
             identifier: 'Id',
             instrumentType: 'Tipo',
             counterparty: 'Contraparte',

@@ -183,3 +183,11 @@ Applied to the running database, the count is:
 * What is still owed
 
 The seed is proved: the rows are in the database and =Member= has none. Not yet proved is the runtime refusal and acceptance: sign in as a =Trading= user, call the list and see rows; sign in as a =Member= and see a refusal. That is the last step before this task is done.
+
+* Where the runtime proof stands
+
+The build is green and the database is populated with the grants. The services start cleanly (24 started, none failed).
+
+The seeded accounts can exercise the split, which is the half I doubted: the ACME seeder gives 30 accounts the =Trading= role, 16 =Operations= and 12 =Viewer=, read from =projects/ores.seeder/datasets/acme_corporation/accounts.json= by its =role= field. So the positive case is a =Trading= account and the negative case is a =Member=-less =Viewer=.
+
+What remains is the call itself: sign in through =ores.shell= as a =Trading= account, list the trade summaries and see rows, then sign in as a =Viewer= and see the write paths refused. The shell's login idiom is the one thing not yet established, and it is the first step of the next session.

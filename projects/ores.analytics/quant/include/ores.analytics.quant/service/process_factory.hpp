@@ -20,6 +20,7 @@
 #ifndef ORES_ANALYTICS_QUANT_SERVICE_PROCESS_FACTORY_HPP
 #define ORES_ANALYTICS_QUANT_SERVICE_PROCESS_FACTORY_HPP
 
+#include "ores.analytics.quant/domain/arrival_spec.hpp"
 #include "ores.analytics.quant/domain/i_arrival_process.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
@@ -126,6 +127,11 @@ public:
                          double ticks_per_hour,
                          double branching_ratio = 0.0,
                          double decay = 1.0,
+                         std::uint32_t seed = 42);
+
+    /// @brief Build the arrival process a spec names, with its four numbers.
+    static std::unique_ptr<ores::analytics::quant::domain::i_arrival_process>
+    make_arrival_process(const ores::analytics::quant::domain::arrival_spec& spec,
                          std::uint32_t seed = 42);
 };
 

@@ -66,7 +66,7 @@ This page documents a test scenario verifying [[id:86DEC5CB-E1C3-4E34-A223-027D4
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** Open a configuration and edit a product
 
@@ -80,7 +80,7 @@ This page documents a test scenario verifying [[id:86DEC5CB-E1C3-4E34-A223-027D4
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** A sequence is a list of words
 
@@ -93,7 +93,7 @@ This page documents a test scenario verifying [[id:86DEC5CB-E1C3-4E34-A223-027D4
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** A curve set is a list
 
@@ -105,7 +105,7 @@ This page documents a test scenario verifying [[id:86DEC5CB-E1C3-4E34-A223-027D4
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** A whole number is a whole number
 
@@ -118,7 +118,7 @@ This page documents a test scenario verifying [[id:86DEC5CB-E1C3-4E34-A223-027D4
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** A bounded number states its bounds
 
@@ -130,7 +130,7 @@ This page documents a test scenario verifying [[id:86DEC5CB-E1C3-4E34-A223-027D4
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** A flag is true and false
 
@@ -142,7 +142,7 @@ This page documents a test scenario verifying [[id:86DEC5CB-E1C3-4E34-A223-027D4
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** A required parameter says so
 
@@ -154,7 +154,7 @@ This page documents a test scenario verifying [[id:86DEC5CB-E1C3-4E34-A223-027D4
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** The engine run settings draw the same controls
 
@@ -167,7 +167,7 @@ This page documents a test scenario verifying [[id:86DEC5CB-E1C3-4E34-A223-027D4
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 ** Both screens save
 
@@ -179,7 +179,7 @@ This page documents a test scenario verifying [[id:86DEC5CB-E1C3-4E34-A223-027D4
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | PENDING |
 
 * Results=.
 

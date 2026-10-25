@@ -61,6 +61,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:6DB2B277-D4CC-4FE2-830B-A83D1033B6AC][Retire the feed binding]] | BACKLOG | | | Delete the feed binding and read the consumers from the routes, so one record says which party consumes which source. |
 | [[id:C452234B-3764-45C7-A62D-9DCDDFF151BC][Reconcile the binding stories and the market data docs]] | DONE | | 2026-10-24 | Make the agile record and the market data docs say that the route is the consumer record and the binding is gone. |
 | [[id:4512DD80-5A5D-42DC-996B-9C62DC88E16B][Repair the baseline drift the gate reports]] | BACKLOG | | | Commodity, workflow and reporting merges left generated artefacts, seeded permissions and pgTAP expectations stale. |
+| [[id:2D2E09E9-42CE-4467-A9B9-B7FA73975285][Audit the market data documents for the service]] | STARTED | 2026-10-25 | | The standards, journeys and prototype notes still describe the old feeds world: bindings, auto-start, feeds that should run, and real market data yet to arrive. |
 
 * Decisions
 

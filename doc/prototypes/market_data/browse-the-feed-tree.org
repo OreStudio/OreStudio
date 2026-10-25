@@ -2,7 +2,7 @@
 :ID: 17E6CB2C-E1C9-4911-81AC-591D88AC5B89
 :END:
 #+title: Browse the feed tree prototype
-#+description: Synthetic as one screen with a Dashboard tab and a Feed tree tab: providers and what each simulates, the feeds that should run and do not, and a paged table of feeds started and stopped by selection, on a throwaway page of mock data
+#+description: Synthetic as one screen with a Dashboard tab and a Feed tree tab: providers and what each simulates, the demanded feeds that are not running, and a paged table of feeds whose picked rows are started or stopped as an operator test, on a throwaway page of mock data
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:market_data:synthetic:
@@ -27,7 +27,7 @@ The flow is short:
 
 - *Market data* has one /Synthetic/ card. It opens a screen, not a folder.
 - *Synthetic* has two tabs. Every feed on it is synthetic, so no label says
-  so. Real market data will get its own card under Market data.
+  so. The Catalogue holds the providers, sources and vendor instruments.
 - *Dashboard* is the first tab. It lists the providers, says what each one
   simulates, and shows what runs. A banner counts the feeds that should run and
   do not, with one button to start them.
@@ -77,9 +77,9 @@ question is what one screen must hold so that the two lists can go.
   set. The dialog counts what the request touches, and the report says what
   started, what already ran and what was skipped.
 - *State filter.* Started, Stopped or All replaces the Running only box.
-- *Feeds that should run.* A restart of the synthetic service stops every
-  feed, and nothing starts them again. The dashboard counts the enabled
-  auto-start feeds that are stopped and starts them in one step. The
+- *Feeds that are demanded and stopped.* Demand starts a generator. A restart
+  keeps the demand, so a count above zero means a generator failed to start.
+  The banner opens the tree on those rows; it has no start button. The
   /restart/ state shows it.
 
 ** The screens and states

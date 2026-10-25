@@ -714,7 +714,14 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
         detail: text(row['detail']),
         source: text(row['source']),
     });
+    const valueSets: Record<string, ValueFields> = {};
+    for (const row of linkRows) {
+        const scope = text(row['scope']);
+        const name = text(row['name']);
+        valueSets[`${scope}|${name}`] = valueSetFields(scope, name);
+    }
     return {
+        valueSets,
         types: types.map((row) => {
             const doc = docOf('Types', '', text(row['code']));
             return {

@@ -275,6 +275,13 @@ export function ChoiceSelect({
  * bounded by the range, and a field for the rest. The meaning of the setting
  * stands under the field.
  */
+export /** The scope a link row uses for a setting's scope in the contract. */
+function linkScope(scope: string): string {
+    if (scope === 'model') return 'ModelParameters';
+    if (scope === 'engine') return 'EngineParameters';
+    return scope;
+}
+
 export function SettingValue({
     vocabulary,
     typeCode,
@@ -296,10 +303,9 @@ export function SettingValue({
 }): ReactNode {
     const { t } = useTranslation();
     /*
-     * A setting the guide never lists has no pair row of its own: the contract
-     * holds it once, with no type, model or engine. The pair's own row wins,
-     * then the documented one by name and scope, so its value set still supplies
-     * the control.
+     * The value model is the contract's: the link table names one set for every
+     * (scope, name), and the reply serves them all in one map. The setting row
+     * supplies the words, never the values.
      */
     const setting =
         settingsFor(vocabulary, typeCode, model, engine).find(
@@ -309,17 +315,12 @@ export function SettingValue({
             (candidate) => candidate.name === name && candidate.scope === scope,
         ) ??
         vocabulary.settings.find((candidate) => candidate.name === name);
+    const allowed = vocabulary.valueSets[`${linkScope(scope)}|${name}`];
     const kind = setting?.kind ?? 'text';
-    const choices = setting?.choices ?? [];
-    const sourceKind = setting?.sourceKind ?? '';
+    const choices = allowed?.choices ?? [];
+    const sourceKind = allowed?.sourceKind ?? '';
     const ranged = sourceKind === 'range';
     const numeric = ranged || sourceKind === 'integer' || sourceKind === 'number';
-    const options =
-        kind === 'tenor'
-            ? vocabulary.tenors.map((tenor) => tenor.code)
-            : kind === 'reference'
-              ? vocabulary.templates.map((template) => template.code)
-              : (setting?.options ?? []);
     const template = kind === 'reference' ? templateInfo(vocabulary, value) : undefined;
     const meaning =
         template === undefined
@@ -330,23 +331,15 @@ export function SettingValue({
         <Field label={label} {...(meaning !== '' ? { hint: meaning } : {})}>
             {choices.length > 0 ? (
                 <ChoiceSelect choices={choices} value={value} onChange={onChange} />
-            ) : options.length > 0 ? (
-                <Select value={value} onChange={(event) => onChange(event.target.value)}>
-                    {[...new Set([...options, value])].map((entry) => (
-                        <option key={entry} value={entry}>
-                            {entry}
-                        </option>
-                    ))}
-                </Select>
             ) : (
                 <Input
                     value={value}
                     {...(numeric ? { type: 'number' as const } : {})}
-                    {...(ranged && setting?.minimum !== null && setting?.minimum !== undefined
-                        ? { min: setting.minimum }
+                    {...(ranged && allowed?.minimum !== null && allowed?.minimum !== undefined
+                        ? { min: allowed.minimum }
                         : {})}
-                    {...(ranged && setting?.maximum !== null && setting?.maximum !== undefined
-                        ? { max: setting.maximum }
+                    {...(ranged && allowed?.maximum !== null && allowed?.maximum !== undefined
+                        ? { max: allowed.maximum }
                         : {})}
                     {...(numeric ? { step: sourceKind === 'integer' ? 1 : ('any' as const) } : {})}
                     {...(numeric

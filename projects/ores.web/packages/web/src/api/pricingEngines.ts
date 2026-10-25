@@ -106,6 +106,7 @@ const valueSetFields = {
 };
 
 const vocabularySchema = z.object({
+    valueSets: z.record(z.string(), z.object(valueSetFields)).default({}),
     types: z.array(
         z.object({
             code: z.string(),

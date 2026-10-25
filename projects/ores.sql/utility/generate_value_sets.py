@@ -35,6 +35,8 @@ GUIDE = os.path.join(ROOT, "projects", "ores.seeder", "datasets", "ore_pricing_e
                      "curation", "value-sets.json")
 CODE = os.path.join(ROOT, "projects", "ores.seeder", "datasets", "ore_pricing_engines",
                     "curation", "value-sets-code.json")
+REVIEW = os.path.join(ROOT, "projects", "ores.seeder", "datasets", "ore_pricing_engines",
+                      "curation", "value-sets-review.json")
 OUT = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
                    "reporting_ore_parameter_value_sets_populate.sql")
 
@@ -205,6 +207,10 @@ def load():
         code = json.load(handle)
     data["sets"].update(code["sets"])
     data["links"].update(code["links"])
+    with open(REVIEW, encoding="utf-8") as handle:
+        review = json.load(handle)
+    data["links"].update(review["links"])
+    data["sets"].update(review.get("sets", {}))
     named = set(data["links"].values())
     for name in [code_ for code_ in data["sets"] if code_ not in named]:
         del data["sets"][name]

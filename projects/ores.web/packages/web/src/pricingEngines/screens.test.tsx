@@ -125,6 +125,68 @@ const DOCUMENT: PricingDocument = {
 };
 
 const VOCABULARY: PricingVocabulary = {
+    valueSets: {
+        'ModelParameters|Calibration': {
+            valueSet: 'calibration',
+            sourceKind: 'enumerated',
+            choices: [
+                { value: 'Bootstrap', label: 'Bootstrap calibration' },
+                { value: 'BestFit', label: 'Best fit' },
+            ],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+        },
+        'EngineParameters|TimeSteps': {
+            valueSet: 'timesteps',
+            sourceKind: 'range',
+            choices: [],
+            minimum: 1,
+            maximum: 500,
+            pattern: '',
+        },
+        'EngineParameters|Training.Samples': {
+            valueSet: 'training_samples',
+            sourceKind: 'integer',
+            choices: [],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+        },
+        'EngineParameters|Training.Sequence': {
+            valueSet: 'training_sequence',
+            sourceKind: 'enumerated',
+            choices: [
+                { value: 'MersenneTwister', label: 'MersenneTwister' },
+                { value: 'SobolBrownianBridge', label: 'SobolBrownianBridge' },
+            ],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+        },
+        'EngineParameters|SensitivityTemplate': {
+            valueSet: 'sensitivity_template',
+            sourceKind: 'catalogue',
+            choices: [
+                { value: 'IR_FD', label: 'IR_FD' },
+                { value: 'IR_Analytical', label: 'IR_Analytical' },
+            ],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+        },
+        'EngineParameters|TimestepPeriod': {
+            valueSet: 'tenor',
+            sourceKind: 'catalogue',
+            choices: [
+                { value: '3M', label: '3M' },
+                { value: '6M', label: '6M' },
+            ],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+        },
+    },
     globals: [],
     types: [
         {

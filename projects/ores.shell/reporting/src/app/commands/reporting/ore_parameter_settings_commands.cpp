@@ -120,6 +120,7 @@ std::string scope_of(const std::string& raw) {
 struct row {
     std::string scope;
     std::string name;
+    std::string domain;
     std::string kind;
     std::string set_code;
     std::string catalogue;
@@ -128,6 +129,22 @@ struct row {
     std::optional<double> maximum;
     std::vector<const domain::ore_parameter_value_set_value*> values;
 };
+
+/** Whether a set's kind can hold a value of the domain the contract states. */
+bool compatible(const std::string& kind, const std::string& domain) {
+    if (kind.empty() || domain.empty())
+        return true;
+    if (domain == "boolean")
+        return kind == "boolean";
+    if (domain == "integer")
+        return kind == "integer";
+    if (domain == "double")
+        return kind == "number" || kind == "range";
+    if (domain == "string")
+        return kind == "text" || kind == "enumerated" || kind == "catalogue" ||
+               kind == "regex" || kind == "range";
+    return true;
+}
 
 std::string choices_of(const row& entry) {
     if (entry.kind == "boolean")
@@ -162,14 +179,16 @@ std::vector<row> rows_of(const model& data) {
     for (const auto& link : data.links)
         links.emplace(link.scope + "|" + link.name, &link);
 
-    std::set<std::pair<std::string, std::string>> contract;
+    std::map<std::pair<std::string, std::string>, std::string> contract;
     for (const auto& parameter : data.parameters)
         if (is_parameter_scope(parameter.scope))
-            contract.emplace(parameter.scope, parameter.name);
+            contract.emplace(std::make_pair(parameter.scope, parameter.name),
+                             parameter.ore_parameter_value_domain_code);
 
     std::vector<row> rows;
-    for (const auto& [scope, name] : contract) {
-        row entry{.scope = scope, .name = name};
+    for (const auto& [key, domain] : contract) {
+        const auto& [scope, name] = key;
+        row entry{.scope = scope, .name = name, .domain = domain};
         const auto found = links.find(scope + "|" + name);
         if (found != links.end()) {
             entry.set_code = found->second->value_set_code;
@@ -309,6 +328,7 @@ void ore_parameter_settings_commands::register_commands(cli::Menu& root_menu, na
             auto rows = rows_of(*data);
             std::size_t without_set = 0;
             std::size_t empty_enum = 0;
+            std::size_t mismatched = 0;
             for (const auto& entry : rows) {
                 if (entry.set_code.empty()) {
                     ++without_set;
@@ -317,6 +337,10 @@ void ore_parameter_settings_commands::register_commands(cli::Menu& root_menu, na
                     ++empty_enum;
                     out << "empty enum   " << entry.scope << " " << entry.name << " ("
                         << entry.set_code << ")" << '\n';
+                } else if (!compatible(entry.kind, entry.domain)) {
+                    ++mismatched;
+                    out << "kind/domain  " << entry.scope << " " << entry.name << " ("
+                        << entry.kind << " set, " << entry.domain << " domain)" << '\n';
                 }
             }
             std::set<std::string> contract;
@@ -334,8 +358,9 @@ void ore_parameter_settings_commands::register_commands(cli::Menu& root_menu, na
                 << "with a set   " << rows.size() - without_set << '\n'
                 << "without set  " << without_set << '\n'
                 << "links outside " << outside << '\n'
-                << "empty enums  " << empty_enum << '\n';
-            if (without_set == 0 && outside == 0 && empty_enum == 0)
+                << "empty enums  " << empty_enum << '\n'
+                << "kind/domain  " << mismatched << '\n';
+            if (without_set == 0 && outside == 0 && empty_enum == 0 && mismatched == 0)
                 out << "OK" << '\n';
             else
                 out << "FAIL" << '\n';

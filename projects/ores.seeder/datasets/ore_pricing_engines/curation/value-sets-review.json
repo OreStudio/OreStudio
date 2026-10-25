@@ -1,0 +1,30 @@
+{
+  "reason": "The contract states these parameters' storage types, and the code's call form alone typed them otherwise. A person read the contract and the call site and settled each one here. The contract is the authority for the domain; the set states a kind compatible with it.",
+  "source": "ore_code",
+  "source_ref": "projects/ores.sql/populate/reporting/reporting_ore_parameters_artefact_populate.sql",
+  "curator": "marco",
+  "date": "2026-10-25",
+  "links": {
+    "GlobalParameters|AllowModelFallbacks": "flag",
+    "GlobalParameters|Calibrate": "flag",
+    "GlobalParameters|ContinueOnCalibrationError": "flag",
+    "GlobalParameters|GenerateAdditionalResults": "flag",
+    "GlobalParameters|BondFutureAmericanAsEuropean": "text",
+    "GlobalParameters|ImplyAbsMaturityForRegex": "text",
+    "GlobalParameters|StrikeSpread": "number"
+  },
+  "sets": {
+    "text": {
+      "name": "Text",
+      "description": "A free text value the code reads as it stands.",
+      "source_kind": "text",
+      "is_ordered": false
+    },
+    "number": {
+      "name": "Number",
+      "description": "A numeric value the code parses as a real.",
+      "source_kind": "number",
+      "is_ordered": false
+    }
+  }
+}

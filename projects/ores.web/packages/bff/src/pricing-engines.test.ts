@@ -575,6 +575,15 @@ describe('pricing engine routes', () => {
             { value: 'BestFit', label: 'Best fit' },
             { value: 'None', label: 'No calibration' },
         ]);
+        expect(response.json().valueSets['ModelParameters|Calibration']).toMatchObject({
+            valueSet: 'calibration',
+            sourceKind: 'enumerated',
+            choices: [
+                { value: 'Bootstrap', label: 'Bootstrap' },
+                { value: 'BestFit', label: 'Best fit' },
+                { value: 'None', label: 'No calibration' },
+            ],
+        });
         const documented = response
             .json()
             .settings.find((setting: { name: string }) => setting.name === 'SensitivityTemplate');

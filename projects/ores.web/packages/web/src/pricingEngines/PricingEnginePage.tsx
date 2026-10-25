@@ -343,37 +343,30 @@ function DetailsTab({ document }: { readonly document: PricingDocument }): React
  * selectable, so editing another parameter never drops it.
  */
 function GlobalValueField({
+    vocabulary,
     parameter,
     doc,
     value,
     onChange,
 }: {
+    readonly vocabulary: PricingVocabulary | undefined;
     readonly parameter: PricingParameter;
     readonly doc: PricingVocabulary['globals'][number] | undefined;
     readonly value: string;
     readonly onChange: (value: string) => void;
 }): ReactNode {
     const label = doc?.label ?? parameter.name;
-    const choices = doc?.choices ?? [];
+    const allowed = vocabulary?.valueSets[`GlobalParameters|${parameter.name}`];
+    const choices = allowed?.choices ?? [];
     if (choices.length > 0) {
         return <ChoiceSelect choices={choices} value={value} label={label} onChange={onChange} />;
     }
-    if (doc?.domain === 'boolean') {
-        return (
-            <Select
-                aria-label={label}
-                value={value}
-                onChange={(event) => onChange(event.target.value)}
-            >
-                <option value="true">true</option>
-                <option value="false">false</option>
-            </Select>
-        );
-    }
+    const numeric = allowed?.sourceKind === 'number' || allowed?.sourceKind === 'integer';
     return (
         <Input
             aria-label={label}
-            inputMode={doc?.domain === 'double' || doc?.domain === 'integer' ? 'numeric' : 'text'}
+            {...(numeric ? { type: 'number' as const } : {})}
+            inputMode={numeric ? 'numeric' : 'text'}
             value={value}
             onChange={(event) => onChange(event.target.value)}
         />
@@ -441,6 +434,7 @@ function GlobalParametersTab({
                                         </span>
                                         <div className="text-sm">
                                             <GlobalValueField
+                                                vocabulary={vocabulary}
                                                 parameter={parameter}
                                                 doc={docOf(parameter.name)}
                                                 value={values[parameter.id] ?? parameter.value}

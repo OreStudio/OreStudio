@@ -203,3 +203,13 @@ Everything but the command name is now known, so the proof is one script away.
 - The one missing piece is the name of the trading list command. =trading_commands.cpp= registers it through a helper rather than a literal =Insert(...)=, so a =grep= for the menu entry did not find it; the next session should read that file's registration function, or run the shell with =help= to list the trading menu.
 
 The script is two lines: the =login=, then the trading summary list. The proof is a list that answers with rows as =joshua.brown= and refuses as =kathryn.haynes=.
+
+* The proof is blocked on provisioning, not on permissions
+
+The calls to make it are now known, and the run fails one step before the permission check:
+
+- =compass shell -l <file> -u <user> -p <password>= resolves the NATS defaults from =.env= and runs a scripted session, which is the right entry point.
+- The run reports *System is in BOOTSTRAP MODE*, the auto-login fails, and =trade_summaries list= answers "You must be logged in". The database was recreated and populated with reference data, but no tenant, party or account was provisioned, so the Acme accounts the seeder describes do not exist in it yet.
+- The shell's own =-l= is ambiguous with =--log-level= and must be written =--load=; that only matters outside =compass shell=, which passes it correctly.
+
+So the next step is to provision a tenant and its party before the proof, not to change any permission. The proof itself is then two scripted runs: =joshua.brown= reading the summaries, and a write refused for =kathryn.haynes=.

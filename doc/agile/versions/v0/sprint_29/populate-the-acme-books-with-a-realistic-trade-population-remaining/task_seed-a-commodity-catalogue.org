@@ -37,7 +37,11 @@ A commodity trade names its commodity in free text, and nothing holds the set of
 
 - A refdata entity holds one commodity: the code as the engine spells it, a human name, the unit it is quoted in and the currency it is quoted in.
 - The catalogue arrives through the DQ pipeline, as countries, currencies and calendar types do: an artefact table, a publish function and a dataset, with the rows staged rather than inserted.
-- The publish is idempotent: a second publish changes no row, inserts nothing and reports it.
+- The publish leaves no duplicate current row, and it reports what it did.
+  In =upsert= mode a second publish replaces each row and reports
+  =updated=; in =insert_only= mode it reports =skipped= and changes
+  nothing. The task states which mode a tenant's bundle uses rather than
+  claiming one ''idempotent'' behaviour covers both.
 - The catalogue carries the index names ORE's own corpus uses, among them NYMEX:CL, NYMEX:NG, XLME:AH and PM:XAUUSD.
 - Every seeded commodity states a unit and a quotation currency that match how that commodity is traded: barrels for WTI, MMBtu for gas, tonnes for LME aluminium, ounces for gold.
 - A commodity code the catalogue does not hold is refused by name, rather than accepted as free text.
@@ -113,6 +117,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Commodity artefact rows after a rebuild | 6 | =select count(*) from ores_dq_commodities_artefact_tbl= | e2b2b9c0de |
+| First publish, =upsert= | inserted 6, and the catalogue reads back with each commodity's unit and quotation currency | =select * from ores_refdata_publish_commodities_from_dq_fn(...)= | e2b2b9c0de |
+| Second publish, =upsert= | updated 6: every row is replaced and re-versioned | same | e2b2b9c0de |
+| Third publish, =insert_only= | skipped 6: nothing written | same, with mode =insert_only= | e2b2b9c0de |
+| Current rows after the three publishes | 6 current rows, 12 version rows in all: no duplicate current row | =select count(*), max(version), count(*) from ores_refdata_commodities_tbl= | e2b2b9c0de |
 |      |       |         |        |
 
 * Notes

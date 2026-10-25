@@ -199,7 +199,7 @@ TEST_CASE("a run that succeeded records no error at all", tags) {
     CHECK(errors_of(ctx, instance_id).empty());
 }
 
-TEST_CASE("an error whose scope the vocabulary does not hold is refused rather than stored", tags) {
+TEST_CASE("an error whose scope the vocabulary does not hold costs its own row only", tags) {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = write_test_party_and_scope_context(h, gen);
@@ -208,16 +208,119 @@ TEST_CASE("an error whose scope the vocabulary does not hold is refused rather t
     ores::reporting::service::report_error_recorder recorder(ctx);
     const std::vector<ores::reporting::service::engine_log_error> errors{
         {.severity = "error",
+         .scope = "Curve",
+         .message = "yield curve building failed for curve(s) Yield/GBP/GBP1D",
+         .subject = "curve",
+         .subject_id = "[IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]",
+         .cause = "Yield/GBP/GBP1D",
+         .detail = {}},
+        {.severity = "error",
          .scope = "Something the engine grew",
          .message = "a scope no reader can place",
          .subject = "trade",
          .subject_id = "033b4053-fe1d-5901-bc2f-7d95afe91f00",
          .detail = {}}};
 
-    const auto failure = recorder.record_engine_errors(instance_id, errors);
-    CHECK_FALSE(failure.empty());
-    CHECK(failure.find("Something the engine grew") != std::string::npos);
-    CHECK(errors_of(ctx, instance_id).empty());
+    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
+
+    const auto rows = errors_of(ctx, instance_id);
+    // The curve the vocabulary names, and a warning saying what it could not store.
+    // The read is ordered by a random id, so the rows are found by what they say.
+    const auto by_scope = [&rows](std::string_view scope) {
+        return std::ranges::find(
+            rows, scope, &ores::reporting::domain::report_error_event::scope_code);
+    };
+    const auto curve = by_scope("Curve");
+    const auto warning = by_scope("Report");
+    CHECK(rows.size() == 2);
+    REQUIRE(curve != rows.end());
+    CHECK(curve->cause == "Yield/GBP/GBP1D");
+    REQUIRE(warning != rows.end());
+    CHECK(warning->severity == "warning");
+    CHECK(warning->message.find("Something the engine grew") != std::string::npos);
+}
+
+TEST_CASE("the run-level failure is stored beside the engine's own errors", tags) {
+    scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto instance_id = write_instance(ctx, h.db_user(), gen);
+
+    ores::reporting::service::report_error_recorder recorder(ctx);
+    const std::vector<ores::reporting::service::engine_log_error> errors{
+        {.severity = "error",
+         .scope = "Curve",
+         .message = "yield curve building failed for curve(s) Yield/GBP/GBP1D",
+         .subject = "curve",
+         .subject_id = "[IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]",
+         .cause = "Yield/GBP/GBP1D",
+         .detail = {}}};
+
+    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
+    CHECK(recorder.record_run_failure(instance_id, "The run's compute job failed with outcome 3")
+              .empty());
+
+    const auto rows = errors_of(ctx, instance_id);
+    const auto curve =
+        std::ranges::find_if(rows, [](const auto& row) { return row.scope_code == "Curve"; });
+    const auto failure = std::ranges::find_if(rows, [](const auto& row) {
+        return row.scope_code == "Report" && row.severity == "error";
+    });
+    CHECK(rows.size() == 2);
+    CHECK(curve != rows.end());
+    CHECK(failure != rows.end());
+}
+
+TEST_CASE("a batch whose scopes were all unplaceable does not block the next one", tags) {
+    scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto instance_id = write_instance(ctx, h.db_user(), gen);
+
+    ores::reporting::service::report_error_recorder recorder(ctx);
+    const std::vector<ores::reporting::service::engine_log_error> unplaceable{
+        {.severity = "error",
+         .scope = "Something the engine grew",
+         .message = "a scope no reader can place",
+         .subject = "trade",
+         .subject_id = "033b4053-fe1d-5901-bc2f-7d95afe91f00",
+         .detail = {}}};
+    const std::vector<ores::reporting::service::engine_log_error> placeable{
+        {.severity = "error",
+         .scope = "Curve",
+         .message = "yield curve building failed for curve(s) Yield/GBP/GBP1D",
+         .subject = "curve",
+         .subject_id = "[IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]",
+         .cause = "Yield/GBP/GBP1D",
+         .detail = {}}};
+
+    CHECK(recorder.record_engine_errors(instance_id, unplaceable).empty());
+    CHECK(recorder.record_engine_errors(instance_id, placeable).empty());
+
+    const auto rows = errors_of(ctx, instance_id);
+    CHECK(std::ranges::any_of(rows, [](const auto& row) { return row.scope_code == "Curve"; }));
+}
+
+TEST_CASE("a run's errors are stored once however often its output is read", tags) {
+    scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto instance_id = write_instance(ctx, h.db_user(), gen);
+
+    ores::reporting::service::report_error_recorder recorder(ctx);
+    const std::vector<ores::reporting::service::engine_log_error> errors{
+        {.severity = "error",
+         .scope = "Curve",
+         .message = "yield curve building failed for curve(s) Yield/GBP/GBP1D",
+         .subject = "curve",
+         .subject_id = "[IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]",
+         .cause = "Yield/GBP/GBP1D",
+         .detail = {}}};
+
+    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
+    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
+
+    CHECK(errors_of(ctx, instance_id).size() == 1);
 }
 
 TEST_CASE("an error carries the party of its run and not the party of the caller", tags) {

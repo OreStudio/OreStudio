@@ -23,6 +23,7 @@
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid_generators.hpp>
+#include <algorithm>
 #include <chrono>
 #include <format>
 #include <stdexcept>
@@ -96,6 +97,21 @@ domain::report_error_event make_error(const utility::uuid::tenant_id& tenant_id,
 
 }
 
+namespace {
+
+/// Whether the run already holds the errors of its analytics. A warning row the
+/// recorder wrote for an unplaceable scope is not one of them, so it never
+/// stands in for a batch that has not been read yet.
+bool run_holds_errors(const ores::database::context& ctx, const std::string& instance_id) {
+    messaging::report_error_events_filter only_errors;
+    only_errors.severity = std::string("error");
+    return !repository::report_error_event_repository()
+                .read_latest_by_report_instance_id(ctx, instance_id, 0, 1, {}, only_errors)
+                .empty();
+}
+
+}
+
 report_error_recorder::report_error_recorder(ores::database::context ctx)
     : ctx_(std::move(ctx)) {}
 
@@ -106,18 +122,25 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
         return {};
 
     try {
+        // The step that reads a run's output runs at least once, so its errors
+        // are written once.
+        if (run_holds_errors(ctx_, report_instance_id))
+            return {};
+
         const auto instance_id = parse_instance_id(report_instance_id);
         const auto party_id = party_of_run(ctx_, report_instance_id);
         const auto event_time = std::chrono::system_clock::now();
         std::vector<domain::report_error_event> rows;
-        rows.reserve(errors.size());
+        std::vector<std::string> unknown_scopes;
+        rows.reserve(errors.size() + unknown_scopes.capacity());
         for (const auto& error : errors) {
-            if (!is_known_scope(error.scope))
-                return std::format("The engine reported an error with an unknown scope '{}': {}. "
-                                   "The scope vocabulary has to grow before the run's errors can "
-                                   "be stored.",
-                                   error.scope,
-                                   error.message);
+            if (!is_known_scope(error.scope)) {
+                // The scope vocabulary has to grow before these rows can be
+                // stored, but that is no reason to lose the ones it does name.
+                if (std::ranges::find(unknown_scopes, error.scope) == unknown_scopes.end())
+                    unknown_scopes.push_back(error.scope);
+                continue;
+            }
             rows.push_back(make_error(
                 ctx_.tenant_id(),
                 instance_id,
@@ -131,6 +154,24 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
                 error.cause.empty() ? std::nullopt : std::optional(error.cause),
                 error.detail));
         }
+
+        // A scope the vocabulary does not name is said, so the loss is visible
+        // on the run rather than only in a log line.
+        for (const auto& scope : unknown_scopes)
+            rows.push_back(make_error(ctx_.tenant_id(),
+                                      instance_id,
+                                      party_id,
+                                      event_time,
+                                      std::string(scope_report),
+                                      "warning",
+                                      std::format("The engine reported errors under the scope "
+                                                  "'{}', which the scope vocabulary does not name "
+                                                  "yet, so those rows were not stored.",
+                                                  scope),
+                                      std::nullopt,
+                                      std::nullopt,
+                                      std::nullopt,
+                                      {}));
 
         repository::report_error_event_repository().write(ctx_, rows);
         return {};

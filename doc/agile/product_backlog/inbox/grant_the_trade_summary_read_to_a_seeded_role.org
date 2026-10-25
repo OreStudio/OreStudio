@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 550AC685-2F42-4599-A525-09B30EF39BB5
+:END:
+#+title: Grant the trade summary read to a seeded role
+#+description: The Trades area is offered to a person who holds a trade summary read, and no seeded role holds one: ReportRun holds trading::trades:read, refdata::books:read and refdata::counterparties:read but not trading::trade_summaries:read, so the only role offered the area is refused by /api/trades. Grant it to the role that already reads trades, or decide which role a blotter belongs to.
+#+type: capture
+#+level: cross
+#+filetags: :iam:trading:trade_summaries:seeding:web:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

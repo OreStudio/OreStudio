@@ -29,8 +29,8 @@ import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading
 import { input, readAll, refusal, resultSchema, row, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
-/** The most rows one page may hold. */
-const MAX_PAGE = 200;
+/** The most rows one page may hold, which is what the record list offers, including Load all. */
+const MAX_PAGE = 1000;
 
 /** The fields the trade summary read model can order by. */
 const SORTABLE = ['trade_date', 'instrument_type', 'status', 'row_kind'] as const;
@@ -40,7 +40,7 @@ const SORTABLE = ['trade_date', 'instrument_type', 'status', 'row_kind'] as cons
  * the words the screen uses, and an empty value means "no filter", which the
  * wire states as null rather than as the empty string.
  */
-const pageQuerySchema = z.object({
+const tradeListQuerySchema = z.object({
     offset: z.coerce.number().int().min(0).default(0),
     limit: z.coerce.number().int().min(1).max(MAX_PAGE).default(25),
     search: z.string().trim().max(256).default(''),
@@ -76,26 +76,39 @@ function rankOf(idType: string): number {
     return index === -1 ? IDENTIFIER_ORDER.length : index;
 }
 
-/** The filter the page is read with, as the read model declares it. */
-function filterOf(query: z.infer<typeof pageQuerySchema>) {
+/** Every member of the read model's filter set, absent. The wire states an absent member as null. */
+const NO_FILTER = {
+    row_kind: null,
+    party_id: null,
+    counterparty_id: null,
+    book_id: null,
+    instrument_type: null,
+    status: null,
+    authorisation_status: null,
+    trade_date: null,
+    id_one_of: null,
+    row_kind_one_of: null,
+    party_id_one_of: null,
+    counterparty_id_one_of: null,
+    book_id_one_of: null,
+    instrument_type_one_of: null,
+    status_one_of: null,
+    authorisation_status_one_of: null,
+    trade_date_one_of: null,
+    trade_date_from: null,
+    trade_date_to: null,
+    search: null,
+} as const;
+
+/** The filter the page is read with: the set, with the screen's choices in the members it names. */
+function filterOf(query: z.infer<typeof tradeListQuerySchema>) {
     return {
-        row_kind: null,
+        ...NO_FILTER,
         party_id: orNull(query.party),
         counterparty_id: orNull(query.counterparty),
         book_id: orNull(query.book),
         instrument_type: orNull(query.type),
         status: orNull(query.status),
-        authorisation_status: null,
-        trade_date: null,
-        id_one_of: null,
-        row_kind_one_of: null,
-        party_id_one_of: null,
-        counterparty_id_one_of: null,
-        book_id_one_of: null,
-        instrument_type_one_of: null,
-        status_one_of: null,
-        authorisation_status_one_of: null,
-        trade_date_one_of: null,
         trade_date_from: orNull(query.from),
         trade_date_to: orNull(query.to),
         search: orNull(query.search),
@@ -118,7 +131,7 @@ export function registerTradeRoutes(
 ): void {
     server.get('/api/trades', async (request) => {
         const session = requireSession(request);
-        const query = input(pageQuerySchema, request.query);
+        const query = input(tradeListQuerySchema, request.query);
         const reply = await session.client.callAuthenticated(
             summarySubjects.list_trade_summaries_request,
             {
@@ -148,15 +161,15 @@ async function enrich(
     session: LiveSession,
     summaries: readonly Record<string, unknown>[],
 ): Promise<readonly Record<string, unknown>[]> {
-    if (summaries.length === 0) {
-        return [];
-    }
     const ids = summaries
         .filter((entry) => text(entry['row_kind']) === 'trade')
         .map((entry) => text(entry['id']));
     const bookIds = distinct(summaries.map((entry) => text(entry['book_id'])));
     const counterpartyIds = distinct(summaries.map((entry) => text(entry['counterparty_id'])));
 
+    if (ids.length === 0 && bookIds.length === 0 && counterpartyIds.length === 0) {
+        return summaries;
+    }
     const identifiers = await readAll(
         session,
         identifierSubjects.list_trade_identifiers_request,
@@ -236,5 +249,3 @@ function nameById(
 ): ReadonlyMap<string, string> {
     return new Map(rows.map((entry) => [text(entry['id']), text(entry[field])]));
 }
-
-export { pageQuerySchema };

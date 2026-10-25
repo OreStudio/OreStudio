@@ -383,10 +383,11 @@ trail Home, Market data, Synthetic, Feed tree, the folders down to the feed, the
 
 ** Not built yet
 
-The Trades area has journeys and prototypes and no web screens yet. The BFF has
-no trading route, and the trade list can filter only by trade id until the model
-declares the columns a person searches by. The area is in the menu order above,
-and it is drawn when its first screen exists and a person holds its read.
+The Trades area has its first screen: the trade list at =/trades=, read through
+the BFF's trading route and the trade summary read model. It is drawn for a
+person who holds the reads it needs. Structures and packages, the trade page and
+Book a trade follow, and the area becomes a page of cards when the second screen
+exists, as every other area is.
 
 Market data has no screen for curve surfaces or for feeds of other kinds yet.
 They are added to the Market data area when they have screens; a feed of a new

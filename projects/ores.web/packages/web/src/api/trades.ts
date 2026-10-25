@@ -63,10 +63,6 @@ export interface TradePageQuery {
     readonly descending: boolean;
     readonly status: string;
     readonly type: string;
-    readonly party: string;
-    readonly book: string;
-    readonly from: string;
-    readonly to: string;
 }
 
 /** One page of trades and the total the filter matches. */
@@ -105,10 +101,6 @@ export const trades = {
             descending: String(query.descending),
             status: query.status,
             type: query.type,
-            party: query.party,
-            book: query.book,
-            from: query.from,
-            to: query.to,
         });
         return z
             .object({ rows: z.array(tradeRowSchema), total: z.int().nonnegative() })

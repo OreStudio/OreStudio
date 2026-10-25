@@ -113,16 +113,16 @@ Taken on 2026-10-24 from the provisioned dataset, because no database was runnin
 | Books | 38 | =jq length .../books.json= |
 | Portfolios per party | group 1, UK 21, US 13, HK 13 | =jq '[.[].company_code] | group_by(.) | map({(.[0]): length}) | add' .../portfolios.json= |
 | Books per party | group 2, UK 20, US 8, HK 8 | the same over =books.json= |
-| Largest party tree | 41 nodes: 21 portfolios and 20 books, plus the party | derived |
+| Largest party tree | 42 nodes: the party, its 21 portfolios and its 20 books | derived |
 | Whole-group tree | 90 nodes: 4 parties, 48 portfolios, 38 books | derived |
 
 * What the measurement decides
 
-A party's tree is *tens* of nodes. The largest is 41, and the whole holding company is 90. At that size the node read model is premature: one page of the two existing lists draws the whole tree, which is exactly what the legacy did and why it got away with it.
+A party's tree is *tens* of nodes. The largest is 42, and the whole holding company is 90. At that size the node read model is premature: one page of the two existing lists draws the whole tree, which is exactly what the legacy did and why it got away with it.
 
 Two consequences, and both are cheap:
 
-- *Read whole, then guard the ceiling.* The BFF reads =portfolios.list= and =books.list= at a page size above the tree size, zips them, and refuses to draw a tree that came back truncated: it compares =total= against the rows it holds and says the tree is partial rather than silently showing a subset.
+- *Read whole, then guard the ceiling.* The BFF reads =portfolios.list= and =books.list= at a page size above the tree size and zips them. The guard cannot compare =total= with the rows it holds, because =total= counts the tenant while the rows are party-scoped; it compares the rows against a page that came back full, and says the tree may be partial when it did.
 - *The party filter is still missing.* Neither filter carries =party_id=, and the party is applied by erasing other parties' rows after the pager, so =total= counts the tenant. At 90 nodes this reads acceptably, and the erase is the defect to fix when either list is touched.
 
 The node read model therefore becomes the answer to a *measured* threshold rather than the first step: when a tenant's tree passes the page size, or when a lazy tree is wanted for its own sake, the =portfolio_tree_node= read model is the shape to build, and this page already states it.

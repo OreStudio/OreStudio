@@ -64,10 +64,6 @@ export function TradesPage(): ReactNode {
                 descending: page.descending,
                 status: page.filters['status'] ?? '',
                 type: page.filters['type'] ?? '',
-                party: '',
-                book: '',
-                from: '',
-                to: '',
             }),
         search: true,
         sortable: [...TRADE_SORTS],
@@ -79,7 +75,7 @@ export function TradesPage(): ReactNode {
                 all: t('trading.trades.filterAllStates'),
                 choices: STATES.map((state) => ({
                     value: state,
-                    label: t(`trading.states.${state}`),
+                    label: stateLabel(t, state),
                 })),
             },
             {
@@ -132,7 +128,7 @@ export function TradesPage(): ReactNode {
                     cell: (row) =>
                         row.status === null
                             ? t('trading.trades.structureHolds', { count: row.trade_count })
-                            : t(`trading.states.${row.status}`),
+                            : stateLabel(t, row.status),
                     sort: 'status',
                 },
                 {
@@ -157,6 +153,11 @@ export function TradesPage(): ReactNode {
             ]}
         />
     );
+}
+
+/** The words for a state, and the code itself for one this screen does not know. */
+function stateLabel(t: (key: string) => string, state: string): string {
+    return (STATES as readonly string[]).includes(state) ? t(`trading.states.${state}`) : state;
 }
 
 /** The first column: a trade's reference, or the kind of a row that has no trade behind it. */

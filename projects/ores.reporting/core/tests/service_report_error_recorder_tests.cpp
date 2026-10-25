@@ -240,28 +240,49 @@ TEST_CASE("an error whose scope the vocabulary does not hold costs its own row o
     CHECK(warning->message.find("Something the engine grew") != std::string::npos);
 }
 
-TEST_CASE("the run's failure row says one sentence, not the engine's whole account", tags) {
+TEST_CASE("the run's failure row points at the reasons when they are there", tags) {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = write_test_party_and_scope_context(h, gen);
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
-    CHECK(recorder
-              .record_run_failure(
-                  instance_id,
-                  "The run's compute job failed with outcome 3: The engine's analytic failed. "
-                  "The engine reported 20 errors; the last 5 are:\n"
-                  "  yield curve building failed for curve(s) Yield/GBP/GBP1D\n"
-                  "  Portfolio does not contain any built trades")
+    const std::vector<ores::reporting::service::engine_log_error> errors{
+        {.severity = "error",
+         .scope = "Curve",
+         .message = "yield curve building failed for curve(s) Yield/GBP/GBP1D",
+         .subject = "curve",
+         .subject_id = "[IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]",
+         .cause = "Yield/GBP/GBP1D",
+         .detail = {}}};
+    CHECK(recorder.record_engine_errors(instance_id, errors).empty());
+    CHECK(recorder.record_run_failure(instance_id, "The run's compute job failed with outcome 3")
               .empty());
 
     const auto rows = errors_of(ctx, instance_id);
+    const auto failure = std::ranges::find_if(rows, [](const auto& row) {
+        return row.scope_code == "Report" && row.severity == "error";
+    });
+    REQUIRE(failure != rows.end());
+    CHECK(failure->message == "The run failed. Its reasons are the errors recorded against it.");
+}
+
+TEST_CASE("the run's failure row carries the whole reason when it is the only account", tags) {
+    scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = write_test_party_and_scope_context(h, gen);
+    const auto instance_id = write_instance(ctx, h.db_user(), gen);
+
+    ores::reporting::service::report_error_recorder recorder(ctx);
+    const std::string account =
+        "The run's compute job failed with outcome 3: The engine's analytic failed. The engine "
+        "reported 20 errors; the last 5 are: yield curve building failed for curve(s) "
+        "Yield/GBP/GBP1D";
+    CHECK(recorder.record_run_failure(instance_id, account).empty());
+
+    const auto rows = errors_of(ctx, instance_id);
     REQUIRE(rows.size() == 1);
-    CHECK(rows.front().scope_code == "Report");
-    CHECK(rows.front().message ==
-          "The run's compute job failed with outcome 3: The engine's analytic failed.");
-    CHECK(rows.front().message.find("Portfolio does not contain") == std::string::npos);
+    CHECK(rows.front().message == account);
 }
 
 TEST_CASE("the run-level failure is stored beside the engine's own errors", tags) {

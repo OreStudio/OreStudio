@@ -31,7 +31,7 @@ import { Fact, Notice, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 
 /** The page's tabs, in the order the prototype settled: the trade first, then its parts. */
-const TABS = ['details', 'identifiers', 'links', 'history'] as const;
+const TABS = ['details', 'instrument', 'identifiers', 'links', 'history'] as const;
 
 /** A table of the trade's parts, with the columns each part has. */
 function PartTable({
@@ -80,6 +80,14 @@ function PartTable({
     );
 }
 
+/** The value, unless it is a uuid, which is not something to put on a screen. */
+function withoutId(value: string): string {
+    const looksLikeId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        value,
+    );
+    return looksLikeId ? '' : value;
+}
+
 /** The tone a state is drawn in, so the badge says more than the word does. */
 function stateTone(state: string): 'up' | 'warn' | 'muted' | 'neutral' {
     switch (state) {
@@ -93,6 +101,91 @@ function stateTone(state: string): 'up' | 'warn' | 'muted' | 'neutral' {
         default:
             return 'neutral';
     }
+}
+
+/**
+ * The trade's terms, from the table its type is stored in.
+ *
+ * A type with no table states that plainly: the trade is understood, its terms
+ * are simply not held anywhere yet. A type with a table and no row says that
+ * instead, because the two are different facts about the trade.
+ */
+function InstrumentTab({ record }: { readonly record: TradePageRecord }): ReactNode {
+    const { t } = useTranslation();
+    const terms = record.terms;
+    if (record.refused) {
+        return <Notice tone="info">{t('trading.page.instrumentRefused')}</Notice>;
+    }
+    if (!record.routed) {
+        return (
+            <Notice tone="info">
+                {t('trading.page.instrumentNotRouted', { type: record.trade.instrument_type })}
+            </Notice>
+        );
+    }
+    if (terms === null) {
+        return <Notice tone="info">{t('trading.page.instrumentNoTerms')}</Notice>;
+    }
+    const issue = terms['issue'] as Readonly<Record<string, unknown>> | null | undefined;
+    const value = (given: unknown): string =>
+        given === undefined || given === null ? '' : String(given);
+    const calendar = value(issue?.['calendar']);
+    return (
+        <div className="space-y-6">
+            <dl className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                <Fact
+                    label={t('trading.page.tradeTypeCode')}
+                    value={record.trade.instrument_type}
+                />
+                <Fact label={t('trading.page.notional')} value={value(terms['notional'])} />
+            </dl>
+            <section className="space-y-3">
+                <h2 className="text-sm font-medium text-ink">{t('trading.page.issue')}</h2>
+                {issue === null || issue === undefined ? (
+                    <Notice tone="info">{t('trading.page.issueMissing')}</Notice>
+                ) : (
+                    <dl className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                        <Fact
+                            label={t('trading.page.securityId')}
+                            value={value(issue['security_id'])}
+                        />
+                        <Fact
+                            label={t('trading.page.issuer')}
+                            value={withoutId(value(issue['issuer']))}
+                        />
+                        <Fact
+                            label={t('trading.page.faceValue')}
+                            value={value(issue['face_value'])}
+                        />
+                        <Fact
+                            label={t('trading.page.issueDate')}
+                            value={value(issue['issue_date'])}
+                        />
+                        <Fact
+                            label={t('trading.page.settlementDays')}
+                            value={value(issue['settlement_days'])}
+                        />
+                        <Fact label={t('trading.page.calendar')}>
+                            {calendar === '' ? (
+                                '—'
+                            ) : (
+                                <Link
+                                    className="text-accent hover:text-accent-bright"
+                                    to={`${PATHS.calendars}/${encodeURIComponent(calendar)}`}
+                                >
+                                    {calendar}
+                                </Link>
+                            )}
+                        </Fact>
+                        <Fact
+                            label={t('trading.page.creditGroup')}
+                            value={value(issue['credit_group'])}
+                        />
+                    </dl>
+                )}
+            </section>
+        </div>
+    );
 }
 
 /** The tabs of one trade, drawn from the one read the page makes. */
@@ -240,6 +333,7 @@ export function TradePage(): ReactNode {
                         />
                     </dl>
                 )}
+                {tabs.tab === 'instrument' && <InstrumentTab record={record} />}
                 {tabs.tab === 'identifiers' && (
                     <div className="space-y-4">
                         <PartTable

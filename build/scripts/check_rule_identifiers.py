@@ -93,7 +93,7 @@ PAGES = {
 
 # Pages the checklist cites that carry no identifiers yet. A line that cites
 # only one of these passes rule 3.
-UNKEYED = ("UXL", "UDP", "CFG", "FSS")
+UNKEYED = ("UXL", "UDP", "CFG", "FSS", "OLS")
 
 START = re.compile(r"^(?:- )?\*((?:RS|ES)-[A-Z]+-\d{2})\* ")
 PLACEHOLDER = re.compile(r"^(?:- )?\*((?:RS|ES)-[A-Z]+)-\?\?\* ")

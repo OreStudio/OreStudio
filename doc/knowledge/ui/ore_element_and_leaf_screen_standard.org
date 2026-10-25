@@ -1,0 +1,419 @@
+:PROPERTIES:
+:ID: 852207A6-6785-43E6-A5D6-2D5C2C374101
+:END:
+#+title: ORE element and leaf screen standard
+#+description: The one way every ores.web screen shows an ORE element type and its leaves, whether a product, an engine run setting or a convention: the words, the Simple and Advanced switch, the documentation that opens under a leaf, the value in force, the control, the edit marks, the filters and the gaps.
+#+type: knowledge
+#+level: cross
+#+filetags: :web:ux:standards:reporting:refdata:configuration:conventions:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+* Summary
+
+Every value a person reads or changes in ORE Studio that ORE reads from an XML
+document is a /leaf/ of that document: a parameter of a product, a setting of
+the engine run settings, a term of a convention. Every leaf belongs to an
+/element type/: a product type, a group of settings, a convention kind.
+
+This page states how a screen draws a leaf and an element type, once, with the
+exact words. A person who learns to read a product parameter can read a
+convention term without learning anything new: the same Simple and Advanced
+switch, the same documentation that opens under the leaf, the same value in
+force, the same default, the same control for the same kind of value, the same
+marks for a change, the same filters and the same words for a gap.
+
+The page does not decide identity, ownership, reach, selection or lifecycle.
+Those differ between a settings document such as =pricingengine.xml= and a
+library document such as =conventions.xml=, and the
+[[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]] and
+the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] govern
+them. Each rule here has an identifier of the form =OL-AREA-NN=, so a test,
+the Allium specification
+[[proj:doc/llm/specs/ore-leaf-behaviour.allium][=ore-leaf-behaviour.allium=]] and
+the screen review checklist can name it. The
+identifiers follow the convention the [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] hub
+states; =check_rule_identifiers.py= does not key this page yet.
+
+* Detail
+
+** Where this standard applies
+
+- *OL-SCOPE-01* A screen that shows a leaf or an element type follows this page,
+  wherever the leaf appears: a record page, a section card, a workbench pane, a
+  dialog, a wizard step or a review.
+- *OL-SCOPE-02* Today that means the product pricing page and its product and
+  global parameter dialogs, the engine run settings page, and the convention
+  pages and the convention authoring journey. A screen for any other ORE
+  document kind joins when it is built.
+- *OL-SCOPE-03* The page governs how a leaf and an element type are drawn and
+  changed in place. It does not govern how a record is found, owned, bound,
+  versioned or signed off.
+
+** Words
+
+One word per idea. The first group are the words of this page and of the code;
+they are not printed on a screen. The second group are printed.
+
+| Word | Meaning | On screen |
+|------+---------+-----------|
+| /Leaf/ | One value of one ORE document: an element or an attribute that holds a value, identified by its schema and its XPath | No |
+| /Element type/ | What a set of leaves belongs to: a product type, a group of engine run settings, a convention kind | No; the kind's own noun |
+| /Documentation entry/ | The one record of what a leaf means, in the ORE parameter contract | No |
+| /Value set/ | The values a leaf may take: a type, a closed list, a range or a catalogue of other ORE Studio data | No |
+| /Parameter/ | A leaf of a product or of the document's global parameters | Yes |
+| /Setting/ | A leaf of the engine run settings, and of nothing else | Yes |
+| /Term/ | A leaf of a convention | Yes |
+| /Value in force/ | The value a run uses: the set value, or the default when the leaf is absent | Yes, as the value |
+| /Default/ | The value ORE uses when the leaf is absent | Yes |
+| /Documentation/ | What a leaf means, opened under the leaf | Yes |
+| /Simple/, /Advanced/ | How much of the documentation entry a screen shows | Yes |
+
+- *OL-WORDS-01* A screen names a leaf with its kind's noun: /parameter/,
+  /setting/ or /term/. Every other word in this page is the same on every
+  screen. A sentence that carries the noun takes it as a value, so the sentence
+  itself is the same.
+- *OL-WORDS-02* The word /setting/ is never printed for a parameter or a term,
+  as the configuration screen standard requires.
+- *OL-WORDS-03* The ORE name of a leaf, such as =FixedCalendar=, is printed only
+  where this page says so: under Advanced, and in place of a missing label.
+
+** The words a screen prints
+
+These are the only words a screen prints for the ideas below. They live in one
+translation namespace, =oreParameter=, and no screen keeps its own copy of them.
+
+| Key | English | Where |
+|-----+---------+-------|
+| =oreParameter.mode.simple= | Simple | The switch |
+| =oreParameter.mode.advanced= | Advanced | The switch |
+| =oreParameter.mode.label= | How much to show | The switch's accessible name *(proposed)* |
+| =oreParameter.mode.simpleHelp= | The label, the value and what it means. | The tooltip on Simple *(proposed)* |
+| =oreParameter.mode.advancedHelp= | Also the ORE XML path, the format, the options and the releases. | The tooltip on Advanced *(proposed)* |
+| =oreParameter.documentation= | Documentation | The button under a closed leaf |
+| =oreParameter.hideDocumentation= | Hide documentation | The button under an open leaf |
+| =oreParameter.showAllDocumentation= | Show all documentation | The button over a section *(proposed)* |
+| =oreParameter.hideAllDocumentation= | Hide all documentation | The button over a section *(proposed)* |
+| =oreParameter.defaultIs= | Default: {value} | The line in the documentation, and beside a leaf that is not set |
+| =oreParameter.defaultOption= | Default ({value}) | The first option of a control |
+| =oreParameter.notSet= | not set | A group with no row |
+| =oreParameter.required= | Required | The mark on a required leaf |
+| =oreParameter.undocumented= | No documentation is held for {name}. | A leaf with no entry |
+| =oreParameter.documentationUnread= | The documentation could not be read: {message} | The read failed |
+| =oreParameter.schema.xml= | ORE XML | Advanced |
+| =oreParameter.schema.format= | Format | Advanced |
+| =oreParameter.schema.options= | Options | Advanced |
+| =oreParameter.schema.introduced= | Introduced in | Advanced |
+| =oreParameter.schema.removed= | Removed in | Advanced |
+| =oreParameter.changed= | changed | The mark on a changed leaf |
+| =oreParameter.noChanges= | No changes yet | The foot of a card in edit |
+| =oreParameter.oneChange= | 1 change | The foot of a card in edit |
+| =oreParameter.changes= | {count} changes | The foot of a card in edit |
+| =oreParameter.changesNumbers= | Changes the numbers | The label on a section, and the filter |
+| =oreParameter.operational= | Operational | The label on a section |
+| =oreParameter.filters.set= | Set in this configuration | The filter |
+| =oreParameter.filters.numbers= | Changes the numbers | The filter |
+| =oreParameter.filters.shown= | {shown} of {total} {noun} shown | The count beside the filters |
+| =oreParameter.filters.none= | No {noun} matches the filters. | The filters match nothing |
+| =oreParameter.source.ore_guide= | From the ORE guide | The source tag |
+| =oreParameter.source.ore_code= | From the ORE code | The source tag |
+| =oreParameter.source.authored= | Written for ORE Studio, to review | The source tag |
+| =oreParameter.source.seed= | Carried over from the old seed, to review | The source tag *(proposed)* |
+| =oreParameter.source.unknown= | Source not stated | The source tag |
+
+- *OL-WORDS-04* A word marked *(proposed)* is not on any screen today and is not
+  final: it waits for the owner's decision in [[*Decisions to take][Decisions to take]],
+  and no screen adopts it before then. The others are already on at least one
+  screen; this table picks one where two screens differ.
+- *OL-WORDS-05* A translation exists for every key in every language the web
+  offers. A key with no translation is a gap, not a fallback to English.
+
+** The Simple and Advanced switch
+
+The switch decides how much of the documentation entry a screen shows. It is
+the same switch as the one on the feed screens, held in =EditingMode.tsx=.
+
+- *OL-MODE-01* The switch is a pair of buttons, *Simple* and *Advanced*, on the
+  toolbar of the page or the pane that shows leaves. It is drawn once per page,
+  not once per section.
+- *OL-MODE-02* The choice is one choice for the whole web application, kept in
+  the browser. A new person starts in Simple. A person who picks Advanced stays
+  in Advanced on every screen that offers it, feeds included.
+- *OL-MODE-03* *Simple* shows the row as [[*Reading a leaf][Reading a leaf]]
+  draws it. The documentation opens with the description and the default.
+- *OL-MODE-04* *Advanced* adds, inside the open documentation, the schema entry:
+  ORE XML, Format, Options, Introduced in and Removed in.
+- *OL-MODE-05* The switch never hides a value, a control or a gap. It changes
+  only how much of the documentation shows.
+- *OL-MODE-06* The switch's name and tooltips say what it does on the screen
+  that draws it. On a screen of leaves they are the words above; on a feed they
+  stay the feed's words.
+- *OL-MODE-07* A card or a dialog that a row opens carries the page's choice. It
+  has no switch of its own.
+
+** Reading a leaf
+
+A leaf is one row. The row is the same in a section card, a workbench pane, a
+dialog and a review.
+
+- *OL-READ-01* The row shows, in this order: the label, the marks (*Required*,
+  *Changes the numbers*, *changed*), and at the right the value in force. The
+  short help stands under the control in edit, and the description opens under
+  *Documentation*.
+- *OL-READ-02* The label is the documentation entry's label, and it is the only
+  label the row carries. Where there is no entry, the label is the ORE name and
+  the open documentation says the entry is missing.
+- *OL-READ-03* The value in force is always shown. A leaf that is set shows its
+  value. A leaf that is not set shows *Default: X*. A row never shows an empty
+  value.
+- *OL-READ-04* A section lists every leaf its element type takes, set or not,
+  because the default of a leaf the document leaves out is a value the run uses.
+  A leaf the document does not hold is a row like any other, with *Default: X*.
+- *OL-READ-05* A flag shows *Yes* or *No*. A value from a closed list shows its
+  words where the value set holds words, and the ORE value where it does not.
+- *OL-READ-06* A value that names other ORE Studio data, such as a calendar, an
+  index or a sensitivity template, shows one line under it that says what the
+  entry is, and is a link to that record when the screen has a page for it.
+- *OL-READ-07* A leaf that changes the numbers a run computes carries the
+  *Changes the numbers* mark in its own row, whatever its section says.
+- *OL-READ-08* A leaf that ORE no longer reads, because its entry has a
+  *Removed in* release, shows the release beside the value in Simple and
+  Advanced, so a person does not rely on it.
+
+** The documentation under a leaf
+
+- *OL-DOC-01* The documentation is closed under every leaf. *Documentation*
+  opens it and *Hide documentation* closes it, for that leaf alone.
+- *OL-DOC-02* Open, it shows the description, then *Default: X*. Under Advanced
+  it adds the schema entry below a rule.
+- *OL-DOC-03* *Show all documentation* over a section opens it for every leaf
+  of the section, and *Hide all documentation* closes it. A leaf the person
+  opened or closed by hand follows the section button the next time it is
+  pressed.
+- *OL-DOC-04* The documentation is the same panel everywhere, the shared
+  =ParameterDocumentationPanel=. A screen does not draw its own.
+- *OL-DOC-05* The screen never holds ORE text. The label, the help, the
+  description, the default, the format, the options and the releases come from
+  the documentation entry, keyed by the schema and the XPath and, where the
+  meaning depends on them, by the element pair.
+- *OL-DOC-06* The documentation validates nothing. It says what a value means;
+  the value set and the write path say what a value may be.
+- *OL-DOC-07* In edit, a control that takes the focus opens the documentation
+  of its leaf, so a person reads what a value means as they choose it.
+
+** The element type
+
+An element type is what a person picks or opens before its leaves: a product
+type in the product pricing workbench, a convention kind on the conventions
+page.
+
+- *OL-ELEMENT-01* An element type opens with a card that says what it is: its
+  label, its code under Advanced, its description, its asset class and the
+  source tag.
+- *OL-ELEMENT-02* The card adds what the kind has that others do not. A product
+  adds its instrument, and the model and engine with their own descriptions. A
+  convention kind adds what it is used for, such as the curves it builds.
+- *OL-ELEMENT-03* The description is the curated text. Where there is none, the
+  card says *No description is held for this choice.* and does not print a
+  sentence made from the code.
+- *OL-ELEMENT-04* The asset class, the instrument and the grouping come from
+  data. A screen does not hold a table that maps a kind to an asset class.
+- *OL-ELEMENT-05* A list of element types groups by asset class, in the order
+  the data gives, and puts a type with no asset class under *No asset class*.
+
+** Where the words come from
+
+- *OL-SOURCE-01* A description, a model, an engine and an element type show the
+  source of their words as a tag: *From the ORE guide*, *From the ORE code*,
+  *Written for ORE Studio, to review*, *Carried over from the old seed, to
+  review* or *Source not stated*.
+- *OL-SOURCE-02* The two tags that end *to review* are drawn in the warning tone,
+  because a person wrote the words and a reviewer has not yet confirmed them.
+- *OL-SOURCE-03* Under Advanced, a leaf's documentation shows the source tag of
+  its entry too.
+
+** The control
+
+The control comes from the leaf's value set. Two leaves with the same kind of
+value set have the same control on every screen.
+
+| Value set | Control |
+|-----------+---------|
+| Flag | A select: *Default (X)*, *Yes*, *No* |
+| Closed list | A select: *Default (X)*, then the values in the order the set gives, as OL-READ-05 shows them |
+| Catalogue | A select or a search over that catalogue, such as calendars or indices, with *Default (X)* first |
+| Integer or number | A number field, bounded by the set's range |
+| Period | A text field that takes a period such as =3M=, with the format under it |
+| Text | A text field |
+
+- *OL-CONTROL-01* The first option of every select is *Default (X)*, and it
+  unsets the leaf. A field that is not a select is empty when the leaf is not
+  set, with *Default (X)* as its placeholder, and emptying it unsets the leaf.
+- *OL-CONTROL-02* A control never offers a value the set refuses. A saved value
+  that the set no longer holds is shown and marked, not added to the options as
+  if it were valid.
+- *OL-CONTROL-03* Where a choice depends on another (a model on a product type,
+  an engine on a model, an index on a currency), the control offers only the
+  values that belong together.
+- *OL-CONTROL-04* The control is the shared one for its value set. A screen does
+  not build its own select for a leaf.
+
+** Changing a leaf
+
+The edit of a group, a collection row and a convention follows the record
+standard and the configuration standard. Within the edit, a leaf behaves the
+same everywhere.
+
+- *OL-EDIT-01* The documentation stays where it was in edit. Nothing hides it.
+- *OL-EDIT-02* A leaf whose value differs from the saved value shows *changed*.
+  The foot of the card counts the changes: *No changes yet*, *1 change*,
+  *{count} changes*.
+- *OL-EDIT-03* A refusal from the server is shown on the leaf it names, in the
+  server's words.
+- *OL-EDIT-04* A change that would drop a leaf, because a dependent choice
+  changed, names the leaf before it is dropped.
+- *OL-EDIT-05* A section that changes the numbers says *Changes the numbers*,
+  and an operational section says *Operational*, in view and in edit.
+
+** Filters
+
+- *OL-FILTER-01* A list of more leaves than fit on one screen offers two
+  filters: *Set in this configuration* and *Changes the numbers*.
+- *OL-FILTER-02* *Set in this configuration* keeps the leaves the document holds
+  a value for, a value equal to the default included, because a held value is
+  written to the ORE document and an absent one is not.
+- *OL-FILTER-03* A filter is drawn only where the data can answer it. A
+  *Changes the numbers* filter on leaves that carry no such mark is not drawn.
+- *OL-FILTER-04* A filter never hides a problem. A refusal on a leaf the filters
+  hide is shown over the list, so Save is never refused with no reason in view.
+- *OL-FILTER-05* Beside the filters stands the count, *{shown} of {total} {noun}
+  shown*, with the kind's noun.
+- *OL-FILTER-06* Filters that match nothing say *No {noun} matches the
+  filters.* and leave the filters visible.
+- *OL-FILTER-07* The filters are the shared =ParameterFilters=. A screen does
+  not draw its own.
+
+** Gaps and states
+
+A gap in the data is visible. A screen never hides a leaf because its data is
+missing.
+
+| State | What the screen does |
+|-------+----------------------|
+| No entry | The ORE name as the label, the value, and *No documentation is held for {name}.* |
+| No value set | A text field, and the leaf is listed in the coverage gap of the kind |
+| Not set | *Default: X* as the value, and *Default (X)* chosen in the control |
+| Group with no row | *not set* on the group; the engine uses the default of every leaf |
+| Removed | The *Removed in* release beside the value |
+| Documentation unread | *The documentation could not be read: {message}* over the section, and every value still shown |
+
+- *OL-STATE-01* A read of the documentation that fails does not stop the values
+  from showing.
+
+** What this page leaves to the other standards
+
+| Question | Settings document, such as =pricingengine.xml= | Library document, such as =conventions.xml= |
+|----------+------------------------------------------------+---------------------------------------------|
+| What a row is | A slot of one configuration, keyed by ORE's vocabulary | A named entry that other documents reference by name |
+| Who owns it | The configuration | The party |
+| Its reach | The reports that bind the configuration | The documents that name it, and the reports whose set holds it |
+| Its page | The configuration screen standard | The record screen standard, for the entry |
+
+These differ, so this page does not decide them. Inside either page, a leaf and
+an element type follow this page.
+
+** Conformance today
+
+Measured on 2026-10-25 at =dd50a72032=, by reading
+=engineSettings/EngineSettingsRecordPage.tsx=,
+=pricingEngines/PricingEnginePage.tsx=, =pricingEngines/parts.tsx=,
+=ui/OreParameter.tsx=, =ui/EditingMode.tsx= and =refdata/conventions.tsx= in
+=projects/ores.web/packages/web/src/=. This is the list of gaps to close. A
+screen not yet running against this page was read, not driven; the harness has
+not checked it.
+
+| Rule | Engine run settings | Product pricing | Conventions |
+|------+---------------------+-----------------+-------------|
+| OL-WORDS-01: one namespace | Gap: the buttons, the default, the marks and the filter count use copies under =engineSettings.*= | Meets for the documentation panel and the filters | Gap: no leaf is drawn |
+| OL-MODE-01: one switch per page | Gap: every group card draws its own | Meets: one on the toolbar | Gap: none |
+| OL-MODE-06: the switch's words | Gap: the tooltips are the feed's | Gap: the tooltips are the feed's | Gap |
+| OL-READ-01: help under the control in edit | Meets | Gap: the help is the control's hint, and the view has none | Gap |
+| OL-READ-02: one label, from the entry | Meets | Gap: in edit, and in the journey, the control carries a second label, the ORE name and scope | Gap: the labels are in the codegen model, not the contract |
+| OL-READ-03: the value in force | Meets | Meets for a parameter the document holds | Gap |
+| OL-READ-04: every leaf, set or not | Meets: every setting of the group is a row | Gap: only the parameters the document holds are rows; the defaults of the others cannot be read | Gap |
+| OL-READ-06: what a catalogue value names | N/A | Meets for a sensitivity template | Gap |
+| OL-READ-07: the mark on a leaf | Meets | Gap: the pricing data holds no *changes the numbers* flag | Gap |
+| OL-DOC-01: the leaf's documentation | Meets, with its own button | Meets | Gap: none |
+| OL-DOC-03: the section's documentation | Gap: the words are *Show documentation* and *Hide documentation* | Gap: no section button | Gap |
+| OL-DOC-04: one panel | Meets: the shared panel | Meets: the shared panel | Gap |
+| OL-DOC-05: no ORE text in the screen | Meets | Meets | Gap: the contract holds no entry for =conventions.xsd= |
+| OL-DOC-07: focus opens the documentation | Meets | Gap | Gap |
+| OL-ELEMENT-04: metadata in data | Gap: the groups are a constant in code | Meets | Gap: the asset class and the holder are in =conventionKinds.ts= |
+| OL-SOURCE-01: the source tag | Gap: none | Partial: a tag in the journey, a line of text on the page; no word for the seed | Gap |
+| OL-CONTROL-01: *Default (X)* first | Meets, for a select and as a number's placeholder | Gap: the select has no default option | Gap |
+| OL-CONTROL-02: no value outside the set | Meets | Gap: a value outside the set is added to the options | Gap |
+| OL-EDIT-02: the changed mark and the count | Meets | Gap: no mark on the leaf and no count in edit; the save dialog states the difference | Gap |
+| OL-FILTER-02: what *set* means | Meets: the document holds a value | Gap: a value equal to the default is hidden as if it were absent | Gap |
+| OL-FILTER-03: only a filter the data answers | Meets | Gap: *Changes the numbers* is drawn and filters nothing | Gap |
+| OL-FILTER-04: no hidden problem | Meets | N/A: no check by the leaf | Gap |
+| OL-FILTER-05: the noun | Meets | Gap: the shared count says /settings/ | Gap |
+| OL-STATE: the undocumented words | Meets, through the shared panel | Meets, through the shared panel | Gap |
+
+Two unused keys hold other sentences for the undocumented state,
+=engineSettings.undocumented= and =pricingEngines.globals.noDocumentation=. They
+go when the words move into =oreParameter=.
+
+Conventions have no leaf on any screen today: a convention family is a read-only
+list with no record page, so every rule is a gap there.
+
+The engine run settings page is the closer of the two: it fails mostly on words
+and on its own copies of shared parts. The product pricing page shares the
+parts, but its data cannot yet answer three rules, because a parameter is a
+name and a value held only when set: the leaves not set, the
+*changes the numbers* mark and the edit marks. The tasks that close these gaps
+are in [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]:
+the shared parameter list, control and edit lifecycle, the engine settings
+groups in data, the labels, domains and tabs from data, and the parameter data
+model as the source of valid values.
+
+** Where the rules came from
+
+Five rules were taken from what the engine run settings page already does, after
+the first draft of this page, because the page does them better than the draft
+said: one label from the entry with the help under the control in edit
+(OL-READ-01, OL-READ-02), the mark on each leaf (OL-READ-07), focus opens the
+documentation (OL-DOC-07), *Default (X)* as a number's placeholder
+(OL-CONTROL-01), and a filter that never hides a problem (OL-FILTER-04). Two
+were added because the product pricing page showed a gap the draft did not
+name: every leaf is a row, set or not (OL-READ-04), and a filter is drawn only
+where the data answers it (OL-FILTER-03).
+
+** Decisions to take
+
+- *The noun for a convention leaf.* This page proposes /term/: the convention
+  lists and the tenor journey already speak of a convention's terms. The
+  alternative is /field/, which the record standard uses for any record.
+- *The section button.* This page proposes *Show all documentation* and *Hide
+  all documentation*, so the section button and the leaf button do not share
+  *Hide documentation*. The engine run settings page says *Show documentation*.
+- *The switch's name.* *How to edit* is right on a feed and wrong on a screen of
+  leaves, where the switch changes what shows. This page proposes *How much to
+  show* for those screens.
+- *The seed tag.* The curation has four sources and the screen has words for
+  three. This page proposes *Carried over from the old seed, to review*.
+- *The short help in view.* The configuration standard says Simple shows the
+  short help. Neither built page does: the engine run settings page shows it
+  under the control in edit, and this page follows it. If the owner keeps the
+  help in view, OL-READ-01 changes and both pages gain a gap.
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that places this page in the reading order.
+- [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]] — /completes/: that page states the reading of a group and a collection for a configuration; this page states the leaf once, with the exact words, so a convention term reads the same as a product parameter.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — /completes/: a convention entry is a record page, and this page adds what its terms show inside it.
+- [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]] — /contradicts/: on a feed the Simple and Advanced switch changes how a person edits; here the same switch changes how much documentation shows. One remembered choice carries both meanings, and OL-MODE-06 gives each screen its own words for it.
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — /completes/: adds the words for a leaf, and the warning tone on the two source tags that a reviewer has not confirmed.
+- [[id:0B141B6B-EA10-4FD1-AFD1-FD12F9F43435][How the pricing engine data is sourced and curated]] — /completes/: it names four sources for the words; this page gives the screen a tag for each, including the fourth, which no screen shows yet.
+- [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] — /exemplifies/: a convention term such as =FixedConvention= or =FixedCalendar= takes a value from the catalogue that page defines. The convention models describe each term as a text field with an example such as =e.g. ModifiedFollowing=; OL-CONTROL makes it a choice from the catalogue, so a misspelt convention cannot be saved.
+- [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] — the story whose tasks close the product pricing and engine run settings gaps in the conformance table.
+- [[id:DE6C0BDA-D12A-4E31-AA86-C323F5A7E016][Name the convention sets a report chooses]] — /completes/: the selection of conventions a report binds, which this page leaves to the configuration standard.

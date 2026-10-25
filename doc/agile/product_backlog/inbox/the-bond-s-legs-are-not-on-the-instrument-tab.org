@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: 6C1D7A90-2B58-4E13-A9F4-58B0C2E7D316
+:END
+#+title: The bond's legs are not on the instrument tab
+#+description: The prototype draws a Legs card for a bond and the trade page shows none, so a coupon or amortising bond cannot be read from its page.
+#+type: capture
+#+level: cross
+#+filetags: :web:trading:instrument:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+The prototype's bond card carries a second card beside the issue:
+
+#+begin_example
+{id: 'legs', title: 'Legs', table: 'bond_leg'}
+#+end_example
+
+The trade page's Instrument tab shows the trade type, the notional and the issue. It shows no legs, and a bond's legs are where its coupons, amortisations and rates live in the model.
+
+Reading them is the same shape as the issue read: =bond_legs= by issue id, with =bond_leg_amounts=, =bond_leg_rates= and =bond_leg_amortizations= under them. It is left out here because the tab was already the last piece of its task and the legs are a table of their own rather than a fact.

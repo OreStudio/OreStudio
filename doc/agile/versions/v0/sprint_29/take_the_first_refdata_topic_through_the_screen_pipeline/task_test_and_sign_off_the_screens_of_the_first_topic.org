@@ -26,10 +26,10 @@ The screens are proved on a running system and signed off by the procedure the t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] |
-| Now          | The owner ran the scenario: step 6 is fixed, step 3 awaits their words. |
-| Waiting on   | The owner's walk of the sheet and sign off of the calendars screen. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
@@ -114,5 +114,8 @@ page's own save, the open dialog does not warn of a newer version, Escape
 closes without the guard, the list shows the calendar type as a code, and the
 type badge's title case and colour; three are captured with the two server
 gaps the runs found, a deleted calendar's days left behind and a re-created
-code's continued history. Delete is now titled by the name. The owner's walk
-and sign off close the topic; the task waits on it.
+code's continued history. Delete is now titled by the name. The owner ran the
+scenario by hand on 2026-10-25: ten steps passed and two failed; the record's
+history now carries its parts, the QuantLib tabs stay by the owner's decision,
+TARGET carries the euro's flag, and the owner signed the calendars screen off
+at 17:50 UTC.

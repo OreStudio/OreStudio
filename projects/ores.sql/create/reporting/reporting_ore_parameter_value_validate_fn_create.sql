@@ -40,6 +40,7 @@ declare
     v_kind text;
     v_relation text;
     v_ok boolean := false;
+    v_part text;
 begin
     v_scope := case NEW.parameter_scope
         when 'model' then 'ModelParameters'
@@ -74,7 +75,15 @@ begin
                and v.valid_to = ores_utility_infinity_timestamp_fn())
           into v_ok;
     elsif v_kind = 'boolean' then
-        v_ok := lower(NEW.parameter_value) in ('true', 'false');
+        /*
+         * A boolean has two spellings in this tree. ORE's XML states it as Y or
+         * N and the projection stores what the document said, so a document
+         * that reads Y writes Y; the screens state true or false. Both are the
+         * same value. The check accepts either and stores it as it arrived,
+         * because normalising it would change the document an export writes
+         * back and break a roundtrip that is meant to be lossless.
+         */
+        v_ok := lower(NEW.parameter_value) in ('true', 'false', 'y', 'n');
     elsif v_kind = 'range' then
         begin
             select NEW.parameter_value::numeric >= coalesce(s.minimum, '-Infinity'::numeric)
@@ -92,15 +101,29 @@ begin
           from ores_reporting_ore_parameter_value_sets_tbl s
          where s.code = v_set_code
            and s.valid_to = ores_utility_infinity_timestamp_fn();
-    elsif v_kind = 'integer' then
-        v_ok := NEW.parameter_value ~ '^\s*-?[0-9]+\s*$';
-    elsif v_kind = 'number' then
-        begin
-            perform NEW.parameter_value::numeric;
-            v_ok := true;
-        exception when others then
-            v_ok := false;
-        end;
+    elsif v_kind in ('integer', 'number') then
+        /*
+         * A numeric parameter may state one number or a list of them, such as
+         * the discretisation grid a replicating engine reads. Each comma
+         * separated part is checked and an empty part is a typo, so a list is
+         * as guarded as a single value rather than waved through.
+         */
+        v_ok := true;
+        foreach v_part in array string_to_array(NEW.parameter_value, ',') loop
+            if v_part is null or btrim(v_part) = '' then
+                v_ok := false;
+            elsif v_kind = 'integer' then
+                if btrim(v_part) !~ '^-?[0-9]+$' then
+                    v_ok := false;
+                end if;
+            else
+                begin
+                    perform btrim(v_part)::numeric;
+                exception when others then
+                    v_ok := false;
+                end;
+            end if;
+        end loop;
     elsif v_kind in ('period', 'text') then
         v_ok := true;
     elsif v_kind = 'catalogue' then

@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: 61C6B0A5-03A5-4424-8EA3-EE7E587629FD
+:END:
+#+title: Take a topic through the screen pipeline
+#+description: Journeys judged → prototype signed off → screens built from the shared parts → scenario on a fresh database → harness and sheet → the owner's sign off.
+#+type: runbook
+#+level: cross
+#+filetags: :llm:ux:web:pipeline:refdata:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
+
+* Goal
+
+Take one topic of [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][Screen pipeline topics]] from the person's goal to a signed off
+screen, so that every screen of the web speaks the one UX language and the
+next topic repeats the same steps without discussion. Each step ends in a
+document a person signs off: the journeys, the prototype, the screens, the
+scenario and the sheet. The calendars topic ran it first, in
+[[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]], and
+this page is what that run taught.
+
+* Preconditions
+
+- The topic is a row of [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][Screen pipeline topics]], with its entities and its
+  first judgement, and its gaps are on the [[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]].
+- The UX language is settled: the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and the
+  [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] carry a rule identifier on every rule, and
+  the [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] cites them.
+- The harness of [[id:D8BD9068-113A-4324-894C-06D74D34813E][How do I run the browser harness against the environment?]]
+  runs against the checkout's environment, and the [[id:10ECDD95-0C8C-4BFF-A94A-FCBFAAC8F25A][record screen baseline]]
+  says what the topic's screens measured before the pipeline touched them.
+- A story for the topic exists in the sprint with the four tasks below, as
+  =compass add story= and =compass add task= scaffold them; the owner is
+  reachable, because three steps stop for their sign off.
+
+* Steps
+
+In execution order. Each step is one task of the topic's story, worked
+through [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]]; a step that ends in the owner's
+sign off leaves its task =STARTED= and waiting on them until they have
+spoken, and closes on the next PR.
+
+1. /Extract and judge the journeys./ Start from the person's goal, not from
+   the Qt dialog. Read the topic's row and the matrix; find the journeys that
+   exist under [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] and write the ones that do not, with
+   =compass add user_journey= as [[id:62D58EB6-9977-411C-8403-E3A12DB4CB3D][New user journey]] says. Then judge each
+   step of each journey on the journey page, under /Screens and wireframes/,
+   in a table of step, shape on the screen, and judgement: a step the standard
+   record screen already draws, a kind's own action by RS-PAGE-03, a view no
+   rule draws yet, a missing server operation, or a step that keeps state
+   across a reply and so needs a workflow under the Workflows menu. Add the
+   =* Prototype= section the [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][journey contract]] requires, link each gap in
+   /What is missing/ to its capture, and name the placements the prototype
+   must decide. *Stop for the owner:* the journeys are signed off before any
+   prototype. Record the sign off and its decisions on the journey, the task
+   and the story's =* Decisions=.
+
+2. /Prototype the screens./ One prototype per topic under
+   =doc/prototypes/<group>/<name>/=, as the [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] page requires: plain
+   HTML, CSS and JavaScript, the web app's tokens, the query string as the
+   state so every screen, dialog and reader view has an address a reviewer
+   opens. Draw the screens where the standard settles them and nowhere else;
+   where no rule covers a part, define it in the design note for the standard
+   to take. Copy no history, dialog or panel from a live screen or an older
+   prototype without checking it against the standard: the live reference data
+   screens still carry the legacy =HistoryPanel=, and the first calendars
+   prototype copied it (see the memory [[id:EFC77BFA-BF5D-4FA7-A55F-1D09EB0932AD][History is the shared timeline, never the compare panel]]).
+   The design note cites the rule identifiers each screen follows, lists every
+   state's address and says what is fake; the group page and the top page list
+   the prototype; the journey's =* Prototype= section links it. Render every
+   state with Playwright and read the screenshots against the checklist before
+   the owner does. *Stop for the owner:* the prototype is signed off before any
+   code; their corrections are PRs on the same task.
+
+3. /Build the screens./ Move the live screen to the prototype, and land each
+   move in the shared part the standard names, so that no screen builds a
+   dialog of its own and every record screen gains the fix: =RecordHeader=,
+   =RecordDialog=, =PartsPanel=, =RecordDetails=, =RecordTimeline=,
+   =RecordList=. A kind's own action that answers in one reply is an
+   operation dialog opened from the header. The strings exist in English,
+   French and Portuguese before the screen ships. Where the harness has no
+   check for a rule the build relies on, add one to
+   =projects/ores.web/packages/harness/tests=, titled by the identifier, so the
+   legacy shape cannot pass a sign off again. Prove the build on the running
+   web with the harness on the screen alone and a scripted drive of the
+   editable path; the dialog checks skip on a screen whose first row is read
+   only, so derive or add a record to reach them.
+
+4. /Test and sign off./ Follow [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]]:
+   recreate the database and provision Acme as
+   [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]] says, write the test scenario with
+   =compass add test_scenario= over list, page, create, amend with a stale
+   version, parts, derived views, history and revert, delete, and the reader,
+   and drive it with a script kept in the task's =evidence/= folder, one
+   function per step, until every failure is the screen's and not the
+   script's. Press Refresh after every write in the script and in the words,
+   because the page does not reload by itself. Then follow
+   [[id:BB919630-E0C1-42A6-965D-109EBE52227A][How do I sign off a screen?]]: the harness on the screen alone, the sheet
+   from =screen_sign_off.py=, the person's lines filled from the scenario and
+   its screenshots, the verdict. File every gap as a capture or fix it when it
+   is the screen's and small; a gap the owner's run finds in the standard
+   changes the standard, with the date and the reason on the rule. *Stop for
+   the owner:* they run the scenario by hand and walk the sheet; their verdict
+   is the sign off that closes the topic. Record it on the scenario, the
+   sheet, the task and the story.
+
+5. /Close the topic./ Close the story with its decisions distilled, and
+   scaffold the next topic's story from this runbook with the same four
+   tasks, in the order of [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][Screen pipeline topics]]. The close PR of each
+   topic adds what the topic taught to the section below, under the topic's
+   name and date, so the page grows without being rewritten.
+
+* Postconditions
+
+- The topic's journeys carry a judgement per step and the owner's sign off.
+- The prototype is on =main= under =doc/prototypes/<group>/=, listed and
+  signed off, with the rule it added to the standard recorded there.
+- The live screens draw what the prototype draws, through the shared parts,
+  in three languages, with a harness check for every rule the build relied
+  on; the harness on each screen has no failure that is the screen's.
+- The scenario is PASSED by the owner's own run, the sheet carries their
+  verdict, and every gap found is a capture or a fix.
+- The story is DONE with its decisions, and the next topic's story exists.
+
+* What the topics taught
+
+** Calendars, 2026-10-25
+
+- The topic's journey already existed; the task was to judge it, not to
+  write a second one. Look before writing.
+- A copied screen copies its legacy. The first prototype carried the two-pane
+  history compare from the live currencies page and the classifications
+  prototype; the owner caught it. The timeline is the only history.
+- The owner's run of the scenario changed the standard twice: a record's
+  history carries its parts (RS-HIST-01), and the tabs a read-only kind lacks
+  stay hidden. Expect the standard to move at the sign off and write the
+  decision on the rule.
+- The scenario script's first failures were its own: it looked for a row
+  before pressing Refresh, clicked the header's Edit instead of the row's,
+  and left a regex literal uninterpolated. Three runs found two server gaps
+  along the way: a deleted calendar's days stay behind, and a re-created key
+  continues the old history.
+- The harness skips the dialog checks on a screen whose first row is read
+  only; derive or add a record to reach them, and let the scenario create and
+  delete its own.
+- The local gate can be red on main's defects while the branch is clean;
+  prove whose failure it is on a clean worktree of =origin/main= and capture
+  it rather than wait.
+
+* See also
+
+- [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][Screen pipeline topics]] — the topics in order, and what each produces.
+- [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] — the calendars run, step by step.
+- [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][User Journey: Keep a holiday calendar right]] — a judged journey, the shape step 1 produces.
+- [[id:4EAC99FF-2F49-4D7D-94B8-DCE7DF5A9EB5][Keep a holiday calendar right prototype]] — a signed off prototype and its note.
+- [[id:2EB79148-75EE-4FB2-A992-2957E0B873C9][Test Scenario: Verify the holiday calendar screens]] — a scenario run by the owner.
+- [[id:BB919630-E0C1-42A6-965D-109EBE52227A][How do I sign off a screen?]] — the sheet and the verdict.
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders the UX cluster.

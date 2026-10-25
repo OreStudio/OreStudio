@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: F211A600-B482-4C76-B4EF-2FFE1FDEB8EB
+:END:
+#+title: Story: Take the currencies topic through the screen pipeline
+#+description: Run the currencies and pairs topic through the screen pipeline runbook: journeys judged, prototype signed off, screens built, scenario, harness and sheet, the owner's sign off.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The second topic of [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][Screen pipeline topics]], currencies and pairs, goes through the
+[[id:61C6B0A5-03A5-4424-8EA3-EE7E587629FD][screen pipeline runbook]]: the currency, the desk group, the currency pair and
+the currency pair convention, with the classifications their pickers offer. The
+currencies screen is the richest the web has, so the topic proves the runbook on
+a screen that already conforms in most lines, and closes the gaps the
+[[id:10ECDD95-0C8C-4BFF-A94A-FCBFAAC8F25A][record screen baseline]] and the currencies sign off sheet found on it. The Qt
+import and export of currencies needs a decision in the journeys step: a
+workflow, or dropped.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing; the runbook and the harness are in place. |
+| Next          | Extract the journeys of the currencies topic, with the runbook's step 1. |
+| Last touched  | 2026-10-25                               |
+
+* Acceptance
+
+- The journeys Add or correct a currency, Group currencies for the desk and Set up a currency pair carry a judgement per step and the owner's sign off, and the Qt import and export is decided.
+- A prototype of each screen follows the settled standard, is signed off before any code, and its note says which rules it adds.
+- The currencies, desk groups and currency pairs screens draw what the prototype draws, through the shared parts, in three languages, with a harness check for every rule the build relies on; the ten screens still on =HistoryPanel= lose the ones this topic owns.
+- A test scenario covers list, record page, create, amend with a stale version, links, history and revert, delete and the reader, run on a fresh database and by the owner.
+- The sheet of each screen carries the owner's sign off, every gap is a capture or a fix, and the runbook gains what the topic taught.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9C4A21C6-6B7E-41A3-AB03-E2D3A8BB9939][Extract the journeys of the currencies topic]] | BACKLOG | | | Find or write the journeys of currencies, groups and pairs, judge each step as the standard screen, an own action, a view or a workflow, and get the owner's sign off. |
+| [[id:958AA2EF-041E-4266-AFE8-A57A6C345F6E][Prototype the screens of the currencies topic]] | BACKLOG | | | Prototype each screen of the topic to the settled standard with its design note, every state at an address, and get the owner's sign off before any code. |
+| [[id:31086D9C-507A-4748-BEBF-12D90775D130][Build the screens of the currencies topic]] | BACKLOG | | | Move the currencies, desk groups and currency pairs screens to the signed off prototype through the shared parts, with the harness checks and the strings in three languages. |
+| [[id:1592D684-2DC9-46B5-B348-032470DFDC08][Test and sign off the screens of the currencies topic]] | BACKLOG | | | Write and drive the test scenario on a fresh database, run the harness and the sheet, file the gaps, and record the owner's sign off. |
+
+* Decisions
+
+* Out of scope
+
+- The countries page the country link waits for; it belongs to the parties topic.
+- The server gaps the calendars topic captured: a deleted calendar's days, a re-created key's history, the gold Refresh after an own save.

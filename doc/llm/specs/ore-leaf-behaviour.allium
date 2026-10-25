@@ -1,0 +1,431 @@
+-- allium: 3
+-- ore-leaf-behaviour.allium
+
+-- Scope: how an ores.web screen draws and changes a leaf of an ORE
+-- document, a product parameter, an engine run setting or a convention
+-- term, as the ORE element and leaf screen standard (OL) states it. The
+-- words and the layout stay in that page; this spec carries the rules that
+-- are a state and the events that move it, so a test can be propagated
+-- from each. Every rule names the identifiers it encodes, in the form the
+-- page carries them, such as OL-READ-04.
+-- Includes:
+--   - The Simple and Advanced switch: one remembered choice, read by every
+--     screen and every card it opens (OL-MODE-02, 05, 07)
+--   - The documentation under a leaf: one leaf, the whole section, and the
+--     focus in edit (OL-DOC-01, 03, 07)
+--   - The value in force, every leaf a row, the one label (OL-READ-02, 03,
+--     04, 07)
+--   - The control: Default unsets, and no value outside the set
+--     (OL-CONTROL-01, 02)
+--   - A dependent choice that would drop a leaf names it first
+--     (OL-CONTROL-03, OL-EDIT-04)
+--   - The changed mark and the count, and a refusal on its leaf
+--     (OL-EDIT-02, 03)
+--   - The filters: what set means, a filter only where the data answers
+--     it, and no hidden problem (OL-FILTER-02, 03, 04)
+--   - A failed read of the documentation still shows every value
+--     (OL-STATE-01)
+-- Excludes:
+--   - The words, the order of the marks, the colours and the tags: prose
+--     rules with identifiers, checked in the browser by the harness
+--   - Identity, ownership, reach, history and lifecycle: the record screen
+--     and configuration screen specs govern them
+--   - The server's checks of a value: the spec states what the screen
+--     does with a refusal, not how the write path decides it
+-- External inputs: the documentation entries and value sets the screen
+-- reads, the document's held values, the person's actions on the screen,
+-- and the server's answer to a save.
+
+config {
+    -- A new person starts in Simple (OL-MODE-02).
+    first_mode: simple | advanced = simple
+}
+
+-- ------------------------------------------------------------
+-- Entities
+-- ------------------------------------------------------------
+
+-- The person at the screen. Permissions come from the session.
+entity Person {
+    name: String
+    may_write: Boolean
+}
+
+-- The one Simple and Advanced choice, kept in the browser and shared by
+-- every screen that offers it, feeds included (OL-MODE-02).
+entity ModeChoice {
+    person: Person
+    mode: simple | advanced
+}
+
+-- The values a leaf may take. The documentation says what a value means;
+-- the set says what a value may be (OL-DOC-06).
+entity ValueSet {
+    kind: flag | closed | catalogue | integer | number | period | text
+    -- The values of a flag, a closed list or a catalogue. Empty for the
+    -- kinds that state a type and no list.
+    values: Set<String>
+    minimum: Decimal?
+    maximum: Decimal?
+
+    lists_values: kind in {flag, closed, catalogue}
+}
+
+-- The one record of what a leaf means, keyed by its schema and XPath.
+entity DocumentationEntry {
+    schema_name: String
+    xpath: String
+    label: String
+    default_text: String
+    removed_in: String?
+    -- Whether a value of the leaf changes the numbers a run computes;
+    -- null where the data does not say (OL-FILTER-03).
+    changes_numbers: Boolean?
+}
+
+-- What a set of leaves belongs to: a product type, a group of engine run
+-- settings, a convention kind.
+entity ElementType {
+    code: String
+    leaves: Leaf with element_type = this
+}
+
+-- One leaf of an ORE document. A leaf may depend on another: a model
+-- parameter on the model, an engine parameter on the engine. It applies
+-- only while the leaf it depends on holds one of the values it names.
+entity Leaf {
+    element_type: ElementType
+    ore_name: String
+    entry: DocumentationEntry?
+    value_set: ValueSet?
+    required: Boolean
+    depends_on: Leaf?
+    applies_when: Set<String>
+
+    documented: entry != null
+    -- The one label a row carries (OL-READ-02).
+    label: if documented: entry.label else: ore_name
+    marks_numbers: documented and entry.changes_numbers = true
+}
+
+-- A screen that draws the leaves of one element type for one document:
+-- a group card, a product's workbench pane, a convention's record page.
+entity LeafScreen {
+    person: Person
+    element_type: ElementType
+    editing: Boolean
+    filter_set: Boolean
+    filter_numbers: Boolean
+    documentation_read: ok | failed
+
+    rows: Row with screen = this
+    -- The screen reads the person's one choice and keeps none of its own
+    -- (OL-MODE-07).
+    choice: ModeChoice where person = this.person
+
+    visible: rows where (not this.filter_set or held)
+        and (not this.filter_numbers or leaf.marks_numbers)
+    changed_rows: rows where changed
+    change_count: changed_rows.count
+    -- The refusals a filter hides, shown over the list (OL-FILTER-04).
+    hidden_problems: rows where problem != null
+        and ((this.filter_set and not held)
+            or (this.filter_numbers and not leaf.marks_numbers))
+    pending_drops: rows where drop_pending
+    -- A filter is drawn only where the data can answer it (OL-FILTER-03).
+    numbers_filter_drawn: (rows where leaf.documented
+        and leaf.entry.changes_numbers != null).count > 0
+    all_documentation_open: (visible where not doc_open).count = 0
+}
+
+-- One leaf on one screen: what the document holds, what the edit holds,
+-- and whether its documentation is open.
+entity Row {
+    screen: LeafScreen
+    leaf: Leaf
+    -- The value the document holds; null when the document leaves the
+    -- leaf out and ORE uses its default.
+    saved: String?
+    -- The value in the edit; null means Default (X) is chosen.
+    draft: String?
+    doc_open: Boolean
+    problem: String?
+    -- A dependent choice moved, and this leaf no longer applies. It is
+    -- named and kept until the person confirms (OL-EDIT-04).
+    drop_pending: Boolean
+
+    held: saved != null
+    -- The value a run uses, which the row always shows (OL-READ-03).
+    value_in_force: if held: saved
+        else if leaf.documented: leaf.entry.default_text
+        else: null
+    changed: screen.editing and draft != saved
+}
+
+-- ------------------------------------------------------------
+-- Rules: the Simple and Advanced switch
+-- ------------------------------------------------------------
+
+-- OL-MODE-02: a person meets the switch for the first time in Simple.
+rule FirstChoiceIsSimple {
+    when: person: Person.created
+    ensures: ModeChoice.created(person: person, mode: config.first_mode)
+}
+
+-- OL-MODE-02: the person's choice holds for every screen that offers the
+-- switch, and for every card and dialog those screens open (OL-MODE-07).
+rule PersonChoosesTheMode {
+    when: ModeChosen(person, mode)
+    for choice in ModeChoices where person = person:
+        ensures: choice.mode = mode
+}
+
+-- OL-MODE-05: the switch changes how much documentation shows and
+-- nothing else. The rows a screen shows, and their values, do not depend
+-- on the mode: visible and value_in_force read no mode.
+
+-- ------------------------------------------------------------
+-- Rules: reading a leaf
+-- ------------------------------------------------------------
+
+-- OL-READ-04: a screen lists every leaf its element type takes, set or
+-- not, so the default of a leaf the document leaves out can be read.
+invariant EveryLeafIsARow {
+    for screen in LeafScreens:
+        for leaf in screen.element_type.leaves:
+            (screen.rows where leaf = leaf).count = 1
+}
+
+-- OL-READ-03: a documented row never shows an empty value. An
+-- undocumented row that the document does not hold has no default to
+-- show; the screen shows its ORE name and the undocumented note.
+invariant TheValueInForceIsShown {
+    for row in Rows where row.leaf.documented:
+        row.value_in_force != null
+}
+
+-- ------------------------------------------------------------
+-- Rules: the documentation under a leaf
+-- ------------------------------------------------------------
+
+-- OL-DOC-01: Documentation opens one leaf's documentation, and Hide
+-- documentation closes it.
+rule PersonTogglesOneLeaf {
+    when: DocumentationToggled(person, row)
+    requires: row.screen.person = person
+    ensures: row.doc_open = not row.doc_open
+}
+
+-- OL-DOC-03: the section button opens every visible leaf, or closes them
+-- all when all are open. A leaf opened or closed by hand follows it.
+rule PersonTogglesTheSection {
+    when: AllDocumentationToggled(person, screen)
+    requires: screen.person = person
+    let opening = not screen.all_documentation_open
+    for row in screen.visible:
+        ensures: row.doc_open = opening
+}
+
+-- OL-DOC-07: in edit, a control that takes the focus opens its leaf's
+-- documentation. Nothing closes it but the person.
+rule FocusOpensTheDocumentation {
+    when: ControlFocused(person, row)
+    requires: row.screen.editing and row.screen.person = person
+    ensures: row.doc_open = true
+}
+
+-- ------------------------------------------------------------
+-- Rules: changing a leaf
+-- ------------------------------------------------------------
+
+-- The edit starts from what the document holds.
+rule PersonStartsTheEdit {
+    when: EditPressed(person, screen)
+    requires: person.may_write and screen.person = person
+        and not screen.editing
+    ensures: screen.editing = true
+    for row in screen.rows:
+        ensures: row.draft = row.saved
+        ensures: row.problem = null
+        ensures: row.drop_pending = false
+}
+
+-- OL-CONTROL-01, OL-CONTROL-02: the person chooses a value from the
+-- control. Default (X) is the choice of no value, and it unsets the leaf.
+-- A control offers no value its set refuses, so a listed set admits only
+-- its values. A range or a type is the field's own check, and a value it
+-- refuses never reaches the edit.
+rule PersonChoosesAValue {
+    when: ValueChosen(person, row, value)
+    requires: row.screen.editing and row.screen.person = person
+    requires: value = null or row.leaf.value_set = null
+        or not row.leaf.value_set.lists_values
+        or value in row.leaf.value_set.values
+    ensures: row.draft = value
+    ensures: row.problem = null
+}
+
+-- OL-CONTROL-03, OL-EDIT-04: a choice that another leaf depends on moves.
+-- A dependent leaf that no longer applies is named and kept; nothing is
+-- dropped before the person confirms.
+rule DependentLeavesAreNamedBeforeTheDrop {
+    when: ValueChosen(person, row, value)
+    requires: row.screen.editing
+    for other in row.screen.rows where leaf.depends_on = row.leaf:
+        ensures: other.drop_pending = (value not in other.leaf.applies_when)
+}
+
+-- OL-EDIT-04: the person confirms the drop, and the named leaves are
+-- unset in the edit. They are written only by the save.
+rule PersonConfirmsTheDrop {
+    when: DropConfirmed(person, screen)
+    requires: screen.editing and screen.pending_drops.count > 0
+    for row in screen.pending_drops:
+        ensures: row.draft = null
+        ensures: row.drop_pending = false
+}
+
+-- OL-EDIT-02: a leaf whose edit differs from what the document holds is
+-- marked, and the screen counts the marks.
+invariant TheCountIsTheMarks {
+    for screen in LeafScreens:
+        screen.change_count = (screen.rows where changed).count
+}
+
+-- OL-EDIT-03: a refusal from the server stands on the leaf it names, in
+-- the server's words, and the edit stays open.
+rule RefusalStandsOnItsLeaf {
+    when: ServerRefusedLeaf(screen, row, words)
+    requires: screen.editing and row.screen = screen
+    ensures: row.problem = words
+    ensures: screen.editing = true
+}
+
+-- The save writes the edit. The document now holds what the edit held,
+-- and no row is marked.
+rule SaveWritesTheEdit {
+    when: ServerAcceptedSave(screen)
+    requires: screen.editing and screen.pending_drops.count = 0
+    for row in screen.rows:
+        ensures: row.saved = row.draft
+    ensures: screen.editing = false
+}
+
+-- Cancel leaves the document as it was.
+rule PersonCancelsTheEdit {
+    when: CancelPressed(person, screen)
+    requires: screen.editing and screen.person = person
+    for row in screen.rows:
+        ensures: row.draft = row.saved
+        ensures: row.problem = null
+        ensures: row.drop_pending = false
+    ensures: screen.editing = false
+}
+
+-- ------------------------------------------------------------
+-- Rules: filters and gaps
+-- ------------------------------------------------------------
+
+-- OL-FILTER-02: Set in this configuration keeps every leaf the document
+-- holds a value for, a value equal to the default included.
+rule PersonTogglesTheSetFilter {
+    when: SetFilterToggled(person, screen)
+    requires: screen.person = person
+    ensures: screen.filter_set = not screen.filter_set
+}
+
+-- OL-FILTER-03: the numbers filter is offered only where the data says
+-- which leaves change the numbers.
+rule PersonTogglesTheNumbersFilter {
+    when: NumbersFilterToggled(person, screen)
+    requires: screen.person = person and screen.numbers_filter_drawn
+    ensures: screen.filter_numbers = not screen.filter_numbers
+}
+
+-- OL-FILTER-04: a problem on a leaf the filters hide is shown over the
+-- list, so a refused save always has its reason in view.
+invariant NoProblemIsHidden {
+    for screen in LeafScreens:
+        for row in screen.rows where problem != null:
+            row in screen.visible or row in screen.hidden_problems
+}
+
+-- OL-STATE-01: a failed read of the documentation leaves every row and
+-- every held value in place.
+rule DocumentationReadFails {
+    when: DocumentationReadFailed(screen)
+    ensures: screen.documentation_read = failed
+}
+
+-- ------------------------------------------------------------
+-- Surfaces
+-- ------------------------------------------------------------
+
+surface LeafList {
+    facing viewer: Person
+
+    context screen: LeafScreen where person = viewer
+
+    exposes:
+        screen.choice.mode
+        screen.editing
+        screen.change_count
+        screen.filter_set
+        screen.filter_numbers
+        screen.numbers_filter_drawn
+        screen.documentation_read
+        for row in screen.visible:
+            row.leaf.label
+            row.leaf.required
+            row.leaf.marks_numbers
+            row.value_in_force
+            row.held
+            row.changed
+            row.doc_open
+            row.problem
+            row.drop_pending
+        for row in screen.hidden_problems:
+            row.problem
+
+    provides:
+        ModeChosen(viewer, simple)
+        ModeChosen(viewer, advanced)
+        AllDocumentationToggled(viewer, screen)
+        SetFilterToggled(viewer, screen)
+        NumbersFilterToggled(viewer, screen)
+            when screen.numbers_filter_drawn
+        EditPressed(viewer, screen)
+            when viewer.may_write and not screen.editing
+        CancelPressed(viewer, screen)
+            when screen.editing
+        DropConfirmed(viewer, screen)
+            when screen.pending_drops.count > 0
+        for row in screen.visible:
+            DocumentationToggled(viewer, row)
+            ControlFocused(viewer, row)
+                when screen.editing
+            ValueChosen(viewer, row, null)
+                when screen.editing
+            for value in row.leaf.value_set.values:
+                ValueChosen(viewer, row, value)
+                    when screen.editing and row.leaf.value_set.lists_values
+
+    @guarantee TheSwitchHidesNothing
+        -- The mode decides only how much of the documentation entry the open
+        -- panel shows. The rows, their values and their controls are the same
+        -- in Simple and Advanced (OL-MODE-05).
+    @guarantee OneLabelFromTheEntry
+        -- A row carries one label, the entry's, or the ORE name where there
+        -- is no entry; the control repeats none (OL-READ-02).
+    @guarantee NoOreTextInTheScreen
+        -- Every label, help, description, default, format and release comes
+        -- from the documentation entry; the screen holds none (OL-DOC-05).
+}
+
+-- Open questions:
+--   - An undocumented leaf the document does not hold has no default the
+--     screen can show. OL-READ-03 asks for a value; the spec shows the
+--     undocumented note instead and records it as a gap of the kind.
+--   - A catalogue set may be too long to send whole. The spec treats its
+--     values as known; a search over the catalogue keeps the same rule,
+--     that no refused value can be chosen.

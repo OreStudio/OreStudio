@@ -1,0 +1,26 @@
+:PROPERTIES:
+:ID: 3E7A9C15-6D42-4B80-9F13-5C28E0B7D461
+:END:
+#+title: The population writes a party id into the issuer
+#+description: A bond issue's issuer is a free-text name, and the generated population puts a party id there, so the trade page has nothing a person can read to show.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:trading:seeding:bug:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+The bond issue's =issuer= column is text: a name. The generated population writes
+a party uuid into it instead:
+
+#+begin_example
+issuer: 001da331-48a7-466c-8548-a84bd7567367
+#+end_example
+
+So the trade page's Issue section cannot show an issuer. It shows a dash, and it
+deliberately does not show the id, because a uuid is not something a person
+reads.
+
+The generator knows the party, since it picks it, so the fix is to write the
+party's name there, or to model the issuer as a party reference and read the name
+where it is shown. Which of the two depends on whether an issuer is always one of
+our parties, and that is a modelling question rather than a seeding one.

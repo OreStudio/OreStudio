@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :take_the_first_refdata_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/write-the-screen-pipeline-runbook
+#+pr: 3818
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The next topic repeats the pipeline without discussion. The runbook names each s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -40,9 +40,13 @@ The next topic repeats the pipeline without discussion. The runbook names each s
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Write the runbook from what the four tasks of the calendars topic did, not
+from what was planned: each step names its task shape, the recipe or page it
+follows, the document it produces, who signs it off and where the sign off is
+recorded, and a section carries what the topic taught that the next must know.
+Scaffold the next topic's story, currencies and pairs, with the same four tasks
+so the runbook is used before it is forgotten, and wire the runbook into the
+catalogue and the story into the sprint's epic.
 
 * Measurements
 
@@ -56,7 +60,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Runbook steps | 5, three of them stopping for the owner | =doc/llm/runbooks/take_a_topic_through_the_screen_pipeline/runbook.org= | this branch |
+| Lessons recorded | 6 | the section What the calendars topic taught | this branch |
+| Next topic scaffolded | 1 story, 4 tasks | =compass add story=, =compass add task= | this branch |
+| Calendars topic, PRs merged | 5 of the topic's own, 1 of the harness check it added | 3781, 3785, 3787, 3790, 3798, 3811 | this branch |
 
 * Notes
 
@@ -75,12 +82,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3818][#3818]] | [docs] Write the screen pipeline runbook and scaffold the currencies topic |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: docs class | doc/llm/runbooks, the new story | Accept | Every step links the page it follows by id; the lessons are the ones the task records of the topic carry |
+| 2 | PR 3818 review: the story closed while the prototype task was still STARTED; who adds lessons to the runbook and when; the lessons section named after one topic | the prototype task, the runbook | Accept | The prototype task is DONE, as the owner signed it off on 2026-10-25; step 5 says the close PR of each topic adds its lessons under the topic's name and date, and the section is now What the topics taught with a Calendars subsection |
 
 * Result
+
+The runbook Take a topic through the screen pipeline states the five steps
+the calendars topic walked: journeys judged and signed off, prototype drawn
+and signed off, screens built through the shared parts with harness checks
+and three languages, scenario on a fresh database with the harness and the
+sheet and the owner's sign off, and the close that scaffolds the next topic.
+It names the page each step follows, the document it produces and where the
+sign off is recorded, and carries six lessons from the calendars run. The
+runbooks catalogue lists it. The next topic's story, Take the currencies topic
+through the screen pipeline, is scaffolded with the same four tasks and wired
+into the sprint's epic.

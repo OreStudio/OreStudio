@@ -148,7 +148,7 @@ def top_level_keys(literal: str) -> tuple[str, ...]:
 def read_all_sites(text: str) -> list[tuple[int, str, str]]:
     """Each readAll call: the subject expression, the rows key, and the offset."""
     sites = []
-    for match in re.finditer(r"readAll\(\s*session\s*,", text):
+    for match in re.finditer(r"readAll\(", text):
         rest = text[match.end() :]
         parts = split_arguments(rest)
         if len(parts) < 2:

@@ -70,6 +70,7 @@ import {
 } from '../ui/OreParameter.js';
 import { PRICING_ENGINES_EVENTS } from './PricingEnginesPage.js';
 import { ChoiceSelect, ModelEnginePanels, SettingValue } from './parts.js';
+import { typeName } from './model.js';
 import { SaveDialog } from './SaveDialog.js';
 import {
     documentationOf,
@@ -678,7 +679,7 @@ function ProductsTab({
                                                     : 'block w-full rounded border-l-2 border-transparent px-2 py-1 text-left text-sm break-words text-ink-muted hover:text-ink [overflow-wrap:anywhere]'
                                             }
                                         >
-                                            {product.typeCode}
+                                            {typeName(vocabulary, product.typeCode)}
                                         </button>
                                     ))}
                                 </div>
@@ -1608,9 +1609,31 @@ function AddProductDialog({
     );
     const [typeCode, setTypeCode] = useState(free[0]?.code ?? '');
     const [id] = useState(newId);
+    const pairs = vocabulary.pairs.filter((pair) => pair.typeCode === typeCode);
+    const knownModels = [...new Set(pairs.map((pair) => pair.model))];
+    const models =
+        knownModels.length > 0 ? knownModels : vocabulary.models.map((entry) => entry.code);
+    const [model, setModel] = useState(pairs.find((pair) => pair.usual)?.model ?? models[0] ?? '');
+    const chosenModel = model !== '' ? model : (models[0] ?? '');
+    const knownEngines = [
+        ...new Set(pairs.filter((pair) => pair.model === chosenModel).map((pair) => pair.engine)),
+    ];
+    const engines =
+        knownEngines.length > 0 ? knownEngines : vocabulary.methods.map((entry) => entry.code);
+    const [engine, setEngine] = useState(
+        pairs.find((pair) => pair.usual)?.engine ?? engines[0] ?? '',
+    );
+    const chosenEngine = engine !== '' ? engine : (engines[0] ?? '');
     const position = Math.max(-1, ...start.products.map((entry) => entry.position)) + 1;
     const added: PricingProduct | undefined =
-        typeCode === '' ? undefined : { ...newProduct(vocabulary, typeCode, position), id };
+        typeCode === ''
+            ? undefined
+            : {
+                  ...newProduct(vocabulary, typeCode, position),
+                  id,
+                  ...(chosenModel !== '' ? { model: chosenModel } : {}),
+                  ...(chosenEngine !== '' ? { engine: chosenEngine } : {}),
+              };
     const settings =
         added === undefined
             ? []
@@ -1642,20 +1665,69 @@ function AddProductDialog({
             document={document}
             after={after}
             vocabulary={vocabulary}
+            onlyProductId={id}
             onClose={onClose}
         >
             {free.length === 0 ? (
                 <Notice tone="info">{t('pricingEngines.change.everyTypeHeld')}</Notice>
             ) : (
-                <Field label={t('pricingEngines.fields.type')}>
-                    <Select value={typeCode} onChange={(event) => setTypeCode(event.target.value)}>
-                        {free.map((type) => (
-                            <option key={type.code} value={type.code}>
-                                {type.description !== '' ? type.description : type.code}
-                            </option>
-                        ))}
-                    </Select>
-                </Field>
+                <>
+                    <Field label={t('pricingEngines.fields.type')}>
+                        <Select
+                            value={typeCode}
+                            onChange={(event) => {
+                                const next = event.target.value;
+                                setTypeCode(next);
+                                const pair = vocabulary.pairs
+                                    .filter((candidate) => candidate.typeCode === next)
+                                    .find((candidate) => candidate.usual);
+                                setModel(pair?.model ?? '');
+                                setEngine(pair?.engine ?? '');
+                            }}
+                        >
+                            {free.map((type) => (
+                                <option key={type.code} value={type.code}>
+                                    {type.description !== '' ? type.description : type.code}
+                                </option>
+                            ))}
+                        </Select>
+                    </Field>
+                    {models.length > 0 && (
+                        <Field label={t('pricingEngines.fields.model')}>
+                            <Select
+                                value={model}
+                                onChange={(event) => {
+                                    const next = event.target.value;
+                                    setModel(next);
+                                    const pair = pairs.find(
+                                        (candidate) => candidate.model === next,
+                                    );
+                                    setEngine(pair?.engine ?? '');
+                                }}
+                            >
+                                {models.map((entry) => (
+                                    <option key={entry} value={entry}>
+                                        {entry}
+                                    </option>
+                                ))}
+                            </Select>
+                        </Field>
+                    )}
+                    {engines.length > 0 && (
+                        <Field label={t('pricingEngines.fields.engine')}>
+                            <Select
+                                value={engine}
+                                onChange={(event) => setEngine(event.target.value)}
+                            >
+                                {engines.map((entry) => (
+                                    <option key={entry} value={entry}>
+                                        {entry}
+                                    </option>
+                                ))}
+                            </Select>
+                        </Field>
+                    )}
+                </>
             )}
         </SaveDialog>
     );

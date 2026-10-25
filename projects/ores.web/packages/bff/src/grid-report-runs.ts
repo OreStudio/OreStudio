@@ -220,6 +220,7 @@ export function registerGridReportRunRoutes(
                     message: text(entry['message']),
                     subject: nullableText(entry['subject']),
                     subject_id: nullableText(entry['subject_id']),
+                    cause: nullableText(entry['cause']),
                     subject_version:
                         typeof entry['subject_version'] === 'number'
                             ? entry['subject_version']

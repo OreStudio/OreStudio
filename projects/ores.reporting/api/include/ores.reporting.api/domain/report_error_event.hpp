@@ -165,6 +165,15 @@ struct report_error_event final {
     std::optional<std::chrono::system_clock::time_point> subject_as_of;
 
     /**
+     * @brief What the error is about, said in a person's words rather than the engine's: the curve
+     * that would not build, or the curve a failed trade needed. It is worked out once, where the
+     * engine's log is read, because the engine states a trade's curve only inside the message it
+     * writes. A screen that repeated that reading would be a second implementation of the engine's
+     * format, and the shell would have none at all.
+     */
+    std::optional<std::string> cause;
+
+    /**
      * @brief The engine's remaining sub-fields for the message, as a JSON object, when it emitted
      * any: the exceptionType that says which failure this is, and the warningType on a warning. The
      * message alone does not carry them, and they are what tells two errors of one scope apart, so

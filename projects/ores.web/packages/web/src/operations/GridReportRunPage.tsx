@@ -77,6 +77,7 @@ type RunError = {
     readonly message: string;
     readonly subject: string;
     readonly subjectId: string;
+    readonly cause: string;
     readonly version: number | null;
     readonly asOf: string;
     readonly time: string;
@@ -93,47 +94,11 @@ const toError = (raw: unknown): RunError => {
         message: asText(row['message']),
         subject: asText(row['subject']),
         subjectId: asText(row['subject_id']),
+        cause: asText(row['cause']),
         version: typeof row['subject_version'] === 'number' ? row['subject_version'] : null,
         asOf: asText(row['subject_as_of']),
         time: asText(row['time']),
     };
-};
-
-/** A curve's name, from the id the engine states for it. */
-const curveNameOf = (value: string): string => {
-    const stated = /IndexCurve\([^,]*,\s*([^)]*)\)/.exec(value)?.[1];
-    if (stated !== undefined) return stated.trim();
-    return value.replace(/^\[/, '').replace(/\]$/, '');
-};
-
-/** The pricing date the engine worked at, when a message states one. */
-const asOfDateOf = (rows: readonly RunError[]): string => {
-    for (const row of rows) {
-        const stated = /as of date (\d{4}-\d{2}-\d{2})/.exec(row.message)?.[1];
-        if (stated !== undefined) return stated;
-    }
-    return '';
-};
-
-/** The first sentence of a message, for a line that must stay short. */
-const firstSentenceOf = (message: string): string => {
-    const cut = message.search(/\.\s/);
-    const sentence = cut === -1 ? message : message.slice(0, cut + 1);
-    return sentence.length > 160 ? `${sentence.slice(0, 157)}...` : sentence;
-};
-
-/** What the error is about, in a person's words rather than the engine's kind. */
-const labelOf = (error: RunError): string => {
-    if (error.scope === 'Trade') {
-        const curve = /IndexCurve\([^,]*,\s*([^)]*)\)/.exec(error.message)?.[1];
-        if (curve !== undefined) return curve.trim();
-        return error.subjectId !== '' ? error.subjectId : 'a trade';
-    }
-    if (error.scope === 'Curve') {
-        return curveNameOf(error.subjectId !== '' ? error.subjectId : error.message);
-    }
-    if (error.subjectId !== '') return error.subjectId;
-    return firstSentenceOf(error.message);
 };
 
 const tradeHref = (error: RunError): string =>
@@ -188,13 +153,10 @@ function RunSummary({
     const curves = [
         ...new Set(
             rows
-                .filter((error) => error.scope === 'Curve')
-                .map((error) =>
-                    curveNameOf(error.subjectId !== '' ? error.subjectId : error.message),
-                ),
+                .filter((error) => error.scope === 'Curve' && error.cause !== '')
+                .map((error) => error.cause),
         ),
     ];
-    const priced = asOfDateOf(rows);
     if (rows.length === 0) return null;
 
     return (
@@ -204,11 +166,6 @@ function RunSummary({
                     ? `This run recorded ${rows.length} problem(s).`
                     : `Market data is missing for ${curves.length} curve(s).`}
             </p>
-            {priced !== '' && (
-                <p className="text-sm text-ink-muted">
-                    {`Priced at ${priced}, the last date the gathered market data carries.`}
-                </p>
-            )}
             <button type="button" onClick={onShowErrors} className="text-sm underline">
                 {`View all ${rows.length} errors →`}
             </button>
@@ -249,10 +206,9 @@ function RunErrors({ id, outputMessage }: { readonly id: string; readonly output
         const curves = shown.filter((error) => error.scope === 'Curve');
         const trades = shown.filter((error) => error.scope === 'Trade');
         return curves.map((curve) => {
-            const name = curveNameOf(curve.subjectId !== '' ? curve.subjectId : curve.message);
-            const matching = trades.filter((trade) => trade.message.includes(name));
+            const matching = trades.filter((trade) => trade.cause === curve.cause);
             const unique = [...new Map(matching.map((trade) => [trade.subjectId, trade])).values()];
-            return { name, curve, trades: unique };
+            return { name: curve.cause, curve, trades: unique };
         });
     }, [shown]);
 
@@ -369,11 +325,7 @@ function RunErrors({ id, outputMessage }: { readonly id: string; readonly output
                                         >
                                             {other.severity}
                                         </Tag>
-                                        <span className="text-ink-muted">
-                                            {other.message.startsWith("The run's compute job")
-                                                ? firstSentenceOf(other.message)
-                                                : other.message}
-                                        </span>
+                                        <span className="text-ink-muted">{other.message}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -433,7 +385,7 @@ function RunErrors({ id, outputMessage }: { readonly id: string; readonly output
                                             </td>
                                             <td className="px-2 py-1">{error.scope}</td>
                                             <td className="px-2 py-1 font-mono">
-                                                {labelOf(error)}
+                                                {error.cause || '—'}
                                             </td>
                                             <td className="px-2 py-1 font-mono">
                                                 {error.scope !== 'Trade' ||
@@ -464,7 +416,7 @@ function RunErrors({ id, outputMessage }: { readonly id: string; readonly output
                     </div>
                     {current !== null && (
                         <aside className="card space-y-3 p-4">
-                            <p className="font-mono text-sm">{labelOf(current)}</p>
+                            <p className="font-mono text-sm">{current.cause || current.scope}</p>
                             <p className="text-xs text-ink-muted">
                                 {`${current.severity} · ${current.scope} · ${formatDateTime(current.time, language)}`}
                             </p>

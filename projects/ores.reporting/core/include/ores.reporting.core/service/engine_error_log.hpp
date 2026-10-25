@@ -46,6 +46,11 @@ struct engine_log_error {
     std::string subject;
     std::string subject_id;
 
+    /// The thing the error is about in a person's words: the curve that would
+    /// not build, or the curve the failed trade needed. Empty when the engine
+    /// stated neither.
+    std::string cause;
+
     /// The sub-fields other than the identifying one, as the engine wrote them.
     std::string detail;
 };

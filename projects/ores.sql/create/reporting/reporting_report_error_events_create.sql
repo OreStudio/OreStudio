@@ -89,6 +89,7 @@ create table if not exists "ores_reporting_report_error_events_tbl" (
     "subject_id" text null,
     "subject_version" integer null,
     "subject_as_of" timestamp with time zone null,
+    "cause" text null,
     "detail" jsonb null,
     "event_time" timestamp with time zone not null,
     primary key (tenant_id, id),

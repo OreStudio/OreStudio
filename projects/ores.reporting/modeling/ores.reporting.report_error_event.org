@@ -205,6 +205,20 @@ The instant the subject was current at, when the subject is versioned. It reads
 beside =subject_version=: the version alone names a row, and the instant says
 when that row was the live one.
 
+** cause
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+What the error is about, said in a person's words rather than the engine's: the
+curve that would not build, or the curve a failed trade needed. It is worked out
+once, where the engine's log is read, because the engine states a trade's curve
+only inside the message it writes. A screen that repeated that reading would be
+a second implementation of the engine's format, and the shell would have none at
+all.
+
 ** detail
 :PROPERTIES:
 :type:     jsonb

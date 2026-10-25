@@ -82,7 +82,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Run the Allium check before merge | ore-leaf-behaviour.allium | Decline | The Allium CLI is not installed in this environment; the spec was checked by hand against record-screen-behaviour.allium, and the PR states it. |
+| 2 | Mark the conformance table as unverified | ore_element_and_leaf_screen_standard.org | No change | The section already says the screens were read, not driven, and that the harness has not checked them. |
+| 3 | Mark the four open words as proposed | ore_element_and_leaf_screen_standard.org | Accept | The marker is now *(proposed)*, and OL-WORDS-04 says such a word is not final and no screen adopts it before the owner decides. |
+| 4 | Track the codegen-tests failure separately | inbox capture | Accept | Filed [[id:6D562FB6-316C-46F3-9775-9BA8B6787072][Seed the permissions of the ORE parameter value set handlers]]: 16 unseeded codes, failing on a clean main at c70e30a652. |
+| 5 | The rule count of 55 looks wrong | ore_element_and_leaf_screen_standard.org | Decline | The identifiers have the form OL-AREA-NN; grep -oE '\*OL-[A-Z]+-[0-9]{2}\*' counts 55 distinct ones. |
 
 * Result
 

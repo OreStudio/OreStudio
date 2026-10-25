@@ -87,13 +87,13 @@ translation namespace, =oreParameter=, and no screen keeps its own copy of them.
 |-----+---------+-------|
 | =oreParameter.mode.simple= | Simple | The switch |
 | =oreParameter.mode.advanced= | Advanced | The switch |
-| =oreParameter.mode.label= | How much to show | The switch's accessible name *(new)* |
-| =oreParameter.mode.simpleHelp= | The label, the value and what it means. | The tooltip on Simple *(new)* |
-| =oreParameter.mode.advancedHelp= | Also the ORE XML path, the format, the options and the releases. | The tooltip on Advanced *(new)* |
+| =oreParameter.mode.label= | How much to show | The switch's accessible name *(proposed)* |
+| =oreParameter.mode.simpleHelp= | The label, the value and what it means. | The tooltip on Simple *(proposed)* |
+| =oreParameter.mode.advancedHelp= | Also the ORE XML path, the format, the options and the releases. | The tooltip on Advanced *(proposed)* |
 | =oreParameter.documentation= | Documentation | The button under a closed leaf |
 | =oreParameter.hideDocumentation= | Hide documentation | The button under an open leaf |
-| =oreParameter.showAllDocumentation= | Show all documentation | The button over a section *(new)* |
-| =oreParameter.hideAllDocumentation= | Hide all documentation | The button over a section *(new)* |
+| =oreParameter.showAllDocumentation= | Show all documentation | The button over a section *(proposed)* |
+| =oreParameter.hideAllDocumentation= | Hide all documentation | The button over a section *(proposed)* |
 | =oreParameter.defaultIs= | Default: {value} | The line in the documentation, and beside a leaf that is not set |
 | =oreParameter.defaultOption= | Default ({value}) | The first option of a control |
 | =oreParameter.notSet= | not set | A group with no row |
@@ -118,11 +118,13 @@ translation namespace, =oreParameter=, and no screen keeps its own copy of them.
 | =oreParameter.source.ore_guide= | From the ORE guide | The source tag |
 | =oreParameter.source.ore_code= | From the ORE code | The source tag |
 | =oreParameter.source.authored= | Written for ORE Studio, to review | The source tag |
-| =oreParameter.source.seed= | Carried over from the old seed, to review | The source tag *(new)* |
+| =oreParameter.source.seed= | Carried over from the old seed, to review | The source tag *(proposed)* |
 | =oreParameter.source.unknown= | Source not stated | The source tag |
 
-- *OL-WORDS-04* A word marked *(new)* is not on any screen today. The others are
-  already on at least one screen; this table picks one where two screens differ.
+- *OL-WORDS-04* A word marked *(proposed)* is not on any screen today and is not
+  final: it waits for the owner's decision in [[*Decisions to take][Decisions to take]],
+  and no screen adopts it before then. The others are already on at least one
+  screen; this table picks one where two screens differ.
 - *OL-WORDS-05* A translation exists for every key in every language the web
   offers. A key with no translation is a gap, not a fallback to English.
 

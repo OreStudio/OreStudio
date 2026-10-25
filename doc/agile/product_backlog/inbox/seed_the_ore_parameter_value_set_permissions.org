@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 6D562FB6-316C-46F3-9775-9BA8B6787072
+:END:
+#+title: Seed the permissions of the ORE parameter value set handlers
+#+description: test_handler_permissions.py fails on main at c70e30a652: 16 permission codes the reporting ore_parameter value set handlers check, such as reporting::ore_parameter_setting_value_sets:delete, are not in iam_permissions_populate.sql, so the codegen suite is red for every branch. Seed the codes, or name why a handler checks a code no role can hold.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:tests:iam:reporting:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.codegen/tests/test_handler_permissions.py= fails on a clean
+=main= at =c70e30a652=: =test_every_handler_permission_is_seeded= and
+=test_a_code_missing_from_the_seeds_is_reported=. The check finds 16 permission
+codes that the reporting ORE parameter value set handlers check and that
+=iam_permissions_populate.sql= does not seed, the first of them
+=reporting::ore_parameter_setting_value_sets:delete= in
+=ore_parameter_setting_value_set_handler.hpp=. Seed the codes, or state why a
+handler checks a code no role can hold.
+
+* Why
+
+A handler that checks an unseeded code refuses every caller, and the failing
+test turns the codegen suite red for every branch, so the local check gate
+cannot be green until it is fixed. It was found raising PR #3814, which changes
+no handler and no seed.
+
+* References
+
+- =projects/ores.codegen/tests/test_handler_permissions.py=
+- =projects/ores.reporting/core/include/ores.reporting.core/messaging/ore_parameter_setting_value_set_handler.hpp=
+
+* See also
+
+- [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] — the story whose value set work added the handlers.

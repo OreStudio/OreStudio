@@ -101,6 +101,11 @@ pages above disagree, what the form layout leaves open, and what a rule needs
 so a check can name it. Read it to see what the standards still have to settle.
 It adds no rule either.
 
+[[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][The screen pipeline topics]] — the Qt
+entities grouped into eleven topics, each judged as standard or a workflow and
+ordered for the pipeline. Calendars go first. Read it to know which topic is
+next and what it carries.
+
 # aside
 
 [[id:5779B40E-1C82-478D-951E-C81C13F7DFEA][The market simulator screens]] —

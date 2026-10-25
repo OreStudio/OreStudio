@@ -120,7 +120,7 @@ of the application join as their own stories under this heading.
 | [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] | STARTED | 2026-10-25 | | Build the Qt-to-web matrix of the reference data screens, audit the UX standards for gaps, and order the topics. |
 | [[id:90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2][Settle the UX language for record screens]] | BACKLOG | | | Decide every contradiction between the standards, write the form layout rules, name each rule, and specify it in Allium. |
 | [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] | BACKLOG | | | Build a Playwright harness that checks every record screen by rule identifier, and write the sign off recipe. |
-| [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] | BACKLOG | | | Run the first Qt topic through journeys, prototype, build, test scenario and sign off; the pipeline is the deliverable. |
+| [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] | BACKLOG | | | Run the calendars topic through journeys, prototype, build, test scenario and sign off; the pipeline is the deliverable. |
 
 ** Hotfixes
 

@@ -2,7 +2,7 @@
 :ID: 1E0EF4FA-60C0-4F2F-AAE1-848E84675449
 :END:
 #+title: Story: Take the first reference data topic through the screen pipeline
-#+description: Run the first Qt topic through journeys, prototype, build, test scenario and sign off; the pipeline is the deliverable.
+#+description: Run the calendars topic through journeys, prototype, build, test scenario and sign off; the pipeline is the deliverable.
 #+type: story
 #+level: s2
 #+filetags: :ux:web:refdata:journeys:prototype:sprint_29:v0:
@@ -24,7 +24,7 @@ One reference data topic goes end to end through the pipeline, and the pipeline 
 | State         | BACKLOG                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
-| Waiting on    | The topic order of [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] names the first topic. The harness of [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] must exist before the screens are built. |
+| Waiting on    | The harness of [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] must exist before the screens are built. The topic is calendars, per [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][The screen pipeline topics]]. |
 | Next          | Extract the journeys of the first topic. |
 | Last touched  | 2026-10-25                               |
 

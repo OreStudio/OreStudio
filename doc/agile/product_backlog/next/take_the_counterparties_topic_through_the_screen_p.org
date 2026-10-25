@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: F7E3D2C6-C608-42BA-8055-F71CDE94344F
+:END:
+#+title: Take the counterparties topic through the screen pipeline
+#+description: Counterparty, identifier and contact; Onboard a counterparty exists; an entity screen over the composite write. Fourth.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:refdata:pipeline:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Take the counterparties topic through the screen pipeline. Counterparty, counterparty identifier and counterparty contact. Journey exists: Onboard a counterparty. An entity screen over the composite write, with the onboarding workflow; the Qt hierarchy tab is the gap. Fourth topic in the order the inventory story set.
+
+* Why
+
+Every screen must speak one UX language, and the epic One UX language for
+every screen takes the Qt reference data topics through one pipeline, one topic
+at a time. This capture is one topic's turn. The order and the judgement of
+each topic are on The screen pipeline topics.
+
+* References
+
+- [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][The screen pipeline topics]] — the order and the judgement of every topic.
+- [[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]] — the entities and the gaps the topic carries.
+
+* See also
+
+-

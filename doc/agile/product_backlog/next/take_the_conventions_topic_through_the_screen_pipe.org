@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 7522335D-4170-44BF-B8BE-59C3B2481C61
+:END:
+#+title: Take the conventions topic through the screen pipeline
+#+description: Nine convention kinds and six lists; eight journeys exist; seven kinds list ids only, the largest gap. Fifth topic.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:refdata:pipeline:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Take the conventions topic through the screen pipeline. The nine Qt convention kinds and the lists they draw on: day count fraction, business day convention, floating index, payment frequency, leg type and curve role. Eight journeys exist, from Author a convention for a kind to Publish conventions from data quality. Standard screens per kind plus the import and decision workflows; seven kinds list ids only today, the largest gap in the matrix. Fifth topic in the order the inventory story set.
+
+* Why
+
+Every screen must speak one UX language, and the epic One UX language for
+every screen takes the Qt reference data topics through one pipeline, one topic
+at a time. This capture is one topic's turn. The order and the judgement of
+each topic are on The screen pipeline topics.
+
+* References
+
+- [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][The screen pipeline topics]] — the order and the judgement of every topic.
+- [[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]] — the entities and the gaps the topic carries.
+
+* See also
+
+-

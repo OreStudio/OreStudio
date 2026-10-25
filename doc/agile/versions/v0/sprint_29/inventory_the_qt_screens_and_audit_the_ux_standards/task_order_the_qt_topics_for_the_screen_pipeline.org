@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :inventory_the_qt_screens_and_audit_the_ux_standards:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/order-the-qt-topics
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The pipeline has a queue. Each topic names its entities, the journeys it needs, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -53,9 +53,9 @@ A row that needs a seam the code lacks says so.
 | 42 | rule success | FieldEditedFollowsTheReasons | Editing a field back to its value clears a reason picked while it was changed | RS-WRITE-22 | none |
 | 43 | rule failure | RevertRefusedAsStale | A revert after another browser saved is refused and the page says so | RS-WRITE-23, RS-HIST-02 | a second browser |
 | 44 | invariant | NoSilentDelete | A deleted record carries the reason of its delete; a removed link carries none | RS-FEEDBACK-06, RS-RELATED-03 | a record with links |
-| 39 | open question | the first page after a write | Decide before the test: does Refresh after a write return to page one always, or only when the sort could move the record | RS Paging | the owner |
+| 39 | guarantee | RefreshKeepsThePage | Refresh after a write keeps the page the person was on; a new search, filter, order or page size goes to the first; a page past the end shows the last page | RS-LIST-19 | a list with more than one page |
 
-Forty four obligations. Thirteen need a second browser or a second account,
-two need a controllable clock, and one is an open question for the owner. The rest
-need nothing the running environment lacks. Row 39, the open question, stands
-last on purpose: it is a decision, not a test.
+Forty four obligations. Thirteen need a second browser or a second account, two
+need a controllable clock. The rest need nothing the running environment lacks.
+No open question remains: row 39 was the question of the page after a write,
+the owner decided it on 2026-10-25, and it is a test now.

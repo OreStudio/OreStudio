@@ -108,6 +108,11 @@ entity Screen {
     load_began_at: Timestamp
     loaded_at: Timestamp?
     refresh_gold: Boolean
+    -- The page the person asked a list for, the page it shows, and the last
+    -- page the server's total allows. A record page has none of them.
+    requested_page: Integer?
+    page: Integer?
+    last_page: Integer?
     -- The rows marked after a reload, and when the mark goes.
     marked_rows: Set<String>
     marks_expire_at: Timestamp?
@@ -651,6 +656,31 @@ surface RecordList {
 
     @guarantee RefreshIsTheOnlyReload
         -- The list reads again only on RefreshPressed (ES-REFRESH-11).
+    @guarantee RefreshKeepsThePage
+        -- RefreshPressed never changes screen.requested_page; only
+        -- ListNarrowed does (RS-LIST-19, decided 2026-10-25).
 }
 
-open question "Does the list return to the first page on every Refresh after a write, or only when the sort could have moved the record? RS Paging says the first page."
+-- RS-LIST-19 (decided 2026-10-25): Refresh keeps the page the person is on,
+-- after a write as after any change. The marked rows and the strip say
+-- where the change fell. Only a new search, filter, order or page size
+-- moves the person to the first page.
+rule NarrowingReturnsToTheFirstPage {
+    when: ListNarrowed(person, screen)
+    requires: screen.person = person and screen.record = null
+    ensures: screen.requested_page = 1
+}
+
+-- RS-LIST-19: the person loses their place only when the page no longer
+-- exists, and then the list shows the last page. The first page is never
+-- the answer to a change the person made.
+rule PageBeyondTheEndShowsTheLast {
+    when: screen: Screen.last_page becomes screen.last_page
+    requires: screen.record = null and screen.requested_page > screen.last_page
+    ensures: screen.page = screen.last_page
+}
+
+invariant TheListShowsThePageAsked {
+    for screen in Screens where record = null and requested_page <= last_page:
+        screen.page = screen.requested_page
+}

@@ -205,9 +205,13 @@ repeats.
   a cap, so it keeps the rule in
   [[id:92F755EA-5FA9-48DF-82F2-FF3E8F2236C7][Lists are always paged]].
 - *RS-LIST-19* A new search, a new filter, a new order or a new page size returns to the
-  first page. A write reloads nothing and turns Refresh gold. When the person presses
-  Refresh after a write, the list returns to the first page, because the
-  changed record may have moved.
+  first page. A write reloads nothing and turns Refresh gold. Refresh keeps the
+  page the person is on, after a write as after any change, and the marked rows
+  and the strip say where the change fell; a record that the sort moved off
+  the page is the strip's case. The person loses their place only when the
+  page no longer exists, and then the list shows the last page (decided
+  2026-10-25 by the owner; the Entity screen specification's Refresh section
+  says how the list shows a change).
 - *RS-LIST-20* The page, page size, search and order are held in the address, so a link and
   the browser's back button restore the list.
 

@@ -52,7 +52,7 @@ namespace ores::analytics::quant::service {
  * ores.analytics.quant. The arrival process is borrowed and must outlive the
  * clock.
  */
-class ORES_ANALYTICS_QUANT_EXPORT tick_clock final {
+class tick_clock final {
 public:
     /// @param arrivals The process that draws each gap, in seconds.
     explicit tick_clock(ores::analytics::quant::domain::i_arrival_process& arrivals)

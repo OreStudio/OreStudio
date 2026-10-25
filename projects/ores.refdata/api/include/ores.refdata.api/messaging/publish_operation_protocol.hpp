@@ -255,6 +255,24 @@ struct publish_cashflow_types_from_dq_request {
 };
 
 /**
+ * @brief The workflow step that publishes the DQ-cleared commodities.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_commodities_from_dq_fn.
+ */
+struct publish_commodities_from_dq_request {
+    static constexpr std::string_view nats_subject = "refdata.v1.ops.publish_commodities_from_dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+/**
  * @brief The workflow step that publishes the DQ-cleared conventions.
  *
  * A trigger rather than a request: the DQ publisher sends it and reads no

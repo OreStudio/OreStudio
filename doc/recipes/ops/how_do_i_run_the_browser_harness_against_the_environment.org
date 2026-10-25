@@ -24,7 +24,7 @@ cd projects/ores.web
 npm run harness
 #+end_src
 
-The harness signs in as the tenant administrator with the shared Acme password, the same facts =compass open-as= holds, and runs every spec under =packages/harness/tests= against =http://localhost:$ORES_WEB_PORT/=. Set =ORES_HARNESS_URL= to drive another host. Add =--headed= through =npm run harness:headed --workspace @ores/harness= to watch the browser.
+The harness signs in as the tenant administrator with the shared Acme password, the same facts =compass open-as= holds, and runs every spec under =packages/harness/tests= against =http://localhost:$ORES_WEB_PORT/=. Set =ORES_HARNESS_URL= to drive another host. The config runs one worker; the baseline runs used =-- --workers 4=, which takes about twenty minutes over every screen, and the shared environment stood it. Add =--headed= through =npm run harness:headed --workspace @ores/harness= to watch the browser.
 
 A failing test leaves its screenshot, a page snapshot and a trace under =projects/ores.web/.runtime/harness/results/<test>/=, which git ignores. Open the trace with =npx playwright show-trace <trace.zip>=. The HTML report is under =.runtime/harness/report=.
 

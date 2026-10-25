@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :check_every_record_screen_against_the_ux_language:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-the-conformance-harness
+#+pr: 3777
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A screen that breaks the UX language fails a test that names the rule identifier
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -42,9 +42,17 @@ A screen that breaks the UX language fails a test that names the rule identifier
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Discover the screens from the registries the BFF reads, REFDATA_RECORDS and
+CLASSIFICATION_LISTS, through the wire-protocol package, with a hand table of
+routes that refuses a kind it does not place, so a new kind is checked or
+stopped and never skipped in silence. Sign in once in a setup project and reuse
+the session, because a sign-in per check would cost more than the checks. Write
+one test per structural rule the audit named as machine checkable, over the
+list, the record page and the Edit dialog, titled by the rule identifier with
+the screen in the describe, so a failure names both. Where a row opens no page,
+skip the record checks with the reason and let the list check report it. Add a
+JSON report and a script that folds a run into the table of rule against
+screen, so the baseline task reads the run and not the log.
 
 * Measurements
 
@@ -58,7 +66,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Screens discovered | 32: 4 record, 28 classification | =allScreens()= in =packages/harness/src/screens.ts= | b6698c1818 |
+| Checks per screen | 8 list, 7 record page, 6 dialog | =grep -c "test('\[" packages/harness/tests/*.spec.ts= | b6698c1818 |
+| Full run | 477 passed, 67 failed, 128 skipped in 19.9 min with 4 workers | =npm run harness -- --workers 4= | b6698c1818 |
+| Kinds in the registry with no screen | 5 | =kindsWithoutAScreen()= | b6698c1818 |
 
 * Notes
 
@@ -77,12 +88,36 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3777][#3777]] | [web] Check every record screen against the UX language by rule identifier |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: web class | packages/harness | Accept | prettier and typecheck clean; the breadcrumb check first demanded the display field and was corrected to the key the standard's sketch draws; the cascade from a row that opens nothing became a skip |
+| 2 | A stale session would fail late checks as rule failures | list and record specs | Accept | Each beforeEach fails with a clear message when the page lands on sign-in; the two full runs of 20 minutes stayed signed in |
+| 3 | A slow page silently skips the record checks | record.spec.ts | Accept | The skip is only for a read-only classification list; a record kind that opens nothing fails, with a 10 second wait |
+| 4 | The order helper takes a RegExp through a cast | list.spec.ts | Accept | Typed string or RegExp |
+| 5 | kindsWithoutAScreen is unused and the route type collapses to string | screens.ts | Accept | Removed; the table is typed as a route template or one of three placements |
+| 6 | Every test reopens the first row; the run is long | record.spec.ts | Decline for now | One title per rule is what a failure must name; the cost is 20 minutes in the background |
+| 7 | The config runs one worker and the evidence four | recipe | Accept | The recipe says so |
+| 8 | 15 also matches 150 | list.spec.ts | Accept | The page size is matched by its selected value |
+| 9 | The breadcrumb XPath leans on .last() | record.spec.ts | Decline for now | The crumbs carry no aria-current to select; the last text node is the subject by the standard's shape |
+| 10 | The order check is vacuous without Add | list.spec.ts | Accept | Add is asserted present exactly for a writable kind, from the registries' writable and editable flags |
+| 11 | currency-groups routes to desk-groups | screens.ts | Accept | Intended: the desk groups screen is the currency groups kind |
+| 12 | A stray blank line in the reporter array; the status mapping has no comment | config, harness_baseline.py | Accept | Both |
+| 13 | A fixture test for the baseline script | harness_baseline.py | Decline for now | The script is a report folder; a test comes with the sign off recipe task if the report shape moves |
 
 * Result
+
+The harness checks every record screen the registries name: 32 screens, 21
+checks each over the list, the record page and the Edit dialog, each test
+titled by the rule identifier it asserts. A full run takes 19.9 minutes with
+four workers and reports 477 passed, 67 failed and 128 skipped. The
+failures are the screens' and not the checks': record pages and classification
+lists draw no Refresh and no load time, every dialog lacks its loaded-at time,
+dialogs are titled by the key and not the display field, classification row
+pages have no lead line, and five read-only lists open no row page. The JSON
+report feeds =scripts/harness_baseline.py=, which the baseline task uses. The
+harness does not run in CI yet: it needs a started environment with Acme
+provisioned, and no workflow starts one; the baseline task records that gap.

@@ -110,7 +110,7 @@ reads cause above effect.
 The screen pipeline judges a journey before its prototype: a step is a CRUD
 variation that the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] already draws, or it has
 steps and state of its own and needs a workflow under the Workflows menu.
-Judged on 2026-10-25, against the screen the web draws today.
+Judged on 2026-10-25, against the screen the web draws today, and signed off by the owner the same day.
 
 #+ATTR_HTML: :class hug-leading
 | Step | Shape on the screen | Judgement |
@@ -122,7 +122,7 @@ Judged on 2026-10-25, against the screen the web draws today.
 | 5 Maintain the rules | The Rules tab, a parts panel; the dialog asks the fields the kind needs | Parts panel. The fields that follow the kind are the form's own rule (RS-WRITE-07) |
 | 6 Add an exception | The Exceptions tab, a parts panel | Parts panel |
 | 7 Record diary events | The Events tab, a parts panel | Parts panel |
-| 8 Rebuild the business days | /Rebuild business days/ with the year, on the Business days tab | CRUD variation: one operation, answered in one reply, no state of its own. An own action; RS-PAGE-03 puts own actions in the header and today it stands in the tab, which the prototype decides |
+| 8 Rebuild the business days | /Rebuild business days/ with the year, on the Business days tab | CRUD variation: one operation, answered in one reply, no state of its own. An own action; RS-PAGE-03 puts own actions in the header, and the owner decided on 2026-10-25 that it moves there from the tab |
 | 9 Check the business days | The Business days tab: one year, one block per month, each holiday with what produced it, and a second calendar for the union | A read-only view on the record page. No rule of the standard draws a derived view yet, so the prototype defines it and the standard gains the rule |
 | 10 Check the history | The History tab for the calendar; a wide dialog with the timeline for one part | Standard history (RS-HIST, RS-RELATED-06) |
 | 11 Export for ORE | Nothing today | A missing server operation, not a screen question; see /What is missing/ |
@@ -136,9 +136,13 @@ calendar types and the diary entry types the pickers offer are kept by
 
 * Prototype
 
-None yet. The task [[id:29F81FF8-6836-439E-8945-3AAB20850A6C][Prototype the screens of the first topic]] adds it
-under =doc/prototypes/calendars/=, with a design note that cites the rule
-identifiers each state follows, and the Business days view it must define.
+[[id:4EAC99FF-2F49-4D7D-94B8-DCE7DF5A9EB5][Keep a holiday calendar right prototype]], under
+=doc/prototypes/calendars/keep-a-holiday-calendar-right/=. It draws the list,
+a calendar of each shape with the tabs the shape allows, Derive and Rebuild as
+own actions in the header, every dialog, the history, the reader's view and the
+Business days view, each at its own address. Its design note cites the rule
+identifiers each state follows and defines the Business days view for the
+standard to take.
 
 * Entities composed
 

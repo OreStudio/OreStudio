@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  PROTOTYPE. Throwaway. Mock data from the Acme seed plus three invented user
+  calendars; no backend, no build step.
+
+  Keep a holiday calendar right: the calendar list, one calendar with the tabs
+  its shape allows, the two own actions in the header, the dialogs, and the
+  Business days view. Every state is reached by query parameters:
+    ?screen=list
+    ?screen=calendar&code=Acme.Desk&tab=details|rules|exceptions|events|days|history
+    &dialog=edit|derive|rebuild|add-rule|edit-rule|add-exception|add-event|delete|remove-part
+    &who=admin|reader   &year=2026   &compare=TARGET   &built=none
+-->
+<title>ORE Studio Holiday calendars</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <span class="brand"><span class="brand-mark"></span>ORE Studio <span class="tenant">Acme Corporation</span></span>
+    <nav class="menu" aria-label="Areas">
+      <span>Home</span><span aria-current="page">Reference data</span><span>Organisation</span><span>Market data</span><span>Trades</span><span>Requests</span><span>Operations</span><span>Reporting</span>
+    </nav>
+    <span class="me" id="me">TA</span>
+  </div>
+</header>
+<main id="main"></main>
+<div id="layer"></div>
+<footer class="proto">
+  <div class="proto-inner">
+    <strong>PROTOTYPE</strong>
+    <span>Signed in as</span>
+    <span class="seg" id="who-seg"></span>
+    <span>Business days</span>
+    <span class="seg" id="built-seg"></span>
+    <span id="proto-where"></span>
+  </div>
+</footer>
+<script src="prototype.js"></script>
+</body>
+</html>

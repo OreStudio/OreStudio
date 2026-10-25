@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: 4EAC99FF-2F49-4D7D-94B8-DCE7DF5A9EB5
+:END:
+#+title: Keep a holiday calendar right prototype
+#+description: The calendar list, one calendar with the tabs its shape allows, the two own actions in the header, the dialogs and the Business days view, on the Acme seed.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:refdata:calendars:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+| Item          | Where                                                    |
+|---------------+----------------------------------------------------------|
+| Prototype     | [[file:keep-a-holiday-calendar-right/][the prototype]]   |
+| Gemini review | none                                                     |
+| Group         | [[file:index.org][Calendars prototypes]]                 |
+
+* Summary
+
+This prototype draws the screens of [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][Keep a holiday calendar right]] as the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] settled them on 2026-10-25, so the review is about
+the calendars topic and not about the language. It is the first prototype of
+the [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][screen pipeline]]: the web already draws a calendars screen, and this
+page says where that screen moves to meet the standard and the owner's two
+decisions on the journey, and defines the one view the standard has no rule
+for, the Business days.
+
+It is throwaway. It reads no service: the 61 QuantLib calendars are the Acme
+seed as the server returned them on 2026-10-25, and the three user calendars,
+their rules, exceptions, events and history are invented. The business days are
+computed in the page from the rules, so the view is real for the bespoke
+calendar; the QuantLib holidays of the two bases are typed in for 2026.
+
+Open [[file:keep-a-holiday-calendar-right/][the prototype]]. Every state has an address, for example
+=?screen=calendar&code=Acme.Desk&tab=days= or
+=?screen=calendar&code=TARGET&dialog=derive&who=reader=.
+
+* Detail
+
+** What it asks
+
+Three questions the journey judgement left to the prototype:
+
+1. Where do the two own actions stand? The owner decided that /Rebuild
+   business days/ moves from the tab to the header, beside /Derive a calendar/
+   (RS-PAGE-03). The prototype draws both there and turns the rebuild into an
+   operation dialog, so the header holds buttons and the tab holds the view.
+2. How is the Business days view drawn? No rule of the standard draws a
+   derived, read-only view. The prototype defines one, below, for the standard
+   to take.
+3. What does a reader see? A person who may not write sees the mark /Read
+   only/ and no action, on the page and in every panel (RS-FEEDBACK-01,
+   RS-FEEDBACK-02).
+
+** The screens and the rules each follows
+
+- *The list.* Breadcrumb, plural title and one sentence (RS-LIST-01); Refresh
+  with its load time, then Add, at the right (RS-LIST-03, ES-REFRESH-06,
+  ES-REFRESH-16); a search box with Clear (RS-LIST-04); sortable columns Code,
+  Name, Calendar type, Country, and /Holidays from/, which says in words what
+  the calendar is made of; the pager with the count first and 15 rows
+  (RS-LIST-17); search, page, size and order in the address (RS-LIST-20); the
+  code and the country in monospace with their flags (RS-ICON-03); a click on
+  a row opens the page (RS-LIST-10). The nothing-matches state offers /Clear
+  the search/ (RS-LIST-21).
+- *The record page.* The breadcrumb ends at the code and the title is the name
+  with the flag (RS-PAGE-01); the lead reads code and version (RS-PAGE-02);
+  the actions stand in this order: Refresh with its load time, the access
+  mark, /Derive a calendar/, /Rebuild business days/, /Edit/, /Delete/
+  (RS-PAGE-03, RS-FEEDBACK-02). A QuantLib calendar is read only, so it draws
+  Derive and nothing else, and its Details end in the notice that says why
+  (RS-WRITE-33). The tabs follow the shape: Details, Rules, Exceptions, Diary
+  events, Business days, History; a tab that does not apply is not drawn
+  (RS-PAGE-09). The details stand in four columns in the field table's order,
+  with the fixed reason under the code and /Holidays from/ as a link to the
+  base (RS-PAGE-05, RS-PAGE-06, RS-PAGE-08); the last-changed line ends them
+  (RS-PAGE-10).
+- *The parts.* Rules, exceptions and events are parts panels: the columns the
+  kind declares, History, Edit and Delete on each row, Add under the table
+  (RS-RELATED-04, RS-RELATED-05); each opens the record dialog with the parent
+  given, the history in a wide dialog, or the remove dialog (RS-RELATED-06). A
+  rule is shown in words, "Last Monday of May", because a rule has no name
+  (the journey's gap 6). The rule dialog's fields follow the kind (RS-WRITE-07).
+- *The dialogs.* Edit is titled /Edit/ and the page's title, and says under
+  its title when the record was loaded (RS-WRITE-20, RS-WRITE-16); the key is
+  fixed with its reason (RS-WRITE-03, ES-PAGE-08); the fields stand in two
+  columns in the field table's order (RS-WRITE-11); one line of help stands
+  under a control (RS-WRITE-12); Why and Commentary close the form
+  (ES-EDIT-02); the footer holds Cancel then Save, each with its icon, and no
+  Delete (RS-WRITE-14); a create states its reason in a note and lists what is
+  still to fill (RS-WRITE-17, RS-WRITE-13); the ✕ and Cancel alike close at
+  once while nothing changed, and ask /You have unsaved changes. Close
+  anyway?/ once a field has, in every dialog (RS-WRITE-24). Delete confirms, names the record,
+  says what is lost and asks for a reason (RS-WRITE-25, RS-WRITE-30).
+- *Derive a calendar.* The record dialog titled /Derive a calendar from
+  <name>/, with the base shown as a fixed field and the type and the country
+  given from the base; a create, so no reason (RS-WRITE-17). After it the
+  screen opens the new calendar (RS-WRITE-19).
+- *Rebuild business days.* An operation dialog: one field, /Build up to the
+  end of/, the note that a rebuild adds the days not built yet, and the button
+  /Rebuild/. The reply is a notice with the count of days written. This is the
+  one dialog that is not a record, remove or revert dialog, and the standard's
+  RS-WRITE-31 gains the operation dialog as a fourth shared shape, or names
+  the exception.
+- *History.* The timeline of versions at the left with the current emblem on
+  the newest, the compare at the right with the old value on a red line and
+  the new on a green line, and Revert on an older version (ES-HIST-11,
+  ES-HIST-18, RS-HIST-02).
+
+** The Business days view
+
+The rule the standard gains, in words. A derived view is a tab of the record
+page that shows what the record's parts produce. It is read only and has no
+Add. It:
+
+- names the period it shows and lets the person step it, here a year with
+  Previous and Next, and keeps the period in the address;
+- shows one block per natural division, here one per month, in the same grid
+  the details use: three across, then two, then one;
+- shows each entry with its date, its words and what produced it: a rule, an
+  exception, the base, in a faint column at the right, so the person reads
+  cause beside effect;
+- draws a business day an exception opened in green, because it is the one
+  entry that adds a day rather than takes one;
+- offers one comparison, /Compare with/, and draws the other calendar's
+  holidays in italics with the words /Holiday in <code> only/, because the
+  union is the definition a pair settles on;
+- says in one line what it does not show: a change to a rule or an exception
+  shows once the year is rebuilt;
+- has an empty state that names the action: /No business days are built for
+  2026. Rebuild the calendar to build them/, with the link for a writer and
+  the words for a reader.
+
+** The states
+
+| Address | What it shows |
+|---------+---------------|
+| =?screen=list= | The list, 64 calendars, 15 to a page |
+| =?screen=list&q=acme= | The search; =&q=zzz= is the nothing-matches state |
+| =?screen=calendar&code=Acme.Desk= | A bespoke calendar, six tabs |
+| =?screen=calendar&code=Acme.London= | A derived calendar: no Rules tab, /Holidays from/ links the base |
+| =?screen=calendar&code=TARGET= | A QuantLib calendar: Read only, Derive only, the notice |
+| =&tab=rules=, =exceptions=, =events= | The parts panels |
+| =&tab=days= | The Business days view; =&year=2027=, =&compare=TARGET=, =&built=none= |
+| =&tab=history= | The timeline; =&v=2= selects a version |
+| =&dialog=edit=, =derive=, =rebuild=, =delete= | The header's dialogs |
+| =&tab=rules&dialog=add-part= | Add a rule; =&dialog=edit-part&part=r5=, =remove-part=, =part-history= |
+| =&guard=1= | The closing guard |
+| =&who=reader= | The same screen for a person who may not write |
+
+** What is fake
+
+The three user calendars and everything under them. The history of
+=Acme.Desk=. The QuantLib holidays of the bases, typed in for 2026 only. The
+count of days a rebuild writes. The flags, which are the country code in a box.
+Nothing is written: Save, Add, Rebuild and Delete show a notice and go back.
+
+** Where the code lives
+
+=index.html= is the shell, =prototype.css= the look from the web app's tokens,
+and =prototype.js= the data, the rule engine that turns rules into dates, and
+the screens. The query string is the state; every link changes it.
+
+** The verdict
+
+Open. The owner signs it off before the build task starts. The build then
+moves the web's calendars screen to this: Rebuild into the header as an
+operation dialog, Refresh and the load time on the page, the dialog titles
+and load times, the Business days view as drawn here, and the Read only mark.
+
+** What it does not settle
+
+- The rebuild that rewrites a built day, and the QuantLib holidays the server
+  does not read: the view draws the intended screen, and the journey's gaps 1
+  and 2 carry the server work.
+- The ORE export, which has no screen until the server returns the document.
+- The role below the tenant administrator; the reader here is any person who
+  may not write.
+
+* See also
+
+- [[id:4C3A8F3E-655F-4DB8-9F94-A25EBA9C4E8A][User Journey: Keep a holiday calendar right]] — the journey this answers, with the step judgement.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the rules the identifiers above name.
+- [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] — the lines a reviewer walks on this prototype.
+- [[id:10ECDD95-0C8C-4BFF-A94A-FCBFAAC8F25A][The record screen baseline]] — what the live calendars screen measured before this.
+- [[file:index.org][Calendars prototypes]] — the group.

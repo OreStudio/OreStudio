@@ -144,7 +144,8 @@ def validate(data):
     problems = []
     for code, entry in data["sets"].items():
         kind = entry["source_kind"]
-        if kind not in ("enumerated", "catalogue", "range", "regex", "boolean"):
+        if kind not in ("enumerated", "catalogue", "range", "regex", "boolean",
+                        "integer", "number", "text"):
             problems.append(f"{code}: unknown source kind {kind}")
         registry = data["catalogues"]
         if isinstance(registry, list):

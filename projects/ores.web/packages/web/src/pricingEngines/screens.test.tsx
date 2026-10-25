@@ -215,6 +215,23 @@ const VOCABULARY: PricingVocabulary = {
             pattern: '',
             required: false,
         },
+        {
+            typeCode: 'BermudanSwaption',
+            model: 'LGM',
+            engine: 'Grid',
+            scope: 'engine',
+            name: 'Training.Samples',
+            kind: 'text',
+            usual: '1024',
+            options: [],
+            valueSet: 'training_samples',
+            sourceKind: 'integer',
+            choices: [],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+            required: false,
+        },
     ],
     models: [
         {
@@ -631,5 +648,11 @@ describe('the value of a setting', () => {
         expect(html).toContain('type="number"');
         expect(html).toContain('min="1"');
         expect(html).toContain('max="500"');
+    });
+
+    it('draws an integer as a whole-number field from the set', () => {
+        const html = setting('Training.Samples', '1024');
+        expect(html).toContain('type="number"');
+        expect(html).toContain('step="1"');
     });
 });

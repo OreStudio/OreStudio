@@ -145,6 +145,14 @@ def sets_of(found):
                     "is_ordered": False,
                 }
             flags += 1
+        elif kind in ("integer", "real", "period"):
+            set_code = slug(name)
+            sets[set_code] = {
+                "name": name.replace("_", " ").replace(".", " ").strip().capitalize(),
+                "description": f"The values the {name} setting accepts.",
+                "source_kind": {"integer": "integer", "real": "number", "period": "text"}[kind],
+                "is_ordered": False,
+            }
         elif kind == "enum":
             set_code = slug(name)
             values = [
@@ -181,7 +189,7 @@ def merge(path, sets, links):
         json.dump({"sets": sets, "links": links}, handle, indent=2,
                   sort_keys=True, ensure_ascii=False)
         handle.write("\n")
-    flags = sum(1 for set_code in sets if len(sets[set_code].get("values", [])) == 0)
+    flags = sum(1 for set_code in sets if sets[set_code]["source_kind"] == "boolean")
     print(f"{len(sets)} sets ({flags} flags) and {len(links)} links written to {path}")
 
 

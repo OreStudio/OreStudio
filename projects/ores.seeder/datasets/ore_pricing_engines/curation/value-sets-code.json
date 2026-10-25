@@ -1,70 +1,206 @@
 {
   "links": {
+    "EngineParameters|Accuracy": "accuracy",
     "EngineParameters|AdditionalResultsPathLevel": "flag",
     "EngineParameters|AlwaysRecomputeOptionRepresentation": "flag",
     "EngineParameters|AntitheticVariate": "flag",
     "EngineParameters|ApplyConvexityAdjustment": "flag",
     "EngineParameters|ApplySimmExemptions": "flag",
+    "EngineParameters|BSStdDevs": "bsstddevs",
+    "EngineParameters|Bins": "bins",
+    "EngineParameters|Bootstrap.MesherEpsilon": "bootstrap_mesherepsilon",
+    "EngineParameters|Bootstrap.MesherScaling": "bootstrap_mesherscaling",
+    "EngineParameters|Bootstrap.StateGridPoints": "bootstrap_stategridpoints",
+    "EngineParameters|Bootstrap.TimeStepsPerYear": "bootstrap_timestepsperyear",
+    "EngineParameters|BootstrapTolerance": "bootstraptolerance",
     "EngineParameters|BrownianBridge": "flag",
     "EngineParameters|BrownianBridgeOrdering": "brownianbridgeordering",
     "EngineParameters|ByCallSpread": "flag",
     "EngineParameters|CalibrateUnderlyingCurves": "flag",
+    "EngineParameters|CallSpreadEps": "callspreadeps",
+    "EngineParameters|CashflowGeneration.OnCpnAddSimTimesCutoff": "cashflowgeneration_oncpnaddsimtimescutoff",
+    "EngineParameters|CashflowGeneration.OnCpnMaxSimTimes": "cashflowgeneration_oncpnmaxsimtimes",
     "EngineParameters|ComputeBPS": "flag",
     "EngineParameters|ComputeDelta": "flag",
     "EngineParameters|ComputeDeltaVega": "flag",
     "EngineParameters|ComputeGamma": "flag",
     "EngineParameters|ControlVariate": "flag",
+    "EngineParameters|Correlation": "correlation",
     "EngineParameters|EnableCgOptimization": "flag",
+    "EngineParameters|ErrorTolerance": "errortolerance",
     "EngineParameters|ExternalDeviceCompatibilityMode": "flag",
+    "EngineParameters|FixedMaxStdDevs": "fixedmaxstddevs",
+    "EngineParameters|FixedMinStdDevs": "fixedminstddevs",
+    "EngineParameters|FlatVol": "flatvol",
     "EngineParameters|FxVolIsStatic": "flag",
+    "EngineParameters|Heston.EarlyExitThreshold": "heston_earlyexitthreshold",
+    "EngineParameters|Heston.MaxAcceptableError": "heston_maxacceptableerror",
+    "EngineParameters|Heston.MaxCalibrationAttempts": "heston_maxcalibrationattempts",
     "EngineParameters|Heston.QuantoProcessDiscretization": "heston_quantoprocessdiscretization",
+    "EngineParameters|Heston.RelaxedFellerConstraint": "heston_relaxedfellerconstraint",
     "EngineParameters|IncludePastCashflows": "flag",
+    "EngineParameters|IndicatorSmoothingForDerivatives": "indicatorsmoothingforderivatives",
+    "EngineParameters|IndicatorSmoothingForValues": "indicatorsmoothingforvalues",
+    "EngineParameters|IntegrationPoints": "integrationpoints",
     "EngineParameters|Interactive": "flag",
     "EngineParameters|LinearInZero": "flag",
+    "EngineParameters|LowerLimit": "lowerlimit",
+    "EngineParameters|MaxDiscretisationPoints": "maxdiscretisationpoints",
+    "EngineParameters|MaxGapDays": "maxgapdays",
+    "EngineParameters|MaxIterations": "maxiterations",
+    "EngineParameters|MaxPriceThresholdSteps": "maxpricethresholdsteps",
+    "EngineParameters|MaxSamples": "maxsamples",
+    "EngineParameters|MeanReversion": "meanreversion",
+    "EngineParameters|MesherConcentration": "mesherconcentration",
+    "EngineParameters|MesherEpsilon": "mesherepsilon",
     "EngineParameters|MesherIsStatic": "flag",
+    "EngineParameters|MesherMaxConcentratingPoints": "meshermaxconcentratingpoints",
+    "EngineParameters|MesherScaling": "mesherscaling",
     "EngineParameters|MinObsDate": "flag",
     "EngineParameters|PolynomType": "polynomtype",
+    "EngineParameters|Precision": "precision",
+    "EngineParameters|PriceThreshold": "pricethreshold",
+    "EngineParameters|PriceThresholdStep": "pricethresholdstep",
+    "EngineParameters|Pricing.MesherEpsilon": "pricing_mesherepsilon",
+    "EngineParameters|Pricing.MesherScaling": "pricing_mesherscaling",
+    "EngineParameters|Pricing.Samples": "pricing_samples",
+    "EngineParameters|Pricing.Seed": "pricing_seed",
     "EngineParameters|Pricing.Sequence": "pricing_sequence",
+    "EngineParameters|Pricing.StateGridPoints": "pricing_stategridpoints",
+    "EngineParameters|Pricing.TimeStepsPerYear": "pricing_timestepsperyear",
     "EngineParameters|RecalibrateOnStickyCloseOutDates": "flag",
     "EngineParameters|ReevaluateExerciseInStickyRun": "flag",
+    "EngineParameters|Regression.MaxSimTimesEQ": "regression_maxsimtimeseq",
+    "EngineParameters|Regression.MaxSimTimesFX": "regression_maxsimtimesfx",
+    "EngineParameters|Regression.MaxSimTimesIR": "regression_maxsimtimesir",
+    "EngineParameters|RegressionOrder": "regressionorder",
+    "EngineParameters|RequiredSamples": "requiredsamples",
+    "EngineParameters|RequiredTolerance": "requiredtolerance",
     "EngineParameters|SalvagingAlgorithm": "salvagingalgorithm",
+    "EngineParameters|Samples": "samples",
     "EngineParameters|Scheme": "scheme",
     "EngineParameters|ScriptedLibraryOverride": "flag",
+    "EngineParameters|Seed": "seed",
     "EngineParameters|SequenceType": "sequencetype",
     "EngineParameters|SobolDirectionIntegers": "soboldirectionintegers",
     "EngineParameters|SobolOrdering": "sobolordering",
     "EngineParameters|SpreadOnIncomeCurve": "flag",
+    "EngineParameters|SqrtSmoothingForDerivatives": "sqrtsmoothingforderivatives",
+    "EngineParameters|StateGridPoints": "stategridpoints",
     "EngineParameters|StaticNpvMem": "flag",
+    "EngineParameters|Steps": "steps",
+    "EngineParameters|TimeStepsPerYear": "timestepsperyear",
+    "EngineParameters|TimestepPeriod": "timestepperiod",
     "EngineParameters|Training.BasisFunction": "training_basisfunction",
+    "EngineParameters|Training.BasisFunctionOrder": "training_basisfunctionorder",
+    "EngineParameters|Training.Samples": "training_samples",
+    "EngineParameters|Training.Seed": "training_seed",
     "EngineParameters|Training.Sequence": "training_sequence",
+    "EngineParameters|TrainingSeed": "trainingseed",
     "EngineParameters|TrainingSequenceType": "trainingsequencetype",
+    "EngineParameters|UpperLimit": "upperlimit",
     "EngineParameters|UseAD": "flag",
     "EngineParameters|UseCG": "flag",
     "EngineParameters|UseDoublePrecisionForExternalCalculation": "flag",
     "EngineParameters|UseExternalComputeDevice": "flag",
+    "EngineParameters|VarianceStateGridPoints": "variancestategridpoints",
+    "EngineParameters|VegaRatio": "vegaratio",
     "EngineParameters|ZeroVolatility": "flag",
+    "EngineParameters|beta": "beta",
+    "EngineParameters|buckets": "buckets",
     "EngineParameters|calibrateConstituentCurves": "flag",
     "EngineParameters|homogeneousPoolWhenJustified": "flag",
+    "EngineParameters|nSimulations": "nsimulations",
+    "EngineParameters|nx": "nx",
+    "EngineParameters|ny": "ny",
+    "EngineParameters|samples": "samples",
+    "EngineParameters|seed": "seed",
+    "EngineParameters|singleSwaptionThreshold": "singleswaptionthreshold",
+    "EngineParameters|sx": "sx",
+    "EngineParameters|sy": "sy",
     "EngineParameters|withFlatVol": "flag",
     "ModelParameters|AdjustCreditSpreadToRR": "flag",
     "ModelParameters|AdjustDiscounting": "flag",
     "ModelParameters|AdjustEquityForward": "flag",
     "ModelParameters|AdjustEquityVolatility": "flag",
+    "ModelParameters|CalibrationInstrumentSpacing": "calibrationinstrumentspacing",
+    "ModelParameters|Credit_Reversion": "credit_reversion",
     "ModelParameters|EnableCredit": "flag",
     "ModelParameters|EnforceBaseCcy": "flag",
+    "ModelParameters|ExerciseTimeStepsPerYear": "exercisetimestepsperyear",
     "ModelParameters|FullDynamicFx": "flag",
     "ModelParameters|FullDynamicIr": "flag",
     "ModelParameters|IncludeSecurityLeg": "flag",
+    "ModelParameters|InfDkVolatility": "infdkvolatility",
+    "ModelParameters|InfJyRealToNominalVolRatio": "infjyrealtonominalvolratio",
     "ModelParameters|MatchUnderlyingTenor": "flag",
+    "ModelParameters|MaxCPRMultiplier": "maxcprmultiplier",
+    "ModelParameters|MinCPRMultiplier": "mincprmultiplier",
+    "ModelParameters|Reversion": "reversion",
+    "ModelParameters|ShiftHorizon": "shifthorizon",
     "ModelParameters|StaticTodaysSpot": "flag",
     "ModelParameters|SurvivalWeightedFundingReturnCashflows": "flag",
+    "ModelParameters|Tolerance": "tolerance",
     "ModelParameters|TreatSecuritySpreadAsCreditSpread": "flag",
     "ModelParameters|ZeroRecoveryOverwrite": "flag",
+    "ModelParameters|eta": "eta",
+    "ModelParameters|max": "max",
+    "ModelParameters|min": "min",
+    "ModelParameters|p": "p",
+    "ModelParameters|steps": "steps",
     "ModelParameters|useAssumedRecovery": "flag",
     "ModelParameters|useQuadrature": "flag",
     "ModelParameters|useStochasticRecovery": "flag"
   },
   "sets": {
+    "accuracy": {
+      "description": "The values the Accuracy setting accepts.",
+      "is_ordered": false,
+      "name": "Accuracy",
+      "source_kind": "number"
+    },
+    "beta": {
+      "description": "The values the beta setting accepts.",
+      "is_ordered": false,
+      "name": "Beta",
+      "source_kind": "number"
+    },
+    "bins": {
+      "description": "The values the Bins setting accepts.",
+      "is_ordered": false,
+      "name": "Bins",
+      "source_kind": "integer"
+    },
+    "bootstrap_mesherepsilon": {
+      "description": "The values the Bootstrap.MesherEpsilon setting accepts.",
+      "is_ordered": false,
+      "name": "Bootstrap mesherepsilon",
+      "source_kind": "number"
+    },
+    "bootstrap_mesherscaling": {
+      "description": "The values the Bootstrap.MesherScaling setting accepts.",
+      "is_ordered": false,
+      "name": "Bootstrap mesherscaling",
+      "source_kind": "number"
+    },
+    "bootstrap_stategridpoints": {
+      "description": "The values the Bootstrap.StateGridPoints setting accepts.",
+      "is_ordered": false,
+      "name": "Bootstrap stategridpoints",
+      "source_kind": "integer"
+    },
+    "bootstrap_timestepsperyear": {
+      "description": "The values the Bootstrap.TimeStepsPerYear setting accepts.",
+      "is_ordered": false,
+      "name": "Bootstrap timestepsperyear",
+      "source_kind": "integer"
+    },
+    "bootstraptolerance": {
+      "description": "The values the BootstrapTolerance setting accepts.",
+      "is_ordered": false,
+      "name": "Bootstraptolerance",
+      "source_kind": "number"
+    },
     "brownianbridgeordering": {
       "description": "The values the BrownianBridgeOrdering setting accepts.",
       "is_ordered": false,
@@ -91,11 +227,113 @@
         }
       ]
     },
+    "bsstddevs": {
+      "description": "The values the BSStdDevs setting accepts.",
+      "is_ordered": false,
+      "name": "Bsstddevs",
+      "source_kind": "number"
+    },
+    "buckets": {
+      "description": "The values the buckets setting accepts.",
+      "is_ordered": false,
+      "name": "Buckets",
+      "source_kind": "integer"
+    },
+    "calibrationinstrumentspacing": {
+      "description": "The values the CalibrationInstrumentSpacing setting accepts.",
+      "is_ordered": false,
+      "name": "Calibrationinstrumentspacing",
+      "source_kind": "text"
+    },
+    "callspreadeps": {
+      "description": "The values the CallSpreadEps setting accepts.",
+      "is_ordered": false,
+      "name": "Callspreadeps",
+      "source_kind": "number"
+    },
+    "cashflowgeneration_oncpnaddsimtimescutoff": {
+      "description": "The values the CashflowGeneration.OnCpnAddSimTimesCutoff setting accepts.",
+      "is_ordered": false,
+      "name": "Cashflowgeneration oncpnaddsimtimescutoff",
+      "source_kind": "text"
+    },
+    "cashflowgeneration_oncpnmaxsimtimes": {
+      "description": "The values the CashflowGeneration.OnCpnMaxSimTimes setting accepts.",
+      "is_ordered": false,
+      "name": "Cashflowgeneration oncpnmaxsimtimes",
+      "source_kind": "integer"
+    },
+    "correlation": {
+      "description": "The values the Correlation setting accepts.",
+      "is_ordered": false,
+      "name": "Correlation",
+      "source_kind": "number"
+    },
+    "credit_reversion": {
+      "description": "The values the Credit_Reversion setting accepts.",
+      "is_ordered": false,
+      "name": "Credit reversion",
+      "source_kind": "number"
+    },
+    "errortolerance": {
+      "description": "The values the ErrorTolerance setting accepts.",
+      "is_ordered": false,
+      "name": "Errortolerance",
+      "source_kind": "number"
+    },
+    "eta": {
+      "description": "The values the eta setting accepts.",
+      "is_ordered": false,
+      "name": "Eta",
+      "source_kind": "number"
+    },
+    "exercisetimestepsperyear": {
+      "description": "The values the ExerciseTimeStepsPerYear setting accepts.",
+      "is_ordered": false,
+      "name": "Exercisetimestepsperyear",
+      "source_kind": "integer"
+    },
+    "fixedmaxstddevs": {
+      "description": "The values the FixedMaxStdDevs setting accepts.",
+      "is_ordered": false,
+      "name": "Fixedmaxstddevs",
+      "source_kind": "number"
+    },
+    "fixedminstddevs": {
+      "description": "The values the FixedMinStdDevs setting accepts.",
+      "is_ordered": false,
+      "name": "Fixedminstddevs",
+      "source_kind": "number"
+    },
     "flag": {
       "description": "A switch that is either on or off.",
       "is_ordered": false,
       "name": "Flag",
       "source_kind": "boolean"
+    },
+    "flatvol": {
+      "description": "The values the FlatVol setting accepts.",
+      "is_ordered": false,
+      "name": "Flatvol",
+      "source_kind": "number"
+    },
+    "heston_earlyexitthreshold": {
+      "description": "The values the Heston.EarlyExitThreshold setting accepts.",
+      "is_ordered": false,
+      "name": "Heston earlyexitthreshold",
+      "source_kind": "number"
+    },
+    "heston_maxacceptableerror": {
+      "description": "The values the Heston.MaxAcceptableError setting accepts.",
+      "is_ordered": false,
+      "name": "Heston maxacceptableerror",
+      "source_kind": "number"
+    },
+    "heston_maxcalibrationattempts": {
+      "description": "The values the Heston.MaxCalibrationAttempts setting accepts.",
+      "is_ordered": false,
+      "name": "Heston maxcalibrationattempts",
+      "source_kind": "integer"
     },
     "heston_quantoprocessdiscretization": {
       "description": "The values the Heston.QuantoProcessDiscretization setting accepts.",
@@ -159,6 +397,156 @@
         }
       ]
     },
+    "heston_relaxedfellerconstraint": {
+      "description": "The values the Heston.RelaxedFellerConstraint setting accepts.",
+      "is_ordered": false,
+      "name": "Heston relaxedfellerconstraint",
+      "source_kind": "number"
+    },
+    "indicatorsmoothingforderivatives": {
+      "description": "The values the IndicatorSmoothingForDerivatives setting accepts.",
+      "is_ordered": false,
+      "name": "Indicatorsmoothingforderivatives",
+      "source_kind": "number"
+    },
+    "indicatorsmoothingforvalues": {
+      "description": "The values the IndicatorSmoothingForValues setting accepts.",
+      "is_ordered": false,
+      "name": "Indicatorsmoothingforvalues",
+      "source_kind": "number"
+    },
+    "infdkvolatility": {
+      "description": "The values the InfDkVolatility setting accepts.",
+      "is_ordered": false,
+      "name": "Infdkvolatility",
+      "source_kind": "number"
+    },
+    "infjyrealtonominalvolratio": {
+      "description": "The values the InfJyRealToNominalVolRatio setting accepts.",
+      "is_ordered": false,
+      "name": "Infjyrealtonominalvolratio",
+      "source_kind": "number"
+    },
+    "integrationpoints": {
+      "description": "The values the IntegrationPoints setting accepts.",
+      "is_ordered": false,
+      "name": "Integrationpoints",
+      "source_kind": "integer"
+    },
+    "lowerlimit": {
+      "description": "The values the LowerLimit setting accepts.",
+      "is_ordered": false,
+      "name": "Lowerlimit",
+      "source_kind": "number"
+    },
+    "max": {
+      "description": "The values the max setting accepts.",
+      "is_ordered": false,
+      "name": "Max",
+      "source_kind": "number"
+    },
+    "maxcprmultiplier": {
+      "description": "The values the MaxCPRMultiplier setting accepts.",
+      "is_ordered": false,
+      "name": "Maxcprmultiplier",
+      "source_kind": "number"
+    },
+    "maxdiscretisationpoints": {
+      "description": "The values the MaxDiscretisationPoints setting accepts.",
+      "is_ordered": false,
+      "name": "Maxdiscretisationpoints",
+      "source_kind": "integer"
+    },
+    "maxgapdays": {
+      "description": "The values the MaxGapDays setting accepts.",
+      "is_ordered": false,
+      "name": "Maxgapdays",
+      "source_kind": "integer"
+    },
+    "maxiterations": {
+      "description": "The values the MaxIterations setting accepts.",
+      "is_ordered": false,
+      "name": "Maxiterations",
+      "source_kind": "integer"
+    },
+    "maxpricethresholdsteps": {
+      "description": "The values the MaxPriceThresholdSteps setting accepts.",
+      "is_ordered": false,
+      "name": "Maxpricethresholdsteps",
+      "source_kind": "integer"
+    },
+    "maxsamples": {
+      "description": "The values the MaxSamples setting accepts.",
+      "is_ordered": false,
+      "name": "Maxsamples",
+      "source_kind": "integer"
+    },
+    "meanreversion": {
+      "description": "The values the MeanReversion setting accepts.",
+      "is_ordered": false,
+      "name": "Meanreversion",
+      "source_kind": "number"
+    },
+    "mesherconcentration": {
+      "description": "The values the MesherConcentration setting accepts.",
+      "is_ordered": false,
+      "name": "Mesherconcentration",
+      "source_kind": "number"
+    },
+    "mesherepsilon": {
+      "description": "The values the MesherEpsilon setting accepts.",
+      "is_ordered": false,
+      "name": "Mesherepsilon",
+      "source_kind": "number"
+    },
+    "meshermaxconcentratingpoints": {
+      "description": "The values the MesherMaxConcentratingPoints setting accepts.",
+      "is_ordered": false,
+      "name": "Meshermaxconcentratingpoints",
+      "source_kind": "integer"
+    },
+    "mesherscaling": {
+      "description": "The values the MesherScaling setting accepts.",
+      "is_ordered": false,
+      "name": "Mesherscaling",
+      "source_kind": "number"
+    },
+    "min": {
+      "description": "The values the min setting accepts.",
+      "is_ordered": false,
+      "name": "Min",
+      "source_kind": "number"
+    },
+    "mincprmultiplier": {
+      "description": "The values the MinCPRMultiplier setting accepts.",
+      "is_ordered": false,
+      "name": "Mincprmultiplier",
+      "source_kind": "number"
+    },
+    "nsimulations": {
+      "description": "The values the nSimulations setting accepts.",
+      "is_ordered": false,
+      "name": "Nsimulations",
+      "source_kind": "integer"
+    },
+    "nx": {
+      "description": "The values the nx setting accepts.",
+      "is_ordered": false,
+      "name": "Nx",
+      "source_kind": "integer"
+    },
+    "ny": {
+      "description": "The values the ny setting accepts.",
+      "is_ordered": false,
+      "name": "Ny",
+      "source_kind": "integer"
+    },
+    "p": {
+      "description": "The values the p setting accepts.",
+      "is_ordered": false,
+      "name": "P",
+      "source_kind": "number"
+    },
     "polynomtype": {
       "description": "The values the PolynomType setting accepts.",
       "is_ordered": false,
@@ -209,6 +597,48 @@
         }
       ]
     },
+    "precision": {
+      "description": "The values the Precision setting accepts.",
+      "is_ordered": false,
+      "name": "Precision",
+      "source_kind": "number"
+    },
+    "pricethreshold": {
+      "description": "The values the PriceThreshold setting accepts.",
+      "is_ordered": false,
+      "name": "Pricethreshold",
+      "source_kind": "number"
+    },
+    "pricethresholdstep": {
+      "description": "The values the PriceThresholdStep setting accepts.",
+      "is_ordered": false,
+      "name": "Pricethresholdstep",
+      "source_kind": "number"
+    },
+    "pricing_mesherepsilon": {
+      "description": "The values the Pricing.MesherEpsilon setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing mesherepsilon",
+      "source_kind": "number"
+    },
+    "pricing_mesherscaling": {
+      "description": "The values the Pricing.MesherScaling setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing mesherscaling",
+      "source_kind": "number"
+    },
+    "pricing_samples": {
+      "description": "The values the Pricing.Samples setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing samples",
+      "source_kind": "integer"
+    },
+    "pricing_seed": {
+      "description": "The values the Pricing.Seed setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing seed",
+      "source_kind": "integer"
+    },
     "pricing_sequence": {
       "description": "The values the Pricing.Sequence setting accepts.",
       "is_ordered": false,
@@ -246,6 +676,60 @@
           "value": "Burley2020SobolBrownianBridge"
         }
       ]
+    },
+    "pricing_stategridpoints": {
+      "description": "The values the Pricing.StateGridPoints setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing stategridpoints",
+      "source_kind": "integer"
+    },
+    "pricing_timestepsperyear": {
+      "description": "The values the Pricing.TimeStepsPerYear setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing timestepsperyear",
+      "source_kind": "integer"
+    },
+    "regression_maxsimtimeseq": {
+      "description": "The values the Regression.MaxSimTimesEQ setting accepts.",
+      "is_ordered": false,
+      "name": "Regression maxsimtimeseq",
+      "source_kind": "integer"
+    },
+    "regression_maxsimtimesfx": {
+      "description": "The values the Regression.MaxSimTimesFX setting accepts.",
+      "is_ordered": false,
+      "name": "Regression maxsimtimesfx",
+      "source_kind": "integer"
+    },
+    "regression_maxsimtimesir": {
+      "description": "The values the Regression.MaxSimTimesIR setting accepts.",
+      "is_ordered": false,
+      "name": "Regression maxsimtimesir",
+      "source_kind": "integer"
+    },
+    "regressionorder": {
+      "description": "The values the RegressionOrder setting accepts.",
+      "is_ordered": false,
+      "name": "Regressionorder",
+      "source_kind": "integer"
+    },
+    "requiredsamples": {
+      "description": "The values the RequiredSamples setting accepts.",
+      "is_ordered": false,
+      "name": "Requiredsamples",
+      "source_kind": "integer"
+    },
+    "requiredtolerance": {
+      "description": "The values the RequiredTolerance setting accepts.",
+      "is_ordered": false,
+      "name": "Requiredtolerance",
+      "source_kind": "number"
+    },
+    "reversion": {
+      "description": "The values the Reversion setting accepts.",
+      "is_ordered": false,
+      "name": "Reversion",
+      "source_kind": "number"
     },
     "salvagingalgorithm": {
       "description": "The values the SalvagingAlgorithm setting accepts.",
@@ -290,6 +774,12 @@
           "value": "Principal"
         }
       ]
+    },
+    "samples": {
+      "description": "The values the samples setting accepts.",
+      "is_ordered": false,
+      "name": "Samples",
+      "source_kind": "integer"
     },
     "scheme": {
       "description": "The values the Scheme setting accepts.",
@@ -353,6 +843,12 @@
         }
       ]
     },
+    "seed": {
+      "description": "The values the seed setting accepts.",
+      "is_ordered": false,
+      "name": "Seed",
+      "source_kind": "integer"
+    },
     "sequencetype": {
       "description": "The values the SequenceType setting accepts.",
       "is_ordered": false,
@@ -390,6 +886,18 @@
           "value": "Burley2020SobolBrownianBridge"
         }
       ]
+    },
+    "shifthorizon": {
+      "description": "The values the ShiftHorizon setting accepts.",
+      "is_ordered": false,
+      "name": "Shifthorizon",
+      "source_kind": "number"
+    },
+    "singleswaptionthreshold": {
+      "description": "The values the singleSwaptionThreshold setting accepts.",
+      "is_ordered": false,
+      "name": "Singleswaptionthreshold",
+      "source_kind": "number"
     },
     "soboldirectionintegers": {
       "description": "The values the SobolDirectionIntegers setting accepts.",
@@ -485,6 +993,54 @@
         }
       ]
     },
+    "sqrtsmoothingforderivatives": {
+      "description": "The values the SqrtSmoothingForDerivatives setting accepts.",
+      "is_ordered": false,
+      "name": "Sqrtsmoothingforderivatives",
+      "source_kind": "number"
+    },
+    "stategridpoints": {
+      "description": "The values the StateGridPoints setting accepts.",
+      "is_ordered": false,
+      "name": "Stategridpoints",
+      "source_kind": "integer"
+    },
+    "steps": {
+      "description": "The values the steps setting accepts.",
+      "is_ordered": false,
+      "name": "Steps",
+      "source_kind": "integer"
+    },
+    "sx": {
+      "description": "The values the sx setting accepts.",
+      "is_ordered": false,
+      "name": "Sx",
+      "source_kind": "number"
+    },
+    "sy": {
+      "description": "The values the sy setting accepts.",
+      "is_ordered": false,
+      "name": "Sy",
+      "source_kind": "number"
+    },
+    "timestepperiod": {
+      "description": "The values the TimestepPeriod setting accepts.",
+      "is_ordered": false,
+      "name": "Timestepperiod",
+      "source_kind": "text"
+    },
+    "timestepsperyear": {
+      "description": "The values the TimeStepsPerYear setting accepts.",
+      "is_ordered": false,
+      "name": "Timestepsperyear",
+      "source_kind": "integer"
+    },
+    "tolerance": {
+      "description": "The values the Tolerance setting accepts.",
+      "is_ordered": false,
+      "name": "Tolerance",
+      "source_kind": "number"
+    },
     "training_basisfunction": {
       "description": "The values the Training.BasisFunction setting accepts.",
       "is_ordered": false,
@@ -535,6 +1091,24 @@
         }
       ]
     },
+    "training_basisfunctionorder": {
+      "description": "The values the Training.BasisFunctionOrder setting accepts.",
+      "is_ordered": false,
+      "name": "Training basisfunctionorder",
+      "source_kind": "integer"
+    },
+    "training_samples": {
+      "description": "The values the Training.Samples setting accepts.",
+      "is_ordered": false,
+      "name": "Training samples",
+      "source_kind": "integer"
+    },
+    "training_seed": {
+      "description": "The values the Training.Seed setting accepts.",
+      "is_ordered": false,
+      "name": "Training seed",
+      "source_kind": "integer"
+    },
     "training_sequence": {
       "description": "The values the Training.Sequence setting accepts.",
       "is_ordered": false,
@@ -573,6 +1147,12 @@
         }
       ]
     },
+    "trainingseed": {
+      "description": "The values the TrainingSeed setting accepts.",
+      "is_ordered": false,
+      "name": "Trainingseed",
+      "source_kind": "integer"
+    },
     "trainingsequencetype": {
       "description": "The values the TrainingSequenceType setting accepts.",
       "is_ordered": false,
@@ -610,6 +1190,24 @@
           "value": "Burley2020SobolBrownianBridge"
         }
       ]
+    },
+    "upperlimit": {
+      "description": "The values the UpperLimit setting accepts.",
+      "is_ordered": false,
+      "name": "Upperlimit",
+      "source_kind": "number"
+    },
+    "variancestategridpoints": {
+      "description": "The values the VarianceStateGridPoints setting accepts.",
+      "is_ordered": false,
+      "name": "Variancestategridpoints",
+      "source_kind": "integer"
+    },
+    "vegaratio": {
+      "description": "The values the VegaRatio setting accepts.",
+      "is_ordered": false,
+      "name": "Vegaratio",
+      "source_kind": "number"
     }
   }
 }

@@ -300,7 +300,9 @@ export function SettingValue({
     );
     const kind = setting?.kind ?? 'text';
     const choices = setting?.choices ?? [];
-    const ranged = setting?.sourceKind === 'range';
+    const sourceKind = setting?.sourceKind ?? '';
+    const ranged = sourceKind === 'range';
+    const numeric = ranged || sourceKind === 'integer' || sourceKind === 'number';
     const options =
         kind === 'tenor'
             ? vocabulary.tenors.map((tenor) => tenor.code)
@@ -328,15 +330,22 @@ export function SettingValue({
             ) : (
                 <Input
                     value={value}
-                    {...(ranged ? { type: 'number' as const } : {})}
+                    {...(numeric ? { type: 'number' as const } : {})}
                     {...(ranged && setting?.minimum !== null && setting?.minimum !== undefined
                         ? { min: setting.minimum }
                         : {})}
                     {...(ranged && setting?.maximum !== null && setting?.maximum !== undefined
                         ? { max: setting.maximum }
                         : {})}
-                    {...(ranged ? { step: 'any' as const } : {})}
-                    {...(ranged || kind === 'number' ? { inputMode: 'decimal' as const } : {})}
+                    {...(numeric ? { step: sourceKind === 'integer' ? 1 : ('any' as const) } : {})}
+                    {...(numeric
+                        ? {
+                              inputMode:
+                                  sourceKind === 'integer'
+                                      ? ('numeric' as const)
+                                      : ('decimal' as const),
+                          }
+                        : {})}
                     onChange={(event) => onChange(event.target.value)}
                 />
             )}

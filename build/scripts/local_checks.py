@@ -365,6 +365,13 @@ CATALOGUE: tuple[Check, ...] = (
         paths=SKILL_SCRIPTS + ("doc/llm/skills/*",),
     ),
     Check(
+        id="rule-identifiers",
+        title="Every UX rule carries one identifier and the checklist cites them",
+        argv=("python3", "build/scripts/check_rule_identifiers.py"),
+        classes=("docs",),
+        fix="Run build/scripts/check_rule_identifiers.py --assign for a rule without an identifier; cite an identifier on the checklist line it names.",
+    ),
+    Check(
         id="structure-notes",
         title="Every structure note is linked from and to its neighbours",
         argv=("python3", "build/scripts/link_structure_notes.py", "--check"),

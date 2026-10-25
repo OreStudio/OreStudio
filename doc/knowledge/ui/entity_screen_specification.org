@@ -65,17 +65,17 @@ A user journey says what a person is trying to do. A screen is a part of the
 interface. The two are not the same shape, and a screen is never a journey
 copied step by step.
 
-- A journey is a design document. It names the goal, the actor, the reads and
+- *ES-JOURNEY-01* A journey is a design document. It names the goal, the actor, the reads and
   writes it needs, and what is missing. It stays as it is.
-- The screens that serve a journey follow the UX standards: the list, the page
+- *ES-JOURNEY-02* The screens that serve a journey follow the UX standards: the list, the page
   of one subject, the cards, the dialogs and the history. One journey is usually
   served by several standard screens, and one screen serves several journeys.
-- A wizard is the exception. Use a guided sequence of steps only when it makes
+- *ES-JOURNEY-03* A wizard is the exception. Use a guided sequence of steps only when it makes
   the task easier or quicker for the person, for example the first run of an
   installation or the setup of a tenant. Editing a record, or a record made of
   several kinds of record, is not such a task. It is done on the page of the
   subject, with an Edit button on each card.
-- A change that needs a second person is not a different screen. The person
+- *ES-JOURNEY-04* A change that needs a second person is not a different screen. The person
   saves in the usual dialog, and the save proposes the change. See
   [[*Proposals and four-eyes][Proposals and four-eyes]].
 
@@ -129,15 +129,15 @@ Staff is a different list for them, built from the organisation read. See
   1–15 of 58      [« First] [‹ Previous] [Next ›] [Last »]   Page size [15 ▾]
 #+end_src
 
-- The first column is the person: their photo, then their name. A name opens the
+- *ES-LIST-01* The first column is the person: their photo, then their name. A name opens the
   page. The username, the kind, the job title and the parties follow.
-- The parties are tags with the party's name, not its code. A person in several
+- *ES-LIST-02* The parties are tags with the party's name, not its code. A person in several
   parties shows each.
-- The search, the sort, the filter and the page all go to the server. The list
+- *ES-LIST-03* The search, the sort, the filter and the page all go to the server. The list
   never reads every row to filter them itself.
-- The header, the table, the states and the pager are those of the record
+- *ES-LIST-04* The header, the table, the states and the pager are those of the record
   standard's list. The titles are in sentence case.
-- A list for a member names what it holds in its lead sentence, because it is not
+- *ES-LIST-05* A list for a member names what it holds in its lead sentence, because it is not
   the whole tenant.
 
 ** The page
@@ -159,17 +159,17 @@ Staff is a different list for them, built from the organisation read. See
 
 *** Header
 
-- The breadcrumb is Home, the area, the list, then the subject. The areas are in
+- *ES-PAGE-01* The breadcrumb is Home, the area, the list, then the subject. The areas are in
   [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]].
-- The photo stands large beside the title. The title is the person's name.
-- Under the title, in small subdued type, is the subject's identifier. Nothing
+- *ES-PAGE-02* The photo stands large beside the title. The title is the person's name.
+- *ES-PAGE-03* Under the title, in small subdued type, is the subject's identifier. Nothing
   else. The version stands on each card, beside its title, because each card is a
   different record with its own version.
-- A trade is the one exception. The line under its title also carries the trade's
+- *ES-PAGE-04* A trade is the one exception. The line under its title also carries the trade's
   state, its internal version and its external version, because the two-version
   rule of [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] is what a person reads a trade for. The cards still carry
   their own versions.
-- The header carries no Edit button. Edit belongs to the card it changes,
+- *ES-PAGE-05* The header carries no Edit button. Edit belongs to the card it changes,
   because each card is its own record. This is the one rule of the Record
   screen standard's Header, Edit stands on the thing it changes, applied to an
   entity (decided 2026-10-25).
@@ -196,47 +196,47 @@ speaks for it.
 
 Each aspect that a person can change is one card.
 
-- The card's title is on the left. The version of the record it shows is small and
+- *ES-PAGE-06* The card's title is on the left. The version of the record it shows is small and
   subdued beside it. The Edit button is on the right.
-- The fields are read as text, not as inputs. A label stands above each value in
+- *ES-PAGE-07* The fields are read as text, not as inputs. A label stands above each value in
   sentence case, with no colon. A value with nothing in it is a muted dash.
-- A field that is fixed once the record exists, such as the username, says why in
+- *ES-PAGE-08* A field that is fixed once the record exists, such as the username, says why in
   a line of small text under it: "Set when the account was made, and never
   changed here."
-- A field that another person owns says who. The sign-in address says "An
+- *ES-PAGE-09* A field that another person owns says who. The sign-in address says "An
   administrator owns it."
-- A card the reader may not change shows the access mark, Read only, as the
+- *ES-PAGE-10* A card the reader may not change shows the access mark, Read only, as the
   [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] sets it.
 
 ** Changing a record
 
 *** The Edit pattern
 
-- Edit is one button with an icon and the word Edit, on the card it changes. It
+- *ES-EDIT-01* Edit is one button with an icon and the word Edit, on the card it changes. It
   is drawn only for a person who may change that card.
-- Edit opens a dialog with the current values. The dialog is titled Edit
+- *ES-EDIT-02* Edit opens a dialog with the current values. The dialog is titled Edit
   followed by the card's title, the entity's shape of the Record screen
   standard's Amend rule. It asks for the change reason and the commentary. The
   card itself asks for neither, and shows no reason field beside its values.
-- Save is enabled once the form is complete, and a save with no field change
+- *ES-EDIT-03* Save is enabled once the form is complete, and a save with no field change
   is allowed: it writes a version that carries only its reason, which the history
   model keeps (decided 2026-10-25; the rule is the Record screen standard's
   Amend). The reasons offered follow the change: when a field changed, "No
   change in substance" is not offered, and when nothing changed only that
   reason is.
-- The write claims the version that was read. A record that has changed since is
+- *ES-EDIT-04* The write claims the version that was read. A record that has changed since is
   refused with a conflict, and the dialog says so and offers to reload.
-- Closing the dialog with changes asks "You have unsaved changes. Close anyway?"
-- An optional field has a Clear control beside it, which writes the empty value.
+- *ES-EDIT-05* Closing the dialog with changes asks "You have unsaved changes. Close anyway?"
+- *ES-EDIT-06* An optional field has a Clear control beside it, which writes the empty value.
   A Clear is not a Save of a blank by accident.
 
 *** Small controls
 
-- A change that is not a form, such as the reporting line, has a small icon
+- *ES-EDIT-07* A change that is not a form, such as the reporting line, has a small icon
   button on the line it changes. It is drawn only when the reader may use it.
-- The photo is its own control. Clicking the photo opens the chooser to replace
+- *ES-EDIT-08* The photo is its own control. Clicking the photo opens the chooser to replace
   it. There is no separate "Replace photo" button.
-- A control that proposes and does not write, such as a change that another
+- *ES-EDIT-09* A control that proposes and does not write, such as a change that another
   person must approve, says Propose and not Save. See
   [[*Proposals and four-eyes][Proposals and four-eyes]].
 
@@ -253,22 +253,22 @@ record that holds it: the currency of a trade, the country of an address, the
 calendar of a convention, the party of a book, the account of a sign-in. The rule
 is the same for every kind of record, and it is the rule for a person below.
 
-- A reference is a link to the page of the record it names. The text of the link
+- *ES-REF-01* A reference is a link to the page of the record it names. The text of the link
   is the record's name, or its code where the record has no name, and the
   record's flag or photo stands beside it where the record has one.
-- The link is the same on every screen, in every table, card, panel, history
+- *ES-REF-02* The link is the same on every screen, in every table, card, panel, history
   entry and chart. It is not a choice of the screen.
-- The address comes from one place. A screen gives the kind of record and its key,
+- *ES-REF-03* The address comes from one place. A screen gives the kind of record and its key,
   and the shared mechanism returns the address and says whether the reader may
   open it. A screen never writes =/refdata/currencies/...= or any other record
   address in its own code.
-- A reference is plain text, never a link that goes nowhere, in four cases: the
+- *ES-REF-04* A reference is plain text, never a link that goes nowhere, in four cases: the
   reader may not read the record, the kind of record has no page of its own, the
   record does not exist, and the reference is to the record whose page is open.
-- A kind of record that is referenced but has no page yet is a gap in the product.
+- *ES-REF-05* A kind of record that is referenced but has no page yet is a gap in the product.
   The reference is drawn as text with its flag, and the gap is filed as a story.
   It is not hidden by writing the address anyway.
-- A new foreign key on a record is drawn as a reference from the day it is
+- *ES-REF-06* A new foreign key on a record is drawn as a reference from the day it is
   added. A review of a screen checks every value that is a key.
 
 | Kind of record | Address | Beside the text |
@@ -293,28 +293,28 @@ The main screen of an entity contains the workflows that act on it. A person who
 looks at the parties finds how to onboard one there, and does not have to know
 which area page holds the workflow.
 
-- The workflows are in one Workflows menu in the header of the list, beside
+- *ES-WORKFLOW-01* The workflows are in one Workflows menu in the header of the list, beside
   Refresh. An entity with a page of its own carries the workflows that act on one
   subject in the same menu on that page.
-- Each line of the menu has the workflow's name, which is a verb and its object,
+- *ES-WORKFLOW-02* Each line of the menu has the workflow's name, which is a verb and its object,
   and one line about it. Choosing a line opens the workflow.
-- A line is drawn only for a person who may start that workflow. If there is
+- *ES-WORKFLOW-03* A line is drawn only for a person who may start that workflow. If there is
   none, the menu is not drawn.
-- A workflow is not a CRUD command. Add, Edit and Delete are buttons on the list
+- *ES-WORKFLOW-04* A workflow is not a CRUD command. Add, Edit and Delete are buttons on the list
   or on a card. A workflow has several steps, so it has its own address and its
   own trail: Home, the area, the workflow.
-- A workflow is listed once. It is listed on the screen of the entity it acts
+- *ES-WORKFLOW-05* A workflow is listed once. It is listed on the screen of the entity it acts
   on. It has a card on its area page, in the workflow hue and with the tag
   Workflow, only when no screen of an entity can hold it. See
   [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]].
-- The component is =WorkflowMenu= in =shell/WorkflowMenu.tsx=. It reads the
+- *ES-WORKFLOW-06* The component is =WorkflowMenu= in =shell/WorkflowMenu.tsx=. It reads the
   workflows from the card registry (=shell/cards.ts=), where each workflow names
   the screen it acts on.
 
 ** People are links
 
-A person is named in many places: a manager, a holder of a role, the author of a
-history entry, the person who asked for something, the person who answered. The
+*ES-PEOPLE-05* A person is named in many places: a manager, a holder of a role, the
+author of a history entry, the person who asked for something, the person who answered. The
 rule is the same in all of them.
 
 | What is on the screen | How it is drawn |
@@ -328,42 +328,42 @@ rule is the same in all of them.
 | A web address | An =http= or =https= link that opens in a new tab with =rel="noopener noreferrer"= |
 | A value that is neither | Plain text. It never becomes a link that goes nowhere |
 
-- =PersonRef= draws a person from a username or an identifier. It reads the
+- *ES-PEOPLE-01* =PersonRef= draws a person from a username or an identifier. It reads the
   directory once, and the directory is the widest read the reader holds. A reader
   of accounts names anybody in the tenant. A reader of the organisation names the
   people in their parties and under them. Anybody else names nobody.
-- =actorPathFor= decides whether a history author is linked.
-- A sign-in address is not a mail address and is not a =mailto:= link. Only the
+- *ES-PEOPLE-02* =actorPathFor= decides whether a history author is linked.
+- *ES-PEOPLE-03* A sign-in address is not a mail address and is not a =mailto:= link. Only the
   contact record's email is.
-- The email on the contact card says which address it is, and says that it is not
+- *ES-PEOPLE-04* The email on the contact card says which address it is, and says that it is not
   the sign-in address.
 
 ** Photos, flags and images
 
-- A person is drawn with a photo wherever there is room for one: the list, the
+- *ES-PHOTO-01* A person is drawn with a photo wherever there is room for one: the list, the
   page header, a manager line, a card in a chart, a person in a picker and the
   history rail. Where a person has no photo, their initials stand in the same
   circle, so a list does not jump.
-- A username is never drawn without the photo. This holds on every screen and
+- *ES-PHOTO-02* A username is never drawn without the photo. This holds on every screen and
   on every tab of a screen, including the audit screens, where a username
   names who signed in, who failed to sign in or who ended a session. The
   photo stands at the left of the name, small in rows.
-- The one exception is the accounts dialog itself, where the account is the
+- *ES-PHOTO-03* The one exception is the accounts dialog itself, where the account is the
   subject of the dialog and its photo is already its own control.
-- A screen that reads accounts by identifier reads the image identifier with the
+- *ES-PHOTO-04* A screen that reads accounts by identifier reads the image identifier with the
   username, so that it can draw the photo. A reading that carries only the
   username does not leave the photo out. The screen reads the account list once
   and joins it.
-- A photo is fetched by its image identifier, which the read already carries. A
+- *ES-PHOTO-05* A photo is fetched by its image identifier, which the read already carries. A
   screen never asks for a person's picture once per row by username. The image is
   cached by its identifier for a year.
-- The sizes are small (20 pixels) in rows, pickers and the rail, medium in
+- *ES-PHOTO-06* The sizes are small (20 pixels) in rows, pickers and the rail, medium in
   cards, and large (56 pixels) in a page header.
-- A country, a currency, a calendar or a business centre is drawn with its flag
+- *ES-PHOTO-07* A country, a currency, a calendar or a business centre is drawn with its flag
   wherever its code appears. A country code on a contact card is the flag, then
   the code. Flags come from the one map in the record standard, and a screen never
   works out a flag itself.
-- The photo of a person who wrote a history entry stands at the left of the
+- *ES-PHOTO-08* The photo of a person who wrote a history entry stands at the left of the
   entry, beside its header and changes. See
   [[*History and the timeline][History and the timeline]].
 
@@ -375,25 +375,25 @@ This is the rule that matters most, and the Staff work learned it the hard way.
 The paging on the screen must match the paging of the data requests.
 #+end_quote
 
-- Every list of rows asks the server for one page: =offset=, =limit=, and the
+- *ES-PAGING-01* Every list of rows asks the server for one page: =offset=, =limit=, and the
   server's total. The pager, the page size and the "Showing 1–15 of 40" sentence
   are the request's own numbers. A screen that reads everything and slices it in
   the browser has a pager that is not a pager.
-- The search, the filter, the area and the sort are fields of the same request.
+- *ES-PAGING-02* The search, the filter, the area and the sort are fields of the same request.
   The server applies them. A new search or filter returns to the first page.
-- A search is sent when the typing pauses, not on every key.
-- The default page is 15 rows, and the sizes are those of the record standard. No
+- *ES-PAGING-03* A search is sent when the typing pauses, not on every key.
+- *ES-PAGING-04* The default page is 15 rows, and the sizes are those of the record standard. No
   screen sets its own.
-- An entity is never read whole. That includes the lists a screen needs only
+- *ES-PAGING-05* An entity is never read whole. That includes the lists a screen needs only
   to draw something else: the permissions of a role, the people who hold a
   role, the roles a person holds, the people a name is resolved against. Each
   of them is a page, or a lookup of the few rows the screen draws. The one
   exception is the classification list of the Record screen standard's
   Exceptions, which is short, reordered as a whole and bounded by the Load all
   rule of 1000 rows (decided 2026-10-25).
-- A count that a screen needs, such as how many people hold a role, is part of
+- *ES-PAGING-06* A count that a screen needs, such as how many people hold a role, is part of
   the answer to the page, not a second read of everything.
-- A thing that is not a list but looks like one to the reader, such as the
+- *ES-PAGING-07* A thing that is not a list but looks like one to the reader, such as the
   catalogue of permissions, is paged by the unit the reader sees. A row on the
   screen is a resource with its actions, so a page is a whole number of resources
   and never half of one.
@@ -402,15 +402,15 @@ The paging on the screen must match the paging of the data requests.
 
 A combo box that filters a paged list obeys the same rule.
 
-- It offers only the values that exist in the data, and the server says which.
+- *ES-PAGING-08* It offers only the values that exist in the data, and the server says which.
   An area no role grants something in is not offered.
-- A screen that shows one value at a time, such as one area of the permissions,
+- *ES-PAGING-09* A screen that shows one value at a time, such as one area of the permissions,
   has no "all" choice. One value is always chosen. When the reader has not
   chosen, the first value the server lists is chosen, and the server says which.
-- A list that narrows rows, such as the roles list, may start with "All areas",
+- *ES-PAGING-10* A list that narrows rows, such as the roles list, may start with "All areas",
   because choosing none shows every row. The first choice there means no filter,
   and it is not a page of everything.
-- A filter that matches nothing says so and offers to clear it.
+- *ES-PAGING-11* A filter that matches nothing says so and offers to clear it.
 
 *** Editing across pages
 
@@ -443,54 +443,54 @@ and below it a rail of entries, newest first.
 
 *** The event chart
 
-- The chart is a histogram of the entries: a bar for each hour, or for each day
+- *ES-HIST-01* The chart is a histogram of the entries: a bar for each hour, or for each day
   once the history spans more than two days. Each bar is split by the kind of
   entry, and each kind has one colour that the legend repeats.
-- Every bar has the same fixed width. A bar never stretches to fill the row, and
+- *ES-HIST-02* Every bar has the same fixed width. A bar never stretches to fill the row, and
   a long history scrolls sideways.
-- An hour or a day with no entries is empty space. The chart draws every bucket
+- *ES-HIST-03* An hour or a day with no entries is empty space. The chart draws every bucket
   from the first entry to the last, so a gap in time reads as a gap.
-- A bar shows its time and its count on hover, and each segment its kind and its
+- *ES-HIST-04* A bar shows its time and its count on hover, and each segment its kind and its
   count. The first and the last time stand under the bars. The legend names the
   kinds that appear, each with its count.
-- A click on a bar scrolls to the entry nearest that hour or day, and marks it for
+- *ES-HIST-05* A click on a bar scrolls to the entry nearest that hour or day, and marks it for
   a moment. A click on an empty bar goes to the closest entry in time.
-- The chart reads the entries the list holds. It makes no read of its own.
+- *ES-HIST-06* The chart reads the entries the list holds. It makes no read of its own.
 
 *** One line per entry
 
-- Each entry is a header on one line: the kind, the record and its version, the
+- *ES-HIST-07* Each entry is a header on one line: the kind, the record and its version, the
   reason code, the author, what they did, and the time. The time and the
   current-version emblem stand in the left gutter.
-- The note, such as "Attached staff photo during provisioning", is never on the
+- *ES-HIST-08* The note, such as "Attached staff photo during provisioning", is never on the
   header line. It stands on its own line below the header.
-- The detail is collapsed. A field that changed is drawn as the difference, the
+- *ES-HIST-09* The detail is collapsed. A field that changed is drawn as the difference, the
   old and the new, and a first version as the whole record. A reader opens the
   detail on demand. The first screen of a long history is a list of headers a
   person can scan.
-- An entry that changed no field says "No changes". It has no detail to open.
-- The newest version of a record carries a small emblem next to its time, with
+- *ES-HIST-10* An entry that changed no field says "No changes". It has no detail to open.
+- *ES-HIST-11* The newest version of a record carries a small emblem next to its time, with
   the words "Current version" as its tooltip. There is no sentence for it, and no
   Revert button on it, because there is nothing to revert to.
-- An entry that cannot be reverted, such as a sign-in, simply offers no control.
+- *ES-HIST-12* An entry that cannot be reverted, such as a sign-in, simply offers no control.
   The rail does not explain what is missing: no "this entry records something
   that happened, so there is nothing to revert", and no "putting a field back is
   not offered here". A sentence that says what is not there adds nothing.
 
 *** System activity
 
-- Every history draws one toggle, "Hide system activity". When it is on, the
+- *ES-HIST-13* Every history draws one toggle, "Hide system activity". When it is on, the
   toggle reads "Show system activity". It is drawn even when no service account
   wrote an entry.
-- The toggle starts off. A history shows every entry until the reader hides some.
-- The toggle hides an entry only when its author is a service account. The tenant
+- *ES-HIST-14* The toggle starts off. A history shows every entry until the reader hides some.
+- *ES-HIST-15* The toggle hides an entry only when its author is a service account. The tenant
   administrator and the super administrator are people, so their entries stay.
-- The toggle also hides the entries in the chart, the legend and the day dividers.
+- *ES-HIST-16* The toggle also hides the entries in the chart, the legend and the day dividers.
   The chart counts what the rail shows.
-- Only a reader who may read accounts can tell a service from a person. For any
+- *ES-HIST-17* Only a reader who may read accounts can tell a service from a person. For any
   other reader the toggle is disabled, and its tooltip says why. The screen does
   not guess, because a wrong guess hides people.
-- The shared =Timeline= draws the toggle. A screen gives it =isService=, which
+- *ES-HIST-18* The shared =Timeline= draws the toggle. A screen gives it =isService=, which
   =usePeopleDirectory= supplies.
 
 *** Entries that are one act
@@ -499,19 +499,19 @@ A bulk import writes a record for each row, so the history of one party can hold
 forty links created in one second. The rail draws entries that are one act as one
 row that opens to its members.
 
-- Entries are one act when they were created, or closed, by the same author, for
+- *ES-HIST-19* Entries are one act when they were created, or closed, by the same author, for
   the same kind of record, with the same reason code and the same comment, and each
   follows the one before it by no more than 5 seconds. There must be at least 3.
-- A change is never part of a batch. It carries a difference that a reader wants to
+- *ES-HIST-20* A change is never part of a batch. It carries a difference that a reader wants to
   read.
-- The batch row says what was done once: the kind, the count, the kind of record,
+- *ES-HIST-21* The batch row says what was done once: the kind, the count, the kind of record,
   the reason, the author and the comment. Beneath it, "{n} entries" opens a list of
   the members, one line each, with the time and the name of the record.
-- The batch stands at the time of its newest entry. Entries of other acts keep
+- *ES-HIST-22* The batch stands at the time of its newest entry. Entries of other acts keep
   their place around it. A batch has no Revert button.
-- The chart and the counts still read the entries. A batch is only how the rail
+- *ES-HIST-23* The chart and the counts still read the entries. A batch is only how the rail
   draws them.
-- A party history leaves out its versions that changed none of the fields it
+- *ES-HIST-24* A party history leaves out its versions that changed none of the fields it
   carries, such as the versions a child record's import bumped. The first version
   stays.
 
@@ -521,28 +521,28 @@ A party works in countries and currencies, and may trade with counterparties. A
 person works in parties. Each of these is a link, and the timeline draws a link
 as a record of its own.
 
-- A link is named by what it points at: "Country GB", "Currency EUR",
+- *ES-HIST-25* A link is named by what it points at: "Country GB", "Currency EUR",
   "Counterparty Globex Corporation". A counterparty or a party is said by its
   name, and its id stands only when the name cannot be read.
-- The opening of a link is a "Created" entry. A change to a link, where it has a
+- *ES-HIST-26* The opening of a link is a "Created" entry. A change to a link, where it has a
   column of its own, is a "Changed" entry with the difference.
-- The closing of a link is a "Closed" entry. It carries the time the link ended
+- *ES-HIST-27* The closing of a link is a "Closed" entry. It carries the time the link ended
   and the account that ended it, drawn as the author of any other entry is. A
   link closed before the store recorded the closer has no author, and the entry
   does not say that it has none.
-- A link that was closed and opened again is one record in two runs. The second
+- *ES-HIST-28* A link that was closed and opened again is one record in two runs. The second
   run counts from one again.
-- The timeline names a gap for a kind of link only when that kind could not be
+- *ES-HIST-29* The timeline names a gap for a kind of link only when that kind could not be
   read. A kind that read and holds no link states nothing.
 
 *** The author
 
-- The author's photo stands at the left of the entry, beside the header and the
+- *ES-HIST-30* The author's photo stands at the left of the entry, beside the header and the
   changes, at medium size (2 rem) so that a face can be seen. Where the author has
   no photo, their initials stand in the same circle. A service is its initials.
-- The author's name is a link to their page where the reader may open people.
+- *ES-HIST-31* The author's name is a link to their page where the reader may open people.
   A service is text.
-- The photo and the link come from the same directory as every other mention of
+- *ES-HIST-32* The photo and the link come from the same directory as every other mention of
   a person.
 
 *** One rail for several kinds of record
@@ -551,12 +551,12 @@ A person's history merges the versions of the account and the contact record,
 the roles given, and the sign-ins. They share the rail, and each entry names its
 kind and its record.
 
-- Each kind of entry has its own tone: a change, a grant, an act, a decision.
-- An act that is not a version, such as a sign-in, is drawn quietly and says that
+- *ES-HIST-33* Each kind of entry has its own tone: a change, a grant, an act, a decision.
+- *ES-HIST-34* An act that is not a version, such as a sign-in, is drawn quietly and says that
   it cannot be reverted.
-- A version of a record that may be reverted offers Revert to the person who may
+- *ES-HIST-35* A version of a record that may be reverted offers Revert to the person who may
   write it. The newest version says "Current version" and offers nothing.
-- Entries are paired with the version before them to find what changed. The
+- *ES-HIST-36* Entries are paired with the version before them to find what changed. The
   pairing is the screen's reading of the stream, not the server's claim.
 
 *** Gaps
@@ -566,11 +566,11 @@ taken away is closed and no read returns it. The sign-in log keeps a window. Eac
 such part is a gap on the answer, stated on the screen in words. A gap is never
 rounded away, and it is never shown as an empty list.
 
-- A gap the screen knows is said in its own words, in every language, once.
-- A part that was removed is closed, and no read lists a closed row. A party's
+- *ES-HIST-37* A gap the screen knows is said in its own words, in every language, once.
+- *ES-HIST-38* A part that was removed is closed, and no read lists a closed row. A party's
   history says so for its identifiers, its contacts and its business units, in
   its own words, until a read by parent lists them.
-- Any other gap says that part of the history could not be read. It then names the
+- *ES-HIST-39* Any other gap says that part of the history could not be read. It then names the
   record and gives the stream's own reason, so a reader can tell what is missing
   and why. The reason is in English and may name tables, reads and refusals.
   Such a gap is a fault to fix, not a state to keep.
@@ -592,9 +592,9 @@ where the field moved.
 
 *** History and Audit
 
-History is the versions of one record. A log of events that happened is Audit,
-and has a Refresh and no revert. The sign-in record is Audit. In a person's
-timeline it appears as acts.
+*ES-HIST-40* History is the versions of one record, and the tab is named History. A
+log of events that happened is Audit, and has a Refresh and no revert. The
+sign-in record is Audit. In a person's timeline it appears as acts.
 
 *** Relationship histories
 
@@ -609,21 +609,21 @@ There is no card of the person beside it. The list is the way in.
 
 ** Several kinds of record in one entity
 
-- One page per subject. An aspect is a tab, not a screen of its own.
-- Each tab reads what it needs, and each read is its own permission. A reader who
+- *ES-ASPECT-01* One page per subject. An aspect is a tab, not a screen of its own.
+- *ES-ASPECT-02* Each tab reads what it needs, and each read is its own permission. A reader who
   can read an account and not its roles sees the Details tab and not the Roles
   tab.
-- A reader sees their own record whatever they hold. The signed-in person's own
+- *ES-ASPECT-03* A reader sees their own record whatever they hold. The signed-in person's own
   account, contact record, sign-in state, sessions and permissions are self reads
   on the allow-list of [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. A page that is the reader's own uses
   them and needs no permission. Any other person's page needs the read of that
   aspect.
-- When the read of one aspect is refused, that aspect says so and the others
+- *ES-ASPECT-04* When the read of one aspect is refused, that aspect says so and the others
   carry on.
-- The entity's relationships are shown where the reader needs them: a manager on
+- *ES-ASPECT-05* The entity's relationships are shown where the reader needs them: a manager on
   the identity card, the people who report to a person in the hierarchy, the
   parties as tags in the list.
-- Do not add a tab to say that something cannot be done. Say it where the
+- *ES-ASPECT-06* Do not add a tab to say that something cannot be done. Say it where the
   control would be.
 
 ** A trade, a structure and a package
@@ -641,16 +641,16 @@ The [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]] say what a perso
 | /Links/ | The structure or package the trade is in, and the trades it is linked to |
 | /History/ | The timeline |
 
-- The identity card says why a field is fixed. The party and the counterparty
+- *ES-TRADE-01* The identity card says why a field is fixed. The party and the counterparty
   never change, so a change to either is a cancel and rebook, which is a
   lifecycle event and not an Edit.
-- Edit asks for the kind of change first, and the kind bounds the fields the
+- *ES-TRADE-02* Edit asks for the kind of change first, and the kind bounds the fields the
   dialog offers. This is the rule of [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]]: the reason constrains the
   change. The dialog then says what the save will do, which version moves and
   whether a confirmation is issued.
-- A trade that is the leg of a structure or a package says so, and says whose
+- *ES-TRADE-03* A trade that is the leg of a structure or a package says so, and says whose
   confirmation a change reaches.
-- Recording a lifecycle event is a workflow, in the Workflows menu of the page.
+- *ES-TRADE-04* Recording a lifecycle event is a workflow, in the Workflows menu of the page.
   It has steps and writes several records, and a novation books a second trade.
 
 *** Booking a trade
@@ -659,16 +659,16 @@ Booking is the Add of the trade list. It opens a page and not a sequence, becaus
 a sequence is allowed only when it makes the task quicker, and a trader booking a
 deal knows the whole deal.
 
-- The page has four tabs: Trade, Instrument, Identifiers and Review. Book is a
+- *ES-TRADE-05* The page has four tabs: Trade, Instrument, Identifiers and Review. Book is a
   button in the header and stays disabled until the review has nothing to refuse.
-- The trade type is a combo box, grouped by product. A trade type with no
+- *ES-TRADE-06* The trade type is a combo box, grouped by product. A trade type with no
   instrument table is listed and cannot be chosen, and says so. The type is the
   one choice that decides what the Instrument tab holds.
-- The Instrument tab has a tab of its own for each part of the instrument: its
+- *ES-TRADE-07* The Instrument tab has a tab of its own for each part of the instrument: its
   terms, then each child table. A part with rows is edited as a table with
   Add a row and Remove. A part that the economic digest does not read says so
   where the person edits it.
-- A trade booked in a virtual book must be a draft, a test or a hypothetical.
+- *ES-TRADE-08* A trade booked in a virtual book must be a draft, a test or a hypothetical.
   The Review tab refuses anything else and says why.
 
 *** A structure and a package
@@ -677,14 +677,14 @@ A structure is a tree: the deal the customer sees at the root, with strategies,
 packages and trades inside. A package is a structure of kind Package, so there is
 one screen and its words follow the kind. See [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]].
 
-- The tree is its own panel beside the page, as in the structure editor. A row
+- *ES-TRADE-09* The tree is its own panel beside the page, as in the structure editor. A row
   stands for the root, for each inner structure with its kind, and for each
   trade with its product, role and notional. A click on a structure opens its
   page, and a click on a trade selects it.
-- The page says how the kind confirms and prices: a strategy, a typed structure
+- *ES-TRADE-10* The page says how the kind confirms and prices: a strategy, a typed structure
   and a dynamic structure are one deal, and a package confirms trade by trade.
-- The list shows each root with its inner structures indented under it.
-- Grouping trades is a workflow, because the kind to choose has consequences the
+- *ES-TRADE-11* The list shows each root with its inner structures indented under it.
+- *ES-TRADE-12* Grouping trades is a workflow, because the kind to choose has consequences the
   person must read first.
 
 *** A priced structure
@@ -692,19 +692,19 @@ one screen and its words follow the kind. See [[id:FC31FC9C-7A6E-4EFD-8A62-6DE41
 The price of a structure is a tab of the structure page. There is no separate
 workbench that edits a structure in place.
 
-- The members of a structure change through the Edit pattern, one change at a time.
+- *ES-TRADE-13* The members of a structure change through the Edit pattern, one change at a time.
   A dialog asks for the reason and the commentary. The change waits until the
   person presses Refresh, and the history of the structure records who made it and
   why. A change to the members does not move the version of a trade.
-- A leg is booked on Book a trade, with the structure and the role in the address.
+- *ES-TRADE-14* A leg is booked on Book a trade, with the structure and the role in the address.
   The booking and the membership are two writes. The result offers the next open
   role of the template.
-- A strategy states what its template asks of its legs, and the Members tab shows
+- *ES-TRADE-15* A strategy states what its template asks of its legs, and the Members tab shows
   each check as it passes or fails.
-- Market data is a snapshot, and the tab says when it was read. A newer snapshot
+- *ES-TRADE-16* Market data is a snapshot, and the tab says when it was read. A newer snapshot
   turns Refresh gold, and nothing ticks by itself. A screen that must stream says so
   on its own query, as the notification bell does.
-- A price is indicative. The tab says so, and it names the shifts that were applied.
+- *ES-TRADE-17* A price is indicative. The tab says so, and it names the shifts that were applied.
 
 ** The entity protocol
 
@@ -713,36 +713,36 @@ the [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specificatio
 the server is stated as a change to the entity's model, and not as a new
 operation.
 
-- *Reads.* A list is =list= with an offset, a limit, a stated order and a filter
+- *ES-PROTOCOL-01* *Reads.* A list is =list= with an offset, a limit, a stated order and a filter
   record. The reply carries the total, and the pager is built from it. A record
   page is =get=. A set of rows for the keys on a page is =get_many= or a filter
   with a one-of member. A history is =list= of the entity's versions. A read at an
   instant is the =as_of= field.
-- *The filter record.* A filter has an equals member for each column the model
+- *ES-PROTOCOL-02* *The filter record.* A filter has an equals member for each column the model
   declares filterable, a one-of member for the key and the relation columns, a
   =_from= and a =_to= member for each filterable date or timestamp column, and
   one =search= member for the columns the model declares searchable. A screen
   that wants to filter by a column asks for the column to be declared filterable.
   It does not filter in the browser. A combo box that filters a list offers only
   the values that exist, as the paging section says.
-- *A scoped read.* The children of one row are =list_by_<relation>=, such as the
+- *ES-PROTOCOL-03* *A scoped read.* The children of one row are =list_by_<relation>=, such as the
   identifiers of a trade. A filter on a column of another entity, such as the
   trades in a book or in a state, is a filter of a read model that carries the
   column, and not a join the screen builds. The trades of a portfolio and the
   portfolios below it are the books below it, read first, then a one-of member
   of those books. The table in *Finding an entity* of the protocol
   specification names the mechanism for each need.
-- *Writes.* A change is =put= with a precondition, which is the version the edit
+- *ES-PROTOCOL-04* *Writes.* A change is =put= with a precondition, which is the version the edit
   started from, and a change intent: the reason code and the commentary. A set of
   records is =put_many=, and it is one transaction. The screen never sends a
   tenant, a party, a version it computed or a provenance field.
-- *Domain operations.* A write that touches several entities as one transaction,
+- *ES-PROTOCOL-05* *Domain operations.* A write that touches several entities as one transaction,
   such as booking a trade, is a domain operation in the =ops= namespace of its
   component. It is the exception, and a screen uses one only when the common
   verbs cannot do the job. Each use is listed on the journey as a gap to review.
-- *Events.* The change news of a screen is the entity's events. The screen names
+- *ES-PROTOCOL-06* *Events.* The change news of a screen is the entity's events. The screen names
   the entity it shows and never guesses a subject.
-- *The registry.* Each entity declares itself once, as the record standard says,
+- *ES-PROTOCOL-07* *The registry.* Each entity declares itself once, as the record standard says,
   and the screen reads the declaration. A trading entity gets the same kind of
   registry entry, write schema, field table and column list as a reference data
   record.
@@ -751,16 +751,16 @@ operation.
 
 A tree, a chart and a queue draw how subjects relate.
 
-- A tree draws each subject once, under the subject it relates to. A subject can
+- *ES-RELATION-01* A tree draws each subject once, under the subject it relates to. A subject can
   belong to several groups, such as a person in two parties, and is then drawn
   in each group, with the same person under the same manager in each.
-- A group is a party, nested by its own parent, and its name is drawn, never its
+- *ES-RELATION-02* A group is a party, nested by its own parent, and its name is drawn, never its
   code.
-- A filter by group appears only when the reader sees more than one, and its
+- *ES-RELATION-03* A filter by group appears only when the reader sees more than one, and its
   choices are the groups they see.
-- A person with a manager the reader cannot see is marked, not drawn as a root.
-- A chart zooms and fits, and scrolls sideways rather than squeezing its cards.
-- A relationship view is paged or lazy in the same way as a list. It never reads
+- *ES-RELATION-04* A person with a manager the reader cannot see is marked, not drawn as a root.
+- *ES-RELATION-05* A chart zooms and fits, and scrolls sideways rather than squeezing its cards.
+- *ES-RELATION-06* A relationship view is paged or lazy in the same way as a list. It never reads
   every row to draw the part the reader sees.
 
 ** Who sees what
@@ -773,29 +773,29 @@ Visibility is decided by the narrowest read that does the job.
 | A member | The people in the parties they work in, and everyone who reports to them | The organisation read, scoped by party and reporting line |
 | Anyone | Their own record | Self reads |
 
-- A member's list shows names, photos, titles and parties. It does not show
+- *ES-SEES-01* A member's list shows names, photos, titles and parties. It does not show
   email addresses, contact records, sign-ins or roles. Account data is not screen
   furniture.
-- A party the reader does not work in, and does not manage someone in, is not
+- *ES-SEES-02* A party the reader does not work in, and does not manage someone in, is not
   named to them, even when a colleague in their own party also works in it.
-- A person who is outside the reader's view is "someone outside your view", never
+- *ES-SEES-03* A person who is outside the reader's view is "someone outside your view", never
   an identifier.
-- The menu offers an entry by the narrowest read that screen needs, so a member
+- *ES-SEES-04* The menu offers an entry by the narrowest read that screen needs, so a member
   gets Staff and Hierarchy and an administrator gets the fuller list.
 
 ** Proposals and four-eyes
 
 A change that another person must agree to is a proposal, not a write.
 
-- The control says Propose, and the dialog says that nothing changes until the
+- *ES-PROPOSE-01* The control says Propose, and the dialog says that nothing changes until the
   other person approves.
-- The proposer sees the state of their proposal among their own requests and can
+- *ES-PROPOSE-02* The proposer sees the state of their proposal among their own requests and can
   withdraw it while it waits.
-- The person who decides sees it in Requests, with who proposed it and what
+- *ES-PROPOSE-03* The person who decides sees it in Requests, with who proposed it and what
   changes, and approves or declines it. A decline needs a comment.
-- Requests is the one place for every kind of request. Every member sees their
+- *ES-PROPOSE-04* Requests is the one place for every kind of request. Every member sees their
   own there, and a person who can decide also sees the queue.
-- The decision and the apply are recorded, so the history of the subject names the
+- *ES-PROPOSE-05* The decision and the apply are recorded, so the history of the subject names the
   proposer, the decider and the time.
 
 The reporting line becomes a proposal in the story "Approve a reporting line
@@ -804,33 +804,33 @@ by a direct edit for those who hold the update permission.
 
 ** The shell around a screen
 
-- The footer states the tenant and the party the session acts for, as pills,
+- *ES-SHELL-01* The footer states the tenant and the party the session acts for, as pills,
   because they decide what every screen shows. It also states the client, the
   server and the environment.
-- The header names an administrator's mode and says nothing for an ordinary
+- *ES-SHELL-02* The header names an administrator's mode and says nothing for an ordinary
   member, whose mode has no meaning to them.
-- The notification bell and the account menu stand in the header. The account
+- *ES-SHELL-03* The notification bell and the account menu stand in the header. The account
   menu holds the person's own pages and signing out. It is not part of the menu
   of areas in [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]].
-- A person's own pages are My profile, My access and Where I work. They are
+- *ES-SHELL-04* A person's own pages are My profile, My access and Where I work. They are
   reached from the account menu and from the profile's doors, each in one place.
 
 ** Feedback, states and words
 
-- A screen states what it is waiting for. First load says "Loading…" in the place
+- *ES-WORDS-01* A screen states what it is waiting for. First load says "Loading…" in the place
   of the content. A reload keeps the rows, dimmed. An empty list says what is
   empty and what to do. An error is in place, in the server's words, with Retry.
-- A refused read is a refusal and not a failure. The screen says the reader may
+- *ES-WORDS-02* A refused read is a refusal and not a failure. The screen says the reader may
   not see this, in words, and never shows a permission code.
-- A time is relative with the exact time on hover. "Never signed in" is a phrase
+- *ES-WORDS-03* A time is relative with the exact time on hover. "Never signed in" is a phrase
   and not 1 January 1970: a missing time is not a time, the server states null
   for it, and no screen has a zero instant to explain.
-- Words are in sentence case, and the verbs are the Record screen standard's
+- *ES-WORDS-04* Words are in sentence case, and the verbs are the Record screen standard's
   Naming list, which includes Propose. An entity's own action is a verb and its
   object.
-- Every string exists in English, French and Portuguese before the screen ships.
-- A screen never shows an identifier where a name would do.
-- A screen does not narrate what is absent. A control that is not offered is not
+- *ES-WORDS-05* Every string exists in English, French and Portuguese before the screen ships.
+- *ES-WORDS-06* A screen never shows an identifier where a name would do.
+- *ES-WORDS-07* A screen does not narrate what is absent. A control that is not offered is not
   drawn, and nothing says why unless the reader would otherwise be stuck. A sentence
   that only explains an empty space is removed.
 
@@ -842,34 +842,34 @@ lost. The design is in [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notific
 
 *** How a screen hears
 
-- The browser holds one stream of change news for the session. It opens when
+- *ES-REFRESH-01* The browser holds one stream of change news for the session. It opens when
   the first screen watches something and closes with the last, so a screen that
   watches nothing holds no connection.
-- A screen names the entities it shows, as the services name their events: the
+- *ES-REFRESH-02* A screen names the entities it shows, as the services name their events: the
   component and the events collection, such as =iam= and =accounts=. The refdata
   registry states these, so no screen guesses a plural.
-- The news is a time and not a list. A thousand changes in one import make a
+- *ES-REFRESH-03* The news is a time and not a list. A thousand changes in one import make a
   screen stale once.
-- The news may name the records that changed, when there are few (up to 20 in
+- *ES-REFRESH-04* The news may name the records that changed, when there are few (up to 20 in
   one message). A list uses them to place the change (see Refresh). A record page names its record in its watch
   (={ component, entity, record: { username } }=) and goes stale only when the
   news names its record or names none. It does not pulse for another person's
   change. A page that cannot state its record's key leaves the record out and
   goes stale for any change to the entity.
-- A screen is stale when a change reached the browser after the load that
+- *ES-REFRESH-05* A screen is stale when a change reached the browser after the load that
   produced its data began. The comparison uses the browser's clock at both ends,
   because the server's clock differs. A change that arrives while a load is in
   flight counts.
 
 *** Refresh
 
-- Every list, relationship view and record page has a Refresh button in the
+- *ES-REFRESH-06* Every list, relationship view and record page has a Refresh button in the
   header's actions, the same control and the same place (=RefreshButton=).
-- When the screen is stale the button turns gold, pulses four times, and stays
+- *ES-REFRESH-07* When the screen is stale the button turns gold, pulses four times, and stays
   gold until the screen loads again. Its tooltip says the data changed and gives
   the time. A reader who asks for less motion gets the gold and no pulse.
-- The gold (=--color-stale=) means "changed on the server" and nothing else.
-- A list also says where the change fell, in three cases. The list keeps the
+- *ES-REFRESH-08* The gold (=--color-stale=) means "changed on the server" and nothing else.
+- *ES-REFRESH-09* A list also says where the change fell, in three cases. The list keeps the
   records that the changes since its load named.
   1. A few records, all on the page: those rows pulse (=row-news=).
   2. Too many to name, or a list that cannot tell its rows apart: a strip along
@@ -879,125 +879,125 @@ lost. The design is in [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notific
      the rows pulse and the strip shows.
   A list tells its rows apart by =recordKey=, the key of the record a row shows,
   as the events name it. Refresh stays gold in all three cases.
-- A click reads again whatever the screen shows. On a record page that is every
+- *ES-REFRESH-10* A click reads again whatever the screen shows. On a record page that is every
   card and the history.
-- The page does not reload by itself. A list does not, a record page does not,
+- *ES-REFRESH-11* The page does not reload by itself. A list does not, a record page does not,
   and the history does not.
-- The query client holds this for every screen. It never reads again because the
+- *ES-REFRESH-12* The query client holds this for every screen. It never reads again because the
   window gained focus or the network came back (=refetchOnWindowFocus= and
   =refetchOnReconnect= are off). A screen that must poll says so on its own query,
   as the notification bell and the dashboards do.
-- A tab of a record page that the person has opened stays drawn and is hidden while
+- *ES-REFRESH-13* A tab of a record page that the person has opened stays drawn and is hidden while
   another is open. Leaving a tab never unmounts its reads, so coming back to it
   reads nothing. A tab the person has not opened reads nothing.
-- Refresh reads again only the queries the page shows: the record, its parts, its
+- *ES-REFRESH-14* Refresh reads again only the queries the page shows: the record, its parts, its
   links and its history. It does not read every record of the app.
-- A save does not reload the page either. The save's own change event makes
+- *ES-REFRESH-15* A save does not reload the page either. The save's own change event makes
   Refresh gold, like any other change, and the person presses Refresh to see the
   saved values. A page that was reloaded by the save would hide that the data
   moved, and would make the gold mean two things.
 
 *** When the data was loaded
 
-- Under the Refresh button the screen says when it loaded, as an ISO 8601
+- *ES-REFRESH-16* Under the Refresh button the screen says when it loaded, as an ISO 8601
   timestamp in the reader's zone, such as =2026-10-11T02:13:10+01:00=. It is
   small, monospaced and faint (half opacity), and it has no label. The tooltip
   says "Loaded" and repeats the timestamp. The text is the same in every
   language.
-- The timestamp is part of =RefreshButton=, which takes the screen's load state
+- *ES-REFRESH-17* The timestamp is part of =RefreshButton=, which takes the screen's load state
   and the news about it, so a screen cannot show the button without it
   (=LoadedAt=).
-- The time is the browser's clock at the moment the data arrived. It is the clock
+- *ES-REFRESH-18* The time is the browser's clock at the moment the data arrived. It is the clock
   the stale logic compares, so the two never disagree. It is not the server's
   =as_of=, which is a field a caller sends to read the data as it was at an
   instant. A read response carries no read time.
-- A screen made of several reads states the /oldest/ of the reads on screen,
+- *ES-REFRESH-19* A screen made of several reads states the /oldest/ of the reads on screen,
   because the screen is only as fresh as its oldest part. The stale logic uses the
   newest, which is a different question. Only the reads the screen is showing
   count: a page of a list that was read earlier stays in the cache and does not
   age the screen.
-- The time stays while a reload runs or fails, because the old data is still on
+- *ES-REFRESH-20* The time stays while a reload runs or fails, because the old data is still on
   screen. Before the first load nothing is drawn.
 
 *** Rows and entries that changed
 
-- After a reload, a row that was not on the page before, or whose content is
+- *ES-REFRESH-21* After a reload, a row that was not on the page before, or whose content is
   not what it was, gets a gold left edge and pulses three times. The mark goes
   after four seconds. The list keeps its scroll position.
-- The comparison is with the same page read before. It uses no clock, and moving
+- *ES-REFRESH-22* The comparison is with the same page read before. It uses no clock, and moving
   to another page, searching or sorting marks nothing.
-- A history entry that arrives with a read is marked the same way.
+- *ES-REFRESH-23* A history entry that arrives with a read is marked the same way.
 
 *** An edit in progress
 
-- A dialog is never reloaded under the person. While it is open it listens for
+- *ES-REFRESH-24* A dialog is never reloaded under the person. While it is open it listens for
   a change to its entity and reads the record again behind the form.
-- When the record is newer than the one the edit started from, a warning above
+- *ES-REFRESH-25* When the record is newer than the one the edit started from, a warning above
   the form says who saved it and which fields moved, with the old and the new
   value. The person chooses Keep my edit or Take the new values.
-- A save claims the version the edit started from. A save made against an old
+- *ES-REFRESH-26* A save claims the version the edit started from. A save made against an old
   version is refused with a clear message, and the edit stays in the form.
-- Keep my edit makes the newest version the base, so the save replaces it
+- *ES-REFRESH-27* Keep my edit makes the newest version the base, so the save replaces it
   knowingly.
-- A dialog over a record says under its title when the record it started from was
+- *ES-REFRESH-28* A dialog over a record says under its title when the record it started from was
   loaded (=Dialog='s =loadedAt=). The time moves when the person takes the newer
   version or keeps their edit on top of it, because the base has changed. A
   dialog over no record leaves it out.
 
 *** What is not heard yet
 
-- The events of another tenant are not told to a session. An event names its
+- *ES-REFRESH-29* The events of another tenant are not told to a session. An event names its
   tenant and, on a party-owned table, its party, in the envelope. A session hears
   its own tenant and the system tenant, and a member hears the parties they work in.
   The broker does not enforce this, so a client that listens to NATS directly still
   hears every tenant.
-- A role granted or taken away is published inside the service only, so a person
+- *ES-REFRESH-30* A role granted or taken away is published inside the service only, so a person
   page cannot hear it.
-- A reporting line has no event of its own. The staff list and the hierarchy
+- *ES-REFRESH-31* A reporting line has no event of its own. The staff list and the hierarchy
   hear it when the person changes too.
-- A change to a record that a screen shows by reference, such as a country name
+- *ES-REFRESH-32* A change to a record that a screen shows by reference, such as a country name
   on a book, is not heard.
-- The classification lists, the staff list and the hierarchy mark no rows yet.
-- The account profile write has no version claim in its protocol. The BFF checks
+- *ES-REFRESH-33* The classification lists, the staff list and the hierarchy mark no rows yet.
+- *ES-REFRESH-34* The account profile write has no version claim in its protocol. The BFF checks
   the claim just before it writes, which leaves a very small gap.
-- The notification bell still reads its count on a timer.
+- *ES-REFRESH-35* The notification bell still reads its count on a timer.
 
 ** What a screen or a form needs, and what the log keeps
 
 A screen or a form that is drawn must work. So what it needs is known before it
 is entered, and a screen the reader cannot use is not drawn.
 
-- /Each screen and each form declares what it needs/, as typed permission
+- *ES-NEEDS-01* /Each screen and each form declares what it needs/, as typed permission
   constants (=access/permissions.ts=, =access/screens.ts=). A wrong name does not
   compile. The menu, the home tiles, the route guard and the button that opens a
   form read that one declaration.
-- /A screen the reader cannot use is not offered./ A saved link to it does not show
+- *ES-NEEDS-02* /A screen the reader cannot use is not offered./ A saved link to it does not show
   "not available". It names the screen, says in words what the reader would need to
   be able to do, and lists the roles they could ask for that allow it. Each has a
   link that opens the request for that role, already filled in. When no role can
   be asked for, it says to ask the tenant administrator and offers no link. The
   words for each permission are typed, so a new permission without words does not
   compile.
-- /A screen that was drawn and then refused a read is our fault, not the reader's./
+- *ES-NEEDS-03* /A screen that was drawn and then refused a read is our fault, not the reader's./
   It is replaced by a panel that says so, gives a reference that finds the request
   in the log, and offers Try again and Home. The roles are read again first. If they
   changed, the screen's own guard takes over and says what is missing.
-- /Nothing is decided until the roles are known./ =Requires= and =FirstAvailable=
+- *ES-NEEDS-04* /Nothing is decided until the roles are known./ =Requires= and =FirstAvailable=
   draw nothing but "Loading" while the roles are read, so a screen never asks the
   server for what the reader may not read.
-- /Two audiences are two screens./ The whole directory and the people of your own
+- *ES-NEEDS-05* /Two audiences are two screens./ The whole directory and the people of your own
   parties are two screens, each with its own declaration. A screen does not
   inspect permissions to decide which screen it is.
-- /A form saves through one hook/ (=useRecordEdit=): save, close the form, and mark
+- *ES-NEEDS-06* /A form saves through one hook/ (=useRecordEdit=): save, close the form, and mark
   what the save changed as out of date. The hook reads none of it again, because a
   save does not reload the page (see Refresh). The person reads again with Refresh,
   which the save's own change event has turned gold. A read that no screen shows is
   stale all the same, so the screen that shows it next reads it fresh.
-- /Every failed request names its operation/ (the method and the path, with no
+- *ES-NEEDS-07* /Every failed request names its operation/ (the method and the path, with no
   query), its status, the server's code, and the request id. The banner shows the
   operation and the first eight characters of the id. The BFF puts the same id on
   its own lines for that request.
-- /The path a person took is in the log./ The browser sends a trail to the BFF:
+- *ES-NEEDS-08* /The path a person took is in the log./ The browser sends a trail to the BFF:
   =screen entered=, =screen left=, =form opened=, =form closed=, =save requested=,
   =saved=, =save refused=, =save failed=, =request failed=. The BFF writes each in
   the line form of the services, under =ores.web.client.<area>=, with the
@@ -1080,8 +1080,8 @@ Work in this order. Each step ends in something to check.
 
 ** Verifying a rule
 
-A rule is done when the screen shows what the rule says, tried against data of
-the real size. A test that checks only the code's own reading of the rule is not
+*ES-VERIFY-01* A rule is done when the screen shows what the rule says, tried
+against data of the real size, as a member and as an administrator. A test that checks only the code's own reading of the rule is not
 enough. The Staff work paged the areas of the permissions in the browser, passed
 a test of that, and still showed a screen with every permission on it.
 

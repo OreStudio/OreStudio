@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: DAB023AE-5D4C-4B01-BEC8-D2CE837C45BB
+:END:
+#+title: Make the rule identifier check see block headings and vanished identifiers
+#+description: The check ignores a heading inside an org block and cannot see a deleted identifier. From the review of PR 3758.
+#+type: capture
+#+level: cross
+#+filetags: :ux:tooling:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the rule identifier check see a heading inside an org block and a vanished identifier. build/scripts/check_rule_identifiers.py skips bullets inside begin and end blocks but not headings, so an example block with a heading would start a false section. It also cannot see a deleted or renumbered identifier unless the checklist cites it, so the permanence rule the UX hub states is not enforced; comparing against origin/main would catch a removed identifier. Both came from the review of the identifier PR 3758.
+
+* Why
+
+The identifier is the name a check and a reviewer share. A check that can be
+fooled by a heading in an example, or that cannot tell a rule vanished, lets
+the two drift apart without a word.
+
+* References
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the hub that states the identifier scheme.
+
+* See also
+
+-

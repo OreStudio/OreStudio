@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/decide-whether-ticks-are-stored-once-for-each-source
-#+pr:
+#+pr: 3744
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3744][#3744]] | [marketdata] Decide one tick for each source |
 
 * Review
 

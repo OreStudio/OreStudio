@@ -1,0 +1,31 @@
+:PROPERTIES:
+:ID: 6A17ED40-64D9-4175-832D-1A142EC63D73
+:END:
+#+title: The pricing engines screen test fails on main
+#+description: screens.test.tsx expects BermudanSwaption where the page now names the product; red on main and on every web branch.
+#+type: capture
+#+level: cross
+#+filetags: :web:gate:bug:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The pricing engines screen test fails on main. src/pricingEngines/screens.test.tsx, one pricing engine configuration, draws the product under the model and the engine that price it, expects the page to contain BermudanSwaption and the page now reads 'A swap exercisable on several dates' and 'Interest Rates · SWPTN' where the code stood, since the product is named in its heading (100508fc7b, Name the product in its heading and dialogs). Seen on origin/main e253a0a133 on 2026-10-25 in a clean worktree with the web's node modules linked, and on every branch that touches ores.web, whose web class of the local gate is red on this test. The test or the page needs the other's word.
+
+* Why
+
+The web class of the local gate runs every web test, so a branch that touches
+ores.web cannot show a green report until this is fixed, and a reviewer cannot
+tell its failure from the branch's own.
+
+* References
+
+- =projects/ores.web/packages/web/src/pricingEngines/screens.test.tsx= — the test.
+- =100508fc7b= — the commit that named the product in its heading.
+
+* See also
+
+- [[id:FFEED7A4-01D6-4C1D-99CB-9CA01336C945][Main's local gate is red on three drift checks and one pgTAP test]] — the other gate defects of the day.

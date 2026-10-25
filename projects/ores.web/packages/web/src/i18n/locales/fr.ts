@@ -2659,6 +2659,8 @@ const fr: SourceCatalogue = {
         },
         gaps: 'Ce que cet historique ne peut pas montrer',
         gapFor: {
+            record_parts_removed:
+                "Une règle, une exception ou un événement supprimé de l'enregistrement n'est pas dans ce flux : l'écran lit l'historique des parties que l'enregistrement détient maintenant.",
             party_country:
                 'Les pays où elle opère n’ont pas pu être lus, donc l’ajout ou le retrait d’un pays n’apparaît pas.',
             party_currency:

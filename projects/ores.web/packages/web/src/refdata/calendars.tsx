@@ -518,6 +518,26 @@ function CalendarBody({ calendar }: { readonly calendar: RecordRow }): ReactNode
                 <RecordTimeline
                     entityType="ores.refdata.calendar"
                     entityId={code}
+                    parts={[
+                        {
+                            entityType: 'ores.refdata.calendar_rule',
+                            rows: rules.data ?? [],
+                            name: (row) =>
+                                `${t('refdata.calendars.editPart.calendar-rules')} ${ruleWords(t, language, row)}`,
+                        },
+                        {
+                            entityType: 'ores.refdata.calendar_exception',
+                            rows: exceptions.data ?? [],
+                            name: (row) =>
+                                `${t('refdata.calendars.editPart.calendar-exceptions')} ${show(row['exception_date'])}`,
+                        },
+                        {
+                            entityType: 'ores.refdata.calendar_event',
+                            rows: events.data ?? [],
+                            name: (row) =>
+                                `${t('refdata.calendars.editPart.calendar-events')} ${show(row['event_date'])} ${show(row['name'])}`,
+                        },
+                    ]}
                     {...(may.write && editable ? { onRevert: setReverting } : {})}
                 />
             )}

@@ -59,6 +59,11 @@ One reference data topic goes end to end through the pipeline, and the pipeline 
   compare of the legacy =HistoryPanel=; a reference to a country is a flag and
   a link to the country (owner, 2026-10-25). The build moves the live screen
   to the prototype.
+- A record's History is the record's story: its own versions and those of
+  every part it holds now, merged and named by their part, with a deleted part
+  stated as a gap. RS-HIST-01 changed on 2026-10-25 when the owner's run of
+  the calendars scenario looked for an exception's change in the calendar's
+  history and did not find it.
 
 * Out of scope
 

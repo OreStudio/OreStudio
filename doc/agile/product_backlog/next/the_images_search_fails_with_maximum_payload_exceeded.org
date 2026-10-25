@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: C7AC503A-09B7-4279-995E-D47E7258D60A
+:END:
+#+title: The images search fails with Maximum Payload Exceeded
+#+description: GET /api/images?search=eu answers 400, NATS publish failed: Maximum Payload Exceeded; the image chooser cannot search.
+#+type: capture
+#+level: cross
+#+filetags: :web:assets:nats:bug:capture:next:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The images search fails with Maximum Payload Exceeded. GET /api/images?offset=0&limit=50&search=eu, the read the image chooser and the flag map's placeholder lookup use, answered 400 invalid-request with 'NATS publish failed: Maximum Payload Exceeded' on brave_hopper on 2026-10-25 with Acme provisioned. The search for 'eu' matches many images and the reply, or the request, exceeds the bus's payload limit, so a person cannot pick a flag by name in the image chooser. Found while giving the TARGET calendar the EU flag through the API; the image map read, which lists every image by code, answered.
+
+* Why
+
+The image chooser is how a person gives a record its flag or photo; a search that
+fails on a common letter pair makes the chooser unusable for the flags.
+
+* References
+
+- =projects/ores.web/packages/web/src/api/client.ts= — the images read.
+
+* See also
+
+- [[id:2EB79148-75EE-4FB2-A992-2957E0B873C9][Test Scenario: Verify the holiday calendar screens]] — the walk that found it.

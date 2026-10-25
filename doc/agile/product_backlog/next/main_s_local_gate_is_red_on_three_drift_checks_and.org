@@ -15,6 +15,19 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next
 
 Main's local gate is red on three drift checks and one pgTAP test that belong to no open branch. cmake-sources: projects/ores.analytics/quant/src/component_files.cmake is stale. er-diagram: ores_schema.refdata, dq_staging, synthetic and the index are stale, four diagrams. entity-writes: ores_refdata_publish_commodities_from_dq_fn is a new writer outside the ratchet baseline, from PR 3765. pgtap: reporting_ore_parameters_test fails test 3, the XPath of an ore.xsd parameter. Seen on origin/main b4585bf228 and later while raising the seed fix PR 3772; each needs its owner to regenerate or baseline it.
 
+Seen again on 2026-10-25 at 17:40 on a branch that touches only calendars, with
+origin/main at e253a0a133: seven of twenty-four checks red, none of them the
+branch's. cmake-sources: two workflow and variability file lists stale.
+er-diagram: five schema warnings, among them the reporting ore parameter value
+sets table with tenant_id and no row level security. sql-hygiene: the analytics
+pricing model product parameters value set trigger is created without =or
+replace=. handler-permissions: fifteen codes checked by the reporting ore
+parameter value set handlers and the trading origin type handler and never
+seeded. pgtap: the trading trade identifiers and trade links tests fail on
+"Invalid origin: <NULL>". ctest: ores.ore.core.tests, ores.analytics.core.tests
+and ores.web.tests, the last being the pricing engines screen test captured on
+its own. Each is its owner's.
+
 * Why
 
 A branch that touches the sql or tooling class runs these checks, and the

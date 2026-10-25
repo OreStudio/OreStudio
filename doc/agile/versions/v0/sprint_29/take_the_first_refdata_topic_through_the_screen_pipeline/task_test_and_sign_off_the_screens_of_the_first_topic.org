@@ -8,7 +8,7 @@
 #+filetags: :take_the_first_refdata_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
 #+branch: feature/test-and-sign-off-the-screens-of-the-first-topic
-#+pr: 3798
+#+pr: 3811
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -28,7 +28,7 @@ The screens are proved on a running system and signed off by the procedure the t
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] |
-| Now          | The scenario passed, the sheet is filled by the agent, the gaps are captured; the PR is raised. |
+| Now          | The owner ran the scenario: step 6 is fixed, step 3 awaits their words. |
 | Waiting on   | The owner's walk of the sheet and sign off of the calendars screen. |
 | Next         | Nothing. |
 | Last touched | 2026-10-25                               |
@@ -69,6 +69,7 @@ task and name that file in the Command column.
 | Gaps captured | 3 server and refresh gaps: days left behind, history continued, no gold after an own save | =compass list --type capture= | aebd19b746 |
 | Fixed before the sheet | 1: Delete is titled by the name | =calendars.tsx= | this branch |
 | Business days written by the rebuild | 1461, 2026 to 2029 | the scenario's step 7 | aebd19b746 |
+| The owner's run of the scenario | 10 steps passed, 2 failed (3 and 6) | the scenario's Results, 2026-10-25 17:09 UTC | aebd19b746 |
 
 * Notes
 
@@ -87,6 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3811][#3811]] | [web] Carry a record's parts in its history |
 | [[https://github.com/OreStudio/OreStudio/pull/3798][#3798]] | [web] Test the calendars screen on a fresh database and fill its sign off sheet |
 
 * Review
@@ -95,6 +97,8 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: web and docs classes | the scenario, the sheet, calendars.tsx | Accept | The runner's first failures were its own: it looked for a new row before pressing Refresh, which ES-REFRESH-15 says the person does; it clicked the header's Edit instead of the row's; a regex literal did not interpolate. Each is fixed in the runner and the scenario's words say Refresh |
 | 2 | PR 3798 review: the runner's hard-coded scratchpad path, a reader step that asserts nothing, a cleanup loop on a prefix, a hidden compare failure, fixed waits, an empty name in the delete title, the key's parameter name | evidence/scenario_runner.mjs, calendars.tsx | Accept, one point unchanged | The runner writes under SCENARIO_OUT or the system's temporary folder, asserts Read only and no Edit, Delete or Rebuild for the reader, removes only its own code, fails when the union sentence is missing, and waits for the written count rather than five seconds; the delete title falls back to the code when the name is empty. The parameter name unchanged: deleteTitle's placeholder is named code by the other callers and the key is shared; a rename is a locale change for all of them |
+| 3 | The owner's run of the scenario on 2026-10-25 17:00: step 6 failed because the changes to the exceptions were not in the calendar's history; step 3 failed with a screenshot and no words | RecordTimeline.tsx, calendars.tsx, the standard, the scenario, the runner | Accept step 6; step 3 awaits the owner's words | The calendar's History is now the record's story: its versions and those of every rule, exception and event it holds now, each named by its part, with the deleted-part gap stated; RS-HIST-01 says so; the runner asserts it; proved live with a throwaway calendar, 3 entries and 2 named Exception. Step 3, the owner's words: options missing in the tabs, a QuantLib calendar showing Details, Diary events and History only. Decided with the owner: the tabs stay as they are, and the scenario's step says why; and TARGET, which has no country, carries the euro's flag, given by the seed at publish and set on the live rows by hand today |
+| 4 | PR 3811 review of the merged history: one request per part, a failed part read losing the whole stream, waiting on every read, the gap box on every calendar, part names not unique, rows without an id, cache keys, no unit test | RecordTimeline.tsx, calendars.tsx, the standard | Accept five, decide three | A failed part read is left out and named in the gaps; the record's own read decides when the stream draws and the parts join as they land; a row with no id is skipped; a diary event is named by its date and its name. Decided and recorded in RS-HIST-01: a record's parts are few by design, so one read per part is the cost, and the gap box is a standing caveat on a record with parts. Cache keys: the edit dialog marks the history keys stale, and a deleted part leaves the list the stream reads. No unit test: the web's tests render static markup with no query resolution, so the merge is covered by the scenario runner's step 6 and the live proof |
 
 * Result
 

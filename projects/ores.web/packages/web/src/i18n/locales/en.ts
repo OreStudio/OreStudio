@@ -2628,6 +2628,8 @@ export const en: SourceCatalogue = {
         },
         gaps: 'What this history cannot show',
         gapFor: {
+            record_parts_removed:
+                'A rule, exception or diary event deleted from the record is not in this stream: the screen reads the history of the parts the record holds now.',
             party_country:
                 'The countries it works in could not be read, so adding or removing one is not shown.',
             party_currency:

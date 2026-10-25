@@ -905,6 +905,7 @@ package "reporting" #E0F7FA {
         * market_data_storage_key : text
         * fixings_storage_key : text
         * trade_count : integer
+          trade_versions : jsonb
         * series_count : integer
         * created_at : timestamptz
     }
@@ -913,7 +914,8 @@ package "reporting" #E0F7FA {
     An immutable artifact created by the assemble_bundle workflow step.
     Records the object-storage keys where the MsgPack-serialised trades
     and market data blobs produced during gather_trades and
-    gather_market_data are stored.
+    gather_market_data are stored, and the version of each trade the run
+    read, as a JSON object keyed by trade id.
     One bundle is created per report instance execution.  The bundle is
     consumed downstream by prepare_ore_package to repackage the data as
     a tarball for the compute grid.
@@ -970,6 +972,8 @@ package "reporting" #E0F7FA {
           output_storage_key : text
           started_at : timestamptz
           completed_at : timestamptz
+          priced_at : timestamptz
+          price_note : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

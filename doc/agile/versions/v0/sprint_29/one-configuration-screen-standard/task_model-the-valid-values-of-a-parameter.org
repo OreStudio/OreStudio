@@ -31,11 +31,11 @@ code parser read at run time.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | The model, the seed, the reply and the control are in. The curation of the remaining settings and the retirement of the CSV are next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Model the four tables and generate them. |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -230,3 +230,9 @@ The guide states some choices and omits the rest. Where the guide is silent, the
 The extraction is a build-time step. It produces curation data, which the seed writes into the tables. Nothing at run time reads the code, the parser or the guide: the tables are the model, and the screen and the write path read them.
 
 This reverses the earlier rule against deriving a set from the code. Deriving the enumeration from the enum the code itself declares is not a workaround; it is the only complete statement of the values, and it is recorded as curated data with its reference. The parser remains evidence, and the enum is the definition.
+
+Finished. A parameter's value set lives in four tables: the set, its enumerated values, the catalogue registry and the setting junction. Two hundred and fifty one contract parameters have a set: 57 boolean, 13 enumerated, 44 integer, 62 number and 75 text, over 189 sets. The type comes from the ORE code, one pass over the parser that wraps each call and the enum map it builds, with a reviewed file for the handful the call form states ambiguously. The contract takes its storage domain from the set, so the two cannot disagree.
+
+`ore_parameter_settings check` prints the coverage, the links outside the contract, the empty enumerations and any kind/domain disagreement, then OK: 251 of 251, 0, 0, 0. The trigger refuses a value outside its set from any client, and provisioning passes with it active.
+
+The retirement of the per-pair `kind` and `options` is the only part left; the sets now say everything those columns said.

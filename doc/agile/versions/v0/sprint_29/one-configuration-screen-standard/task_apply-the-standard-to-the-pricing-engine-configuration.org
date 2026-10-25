@@ -26,11 +26,11 @@ The pricing engine configuration screens follow the configuration screen standar
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | The page is built, the tests pass and it is live on 21002. |
-| Waiting on   | The owner's test of the screen.        |
-| Next         | Work through the scenario on 21002.    |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -106,3 +106,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The owner signed the screen off after testing it on the clean environment.
+
+The screen reads the parameter value sets from the model in one lookup: the product editor draws `Training.Sequence` and `Pricing.Sequence` as five-value combos, `Training.BasisFunction` as the seven curves, flags as true and false, integers as whole numbers. The product tree names each product in words, the add-product dialog asks for the model and the engine and reports only that product's findings, and a save returns the document with its reports so the dialog closes and a stale second save cannot happen.
+
+The check function that guards a parameter runs as its owner, so the analytics service can write a configuration without owning the value set tables.
+
+Evidence: Playwright on the live screen (product combos, globals flag, add and save), `ore_parameter_settings check` returning OK on 251 of 251, the web and BFF suites green, and the database recreated and provisioned from a clean state for the test.

@@ -84,8 +84,7 @@ public:
         if (ingest_) {
             const auto health = ingest_->health();
             for (auto& adapter : resp.adapters) {
-                if (const auto found = health.find(adapter.adapter_id);
-                    found != health.end()) {
+                if (const auto found = health.find(adapter.adapter_id); found != health.end()) {
                     adapter.ticks_last_minute = found->second.ticks_last_minute;
                     adapter.last_tick_age_ms = found->second.last_tick_age_ms;
                 }

@@ -272,8 +272,7 @@ std::map<std::string, feed_ingest_loop::adapter_health> feed_ingest_loop::health
         adapter_health h;
         h.ticks_last_minute = arrivals.minute_bucket == minute ? arrivals.minute_count : 0;
         if (arrivals.last_arrival != steady_clock::time_point{})
-            h.last_tick_age_ms =
-                duration_cast<milliseconds>(now - arrivals.last_arrival).count();
+            h.last_tick_age_ms = duration_cast<milliseconds>(now - arrivals.last_arrival).count();
         out.emplace(adapter, h);
     }
     return out;

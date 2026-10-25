@@ -47,8 +47,7 @@ namespace ores::shell::app::commands {
 class adapter_status_commands {
 public:
     /// Register the =adapters= submenu.
-    static void register_commands(cli::Menu& root_menu,
-                                  ores::nats::service::nats_client& session);
+    static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /// =status= — read the service's adapter status and print one row each.
     static void process_status(std::ostream& out,

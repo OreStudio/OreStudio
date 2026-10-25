@@ -127,7 +127,7 @@
       </select>
       <input id="search" type="search" placeholder="Search message, curve or trade id…" oninput="render()">
       <span class="muted" style="margin-left:auto">View</span>
-      <button class="chip" id="view-b" aria-pressed="true" onclick="setView('b')">Cards</button>
+      <button class="chip" id="view-b" aria-pressed="true" onclick="setView('b')">Grouped</button>
       <button class="chip" id="view-c" aria-pressed="false" onclick="setView('c')">Split</button>
     </div>
     <div class="layout">
@@ -137,7 +137,7 @@
   </section>
 </main>
 
-<div class="switch">Cards groups by cause. Split lists the rows with the selected one beside them.</div>
+<div class="switch">Grouped puts the causes in cards. Split lists the rows with the selected one beside them.</div>
 
 <script>
   const causes = [

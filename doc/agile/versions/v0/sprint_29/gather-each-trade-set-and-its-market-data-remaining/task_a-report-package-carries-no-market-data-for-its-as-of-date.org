@@ -191,8 +191,8 @@ curve tenors the trades need, which is the data gap recorded above.
 - Two screens: *Run* and *Errors*. They switch, they do not stack.
 - *Run* keeps three lines: a headline, the date it priced at and why, and a link
   to the errors.
-- *Errors* has two views. *Cards* groups the causes: one card per missing
-  datum, with its curve, date and the affected trades. *Split* lists the errors
+- *Errors* has two views. *Grouped* puts the causes in cards: one card per
+  missing datum, with its curve, date and the affected trades. *Split* lists the errors
   as rows in a labelled grid, severity, scope, subject, trade, version, message
   and time, with the selected error in a pane on the right. A filter bar sits above it for
   severity, scope and a search over message, curve or trade id.

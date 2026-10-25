@@ -13,8 +13,8 @@
 
 The synthetic area authors and runs the market data the platform generates
 rather than receives. One window does most of the work, the Market
-Simulator. It browses the configured feeds, starts and stops them, and shows
-what a running feed is producing. The per-entity editors sit behind it, one
+Simulator. It browses the configured feeds, shows what demand makes run, and lets an
+operator start or stop one as a test. It shows what a running feed is producing. The per-entity editors sit behind it, one
 per configured entity.
 
 The Qt implementation is in the separate =ores.qt= checkout under
@@ -56,6 +56,9 @@ The prototype is at
 [[file:../../prototypes/market_data/synthetic-market-simulator/][synthetic market simulator]].
 
 * The cascade rule
+
+Demand starts a generator on its own. The start and stop paths below are the
+operator's test controls, not the way a feed normally runs.
 
 A tree node carries one of three states, running, stopped, or partial, and a
 partial node reads as a count such as "3 of 8 running".

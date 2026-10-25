@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 2D2E09E9-42CE-4467-A9B9-B7FA73975285
+:END:
+#+title: Task: Audit the market data documents for the service
+#+description: The standards, journeys and prototype notes still describe the old feeds world: bindings, auto-start, feeds that should run, and real market data yet to arrive.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/audit-the-market-data-documents
+#+pr: 3809
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every market data document states the new world, or the target it is converging to, and names the service areas, the demand model and the source kinds correctly.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- The menu, the service screens, the feed standard, the journeys and the prototype notes agree with the service as built.
+- Each old-world claim is either corrected or recorded as an open target.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3809][#3809]] | [doc] State the market data documents for the service |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The market data documents now state the service's world, or name the target
+where the app has not moved yet.
+
+- The menu names the four service areas. The Bindings card is gone, replaced by
+  subscriptions and routes. Synthetic sits in the Simulator area.
+- The feed-tree note and row say demand starts a generator, and Start and Stop
+  are the operator test controls.
+- The feed standard's trail adds the Simulator level.
+- The FX and IR journeys no longer say a saved feed is produced only when a
+  person starts it. Demand starts it; the operator test is a separate act.
+- The synthetic screens page says demand starts a generator before it describes
+  the start and stop cascade.
+- The IR authoring note no longer calls the source a binding.
+
+Open, with the reason:
+
+- The app routes still put Synthetic directly under Market data. The menu now
+  names the Simulator area, so a route change is part of the screens task.
+- The manage-synthetic-collections prototype and the shell operation surface
+  still describe auto-start as the run trigger. The shell still offers the
+  test controls, so those pages need the demand note, not a rewrite.
+- The synthetic market simulator prototype note still summarises the window as
+  starting and stopping. Its cascade is the test control, as the screens page
+  now says.
+

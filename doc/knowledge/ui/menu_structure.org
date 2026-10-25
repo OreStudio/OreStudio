@@ -179,7 +179,7 @@ The test for a screen is one question: which topic would a person look in?
 | Home | The dashboard, Active modules, Upcoming modules | Always |
 | Reference data | The cards below | Always |
 | Organisation | Staff, Hierarchy, Roles and Rescue access | Any one of those screens |
-| Market data | The prices and curves the platform receives or generates: the Synthetic screen (Dashboard and Feed tree), the Bindings, and the curve evolution | Any one of those screens |
+| Market data | The prices and curves the platform receives or generates: the Catalogue, Subscriptions, Usage and cost, the Simulator (with the Synthetic screen), and the curve evolution | Any one of those screens |
 | Trades | Trades, and Structures and packages, with the workflows Import a portfolio from ORE, Export a portfolio to ORE and Group trades | Any one of those screens |
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
 | Operations | Running services, Compute grid, Message bus, Telemetry logs, Versions and the database, and Sign-ins | Any one of those screens |
@@ -201,11 +201,13 @@ for a person who holds the read of the deployment (see [[*The deployment read][T
 Market data is its own area. It holds data that changes by the minute: the feeds
 that generate prices and the curves built from them. Reference data is a list
 that changes by the month, and a person who looks for a curve does not look in
-it. It holds Watch a curve evolve and Synthetic.
+it. It holds the four areas the service screens page names: Catalogue, Subscriptions,
+Usage and cost, and Simulator, plus Watch a curve evolve.
 
-Synthetic is one screen for the feeds the platform generates rather than receives.
-Everything on it is synthetic, so no label says so; real market data will have its own
-card in this area. The screen has two tabs:
+Synthetic is one screen for the feeds the platform generates rather than receives. It
+sits in the Simulator area, with the collections and the authoring tools. Everything on
+it is synthetic, so no label says so; the Catalogue holds the providers, sources and
+vendor instruments, live and simulated alike. The screen has two tabs:
 
 | Tab | What it shows |
 |-----+---------------|
@@ -217,11 +219,9 @@ feed tree: Home, Market data, Synthetic, Feed tree, the folders down to the feed
 asset class, then the feed. Each folder on it opens the feed tree with that folder
 chosen. The FX and IR lists are gone; the feed table lists both kinds.
 
-Bindings is a card of Market data beside Synthetic. A binding
-is a party's choice to consume one producer source, and it covers a vendor's source as well as a
-synthetic one, so it is not one of the feeds Synthetic holds. Its list is the record
-screen of the Record screen standard, and its trail is Home, Market data, Bindings,
-then the binding.
+The Bindings card is gone. A party's choice to consume a provider's data is a
+subscription with rights, and a route picks the source that serves it. Both sit under
+Subscriptions, on the record screen of the Record screen standard.
 
 Each card is drawn for a person who holds the read of its screen.
 

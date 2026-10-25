@@ -82,7 +82,9 @@
   .cause .meta { color: var(--muted); margin: 0; font-size: 13px; }
   .trades { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
   .trade { border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px;
-           font-family: var(--mono); font-size: 12px; }
+           font-family: var(--mono); font-size: 12px; color: var(--text);
+           text-decoration: none; display: inline-block; }
+  .trade:hover { border-color: #46597f; text-decoration: underline; }
   body[data-view="b"] #errors .layout { display: block; }
   body[data-view="b"] .layout { grid-template-columns: 1fr; }
   body[data-view="b"] #detail { display: none; }
@@ -220,7 +222,8 @@
       ${t ? `<h4>Trade reference</h4>
       <div class="block">${t.id}
 version ${t.version} · as of ${c.asOf}</div>
-      <p style="margin:10px 0 0"><a class="link" href="#">Open the trade at version ${t.version} →</a></p>`
+      <p style="margin:10px 0 0"><a class="link"
+        href="/trades?trade=${t.id}&version=${t.version}">Open the trade at version ${t.version} →</a></p>`
       : '<h4>Trade reference</h4><p class="empty">Select a trade above to see its reference.</p>'}`;
   }
 
@@ -241,7 +244,8 @@ version ${t.version} · as of ${c.asOf}</div>
           <p class="meta">${c.severity} · ${c.scope}${c.subject ? ' · ' + c.subject : ''}${c.asOf ? ' · ' + c.asOf : ''}
             · ${c.trades.length} trade(s)</p>
           ${c.trades.length ? '<div class="trades">' + c.trades.map((t) => `
-            <span class="trade">${t.id} · ${t.type} · v${t.version} @ ${c.asOf}</span>`).join('') + '</div>' : ''}
+            <a class="trade" href="/trades?trade=${t.id}&version=${t.version}"
+               title="Open ${t.type} ${t.id} at version ${t.version}">${t.id} · ${t.type} · v${t.version} @ ${c.asOf}</a>`).join('') + '</div>' : ''}
         </div>`).join('');
   }
 
@@ -259,7 +263,8 @@ version ${t.version} · as of ${c.asOf}</div>
           <td><span class="badge b-${c.severity === 'error' ? 'error' : 'warn'}">${c.severity}</span></td>
           <td>${c.scope}</td>
           <td class="mono">${c.subject || '—'}</td>
-          <td class="mono">${t ? t.id : '—'}</td>
+          <td class="mono">${t ? `<a class="link" href="/trades?trade=${t.id}&version=${t.version}"
+              onclick="event.stopPropagation()">${t.id}</a>` : '—'}</td>
           <td class="mono muted">${t ? `v${t.version} @ ${c.asOf}` : '—'}</td>
           <td class="msg">${c.message}</td>
           <td class="mono muted">${c.time}</td>

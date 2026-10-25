@@ -113,21 +113,43 @@ Each step ends in a state that can be checked on its own.
    against the weight, and the export and reverse map.
 8. *The record.* Measurements, Result, and the gaps this task cannot close.
 
-* Measurements
-
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
-
 * Notes
+
+** Two defects the live runs found
+
+Both were found by a provisioning run and neither by a compile.
+
+- *The leg group.* The first run failed on
+  =ores_trading_swap_legs_tbl_leg_group_check=: the column accepts null or the
+  groups a credit linked swap states, and the writer stated ="main"=. An
+  ordinary swap leaves it null.
+- *The wrong catalogue.* The second run failed with =Invalid
+  floating_index_type: AMERIBOR=. A leg states the FpML name of an index,
+  =GBP-SONIA=, and the store holds a closed set of those; the scope was loading
+  benchmark *rate* names instead. It now loads the floating index types and the
+  planner prefers the indices of the book's own currency.
+
+** The class share is not yet the weight
+
+The measured share is 27%, against a weight of 42%. That is expected and not a
+defect: the share is a property of the whole population, and only bonds and
+rates are populated. Bonds carry 32 trades because four entity configs each
+book eight; the two families' ratio is therefore bond-led. The share can only
+be measured once the other six families are populated, and rebalanced then.
+
+** What is not proven yet
+
+- *The export.* The acceptance asks that the family exports as the ORE
+  portfolio the engine reads and reverse-maps without loss. The portfolio
+  export the tree exposes returns anchors, and the instruments are projected by
+  the ORE service; no shell verb drives it, so this needs an integration test
+  rather than a run.
+- *The report.* The acceptance asks that the report which prices the family
+  runs against its discount and forward curves. That too needs a run the shell
+  cannot make today.
+- *The three unrouted types.* RateDigitalOption and SwaptionStraddle are not
+  routed yet, and ForwardVolatilityAgreement is not named out of scope in the
+  table. Step 5 of the plan is open.
 
 * Test Scenarios
 

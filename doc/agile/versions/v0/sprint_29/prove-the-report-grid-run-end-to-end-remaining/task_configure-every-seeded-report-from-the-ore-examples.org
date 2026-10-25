@@ -42,9 +42,9 @@ carry none.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | The scope half is settled: all 78 definitions resolve to books and the run used the root's subtree. The switches are not: seven analytic codes no example names, and only =portfolio_details= is witnessed against the engine.                       |
-| Waiting on   | A run per analytic family, or a mapping from each platform code to the ORE type it becomes.                               |
-| Next         | Run one report per analytic family and record the engine's verdict for each code.                  |
+| Now          | The scope half is settled, and a pricing run showed that ORE recognises the analytic codes. That run stopped because the package carries no quotes for the run's as-of date.                       |
+| Waiting on   | Market data at the run's as-of date, then a run per analytic family.                               |
+| Next         | Make the gathered market data cover the as-of date, then run one report per family and record the engine's verdict for each code.                  |
 | Last touched | 2026-10-25                               |
 
 - Every report definition =acme_demo= seeds for ACME either carries a
@@ -144,19 +144,26 @@ Not settled, and the reason this task stays open:
   =pfe=, =parametric_var=, =historical_var=, =credit_curves=, =pnl_explain=.
   =ores.ore= holds no table mapping a platform code to an ORE type, so the code
   is passed to the engine as written.
-- *Only one of those codes is witnessed.* The proof exercised =portfolio_details=
-  and the engine accepted it, writing =runtimes.csv= for PORTFOLIO_DETAILS. The
-  other six are unproven: either ORE 1.8.17 accepts them as analytic types, or
-  each needs a mapping (for example a =var= analytic with a parametric or
-  historical method, or =xva= with its sub-analytics) and the seed is wrong.
+- *What the second run showed.* "Board Risk Dashboard" (=npv=, =saccr=,
+  =parametric_var=) was triggered on the same database. ORE named all three:
+  =PRICING=, =PARAMETRIC_VAR= and =SA_CCR=. So the engine does recognise these
+  codes; the doubt about them was wrong. It then failed each one with
+  =Failed to build market: There are no quotes available for date October 23rd,
+  2026=, so the failure is the market data the package carries, not the
+  switch. The instance went to failed and the result carried the engine's own
+  message, which is the verdict fix holding on a real report.
+- *Only =portfolio_details= has a passing run.* The pricing families need
+  market data for the run's as-of date before anything can be said about their
+  switches.
 
-*Next on this task.* Run one report per analytic family and record the engine's
-verdict for each code. The holding party's definitions cover
-=portfolio_details=, =npv=, =saccr=, =parametric_var= and =cashflow=; the legal
-entities' definitions cover =curves=, =credit_curves=, =sensitivity=,
-=simulation=, =pfe=, =xva= and =historical_var=, and reaching those needs a run
-grant for the entity's party. Close this task when every code has either a
-passing run or a mapping.
+*Next on this task.* Two things, in order. First, make the gathered market data
+cover the run's as-of date, which is what stopped the second run. Then run one
+report per analytic family and record the engine's verdict for each code. The
+holding party's definitions cover =portfolio_details=, =npv=, =saccr=,
+=parametric_var= and =cashflow=; the legal entities' definitions cover
+=curves=, =credit_curves=, =sensitivity=, =simulation=, =pfe=, =xva= and
+=historical_var=, and reaching those needs a run grant for the entity's party.
+Close this task when every code has either a passing run or a mapping.
 
 * Test Scenarios
 

@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: B0EB5843-1178-4954-A378-BA47303344A3
+:END:
+#+title: A report's package carries no market data for its own as-of date
+#+description: A report run failed with 'Failed to build market: There are no quotes available for date October 23rd, 2026'. The market data the chain gathered and put in the package does not cover the run's as-of date, so PRICING, PARAMETRIC_VAR and SA_CCR all failed on the same missing quotes. The as-of date the run uses and the vintage the gather selects have to agree, or the package has to carry the date it does have and the run must use that.
+#+type: capture
+#+level: cross
+#+filetags: :reporting:marketdata:as_of:grid:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The market data a run's package carries must cover the date the run prices at.
+When it does not, the engine refuses every analytic with one message, and the
+report fails for a reason that has nothing to do with the report.
+
+* Why
+
+"Board Risk Dashboard" was triggered on 2026-10-25 against a freshly
+provisioned database. ORE named its three analytics and failed all of them with
+the same line:
+
+#+begin_example
+Failed to build market: There are no quotes available for date October 23rd, 2026
+#+end_example
+
+The as-of date and the gathered vintage disagree. Either the run should price at
+the date the data has, or the gather should select data for the date the run
+asks for. Right now neither happens, and every pricing report fails the same
+way.
+
+* References
+
+- The failing job's log:
+  =build/output/<preset>/publish/run/wrappers/node_1/jobs/<result>/Output/log.txt=,
+  line =analytic.cpp= "Failed to build market".
+- The report instance and its result are recorded on
+  [[id:CAE6E2DF-02A0-4977-8F66-4DC246EAE5E9][Configure every seeded report from the ORE examples]].
+
+* See also
+
+-

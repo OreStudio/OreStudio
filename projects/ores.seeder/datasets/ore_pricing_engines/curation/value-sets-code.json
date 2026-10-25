@@ -1333,6 +1333,12 @@
           "label": "TrBDF2",
           "order": 8,
           "value": "TrBDF2"
+        },
+        {
+          "description": "Segment is the value the replicating variance swap engine accepts for Scheme. The parameter name is shared with the finite difference engines, whose schemes are the other values of this set, so the set is the union of them.",
+          "label": "Segment",
+          "order": 9,
+          "value": "Segment"
         }
       ]
     },

@@ -22,7 +22,13 @@
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
+#include "ores.trading.api/domain/rate_instrument.hpp"
+#include "ores.trading.api/domain/swap_leg.hpp"
+#include "ores.trading.api/domain/swap_leg_amount.hpp"
+#include "ores.trading.api/domain/swap_leg_rate.hpp"
+#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -259,6 +265,170 @@ TEST_CASE("export_portfolio_swap_roundtrip", tags) {
     CHECK(xml.contains("<Portfolio>"));
     CHECK(xml.contains("<SwapData>"));
     CHECK(xml.contains(imported.front().ore_id));
+}
+
+TEST_CASE("a_rate_trade_without_a_fact_row_exports_without_its_legs", tags) {
+    auto lg(make_logger(test_suite));
+
+    /*
+     * The population books a rate trade as a header with two legs and no
+     * specialised leaf, because every routed type reduces to that shape. This
+     * asks whether a portfolio the engine reads comes back out of it: the
+     * engine prices a swap from its legs, so a document that dropped them
+     * would export a trade nobody can price.
+     */
+    const auto f = example_path("IR_Swap_Vanilla.xml");
+    const auto imported = importer::import_portfolio_with_context(f);
+    REQUIRE(!imported.empty());
+
+    const auto trade_id = boost::uuids::random_generator{}();
+    const auto activity_id = boost::uuids::random_generator{}();
+
+    trade_export_item item;
+    item.anchor = imported.front().anchor;
+    item.anchor.id = trade_id;
+    item.anchor.trade_type = "Swap";
+    item.ore_id = imported.front().ore_id;
+
+    ores::trading::domain::instrument_batch instruments;
+    ores::trading::domain::rate_instrument header;
+    header.identity.trade_id = trade_id;
+    header.identity.trade_activity_id = activity_id;
+    header.identity.trade_type_code = "Swap";
+    header.start_date = std::chrono::year{2026} / std::chrono::month{1} / std::chrono::day{15};
+    header.maturity_date = std::chrono::year{2031} / std::chrono::month{1} / std::chrono::day{15};
+    instruments.rate_instruments.push_back(header);
+
+    const auto leg = [&](int number,
+                         std::string_view type_code,
+                         std::string_view index,
+                         std::string_view role,
+                         double value) {
+        ores::trading::domain::swap_leg row;
+        row.identity.trade_id = trade_id;
+        row.identity.trade_activity_id = activity_id;
+        row.identity.leg_number = number;
+        row.leg_type_code = std::string(type_code);
+        row.day_count_fraction_code = "ActAct(ISDA)";
+        row.business_day_convention_code = "ModifiedFollowing";
+        row.payment_frequency_code = "Semiannual";
+        row.floating_index_code = std::string(index);
+        row.currency = "GBP";
+        instruments.swap_legs.push_back(row);
+
+        ores::trading::domain::swap_leg_amount amount;
+        amount.trade_id = trade_id;
+        amount.trade_activity_id = activity_id;
+        amount.leg_number = number;
+        amount.sequence_number = 1;
+        amount.start_date = header.start_date;
+        amount.amount = ores::utility::decimal::decimal::from_double(10000000.0).value();
+        instruments.swap_leg_amounts.push_back(amount);
+
+        ores::trading::domain::swap_leg_rate rate;
+        rate.trade_id = trade_id;
+        rate.trade_activity_id = activity_id;
+        rate.leg_number = number;
+        rate.rate_role = std::string(role);
+        rate.sequence_number = 1;
+        rate.start_date = header.start_date;
+        rate.value = ores::utility::decimal::decimal::from_double(value).value();
+        instruments.swap_leg_rates.push_back(rate);
+    };
+
+    leg(1, "Fixed", "", "fixed", 0.0425);
+    leg(2, "Floating", "GBP-SONIA", "spread", 0.001);
+
+    const auto xml = exporter::export_portfolio({item}, instruments);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    /*
+     * The store rebuilds a rates instrument from a header and one fact row, so
+     * a batch that states a header and legs and no fact row rebuilds nothing.
+     * This case states that limit, because the exporter's silence is what makes
+     * a fact row mandatory rather than tidy.
+     */
+    CHECK_FALSE(xml.contains("<SwapData>"));
+    CHECK_FALSE(xml.contains("GBP-SONIA"));
+}
+
+TEST_CASE("a_rate_trade_that_states_its_fact_row_exports_its_legs", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto f = example_path("IR_Swap_Vanilla.xml");
+    const auto imported = importer::import_portfolio_with_context(f);
+    REQUIRE(!imported.empty());
+
+    const auto trade_id = boost::uuids::random_generator{}();
+    const auto activity_id = boost::uuids::random_generator{}();
+
+    trade_export_item item;
+    item.anchor = imported.front().anchor;
+    item.anchor.id = trade_id;
+    item.anchor.trade_type = "Swap";
+    item.ore_id = imported.front().ore_id;
+
+    ores::trading::domain::instrument_batch instruments;
+    ores::trading::domain::rate_instrument header;
+    header.identity.trade_id = trade_id;
+    header.identity.trade_activity_id = activity_id;
+    header.identity.trade_type_code = "Swap";
+    header.start_date = std::chrono::year{2026} / std::chrono::month{1} / std::chrono::day{15};
+    header.maturity_date = std::chrono::year{2031} / std::chrono::month{1} / std::chrono::day{15};
+    instruments.rate_instruments.push_back(header);
+
+    ores::trading::domain::vanilla_swap_instrument facts;
+    facts.trade_id = trade_id;
+    facts.trade_activity_id = activity_id;
+    facts.settlement_lag = 2;
+    instruments.vanilla_swap_instruments.push_back(facts);
+
+    const auto leg = [&](int number,
+                         std::string_view type_code,
+                         std::string_view index,
+                         std::string_view role,
+                         double value) {
+        ores::trading::domain::swap_leg row;
+        row.identity.trade_id = trade_id;
+        row.identity.trade_activity_id = activity_id;
+        row.identity.leg_number = number;
+        row.leg_type_code = std::string(type_code);
+        row.day_count_fraction_code = "ActAct(ISDA)";
+        row.business_day_convention_code = "ModifiedFollowing";
+        row.payment_frequency_code = "Semiannual";
+        row.floating_index_code = std::string(index);
+        row.currency = "GBP";
+        instruments.swap_legs.push_back(row);
+
+        ores::trading::domain::swap_leg_amount amount;
+        amount.trade_id = trade_id;
+        amount.trade_activity_id = activity_id;
+        amount.leg_number = number;
+        amount.sequence_number = 1;
+        amount.start_date = header.start_date;
+        amount.amount = ores::utility::decimal::decimal::from_double(10000000.0).value();
+        instruments.swap_leg_amounts.push_back(amount);
+
+        ores::trading::domain::swap_leg_rate rate;
+        rate.trade_id = trade_id;
+        rate.trade_activity_id = activity_id;
+        rate.leg_number = number;
+        rate.rate_role = std::string(role);
+        rate.sequence_number = 1;
+        rate.start_date = header.start_date;
+        rate.value = ores::utility::decimal::decimal::from_double(value).value();
+        instruments.swap_leg_rates.push_back(rate);
+    };
+
+    leg(1, "Fixed", "", "fixed", 0.0425);
+    leg(2, "Floating", "GBP-SONIA", "spread", 0.001);
+
+    const auto xml = exporter::export_portfolio({item}, instruments);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    CHECK(xml.contains("<SwapData>"));
+    CHECK(xml.contains("GBP-SONIA"));
+    CHECK(xml.find("<LegData>") != std::string::npos);
 }
 
 TEST_CASE("export_portfolio_keeps_a_cross_currency_swap_apart_from_a_swap", tags) {

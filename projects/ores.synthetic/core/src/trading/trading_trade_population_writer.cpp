@@ -31,6 +31,14 @@
 #include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
+#include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
+#include "ores.trading.api/domain/callable_swap_instrument.hpp"
+#include "ores.trading.api/domain/cap_floor_instrument.hpp"
+#include "ores.trading.api/domain/flexi_swap_instrument.hpp"
+#include "ores.trading.api/domain/fra_instrument.hpp"
+#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
+#include "ores.trading.api/domain/swaption_instrument.hpp"
+#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -604,6 +612,55 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
                   "spread",
                   rate->spread,
                   false);
+        /*
+         * The fact row says which product the legs belong to. It is not
+         * decoration: the store rebuilds a rates instrument from a header and
+         * one fact row, and a trade that states legs alone exports as its type
+         * with no legs at all, which the engine cannot price.
+         */
+        const auto direction = std::string(slot.slot % 2 == 0 ? "Long" : "Short");
+        const auto& type = slot.trade_type_code;
+        if (type == "Swap" || type == "CrossCurrencySwap") {
+            ores::trading::domain::vanilla_swap_instrument leaf;
+            leaf.settlement_lag = 2;
+            book_req.instruments.vanilla_swap_instruments.push_back(leaf);
+        } else if (type == "ForwardRateAgreement") {
+            ores::trading::domain::fra_instrument leaf;
+            leaf.currency = rate->currency;
+            leaf.rate_index = rate->floating_index_code;
+            leaf.long_short = direction;
+            leaf.notional = money(rate->notional);
+            book_req.instruments.fra_instruments.push_back(leaf);
+        } else if (type == "CapFloor") {
+            book_req.instruments.cap_floor_instruments.push_back(
+                ores::trading::domain::cap_floor_instrument{});
+        } else if (type == "Swaption") {
+            ores::trading::domain::swaption_instrument leaf;
+            leaf.expiry_date = rate->start_date;
+            leaf.exercise_type = "European";
+            leaf.settlement_type = "Cash";
+            leaf.long_short = direction;
+            book_req.instruments.swaption_instruments.push_back(leaf);
+        } else if (type == "CallableSwap") {
+            book_req.instruments.callable_swap_instruments.push_back(
+                ores::trading::domain::callable_swap_instrument{});
+        } else if (type == "KnockOutSwap") {
+            ores::trading::domain::knock_out_swap_instrument leaf;
+            leaf.barrier_start_date = rate->start_date;
+            leaf.barrier_type = "UpAndOut";
+            book_req.instruments.knock_out_swap_instruments.push_back(leaf);
+        } else if (type == "FlexiSwap") {
+            ores::trading::domain::flexi_swap_instrument leaf;
+            leaf.option_long_short = direction;
+            book_req.instruments.flexi_swap_instruments.push_back(leaf);
+        } else if (type == "BalanceGuaranteedSwap") {
+            ores::trading::domain::balance_guaranteed_swap_instrument leaf;
+            leaf.reference_security = slot.internal_identifier;
+            book_req.instruments.balance_guaranteed_swap_instruments.push_back(leaf);
+        } else {
+            throw trade_population_write_error("The rate trade type " + type +
+                                               " states no fact row this writer knows.");
+        }
     } else {
         throw trade_population_write_error(
             "The slot states no terms this writer knows how to book.");

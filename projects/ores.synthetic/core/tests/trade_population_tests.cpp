@@ -304,10 +304,12 @@ TEST_CASE("a_scope_naming_no_book_counterparty_or_trader_is_refused", tags) {
 }
 
 TEST_CASE("a_family_the_generator_does_not_cover_is_refused_by_name", tags) {
-    auto rates = bond_scope();
-    rates.asset_class_code = "interest_rates";
+    // Equity has no planner yet, so it is the class the registry refuses by
+    // name. An interest rate scope plans now, which is why it is not the case.
+    auto equity = bond_scope();
+    equity.asset_class_code = "equity";
 
-    CHECK_THROWS_WITH(plan_of(rates), Catch::Matchers::ContainsSubstring("interest_rates"));
+    CHECK_THROWS_WITH(plan_of(equity), Catch::Matchers::ContainsSubstring("equity"));
 }
 
 TEST_CASE("the_notional_of_every_slot_sits_in_the_band", tags) {

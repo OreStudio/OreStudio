@@ -562,9 +562,11 @@ namespace ores::synthetic::service {
 namespace {
 
 /*
- * The ten trade types the routing table sends to rate_instrument. The list is
- * stated rather than read from the table, because a planner is pure and has no
- * database: a type the table routes later has to be added here on purpose.
+ * The trade types the routing table sends to rate_instrument, less the
+ * inflation swap. That one is booked by the inflation family, because its fact
+ * row states an inflation index and this generator has no such vocabulary. The
+ * list is stated rather than read from the table, because a planner is pure and
+ * has no database: a type the table routes later has to be added here.
  */
 constexpr std::string_view rate_types[] = {"Swap",
                                            "CrossCurrencySwap",
@@ -574,8 +576,7 @@ constexpr std::string_view rate_types[] = {"Swap",
                                            "FlexiSwap",
                                            "BalanceGuaranteedSwap",
                                            "CallableSwap",
-                                           "KnockOutSwap",
-                                           "InflationSwap"};
+                                           "KnockOutSwap"};
 constexpr std::size_t rate_type_count = sizeof(rate_types) / sizeof(rate_types[0]);
 
 /*

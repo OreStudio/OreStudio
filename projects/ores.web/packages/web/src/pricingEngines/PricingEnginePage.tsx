@@ -235,7 +235,12 @@ export function PricingEnginePage(): ReactNode {
                 />
             )}
             {tabs.tab === 'globals' && (
-                <GlobalParametersTab document={document} vocabulary={known} mode={mode} />
+                <GlobalParametersTab
+                    document={document}
+                    vocabulary={known}
+                    mode={mode}
+                    mayWrite={mayWrite}
+                />
             )}
             {tabs.tab === 'products' && (
                 <ProductsTab
@@ -354,14 +359,19 @@ function GlobalParametersTab({
     document,
     vocabulary,
     mode,
+    mayWrite,
 }: {
     readonly document: PricingDocument;
     readonly vocabulary: PricingVocabulary | undefined;
     readonly mode: EditingMode;
+    readonly mayWrite: boolean;
 }): ReactNode {
     const { t } = useTranslation();
     const [setOnly, setSetOnly] = useState(false);
     const [numbersOnly, setNumbersOnly] = useState(false);
+    const [editing, setEditing] = useState(false);
+    const [values, setValues] = useState<Readonly<Record<string, string>>>({});
+    const [saving, setSaving] = useState<Draft | null>(null);
     const globals = document.parameters.filter((parameter) => parameter.productId === null);
     const docOf = (name: string) => (vocabulary?.globals ?? []).find((entry) => entry.name === name);
     const shown = globals.filter((parameter) => {
@@ -371,9 +381,16 @@ function GlobalParametersTab({
     });
     return (
         <section className="card space-y-4 p-4">
-            <header className="space-y-1">
-                <h2 className="text-sm font-medium">{t('pricingEngines.globals.heading')}</h2>
-                <p className="text-sm text-ink-muted">{t('pricingEngines.globals.lead')}</p>
+            <header className="flex flex-wrap items-baseline justify-between gap-2">
+                <div className="space-y-1">
+                    <h2 className="text-sm font-medium">{t('pricingEngines.globals.heading')}</h2>
+                    <p className="text-sm text-ink-muted">{t('pricingEngines.globals.lead')}</p>
+                </div>
+                {mayWrite && !editing && (
+                    <Button size="sm" icon="edit" onClick={() => setEditing(true)}>
+                        {t('pricingEngines.actions.edit')}
+                    </Button>
+                )}
             </header>
             {globals.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('pricingEngines.globals.empty')}</p>
@@ -388,15 +405,107 @@ function GlobalParametersTab({
                         total={globals.length}
                     />
                     <ul className="divide-y divide-line-subtle">
-                        {shown.map((parameter) => (
-                            <ParameterRow
-                                key={parameter.id}
-                                parameter={parameter}
-                                doc={docOf(parameter.name)}
-                                mode={mode}
-                            />
-                        ))}
+                        {shown.map((parameter) =>
+                            editing ? (
+                                <li key={parameter.id} className="space-y-2 py-3">
+                                    <div className="flex flex-wrap items-baseline justify-between gap-3">
+                                        <span className="text-sm font-medium">
+                                            {docOf(parameter.name)?.label ?? parameter.name}
+                                        </span>
+                                        <div className="text-sm">
+                                            <Input
+                                                aria-label={
+                                                    docOf(parameter.name)?.label ?? parameter.name
+                                                }
+                                                value={values[parameter.id] ?? parameter.value}
+                                                onChange={(event) =>
+                                                    setValues({
+                                                        ...values,
+                                                        [parameter.id]: event.target.value,
+                                                    })
+                                                }
+                                            />
+                                        </div>
+                                    </div>
+                                    <ParameterDocuments
+                                        doc={{
+                                            documented:
+                                                (docOf(parameter.name)?.description ?? '') !== '',
+                                            name: parameter.name,
+                                            description: docOf(parameter.name)?.description ?? '',
+                                            defaultText: docOf(parameter.name)?.defaultText ?? '',
+                                            format: docOf(parameter.name)?.format ?? '',
+                                            introducedIn:
+                                                docOf(parameter.name)?.introducedIn ?? '',
+                                            removedIn: docOf(parameter.name)?.removedIn ?? '',
+                                            xpath: docOf(parameter.name)?.xpath ?? '',
+                                        }}
+                                        mode={mode}
+                                    />
+                                </li>
+                            ) : (
+                                <ParameterRow
+                                    key={parameter.id}
+                                    parameter={parameter}
+                                    doc={docOf(parameter.name)}
+                                    mode={mode}
+                                />
+                            ),
+                        )}
                     </ul>
+                    {editing && (
+                        <div className="flex justify-end gap-2 border-t border-line-subtle pt-2">
+                            <Button
+                                variant="ghost"
+                                onClick={() => {
+                                    setValues({});
+                                    setEditing(false);
+                                }}
+                            >
+                                {t('common.cancel')}
+                            </Button>
+                            <Button
+                                variant="primary"
+                                icon="save"
+                                onClick={() =>
+                                    setSaving({
+                                        ...draftOf(document),
+                                        parameters: draftOf(document).parameters.map(
+                                            (parameter) =>
+                                                values[parameter.id] === undefined
+                                                    ? parameter
+                                                    : {
+                                                          ...parameter,
+                                                          value:
+                                                              values[parameter.id] ??
+                                                              parameter.value,
+                                                      },
+                                        ),
+                                    })
+                                }
+                            >
+                                {t('pricingEngines.save.save')}
+                            </Button>
+                        </div>
+                    )}
+                    {saving !== null && vocabulary !== undefined && (
+                        <SaveDialog
+                            title={t('pricingEngines.globals.heading')}
+                            document={document}
+                            after={saving}
+                            vocabulary={vocabulary}
+                            onClose={() => setSaving(null)}
+                            onSaved={() => {
+                                setSaving(null);
+                                setValues({});
+                                setEditing(false);
+                            }}
+                        >
+                            <p className="text-sm text-ink-muted">
+                                {t('pricingEngines.change.reviewHint')}
+                            </p>
+                        </SaveDialog>
+                    )}
                 </>
             )}
         </section>

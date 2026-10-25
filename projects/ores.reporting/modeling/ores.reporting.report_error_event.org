@@ -271,9 +271,22 @@ that reads the engine's log is where the two are kept in step.
 
 ** Indexes
 
-| name    | columns                        | unique | current_only | where_extra |
-|---------+--------------------------------+--------+--------------+-------------|
-| subject | tenant_id, subject, subject_id | false  | true         |             |
+| name    | columns                                                             | unique | current_only | where_extra         |
+|---------+---------------------------------------------------------------------+--------+--------------+---------------------|
+| subject | tenant_id, subject, subject_id                                      | false  | true         |                     |
+| run_subject | tenant_id, report_instance_id, scope_code, subject, subject_id, message | true | false | subject_id is not null |
+| run_report  | tenant_id, report_instance_id, scope_code, message             | true   | false        | subject_id is null  |
+
+The two unique indexes say what makes one error row the same as another. A
+row that names a subject is the same row when the run, the scope, the subject
+kind, the subject id and the message agree. A row that names no subject is the same row when
+the run and the scope agree, and its subject is now a scope code so that two
+different scopes cannot collide.
+
+They exist because the step that reads a run's output can run more than once at
+the same time. The recorder asks the database whether the run already holds its
+errors, and two callers can both find none; the index lets one of them win and
+the other fail rather than write the reasons twice.
 
 * Foreign keys
 

@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 29
+Tables: 35
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -372,6 +372,72 @@ package "reporting" #E0F7FA {
     central engine_settings row in the same transaction.
     end note
 
+    entity ores_reporting_engine_settings_group_settings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * group_code : text
+        * column_name : text
+        * ore_name : text
+        * kind : text
+        * changes_numbers : boolean
+        * options : text
+          minimum : double
+          maximum : double
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_engine_settings_group_settings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Engine Settings Group Setting Table
+    One setting of one group, as the screen draws it: the column its value travels
+    under, the ORE parameter that documents it, the kind of control it takes, and
+    the range or the list of words the value must be one of. The group's settings are
+    what a screen shows and what a write to the group accepts, so a setting is data
+    here and no longer a list in the browser's server code.
+    Whether a setting changes the numbers a run computes is stated here, so the
+    screen can warn a person before a write that moves them.
+    end note
+
+    entity ores_reporting_engine_settings_groups_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * position : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_engine_settings_groups_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Engine Settings Group Table
+    The engine settings a screen draws come in groups, and a configuration keeps one
+    row of each group it sets. The group states the code the screen and the service
+    travel the part under, the words a person reads and the place it takes in the
+    screen. The settings of the group are rows of engine_settings_group_setting.
+    Until this table held the groups, a list of them lived in the browser's server
+    code, so a new group of settings took a change of code. The list is data now, so
+    the screen draws the groups the data holds, in the order the data states.
+    end note
+
     entity ores_reporting_engine_settings_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -446,6 +512,36 @@ package "reporting" #E0F7FA {
     The table lists names and patterns. It does not hold the content of a file.
     end note
 
+    entity ores_reporting_ore_parameter_setting_value_sets_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * scope : text
+        * name : text
+        * value_set_code : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_ore_parameter_setting_value_sets_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Ore Parameter Setting Value Set Table
+    The junction between a setting and the set of values it allows. It is keyed by
+    the setting, (scope, name), and not by a parameter row, because the contract
+    holds one row per product type and the allowed values are the same for all of
+    them. A setting has one set today, so the pair is unique; the junction is a
+    table so a setting may draw from more than one set later without a migration.
+    The code is the scope and the name joined with a colon, for example
+    EngineParameters:Training.BasisFunction.
+    end note
+
     entity ores_reporting_ore_parameter_value_domains_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -477,6 +573,104 @@ package "reporting" #E0F7FA {
     leaves the entity type unresolved and the generator writes files called
     unknown_* rather than reporting the bad line. Check the header first when a
     model generates unknown.
+    end note
+
+    entity ores_reporting_ore_parameter_value_set_catalogues_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * relation : text
+        * description : text
+        * is_active : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_ore_parameter_value_set_catalogues_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Ore Parameter Value Set Catalogue Table
+    A parameter whose values are other ORE Studio data names a catalogue here: the
+    tenors, the currencies, the currency pairs, the sensitivity templates, the
+    instrument codes, the calendars, the day counters, the conventions. The values
+    are the catalogue's current rows, read through a view that presents the value
+    and the label, so nothing is copied into the parameter tables and a row retired
+    from the catalogue is refused by the same read.
+    Only a registered relation can be read, and its shape is checked when the
+    registry loads. A catalogue is data, so adding one is a row here and the view it
+    names.
+    end note
+
+    entity ores_reporting_ore_parameter_value_set_values_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * value_set_code : text
+        * value : text
+        * label : text
+        * description : text
+        * display_order : integer
+        * is_active : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_ore_parameter_value_set_values_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Ore Parameter Value Set Value Table
+    One value of an enumerated set, with the label a person reads, where it sits in
+    the combo and whether it may still be chosen. The contract is the one place a
+    value list lives: the per-pair settings table no longer carries one.
+    end note
+
+    entity ores_reporting_ore_parameter_value_sets_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * source_kind : text
+          catalogue_code : text
+          minimum : double
+          maximum : double
+          pattern : text
+        * is_ordered : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_ore_parameter_value_sets_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Ore Parameter Value Set Table
+    A parameter states its storage type in the value domain and its allowed values
+    here. A set is enumerated, in which case its values are rows of
+    ore_parameter_value_set_value, or it is a catalogue, in which case the values
+    are the current rows of another ORE Studio catalogue named by
+    ore_parameter_value_set_catalogue. A range and a regular expression carry
+    their rules on the set itself. A boolean is the built-in pair true and false.
+    The set is shared by every parameter that names it, so one list of values serves
+    every product type and every pair that takes the setting.
     end note
 
     entity ores_reporting_ore_parameters_tbl <<temporal>> #C6F0D8 {

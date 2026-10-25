@@ -29,7 +29,7 @@
 drop trigger if exists ores_analytics_pricing_model_product_parameters_value_set_trg
     on ores_analytics_pricing_model_product_parameters_tbl;
 
-create trigger ores_analytics_pricing_model_product_parameters_value_set_trg
+create or replace trigger ores_analytics_pricing_model_product_parameters_value_set_trg
     before insert or update of parameter_scope, parameter_name, parameter_value
     on ores_analytics_pricing_model_product_parameters_tbl
     for each row

@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-616 tables in 21 groups.
+623 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -551,6 +551,7 @@ entity "trading" as trading {
   ores_trading_long_short_types_tbl
   ores_trading_moment_types_tbl
   ores_trading_option_types_tbl
+  ores_trading_origin_types_tbl
   ores_trading_party_role_types_tbl
   ores_trading_party_roles_tbl
   ores_trading_payoff_types_tbl
@@ -587,7 +588,7 @@ entity "trading" as trading {
 }
 note bottom of trading
 Trading & Lifecycle
-118 tables — ores_schema.trading.puml
+119 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {
@@ -622,9 +623,15 @@ entity "reporting" as reporting {
   ores_reporting_engine_settings_building_tbl
   ores_reporting_engine_settings_execution_tbl
   ores_reporting_engine_settings_fixings_tbl
+  ores_reporting_engine_settings_group_settings_tbl
+  ores_reporting_engine_settings_groups_tbl
   ores_reporting_engine_settings_tbl
   ores_reporting_file_types_tbl
+  ores_reporting_ore_parameter_setting_value_sets_tbl
   ores_reporting_ore_parameter_value_domains_tbl
+  ores_reporting_ore_parameter_value_set_catalogues_tbl
+  ores_reporting_ore_parameter_value_set_values_tbl
+  ores_reporting_ore_parameter_value_sets_tbl
   ores_reporting_ore_parameters_tbl
   ores_reporting_report_configurations_tbl
   ores_reporting_report_definitions_tbl
@@ -643,7 +650,7 @@ entity "reporting" as reporting {
 }
 note bottom of reporting
 Reporting & Analytics
-29 tables — ores_schema.reporting.puml
+35 tables — ores_schema.reporting.puml
 end note
 
 entity "compute" as compute {

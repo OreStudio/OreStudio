@@ -191,7 +191,7 @@ const VOCABULARY: PricingVocabulary = {
     types: [
         {
             code: 'BermudanSwaption',
-            description: 'A swap exercisable on several dates.',
+            description: 'Bermudan-style Swaption',
             instrumentTypeCode: 'SWPTN',
             assetClass: 'interest_rates',
         },
@@ -496,7 +496,7 @@ describe('one pricing engine configuration', () => {
 
     it('draws the product under the model and the engine that price it', () => {
         const text = textOf(record(READ, VOCABULARY, 'products'));
-        expect(text).toContain('BermudanSwaption');
+        expect(text).toContain('Bermudan-style Swaption');
         expect(text).toContain('LGM');
         expect(text).toContain('Grid');
         expect(text).toContain('Calibration');

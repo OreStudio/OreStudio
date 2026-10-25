@@ -1799,3 +1799,11 @@ tangled into the runnable script library
 * Ore Parameter Value Sets
 
 - [[id:3E1AFCC9-7A5D-52DC-825E-869C2589C60F][How do I run the ore_parameter_value_sets commands from the shell?]]
+
+* Engine Settings Group Settings
+
+- [[id:E30BEB88-9B40-5FD2-9F07-E36E082B2518][How do I run the engine_settings_group_settings commands from the shell?]]
+
+* Engine Settings Groups
+
+- [[id:D7949CEC-5DFA-5208-A15C-705E6245D711][How do I run the engine_settings_groups commands from the shell?]]

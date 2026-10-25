@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 118
+Tables: 119
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -3324,6 +3324,38 @@ package "trading" #E8F5E9 {
     ORE XML unchanged. No conversion is introduced here.
     end note
 
+    entity ores_trading_origin_types_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        --
+        * version : integer
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_origin_types_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Origin Type Table
+    Reference data table holding the systems a trade can come from: ux (a
+    person at a screen), api (an external caller through the API),
+    ore_import (the ORE XML import) and synthetic (the trade population
+    generator).
+    The set is closed and the C++ enum domain::origin holds the same values.
+    A code with no enum value cannot be read back, so the table is immutable:
+    it is seeded once and never changes at run time. Because it is immutable,
+    the trade anchor references it with a database foreign key rather than a
+    trigger check. The table has no tenant: the set is the same for every
+    tenant.
+    Origin is provenance and not economics. The same trade imported twice is
+    one trade, so origin stays out of the economic digest.
+    end note
+
     entity ores_trading_party_role_types_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -4408,6 +4440,8 @@ package "trading" #E8F5E9 {
         * counterparty_scope : text <<FK>>
         * booking_nature : text <<FK>>
         * entry_channel : text <<FK>>
+        * origin : text <<FK>>
+          origin_reference : text
         * external_version : integer
           economic_digest : text
         * modified_by : text
@@ -4651,6 +4685,7 @@ ores_trading_trades_tbl ||--o{ ores_trading_trade_portfolios_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_trade_portfolios_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_trade_states_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_trade_states_tbl : "has"
+ores_trading_origin_types_tbl ||--o{ ores_trading_trades_tbl : "has"
 ores_trading_trade_types_tbl ||--o{ ores_trading_trades_tbl : "has"
 ores_trading_counterparty_scope_types_tbl ||--o{ ores_trading_trades_tbl : "has"
 ores_trading_booking_nature_types_tbl ||--o{ ores_trading_trades_tbl : "has"

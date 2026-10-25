@@ -155,8 +155,14 @@ void ir_curve_feed::start() {
 std::string ir_curve_feed::tick(double elapsed_seconds) {
     published_.fetch_add(1, std::memory_order_relaxed);
 
-    const auto elapsed_ticks = elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0;
-    process_->next(elapsed_ticks);
+    // The clock decides when a curve publishes, and the model steps one tick of its own time,
+    // which the template resolver defines as one calendar day. A process whose law is written for
+    // an arbitrary step takes the gap instead, so a curve that ticks less often than its rate
+    // still advances the time it skipped.
+    if (process_->supports_variable_step())
+        process_->next(elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0);
+    else
+        process_->next();
     if (intensity_ != nullptr)
         intensity_->record_event();
     const auto now = std::chrono::system_clock::now();

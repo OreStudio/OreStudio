@@ -875,6 +875,41 @@ TEST_CASE("a curve that serves an adapter publishes a tick under each pillar's o
     CHECK(std::stod(fra.value) > 0.0);
 }
 
+TEST_CASE("a curve whose process takes no variable step advances one tick however long it waited",
+          tags + "[adapter][curve]") {
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    nats.connect();
+    const auto adapter_id =
+        "test-step-" + boost::uuids::to_string(boost::uuids::random_generator()());
+    const auto id = demo_pillar_id("USD", "sofr", "DEPO", "SPOT", "3M");
+    inbox<messaging::adapter_tick> ticks(
+        nats, domain::adapter_ingress_subject(adapter_id, id.external_id));
+
+    ores::synthetic::feed::ir_curve_feed feed(
+        nats,
+        "test.usd.sofr",
+        "test.usd.sofr.market",
+        "USD",
+        "1D",
+        "discount",
+        std::make_unique<flat_curve_process>(),
+        ores::analytics::quant::domain::arrival_spec{.mode = "periodic", .ticks_per_hour = 3600},
+        {resolved_pillar("SPOT", "3M", "DEPOSIT", 0, 90)},
+        {},
+        nullptr,
+        {{.start_tenor_code = "SPOT",
+          .end_tenor_code = "3M",
+          .target = {.id = id,
+                     .subject = domain::adapter_ingress_subject(adapter_id, id.external_id)}}});
+
+    // One tick a second, and a wait of two minutes: the process cannot take the step of a
+    // hundred and twenty ticks the wall clock skipped, so it takes the one tick its law is
+    // written for and publishes all the same.
+    CHECK_NOTHROW(feed.tick(120.0));
+    REQUIRE(ticks.wait_for_count(1));
+    CHECK(ticks.first().external_id == "USD/sofr/DEPO/SPOT/3M");
+}
+
 TEST_CASE("a curve is offered once for each of its pillars, all under the curve's own group",
           tags + "[offers][curve]") {
     using ores::synthetic::feed::ir_curve_feed_build_input;

@@ -78,7 +78,8 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_buil
         ctx.clock.get(),
         ores::analytics::quant::domain::market_link{
             .market = ctx.market, .intensity = ctx.intensity, .sensitivity = in.config.sensitivity},
-        ctx.scheduler);
+        ctx.scheduler,
+        in.adapter_targets);
 }
 
 } // namespace

@@ -35,6 +35,30 @@ The project already owns this knowledge. =REFDATA_RECORDS= carries =rows= and =a
 
 =trades.ts= states =as_of= and every filter member of the four reads it makes (summaries, identifiers, books, counterparties, trades), reads identifiers from =identifiers=, and the list test's fixture uses the reply's real key. The browser suite now asserts the screen answers with rows.
 
-* What is not fixed
+* What closed it
 
-The same hand-written shape appears at about fifty other list call sites in =packages/bff/src=, each missing =as_of= where the C++ declares it, so each is refused the same way. The lever is to derive the payload from the protocol instead of writing it by hand: a descriptor per list carrying =rows=, =asOf= and the filter's members, generated from the C++ the way =REFDATA_RECORDS= is, plus a check that holds every call site to it. Then this class cannot come back, and the five dozen sites are fixed by construction rather than one at a time.
+The lever above, built in PR #3788. A generated table describes all 1004 list
+requests -- whether each carries =as_of=, which members its filter declares, and
+which field of its reply holds the rows -- and =completeListRequest= fills a
+payload from it, applied once inside =readAll=. A caller now states what it
+means; the protocol supplies the rest.
+
+=check_bff_list_requests.py= holds the hand-written payloads to the same table and
+fails on a stale table, and it runs in the gate for web, modeling and codegen
+changes.
+
+The proof is a sweep of every GET route the BFF declares: 70 answered 200, 38
+asked for missing parameters, 16 were unknown paths, 10 were refused by
+permission, one conflicted, one fails with a transport error, and *none* was
+refused for a malformed request.
+
+* What it cost, and what that says
+
+The generator first read a subject only when the string sat on the same line as
+its declaration. 370 requests state it on the next line, so they were absent
+from the table and their payloads still went out incomplete.
+
+That is the lesson worth keeping: a generator is only as good as its reader, and
+a table that quietly omits an entry fails the same way the hand-written payloads
+did. The check compares the table with the headers, so an omission now fails
+rather than passes.

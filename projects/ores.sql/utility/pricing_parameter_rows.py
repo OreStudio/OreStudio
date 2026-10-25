@@ -416,10 +416,48 @@ def pair_rows():
     return rows
 
 
+# Product types the ORE guide chapter does not describe, with a text written from the
+# standard meaning of the name. The guide names the others.
+EXTRA_TYPES = {
+    "BalanceGuaranteedSwap": (
+        "A swap whose notional is guaranteed to a scheduled balance. Use it when the "
+        "amortisation follows the guaranteed balance rather than the actual one."
+    ),
+    "CallableSwap": (
+        "A swap that one side may cancel on a set of dates. Its price includes the "
+        "value of the cancellation right as well as the swap."
+    ),
+    "CPICapFloor": (
+        "A cap or a floor on a consumer price index. It pays when the index fixes above "
+        "or below the strike, and it needs the inflation curve and the index fixings."
+    ),
+    "FlexiSwap": (
+        "A swap with flexible notional or schedule terms. Use it when the standard swap "
+        "conventions do not describe the trade."
+    ),
+}
+
+
 def type_rows():
     with open(VOCABULARY) as f:
         vocabulary = json.load(f)
     rows = []
+    for code, text in sorted(EXTRA_TYPES.items()):
+        rows.append({
+            "scope": "Types",
+            "subtype": "",
+            "name": code,
+            "domain": "string",
+            "required": False,
+            "label": humanise(code),
+            "help": first_sentence(text),
+            "description": text,
+            "default_text": "The product type code.",
+            "format": "The product type code of an ORE pricing engine.",
+            "introduced_in": "1.8.0.7 or earlier",
+            "removed_in": None,
+            "xpath": f"/PricingEngines/Product[@type='{code}']",
+        })
     for code, entry in sorted(vocabulary.items()):
         pairs = entry.get("pairs", [])
         usual = next((p for p in pairs if p.get("usual")), pairs[0] if pairs else None)

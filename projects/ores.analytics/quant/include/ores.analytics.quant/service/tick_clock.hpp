@@ -99,13 +99,16 @@ public:
             // unspecified integer; a zero gap means "tick without waiting",
             // which a periodic process at a very high rate legitimately asks
             // for.
-            // The market moves with wall time rather than with this feed, so
-            // several clocks can share one: whichever asks first advances it and
-            // the rest find it already advanced. The row's sensitivity then says
-            // how much of the market this feed takes.
+            // The market has one owner, which advances it; a feed only reads the
+            // published multiplier, one atomic load, and re-rates its process
+            // when that value changes. The row's sensitivity says how much of
+            // the market this feed takes.
             if (market_) {
-                market_->synchronise();
-                arrivals_.set_baseline_multiplier(market_->multiplier() * sensitivity_);
+                const double wanted = market_->multiplier() * sensitivity_;
+                if (wanted != multiplier_in_force_) {
+                    arrivals_.set_baseline_multiplier(wanted);
+                    multiplier_in_force_ = wanted;
+                }
             }
 
             const double gap_seconds = arrivals_.next_gap();
@@ -144,6 +147,9 @@ private:
     ores::analytics::quant::domain::i_arrival_process& arrivals_;
     ores::analytics::quant::domain::market_regime* market_;
     double sensitivity_;
+    /// The multiplier the process was last rated at, so an unchanged market
+    /// costs one comparison and no re-rating.
+    double multiplier_in_force_ = 1.0;
     std::atomic<bool> stop_flag_{false};
     std::atomic<std::uint64_t> publish_count_{0};
 };

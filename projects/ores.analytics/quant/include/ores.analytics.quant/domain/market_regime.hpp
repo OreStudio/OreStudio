@@ -19,9 +19,9 @@
 #ifndef ORES_ANALYTICS_QUANT_DOMAIN_MARKET_REGIME_HPP
 #define ORES_ANALYTICS_QUANT_DOMAIN_MARKET_REGIME_HPP
 
+#include <atomic>
 #include <chrono>
 #include <cmath>
-#include <mutex>
 #include <optional>
 #include <random>
 #include <stdexcept>
@@ -37,19 +37,22 @@ namespace ores::analytics::quant::domain {
  * one with mean 1/calm_rate before turning calm again. The long-run share of
  * time spent active is therefore wake_rate / (wake_rate + calm_rate).
  *
- * The factor every series shares is multiplier(): one while calm and
- * active_multiplier() while active. A series' own baseline is multiplied by it
- * and by the series' sensitivity, so a busy market lifts everything at once and
- * a curve follows less than a major pair.
+ * *Readers cost one atomic load.* Every feed asks for the multiplier on every
+ * tick, so the published view — the state and the multiplier — is two relaxed
+ * atomics that readers load without a lock, a shared write or a cache-line
+ * handover. Tens of thousands of feeds can read it at once.
  *
- * A scenario can pin either state. Pinning is the operational switch a
- * demonstration or a stress run uses, and it is why the object is not simply a
- * Poisson clock: a test that must wait for a random transition is not a test.
+ * *One owner advances the chain.* The chain's own state (how long the current
+ * state has left, the random engine) belongs to a single caller, the market's
+ * thread, which calls advance_to_now() a few times a second. That caller is the
+ * only writer of the chain and the only one that publishes, so the RNG is never
+ * shared and no reader ever waits.
  *
- * The chain holds no time of its own: advance() is told how much time passed, so
- * a test drives it deterministically. A run uses synchronise() instead, which
- * advances by the time the wall clock reports since the last call, so several
- * feeds' clocks can share one market without any of them moving it twice.
+ * A scenario can pin either state. Pinning stores an atomic the owner reads, and
+ * publishes at once so the pin is visible without waiting for the next tick.
+ *
+ * Tests drive the chain deterministically through advance(seconds) instead of the
+ * wall clock, so an occupancy measurement does not take real time.
  */
 class market_regime final {
 public:
@@ -79,30 +82,22 @@ public:
             throw std::invalid_argument(
                 "market_regime: active_multiplier must be strictly positive");
         remaining_ = dwell_time();
+        publish(state_);
     }
 
-    /// @brief The state in force now.
+    /// @brief The state in force now. One atomic load.
     [[nodiscard]] state current() const {
-        const auto guard = std::lock_guard(mutex_);
-        return pinned_.value_or(state_);
+        return static_cast<state>(published_state_.load(std::memory_order_relaxed));
     }
 
-    /**
-     * @brief The multiplier in force now: one while calm, the active
-     * multiplier while active.
-     *
-     * A pinned state reports its own multiplier, so a pinned calm scenario is
-     * genuinely calm rather than merely waiting for a transition.
-     */
+    /// @brief The multiplier in force now. One atomic load, the tick-path read.
     [[nodiscard]] double multiplier() const {
-        const auto guard = std::lock_guard(mutex_);
-        return (pinned_.value_or(state_) == state::active) ? active_multiplier_ : 1.0;
+        return published_multiplier_.load(std::memory_order_relaxed);
     }
 
     /// @brief Whether a scenario has pinned the state.
     [[nodiscard]] bool is_pinned() const {
-        const auto guard = std::lock_guard(mutex_);
-        return pinned_.has_value();
+        return pinned_.load(std::memory_order_relaxed) != automatic;
     }
 
     /// @brief The share of time the chain spends active in the long run.
@@ -110,62 +105,79 @@ public:
         return wake_rate_ / (wake_rate_ + calm_rate_);
     }
 
-    /// @brief How long the current state still holds, in seconds.
-    [[nodiscard]] double remaining_seconds() const {
-        const auto guard = std::lock_guard(mutex_);
-        return remaining_;
-    }
-
-    /// @brief Pin the state, whatever the chain says, until unpin().
+    /**
+     * @brief Pin the state, whatever the chain says, until unpin().
+     *
+     * Safe to call from a control thread while the owner advances: the pin is an
+     * atomic the owner reads, and the published view moves at once so the change
+     * is visible without waiting for the next advance.
+     */
     void pin(state s) {
-        const auto guard = std::lock_guard(mutex_);
-        pinned_ = s;
+        pinned_.store(s == state::active ? active : calm, std::memory_order_relaxed);
+        publish(s);
     }
 
     /// @brief Hand control back to the chain, which resumes from wherever it was.
     void unpin() {
-        const auto guard = std::lock_guard(mutex_);
-        pinned_.reset();
+        pinned_.store(automatic, std::memory_order_relaxed);
+        publish(state_);
     }
 
     /**
      * @brief Advance to now, by the time the wall clock reports since the last
-     * call, and return the state in force.
-     *
-     * This is how a run shares one market between several feeds: whichever clock
-     * asks first moves the market on, and the others find it already moved, so
-     * the market advances with wall time rather than once per feed.
+     * call. Called by the one owner of the chain, a few times a second.
      */
-    state synchronise() {
+    void advance_to_now() {
         const auto now = std::chrono::steady_clock::now();
-        const auto guard = std::lock_guard(mutex_);
-        if (last_synchronised_) {
-            const auto elapsed = std::chrono::duration<double>(now - *last_synchronised_).count();
-            advance_unlocked(elapsed);
+        if (last_advanced_) {
+            const auto elapsed =
+                std::chrono::duration<double>(now - *last_advanced_).count();
+            advance_chain(elapsed);
         }
-        last_synchronised_ = now;
-        return pinned_.value_or(state_);
+        last_advanced_ = now;
     }
 
     /**
-     * @brief Advance the chain by @p elapsed_seconds, taking as many
-     * transitions as fit.
+     * @brief Advance by @p elapsed_seconds, taking as many transitions as fit.
      *
-     * A pinned chain does not transition: the pin is the scenario's statement
-     * about the market, and the chain picks up where it left off when freed.
+     * Deterministic: a test uses this instead of the wall clock. A pinned chain
+     * does not transition.
      */
     void advance(double elapsed_seconds) {
         if (!std::isfinite(elapsed_seconds) || elapsed_seconds < 0.0)
             throw std::invalid_argument("market_regime: elapsed_seconds must be finite and "
                                         "non-negative");
-        const auto guard = std::lock_guard(mutex_);
-        advance_unlocked(elapsed_seconds);
+        advance_chain(elapsed_seconds);
     }
 
+    /// @brief How long the current state still holds, in seconds. Owner-only.
+    [[nodiscard]] double remaining_seconds() const { return remaining_; }
+
 private:
-    void advance_unlocked(double elapsed_seconds) {
-        if (pinned_)
+    static constexpr int automatic = -1;
+    static constexpr int calm = 0;
+    static constexpr int active = 1;
+
+    void publish(state s) {
+        published_state_.store(s == state::active ? active : calm,
+                               std::memory_order_relaxed);
+        published_multiplier_.store(s == state::active ? active_multiplier_ : 1.0,
+                                    std::memory_order_relaxed);
+    }
+
+    void publish_current() {
+        const auto p = pinned_.load(std::memory_order_relaxed);
+        if (p == automatic)
+            publish(state_);
+        else
+            publish(p == active ? state::active : state::calm);
+    }
+
+    void advance_chain(double elapsed_seconds) {
+        if (pinned_.load(std::memory_order_relaxed) != automatic) {
+            publish_current();
             return;
+        }
 
         double left = elapsed_seconds;
         while (left >= remaining_) {
@@ -174,6 +186,7 @@ private:
             remaining_ = dwell_time();
         }
         remaining_ -= left;
+        publish(state_);
     }
 
     [[nodiscard]] double dwell_time() {
@@ -183,14 +196,20 @@ private:
         return exponential_(rng_) / rate;
     }
 
-    double wake_rate_;
-    double calm_rate_;
-    double active_multiplier_;
+    const double wake_rate_;
+    const double calm_rate_;
+    const double active_multiplier_;
+
+    // The published view: the only thing a feed reads, and the only thing that
+    // needs to be atomic.
+    std::atomic<int> published_state_{calm};
+    std::atomic<double> published_multiplier_{1.0};
+    std::atomic<int> pinned_{automatic};
+
+    // The chain: owned by the one advancing thread.
     state state_ = state::calm;
-    std::optional<state> pinned_;
     double remaining_ = 0.0;
-    mutable std::mutex mutex_;
-    std::optional<std::chrono::steady_clock::time_point> last_synchronised_;
+    std::optional<std::chrono::steady_clock::time_point> last_advanced_;
     std::mt19937 rng_;
     std::exponential_distribution<double> exponential_;
 };

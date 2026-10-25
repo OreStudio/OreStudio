@@ -57,13 +57,19 @@ Three slices, each verifiable on its own.
 3. *The clock.* The clock consults the market before each gap, so every feed
    follows it.
 
-   One correction to what this plan first said: a single clock thread is *not*
-   needed for the exogenous state. A state that is a function of time can be
-   shared by several clocks, provided it advances with wall time rather than once
-   per caller — so the market synchronises against the wall clock under a mutex,
-   and whichever feed asks first moves it on. The strictly single clock becomes
-   necessary only for the endogenous factor, where an event in one series must
-   reach another, and that is the next task.
+   Two corrections, both forced by scale.
+
+   First, a single clock thread is *not* needed for the exogenous state: a state
+   that is a function of time can be shared. Second, sharing it must not cost a
+   lock — at ten thousand feeds a mutex on the tick path is the bottleneck the
+   factor exists to avoid. So the published view is two relaxed atomics that a
+   feed reads without a lock, and one owner thread advances the chain and
+   publishes, a few times a second. The clock re-rates its process only when the
+   multiplier changes, so a steady market costs one load and one comparison per
+   tick.
+
+   The strictly single clock becomes necessary only for the endogenous factor,
+   where an event in one series must reach another, and that is the next task.
 
 Tests follow the slices: the chain's occupancy against its own ratio, a pin that
 holds however much time passes, the multiplier reaching the rate, and the clock

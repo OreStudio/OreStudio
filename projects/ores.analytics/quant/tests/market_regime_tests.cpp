@@ -79,25 +79,57 @@ TEST_CASE("market_regime refuses parameters that cannot describe a market", "[ma
     CHECK_THROWS_AS(regime.advance(-1.0), std::invalid_argument);
 }
 
-TEST_CASE("market_regime moves with wall time, not once per caller", "[market_regime]") {
-    // Two callers share one market, as two feeds' clocks do. Each calls
-    // synchronise() in a tight loop for about a tenth of a second; the market
-    // must advance by about that much, not by twice it.
+TEST_CASE("market_regime is read without a lock or a shared write", "[market_regime]") {
+    // The tick path is one atomic load: tens of thousands of feeds read this.
+    static_assert(std::atomic<double>::is_always_lock_free);
+    static_assert(std::atomic<int>::is_always_lock_free);
+
+    market_regime regime;
+    regime.pin(market_regime::state::active);
+    CHECK(regime.multiplier() == 3.0);
+    regime.unpin();
+    CHECK(regime.multiplier() == 1.0);
+}
+
+TEST_CASE("market_regime advances with wall time under one owner", "[market_regime]") {
+    // One owner advances the chain while many readers read it, which is the
+    // shape of a run: a few thousand feeds and one market thread.
     market_regime regime(1e-6, 1e-6, 3.0);
     const double before = regime.remaining_seconds();
 
     std::atomic<bool> stop{false};
-    auto spin = [&] {
+    std::atomic<int> bad_reads{0};
+
+    std::thread owner([&] {
         while (!stop.load())
-            regime.synchronise();
-    };
-    std::thread a(spin);
-    std::thread b(spin);
+            regime.advance_to_now();
+    });
+    std::vector<std::thread> readers;
+    for (int i = 0; i < 4; ++i) {
+        readers.emplace_back([&] {
+            while (!stop.load()) {
+                const double m = regime.multiplier();
+                if (m != 1.0 && m != 3.0)
+                    bad_reads.fetch_add(1);
+            }
+        });
+    }
+
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     stop.store(true);
-    a.join();
-    b.join();
+    owner.join();
+    for (auto& r : readers)
+        r.join();
 
+    CHECK(bad_reads.load() == 0);
     const double advanced = before - regime.remaining_seconds();
     CHECK(advanced == Catch::Approx(0.1).margin(0.06));
+}
+
+TEST_CASE("market_regime publishes a pin without waiting for the owner", "[market_regime]") {
+    market_regime regime;
+    regime.pin(market_regime::state::active);
+    CHECK(regime.multiplier() == 3.0);
+    regime.pin(market_regime::state::calm);
+    CHECK(regime.multiplier() == 1.0);
 }

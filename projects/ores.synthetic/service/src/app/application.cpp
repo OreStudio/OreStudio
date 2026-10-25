@@ -279,8 +279,17 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     const auto registry = make_default_feed_kind_registry();
 
     // One market for the whole run: every feed built here consults it, so a
-    // busy market lifts all of them together.
+    // busy market lifts all of them together. A feed only reads it; this thread
+    // is its single owner, and moving it on a few times a second is enough for a
+    // state whose dwell times are minutes.
     ores::analytics::quant::domain::market_regime market;
+    std::jthread market_owner([&market](const std::stop_token& stop) {
+        using namespace std::chrono_literals;
+        while (!stop.stop_requested()) {
+            std::this_thread::sleep_for(100ms);
+            market.advance_to_now();
+        }
+    });
 
     // The simulator is an adapter of the market data service for each simulated source. It
     // serves the system collections of the provider of the source, and it starts a generator for

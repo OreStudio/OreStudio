@@ -200,9 +200,10 @@ TEST_CASE("tick_clock scales the arrival rate by the market state and the row's 
         [](std::uint64_t, const std::string&) {},
         [](const std::exception&) {});
 
-    REQUIRE(arrivals.multipliers().size() == 3);
-    for (const double multiplier : arrivals.multipliers())
-        CHECK(multiplier == Catch::Approx(6.0));
+    // The market is constant across these ticks, so the rate is set once and
+    // left alone: the tick path does no work it does not need to do.
+    REQUIRE(arrivals.multipliers().size() == 1);
+    CHECK(arrivals.multipliers().front() == Catch::Approx(6.0));
 }
 
 TEST_CASE("tick_clock leaves the rate alone with no market", tags) {

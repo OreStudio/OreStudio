@@ -24,6 +24,7 @@
 #include "ores.analytics.quant/domain/arrival_spec.hpp"
 #include "ores.analytics.quant/domain/i_arrival_process.hpp"
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
+#include "ores.analytics.quant/domain/market_regime.hpp"
 #include "ores.analytics.quant/service/tick_clock.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/domain/market_clock.hpp"
@@ -95,7 +96,9 @@ public:
                   std::string role,
                   std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
                   const ores::analytics::quant::domain::arrival_spec& arrival,
-                  std::vector<ir_curve_resolved_entry> entries);
+                  std::vector<ir_curve_resolved_entry> entries,
+                  ores::analytics::quant::domain::market_regime* market = nullptr,
+                  double sensitivity = 1.0);
 
     void start() override;
     void stop() override;
@@ -185,7 +188,9 @@ ORES_SYNTHETIC_API_EXPORT std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
         definitions,
     const ir_curve_refdata_context& refctx,
-    const ores::marketdata::domain::market_clock* clock = nullptr);
+    const ores::marketdata::domain::market_clock* clock = nullptr,
+    ores::analytics::quant::domain::market_regime* market = nullptr,
+    double sensitivity = 1.0);
 
 /**
  * @brief Picks the vintage-lookup anchor entry from a resolved Curve Template: the DEPOSIT entry

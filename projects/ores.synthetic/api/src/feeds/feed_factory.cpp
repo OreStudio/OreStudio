@@ -52,8 +52,14 @@ namespace {
 std::shared_ptr<ores::marketdata::domain::i_feed> build_fx_spot(const feed_build_context& ctx,
                                                                 const feed_build_input& input) {
     const auto& in = std::get<fx_spot_feed_build_input>(input);
-    return make_fx_spot_feed(
-        ctx.nats, ctx.auth_nats, in.config, in.components, in.adapter, ctx.clock.get());
+    return make_fx_spot_feed(ctx.nats,
+                             ctx.auth_nats,
+                             in.config,
+                             in.components,
+                             in.adapter,
+                             ctx.clock.get(),
+                             ctx.market,
+                             static_cast<double>(in.config.sensitivity));
 }
 
 std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_build_context& ctx,
@@ -66,7 +72,9 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_buil
                               in.values,
                               in.definitions,
                               in.refctx,
-                              ctx.clock.get());
+                              ctx.clock.get(),
+                              ctx.market,
+                              static_cast<double>(in.config.sensitivity));
 }
 
 } // namespace

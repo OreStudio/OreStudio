@@ -23,6 +23,7 @@
 #include "ores.analytics.quant/domain/arrival_spec.hpp"
 #include "ores.analytics.quant/domain/i_arrival_process.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/domain/market_regime.hpp"
 #include "ores.analytics.quant/service/tick_clock.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/domain/market_clock.hpp"
@@ -96,7 +97,9 @@ public:
                  std::string nats_subject,
                  std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process,
                  const ores::analytics::quant::domain::arrival_spec& arrival,
-                 std::optional<adapter_target> adapter = std::nullopt);
+                 std::optional<adapter_target> adapter = std::nullopt,
+                 ores::analytics::quant::domain::market_regime* market = nullptr,
+                 double sensitivity = 1.0);
 
     /**
      * @brief The oresmd quote URI this feed publishes ticks under, e.g.
@@ -169,7 +172,9 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   std::optional<adapter_target> adapter = std::nullopt,
-                  const ores::marketdata::domain::market_clock* clock = nullptr);
+                  const ores::marketdata::domain::market_clock* clock = nullptr,
+                  ores::analytics::quant::domain::market_regime* market = nullptr,
+                  double sensitivity = 1.0);
 
 }
 #endif

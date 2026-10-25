@@ -51,6 +51,7 @@
 \ir ./reporting_ore_parameter_value_set_catalogues_create.sql
 \ir ./reporting_ore_parameter_value_set_catalogues_notify_trigger_create.sql
 \ir ./reporting_ore_parameter_value_set_catalogue_views_create.sql
+\ir ./reporting_ore_parameter_value_validate_fn_create.sql
 \ir ./reporting_ore_parameter_value_sets_create.sql
 \ir ./reporting_ore_parameter_value_sets_notify_trigger_create.sql
 \ir ./reporting_ore_parameter_value_set_values_create.sql

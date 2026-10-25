@@ -16,9 +16,12 @@ screen the registries name against the structural rules of the standards. On
 2026-10-25, at commit =b6698c1818= of the harness over the web of
 =brave_hopper= with Acme provisioned, 32 screens ran 21 checks each: 477 passed,
 67 failed and 128 were skipped with a stated reason. Every failure is the
-screen's and not the check's, and they fall into four rules. No record page or
-classification page draws Refresh with its load time (ES-REFRESH-16, 27
-screens). No dialog says when its record was loaded (RS-WRITE-16, 23 dialogs).
+screen's and not the check's, and they fall into four rules. No record page
+draws the load time (ES-REFRESH-16, 27 pages: the four record pages and the
+row page of each of the 23 classification kinds whose list opens one); those
+pages draw no Refresh button either, so ES-REFRESH-06 is broken on the same 27,
+read through the same check. No dialog says when its record was loaded
+(RS-WRITE-16, 23 dialogs).
 Twelve dialogs are titled by the key and not the display field (RS-WRITE-20).
 The five read-only classification lists open nothing when a row is clicked
 (RS-LIST-10). Each of the four is a capture in the next bucket, so the topic
@@ -107,9 +110,9 @@ record page, has one column per part.
 
 | Rule | Screens | What the screens do | Where it goes |
 |------+---------+---------------------+---------------|
-| ES-REFRESH-16 | 27: the record pages of currencies, desk groups, currency pairs and calendars, and every classification list and row page | The list screens draw Refresh and the load time through =RecordList=. The record pages and the classification screens use =PageHeader= directly and draw no Refresh at all, so ES-REFRESH-06 fails with it | Capture: Give the record page and the classification pages the shared Refresh button with its load time |
+| ES-REFRESH-16 | 27: the record pages of currencies, desk groups, currency pairs and calendars, and the row page of each of the 23 classification kinds whose list opens one | The list screens draw Refresh and the load time through =RecordList=, and the list column passes everywhere. The record pages and the classification row pages use =PageHeader= directly and draw no Refresh at all, so ES-REFRESH-06 is broken on the same 27 pages; the harness has no separate column for it | Capture: Give the record page and the classification pages the shared Refresh button with its load time |
 | RS-WRITE-16 | 23: every dialog that opened | =RecordDialog= and the classification row dialog open the shared =Dialog= without its =loadedAt=, so no dialog says when its record was loaded | Capture: Pass the loaded time to the record dialog and the classification row dialogs |
-| RS-WRITE-20 | 12: the currency dialog and 11 classification row dialogs | The dialog is titled by the key, Edit AED, where the page is titled by the display field, UAE Dirham. The 10 that pass are lists whose code is their name | Capture: Title the Edit dialog with the display field and not the key |
+| RS-WRITE-20 | 12: the currency dialog and 11 classification row dialogs | The dialog is titled by the key, Edit AED, where the page is titled by the display field, UAE Dirham. Of the 23 dialogs that opened, 12 fail and 10 pass; the 10 that pass, the desk group and currency pair dialogs among them, are kinds whose key is also their display name. The 23rd, calendar type, skipped this one check because its row did not open on that attempt, while its other dialog checks ran | Capture: Title the Edit dialog with the display field and not the key |
 | RS-LIST-10 | 5: business day convention type, currency pair classification, curve role, derivation kind, leg type | The read-only lists open nothing when a row is clicked. Either a read-only record page with its history is wanted, as RS-WRITE-33 describes, or the standard names the exception | Capture: Decide what a row of a read-only classification list opens |
 
 Two checks were corrected during the baseline and are not findings. The

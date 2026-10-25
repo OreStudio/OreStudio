@@ -91,7 +91,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | Local review: docs class | doc/knowledge/ui, product_backlog/next | Accept | The table is the script's output; each capture names its rule, its screens and the baseline page |
+| 1 | Local review: docs class | doc/knowledge/ui, product_backlog/next | Accept | =compass check= 8/8 at 3172e3ae4e (site-page, backlog-indexes, lint, org-links, rule-identifiers, structure-notes, pattern-uses, prototypes); misspell clean; the table is the script's output and each capture names its rule, its screens and the page |
+| 2 | PR 3778 review: the RS-WRITE-20 pass count, ES-REFRESH-06 absent from the table, the ES-REFRESH-16 wording, a thin Review row | record_screen_baseline.org, this task | Accept | The reviewer re-counted the totals (672 = 32 × 21, 67 = 27 + 23 + 12 + 5) and they held. Its count of 11 passing RS-WRITE-20 dialogs was off by one: 10 pass, 12 fail and calendar type skipped the check on a row that did not open. The page now says so, states that ES-REFRESH-06 is read through the ES-REFRESH-16 column, and names the 27 pages as the record column does |
 
 * Result
 

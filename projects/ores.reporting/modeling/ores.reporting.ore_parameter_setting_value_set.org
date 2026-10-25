@@ -78,6 +78,7 @@ The set that states the setting's allowed values. Soft foreign key to
 
 ** Flags
 :PROPERTIES:
+:rls_tenant_isolation: true
 :tablename: ores_reporting_ore_parameter_setting_value_sets_tbl
 :END:
 

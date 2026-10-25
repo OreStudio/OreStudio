@@ -247,8 +247,10 @@ std::string("")
 ** origin
 :PROPERTIES:
 :table:         ores_trading_origin_types_tbl
+:target_column: code
+:error_message: Invalid origin: %. No active origin type found with this code.
+:use_no_tenant: true
 :nullable:      false
-:error_message: Invalid origin: %. No origin type found with this code.
 :END:
 
 ** party_id

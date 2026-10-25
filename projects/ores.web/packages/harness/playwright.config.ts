@@ -38,7 +38,6 @@ export default defineConfig({
     reporter: [
         ['list'],
         ['html', { outputFolder: '../../.runtime/harness/report', open: 'never' }],
-
         ['json', { outputFile: '../../.runtime/harness/results.json' }],
     ],
     use: {

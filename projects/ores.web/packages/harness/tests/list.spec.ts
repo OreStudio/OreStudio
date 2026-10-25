@@ -32,7 +32,7 @@ const AUDIT_COLUMNS = [
 ];
 
 /** The x coordinate of an element, so the order of two controls can be read. */
-async function left(page: Page, name: string): Promise<number> {
+async function left(page: Page, name: string | RegExp): Promise<number> {
     const box = await page.getByRole('button', { name }).first().boundingBox();
     expect(box, `the button ${name} has a box`).not.toBeNull();
     return box?.x ?? 0;
@@ -47,6 +47,7 @@ for (const screen of allScreens()) {
     test.describe(`${screen.shape} ${screen.key}`, () => {
         test.beforeEach(async ({ page }) => {
             await page.goto(screen.list);
+            await expect(page, 'the saved session is still signed in').not.toHaveURL(/sign-in/);
             await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
         });
 
@@ -72,10 +73,13 @@ for (const screen of allScreens()) {
         }) => {
             await expect(page.getByRole('button', { name: 'Refresh', exact: true })).toBeVisible();
             const add = page.getByRole('button', { name: /^Add\b/ });
-            if ((await add.count()) > 0) {
-                expect(await left(page, 'Refresh')).toBeLessThan(
-                    await left(page, /^Add\b/ as unknown as string),
-                );
+            // The session is the tenant administrator's, who may write every kind the
+            // server lets anyone write.
+            await expect(add, 'Add is drawn exactly for a writable kind').toHaveCount(
+                screen.writable ? 1 : 0,
+            );
+            if (screen.writable) {
+                expect(await left(page, 'Refresh')).toBeLessThan(await left(page, /^Add\b/));
             }
         });
 
@@ -107,8 +111,11 @@ for (const screen of allScreens()) {
                 'RS-EXCEPT-01: a classification list is read whole',
             );
             await expect(page.getByText(/^\d+[–-]\d+ of \d+$/).first()).toBeVisible();
-            const size = page.getByRole('combobox').filter({ hasText: '15' }).first();
-            await expect(size).toBeVisible();
+            const size = page
+                .getByRole('combobox')
+                .filter({ has: page.locator('option[value="15"]') })
+                .first();
+            await expect(size).toHaveValue('15');
         });
 
         test('[RS-LIST-10] a row opens the record page on a click', async ({ page }) => {

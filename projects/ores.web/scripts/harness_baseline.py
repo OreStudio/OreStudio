@@ -23,6 +23,7 @@ RULE = re.compile(r"\[((?:RS|ES)-[A-Z]+-\d{2})\]")
 SCREEN = re.compile(r"^(record|classification) [a-z-]+$")
 
 
+# Every other status, unexpected, flaky and timedOut, is a failure.
 MARK = {"skipped": "–", "expected": "✓"}
 
 

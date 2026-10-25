@@ -20,20 +20,28 @@
  */
 
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { allScreens } from '../src/screens.js';
+import { allScreens, type Screen } from '../src/screens.js';
 
 /** Opens the first row of a list and returns the record page's title. */
-async function openFirstRecord(page: Page, list: string): Promise<string> {
-    await page.goto(list);
+async function openFirstRecord(page: Page, screen: Screen): Promise<string> {
+    await page.goto(screen.list);
+    await expect(page, 'the saved session is still signed in').not.toHaveURL(/sign-in/);
     const rows = page.locator('table tbody tr');
     await expect(rows.first()).toBeVisible();
     await rows.first().getByRole('cell').first().click();
-    const opened = await page.waitForURL(new RegExp(`${list}/[^/?]+`), { timeout: 5_000 }).then(
-        () => true,
-        () => false,
+    const opened = await page
+        .waitForURL(new RegExp(`${screen.list}/[^/?]+`), { timeout: 10_000 })
+        .then(
+            () => true,
+            () => false,
+        );
+    // A read-only classification list opens nothing, and its list check reports
+    // RS-LIST-10 once; a record kind that opens nothing is a failure here too.
+    test.skip(
+        !opened && screen.shape === 'classification' && !screen.writable,
+        'RS-LIST-10 fails on this read-only list: a row opens no record page',
     );
-    // The list checks report RS-LIST-10; the record checks have nothing to read.
-    test.skip(!opened, 'RS-LIST-10 fails on this list: a row opens no record page');
+    expect(opened, `a row of ${screen.list} opens a record page`).toBe(true);
     const title = page.getByRole('heading', { level: 1 });
     await expect(title).toBeVisible();
     return (await title.innerText()).trim();
@@ -58,7 +66,7 @@ for (const screen of allScreens()) {
     test.describe(`${screen.shape} ${screen.key}`, () => {
         let title = '';
         test.beforeEach(async ({ page }) => {
-            title = await openFirstRecord(page, screen.list);
+            title = await openFirstRecord(page, screen);
         });
 
         test('[RS-PAGE-01] the breadcrumb ends at the subject, by its key, and the title is its name', async ({

@@ -95,6 +95,18 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Local review: web class | packages/harness | Accept | prettier and typecheck clean; the breadcrumb check first demanded the display field and was corrected to the key the standard's sketch draws; the cascade from a row that opens nothing became a skip |
+| 2 | A stale session would fail late checks as rule failures | list and record specs | Accept | Each beforeEach fails with a clear message when the page lands on sign-in; the two full runs of 20 minutes stayed signed in |
+| 3 | A slow page silently skips the record checks | record.spec.ts | Accept | The skip is only for a read-only classification list; a record kind that opens nothing fails, with a 10 second wait |
+| 4 | The order helper takes a RegExp through a cast | list.spec.ts | Accept | Typed string or RegExp |
+| 5 | kindsWithoutAScreen is unused and the route type collapses to string | screens.ts | Accept | Removed; the table is typed as a route template or one of three placements |
+| 6 | Every test reopens the first row; the run is long | record.spec.ts | Decline for now | One title per rule is what a failure must name; the cost is 20 minutes in the background |
+| 7 | The config runs one worker and the evidence four | recipe | Accept | The recipe says so |
+| 8 | 15 also matches 150 | list.spec.ts | Accept | The page size is matched by its selected value |
+| 9 | The breadcrumb XPath leans on .last() | record.spec.ts | Decline for now | The crumbs carry no aria-current to select; the last text node is the subject by the standard's shape |
+| 10 | The order check is vacuous without Add | list.spec.ts | Accept | Add is asserted present exactly for a writable kind, from the registries' writable and editable flags |
+| 11 | currency-groups routes to desk-groups | screens.ts | Accept | Intended: the desk groups screen is the currency groups kind |
+| 12 | A stray blank line in the reporter array; the status mapping has no comment | config, harness_baseline.py | Accept | Both |
+| 13 | A fixture test for the baseline script | harness_baseline.py | Decline for now | The script is a report folder; a test comes with the sign off recipe task if the report shape moves |
 
 * Result
 

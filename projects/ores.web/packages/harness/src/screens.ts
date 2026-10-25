@@ -32,14 +32,19 @@ export interface Screen {
     readonly key: string;
     readonly shape: 'record' | 'classification';
     readonly list: string;
+    /** Whether a person who may write sees Add, Edit and Delete here. */
+    readonly writable: boolean;
 }
+
+type Route = `/${string}`;
+type Placement = Route | 'part' | 'link' | 'no screen';
 
 /**
  * Where each record kind's list lives, or why it has no list of its own: a
  * part or a link is maintained from its parent's panel (RS-RELATED), and a kind
  * in the registry with no screen is a gap the matrix records.
  */
-const RECORD_ROUTES: Readonly<Record<string, string | 'part' | 'link' | 'no screen'>> = {
+const RECORD_ROUTES: Readonly<Record<string, Placement>> = {
     currencies: '/refdata/currencies',
     'currency-groups': '/refdata/desk-groups',
     'currency-pairs': '/refdata/currency-pairs',
@@ -74,7 +79,14 @@ export function recordScreens(): readonly Screen[] {
     return REFDATA_RECORDS.flatMap((resource) => {
         const route = RECORD_ROUTES[resource.key];
         return route !== undefined && route.startsWith('/')
-            ? [{ key: resource.key, shape: 'record' as const, list: route }]
+            ? [
+                  {
+                      key: resource.key,
+                      shape: 'record' as const,
+                      list: route,
+                      writable: resource.writable,
+                  },
+              ]
             : [];
     });
 }
@@ -85,16 +97,10 @@ export function classificationScreens(): readonly Screen[] {
         key: list.key,
         shape: 'classification' as const,
         list: `/refdata/classifications/${list.key}`,
+        writable: list.editable,
     }));
 }
 
 export function allScreens(): readonly Screen[] {
     return [...recordScreens(), ...classificationScreens()];
-}
-
-/** The kinds the registry names that have no screen of their own, for the baseline. */
-export function kindsWithoutAScreen(): readonly string[] {
-    return Object.entries(RECORD_ROUTES)
-        .filter(([, route]) => route === 'no screen')
-        .map(([key]) => key);
 }

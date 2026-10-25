@@ -63,6 +63,26 @@ new ones.
 5. Run the BFF, web typecheck and web tests, then the gate. No screen, route or
    word beyond these.
 
+* UX revision, agreed after the live check
+
+The counters do not reconcile because two rules feed the same tree. The
+provider roll uses the source rule (serving and demanded), while the asset
+class and folder rolls still use the service's controller counts. One rule
+must drive every level.
+
+- Every feed has one state: serving when its provider's source serves and is
+  demanded at least one id. Every roll, every tag and every tile counts that
+  state, and no other count is added beside it.
+- The Synthetic screen becomes a dashboard, in the dashboard language: total
+  providers, feeds serving, feeds stopped, ids demanded and ticks, then the
+  provider list. The banner stays only for the demanded feeds that are not
+  serving.
+- The provider's screen gets a tab called Provider, not Feed tree. A provider
+  combo at the top chooses the provider, a tree on the left shows only that
+  provider, and the grid on the right lists its feeds.
+- The grid loses the oresmd URI column, which breaks its width. The series is
+  reached from the feed page as it already is.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it

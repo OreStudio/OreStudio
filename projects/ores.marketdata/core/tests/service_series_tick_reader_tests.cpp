@@ -481,3 +481,51 @@ TEST_CASE("a_provider_that_holds_no_series_of_the_identity_gives_an_empty_reply"
     CHECK(reply.values.empty());
 }
 
+
+TEST_CASE("a_party_with_no_subscription_is_refused", tags) {
+    database_helper h;
+    const auto o = make_series(h, fresh_curve_id(), boost::uuids::nil_uuid(), "", false);
+    const auto t0 = now_second();
+    insert_tick(o.owner, o.stream, o.number, t0, 1.0);
+
+    const auto reply = series_tick_reader::read(o.owner, span(o, t0 - 1s, t0 + 1min));
+
+    CHECK(reply.result.outcome == outcome::denied);
+    CHECK(reply.result.code == "not_subscribed");
+    CHECK(reply.values.empty());
+}
+
+TEST_CASE("a_party_with_only_a_derived_right_is_refused", tags) {
+    database_helper h;
+    const auto o = make_series(h, fresh_curve_id(), boost::uuids::nil_uuid(), "", false);
+    subscribe(h, o.series.party_id, o.series.provider_code, false, false, true);
+    const auto t0 = now_second();
+    insert_tick(o.owner, o.stream, o.number, t0, 1.0);
+
+    const auto reply = series_tick_reader::read(o.owner, span(o, t0 - 1s, t0 + 1min));
+
+    CHECK(reply.result.outcome == outcome::denied);
+    CHECK(reply.result.code == "not_subscribed");
+    CHECK(reply.values.empty());
+}
+
+TEST_CASE("the_shared_tick_of_a_provider_is_read_by_every_subscribed_party", tags) {
+    database_helper h;
+    const auto curve = fresh_curve_id();
+    const auto first = make_series(h, curve, boost::uuids::nil_uuid(), "ore");
+    const auto second = make_series(h, curve, boost::uuids::nil_uuid(), "ore");
+    REQUIRE(first.stream == second.stream);
+    REQUIRE(first.series.id != second.series.id);
+
+    const auto t0 = now_second();
+    insert_tick(first.owner, first.stream, first.number, t0, 1.25);
+
+    const auto from_first = series_tick_reader::read(first.owner, span(first, t0 - 1s, t0 + 1min));
+    const auto from_second =
+        series_tick_reader::read(second.owner, span(second, t0 - 1s, t0 + 1min));
+
+    CHECK(from_first.result.outcome == outcome::ok);
+    CHECK(from_first.values == std::vector<double>{1.25});
+    CHECK(from_second.result.outcome == outcome::ok);
+    CHECK(from_second.values == std::vector<double>{1.25});
+}

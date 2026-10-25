@@ -223,7 +223,7 @@ describe('the Synthetic dashboard', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
-        expect(html).toContain('17 feeds should be running and are stopped.');
+        expect(html).toContain('17 demanded ids are not being served.');
         expect(html).toContain('Start them');
         expect(html).toContain('href="/market-data/synthetic?tab=tree&amp;shouldRun=true"');
     });
@@ -236,7 +236,7 @@ describe('the Synthetic dashboard', () => {
                 adapter('ore', 'serving', 17),
             ]);
         });
-        expect(html).not.toContain('should be running');
+        expect(html).not.toContain('demanded ids are not being served');
     });
 
     it('reads a provider as running from its source, not from the controller that never started it', () => {
@@ -259,7 +259,7 @@ describe('the Synthetic dashboard', () => {
         expect(html).toContain('Simulates Bloomberg composite quotes.');
         expect(html).toContain('>Running<');
         expect(html).toContain('>Stopped<');
-        expect(html).not.toContain('should be running');
+        expect(html).not.toContain('demanded ids are not being served');
     });
 
     it('offers no start or stop to a person who may write the feeds but not run them', () => {
@@ -407,7 +407,7 @@ describe('the Synthetic feed tree', () => {
                 client.setQueryData([...FEEDS_KEY, filter, 0, 15], { total: 1, feeds: [IR] });
             },
         );
-        expect(html).toContain('Should run and does not');
+        expect(html).toContain('Demand not served');
         expect(html).toContain('USD SOFR');
     });
 });

@@ -146,6 +146,10 @@ features. Each component's own page carries its script inventory.
 - [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — the look and feel of a screen for an entity
   made of several kinds of record, such as a person: the list, the page, the Edit
   pattern, people links, photos and flags, server paging, history, who sees what.
+- [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]] — the one way a screen draws a
+  value of an ORE document, whether a product parameter, an engine run setting or
+  a convention term: Simple and Advanced, the documentation, the value in force,
+  the control and the gaps, with the exact words.
 
 * Security
 

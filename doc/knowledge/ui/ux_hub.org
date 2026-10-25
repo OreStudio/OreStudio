@@ -77,6 +77,17 @@ lifecycle and the import. It applies to every configuration kind in the
 =configuration_type= vocabulary. Where it and the record standard disagree, this
 page rules for a configuration.
 
+** How a value ORE reads is drawn
+
+[[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]] —
+the one way a screen draws a value of an ORE document and the type it belongs
+to, whether a product parameter, an engine run setting or a convention term:
+the Simple and Advanced switch, the documentation under a leaf, the value in
+force, the control, the marks and the gaps, with the exact words. It comes after
+the configuration standard because a convention is not a configuration section
+but draws the same leaves, so the leaf rules hold inside a configuration page and
+inside a record page alike.
+
 ** How to check a screen
 
 [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] — one line per rule of

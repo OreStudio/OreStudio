@@ -183,6 +183,8 @@ no revert. The sign-in record is the worked example, and its journey is
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the journey catalogue and the "one screen, not
   one per entity" rule.
 - [[id:6A63AAC7-4869-493A-97E7-55B919874784][Journey runtime]] — the step and the rail.
+- [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]] — the words a screen prints for a
+  value of an ORE document, and the warning tone of an unreviewed source.
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the aesthetic rules: typography, colour
   values, spacing, motion.
 - [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon Guidelines]] — the icon inventory and semantic usage rules.

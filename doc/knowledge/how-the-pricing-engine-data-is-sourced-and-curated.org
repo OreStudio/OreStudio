@@ -192,3 +192,4 @@ Still the target: the provenance columns on the rows, the coverage report, the v
 - [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] — the story that applies this.
 - [[id:5BF23494-E801-4B0A-8FE0-CEB8DE48BF13][Apply the standard to the pricing engine configuration]] — the screen that reads the result.
 - [[id:C9C764D9-99DF-4327-8FE6-87704D32B34C][Move the pricing engine documentation onto the one contract]] — the contract the rows land in.
+- [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]] — /completes/: the tag a screen shows for each of the four sources, and how the result is drawn wherever a leaf appears.

@@ -60,6 +60,19 @@ struct feed_build_context final {
  * @brief Build inputs for the FX spot producer: its persisted config plus the gmm_component
  * rows that define the mixture process.
  */
+
+/**
+ * @brief The arrival spec a config row names.
+ *
+ * The four arrival columns travel together from the row to the factory. One
+ * helper per entity keeps the mapping in a single place: a new column reaches
+ * every feed by changing this function, not each builder.
+ */
+ores::analytics::quant::domain::arrival_spec
+to_arrival_spec(const ores::synthetic::domain::fx_spot_generation_config& config);
+ores::analytics::quant::domain::arrival_spec
+to_arrival_spec(const ores::synthetic::domain::ir_curve_generation_config& config);
+
 struct fx_spot_feed_build_input final {
     ores::synthetic::domain::fx_spot_generation_config config;
     std::vector<ores::synthetic::domain::gmm_component> components;

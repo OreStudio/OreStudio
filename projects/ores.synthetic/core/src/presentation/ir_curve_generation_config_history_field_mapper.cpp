@@ -61,6 +61,10 @@ render_ir_curve_generation_config_fields(const domain::ir_curve_generation_confi
         {.name = "Folder ID",
          .value = v.folder_id ? boost::uuids::to_string(*v.folder_id) : std::string{}});
     fields.push_back({.name = "Asset Class Code", .value = v.asset_class_code});
+    fields.push_back({.name = "Arrival Mode", .value = v.arrival_mode});
+    fields.push_back({.name = "Branching Ratio", .value = std::to_string(v.branching_ratio)});
+    fields.push_back({.name = "Decay", .value = std::to_string(v.decay)});
+    fields.push_back({.name = "Sensitivity", .value = std::to_string(v.sensitivity)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

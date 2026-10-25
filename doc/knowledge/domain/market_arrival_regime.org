@@ -76,10 +76,12 @@ It has rank one outside the diagonal. Two consequences matter:
    the bound, pick a series with probability $\lambda_i / \Lambda$, reject with
    the usual probability.
 2. *Stability.* The branching matrix is $\operatorname{diag}(n_i) + \mathbf{1}
-   m^\top$ with $m_i = \alpha_c s_i / \beta_c$. Its spectral radius is below one
-   when every $n_i < 1$ and the common feedback $\sum_i m_i < 1$. Both are
-   closed form, so the parameter rules can refuse an unstable set before
-   anything is built.
+   m^\top$ with $m_i = \alpha_c s_i / \beta_c$. A sufficient condition, and the
+   one the rules enforce, is $\max_i n_i + \sum_j m_j < 1$: each diagonal entry
+   plus the whole common row must stay below one (Gershgorin). For equal $n_i$
+   the radius is exactly $n + \sum_j m_j$, so two values of 0.9 do not pass —
+   they sum to 1.8. The check is closed form, so the parameter rules refuse an
+   unstable set before anything is built.
 
 An arbitrary kernel matrix, where series A excites series B but not C, is
 strictly more expensive and is not needed for a market-wide regime. It stays a

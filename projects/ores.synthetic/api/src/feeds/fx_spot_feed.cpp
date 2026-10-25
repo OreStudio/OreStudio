@@ -18,6 +18,7 @@
  *
  */
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
+#include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -143,11 +144,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
         cfg.source_name,
         producer_subject(cfg.source_name),
         std::move(process),
-        ores::analytics::quant::domain::arrival_spec{.mode = cfg.arrival_mode,
-                                                     .ticks_per_hour =
-                                                         static_cast<double>(cfg.ticks_per_hour),
-                                                     .branching_ratio = cfg.branching_ratio,
-                                                     .decay = cfg.decay},
+        to_arrival_spec(cfg),
         std::move(adapter));
 }
 
@@ -170,9 +167,6 @@ fx_spot_feed::fx_spot_feed(
 
     if (!process_)
         throw std::invalid_argument("fx_spot_feed: process must not be null");
-    if (arrival.ticks_per_hour <= 0.0)
-        throw std::invalid_argument("fx_spot_feed: ticks_per_hour must be positive");
-
     namespace datum = ores::marketdata::datum;
     const auto read = datum::oresmd_uri_codec::read(quote_uri_);
     if (!read)

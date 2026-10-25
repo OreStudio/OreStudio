@@ -156,6 +156,7 @@ std::string("vintage")
 :cpp_type:      double
 :nullable:      false
 :default_value: 0.0
+:default:       0.0
 :END:
 
 Initial spot price the generated process starts from. Only used (and
@@ -309,6 +310,7 @@ std::string("fx")
 :cpp_type:      std::string
 :nullable:      false
 :default_value: "periodic"
+:default:       'periodic'
 :sortable:      true
 :searchable:    true
 :END:
@@ -328,6 +330,7 @@ std::string("periodic")
 :cpp_type:      double
 :nullable:      false
 :default_value: 0.0
+:default:       0.0
 :END:
 
 For "hawkes": how much one tick raises the rate of the next, as the expected
@@ -344,6 +347,7 @@ stationary rate and is refused. Ignored by the other modes.
 :cpp_type:      double
 :nullable:      false
 :default_value: 1.0
+:default:       1.0
 :END:
 
 For "hawkes": how fast a burst fades, in units of one over a second, so a value
@@ -360,6 +364,7 @@ the other modes.
 :cpp_type:      double
 :nullable:      false
 :default_value: 1.0
+:default:       1.0
 :END:
 
 How strongly the market-wide arrival factor moves this row, where one is the

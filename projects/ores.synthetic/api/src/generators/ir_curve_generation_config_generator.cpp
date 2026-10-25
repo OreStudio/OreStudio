@@ -66,6 +66,10 @@ generate_synthetic_ir_curve_generation_config(utility::generation::generation_co
     r.source_name = std::string("synthetic.") + std::string(faker::finance::currencyCode());
     r.folder_id = std::nullopt;
     r.asset_class_code = std::string("interest_rates");
+    r.arrival_mode = std::string("periodic");
+    r.branching_ratio = 0.0;
+    r.decay = 1.0;
+    r.sensitivity = 1.0;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

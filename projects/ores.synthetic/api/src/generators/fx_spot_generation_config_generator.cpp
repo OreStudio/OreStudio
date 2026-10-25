@@ -63,6 +63,10 @@ generate_synthetic_fx_spot_generation_config(utility::generation::generation_con
     r.vintage_date = std::string("2016-02-05");
     r.folder_id = std::nullopt;
     r.asset_class_code = std::string("fx");
+    r.arrival_mode = std::string("periodic");
+    r.branching_ratio = 0.0;
+    r.decay = 1.0;
+    r.sensitivity = 1.0;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

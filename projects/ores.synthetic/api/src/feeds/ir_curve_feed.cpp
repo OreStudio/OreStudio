@@ -18,6 +18,7 @@
  *
  */
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
+#include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -256,11 +257,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
         ir_curve_index_tenor(cfg),
         cfg.role,
         std::move(process),
-        ores::analytics::quant::domain::arrival_spec{.mode = cfg.arrival_mode,
-                                                     .ticks_per_hour =
-                                                         static_cast<double>(cfg.ticks_per_hour),
-                                                     .branching_ratio = cfg.branching_ratio,
-                                                     .decay = cfg.decay},
+        to_arrival_spec(cfg),
         std::move(resolved));
 }
 

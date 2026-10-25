@@ -121,6 +121,10 @@ to_domain(const messaging::ir_curve_generation_config_write& write) {
     v.source_name = write.source_name;
     v.folder_id = write.folder_id;
     v.asset_class_code = write.asset_class_code;
+    v.arrival_mode = write.arrival_mode;
+    v.branching_ratio = write.branching_ratio;
+    v.decay = write.decay;
+    v.sensitivity = write.sensitivity;
     return v;
 }
 
@@ -141,6 +145,11 @@ ir_curve_generation_config_service::list_ir_curve_generation_configs(
     if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
         response.result =
             refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->search && request.filter->search->size() > 256) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "search", .limit = "256"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's

@@ -71,6 +71,23 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_buil
 
 } // namespace
 
+
+ores::analytics::quant::domain::arrival_spec
+to_arrival_spec(const ores::synthetic::domain::fx_spot_generation_config& config) {
+    return {.mode = config.arrival_mode,
+            .ticks_per_hour = static_cast<double>(config.ticks_per_hour),
+            .branching_ratio = config.branching_ratio,
+            .decay = config.decay};
+}
+
+ores::analytics::quant::domain::arrival_spec
+to_arrival_spec(const ores::synthetic::domain::ir_curve_generation_config& config) {
+    return {.mode = config.arrival_mode,
+            .ticks_per_hour = static_cast<double>(config.ticks_per_hour),
+            .branching_ratio = config.branching_ratio,
+            .decay = config.decay};
+}
+
 feed_factory make_default_feed_factory() {
     feed_factory factory;
     factory.register_kind(std::string(fx_spot_feed_kind), build_fx_spot);

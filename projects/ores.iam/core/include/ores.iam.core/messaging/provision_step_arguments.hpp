@@ -525,6 +525,7 @@ struct trade_generation_assignment {
     std::optional<ores::utility::decimal::decimal> max_notional = {};
     std::optional<std::chrono::year_month_day> as_of_date = {};
     std::optional<std::uint64_t> seed = {};
+    std::optional<std::uint32_t> trades_per_book = {};
 };
 
 /// The configs a generate_trades step records, in the order it records them.
@@ -572,6 +573,9 @@ parse_trade_generation_assignments(const std::string& arguments_json) {
                                      "' states no notional band.");
         if (!entry.seed)
             throw std::runtime_error("The step's config '" + entry.name + "' states no seed.");
+        if (!entry.trades_per_book || *entry.trades_per_book == 0)
+            throw std::runtime_error("The step's config '" + entry.name +
+                                     "' states no trades per book.");
     }
     return result;
 }

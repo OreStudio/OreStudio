@@ -37,6 +37,23 @@ The failing statement's column, not the value, is what is missing. Two ways to i
 
 Until it is fixed, a provisioned tenant has no trades: the blotter, the reports that read a trade population, and every synthetic test that expects rows are all blocked behind this one overflow.
 
+* The cause, found
+
+The value is uninitialised memory, not a computed number. Parameter =$14= is =trades_per_book=, and =record_trade_generation_config= in =tenant_provisioning_handler.hpp= sets every member of the write record except that one. The generated write struct declares =std::uint32_t trades_per_book;= with no default initialiser, alone among its members, while the domain and the entity both state =8=. So the record carried whatever was on the stack, 2167221318, and the insert refused it.
+
+The profile's own =trades_per_book: 8= never reached the write either: =trade_generation_assignment= had no member for it, so the JSON key was ignored.
+
+* The fix, applied
+
+1. =trade_generation_assignment= gains =std::optional<std::uint32_t> trades_per_book=, and the parse refuses an entry that states none, in the same way it refuses a missing seed.
+2. =record_trade_generation_config= sets =request.change.write.trades_per_book= from the entry.
+
+The build is green with both. Not yet done: re-running the step to see the row land, because the ACME tenant is already provisioned and the shell's single-step command has not been found.
+
+* The lesson to encode
+
+A generated write struct whose members lack default initialisers turns an omission into garbage rather than into a compile error or a refusal. The protocol template supports a default per member, so the generator should emit one where the model states it. That is a template change and a regeneration of every protocol, and it wants its own task: it is the difference between this class of bug being possible and being impossible.
+
 * References
 
 -

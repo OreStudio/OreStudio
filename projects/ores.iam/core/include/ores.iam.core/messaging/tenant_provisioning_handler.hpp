@@ -1440,6 +1440,10 @@ private:
         request.change.write.max_notional = *entry.max_notional;
         request.change.write.as_of_date = trade_anchor_date(entry);
         request.change.write.seed = *entry.seed;
+        // The write carries no default for this member, so a caller that leaves it out sends
+        // whatever was on the stack. The profile states it, and the domain and entity both
+        // default to 8, so the parse refuses an entry without it and it is set here.
+        request.change.write.trades_per_book = *entry.trades_per_book;
         request.change.write.enabled = true;
         request.change.write.reference_curve_id = reference_curve_id;
         request.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,

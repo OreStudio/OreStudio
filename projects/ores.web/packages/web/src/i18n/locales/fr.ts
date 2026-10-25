@@ -3628,6 +3628,23 @@ const fr: SourceCatalogue = {
             state: 'État',
             bookingDate: 'Date de réservation',
             execution: 'Exécutée à',
+            instrumentRefused:
+                'Vous pouvez lire la transaction mais pas les termes de son instrument.',
+            instrumentNotRouted:
+                "Aucune table d'instrument n'est encore routée pour un {type} : les termes de cette transaction ne sont donc stockés nulle part.",
+            instrumentNoTerms:
+                'La table du type de cette transaction ne contient pas encore ses termes.',
+            tradeTypeCode: 'Type de transaction',
+            issue: 'Émission',
+            issueMissing: "L'émission que cet instrument nomme n'a pas pu être lue.",
+            securityId: 'Titre',
+            issuer: 'Émetteur',
+            faceValue: 'Valeur nominale',
+            issueDate: "Date d'émission",
+            settlementDays: 'Jours de règlement',
+            calendar: 'Calendrier',
+            creditGroup: 'Groupe de crédit',
+            notional: 'Notionnel',
             identifiers: 'Identifiants',
             idType: 'Schéma',
             idValue: 'Valeur',

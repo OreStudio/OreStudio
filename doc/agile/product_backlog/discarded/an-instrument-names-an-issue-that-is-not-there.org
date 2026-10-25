@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 8B2E5F14-7C93-4A61-9D28-3F0A6B1C7E52
+:END:
+#+title: An instrument names an issue that is not there (wrong)
+#+description: Discarded. The issue exists; the page read the reply from a field the reply does not carry, so it parsed to an empty list.
+#+type: capture
+#+level: cross
+#+filetags: :trading:synthetic:seeding:bug:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+Seen while building the trade page's Instrument tab.
+
+The ACME population's bond instrument names its issue by id. That id is not in
+the issue table:
+
+#+begin_example
+instrument's issue_id : 167a9093-67ad-5c1d-b562-9c0a772dd1e9
+issue table holds      : 20 rows, none with that id
+#+end_example
+
+So the page shows the notional and the trade type, and the issue is blank. It
+does not fall back to the id, because a uuid is not something a person reads.
+
+Either the trade generator writes an issue id of its own instead of the issue it
+created, or the issue rows are written under another key. The generator is the
+place to look: it is the thing that knows both ids at the moment it writes them.
+
+
+* Why this was discarded
+
+It reported that the instrument named an issue that is not in the issue table.
+That is wrong. The id is there:
+
+#+begin_example
+select count(*) from ores_trading_bond_issues_tbl
+ where issue_id = '167a9093-67ad-5c1d-b562-9c0a772dd1e9'  ->  1
+#+end_example
+
+The page showed nothing because the read asked for the rows under =bond_issues=
+and the reply carries them under =issues=, so the array parsed to empty and the
+page drew a dash. The instrument tab shows =POPQVVOAIH5P1= now.
+
+* Why the check missed it
+
+=bff-list-requests= compares a =readAll= rows key against the reply's own field.
+Its argument reader consumed "session," with the call's opening, so every
+argument was off by one: it compared the *payload* against the reply and never
+looked at the rows key at all. It reads the arguments correctly now, and a wrong
+key fails it — proved by putting =bond_issues= back and watching it report one
+mismatch.
+
+* The lesson
+
+An empty list from a wrong field name is the quietest fault in this codebase:
+every layer succeeds, the screen is merely blank. It has now happened twice in a
+day, to identifiers and to issues, and both times a person looking at the screen
+found it rather than a test.

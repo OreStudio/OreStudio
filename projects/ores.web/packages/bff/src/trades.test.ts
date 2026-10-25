@@ -223,6 +223,21 @@ describe('trade list route', () => {
                 result: ok,
                 links: [],
             },
+            'trading.v1.bond_instruments.list': {
+                result: ok,
+                bond_instruments: [
+                    {
+                        trade_id: TRADE,
+                        notional: '1000000.00',
+                        issue_id: 'a',
+                        identity: { trade_type_code: 'Bond' },
+                    },
+                ],
+            },
+            'trading.v1.bond_issues.list': {
+                result: ok,
+                bond_issues: [{ issue_id: 'a', security_id: 'POP09MP3R9XP5' }],
+            },
             'trading.v1.trades_versions.list': {
                 result: ok,
                 versions: [{ id: TRADE, version: 2 }],
@@ -247,9 +262,51 @@ describe('trade list route', () => {
         expect(body.booking).toMatchObject({ trade_date: '2026-01-02' });
         expect(body.links).toEqual({ from: [], to: [] });
         expect(body.history).toHaveLength(1);
+        // The fixture's trade is a Swap, which has no instrument table yet, so
+        // the page is told that rather than shown empty terms.
+        expect(body.terms).toBeNull();
+        expect(body.routed).toBe(false);
         // Both ends of the links are read, which is how one trade's links are found.
         const linkCalls = calls.filter((call) => call.subject === 'trading.v1.trade_links.list');
         expect(linkCalls).toHaveLength(2);
+    });
+
+    it("reads a bond trade's terms and names the issue they refer to", async () => {
+        const bond = { ...SUMMARIES.trade_summaries[0], instrument_type: 'Bond' };
+        const { server, sessionId } = buildTestServer({
+            [listSummaries]: { result: ok, trade_summaries: [bond], total: 1 },
+            'trading.v1.bond_instruments.list': {
+                result: ok,
+                bond_instruments: [
+                    {
+                        trade_id: TRADE,
+                        notional: '1000000.00',
+                        issue_id: 'i',
+                        identity: { trade_type_code: 'Bond' },
+                    },
+                ],
+            },
+            'trading.v1.bond_issues.list': {
+                result: ok,
+                issues: [{ issue_id: 'i', security_id: 'POP09MP3R9XP5' }],
+            },
+            'trading.v1.trade_identifiers.list': { result: ok, identifiers: [] },
+            'trading.v1.trade_party_roles.list': { result: ok, roles: [] },
+            'trading.v1.trade_bookings.list': { result: ok, trade_bookings: [] },
+            'trading.v1.trade_links.list': { result: ok, links: [] },
+            'trading.v1.trades_versions.list': { result: ok, versions: [] },
+            'refdata.v1.books.list': { result: ok, books: [] },
+            'refdata.v1.counterparties.list': { result: ok, counterparties: [] },
+            'trading.v1.trades.list': { result: ok, trades: [] },
+        });
+
+        const body = (await send(server, sessionId, `/api/trades/${TRADE}`)).json();
+
+        expect(body.routed).toBe(true);
+        expect(body.terms).toMatchObject({
+            notional: '1000000.00',
+            issue: { security_id: 'POP09MP3R9XP5' },
+        });
     });
 
     it('answers not found for a trade that does not exist', async () => {

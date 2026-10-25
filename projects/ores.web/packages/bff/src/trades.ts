@@ -23,6 +23,8 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
+import { subjects as bondIssueSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_issue_protocol';
+import { subjects as bondSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_instrument_protocol';
 import { subjects as bookingSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_booking_protocol';
 import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
 import { subjects as linkSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_link_protocol';
@@ -192,6 +194,79 @@ export function registerTradeRoutes(
 }
 
 /**
+ * The instrument tables a trade's terms can live in, by the type the read model
+ * states.
+ *
+ * A trade's terms sit in the table for its product type, so the type decides
+ * which list answers. Only the tables that exist today are named here: a type
+ * that is missing has no terms stored yet, which the page states rather than
+ * inventing.
+ */
+const INSTRUMENT_TABLES: Readonly<
+    Record<string, { readonly subject: string; readonly rows: string }>
+> = {
+    Bond: { subject: bondSubjects.list_bond_instruments_request, rows: 'bond_instruments' },
+};
+
+/**
+ * One trade's instrument terms.
+ *
+ * `routed` says the type has a table, which is a fact about the type. `refused`
+ * says a read was attempted and the service declined it, so the page can draw
+ * the rest of the trade instead of failing whole. `terms` is null when the table
+ * holds no row for the trade.
+ */
+async function readInstrument(
+    session: LiveSession,
+    instrumentType: string,
+    tradeId: string,
+): Promise<{
+    readonly routed: boolean;
+    readonly refused: boolean;
+    readonly terms: Record<string, unknown> | null;
+}> {
+    // `in` walks the prototype chain, so a type named `constructor` would read
+    // as routed.
+    if (!Object.hasOwn(INSTRUMENT_TABLES, instrumentType)) {
+        return { routed: false, refused: false, terms: null };
+    }
+    const table = INSTRUMENT_TABLES[instrumentType] as {
+        readonly subject: string;
+        readonly rows: string;
+    };
+    let rows: readonly Record<string, unknown>[];
+    try {
+        rows = await readAll(session, table.subject, table.rows, {
+            filter: { trade_id_one_of: [tradeId] },
+        });
+    } catch {
+        return { routed: true, refused: true, terms: null };
+    }
+    const terms = rows[0];
+    if (terms === undefined) {
+        return { routed: true, refused: false, terms: null };
+    }
+    // The terms name their issue by id, which a person cannot read, so the issue
+    // is read here and travels with the terms.
+    const issueId = text(terms['issue_id']);
+    let issue: Record<string, unknown> | null = null;
+    if (issueId !== '') {
+        try {
+            const issues = await readAll(
+                session,
+                bondIssueSubjects.list_bond_issues_request,
+                'issues',
+                { filter: { issue_id_one_of: [issueId] } },
+            );
+            issue = issues[0] ?? null;
+        } catch {
+            issue = null;
+        }
+    }
+    return { routed: true, refused: false, terms: { ...terms, issue } };
+}
+
+/**
  * One trade, as its own page reads it.
  *
  * Every read is narrowed to the trade: the summary by id, its identifiers, the
@@ -249,6 +324,7 @@ function registerTradePageRoute(
             identifiers,
             roles,
             booking: bookings[0] ?? null,
+            ...(await readInstrument(session, text(summary['instrument_type']), id)),
             links: { from: fromLinks, to: toLinks },
             history: versions,
         };

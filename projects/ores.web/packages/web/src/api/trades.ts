@@ -103,6 +103,12 @@ export interface TradeVersion {
 /** One trade, as its page reads it. */
 export interface TradePageRecord {
     readonly trade: TradeRow;
+    /** Whether the trade's type is routed to an instrument table at all. */
+    readonly routed: boolean;
+    /** Whether the read of those terms was refused, so the tab can say so. */
+    readonly refused: boolean;
+    /** The terms, with the issue they belong to; null when the table has no row. */
+    readonly terms: Readonly<Record<string, unknown>> | null;
     readonly identifiers: readonly TradeIdentifier[];
     readonly roles: readonly TradePartyRole[];
     readonly booking: TradeBooking | null;
@@ -137,6 +143,9 @@ const tradeRowSchema: z.ZodType<TradeRow> = z.object({
 
 const tradePageRecordSchema = z.object({
     trade: tradeRowSchema,
+    routed: z.boolean().default(false),
+    refused: z.boolean().default(false),
+    terms: z.looseObject({}).nullable().default(null),
     identifiers: z.array(
         z.looseObject({
             id: z.string().default(''),

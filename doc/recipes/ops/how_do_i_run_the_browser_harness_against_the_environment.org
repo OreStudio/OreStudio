@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: D8BD9068-113A-4324-894C-06D74D34813E
+:END:
+#+title: How do I run the browser harness against the environment?
+#+description: Run the Playwright harness in projects/ores.web/packages/harness against the started environment, signed in as a seeded Acme user, from one command.
+#+type: recipe
+#+level: cross
+#+filetags: :ops:web:harness:playwright:ux:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+The harness is the check side of the [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] cluster: it drives the running ores.web in a browser and asserts the rules of the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] by their identifiers. It lives in =projects/ores.web/packages/harness= and reads the checkout's =.env= for the web port, as =compass open-as= does.
+
+* Question
+
+How do I run the browser harness against the environment, and where do I look when a test fails?
+
+* Answer
+
+The environment must be up and the Acme tenant provisioned (see How do I ready up an environment). Then, from the web component:
+
+#+begin_src sh :results verbatim
+cd projects/ores.web
+npm run harness
+#+end_src
+
+The harness signs in as the tenant administrator with the shared Acme password, the same facts =compass open-as= holds, and runs every spec under =packages/harness/tests= against =http://localhost:$ORES_WEB_PORT/=. Set =ORES_HARNESS_URL= to drive another host. Add =--headed= through =npm run harness:headed --workspace @ores/harness= to watch the browser.
+
+A failing test leaves its screenshot, a page snapshot and a trace under =projects/ores.web/.runtime/harness/results/<test>/=, which git ignores. Open the trace with =npx playwright show-trace <trace.zip>=. The HTML report is under =.runtime/harness/report=.
+
+The browsers come from Playwright, not from the repository: =playwright install chromium= once per machine, with the global =playwright= CLI or =npx playwright=.
+
+* Script
+
+=projects/ores.web/packages/harness/playwright.config.ts= reads the port through =src/env.ts=; =src/signIn.ts= is the fixture every spec signs in with; =src/acme.ts= names the seeded people and the shared password.
+
+* Tested by
+
+Run =npm run harness= in =projects/ores.web= with the environment up; the first spec signs in, opens the currencies list, searches a code and opens its record page.
+
+* See also
+
+- [[id:B3685CBB-277D-4A17-972B-1055D91C504C][How do I open the web as an Acme user?]] — the same sign-in, by hand in Chrome.
+- [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] — the lines the harness answers and the ones a person still walks.

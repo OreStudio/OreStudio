@@ -8,7 +8,7 @@
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch: feature/rename-the-configuration-screens
-#+pr:
+#+pr: 3749
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
@@ -80,6 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3749][#3749]] | [agile] Record the rename task result |
 | [[https://github.com/OreStudio/OreStudio/pull/3727][#3727]] | [web] Rename the two configuration screens |
 
 * Review

@@ -564,6 +564,8 @@ function ProductsTab({
 }): ReactNode {
     const { t } = useTranslation();
     const [filter, setFilter] = useState('');
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [pending, setPending] = useState<string | null>(null);
     const first = [...document.products].sort((a, b) => a.position - b.position)[0];
     const [openClasses, setOpenClasses] = useState<ReadonlySet<string>>(
         () => new Set(first === undefined ? [] : [assetClassOf(vocabulary, first.typeCode)]),
@@ -666,6 +668,10 @@ function ProductsTab({
                                             type="button"
                                             title={product.typeCode}
                                             onClick={() => {
+                                                if (editingId !== null && editingId !== product.id) {
+                                                    setPending(product.id);
+                                                    return;
+                                                }
                                                 setOpenClasses((before) =>
                                                     new Set(before).add(
                                                         assetClassOf(vocabulary, product.typeCode),
@@ -711,16 +717,62 @@ function ProductsTab({
                     </section>
                 ) : (
                     <Workbench
+                        key={chosen.id}
                         document={document}
                         draft={draft}
                         vocabulary={vocabulary}
                         product={chosen}
                         mayWrite={mayWrite}
                         mode={mode}
+                        onEditingChange={(editing) =>
+                            setEditingId(editing ? chosen.id : null)
+                        }
                         onRemove={() => onRemove(chosen.id)}
                     />
                 )}
             </div>
+            {pending !== null && (
+                <Dialog
+                    title={t('pricingEngines.workbench.discardTitle')}
+                    name="pricing-engine-discard"
+                    onClose={() => setPending(null)}
+                    footer={
+                        <>
+                            <Button variant="ghost" onClick={() => setPending(null)}>
+                                {t('common.cancel')}
+                            </Button>
+                            <Button
+                                variant="danger"
+                                onClick={() => {
+                                    const next = document.products.find(
+                                        (product) => product.id === pending,
+                                    );
+                                    setPending(null);
+                                    setEditingId(null);
+                                    onSelect(pending);
+                                    if (next !== undefined) {
+                                        setOpenClasses((before) =>
+                                            new Set(before).add(
+                                                assetClassOf(vocabulary, next.typeCode),
+                                            ),
+                                        );
+                                    }
+                                }}
+                            >
+                                {t('pricingEngines.workbench.discard')}
+                            </Button>
+                        </>
+                    }
+                >
+                    <p className="text-sm">
+                        {t('pricingEngines.workbench.discardBody', {
+                            type:
+                                document.products.find((product) => product.id === editingId)
+                                    ?.typeCode ?? '',
+                        })}
+                    </p>
+                </Dialog>
+            )}
         </div>
     );
 }
@@ -733,6 +785,7 @@ function Workbench({
     product,
     mayWrite,
     mode,
+    onEditingChange,
     onRemove,
 }: {
     readonly document: PricingDocument;
@@ -741,6 +794,7 @@ function Workbench({
     readonly product: PricingProduct;
     readonly mayWrite: boolean;
     readonly mode: EditingMode;
+    readonly onEditingChange: (editing: boolean) => void;
     readonly onRemove: () => void;
 }): ReactNode {
     const { t } = useTranslation();
@@ -774,7 +828,14 @@ function Workbench({
                     </div>
                     {mayWrite && !editing && (
                         <div className="flex gap-2">
-                            <Button size="sm" icon="edit" onClick={() => setEditing(true)}>
+                            <Button
+                                size="sm"
+                                icon="edit"
+                                onClick={() => {
+                                    setEditing(true);
+                                    onEditingChange(true);
+                                }}
+                            >
                                 {t('pricingEngines.actions.edit')}
                             </Button>
                             <Button size="sm" variant="danger" icon="delete" onClick={onRemove}>
@@ -797,7 +858,10 @@ function Workbench({
                     vocabulary={vocabulary}
                     productId={product.id}
                     mode={mode}
-                    onCancel={() => setEditing(false)}
+                    onCancel={() => {
+                        setEditing(false);
+                        onEditingChange(false);
+                    }}
                     onSave={(after) => setSaving(after)}
                 />
             ) : (
@@ -847,6 +911,7 @@ function Workbench({
                     onSaved={() => {
                         setSaving(null);
                         setEditing(false);
+                        onEditingChange(false);
                     }}
                 >
                     <p className="text-sm text-ink-muted">

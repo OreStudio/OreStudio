@@ -915,7 +915,7 @@ function RebuildDialog({
                     <Button
                         variant="primary"
                         icon="calendar"
-                        disabled={!valid}
+                        disabled={!valid || rebuild.isSuccess}
                         pending={rebuild.isPending}
                         onClick={() => rebuild.mutate()}
                     >

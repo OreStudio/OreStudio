@@ -108,6 +108,8 @@ entity Screen {
     load_began_at: Timestamp
     loaded_at: Timestamp?
     refresh_gold: Boolean
+    -- The page a list shows; a record page has none.
+    page: Integer?
     -- The rows marked after a reload, and when the mark goes.
     marked_rows: Set<String>
     marks_expire_at: Timestamp?
@@ -653,4 +655,16 @@ surface RecordList {
         -- The list reads again only on RefreshPressed (ES-REFRESH-11).
 }
 
-open question "Does the list return to the first page on every Refresh after a write, or only when the sort could have moved the record? RS Paging says the first page."
+-- RS-LIST-19 (decided 2026-10-25): Refresh keeps the page the person is on,
+-- after a write as after any change. The marked rows and the strip say
+-- where the change fell. The person loses their place only when the page
+-- no longer exists, and then the list shows the last page.
+rule RefreshKeepsThePage {
+    when: RefreshPressed(person, screen)
+    requires: screen.person = person and screen.record = null
+    ensures: screen.page = screen.page
+    @guidance
+        -- A list that reads a page past the end asks the server for the
+        -- last page instead; the first page is never the answer to a
+        -- change the person made.
+}

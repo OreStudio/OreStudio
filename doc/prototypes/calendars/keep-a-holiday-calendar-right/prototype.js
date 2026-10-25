@@ -351,7 +351,7 @@ function renderList() {
               <td class="code"><span class="cell-flag">${flag(c.country_code, true)}${esc(c.code)}</span></td>
               <td>${esc(c.name)}</td>
               <td>${esc(CALENDAR_TYPES[c.calendar_type] ?? c.calendar_type)}</td>
-              <td><span class="cell-flag">${flag(c.country_code, true)}<a href="${countryHref(c.country_code)}" onclick="event.stopPropagation()">${esc(COUNTRIES[c.country_code] ?? c.country_code)}</a></span></td>
+              <td><span class="cell-flag">${flag(c.country_code, true)}<a href="${countryHref(c.country_code)}" title="Open ${esc(COUNTRIES[c.country_code] ?? c.country_code)}" onclick="event.stopPropagation()">${esc(COUNTRIES[c.country_code] ?? c.country_code)}</a></span></td>
               <td class="muted">${esc(madeOf(c))}</td>
             </tr>`).join('')}</tbody>
         </table></div>
@@ -528,14 +528,12 @@ function timeline({ record, events, fields, canRevert, gaps }) {
     for (const e of shown) kinds[e.kind] = (kinds[e.kind] ?? 0) + 1;
     const chart = `<div class="chart card">
         <div class="bars" style="--max:${max}">${days.map((d) => { const k = counts[d]; const total = Object.values(k).reduce((a, b) => a + b, 0); return `<div class="bar" title="${d}: ${total} ${total === 1 ? 'entry' : 'entries'}" style="--n:${total}">${Object.entries(k).map(([kind, n]) => `<span style="flex:${n};background:${KIND_COLOUR[kind]}" title="${kind} ${n}"></span>`).join('')}</div>`; }).join('')}</div>
-        <div class="chart-foot"><span>${days.length ? stamp(shown[shown.length - 1].at) : ''}</span><span>${days.length ? stamp(shown[0].at) : ''}</span></div>
+        <div class="chart-foot"><span>${days.length ? stamp(shown[shown.length - 1].at) : ''}</span><span>Times in UTC</span><span>${days.length ? stamp(shown[0].at) : ''}</span></div>
         <div class="legend">${Object.entries(kinds).map(([k, n]) => `<span><i style="background:${KIND_COLOUR[k]}"></i>${k} ${n}</span>`).join('')}</div>
       </div>`;
 
-    // The rail.
     let day = '';
-    const rows = shown.map((e, i) => {
-        const before = events.find((x) => x.version === e.version - 1);
+    const rows = shown.map((e) => {
         const current = e === newest;
         const divider = dayOf(e.at) !== day ? `<li class="day">${longDay(dayOf(e.at))}</li>` : '';
         day = dayOf(e.at);
@@ -568,6 +566,7 @@ function timeline({ record, events, fields, canRevert, gaps }) {
     return `<div class="timeline">
       <div class="tl-bar"><a class="btn ${hide ? '' : 'primary'}" href="${href({ sys: hide ? '' : 'hide' })}">${hide ? 'Show system activity' : 'Hide system activity'}</a></div>
       ${chart}
+      ${hide && newest.service ? `<p class="small muted">The current version, v${newest.version}, is system activity and is hidden.</p>` : ''}
       <ol class="entries">${rows || '<li class="small muted">Every entry is system activity, and it is hidden.</li>'}</ol>
       ${gapBox}</div>`;
 }
@@ -700,7 +699,7 @@ function dialogs(c) {
             const name = kind === 'rules' ? ruleWords(row) : kind === 'exceptions' ? row.exception_date : row.name;
             const events = PART_HISTORY[row.id] ?? [{ version: 1, kind: 'Created', at: '2026-10-02T11:20:30Z', by: 'adrian.vance', service: false, reason: 'system.new_record', note: '', changes: [] }];
             const fields = Object.entries(row).filter(([k]) => !['id', 'version'].includes(k)).map(([k, v]) => [k.replace(/_/g, ' '), v === null || v === '' ? '—' : String(v)]);
-            return dialogShell({ title: `History of ${esc(name)}`, body: timeline({ record: `${p.title} ${row.id}`, events, fields, canRevert: true, gaps: [] }), foot: `<a class="btn" href="${href({ dialog: '', part: '', sys: '' })}">Close</a>` });
+            return dialogShell({ title: `History of ${esc(name)}`, body: timeline({ record: `${p.title} ${row.id}`, events, fields, canRevert: admin, gaps: [] }), foot: `<a class="btn" href="${href({ dialog: '', part: '', sys: '' })}">Close</a>` });
         }
         case 'revert': return dialogShell({ narrow: true, title: `Revert to v${esc(q.get('v'))}?`, body: `<p class="muted small">A new version is written with the values of v${esc(q.get('v'))}. Nothing is deleted.</p><div class="form-grid">${reasonFields(false)}</div>`, foot: `${cancelLink()}<a class="btn primary" href="${href({ dialog: '', done: 'reverted', v: '' })}">${icon('revert')} Revert</a>` });
         default: layer.innerHTML = '';

@@ -1,0 +1,185 @@
+:PROPERTIES:
+:ID: C3D61F4A-C71A-4884-A35A-2F10ADCD8D44
+:END:
+#+title: Task: Grant the Trade Blotter its reads and writes
+#+description: Every code each Trade Blotter screen needs is seeded and granted to no human role, so each screen would open dark. Decide which human role owns the blotter, grant it the reads and writes the arc needs, and add the check that would have caught the gap.
+#+type: task
+#+level: s1
+#+filetags: :trade-blotter-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/grant-the-blotter-its-reads-and-writes
+#+pr: 3740
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person holding a seeded role opens every Trade Blotter screen, and every code those screens need is held by that role. The run is the proof: the list, the trade page, Book a trade, the structure page, the import and the authorisation queue each answer instead of refusing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- The matrix below is answered: for each screen, which human role holds each code it needs.
+- The chosen role holds the reads and writes, and a second role that should not (a viewer) is refused, proved by a run.
+- A check fails when a menu entry names a permission no seeded human role holds, because handler-permissions proves only that a code exists.
+
+* Plan
+
+Settle the role first, then grant the arc in one change.
+
+- Decide which human role owns the blotter. The candidates are =Trading=, which holds only =refdata::currencies:read= today, =Operations=, which works the queue, and a new role, if a blotter is not what any of them is for.
+- Grant that role every code in the matrix, leaving a role that should not reach the blotter without them.
+- Prove it by a run, because a seed that is read is not a permission that is held.
+- Add the check: a menu entry's permission must be held by at least one seeded human role, which is the guard =handler-permissions= does not provide.
+
+* The matrix
+
+Read from =iam_permissions_populate.sql= and =iam_roles_populate.sql= on 2026-10-25. Every code is seeded. The human column is what a person can hold today; a role ending in =Service= holds its component's wildcard and is not a person.
+
+| Screen or action | Code | Seeded | Held by a human role |
+|---|---|---|---|
+| The list | =trading::trade_summaries:read= | yes | none |
+| The list's identifiers | =trading::trade_identifiers:read= | yes | none |
+| The list's books | =refdata::books:read= | yes | none |
+| The list's counterparties | =refdata::counterparties:read= | yes | =Operations=, =ReportRun= |
+| The portfolio tree | =refdata::portfolios:read= | yes | =ReportRun= |
+| The trade page | =trading::trades:read= | yes | =ReportRun= |
+| The page's links tab | =trading::trade_links:read= | yes | none |
+| The page's history tab | =trading::trade_activities:read= | yes | none |
+| Amending a trade | =trading::trades:write= | yes | none |
+| Book a trade | =trading::trades:write= | yes | none |
+| The structure page | =trading::structures:read=, =trading::structure_members:read= | yes | none |
+| Grouping or restating a structure | =trading::structures:write=, =trading::structure_members:write= | yes | none |
+| Raising an authorisation request | =trading::trade_authorisation_requests:write= | yes | none |
+| The authorisation queue | =trading::trade_authorisation_requests:read=, =inbox::approval_requests:read= | yes | none |
+| Working the queue | =inbox::approval_requests:write= | yes | none |
+| The booking a trade reads | =trading::trade_bookings:read= | yes | none |
+
+No human role holds a single trading write. The only trading read a person holds is =trading::trades:read=, and only =ReportRun= holds it.
+
+* Why this is one task and not seven
+
+The gap is not per screen. The trade list is the first screen to read trading reference data, and it found that the codes were seeded for the handlers and granted to nobody. Every screen the story goes on to build reads the same component, so granting screen by screen would have each task discover the same wall and invent its own role. This task settles the role once and grants the arc.
+
+* Proof
+
+The proof is a run, not a reading of the seed: a person in the chosen role opens the list, the page, Book a trade, the structure page, the import and the queue, and each answers. A second person in a role that should not, such as =Viewer=, is refused on each.
+
+
+* The split
+
+Judgement call, taken so the screens can open; a later task may move a code from one role to another without touching the screens.
+
+| Role | Reads | Writes | Why |
+|---|---|---|---|
+| =Trading= | the whole blotter: the summary, identifiers, links, activities, trades, bookings, structures, structure members, and refdata books, portfolios and counterparties | =trading::trades:write=, =structures:write=, =structure_members:write=, =trade_authorisation_requests:write= | A desk role fronts the book: it sees the blotter and owns booking, amending, grouping and the request that follows a write |
+| =Operations= | the whole blotter | =trade_authorisation_requests:read/write= and =inbox::approval_requests:read/write= | It works the queue a trade raises, and reads the blotter it is asked about |
+| =ReportRun= | the blotter's parts it assembles a report from, plus books | none | A run reads and never writes |
+| =Viewer= | the whole blotter | none | Read-only, and the negative case the proof needs |
+
+=Member= is deliberately left out: a blotter is a desk screen, not one every party member holds.
+
+Two choices worth naming. =Operations= does not hold =trades:write=, because working a queue is not amending a trade. =ReportRun= holds no write at all, so a report can never change the book it reads.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3740][#3740]] | [agile] Track the blotter's permissioning as one task |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The split is written into =iam_roles_populate.sql=. Every code in the matrix is now held by at least one human role, =Trading= and =Operations= hold the arc's reads, and only =Trading= holds the trade and structure writes.
+
+What is not proved: the run. No database and no build tree exist in this worktree, so the positive and negative cases are stated and not exercised, and the gate ran without its build, database and ctest phases. That proof is the next thing this task owes.
+
+* The proof, first attempt
+
+The build is green and the database was recreated and populated. The count of trading grants per role, read from that database:
+
+| Role | Trading grants | Inbox grants |
+|---|---|---|
+| =Trading= | 0 | 0 |
+| =Operations= | 0 | 0 |
+| =Viewer= | 0 | 0 |
+| =ReportRun= | 2 | 0 |
+| =Member= | 0 | 0 |
+
+The two on =ReportRun= were already there. So the block added to =iam_roles_populate.sql= did not take effect, and the task is not done.
+
+It is not the function. Calling =ores_iam_role_permissions_assign_fn= by hand for =Trading= and =trading::trade_summaries:read= creates the row at once and the count becomes 1. So the fault is in the seed file: the block's position, a guard around it, or a later statement that clears it.
+
+The next step is to read the file around the block and the populate that includes it, and then the same count is the proof.
+
+* The fix, and what the proof now says
+
+The block was pasted after the =END $$;= that closes the PL/pgSQL body the whole file's grants live in. =PERFORM= is PL/pgSQL, not SQL, so at top level it is a syntax error, and psql carried on past it: the populate exited 0 with the grants silently absent. The block now sits inside that body, before its =END $$;=.
+
+Applied to the running database, the count is:
+
+| Role | Trading grants | Inbox grants |
+|---|---|---|
+| =Trading= | 13 | 0 |
+| =Operations= | 10 | 2 |
+| =ReportRun= | 12 | 0 |
+| =Viewer= | 8 | 0 |
+| =Member= | 0 | 0 |
+
+=Member= holds none of them, which is the split as intended, and =Operations= holds the two approval-request codes.
+
+* A second defect the proof found
+
+=ores_iam_role_permissions_assign_fn= is **not idempotent**. The count showed =trading::trade_summaries:read= twice for =Trading=, because I had called it by hand while diagnosing and the file then called it again. The file's own header says it is idempotent, so a populate run twice duplicates every assignment it makes. This is not caused by the blotter block — every grant in the file has it — and it wants its own fix: the function should upsert on (role, permission) the way the role upsert does on its name.
+
+* What is still owed
+
+The seed is proved: the rows are in the database and =Member= has none. Not yet proved is the runtime refusal and acceptance: sign in as a =Trading= user, call the list and see rows; sign in as a =Member= and see a refusal. That is the last step before this task is done.

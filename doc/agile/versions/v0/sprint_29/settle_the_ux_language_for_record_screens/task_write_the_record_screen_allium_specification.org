@@ -26,11 +26,11 @@ The behaviour rules of a record screen are a specification a tool can validate a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2][Settle the UX language for record screens]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -41,9 +41,15 @@ The behaviour rules of a record screen are a specification a tool can validate a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Take the behaviour rules the audit named: the stale rule, the edit in progress,
+the stale write, the reasons that follow the change, create, delete, revert,
+links against parts and the access rule. Model the domain they move: the
+record and its versions, the change news, the screen and the dialog with its
+state machine. Write one rule or invariant per behaviour, each naming the
+identifiers it encodes, in the house style of the existing specs. The look
+stays out. The Allium CLI is not installed, so the test obligations are derived
+by hand from the test generation taxonomy, one row per construct, as evidence
+beside the task for the harness story.
 
 * Measurements
 
@@ -57,7 +63,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Rules, invariants and surfaces in the specification | 21, 8, 2 | =grep -c '^rule \|^invariant \|^surface ' doc/llm/specs/record-screen-behaviour.allium= | 37c854bdbd |
+| Distinct rule identifiers the specification cites | 41 | =grep -o '\(RS\|ES\)-[A-Z]*-[0-9][0-9]'= on the spec, unique | 37c854bdbd |
+| Test obligations derived | 39 | the table in =evidence/record_screen_test_obligations.org= | 37c854bdbd |
+| Obligations that need a second browser or account, a clock, or the owner | 13, 2, 1 | the Seam column of that table | 37c854bdbd |
 
 * Notes
 
@@ -82,6 +91,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the spec against the language reference by eye, because the CLI is absent | doc/llm/specs | Accept | A first draft used functions the language lacks and a vacuous invariant; both replaced before commit |
 
 * Result
+
+=doc/llm/specs/record-screen-behaviour.allium= states the record screen's
+behaviour in 21 rules, 8 invariants and 2 surfaces,
+citing 41 rule identifiers. The Allium CLI is not installed in this
+environment, so the specification is unvalidated by a tool and its test
+obligations, 39 of them, are derived by hand in
+=evidence/record_screen_test_obligations.org= for the harness story. Thirteen
+need a second browser or account, two a controllable clock, and one is an open
+question for the owner: whether Refresh after a write returns to the first
+page always or only when the sort could move the record.

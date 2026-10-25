@@ -26,11 +26,11 @@ Every market data document states the new world, or the target it is converging 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -84,3 +84,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The market data documents now state the service's world, or name the target
+where the app has not moved yet.
+
+- The menu names the four service areas. The Bindings card is gone, replaced by
+  subscriptions and routes. Synthetic sits in the Simulator area.
+- The feed-tree note and row say demand starts a generator, and Start and Stop
+  are the operator test controls.
+- The feed standard's trail adds the Simulator level.
+- The FX and IR journeys no longer say a saved feed is produced only when a
+  person starts it. Demand starts it; the operator test is a separate act.
+- The synthetic screens page says demand starts a generator before it describes
+  the start and stop cascade.
+- The IR authoring note no longer calls the source a binding.
+
+Open, with the reason:
+
+- The app routes still put Synthetic directly under Market data. The menu now
+  names the Simulator area, so a route change is part of the screens task.
+- The manage-synthetic-collections prototype and the shell operation surface
+  still describe auto-start as the run trigger. The shell still offers the
+  test controls, so those pages need the demand note, not a rewrite.
+- The synthetic market simulator prototype note still summarises the window as
+  starting and stopping. Its cascade is the test control, as the screens page
+  now says.
+

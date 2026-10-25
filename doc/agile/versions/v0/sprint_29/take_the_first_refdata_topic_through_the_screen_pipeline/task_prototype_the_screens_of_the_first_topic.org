@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :take_the_first_refdata_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/prototype-the-screens-of-the-first-topic
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The screens are agreed on paper. Each prototype follows the settled standard, so
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The prototype is drawn and its note written; the PR is raised. |
+| Waiting on   | The owner's sign off of the prototype before the build starts. |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -41,9 +41,18 @@ The screens are agreed on paper. Each prototype follows the settled standard, so
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The web already draws a calendars screen, so the prototype is not a blank
+sheet: it draws the same screens where the standard settles them, moves what
+the owner decided (Rebuild into the header, as an operation dialog), adds what
+the baseline found missing (Refresh with its load time on the page, the dialog
+titles and load times, the Read only mark), and defines the one view no rule
+covers, the Business days. Plain HTML, CSS and JavaScript under
+=doc/prototypes/calendars/=, as the prototypes page requires, with the query
+string as the state so every screen, dialog and reader view has an address a
+reviewer can open. The data is the Acme seed for the 61 QuantLib calendars and
+three invented user calendars, with the rule engine in the page so the
+Business days view is computed and not drawn by hand. The design note cites
+the rule identifiers each screen follows, so the review is about the topic.
 
 * Measurements
 
@@ -57,7 +66,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Screens and states with an address | 1 list, 3 calendar shapes, 6 tabs, 10 dialogs, the guard, the reader | the states table on the design note | this branch |
+| Rule identifiers the note cites | 43 | =grep -o '[RE]S-[A-Z]*-[0-9]*' keep-a-holiday-calendar-right.org= with =sort -u= and =wc -l= | this branch |
+| Script errors across 16 states | 0 | a Playwright pass over the states, =pageerror= and console errors collected | this branch |
+| Prototype inventory | 89 prototypes in 21 groups, all listed | =python3 build/scripts/check_prototype_inventory.py= | this branch |
 
 * Notes
 
@@ -65,7 +77,8 @@ Two placements the journey judgement left open for this task, on the journey
 page under /Each step, and the shape that serves it/:
 
 - /Rebuild business days/ stands on the Business days tab today; RS-PAGE-03
-  puts a kind's own actions in the header, beside /Derive a calendar/.
+  puts a kind's own actions in the header, beside /Derive a calendar/. The
+  owner decided on 2026-10-25: it moves to the header.
 - The Business days tab is a derived, read-only view that no rule of the
   Record screen standard draws yet; the prototype defines it and the standard
   gains the rule.
@@ -91,6 +104,19 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: docs class | doc/prototypes/calendars | Accept | The states were rendered to screenshots and read against the checklist's list, page, edit, parts, history and words sections; the business day count double-counted an opened day and was corrected |
 
 * Result
+
+The prototype Keep a holiday calendar right, under
+=doc/prototypes/calendars/keep-a-holiday-calendar-right/=, draws the list, a
+calendar of each shape with the tabs its shape allows, Derive a calendar and
+Rebuild business days as own actions in the header with the rebuild as an
+operation dialog, every record, remove, revert and history dialog with its
+title and load time, the reader's view, and the Business days view with its
+year, its comparison, its producers and its empty state. The design note cites
+the rule identifiers each screen follows, defines the derived view rule for
+the standard to take, names the operation dialog as a fourth shared shape for
+RS-WRITE-31, and says what is fake. The group page and the top prototypes page
+list it; the journey's Prototype section links it. The owner's sign off is the
+gate before the build.

@@ -26,10 +26,10 @@ The topic is understood from the person's goal, not from the Qt dialog. Each jou
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] |
-| Now          | The journey is judged and the PR is raised. |
-| Waiting on   | The owner's sign off of the journey before the prototype starts. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
@@ -109,5 +109,6 @@ stays empty for calendars. The Business days tab is a derived view no rule of
 the standard draws yet; the prototype defines it and the standard gains the
 rule. Each gap in What is missing links to its capture, with an eighth added
 for the unenforced read-only calendar. The journey page gained the Prototype
-section the contract requires, pointing at the prototype task. The owner's
-sign off of the journey is the gate before the prototype starts.
+section the contract requires, pointing at the prototype task. The owner signed the
+judgement off on 2026-10-25 and decided that Rebuild business days moves to the
+header; the prototype task carries both.

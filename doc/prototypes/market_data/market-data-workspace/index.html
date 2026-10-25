@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Market data workspace prototype — Market data</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}.small{font-size:.8rem}
+.wrap{max-width:1280px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.nav{display:flex;gap:2px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.nav button{background:none;border:0;border-bottom:2px solid transparent;padding:8px 14px;color:var(--ink-dim)}
+.nav button:hover{color:var(--ink)}.nav button.on{color:var(--ink);border-bottom-color:var(--accent)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px;align-content:start}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.tree{font-size:.88rem;max-height:76vh;overflow:auto}
+.node{display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:5px;cursor:pointer;white-space:nowrap;color:var(--ink-dim)}
+.node:hover{background:var(--panel-2)}.node.sel{background:#1d2633;outline:1px solid #2b4466;color:var(--ink)}
+.node .ico{width:16px;text-align:center;flex:none;color:var(--ink-faint)}
+.node .leaf{color:var(--ink);font-family:var(--mono);font-size:.8rem}
+.node .sub{color:var(--ink-faint);font-size:.72rem}
+.split{display:grid;grid-template-columns:300px 1fr;gap:14px;align-items:start}
+@media(max-width:960px){.split{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;white-space:nowrap}
+td.num,th.num{text-align:right;font-family:var(--mono)}
+tr:hover td{background:#1f1f24}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim);white-space:nowrap}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}.tag.plan{border-style:dashed;color:var(--ink-faint)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 12px;color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619;font-size:.86rem}
+.alert{border:1px solid #4a3a17;border-radius:var(--radius);padding:10px 12px;background:#221c10;color:var(--warn);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.alert span{flex:1;min-width:260px}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:4px 12px;font-size:.86rem}
+.kv dt{color:var(--ink-faint)}.kv dd{margin:0;color:var(--ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:.74rem;color:var(--ink-dim)}
+.card{border:1px solid var(--line);border-radius:6px;background:var(--panel-2);padding:8px 10px;display:grid;gap:4px}
+.card .hd{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.card .nm{font-family:var(--mono);font-size:.82rem;color:var(--ink)}
+.card .ft{display:flex;justify-content:space-between;font-size:.72rem;color:var(--ink-faint)}
+.field{display:grid;gap:4px;min-width:140px}.field label{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field input,.field select{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px;color:var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.bars{display:flex;align-items:flex-end;gap:3px;height:40px}
+.bars i{width:9px;border-radius:2px;background:#2f5b86}.bars i.on{background:var(--accent)}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The overall market data screen set after demand replaced start and stop.
+
+  The tree stays. A feed is still a record with all of its properties: the
+  stochastic process and its parameters, the arrival process, the tick clock,
+  the vintage, the GMM components and the collections it belongs to. What
+  changes is that a feed is never started or stopped; the demand of the parties
+  drives it.
+
+  Screens (?screen=): workspace (the tree and a feed's properties), editor (the
+  feed's process and parameters), sources (the operator's board), subscriptions
+  (party rights and routes), history (one series read over time).
+-->
+
+<div class="proto-note" id="note">Prototype · mock data · no service</div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const screen = params.get('screen') || 'workspace';
+const feedName = params.get('feed') || 'fx.EUR-USD';
+const partyCode = params.get('party') || 'ACME';
+
+const FEEDS = [
+  {name:'fx.EUR-USD', provider:'bloomberg', asset:'FX spot', kind:'simulated', offered:true, series:'oresmd://fx/EUR-USD?type=series',
+   process:'GMM', params:[['components','3'],['gmm_initial_price','1.0812'],['ticks_per_hour','120']],
+   arrival:'hawkes', branching:0.6, decay:12, sensitivity:1.2, tickClock:120,
+   vintageSource:'synthetic', vintageDate:'2026-10-25', components:'3 GMM components',
+   collections:'ACME FX collection, Demo FX collection', demand:['ACME','ACME UK','ACME SG'], state:'serving', ticks:120, last:0.4},
+  {name:'fx.GBP-USD', provider:'bloomberg', asset:'FX spot', kind:'simulated', offered:true, series:'oresmd://fx/GBP-USD?type=series',
+   process:'GMM', params:[['components','2'],['gmm_initial_price','1.2710'],['ticks_per_hour','120']],
+   arrival:'periodic', branching:0, decay:1, sensitivity:1, tickClock:120,
+   vintageSource:'synthetic', vintageDate:'2026-10-25', components:'2 GMM components',
+   collections:'Demo FX collection', demand:['ACME UK'], state:'serving', ticks:84, last:0.6},
+  {name:'ir.USD', provider:'bloomberg', asset:'IR curve', kind:'simulated', offered:true, series:'oresmd://ir/USD?type=series',
+   process:'Hull-White', params:[['a','0.03'],['sigma','0.01'],['tenors','1Y .. 30Y'],['ticks_per_hour','60']],
+   arrival:'periodic', branching:0, decay:1, sensitivity:1, tickClock:60,
+   vintageSource:'synthetic', vintageDate:'2026-10-25', components:'—',
+   collections:'ACME IR collection', demand:['ACME','ACME US'], state:'serving', ticks:60, last:0.3},
+  {name:'ir.EUR', provider:'lseg', asset:'IR curve', kind:'simulated', offered:false, series:'oresmd://ir/EUR?type=series',
+   process:'Vasicek', params:[['a','0.05'],['sigma','0.008'],['tenors','3M .. 30Y'],['ticks_per_hour','60']],
+   arrival:'periodic', branching:0, decay:1, sensitivity:1, tickClock:60,
+   vintageSource:'synthetic', vintageDate:'2026-10-24', components:'—',
+   collections:'—', demand:[], state:'ready', ticks:0, last:null},
+  {name:'ir.USD (replay)', provider:'ore', asset:'IR curve', kind:'replay', offered:true, series:'oresmd://ir/USD?type=replay',
+   process:'—', params:[['file','acme/2026-10-24/ore.xml']],
+   arrival:'—', branching:0, decay:0, sensitivity:0, tickClock:0,
+   vintageSource:'ore import', vintageDate:'2026-10-24', components:'—',
+   collections:'Replay collection', demand:['ACME UK','ACME US'], state:'stale', ticks:0, last:3600}
+];
+
+const SOURCES = [
+  {name:'bloomberg-a', provider:'bloomberg', kind:'simulated', adapter:'serving', routes:5, demanded:26, accepted:26, rejected:0, ticks:298, last:0.4},
+  {name:'lseg-a', provider:'lseg', kind:'simulated', adapter:'ready', routes:2, demanded:0, accepted:0, rejected:0, ticks:0, last:null},
+  {name:'ore-derived', provider:'ore', kind:'derived', adapter:'serving', routes:3, demanded:12, accepted:12, rejected:0, ticks:0, last:120},
+  {name:'ore-import', provider:'ore', kind:'replay', adapter:'stale', routes:2, demanded:4, accepted:0, rejected:4, ticks:0, last:3600}
+];
+
+const PARTIES = [
+  {code:'ACME', name:'Acme Corporation Plc', rights:{bloomberg:['display','non_display'], ore:['display','non_display','derived']}, routes:2, ticks:120},
+  {code:'ACME UK', name:'Acme Corporation UK plc', rights:{bloomberg:['display','non_display'], lseg:['display']}, routes:2, ticks:84},
+  {code:'ACME US', name:'Acme Corporation US Inc', rights:{bloomberg:['display'], ore:['display','derived']}, routes:2, ticks:60},
+  {code:'ACME HK', name:'Acme Corporation HK Ltd', rights:{bloomberg:['non_display'], lseg:['display','non_display']}, routes:2, ticks:34},
+  {code:'ACME SG', name:'Acme Corporation SG Pte', rights:{bloomberg:['display','non_display']}, routes:1, ticks:12}
+];
+
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function feed(name){ return FEEDS.filter(function(f){ return f.name === name; })[0] || FEEDS[0]; }
+function ageLabel(seconds){
+  if (seconds === null) return 'never';
+  if (seconds < 60) return seconds.toFixed(1) + ' s';
+  if (seconds < 3600) return Math.round(seconds / 60) + ' min';
+  return Math.round(seconds / 3600) + ' h';
+}
+function stateTag(f){
+  if (f.state === 'stale') return '<span class="tag bad">stale</span>';
+  if (f.state === 'ready' && f.demand.length === 0) return '<span class="tag plan">no demand</span>';
+  if (f.state === 'ready') return '<span class="tag plan">ready</span>';
+  return '<span class="tag ok">serving</span>';
+}
+function nav(){
+  const screens = [['workspace','Workspace'],['editor','Feed editor'],['sources','Sources'],['subscriptions','Subscriptions'],['history','History']];
+  return '<div class="top"><h1>ORE Studio — Market data</h1><span class="tag">prototype</span>' +
+    '<a style="margin-left:auto" href="../../../knowledge/journeys/market_data/market_data.html">the journeys &rarr;</a></div>' +
+    '<div class="nav">' + screens.map(function(s){
+      return '<button data-screen="' + s[0] + '" class="' + (s[0] === screen ? 'on' : '') + '">' + s[1] + '</button>';
+    }).join('') + '</div>' +
+    '<div class="notice">The tree stays the way a person manages what a feed is. The sources board is the operator\'s view of what is running. Demand connects the two: a feed is never started, the parties\' demand starts its generator. Subscriptions decide what a party may read.</div>';
+}
+
+function tree(){
+  const selected = feed(feedName);
+  const groups = {};
+  FEEDS.forEach(function(f){
+    groups[f.provider] = groups[f.provider] || {};
+    groups[f.provider][f.asset] = groups[f.provider][f.asset] || [];
+    groups[f.provider][f.asset].push(f);
+  });
+  let html = '<div class="panel"><h2>Synthetic</h2><div class="tree">';
+  Object.keys(groups).forEach(function(provider){
+    html += '<div class="node"><span class="ico">▾</span><span class="leaf">' + provider + '</span></div>';
+    Object.keys(groups[provider]).forEach(function(asset){
+      html += '<div class="node" style="padding-left:20px"><span class="ico">▾</span><span class="sub">' + asset + '</span></div>';
+      groups[provider][asset].forEach(function(f){
+        html += '<div class="node' + (f.name === selected.name ? ' sel' : '') + '" data-feed="' + esc(f.name) + '" style="padding-left:38px">' +
+          '<span class="ico">·</span><span class="leaf">' + esc(f.name) + '</span>' + stateTag(f) + '</div>';
+      });
+    });
+  });
+  html += '</div></div>';
+  html += '<div class="panel"><h2>Other</h2><div class="tree">' +
+    '<div class="node" data-screen="sources"><span class="ico">▸</span><span class="leaf">Sources</span><span class="sub">adapters and demand</span></div>' +
+    '<div class="node" data-screen="subscriptions"><span class="ico">▸</span><span class="leaf">Subscriptions</span><span class="sub">party rights and routes</span></div>' +
+    '<div class="node" data-screen="history"><span class="ico">▸</span><span class="leaf">Series</span><span class="sub">read over time</span></div>' +
+    '</div></div>';
+  return html;
+}
+
+function properties(f){
+  const paramRows = f.params.map(function(p){ return '<dt>' + esc(p[0]) + '</dt><dd class="mono">' + esc(p[1]) + '</dd>'; }).join('');
+  return '<div class="panel"><div class="top"><h2 style="border:0;padding:0">' + esc(f.name) + '</h2>' + stateTag(f) +
+    '<span style="margin-left:auto"></span><button class="btn" data-screen="editor">Edit</button></div>' +
+    '<div class="grid2">' +
+    '<div><h2>Identity</h2><dl class="kv">' +
+      '<dt>Name</dt><dd class="mono">' + esc(f.name) + '</dd>' +
+      '<dt>Provider</dt><dd>' + esc(f.provider) + ' · ' + esc(f.kind) + '</dd>' +
+      '<dt>Asset class</dt><dd>' + esc(f.asset) + '</dd>' +
+      '<dt>Series</dt><dd class="mono">' + esc(f.series) + '</dd>' +
+      '<dt>Offered</dt><dd>' + (f.offered ? 'yes' : 'no') + '</dd>' +
+    '</dl></div>' +
+    '<div><h2>Process</h2><dl class="kv">' + paramRows + '</dl></div>' +
+    '<div><h2>Arrival</h2><dl class="kv">' +
+      '<dt>Mode</dt><dd>' + esc(f.arrival) + '</dd>' +
+      '<dt>Branching ratio</dt><dd class="mono">' + f.branching + '</dd>' +
+      '<dt>Decay</dt><dd class="mono">' + f.decay + '</dd>' +
+      '<dt>Sensitivity</dt><dd class="mono">' + f.sensitivity + '</dd>' +
+    '</dl></div>' +
+    '<div><h2>Tick clock and vintage</h2><dl class="kv">' +
+      '<dt>Ticks per hour</dt><dd class="mono">' + f.tickClock + '</dd>' +
+      '<dt>Vintage source</dt><dd>' + esc(f.vintageSource) + '</dd>' +
+      '<dt>Vintage date</dt><dd class="mono">' + esc(f.vintageDate) + '</dd>' +
+    '</dl></div>' +
+    '<div><h2>Components</h2><p class="muted">' + esc(f.components) + '</p><p class="faint small">The GMM components and their weights are edited on the feed, as before.</p></div>' +
+    '<div><h2>Collections</h2><p class="muted">' + esc(f.collections) + '</p></div>' +
+    '<div><h2>Demand</h2><div class="chips">' +
+      (f.demand.length ? f.demand.map(function(p){ return '<span class="chip">' + esc(p) + '</span>'; }).join('') : '<span class="faint small">no party routes to this feed</span>') +
+    '</div><p class="faint small">Demand is computed from the subscriptions and the routes. It is not a run control.</p></div>' +
+    '<div><h2>Last tick</h2><p class="mono">' + ageLabel(f.last) + ' · ' + f.ticks + ' ticks/min</p>' +
+      '<p class="faint small">A feed that is offered with no demand writes nothing. That is the state the operator\'s board flags.</p></div>' +
+    '</div></div>';
+}
+
+function screenWorkspace(){
+  return '<div class="split">' + tree() + properties(feed(feedName)) + '</div>';
+}
+
+function screenEditor(){
+  const f = feed(feedName);
+  return '<div class="panel"><div class="top"><h2 style="border:0;padding:0">Edit ' + esc(f.name) + '</h2>' +
+    '<span class="tag plan">draft</span><span style="margin-left:auto"></span>' +
+    '<button class="btn">Cancel</button><button class="btn primary">Save and preview</button></div>' +
+    '<div class="row">' +
+      field('Provider', f.provider) + field('Asset class', f.asset) +
+      field('Series', f.series) + field('Offered', f.offered ? 'yes' : 'no') +
+    '</div>' +
+    '<h2>Process</h2>' +
+    '<div class="row">' + field('Process type', f.process) + field('Ticks per hour', f.tickClock) + '</div>' +
+    '<table><thead><tr><th>Parameter</th><th>Value</th><th></th></tr></thead><tbody>' +
+      f.params.map(function(p){ return '<tr><td class="mono">' + esc(p[0]) + '</td><td class="mono">' + esc(p[1]) + '</td><td><button class="btn">Change</button></td></tr>'; }).join('') +
+    '</tbody></table>' +
+    '<h2>Arrival process</h2>' +
+    '<div class="row">' + field('Mode', f.arrival) + field('Branching ratio', f.branching) + field('Decay', f.decay) + field('Sensitivity', f.sensitivity) + '</div>' +
+    '<h2>Preview</h2>' +
+    '<div class="panel" style="background:var(--panel-2)"><svg viewBox="0 0 640 120" width="100%" height="120" role="img" aria-label="Sample path preview">' +
+      '<polyline fill="none" stroke="#58a6ff" stroke-width="2" points="0,90 40,86 80,92 120,70 160,74 200,58 240,66 280,50 320,56 360,44 400,52 440,38 480,46 520,32 560,40 600,28 640,34"/>' +
+    '</svg><p class="faint small">The sample path the selected parameters imply. The editor reads it before a save, as the FX and IR authoring screens already do.</p></div>' +
+    '</div>';
+}
+function field(label, value){
+  return '<div class="field"><label>' + esc(label) + '</label><input value="' + esc(value) + '"></div>';
+}
+
+function screenSources(){
+  return '<div class="panel"><div class="top"><h2 style="border:0;padding:0">Sources</h2>' +
+    '<span class="faint small">The operator\'s board. Its own prototype carries the variants.</span></div>' +
+    '<table><thead><tr><th>Source</th><th>Provider</th><th>Kind</th><th>Adapter</th><th class="num">Routes</th><th class="num">Demanded</th><th class="num">Accepted</th><th class="num">Ticks / min</th><th class="num">Last tick</th></tr></thead><tbody>' +
+    SOURCES.map(function(s){
+      const tag = s.adapter === 'stale' ? '<span class="tag bad">stale</span>' : s.routes > 0 && s.demanded === 0 ? '<span class="tag warn">no demand</span>' : s.adapter === 'ready' ? '<span class="tag plan">ready</span>' : '<span class="tag ok">serving</span>';
+      return '<tr><td class="mono">' + s.name + '</td><td>' + s.provider + '</td><td>' + s.kind + '</td><td>' + tag + '</td>' +
+        '<td class="num">' + s.routes + '</td><td class="num">' + s.demanded + '</td><td class="num">' + s.accepted + (s.rejected ? ' <span style="color:var(--bad)">/' + s.rejected + '</span>' : '') + '</td>' +
+        '<td class="num">' + s.ticks + '</td><td class="num muted">' + ageLabel(s.last) + '</td></tr>';
+    }).join('') + '</tbody></table>' +
+    '<div class="notice">Nothing here starts or stops. A quiet source is a demand or mapping question, not a run control.</div></div>';
+}
+
+function screenSubscriptions(){
+  const party = PARTIES.filter(function(p){ return p.code === partyCode; })[0] || PARTIES[0];
+  return '<div class="split"><div class="panel"><h2>Parties</h2><div class="tree">' +
+    PARTIES.map(function(p){
+      return '<div class="node' + (p.code === party.code ? ' sel' : '') + '" data-party="' + p.code + '"><span class="ico">·</span><span class="leaf">' + p.code + '</span><span class="sub">' + p.ticks + '/m</span></div>';
+    }).join('') + '</div></div>' +
+    '<div style="display:grid;gap:14px">' +
+    '<div class="panel"><h2>' + esc(party.name) + ' · rights</h2><table><thead><tr><th>Provider</th><th>Rights</th></tr></thead><tbody>' +
+      Object.keys(party.rights).map(function(provider){
+        return '<tr><td>' + provider + '</td><td><span class="tag ' + (party.rights[provider].indexOf('derived') >= 0 ? 'warn' : 'ok') + '">' + party.rights[provider].join(' · ') + '</span></td></tr>';
+      }).join('') + '</tbody></table>' +
+      '<p class="faint small">The history read requires display or non-display. A derived right alone is refused; the party may compute from the data but not read it.</p></div>' +
+    '<div class="panel"><h2>Routes</h2><table><thead><tr><th>Source</th><th>Provider</th><th>State</th><th class="num">Ticks / min</th></tr></thead><tbody>' +
+      SOURCES.filter(function(s){ return party.rights[s.provider]; }).map(function(s){
+        const tag = s.adapter === 'stale' ? '<span class="tag bad">stale</span>' : s.adapter === 'ready' ? '<span class="tag plan">ready</span>' : '<span class="tag ok">serving</span>';
+        return '<tr><td class="mono">' + s.name + '</td><td>' + s.provider + '</td><td>' + tag + '</td><td class="num">' + Math.round(s.ticks / 2) + '</td></tr>';
+      }).join('') + '</tbody></table>' +
+      '<p class="faint small">A route names the source that serves the party for one provider. A subscription never names a source.</p></div>' +
+    '</div></div>';
+}
+
+function screenHistory(){
+  const f = feed(feedName);
+  return '<div class="panel"><div class="top"><h2 style="border:0;padding:0">' + esc(f.series) + '</h2>' +
+    '<span class="tag ok">readable</span><span style="margin-left:auto"></span>' +
+    '<button class="btn">1 h</button><button class="btn primary">1 d</button><button class="btn">1 w</button></div>' +
+    '<div class="rows" style="display:flex;gap:10px;flex-wrap:wrap">' +
+      '<div class="field"><label>Coordinates</label><input value="all"></div>' +
+      '<div class="field"><label>Party</label><input value="' + partyCode + '"></div>' +
+    '</div>' +
+    '<div class="panel" style="background:var(--panel-2)"><svg viewBox="0 0 900 220" width="100%" height="220" role="img" aria-label="Series over one day">' +
+      '<polyline fill="none" stroke="#58a6ff" stroke-width="2" points="0,150 60,142 120,148 180,120 240,128 300,104 360,116 420,96 480,108 540,86 600,98 660,80 720,92 780,70 840,82 900,64"/>' +
+      '<line x1="0" y1="200" x2="900" y2="200" stroke="#30363d"/></svg>' +
+    '<p class="faint small">The history is one call per series and span. The ticks are shared; the party reads them through its subscription.</p></div>' +
+    '<div class="notice">The read is refused when the party holds no subscription for the provider, or holds only a derived right. The refusal names the party and the provider.</div></div>';
+}
+
+function bar(){
+  return '<span class="label faint">screen</span>' +
+    [['workspace','workspace'],['editor','editor'],['sources','sources'],['subscriptions','subscriptions'],['history','history']].map(function(s){
+      return '<button data-screen="' + s[0] + '" class="' + (s[0] === screen ? 'on' : '') + '">' + s[1] + '</button>';
+    }).join('');
+}
+
+function render(){
+  document.getElementById('note').textContent = 'Prototype · mock data · no service · screen ' + screen;
+  const body = screen === 'editor' ? screenEditor() : screen === 'sources' ? screenSources() : screen === 'subscriptions' ? screenSubscriptions() : screen === 'history' ? screenHistory() : screenWorkspace();
+  document.getElementById('app').innerHTML = nav() + body;
+  document.getElementById('bar').innerHTML = bar();
+  Array.prototype.forEach.call(document.querySelectorAll('[data-screen]'), function(b){
+    b.addEventListener('click', function(e){ if (e.target.tagName === 'BUTTON') go({screen: b.dataset.screen}); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-feed]'), function(b){
+    b.addEventListener('click', function(){ go({feed: b.dataset.feed}); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-party]'), function(b){
+    b.addEventListener('click', function(){ go({party: b.dataset.party}); });
+  });
+}
+function go(changes){
+  const next = new URLSearchParams(location.search);
+  Object.keys(changes).forEach(function(k){ next.set(k, changes[k]); });
+  location.search = next.toString();
+}
+
+render();
+</script>
+</body>
+</html>

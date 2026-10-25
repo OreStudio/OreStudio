@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 0B6E7A2C-4F3D-4C98-9E41-2A7B5D8C1F63
+:END:
+#+title: Market data workspace prototype
+#+description: The overall market data screen set after demand replaced start and stop: the synthetic tree kept, every feed's properties kept, and the operator's sources board, the party's subscriptions and the series history beside it.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+| Item          | Where                                          |
+|---------------+------------------------------------------------|
+| Prototype     | [[file:market-data-workspace/][the prototype]] |
+| Gemini review | none                                           |
+| Group         | [[file:index.org][Market data prototypes]]         |
+
+* Summary
+
+The prototype answers one question: what is the market data screen set now
+that a feed is never started or stopped? The answer keeps the tree and the
+feed's full property panel, because that is where a person manages what a feed
+is. It separates the operator's sources board, the party's subscriptions and
+the series history into their own screens, reached from the same tree.
+
+The tree is the navigation. A feed is still a record with its stochastic
+process and parameters, its arrival process, its tick clock, its vintage, its
+GMM components and its collections. What is gone is the run control. Demand is
+computed from the subscriptions and the routes, and the demand is what starts
+the generator.
+
+* Detail
+
+** The question
+
+The old screen was a synthetic tree with a feed roster and a start and a stop.
+It showed every feed's properties, including the process parameters, because a
+person tuned them there. The first attempt at the new world replaced it with a
+sources coverage board. That board answers the operator's question, not the
+feed author's, and on its own it loses most of what a person could manage.
+
+** The screens
+
+Reached from one navigation, =?screen=.
+
+- *Workspace.* The default. The synthetic tree on the left: provider, then
+  asset class, then feed. A feed's panel on the right holds everything the old
+  screen held: name, provider, kind, series URI, the process type and its
+  parameters, the arrival process and its three fields, the tick clock, the
+  vintage source and date, the GMM components, the collections, the parties in
+  demand, and the last tick. The Edit button opens the editor.
+- *Feed editor.* The process type, its parameter rows, the arrival fields and a
+  sample-path preview. This is the same authoring the old FX and IR screens
+  did; only the frame is new.
+- *Sources.* The operator's board, kept short because it has its own prototype
+  under Operations. Adapter state, routes, demand, accepted and rejected ids,
+  ticks and the last tick.
+- *Subscriptions.* The party's rights by provider, and the sources it routes to.
+  This is where the party administrator works, not the operator.
+- *History.* One series over a span, with the party and the coordinates. The
+  read is refused without display or non-display.
+
+** What is kept
+
+Every property the old feed screens showed. A feed that offered a stochastic
+process is still edited as a process with parameters. The GMM components and
+the collections are still rows on the feed. The tree still groups the feeds by
+provider and asset class, so a person who knew where a feed lived finds it
+where it was.
+
+** What changed
+
+- The run control is gone. A feed's state is =serving=, =ready= or =stale=, and
+  =no demand= is the state that matters: offered, routed, and demanded nothing.
+- The parties' demand is on the feed, read-only. It is a consequence of the
+  subscriptions and the routes, not a switch.
+- The operator's board is a separate screen. A quiet source is a demand or
+  mapping question there, not a start button here.
+
+** States
+
+=screen= picks the screen. =feed= picks the tree leaf shown in the workspace,
+the editor and the history. =party= picks the party on the subscriptions screen.
+The mock data covers serving, ready, no demand and stale, so every screen can
+be read against the failure it exists for.
+
+** What is fake
+
+All data is mock. There is no service, no session and no build step. The
+numbers follow the live shape measured on the provisioned tenant.
+
+** Where the code lives
+
+[[file:market-data-workspace/index.html][The prototype]] is one plain HTML file with its CSS and JavaScript embedded.
+The site publishes it as it stands.
+
+** Verdict
+
+Awaiting sign-off. My recommendation is this set: the workspace with the tree
+and the full feed panel is the home, the editor is the same panel in edit mode,
+and sources, subscriptions and history are separate screens reached from the
+tree. The old [[file:browse-the-feed-tree.org][Browse the feed tree]] prototype
+stays as the record of the screen this replaces.

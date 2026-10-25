@@ -58,6 +58,7 @@ Read from =iam_permissions_populate.sql= and =iam_roles_populate.sql= on 2026-10
 | The list's identifiers | =trading::trade_identifiers:read= | yes | none |
 | The list's books | =refdata::books:read= | yes | none |
 | The list's counterparties | =refdata::counterparties:read= | yes | =Operations=, =ReportRun= |
+| The portfolio tree | =refdata::portfolios:read= | yes | =ReportRun= |
 | The trade page | =trading::trades:read= | yes | =ReportRun= |
 | The page's links tab | =trading::trade_links:read= | yes | none |
 | The page's history tab | =trading::trade_activities:read= | yes | none |

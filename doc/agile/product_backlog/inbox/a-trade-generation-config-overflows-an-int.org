@@ -61,3 +61,9 @@ A generated write struct whose members lack default initialisers turns an omissi
 * See also
 
 -
+
+* The first attempt to prove the fix
+
+The database was recreated clean and ACME provisioned again on the fixed binaries. The run reached staff loading — 25 accounts exist — and then the *shell's own session expired* while it polled the workflow, so the script aborted after five failed polls. What the run left behind: 25 accounts, no trade generation configs, no trades, and no rows at all in =ores_workflow_workflow_steps_tbl=, so the run's fate cannot be read from the record.
+
+So the fix is compile-verified and not yet runtime-verified. The next attempt should avoid the expiry — run the =generate_trades= step on its own rather than the whole bootstrap, or give the shell a session long enough to outlast the poll.

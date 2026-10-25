@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: 9F3C2A41-6B7E-4C1D-8E52-3A9D4B7C1E60
+:END:
+#+title: The Trades route sends a request the service refuses
+#+description: GET /api/trades answers 502 because the trading service refuses trade_summaries.list, while the shell's own list of the same read model answers ok.
+#+type: capture
+#+level: cross
+#+filetags: :web:bff:trading:trade_summaries:bug:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+* Where the Trades screen's 502 stands
+
+Reproduced without a browser on 2026-10-25, against the running BFF:
+
+  GET /api/trades?offset=0&limit=25&search=&sort=trade_date&descending=true&status=&type=
+  -> 502 {"code":"upstream-unavailable","message":"The server refused the request (bad_request)."}
+
+That is =refusal()= in =bff/src/refdata-calls.ts= mapping an upstream =invalid= outcome. So the trading service refused =trading.v1.trade_summaries.list=, and the BFF's own query schema is not at fault: a bad query parameter would have been a 400 from the BFF itself.
+
+The shell is the control: =trade_summaries list= as a Trading account answers =ok= with the same service. So the difference is the request the route builds, not the read model, the permission or the data. The route always sends an =order= and a filter with every member present and null; the shell sends a minimal request.
+
+The next probe is to diff those two requests — send =filter: null= with no order, then add the order alone, then the filter alone, and see which one the service refuses. The likeliest candidate is the fully-populated filter record, since a member typed =std::optional<std::optional<...>>= may not accept a bare JSON null the way the encoder writes it.
+
+Nothing about the features is in doubt: the 160 trades, the configs and the permissions are all proved through the shell. This is one bad request shape in the BFF route.

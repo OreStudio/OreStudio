@@ -21,6 +21,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdint>
 #include <cmath>
 #include <optional>
 #include <random>
@@ -63,14 +64,22 @@ public:
      * @param calm_rate the rate at which an active market turns calm, per second.
      * @param active_multiplier how much the state lifts a baseline while active.
      * @param seed the random seed, so a run reproduces.
+     *
+     * The calm multiplier is not a parameter. It follows from the other three so
+     * that the long-run mean of the factor is exactly one: a busier market must
+     * not quietly raise every configured mean rate, it must only redistribute
+     * that rate in time. The three therefore have to allow it — an active
+     * multiplier at or above the reciprocal of the active share leaves no room
+     * for a positive calm one, and is refused.
      */
     market_regime(double wake_rate = 1.0 / 600.0,
                   double calm_rate = 1.0 / 300.0,
-                  double active_multiplier = 3.0,
+                  double active_multiplier = 2.0,
                   std::uint32_t seed = 42)
         : wake_rate_(wake_rate)
         , calm_rate_(calm_rate)
         , active_multiplier_(active_multiplier)
+        , calm_multiplier_(calm_multiplier_for(wake_rate, calm_rate, active_multiplier))
         , rng_(seed)
         , exponential_(1.0) {
 
@@ -105,6 +114,12 @@ public:
         return wake_rate_ / (wake_rate_ + calm_rate_);
     }
 
+    /// @brief The long-run mean of the factor, which is one by construction.
+    [[nodiscard]] double long_run_mean_multiplier() const {
+        const double p = long_run_active_share();
+        return p * active_multiplier_ + (1.0 - p) * calm_multiplier_;
+    }
+
     /**
      * @brief Pin the state, whatever the chain says, until unpin().
      *
@@ -114,14 +129,16 @@ public:
      */
     void pin(state s) {
         pinned_.store(s == state::active ? active : calm, std::memory_order_relaxed);
+        // Publish the pinned state's own multiplier: the chain's state is not
+        // read here, because the owner may be writing it.
         publish(s);
     }
 
     /// @brief Hand control back to the chain, which resumes from wherever it was.
-    void unpin() {
-        pinned_.store(automatic, std::memory_order_relaxed);
-        publish(state_);
-    }
+    ///
+    /// The owner republishes on its next advance, within one period. Nothing is
+    /// published here: the chain's own state belongs to the owner.
+    void unpin() { pinned_.store(automatic, std::memory_order_relaxed); }
 
     /**
      * @brief Advance to now, by the time the wall clock reports since the last
@@ -161,8 +178,24 @@ private:
     void publish(state s) {
         published_state_.store(s == state::active ? active : calm,
                                std::memory_order_relaxed);
-        published_multiplier_.store(s == state::active ? active_multiplier_ : 1.0,
+        published_multiplier_.store(s == state::active ? active_multiplier_ : calm_multiplier_,
                                     std::memory_order_relaxed);
+    }
+
+    static double calm_multiplier_for(double wake_rate, double calm_rate, double active) {
+        if (!std::isfinite(wake_rate) || wake_rate <= 0.0 || !std::isfinite(calm_rate) ||
+            calm_rate <= 0.0 || !std::isfinite(active) || active <= 0.0)
+            return 1.0; // the constructor refuses these; this keeps it total
+
+        const double p = wake_rate / (wake_rate + calm_rate);
+        if (p >= 1.0)
+            return 1.0;
+        const double calm = (1.0 - p * active) / (1.0 - p);
+        if (!std::isfinite(calm) || calm <= 0.0)
+            throw std::invalid_argument(
+                "market_regime: active_multiplier is too large for this active share, since "
+                "the calm multiplier that keeps the long-run mean at one would not be positive");
+        return calm;
     }
 
     void publish_current() {
@@ -186,7 +219,9 @@ private:
             remaining_ = dwell_time();
         }
         remaining_ -= left;
-        publish(state_);
+        // Read the pin again: one could have landed while the chain advanced, and
+        // publishing the chain's state would then erase it for a whole period.
+        publish_current();
     }
 
     [[nodiscard]] double dwell_time() {
@@ -199,11 +234,12 @@ private:
     const double wake_rate_;
     const double calm_rate_;
     const double active_multiplier_;
+    const double calm_multiplier_;
 
     // The published view: the only thing a feed reads, and the only thing that
     // needs to be atomic.
     std::atomic<int> published_state_{calm};
-    std::atomic<double> published_multiplier_{1.0};
+    std::atomic<double> published_multiplier_{1.0}; // replaced by the ctor's publish
     std::atomic<int> pinned_{automatic};
 
     // The chain: owned by the one advancing thread.

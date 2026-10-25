@@ -203,7 +203,9 @@ TEST_CASE("tick_clock scales the arrival rate by the market state and the row's 
     // The market is constant across these ticks, so the rate is set once and
     // left alone: the tick path does no work it does not need to do.
     REQUIRE(arrivals.multipliers().size() == 1);
-    CHECK(arrivals.multipliers().front() == Catch::Approx(6.0));
+    // The default market is at two while pinned active, and this row follows it
+    // twice as hard as the average.
+    CHECK(arrivals.multipliers().front() == Catch::Approx(4.0));
 }
 
 TEST_CASE("tick_clock leaves the rate alone with no market", tags) {

@@ -283,10 +283,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // is its single owner, and moving it on a few times a second is enough for a
     // state whose dwell times are minutes.
     ores::analytics::quant::domain::market_regime market;
+    constexpr auto market_period = std::chrono::milliseconds(100);
     std::jthread market_owner([&market](const std::stop_token& stop) {
-        using namespace std::chrono_literals;
         while (!stop.stop_requested()) {
-            std::this_thread::sleep_for(100ms);
+            std::this_thread::sleep_for(market_period);
             market.advance_to_now();
         }
     });

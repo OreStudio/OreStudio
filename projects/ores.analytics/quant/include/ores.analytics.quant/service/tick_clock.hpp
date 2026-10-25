@@ -49,9 +49,12 @@ namespace ores::analytics::quant::service {
  * service, taking every other feed and NATS handler with it.
  *
  * The clock holds no database, messaging or logging code, only the arrival
- * process interface and the standard library, so it keeps the rule of
- * ores.analytics.quant. The arrival process is borrowed and must outlive the
- * clock.
+ * process interface, the market regime and the standard library, so it keeps the
+ * rule of ores.analytics.quant. Both are borrowed and must outlive the clock.
+ *
+ * A change of market is applied from the next gap onwards: a gap already being
+ * slept is not shortened, so a feed on a slow arrival can take one long gap to
+ * notice.
  */
 class ORES_ANALYTICS_QUANT_EXPORT tick_clock final {
 public:
@@ -99,19 +102,26 @@ public:
             // unspecified integer; a zero gap means "tick without waiting",
             // which a periodic process at a very high rate legitimately asks
             // for.
-            // The market has one owner, which advances it; a feed only reads the
-            // published multiplier, one atomic load, and re-rates its process
-            // when that value changes. The row's sensitivity says how much of
-            // the market this feed takes.
-            if (market_) {
-                const double wanted = market_->multiplier() * sensitivity_;
-                if (wanted != multiplier_in_force_) {
-                    arrivals_.set_baseline_multiplier(wanted);
-                    multiplier_in_force_ = wanted;
+            double gap_seconds = 0.0;
+            try {
+                // The market has one owner, which advances it; a feed only reads
+                // the published multiplier, one atomic load, and re-rates its
+                // process when that value changes. The row's sensitivity says how
+                // much of the market this feed takes.
+                if (market_) {
+                    const double wanted = market_->multiplier() * sensitivity_;
+                    if (wanted != multiplier_in_force_) {
+                        arrivals_.set_baseline_multiplier(wanted);
+                        multiplier_in_force_ = wanted;
+                    }
                 }
+                gap_seconds = arrivals_.next_gap();
+            } catch (const std::exception& ex) {
+                // The gap is as much a part of the tick as the body, so a throw
+                // from either reaches the same hook and the same skip.
+                on_failed(ex);
+                continue;
             }
-
-            const double gap_seconds = arrivals_.next_gap();
             const bool usable = std::isfinite(gap_seconds) && gap_seconds > 0.0;
             auto remaining =
                 duration_cast<microseconds>(duration<double>(usable ? gap_seconds : 0.0));
@@ -147,8 +157,9 @@ private:
     ores::analytics::quant::domain::i_arrival_process& arrivals_;
     ores::analytics::quant::domain::market_regime* market_;
     double sensitivity_;
-    /// The multiplier the process was last rated at, so an unchanged market
-    /// costs one comparison and no re-rating.
+    /// The rate scale the process was last rated at, market multiplier times the
+    /// row's sensitivity, so an unchanged market costs one comparison and no
+    /// re-rating.
     double multiplier_in_force_ = 1.0;
     std::atomic<bool> stop_flag_{false};
     std::atomic<std::uint64_t> publish_count_{0};

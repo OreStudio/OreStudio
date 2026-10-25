@@ -178,6 +178,8 @@ fx_spot_feed::fx_spot_feed(
     , nats_subject_(std::move(nats_subject))
     , adapter_(std::move(adapter)) {
 
+    if (!std::isfinite(sensitivity) || sensitivity <= 0.0)
+        throw std::invalid_argument("fx_spot_feed: sensitivity must be finite and strictly positive");
     if (!process_)
         throw std::invalid_argument("fx_spot_feed: process must not be null");
     namespace datum = ores::marketdata::datum;

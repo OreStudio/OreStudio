@@ -50,8 +50,9 @@ void poisson_arrival_process::set_baseline_multiplier(double multiplier) {
     if (!std::isfinite(multiplier) || multiplier <= 0.0)
         throw std::invalid_argument("poisson_arrival_process: multiplier must be finite and "
                                     "strictly positive");
-    // The distribution's mean is the rate, so rebuilding it with the scaled rate
-    // is the whole change; the engine keeps its state.
+    // std::exponential_distribution's parameter is the rate, so its mean gap is
+    // the reciprocal. Rebuilding it with the scaled rate is the whole change; the
+    // engine keeps its state.
     gap_distribution_ = std::exponential_distribution<double>(mean_rate_ * multiplier);
 }
 

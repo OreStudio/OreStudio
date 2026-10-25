@@ -74,6 +74,8 @@ ir_curve_feed::ir_curve_feed(
     , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
     , entries_(std::move(entries)) {
 
+    if (!std::isfinite(sensitivity) || sensitivity <= 0.0)
+        throw std::invalid_argument("ir_curve_feed: sensitivity must be finite and strictly positive");
     if (!process_)
         throw std::invalid_argument("ir_curve_feed: process must not be null");
     if (arrival.ticks_per_hour <= 0.0)

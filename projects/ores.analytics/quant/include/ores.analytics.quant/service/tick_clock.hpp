@@ -20,6 +20,7 @@
 #define ORES_ANALYTICS_QUANT_SERVICE_TICK_CLOCK_HPP
 
 #include "ores.analytics.quant/domain/i_arrival_process.hpp"
+#include "ores.analytics.quant/domain/market_regime.hpp"
 #include "ores.analytics.quant/export.hpp"
 #include <atomic>
 #include <chrono>
@@ -54,9 +55,19 @@ namespace ores::analytics::quant::service {
  */
 class ORES_ANALYTICS_QUANT_EXPORT tick_clock final {
 public:
-    /// @param arrivals The process that draws each gap, in seconds.
-    explicit tick_clock(ores::analytics::quant::domain::i_arrival_process& arrivals)
-        : arrivals_(arrivals) {}
+    /**
+     * @param arrivals The process that draws each gap, in seconds.
+     * @param market The market-wide factor, or null for a run with no market.
+     *        One run shares one market, so every feed follows the same state.
+     * @param sensitivity How strongly this feed follows the market, one being the
+     *        average series.
+     */
+    explicit tick_clock(ores::analytics::quant::domain::i_arrival_process& arrivals,
+                        ores::analytics::quant::domain::market_regime* market = nullptr,
+                        double sensitivity = 1.0)
+        : arrivals_(arrivals)
+        , market_(market)
+        , sensitivity_(sensitivity) {}
 
     /**
      * @brief Emits one tick and returns a short summary of it for the log line.
@@ -88,6 +99,11 @@ public:
             // unspecified integer; a zero gap means "tick without waiting",
             // which a periodic process at a very high rate legitimately asks
             // for.
+            // The market decides how busy the feed is before it asks for a gap,
+            // and the row's sensitivity decides how much of the market it takes.
+            if (market_)
+                arrivals_.set_baseline_multiplier(market_->multiplier() * sensitivity_);
+
             const double gap_seconds = arrivals_.next_gap();
             const bool usable = std::isfinite(gap_seconds) && gap_seconds > 0.0;
             auto remaining =
@@ -101,6 +117,11 @@ public:
 
             if (stop_flag_.load(std::memory_order_relaxed))
                 break;
+
+            // The state the gap was drawn in held for the gap, so the market
+            // moves on by exactly the time that passed.
+            if (market_ && std::isfinite(gap_seconds) && gap_seconds > 0.0)
+                market_->advance(gap_seconds);
 
             try {
                 const auto summary = body(usable ? gap_seconds : 0.0);
@@ -122,6 +143,8 @@ public:
 
 private:
     ores::analytics::quant::domain::i_arrival_process& arrivals_;
+    ores::analytics::quant::domain::market_regime* market_;
+    double sensitivity_;
     std::atomic<bool> stop_flag_{false};
     std::atomic<std::uint64_t> publish_count_{0};
 };

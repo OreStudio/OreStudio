@@ -215,18 +215,53 @@ TEST_CASE("the factory builds what a spec names", tags) {
         arrival_spec{.mode = "periodic", .ticks_per_hour = 3600.0});
     CHECK(periodic->next_gap() == Catch::Approx(1.0));
 
-    const auto hawkes = process_factory::make_arrival_process(
-        arrival_spec{.mode = "hawkes",
-                     .ticks_per_hour = 3600.0,
-                     .branching_ratio = 0.5,
-                     .decay = 10.0});
+    const auto hawkes = process_factory::make_arrival_process(arrival_spec{
+        .mode = "hawkes", .ticks_per_hour = 3600.0, .branching_ratio = 0.5, .decay = 10.0});
     REQUIRE(hawkes);
     CHECK(hawkes->next_gap() > 0.0);
 
-    CHECK_THROWS_AS(process_factory::make_arrival_process(
-                        arrival_spec{.mode = "hawkes",
-                                     .ticks_per_hour = 3600.0,
-                                     .branching_ratio = 1.0,
-                                     .decay = 10.0}),
-                    std::invalid_argument);
+    CHECK_THROWS_AS(
+        process_factory::make_arrival_process(arrival_spec{
+            .mode = "hawkes", .ticks_per_hour = 3600.0, .branching_ratio = 1.0, .decay = 10.0}),
+        std::invalid_argument);
+}
+
+TEST_CASE("a market-wide factor scales the baseline of every process", tags) {
+    using ores::analytics::quant::service::hawkes_arrival_process;
+    using ores::analytics::quant::service::periodic_arrival_process;
+    using ores::analytics::quant::service::poisson_arrival_process;
+
+    // The periodic gap is the reciprocal of the rate, so twice the rate is half
+    // the gap.
+    periodic_arrival_process periodic(2.0);
+    REQUIRE(periodic.next_gap() == Catch::Approx(0.5));
+    periodic.set_baseline_multiplier(2.0);
+    CHECK(periodic.next_gap() == Catch::Approx(0.25));
+    periodic.set_baseline_multiplier(1.0);
+    CHECK(periodic.next_gap() == Catch::Approx(0.5));
+
+    // The Poisson mean gap follows the same reciprocal, measured over enough
+    // draws that the noise is small.
+    poisson_arrival_process poisson(10.0, 7);
+    double unscaled = 0.0;
+    for (int i = 0; i < 2000; ++i)
+        unscaled += poisson.next_gap();
+    poisson.set_baseline_multiplier(4.0);
+    double scaled = 0.0;
+    for (int i = 0; i < 2000; ++i)
+        scaled += poisson.next_gap();
+    CHECK(scaled * 4.0 == Catch::Approx(unscaled).epsilon(0.1));
+
+    // The Hawkes baseline moves and the branching ratio does not: the shape of a
+    // burst is not something a busy market changes.
+    hawkes_arrival_process hawkes(10.0, 0.5, 20.0);
+    const double baseline = hawkes.baseline();
+    const double jump = hawkes.jump();
+    hawkes.set_baseline_multiplier(3.0);
+    CHECK(hawkes.baseline() == Catch::Approx(baseline * 3.0));
+    CHECK(hawkes.jump() == Catch::Approx(jump));
+
+    CHECK_THROWS_AS(periodic.set_baseline_multiplier(0.0), std::invalid_argument);
+    CHECK_THROWS_AS(poisson.set_baseline_multiplier(-1.0), std::invalid_argument);
+    CHECK_THROWS_AS(hawkes.set_baseline_multiplier(0.0), std::invalid_argument);
 }

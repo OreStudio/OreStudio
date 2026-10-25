@@ -17,6 +17,7 @@
  *
  */
 #include "ores.analytics.quant/domain/i_arrival_process.hpp"
+#include "ores.analytics.quant/domain/market_regime.hpp"
 #include "ores.analytics.quant/service/processes/periodic_arrival_process.hpp"
 #include "ores.analytics.quant/service/tick_clock.hpp"
 #include <catch2/catch_approx.hpp>
@@ -41,17 +42,27 @@ public:
         return gap_;
     }
 
+    void set_baseline_multiplier(double multiplier) override {
+        multipliers_.push_back(multiplier);
+    }
+
     [[nodiscard]] std::size_t calls() const {
         return calls_;
+    }
+
+    [[nodiscard]] const std::vector<double>& multipliers() const {
+        return multipliers_;
     }
 
 private:
     double gap_;
     std::size_t calls_ = 0;
+    std::vector<double> multipliers_;
 };
 
 }
 
+using ores::analytics::quant::domain::market_regime;
 using ores::analytics::quant::service::periodic_arrival_process;
 using ores::analytics::quant::service::tick_clock;
 
@@ -166,4 +177,48 @@ TEST_CASE("tick_clock hands the body the gap it waited", tags) {
     REQUIRE(gaps.size() == 3);
     for (const double gap : gaps)
         CHECK(gap == Catch::Approx(0.001).epsilon(1e-12));
+}
+
+TEST_CASE("tick_clock scales the arrival rate by the market state and the row's sensitivity",
+          tags) {
+    // An active market triples the rate, and this row follows the market twice as
+    // hard as the average, so every gap is drawn at six times the rate.
+    market_regime market;
+    market.pin(market_regime::state::active);
+
+    scripted_arrival_process arrivals(0.001);
+    tick_clock clock(arrivals, &market, 2.0);
+    int calls = 0;
+
+    clock.run(
+        [&](double) {
+            ++calls;
+            if (calls == 3)
+                clock.stop();
+            return std::string{};
+        },
+        [](std::uint64_t, const std::string&) {},
+        [](const std::exception&) {});
+
+    REQUIRE(arrivals.multipliers().size() == 3);
+    for (const double multiplier : arrivals.multipliers())
+        CHECK(multiplier == Catch::Approx(6.0));
+}
+
+TEST_CASE("tick_clock leaves the rate alone with no market", tags) {
+    scripted_arrival_process arrivals(0.001);
+    tick_clock clock(arrivals);
+    int calls = 0;
+
+    clock.run(
+        [&](double) {
+            ++calls;
+            if (calls == 2)
+                clock.stop();
+            return std::string{};
+        },
+        [](std::uint64_t, const std::string&) {},
+        [](const std::exception&) {});
+
+    CHECK(arrivals.multipliers().empty());
 }

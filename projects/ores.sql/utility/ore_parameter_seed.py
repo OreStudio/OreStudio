@@ -21,7 +21,9 @@ A parameter row is a dict with the keys scope, subtype, name, position, domain,
 required, the text keys label, help, description, default_text, format and
 introduced_in, and removed_in. The schema name and the XPath follow from the
 scope, subtype and name, unless the row names them: a leaf of another ORE
-document, such as a convention, carries its own schema_name and xpath.
+document, such as a convention, carries its own schema_name and xpath. Such a
+row still carries scope, subtype and name, because the table stores them and a
+screen groups by them, but they no longer decide its XPath or its id.
 """
 
 import uuid

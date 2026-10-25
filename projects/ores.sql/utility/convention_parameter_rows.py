@@ -90,11 +90,36 @@ def first_sentence(text):
     return match.group(1) if match else text
 
 
+ABBREVIATIONS = ("i.e.", "e.g.", "etc.", "vs.")
+
+
+def sentence_from(text, start):
+    """The text from start to the end of its sentence, read past an abbreviation."""
+    i = start
+    while i < len(text):
+        if text[i] == "." and (i + 1 == len(text) or text[i + 1] == " "):
+            if not any(text[:i + 1].endswith(a) for a in ABBREVIATIONS):
+                return text[start:i]
+        i += 1
+    return text[start:]
+
+
 def default_of(term, text):
-    stated = re.search(r"\b[Dd]efaults? (?:to|is) ([^.;,]+)", text) or \
-        re.search(r"\(default:? ([^)]+)\)", text)
+    """The default the guide states for the term, or a sentence that says it states none.
+
+    The guide states a default as "defaults to X" in the prose. The whole of its
+    sentence is the default, conditions included, so a rule with an "otherwise" is not
+    cut in half. A clause that goes on to state a second default is about more than this
+    term, and the generic sentence stands in for it.
+    """
+    stated = re.search(r"\b[Dd]efaults? (?:to|is) ", text)
     if stated:
-        return stated.group(1).strip().strip('"') + "."
+        value = sentence_from(text, stated.end()).split(" (")[0].strip()
+        if value and not re.search(r"\b[Dd]efaults? (?:to|is)\b", value.replace("it defaults to", "")):
+            return value + "."
+    stated = re.search(r"\(default:? ([^)]+)\)", text)
+    if stated:
+        return stated.group(1).strip() + "."
     if term["mandatory"] and not term["conditional"]:
         return "None: the convention must give it."
     if term["mandatory"]:

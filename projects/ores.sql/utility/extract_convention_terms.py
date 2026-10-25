@@ -31,6 +31,9 @@ and the guide line of the text. The result, convention_terms.json beside this fi
 is derived: run this script again when ORE changes, and read the counts it prints.
 
     extract_convention_terms.py [--ore /path/to/ORE/Engine]
+
+The ORE checkout comes from --ore, else from the environment variable ORES_ORE_ENGINE,
+else from the default the guide extractor also uses.
 """
 
 import argparse
@@ -39,7 +42,7 @@ import os
 import re
 import subprocess
 
-DEFAULT_ORE = "/home/marco/Vault/Development/ORE/Engine"
+DEFAULT_ORE = os.environ.get("ORES_ORE_ENGINE", "/home/marco/Vault/Development/ORE/Engine")
 SOURCE = "OREData/ored/configuration/conventions.cpp"
 GUIDE = "Docs/UserGuide/parameterisation/conventions.tex"
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "convention_terms.json")
@@ -234,7 +237,9 @@ def clean(text):
     text = re.sub(r"\\lstinline!([^!]*)!", r"\1", text)
     text = re.sub(r"``|''", '"', text)
     text = re.sub(r"\\(?:emph|textit|textbf|texttt|tt)\{([^}]*)\}", r"\1", text)
-    text = re.sub(r"\{\\tt ([^}]*)\}", r"\1", text)
+    text = re.sub(r"\{\\(?:tt|em|it|bf) ([^}]*)\}?", r"\1", text)
+    text = re.sub(r"\$([^$]*)\$", r"\1", text)
+    text = re.sub(r"`([^`']*)'", r"\1", text)
     text = re.sub(r"\\(?:ref|label|cite)\{[^}]*\}", "the guide", text)
     text = text.replace("\\_", "_").replace("\\%", "%").replace("~", " ")
     return re.sub(r"\s+", " ", text).strip()
@@ -244,6 +249,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--ore", default=DEFAULT_ORE, help="an ORE checkout")
     args = parser.parse_args()
+    for needed in (SOURCE, GUIDE):
+        if not os.path.exists(os.path.join(args.ore, needed)):
+            parser.error(f"{os.path.join(args.ore, needed)} does not exist; pass --ore or set "
+                         "ORES_ORE_ENGINE to an ORE checkout")
     with open(os.path.join(args.ore, SOURCE)) as f:
         found = classes(f.read())
     with open(os.path.join(args.ore, GUIDE)) as f:

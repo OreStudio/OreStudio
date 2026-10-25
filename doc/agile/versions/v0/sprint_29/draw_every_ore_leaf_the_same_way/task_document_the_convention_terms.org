@@ -87,7 +87,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The ORE path is hard-coded | extract_convention_terms.py | Accept | The checkout comes from --ore, then ORES_ORE_ENGINE, then the default the guide extractor uses; a missing checkout fails with a message that names the path. |
+| 2 | The release floor reads as a measurement | convention_parameter_rows.py | Decline | The value is the floor the pricing rows already carry, "1.8.0.7 or earlier", which says it is a floor; the Notes record that no convention release is measured. |
+| 3 | A default can be cut at the first comma | convention_parameter_rows.py | Accept | The spot-check found five: "NullCalendar i.", "0 i.", an "otherwise" clause lost, a choices list cut, and two defaults merged. A default now reads to the end of its sentence past an abbreviation, stops before a parenthesis, and falls back to the generic text when the clause states a second default; the guide's LaTeX is stripped. |
+| 4 | Regex parsing of C++ is fragile | extract_convention_terms.py | Decline | The output is committed, so any change the script makes after ORE moves shows in the convention_terms.json diff, and the script prints the counts to compare. |
+| 5 | Same-named terms under different sub-paths | convention_parameter_rows.py | No change | The XPath separates them and the duplicate-id guard would catch a collision. |
+| 6 | Say which keys an explicit XPath leaves unused | ore_parameter_seed.py | Accept | The docstring says scope, subtype and name are still stored but decide neither the XPath nor the id. |
+| 7 | Confirm the four failing checks on main | none | Accept | No file they read changes in this branch, and main's seed holds the 108 pricing code settings that fail the XPath test. Shown from the content, not by a run on a main checkout. |
 
 * Result
 

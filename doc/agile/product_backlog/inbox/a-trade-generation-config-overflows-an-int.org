@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: F58DF154-40E9-408F-A03C-61D2BEB1941C
+:END:
+#+title: A trade generation config overflows an int
+#+description: Provisioning ACME with the acme_demo profile fails at generate_trades: recording the trade generation config 'ACME ACMCOR bond population' fails with 'value 2167221318 is out of range for type integer'. A 32-bit integer column holds a value that needs bigint. The tenant, party, LEI hierarchy, staff, passwords and market data subscriptions all provision, so only the trade population is blocked. Find the column, decide whether it should be bigint or numeric, and fix the model so the seed can record the config.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:trading:seeding:provisioning:bug:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

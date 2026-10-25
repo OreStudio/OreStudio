@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/grant-the-blotter-its-reads-and-writes
-#+pr: 3740
+#+pr: 3763
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -26,11 +26,11 @@ A person holding a seeded role opens every Trade Blotter screen, and every code 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -128,6 +128,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3763][#3763]] | [agile] Prove the blotter grants at runtime |
 | [[https://github.com/OreStudio/OreStudio/pull/3740][#3740]] | [agile] Track the blotter's permissioning as one task |
 
 * Review
@@ -183,3 +184,52 @@ Applied to the running database, the count is:
 * What is still owed
 
 The seed is proved: the rows are in the database and =Member= has none. Not yet proved is the runtime refusal and acceptance: sign in as a =Trading= user, call the list and see rows; sign in as a =Member= and see a refusal. That is the last step before this task is done.
+
+* Where the runtime proof stands
+
+The build is green and the database is populated with the grants. The services start cleanly (24 started, none failed).
+
+The seeded accounts can exercise the split, which is the half I doubted: the ACME seeder gives 30 accounts the =Trading= role, 16 =Operations= and 12 =Viewer=, read from =projects/ores.seeder/datasets/acme_corporation/accounts.json= by its =role= field. So the positive case is a =Trading= account and the negative case is a =Member=-less =Viewer=.
+
+What remains is the call itself: sign in through =ores.shell= as a =Trading= account, list the trade summaries and see rows, then sign in as a =Viewer= and see the write paths refused. The shell's login idiom is the one thing not yet established, and it is the first step of the next session.
+
+* What the next session needs, gathered
+
+Everything but the command name is now known, so the proof is one script away.
+
+- The shell binary is =build/output/linux-clang-release-ninja/publish/bin/ores.shell=, and =-l <file>= runs a =.ores= script non-interactively, skipping =#= comments and expanding =$VAR=.
+- The shell's own login is a top-level command in both the accounts menu and the root menu: =login <principal> <password>=, where the principal is a username or =username@hostname=.
+- The shared password for the seeded Acme accounts is =Secure-Password-123=, from =compass_open_as.py=.
+- A =Trading= account is =joshua.brown= and a =Viewer= account is =kathryn.haynes=.
+- The one missing piece is the name of the trading list command. =trading_commands.cpp= registers it through a helper rather than a literal =Insert(...)=, so a =grep= for the menu entry did not find it; the next session should read that file's registration function, or run the shell with =help= to list the trading menu.
+
+The script is two lines: the =login=, then the trading summary list. The proof is a list that answers with rows as =joshua.brown= and refuses as =kathryn.haynes=.
+
+* The proof is blocked on provisioning, not on permissions
+
+The calls to make it are now known, and the run fails one step before the permission check:
+
+- =compass shell -l <file> -u <user> -p <password>= resolves the NATS defaults from =.env= and runs a scripted session, which is the right entry point.
+- The run reports *System is in BOOTSTRAP MODE*, the auto-login fails, and =trade_summaries list= answers "You must be logged in". The database was recreated and populated with reference data, but no tenant, party or account was provisioned, so the Acme accounts the seeder describes do not exist in it yet.
+- The shell's own =-l= is ambiguous with =--log-level= and must be written =--load=; that only matters outside =compass shell=, which passes it correctly.
+
+So the next step is to provision a tenant and its party before the proof, not to change any permission. The proof itself is then two scripted runs: =joshua.brown= reading the summaries, and a write refused for =kathryn.haynes=.
+
+* The proof, done
+
+ACME was provisioned first: =bootstrap setup= with the =acme_demo= profile created the tenant, the party, the LEI hierarchy, the staff with their passwords, and the market data subscriptions. It then failed at the last step, =generate_trades=, with "value 2167221318 is out of range for type integer" while recording a trade generation config; that is filed as its own capture, because it blocks the trade population and not this task.
+
+With the tenant up, both cases ran through =compass shell=:
+
+| Case | Account | Command | Result |
+|---|---|---|---|
+| Positive | =joshua.brown=, a =Trading= account | =trade_summaries list= | ={"outcome":"ok"}= with an empty list, because no trades were generated |
+| Negative | =kathryn.haynes=, a =Viewer= account | =trade_identifiers delete <id> <version> <reason> <commentary>= | =forbidden= from =trading.v1.trade_identifiers.delete= |
+
+The empty list is the generated population missing, not the read failing: the same command answered =ok=, and before this split no human role held =trade_summaries:read= at all, so it would have been refused. The negative case is a write a =Viewer= must not make, and it is refused at the service, not in the screen.
+
+The split is in the seed, the grants are in the database, and both proof cases ran: a =Trading= account reads the summaries and a =Viewer= is refused a write.
+
+Two defects came out of the work and are recorded where they belong: the assign function is not idempotent, so a second populate duplicates every assignment, and the =acme_demo= profile's trade generation config overflows an int, which is filed as its own capture.
+
+What this task did not do: it did not decide whether a blotter belongs to =Trading= in a house where a trader may also be an =Operations= user; the split is a first cut that a later task may move.

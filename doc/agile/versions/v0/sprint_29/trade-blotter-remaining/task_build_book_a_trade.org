@@ -83,6 +83,12 @@ Three places it could go, with what each costs:
 - *The caller states a precondition* — the request already carries =precondition=, which the service enforces, so the BFF could read the book and state "this book is open". That is a client-side rule dressed as a precondition: a caller that lies is believed, and the acceptance criterion says the service refuses, not that the screen does.
 
 I would take the first. It is not a screen change and should not be bundled with one.
+
+** What the port's implementation needs
+
+=projects/ores.refdata/client= holds a cache and no typed read for a book, so the port's implementation cannot call a ready-made client method. It has to make the request itself, in the shape =trading_trade_population_writer= already uses when it calls other services over NATS: encode the list request, read the reply, and treat a refusal as "unknown" rather than as "open".
+
+That makes the change a half-window one rather than a small edit: an interface, its implementation, the wiring in two places, and a test that a frozen book is refused. It is worth starting a fresh window with, not finishing at the end of one.
 ** What the form needs to read
 
 The books the party may book into, the counterparties it may trade with, the trade types with their product type (which decides the instrument table), the identifier schemes, and the instrument's terms for the chosen type. All of these are reads that exist; the books read needs the open rule above to be useful.

@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 7EB16D8A-A370-444A-9498-0C6ABE8C2F2E
+:END:
+#+title: Task: Store a run's errors once, and keep the rows the vocabulary names
+#+description: The step that reads a run's output runs at least once, and it wrote its rows every time, so a redelivery stored the same reasons twice. One engine scope the vocabulary did not name made it return before writing anything, so a single unrecognised group cost the run every reason it did name. Writing is now guarded by the run, and an unknown scope costs only its own rows, which are said as a warning on the run.
+#+type: task
+#+level: s1
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A run's errors are written once however often its output is read, and one
+unknown scope costs only its own rows.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A redelivery of the step that reads a run's output no longer stores the same
+reasons twice. The recorder asks the run whether it already holds errors and
+returns before writing when it does. The guard covers the run-level failure row
+as well.
+
+An engine scope the vocabulary does not name no longer costs the whole batch.
+The rows the vocabulary does name are stored, and the scope that could not be
+placed is said on the run as a report-scope warning naming it, so the loss is
+visible on the screen rather than only in a log.
+
+Proven by the reporting suites: a batch with one known and one unknown scope
+stores two rows, the curve and the warning, and recording the same errors twice
+stores one.

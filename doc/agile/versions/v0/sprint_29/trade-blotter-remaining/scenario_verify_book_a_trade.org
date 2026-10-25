@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: E45DD02C-CB73-4D63-8EAF-692A4C0F8CD3
+:END:
+#+title: Test Scenario: Verify Book a trade
+#+description: Manual steps confirming a trade books from the form into an open book, opens its own page with the terms it stated, and that a frozen book is not offered and a bad notional is refused with a reason.
+#+type: test_scenario
+#+level: s1
+#+filetags: :trading:booking:trade-blotter-remaining:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: jolly_knuth
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:2D3C5B23-E6DB-46D5-8732-ACF54987A33A][Build Book a trade]] in [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+Ready to test as it stands: the fleet is up on this checkout, the database holds
+tenant =acme_corporation= provisioned from =acme_demo=, and the trading service
+carries the booking rule. Nothing to run first.
+
+Two states are prepared on purpose, so the scenario can show both answers a
+booking gets:
+
+- *One book is frozen.* =USD Vanilla Swaps= holds status =Frozen= in
+  =ores_refdata_books_tbl=. The form offers open books only, so it must not
+  appear in the Book picker; that is Step 3.
+- *Every other book is open*, so a booking has somewhere to land.
+
+The frozen book is returned to =Active= after the run. If the scenario is
+abandoned, thaw it with:
+
+#+begin_example
+update ores_refdata_books_tbl set book_status = 'Active'
+ where name = 'USD Vanilla Swaps'
+   and valid_to = ores_utility_infinity_timestamp_fn();
+#+end_example
+
+* Scenario Info
+
+| Field         | Value                        |
+|---------------+------------------------------|
+| Verifies task | [[id:2D3C5B23-E6DB-46D5-8732-ACF54987A33A][Build Book a trade]] |
+| Parent story  | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
+| Target dialog | Book a trade, at =/trading/trades/new= |
+| Clients       |                              |
+| State         | PENDING                      |
+
+* Steps
+
+Every step names what to click, what to type, and what confirms it passed. The
+credentials are the provisioned Trading persona: =diane.kay@acme_corporation= /
+=Secure-Password-123=.
+
+** Log in as diane.kay
+
+- Open http://127.0.0.1:20802/
+- Username =diane.kay@acme_corporation=, password =Secure-Password-123=, then
+  *Sign in*.
+- Passes when the home page greets *Welcome, Diane Kay* and the menu shows
+  *Trading*.
+
+** Open the booking form from the list
+
+- Choose *Trading* in the menu, then the *Trades* card.
+- Passes when the list draws rows and a *Book a trade* button sits above them.
+- Click *Book a trade*.
+- Passes when the address is =/trading/trades/new=, the crumb reads
+  *Home › Trading › Trades › Book a trade*, and the form shows Book,
+  Counterparty, Trade date, Notional, Security, Identifier scheme and
+  Identifier.
+
+** Confirm a frozen book is not offered
+
+- Open the *Book* picker and read its options.
+- Passes when =USD Vanilla Swaps= is *not* in the list, and the books that are
+  there all read as open books (for example =G10 Majors Options=).
+- This is the rule the server enforces, shown before a request is made: the
+  form offers what the service would accept.
+
+** State the terms of the trade
+
+- Book: =G10 Majors Options=
+- Counterparty: any name in the list (they are LEI names, e.g. one starting
+  *МОСКОВСКИЙ*); the choice is not asserted beyond it being accepted.
+- Trade date: leave today.
+- Notional: =1250000.25=
+- Security: any entry; each reads as a security id and its calendar, e.g.
+  =POP… · TARGET=.
+- Identifier scheme: the one option offered (=Internal=).
+- Identifier: =QA-<your initials>-1=
+- Passes when *Book trade* becomes enabled only after every field is answered,
+  and the button reads *Book trade* rather than the pending text.
+
+** Book the trade and read its page
+
+- Click *Book trade*.
+- Passes when the browser lands on a trade page whose address ends in a uuid,
+  the heading is the identifier you typed (=QA-<your initials>-1=), the State
+  badge reads *Live*, Authorisation reads *waiting*, and Book names
+  =G10 Majors Options=.
+
+** Read the terms on the Instrument tab
+
+- Click the *Instrument* tab.
+- Passes when Trade type reads *Bond*, Notional reads =1250000.25=, and the
+  Issue section shows a security, a face value, an issue date, settlement days,
+  a calendar (it is a link) and a credit group.
+
+** Find the booked trade in the list
+
+- Click *Trades* in the crumb to return to the list.
+- Passes when =QA-<your initials>-1= appears among the rows, with the same book,
+  counterparty and date, and the list still offers *Book a trade*.
+
+** Refuse a notional that is not a number
+
+- Click *Book a trade* again and fill every field as before, except Notional:
+  type =abc=.
+- The browser's form will accept it, because the field does not validate.
+- Click *Book trade*.
+- Passes when the form stays put and a notice above it reads *The notional is a
+  plain decimal.*, and no trade is created: returning to the list shows no row
+  for that attempt.
+
+** Confirm an empty required field blocks the button
+
+- On the same form, clear the Security choice.
+- Passes when *Book trade* becomes disabled again, and stays disabled until a
+  security is chosen.
+
+* Results
+
+(The QA Validation Runner writes each step's outcome here.)
+
+* Notes
+
+- A booking creates three service writes: the trade, its identifier and its
+  bond instrument. If the page opens but the Instrument tab says the type is
+  unrouted, the instrument write was refused and the trade is still booked —
+  note the identifier you used.
+- The counterparty names come from the GLEIF import into this tenant, so they
+  are legal names in their own scripts. Picking by sight is expected.
+- A frozen book is refusable but not selectable, so the refusal itself is
+  covered by the route's own test rather than by a manual step.

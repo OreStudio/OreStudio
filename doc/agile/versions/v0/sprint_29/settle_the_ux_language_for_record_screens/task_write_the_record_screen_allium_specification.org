@@ -8,7 +8,7 @@
 #+filetags: :settle_the_ux_language_for_record_screens:sprint_29:v0:
 #+owner: marco
 #+branch: feature/write-the-record-screen-allium-spec
-#+pr: 3764
+#+pr: 3768
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -85,6 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3768][#3768]] | [docs] Refresh keeps the page the person is on |
 | [[https://github.com/OreStudio/OreStudio/pull/3764][#3764]] | [agile] Record the specification review round and the obligation count |
 | [[https://github.com/OreStudio/OreStudio/pull/3760][#3760]] | [docs] Write the record screen Allium specification |
 

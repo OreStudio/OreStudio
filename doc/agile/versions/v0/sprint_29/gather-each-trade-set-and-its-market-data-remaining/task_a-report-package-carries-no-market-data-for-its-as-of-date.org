@@ -28,11 +28,11 @@ report fails for a reason that has nothing to do with the report.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:ACFE9144-48DF-4FE5-902D-18C757DC91F4][Gather each trade set and its market data — the remaining work]] |
-| Now          | The cause is stale data, not a missing date: the gather asks for the run's date and the export drops every datum as stale, because the tenant's data tops out at 2026-05-05. No code changed.                       |
+| Now          | Nothing. |
 | Waiting on   | A decision between pricing at the data's date and failing early, or both.                               |
-| Next         | Report the export's effective date, use it for the run, and fail with a clear message when nothing covers the requested date.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -251,6 +251,35 @@ errors, seventeen distinct reasons, and the GBP card holding eight trades.
 |   |                 |      |          |       |
 
 * Result
+
+A failed run now says why it failed, one row per reason.
+
+The wrapper uploads what the engine wrote when its verdict fails, so the run's
+own log reaches the storage the reporting service can read. The failure path
+reads that archive and records the engine's errors, one row per reason, with the
+scope, the subject and the subject id. The reporting service now answers the
+per-instance error list it was never subscribed to. The error event model gained
+=subject_version= and =subject_as_of=, and the generated SQL, the repository and
+the TypeScript entity were regenerated to match.
+
+The run page has the screens that were signed off. =Run= states the run, names
+the curves it could not build, the date it priced at, and links into the errors.
+=Errors= carries the severity and warning counts, a scope filter, a search, and
+switches between =Grouped=, one card per failed curve with its trades as links,
+and =Split=, the distinct reasons as rows beside the selected one. A trade id is
+a link carrying the version the run read, and the reference says so when it does
+not know it. The old output paragraph is gone, except where it is the only
+account a run has.
+
+Proven on instance =47e0dd4c=: 33 error rows, four curves, the GBP card holding
+the eight trades whose messages name it, and seventeen distinct reasons. The
+browser check that proves it is =tmp/validate_errors.cjs=.
+
+The remaining work moved to [[id:49A48E66-09CA-4AE5-85A5-D50E369932F5][Record the
+trade version a run read, and make a run's errors idempotent]]: recording the
+version and as-of at gather time, the rerun duplication, the aggregate row that
+repeats the verdict, the batch lost to one unknown scope, the date move that is
+only logged, and the trades page not reading the link's parameters.
 
 * Promoted from capture
 

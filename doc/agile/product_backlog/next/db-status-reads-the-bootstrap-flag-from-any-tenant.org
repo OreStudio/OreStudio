@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 8B41F2D6-7C39-4E58-9A0D-35C7E19B4A62
+:END:
+#+title: db status reads the bootstrap flag from any tenant
+#+description: The status command queries system.bootstrap_mode without naming a tenant, so a leftover test tenant decides the answer and a provisioned system reads as unprovisioned.
+#+type: capture
+#+level: cross
+#+filetags: :compass:tooling:bug:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+After a clean =compass db recreate -y -k= and a full =bootstrap setup=, the
+application works — the tenant exists, staff sign in, trades list — and yet:
+
+#+begin_example
+🔧  Bootstrap mode
+
+    true  — system provisioning wizard not yet run
+
+🏢  Tenants (non-system)
+
+    (none)
+#+end_example
+
+The setting is per tenant, and the table holds a current row for each:
+
+#+begin_example
+select tenant_id, value from ores_variability_system_settings_tbl
+ where name = 'system.bootstrap_mode'
+   and valid_to = ores_utility_infinity_timestamp_fn();
+#+end_example
+
+| tenant                                 | value |
+|----------------------------------------+-------|
+| ffffffff-…  (Root Tenant)              | false |
+| 24da711c-…  (a test tenant)            | true  |
+| 6ff24e8c-…  (a test tenant)            | true  |
+
+=compass_db.bootstrap_mode()= asks for the first current row and names no
+tenant, so whichever row the planner returns decides. A test run that creates a
+tenant and never finishes its onboarding therefore makes a real installation
+report bootstrap mode. The tenant list beside it answered "(none)" while eight
+tenants existed, so the same query shape is wrong in more than one place.
+
+Two ways to fix it, and the second is better: filter on the system tenant, whose
+id is well known; or make the query count rows rather than take the first, and
+say "partly bootstrapped" when tenants disagree, which is the truth a person
+running this command wants.
+
+It matters because the status command is what a person reads before deciding to
+recreate a database — the destructive step this session took on its say-so.

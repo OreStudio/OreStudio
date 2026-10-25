@@ -53,7 +53,7 @@ import { useLoadState } from '../events/useLoadState.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
-import { PATHS, reportPath } from '../shell/paths.js';
+import { PATHS, gridReportRunPath, reportPath } from '../shell/paths.js';
 import { AccessMark } from '../ui/AccessMark.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { Detail, Notice, Tag } from '../ui/Primitives.js';
@@ -409,58 +409,66 @@ function LatestRun({
     const ms = runDuration(report.latestRun.startedAt, report.latestRun.completedAt);
     const countsUnread = unread.some((entry) => entry.cell === 'errors');
     return (
-        <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-4">
-            <Detail
-                label={t('reporting.detail.started')}
-                value={
-                    report.latestRun.startedAt === null ? (
-                        <Absent />
-                    ) : (
-                        <RelativeTime at={report.latestRun.startedAt} />
-                    )
-                }
-            />
-            <Detail
-                label={t('reporting.detail.completed')}
-                value={
-                    report.latestRun.completedAt === null ? (
-                        <Absent />
-                    ) : (
-                        <RelativeTime at={report.latestRun.completedAt} />
-                    )
-                }
-            />
-            <Detail
-                label={t('reporting.columns.duration')}
-                value={ms === null ? <Absent /> : formatDuration(ms, t)}
-            />
-            <Detail
-                label={t('reporting.columns.errors')}
-                value={
-                    countsUnread
-                        ? t('reporting.cell.unread')
-                        : String(report.latestRun.errors ?? '')
-                }
-            />
-            <Detail
-                label={t('reporting.columns.warnings')}
-                value={
-                    countsUnread
-                        ? t('reporting.cell.unread')
-                        : String(report.latestRun.warnings ?? '')
-                }
-            />
-            <Detail
-                label={t('reporting.columns.schedule')}
-                value={
-                    report.nextFireAt === null ? (
-                        t('reporting.detail.noNextFire')
-                    ) : (
-                        <RelativeTime at={report.nextFireAt} />
-                    )
-                }
-            />
-        </dl>
+        <div className="space-y-2">
+            <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-4">
+                <Detail
+                    label={t('reporting.detail.started')}
+                    value={
+                        report.latestRun.startedAt === null ? (
+                            <Absent />
+                        ) : (
+                            <RelativeTime at={report.latestRun.startedAt} />
+                        )
+                    }
+                />
+                <Detail
+                    label={t('reporting.detail.completed')}
+                    value={
+                        report.latestRun.completedAt === null ? (
+                            <Absent />
+                        ) : (
+                            <RelativeTime at={report.latestRun.completedAt} />
+                        )
+                    }
+                />
+                <Detail
+                    label={t('reporting.columns.duration')}
+                    value={ms === null ? <Absent /> : formatDuration(ms, t)}
+                />
+                <Detail
+                    label={t('reporting.columns.errors')}
+                    value={
+                        countsUnread
+                            ? t('reporting.cell.unread')
+                            : String(report.latestRun.errors ?? '')
+                    }
+                />
+                <Detail
+                    label={t('reporting.columns.warnings')}
+                    value={
+                        countsUnread
+                            ? t('reporting.cell.unread')
+                            : String(report.latestRun.warnings ?? '')
+                    }
+                />
+                <Detail
+                    label={t('reporting.columns.schedule')}
+                    value={
+                        report.nextFireAt === null ? (
+                            t('reporting.detail.noNextFire')
+                        ) : (
+                            <RelativeTime at={report.nextFireAt} />
+                        )
+                    }
+                />
+            </dl>
+            <Link
+                to={gridReportRunPath(report.latestRun.id)}
+                className="text-sm text-accent hover:text-accent-bright"
+            >
+                {t('reporting.detail.openRun')}
+            </Link>
+        </div>
     );
 }
 

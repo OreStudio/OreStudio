@@ -1684,12 +1684,9 @@ export const en: SourceCatalogue = {
                 loadingWorkunits: 'Reading the workunits...',
                 loadingResults: 'Reading the results...',
                 empty: 'No batch has been recorded yet.',
-            discardTitle: 'Discard the changes?',
-            discardBody: 'You changed {type} and have not saved. Moving to another product loses those changes.',
-            discard: 'Discard',
-            noMatch: 'No batch matches. Clear the filters.',
-            expandAll: 'Expand all',
-            collapseAll: 'Collapse all',
+                noMatch: 'No batch matches. Clear the filters.',
+                expandAll: 'Expand all',
+                collapseAll: 'Collapse all',
                 download: 'Download the file',
                 runsTitle: 'Runs with the outcome',
                 noRuns: 'No run ended with this outcome.',
@@ -4662,7 +4659,7 @@ export const en: SourceCatalogue = {
         reporting: {
             party: 'Party',
             allParties: 'All parties',
-                noParty: 'Works in no party',
+            noParty: 'Works in no party',
             outside: 'Reports to someone you cannot see',
             outsideManager: 'Someone outside your view',
             zoomIn: 'Zoom in',
@@ -4910,6 +4907,10 @@ export const en: SourceCatalogue = {
             noParameters: 'No parameters. The model or the engine uses its own defaults.',
             documentation: 'Documentation',
             filter: 'Filter products',
+            discardTitle: 'Discard the changes?',
+            discardBody:
+                'You changed {type} and have not saved. Moving to another product loses those changes.',
+            discard: 'Discard',
             expandAll: 'Expand all',
             collapseAll: 'Collapse all',
             noAssetClass: 'No asset class',
@@ -5167,6 +5168,7 @@ export const en: SourceCatalogue = {
             health: 'Health of the latest run',
             healthHint: 'Derived from the latest run, never from the definition.',
             latestRun: 'Latest run',
+            openRun: 'Open the run',
             neverRun:
                 'This definition has never run. Nothing was checked, so it does not read as clean.',
             couldNotCheck:

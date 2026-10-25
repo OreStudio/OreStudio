@@ -26,6 +26,7 @@ import {
     check,
     cloneDraft,
     difference,
+    documentationOf,
     draftOf,
     enginesFor,
     isKnownPair,
@@ -56,16 +57,38 @@ const vocabulary: PricingVocabulary = {
         { code: 'Swap', description: '', instrumentTypeCode: 'IRS' },
     ],
     pairs: [
-        { typeCode: 'BermudanSwaption', model: 'LGM', engine: 'Grid', usual: true, help: '', description: '' },
-        { typeCode: 'BermudanSwaption', model: 'LGM', engine: 'MC', usual: false, help: '', description: '' },
+        {
+            typeCode: 'BermudanSwaption',
+            model: 'LGM',
+            engine: 'Grid',
+            usual: true,
+            help: '',
+            description: '',
+        },
+        {
+            typeCode: 'BermudanSwaption',
+            model: 'LGM',
+            engine: 'MC',
+            usual: false,
+            help: '',
+            description: '',
+        },
         {
             typeCode: 'Swap',
             model: 'DiscountedCashflows',
             engine: 'DiscountingSwapEngine',
             usual: true,
-            help: '', description: '',
+            help: '',
+            description: '',
         },
-        { typeCode: 'Swap', model: 'CrossAssetModel', engine: 'AMC', usual: false, help: '', description: '' },
+        {
+            typeCode: 'Swap',
+            model: 'CrossAssetModel',
+            engine: 'AMC',
+            usual: false,
+            help: '',
+            description: '',
+        },
     ],
     settings: [
         {
@@ -78,7 +101,8 @@ const vocabulary: PricingVocabulary = {
             usual: 'Bootstrap',
             options: ['Bootstrap', 'BestFit'],
             required: true,
-            help: '', description: '',
+            help: '',
+            description: '',
         },
         {
             typeCode: 'BermudanSwaption',
@@ -90,7 +114,8 @@ const vocabulary: PricingVocabulary = {
             usual: '3.0',
             options: [],
             required: true,
-            help: '', description: '',
+            help: '',
+            description: '',
         },
         {
             typeCode: 'BermudanSwaption',
@@ -102,7 +127,8 @@ const vocabulary: PricingVocabulary = {
             usual: 'IR_FD',
             options: [],
             required: false,
-            help: '', description: '',
+            help: '',
+            description: '',
         },
     ],
     models: [
@@ -197,10 +223,7 @@ describe('the vocabulary', () => {
     });
 
     it('offers the models and engines that price the type before the others', () => {
-        expect(modelsFor(vocabulary, 'Swap')).toEqual([
-            'DiscountedCashflows',
-            'CrossAssetModel',
-        ]);
+        expect(modelsFor(vocabulary, 'Swap')).toEqual(['DiscountedCashflows', 'CrossAssetModel']);
         expect(enginesFor(vocabulary, 'BermudanSwaption', 'LGM')).toEqual(['Grid', 'MC']);
     });
 });
@@ -418,7 +441,13 @@ describe('the words the vocabulary holds', () => {
     it('finds how ORE builds the engine of a pair, or says nothing', () => {
         const noted: PricingVocabulary = {
             ...vocabulary,
-            pairs: [{ ...vocabulary.pairs[0]!, help: 'Builds a grid engine.', description: 'Builds a grid engine.' }],
+            pairs: [
+                {
+                    ...vocabulary.pairs[0]!,
+                    help: 'Builds a grid engine.',
+                    description: 'Builds a grid engine.',
+                },
+            ],
         };
         expect(pairNote(noted, 'BermudanSwaption', 'LGM', 'Grid')).toBe('Builds a grid engine.');
         expect(pairNote(noted, 'BermudanSwaption', 'LGM', 'MC')).toBe('');
@@ -436,6 +465,46 @@ describe('the words the vocabulary holds', () => {
             (setting) => setting.name,
         );
         expect(names).toEqual(['Calibration', 'sx', 'SensitivityTemplate']);
+    });
+
+    it('finds a setting under any pair that names it', () => {
+        const named: PricingVocabulary = {
+            ...vocabulary,
+            settings: [
+                ...vocabulary.settings,
+                {
+                    typeCode: 'Swap',
+                    model: 'CrossAssetModel',
+                    engine: 'AMC',
+                    scope: 'engine',
+                    name: 'Training.Seed',
+                    kind: 'number',
+                    usual: '42',
+                    options: [],
+                    required: false,
+                    documented: true,
+                    label: 'Training seed',
+                    help: 'The seed.',
+                    description: 'The seed of the random engine.',
+                    defaultText: '42',
+                    format: 'A number.',
+                    introducedIn: '1.8.7.0',
+                    removedIn: '',
+                    xpath: "/PricingEngines/Product/EngineParameters/Parameter[@name='Training.Seed']",
+                },
+            ],
+        };
+        expect(
+            documentationOf(named, 'Swap', 'CrossAssetModel', 'AMC', 'engine', 'Training.Seed')
+                ?.description,
+        ).toBe('The seed of the random engine.');
+        expect(
+            documentationOf(named, 'BermudanSwaption', 'LGM', 'Grid', 'engine', 'Training.Seed')
+                ?.label,
+        ).toBe('Training seed');
+        expect(
+            documentationOf(named, 'Swap', 'CrossAssetModel', 'AMC', 'engine', 'Unknown'),
+        ).toBeUndefined();
     });
 
     it('reports only a missing setting that ORE needs', () => {

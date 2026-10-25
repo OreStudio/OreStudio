@@ -69,6 +69,7 @@ import { PRICING_ENGINES_EVENTS } from './PricingEnginesPage.js';
 import { ModelEnginePanels, SettingValue } from './parts.js';
 import { SaveDialog } from './SaveDialog.js';
 import {
+    documentationOf,
     draftOf,
     enginesFor,
     templateInfo,
@@ -228,13 +229,7 @@ export function PricingEnginePage(): ReactNode {
                 onDelete={mayDelete ? () => setDialog({ kind: 'delete' }) : undefined}
             />
             {tabs.bar}
-            {tabs.tab === 'details' && (
-                <DetailsTab
-                    document={document}
-                    mayWrite={mayWrite}
-                    onEdit={() => setDialog({ kind: 'details' })}
-                />
-            )}
+            {tabs.tab === 'details' && <DetailsTab document={document} />}
             {tabs.tab === 'globals' && (
                 <GlobalParametersTab
                     document={document}
@@ -293,25 +288,12 @@ export function PricingEnginePage(): ReactNode {
 }
 
 /** The configuration's own fields, as read. */
-function DetailsTab({
-    document,
-    mayWrite,
-    onEdit,
-}: {
-    readonly document: PricingDocument;
-    readonly mayWrite: boolean;
-    readonly onEdit: () => void;
-}): ReactNode {
+function DetailsTab({ document }: { readonly document: PricingDocument }): ReactNode {
     const { t } = useTranslation();
     return (
         <section className="card space-y-4 p-4">
-            <header className="flex flex-wrap items-baseline justify-between gap-2">
+            <header>
                 <h2 className="text-sm font-medium">{t('pricingEngines.record.details')}</h2>
-                {mayWrite && (
-                    <Button size="sm" icon="edit" onClick={onEdit}>
-                        {t('pricingEngines.actions.change')}
-                    </Button>
-                )}
             </header>
             <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-5">
                 <Detail label={t('pricingEngines.fields.name')} value={document.name} />
@@ -374,7 +356,8 @@ function GlobalParametersTab({
     const [values, setValues] = useState<Readonly<Record<string, string>>>({});
     const [saving, setSaving] = useState<Draft | null>(null);
     const globals = document.parameters.filter((parameter) => parameter.productId === null);
-    const docOf = (name: string) => (vocabulary?.globals ?? []).find((entry) => entry.name === name);
+    const docOf = (name: string) =>
+        (vocabulary?.globals ?? []).find((entry) => entry.name === name);
     const shown = globals.filter((parameter) => {
         if (!setOnly) return true;
         const doc = docOf(parameter.name);
@@ -438,7 +421,8 @@ function GlobalParametersTab({
                                                         parameter.name
                                                     }
                                                     inputMode={
-                                                        docOf(parameter.name)?.domain === 'double' ||
+                                                        docOf(parameter.name)?.domain ===
+                                                            'double' ||
                                                         docOf(parameter.name)?.domain === 'integer'
                                                             ? 'numeric'
                                                             : 'text'
@@ -462,8 +446,7 @@ function GlobalParametersTab({
                                             description: docOf(parameter.name)?.description ?? '',
                                             defaultText: docOf(parameter.name)?.defaultText ?? '',
                                             format: docOf(parameter.name)?.format ?? '',
-                                            introducedIn:
-                                                docOf(parameter.name)?.introducedIn ?? '',
+                                            introducedIn: docOf(parameter.name)?.introducedIn ?? '',
                                             removedIn: docOf(parameter.name)?.removedIn ?? '',
                                             xpath: docOf(parameter.name)?.xpath ?? '',
                                         }}
@@ -498,16 +481,14 @@ function GlobalParametersTab({
                                 onClick={() =>
                                     setSaving({
                                         ...draftOf(document),
-                                        parameters: draftOf(document).parameters.map(
-                                            (parameter) =>
-                                                values[parameter.id] === undefined
-                                                    ? parameter
-                                                    : {
-                                                          ...parameter,
-                                                          value:
-                                                              values[parameter.id] ??
-                                                              parameter.value,
-                                                      },
+                                        parameters: draftOf(document).parameters.map((parameter) =>
+                                            values[parameter.id] === undefined
+                                                ? parameter
+                                                : {
+                                                      ...parameter,
+                                                      value:
+                                                          values[parameter.id] ?? parameter.value,
+                                                  },
                                         ),
                                     })
                                 }
@@ -668,7 +649,10 @@ function ProductsTab({
                                             type="button"
                                             title={product.typeCode}
                                             onClick={() => {
-                                                if (editingId !== null && editingId !== product.id) {
+                                                if (
+                                                    editingId !== null &&
+                                                    editingId !== product.id
+                                                ) {
                                                     setPending(product.id);
                                                     return;
                                                 }
@@ -724,9 +708,7 @@ function ProductsTab({
                         product={chosen}
                         mayWrite={mayWrite}
                         mode={mode}
-                        onEditingChange={(editing) =>
-                            setEditingId(editing ? chosen.id : null)
-                        }
+                        onEditingChange={(editing) => setEditingId(editing ? chosen.id : null)}
                         onRemove={() => onRemove(chosen.id)}
                     />
                 )}
@@ -802,11 +784,17 @@ function Workbench({
     const [saving, setSaving] = useState<Draft | null>(null);
     const type = vocabulary?.types.find((candidate) => candidate.code === product.typeCode);
     const parameters = parametersOf(draft, product.id);
-    const settings = vocabulary
-        ? settingsFor(vocabulary, product.typeCode, product.model, product.engine)
-        : [];
     const settingOf = (scope: string, name: string) =>
-        settings.find((setting) => setting.scope === scope && setting.name === name);
+        vocabulary === undefined
+            ? undefined
+            : documentationOf(
+                  vocabulary,
+                  product.typeCode,
+                  product.model,
+                  product.engine,
+                  scope,
+                  name,
+              );
     const model = vocabulary?.models.find((candidate) => candidate.code === product.model);
     const engine = vocabulary?.methods.find((candidate) => candidate.code === product.engine);
     const modelParameters = parameters.filter((parameter) => parameter.scope !== 'engine');
@@ -866,39 +854,44 @@ function Workbench({
                 />
             ) : (
                 <>
-            <RoleCard
-                mode={mode}
-                title={t('pricingEngines.fields.model')}
-                definition={t('pricingEngines.workbench.definitionModel')}
-                code={product.model}
-                description={model?.description ?? ''}
-                detail={model?.detail ?? ''}
-                source={model?.source ?? ''}
-                parameters={modelParameters}
-                settingOf={settingOf}
-                templateOf={(value) =>
-                    vocabulary === undefined ? undefined : templateInfo(vocabulary, value)
-                }
-            />
-            <RoleCard
-                mode={mode}
-                title={t('pricingEngines.fields.engine')}
-                definition={t('pricingEngines.workbench.definitionEngine')}
-                code={product.engine}
-                description={engine?.description ?? ''}
-                detail={engine?.detail ?? ''}
-                source={engine?.source ?? ''}
-                parameters={engineParameters}
-                settingOf={settingOf}
-                templateOf={(value) =>
-                    vocabulary === undefined ? undefined : templateInfo(vocabulary, value)
-                }
-                pairKnown={
-                    vocabulary === undefined
-                        ? undefined
-                        : isKnownPair(vocabulary, product.typeCode, product.model, product.engine)
-                }
-            />
+                    <RoleCard
+                        mode={mode}
+                        title={t('pricingEngines.fields.model')}
+                        definition={t('pricingEngines.workbench.definitionModel')}
+                        code={product.model}
+                        description={model?.description ?? ''}
+                        detail={model?.detail ?? ''}
+                        source={model?.source ?? ''}
+                        parameters={modelParameters}
+                        settingOf={settingOf}
+                        templateOf={(value) =>
+                            vocabulary === undefined ? undefined : templateInfo(vocabulary, value)
+                        }
+                    />
+                    <RoleCard
+                        mode={mode}
+                        title={t('pricingEngines.fields.engine')}
+                        definition={t('pricingEngines.workbench.definitionEngine')}
+                        code={product.engine}
+                        description={engine?.description ?? ''}
+                        detail={engine?.detail ?? ''}
+                        source={engine?.source ?? ''}
+                        parameters={engineParameters}
+                        settingOf={settingOf}
+                        templateOf={(value) =>
+                            vocabulary === undefined ? undefined : templateInfo(vocabulary, value)
+                        }
+                        pairKnown={
+                            vocabulary === undefined
+                                ? undefined
+                                : isKnownPair(
+                                      vocabulary,
+                                      product.typeCode,
+                                      product.model,
+                                      product.engine,
+                                  )
+                        }
+                    />
                 </>
             )}
             {saving !== null && vocabulary !== undefined && (
@@ -1292,10 +1285,13 @@ function ProductEditor({
                     {kept
                         .filter((parameter) => parameter.scope !== 'engine')
                         .map((parameter) => {
-                            const doc = vocabulary.settings.find(
-                                (setting) =>
-                                    setting.scope === parameter.scope &&
-                                    setting.name === parameter.name,
+                            const doc = documentationOf(
+                                vocabulary,
+                                product.typeCode,
+                                model,
+                                engine,
+                                parameter.scope,
+                                parameter.name,
                             );
                             return (
                                 <li key={parameter.id} className="space-y-2 py-3">
@@ -1387,10 +1383,13 @@ function ProductEditor({
                     {kept
                         .filter((parameter) => parameter.scope === 'engine')
                         .map((parameter) => {
-                            const doc = vocabulary.settings.find(
-                                (setting) =>
-                                    setting.scope === parameter.scope &&
-                                    setting.name === parameter.name,
+                            const doc = documentationOf(
+                                vocabulary,
+                                product.typeCode,
+                                model,
+                                engine,
+                                parameter.scope,
+                                parameter.name,
                             );
                             return (
                                 <li key={parameter.id} className="space-y-2 py-3">
@@ -1460,7 +1459,10 @@ function ProductEditor({
                                 {t('pricingEngines.change.dropHint')}
                             </p>
                             {change.dropped.map((parameter) => (
-                                <label key={parameter.id} className="flex items-center gap-2 text-sm">
+                                <label
+                                    key={parameter.id}
+                                    className="flex items-center gap-2 text-sm"
+                                >
                                     <input
                                         type="checkbox"
                                         checked={drop.includes(
@@ -1503,7 +1505,10 @@ function ProductEditor({
                                         )}
                                         onChange={() =>
                                             setAdd(
-                                                toggle(add, settingKey(setting.scope, setting.name)),
+                                                toggle(
+                                                    add,
+                                                    settingKey(setting.scope, setting.name),
+                                                ),
                                             )
                                         }
                                     />

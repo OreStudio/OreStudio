@@ -179,6 +179,36 @@ export function settingsFor(
         .sort((a, b) => Number(b.required) - Number(a.required));
 }
 
+/**
+ * The documentation of one setting: the pair's own row when the vocabulary has
+ * one, and otherwise any documented row that carries the same name.
+ *
+ * A setting means the same thing whichever pair takes it, and the ORE guide
+ * describes a model's settings under one product type only. A configuration may
+ * hold a pair whose settings the guide never lists, and its parameters are
+ * still readable from the row the guide wrote under another type.
+ */
+export function documentationOf(
+    vocabulary: PricingVocabulary,
+    typeCode: string,
+    model: string,
+    engine: string,
+    scope: string,
+    name: string,
+): KnownSetting | undefined {
+    const named = vocabulary.settings.filter(
+        (setting) => setting.scope === scope && setting.name === name && setting.documented,
+    );
+    return (
+        named.find(
+            (setting) =>
+                setting.typeCode === typeCode &&
+                setting.model === model &&
+                setting.engine === engine,
+        ) ?? named[0]
+    );
+}
+
 const keyOf = (scope: string, name: string): string => `${scope}:${name}`;
 
 /** The parameters of one product, in their order. */

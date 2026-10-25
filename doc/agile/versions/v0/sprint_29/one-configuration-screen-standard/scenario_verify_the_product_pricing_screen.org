@@ -34,7 +34,7 @@ The session already did the following. Confirm the system is in this state befor
 | Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
 | Target screen | Reporting → Product pricing (=/reporting/pricing-engines=) and one configuration, on http://localhost:21002 |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | PENDING |
 
 * Steps
 
@@ -45,6 +45,12 @@ The session already did the following. Confirm the system is in this state befor
 - Choose the party *ACME Corporation HK Ltd*.
 - The reporting area opens. If it does not, the login or the party failed; stop here.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Filter the list by party
 
 - Open Reporting, then Product pricing.
@@ -52,11 +58,24 @@ The session already did the following. Confirm the system is in this state befor
 - Set the party to *ACME Corporation HK Ltd*. The list shows only that party's 6 configurations.
 - Set it back to *All parties*. The list shows every party you may see.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | i can only see HK even for all parties.; ; [[file:scenario_verify_the_product_pricing_screen_step2_20261025_094835.png]] |
+
 ** Open a product pricing configuration
 
 - Open the configuration named *XVA Overnight*.
 - The page title is that name.
 - The line under it shows the record key (8 characters) and the version, then Simple | Advanced, Refresh, Edit and Delete.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Check the five tabs in order
 
@@ -64,11 +83,24 @@ The session already did the following. Confirm the system is in this state befor
 - Details is open on arrival.
 - Choose Global parameters, then reload the page. The same tab is open after the reload.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Read the details of the configuration
 
 - The Details tab shows the name, the party, the variant, who changed it and when, and the description.
 - The tab offers no field to type in.
 - Choose Edit. A dialog opens with the name, the variant, the description and a change reason. Choose Cancel; nothing is written.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | why do we need an edit and change button; [[file:scenario_verify_the_product_pricing_screen_step5_20261025_095031.png]] |
 
 ** Read the product tree by asset class
 
@@ -78,6 +110,12 @@ The session already did the following. Confirm the system is in this state befor
 - Expand all and Collapse all open and close every group.
 - Choose a product. The workbench on the right changes to it.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Read the workbench for one product
 
 - The product card states the product type, its asset class and its instrument.
@@ -85,6 +123,13 @@ The session already did the following. Confirm the system is in this state befor
 - The Model section states what a model is, then names the model, its description and its source.
 - The Engine section does the same for the engine.
 - A warning says a pair is not known to work only when the pair is not in the vocabulary.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | "The Swap product type. ORE uses it for the trade type Swap for single-currency swaps. 2 model and engine pairs price it; the usual pair is DiscountedCashflows with DiscountingSwapEngine." this is not what I would consider the documentation of the Swap product, it is very ORE specific. also lots of missing docs. ; [[file:scenario_verify_the_product_pricing_screen_step7_20261025_095308.png]] |
 
 ** Open a parameter's documentation
 
@@ -94,11 +139,24 @@ The session already did the following. Confirm the system is in this state befor
 - With Advanced chosen it also shows the XPath, the format, the release it was introduced in and the release it was removed in.
 - A parameter the contract does not document says so.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | missing docs as per previous step. |
+
 ** Switch between Simple and Advanced
 
 - In the page header choose Advanced, then Simple.
 - In Advanced the parameter panels and the model and engine panels show the schema fields; in Simple they show only the description and the default.
 - Reload the page. The choice is still the one you made.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Change a product setting
 
@@ -108,12 +166,25 @@ The session already did the following. Confirm the system is in this state befor
 - The dialog states the difference the change makes and asks for a change reason. Give a reason and save.
 - The workbench shows the new value. Reload the page and reopen the product; the value is still there.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Discard a draft on a product switch
 
 - With the product editor open and one value changed, choose another product in the tree.
 - A dialog says the draft for the first product will be discarded.
 - Choose Cancel. The editor stays and your changed value is still there.
 - Choose the other product again and choose Discard. The other product opens and the draft is gone.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | [[file:scenario_verify_the_product_pricing_screen_step11_20261025_095444.png]] |
 
 ** Change the model and see the engine
 
@@ -122,6 +193,12 @@ The session already did the following. Confirm the system is in this state befor
 - The engine changes with it to the first engine the vocabulary pairs with the new model.
 - If a pair is not known to work, the card marks it and still lets you choose it. It never refuses.
 - Choose Cancel; nothing is written.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Edit and save a global parameter
 
@@ -132,17 +209,36 @@ The session already did the following. Confirm the system is in this state befor
 - Change one value, choose Save, give a change reason and save.
 - The new value shows. Reload the page; it is still there.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Read the reports that bind it
 
 - Open Reports.
 - The tab states that a report needs a price for every product type in its portfolio, and that a change reaches the next run of each report.
 - It lists the 3 reports that bind this configuration. Open one; its page opens.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Read the history of the configuration
 
 - Open History.
 - The versions list newest first, each with who changed it and why.
 - The product edit and the global parameter edit from the steps above are in the list, each with the reason you gave.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | we are using legacy history format.; [[file:scenario_verify_the_product_pricing_screen_step15_20261025_095604.png]] |
 
 ** Follow the engine run settings link
 
@@ -151,12 +247,18 @@ The session already did the following. Confirm the system is in this state befor
 - Follow the link. The Engine run settings list opens.
 - That screen is a different one: it sets how the engine runs the whole document, not how one product is priced.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
+| Status        | PENDING |
+| Completed at  |  |
 | Branch        | main  |
 | Commit        | 0535beb5c7 |
 | Worktree      | solid_dirac |
@@ -167,3 +269,6 @@ The session already did the following. Confirm the system is in this state befor
 - Every parameter carries a label, a help line, a format and the XPath of its leaf. A parameter the contract does not hold says so.
 - The model and the engine names are a choice from the vocabulary; a pair the vocabulary does not hold is marked and never refused.
 - The Simple and Advanced choice is remembered for the whole screen family, so the engine settings screen opens in the same mode.
+- The QA run on 2026-10-25 failed five steps. Two are fixed in this branch: the duplicate Change button, and the discard dialog that showed its translation keys. The parameter documentation now falls back to a row with the same setting name, so a pair the guide leaves out still reads.
+- Three findings are tasks: [[id:005B424F-0F10-472F-B3BA-2F92395FB1C2][Serve the history of the whole pricing engine document]], [[id:F2CE9184-C4F8-4EA2-BB74-B813BA602A96][Author the documentation of every product type]] and [[id:8C0BEBAB-E0E7-48C2-8E15-CA454F11C8F4][Show every party's configurations on the list]].
+- Re-run steps 5, 7, 8 and 11 after the fixes land. Steps 2 and 15 stay failed until their tasks are done.

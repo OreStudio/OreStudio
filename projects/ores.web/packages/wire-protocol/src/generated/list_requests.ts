@@ -5251,7 +5251,7 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
     },
     'trading.v1.trade_links.list': {
         asOf: true,
-        filter: [],
+        filter: ['from_trade_id', 'to_trade_id', 'from_trade_id_one_of', 'to_trade_id_one_of'],
         rows: ['links'],
     },
     'trading.v1.trade_links_versions.list': {

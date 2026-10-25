@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade_link.hpp"
+#include "ores.trading.api/messaging/trade_link_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -157,6 +158,7 @@ public:
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
+                const std::optional<messaging::trade_links_filter>& filter = std::nullopt,
                 const std::optional<std::string>& as_of = std::nullopt);
 
     /**
@@ -164,8 +166,10 @@ public:
      * @param ctx Repository context with database connection
      * @return Total number of active trade links
      */
-    std::uint32_t get_total_link_count(context ctx,
-                                       const std::optional<std::string>& as_of = std::nullopt);
+    std::uint32_t
+    get_total_link_count(context ctx,
+                         const std::optional<messaging::trade_links_filter>& filter = std::nullopt,
+                         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a trade link by closing its temporal validity.

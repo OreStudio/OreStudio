@@ -63,6 +63,13 @@ struct trade_link_lookup {
     std::optional<ores::trading::domain::trade_link> trade_link;
 };
 
+struct trade_links_filter {
+    std::optional<boost::uuids::uuid> from_trade_id;
+    std::optional<boost::uuids::uuid> to_trade_id;
+    std::optional<std::vector<boost::uuids::uuid>> from_trade_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> to_trade_id_one_of;
+};
+
 struct trade_link_event {
     boost::uuids::uuid event_id;
     trade_link_key key;
@@ -96,6 +103,7 @@ struct list_trade_links_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
+    std::optional<trade_links_filter> filter;
     std::optional<std::string> as_of;
 };
 

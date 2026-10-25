@@ -99,6 +99,8 @@ export function TradesPage(): ReactNode {
                 { label: t('trading.trades.title') },
             ]}
             keyOf={(row) => row.id}
+            // A structure has no page of its own yet, so only a trade opens.
+            pathOf={(row) => (row.row_kind === 'trade' ? `/trades/${row.id}` : undefined)}
             columns={[
                 {
                     id: 'identifier',

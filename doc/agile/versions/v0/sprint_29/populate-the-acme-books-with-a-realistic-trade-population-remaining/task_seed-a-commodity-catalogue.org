@@ -28,9 +28,9 @@ A commodity trade names its commodity in free text, and nothing holds the set of
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The plan is written. The model comes next. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Declare the entity, then generate the artefact and the publish. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance

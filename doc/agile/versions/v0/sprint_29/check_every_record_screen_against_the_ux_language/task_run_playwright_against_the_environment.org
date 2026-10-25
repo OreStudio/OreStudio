@@ -26,11 +26,11 @@ A browser test runs against the environment ores.web with no manual step. The si
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E8118D19-B54C-49EF-9B5C-1801BBA932D9][Check every record screen against the UX language]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -42,9 +42,15 @@ A browser test runs against the environment ores.web with no manual step. The si
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Reuse what the repository already knows rather than invent it: the web port
+from the checkout's .env, as compass open-as reads it; the seeded people and the
+shared Acme password, as compass_open_as.py holds them; the two autocomplete
+fields the sign-in page marks, as the open-as script fills them. Put the harness
+in a workspace package of its own so npm test does not run it, because it needs
+a started environment, and pin @playwright/test to the CLI version the owner
+installed. Make the first spec touch a list, a server search and a record page,
+naming the rule identifiers it checks, so the harness proves the chain before
+the conformance checks are written.
 
 * Measurements
 
@@ -58,7 +64,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Specs in the harness, tests passed | 1, 1 of 1 in 1.9 s | =npm run harness= in =projects/ores.web= | 7aa9599df2 |
+| Rule identifiers the first spec names | 4 | =grep -o 'RS-[A-Z]*-[0-9]*' packages/harness/tests/sign-in.spec.ts= | 7aa9599df2 |
+| Playwright and browser | @playwright/test 1.64.1, Chromium 1248 | =npm ls @playwright/test=; =ls ~/.cache/ms-playwright= | 7aa9599df2 |
+| Local gate | 8 of 8 passed, web class 82.8 s | =compass check= | 7aa9599df2 |
 
 * Notes
 
@@ -83,6 +92,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: web and docs classes | packages/harness, doc/recipes/ops | Accept | prettier clean, typecheck clean; the comments in the spec name the rule each assertion checks and nothing else |
 
 * Result
+
+=projects/ores.web/packages/harness= drives the environment's web in Chromium.
+=npm run harness= in the web component signs in as the tenant administrator,
+opens the currencies list, searches a code on the server and opens its record
+page, naming RS-LIST-03, RS-LIST-04, RS-LIST-10 and RS-PAGE-01. The config
+reads the port from the checkout's .env, the fixture signs in through the two
+autocomplete fields, and a failing test leaves a screenshot, a snapshot and a
+trace under =.runtime/harness=. The recipe How do I run the browser harness
+against the environment says how, and the local gate's web class is green.

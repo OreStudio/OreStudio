@@ -65,7 +65,7 @@ The investigation this story commissioned is
 | [[id:27FF4AA9-F6B8-460F-8BDD-043F1476C9EB][Seed a commodity catalogue]] | DONE | 2026-10-25 | 2026-10-25 | Give the platform a commodity vocabulary it can validate: an entity for the commodities a population draws from, seeded with the exchange-prefixed indices the engine resolves, each with its unit and quotation currency. |
 | [[id:29DAA209-E62B-47C4-9220-51CA6622EC0C][Populate the commodity family]] | DONE | 2026-10-25 | 2026-10-25 | Book the twenty-five commodity trade types the catalogue routes, in the 5% share the weights page sets. Waits on the commodity catalogue. |
 | [[id:D4A62343-5E5B-46B6-84F5-51F008FC4A11][Record where a trade came from]] | DONE | 2026-10-25 | 2026-10-25 | Every trade states an immutable origin from a lookup and an origin reference, so reports and rollbacks can separate manual, API, ORE import and synthetic trades. |
-| [[id:480C95DD-64C1-4EAD-A59B-D8303E5E4336][Populate the interest rates family]] | BACKLOG | | | Book the ten interest rate trade types the catalogue routes to rate_instrument, in the 42% share the weights page sets. |
+| [[id:480C95DD-64C1-4EAD-A59B-D8303E5E4336][Populate the interest rates family]] | DONE | 2026-10-25 | 2026-10-25 | Book the ten interest rate trade types the catalogue routes to rate_instrument, in the 42% share the weights page sets. |
 | [[id:46D280C9-965B-437E-9818-5A18CDD91836][Populate the FX family]] | BACKLOG | | | Book the sixteen FX trade types the catalogue routes, in the 25% share the weights page sets. |
 | [[id:8D7AF6BC-28B8-4887-BD6A-58F329A0B038][Populate the equity family]] | BACKLOG | | | Book the nineteen equity trade types the catalogue routes, in the 12% share the weights page sets. |
 | [[id:66225F6D-E7AA-45D7-A207-AE10607F6DAF][Populate the credit family]] | BACKLOG | | | Book the six credit trade types the catalogue routes, in the 6% share the weights page sets. |
@@ -103,6 +103,22 @@ The investigation this story commissioned is
 - Each class states the market data it prices on. A class whose curves or
   surfaces are absent still books and exports, and its task says which
   pricing it cannot prove yet.
+- A trade that must export states a header, one product fact row and its
+  children. The store rebuilds an instrument from the header and one fact
+  row per product, so a trade with children and no fact row books, reports
+  and exports as its type alone — the engine has nothing to price. The
+  interest rate family found this with an exporter test, and every later
+  family states its fact row.
+- A type ORE models as its own instrument and the store holds no fact row
+  for is out of scope, with the reason named. Routing it to a shared table
+  is not enough on its own: RateDigitalOption, SwaptionStraddle and
+  ForwardVolatilityAgreement each have an ORE element and no fact row here,
+  so each needs a table, an array, a writer and an export mapping before it
+  can book.
+- The class share is a check for the whole story, not for one task. A class's
+  share of the population is a property of every family at once, so a family
+  task reports the share it measured and does not inflate its own config to
+  reach the weight.
 
 * Out of scope
 

@@ -23,6 +23,7 @@
 #include "ores.iam.api/messaging/account_role_protocol.hpp"
 #include "ores.iam.api/messaging/role_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/commodity_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
@@ -30,6 +31,14 @@
 #include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
+#include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
+#include "ores.trading.api/domain/callable_swap_instrument.hpp"
+#include "ores.trading.api/domain/cap_floor_instrument.hpp"
+#include "ores.trading.api/domain/flexi_swap_instrument.hpp"
+#include "ores.trading.api/domain/fra_instrument.hpp"
+#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
+#include "ores.trading.api/domain/swaption_instrument.hpp"
+#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -192,6 +201,18 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
             .code = commodity.code,
             .unit = commodity.unit_code,
             .quotation_currency = commodity.quotation_currency_code});
+
+    /*
+     * A floating leg names an index from the floating index catalogue, which
+     * is the tenant's own. It is not the benchmark rate set: a leg states
+     * =GBP-SONIA=, the FpML name of the index, and the store refuses anything
+     * outside that vocabulary. An empty set is the planner's to refuse, because
+     * a leg naming an unheld index would book and then fail to price.
+     */
+    ores::refdata::messaging::list_floating_index_types_request index_req;
+    index_req.limit = page;
+    for (const auto& index : read(index_req).types)
+        scope.floating_index_codes.push_back(index.code);
 
     ores::refdata::messaging::list_counterparties_request cp_req;
     cp_req.limit = page;
@@ -507,6 +528,150 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
         row.audit.change_reason_code = std::string(population_reason);
         row.audit.change_commentary = "Generated trade population.";
         book_req.instruments.commodity_instruments.push_back(row);
+    } else if (const auto* rate = std::get_if<domain::rate_terms>(&slot.terms)) {
+        const auto money = [](double value) {
+            return ores::utility::decimal::decimal::from_double(value).value();
+        };
+
+        ores::trading::domain::rate_instrument header;
+        header.start_date = rate->start_date;
+        header.maturity_date = rate->maturity_date;
+        header.description = "Generated interest rate trade.";
+        header.audit.change_reason_code = std::string(population_reason);
+        header.audit.change_commentary = "Generated trade population.";
+        book_req.instruments.rate_instruments.push_back(header);
+
+        /*
+         * One fixed leg against one floating leg, which is the shape every
+         * routed rate type reduces to. The leg's economics are rows beside it
+         * and not columns on it: its notional is an amount and its rate or
+         * spread is a rate.
+         */
+        const auto write_leg = [&](int number,
+                                   std::string_view type_code,
+                                   const std::string& day_count,
+                                   const std::string& business_day,
+                                   const std::string& frequency,
+                                   const std::string& index,
+                                   std::string_view rate_role,
+                                   double value,
+                                   bool payer,
+                                   const std::string& currency) {
+            ores::trading::domain::swap_leg leg;
+            leg.identity.leg_number = number;
+            leg.payer = payer;
+            leg.leg_type_code = std::string(type_code);
+            leg.day_count_fraction_code = day_count;
+            leg.business_day_convention_code = business_day;
+            leg.payment_frequency_code = frequency;
+            leg.floating_index_code = index;
+            leg.currency = currency;
+            leg.audit.change_reason_code = std::string(population_reason);
+            leg.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.swap_legs.push_back(leg);
+
+            ores::trading::domain::swap_leg_amount amount;
+            amount.leg_number = number;
+            amount.sequence_number = 1;
+            amount.start_date = rate->start_date;
+            amount.amount = money(rate->notional);
+            amount.change_reason_code = std::string(population_reason);
+            amount.change_commentary = "Generated trade population.";
+            book_req.instruments.swap_leg_amounts.push_back(amount);
+
+            ores::trading::domain::swap_leg_rate leg_rate;
+            leg_rate.leg_number = number;
+            leg_rate.rate_role = std::string(rate_role);
+            leg_rate.sequence_number = 1;
+            leg_rate.start_date = rate->start_date;
+            leg_rate.value = money(value);
+            leg_rate.change_reason_code = std::string(population_reason);
+            leg_rate.change_commentary = "Generated trade population.";
+            book_req.instruments.swap_leg_rates.push_back(leg_rate);
+        };
+
+        write_leg(1,
+                  "Fixed",
+                  rate->fixed_day_count_fraction_code,
+                  rate->fixed_business_day_convention_code,
+                  rate->fixed_payment_frequency_code,
+                  std::string(),
+                  "fixed",
+                  rate->fixed_rate,
+                  true,
+                  rate->currency);
+        write_leg(2,
+                  "Floating",
+                  rate->floating_day_count_fraction_code,
+                  rate->floating_business_day_convention_code,
+                  rate->floating_payment_frequency_code,
+                  rate->floating_index_code,
+                  "spread",
+                  rate->spread,
+                  false,
+                  rate->floating_currency.empty() ? rate->currency : rate->floating_currency);
+        /*
+         * The fact row says which product the legs belong to. It is not
+         * decoration: the store rebuilds a rates instrument from a header and
+         * one fact row, and a trade that states legs alone exports as its type
+         * with no legs at all, which the engine cannot price.
+         */
+        const auto direction = std::string(slot.slot % 2 == 0 ? "Long" : "Short");
+        const auto& type = slot.trade_type_code;
+        if (type == "Swap" || type == "CrossCurrencySwap") {
+            ores::trading::domain::vanilla_swap_instrument leaf;
+            leaf.settlement_lag = 2;
+            book_req.instruments.vanilla_swap_instruments.push_back(leaf);
+        } else if (type == "ForwardRateAgreement") {
+            ores::trading::domain::fra_instrument leaf;
+            leaf.currency = rate->currency;
+            leaf.rate_index = rate->floating_index_code;
+            leaf.long_short = direction;
+            leaf.notional = money(rate->notional);
+            book_req.instruments.fra_instruments.push_back(leaf);
+        } else if (type == "CapFloor") {
+            book_req.instruments.cap_floor_instruments.push_back(
+                ores::trading::domain::cap_floor_instrument{});
+            /*
+             * A cap or a floor without a strike pays nothing: the strike is
+             * the whole of its economics, and the export reads it from the
+             * instrument strike rows the schema keeps beside the leg.
+             */
+            if (rate->strike.has_value()) {
+                ores::trading::domain::instrument_strike row;
+                row.strike_role = "cap";
+                row.sequence_number = 1;
+                row.bare_value = money(*rate->strike);
+                row.bare_currency = rate->currency;
+                book_req.instruments.instrument_strikes.push_back(row);
+            }
+        } else if (type == "Swaption") {
+            ores::trading::domain::swaption_instrument leaf;
+            leaf.expiry_date = rate->expiry_date.value_or(rate->start_date);
+            leaf.exercise_type = "European";
+            leaf.settlement_type = "Cash";
+            leaf.long_short = direction;
+            book_req.instruments.swaption_instruments.push_back(leaf);
+        } else if (type == "CallableSwap") {
+            book_req.instruments.callable_swap_instruments.push_back(
+                ores::trading::domain::callable_swap_instrument{});
+        } else if (type == "KnockOutSwap") {
+            ores::trading::domain::knock_out_swap_instrument leaf;
+            leaf.barrier_start_date = rate->start_date;
+            leaf.barrier_type = "UpAndOut";
+            book_req.instruments.knock_out_swap_instruments.push_back(leaf);
+        } else if (type == "FlexiSwap") {
+            ores::trading::domain::flexi_swap_instrument leaf;
+            leaf.option_long_short = direction;
+            book_req.instruments.flexi_swap_instruments.push_back(leaf);
+        } else if (type == "BalanceGuaranteedSwap") {
+            ores::trading::domain::balance_guaranteed_swap_instrument leaf;
+            leaf.reference_security = slot.internal_identifier;
+            book_req.instruments.balance_guaranteed_swap_instruments.push_back(leaf);
+        } else {
+            throw trade_population_write_error("The rate trade type " + type +
+                                               " states no fact row this writer knows.");
+        }
     } else {
         throw trade_population_write_error(
             "The slot states no terms this writer knows how to book.");

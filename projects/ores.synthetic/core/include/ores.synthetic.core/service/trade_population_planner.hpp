@@ -113,6 +113,27 @@ public:
 };
 
 /**
+ * @brief The planner for an interest rate population.
+ *
+ * The routing table sends ten trade types to @c rate_instrument, and every one
+ * of them reduces to a fixed leg against a floating leg: the type decides the
+ * exercise features the specialised tables hold, and the legs are what all ten
+ * share. The planner states those legs, drawing the index from the tenant's
+ * benchmark catalogue and the conventions from the reference data's own codes.
+ *
+ * It refuses when the tenant holds no benchmark rate, because a floating leg
+ * that named an index the store cannot resolve would book and then fail to
+ * price.
+ */
+class ORES_SYNTHETIC_CORE_EXPORT rate_trade_planner final : public trade_planner {
+public:
+    [[nodiscard]] domain::trade_population_plan
+    plan(const domain::trade_generation_scope& scope) const override;
+
+    [[nodiscard]] std::string_view asset_class_code() const override;
+};
+
+/**
  * @brief The planner registered for an asset class.
  *
  * A class with no planner is refused by name rather than falling back to one,

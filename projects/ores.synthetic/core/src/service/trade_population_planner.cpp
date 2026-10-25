@@ -186,15 +186,17 @@ void validate_scope(const domain::trade_generation_scope& scope) {
 }
 
 std::vector<std::string_view> planned_asset_classes() {
-    static const std::vector<std::string_view> codes{"bond", "commodity"};
+    static const std::vector<std::string_view> codes{"bond", "commodity", "interest_rates"};
     return codes;
 }
 
 const trade_planner& planner_for(const std::string& asset_class_code) {
     static const bond_trade_planner bond;
     static const commodity_trade_planner commodity;
+    static const rate_trade_planner rates;
     static const std::map<std::string, const trade_planner*> planners{{"bond", &bond},
-                                                                     {"commodity", &commodity}};
+                                                                     {"commodity", &commodity},
+                                                                     {"interest_rates", &rates}};
 
     const auto entry = planners.find(asset_class_code);
     if (entry == planners.end()) {
@@ -551,6 +553,193 @@ boost::uuids::uuid issuer_id_for(const domain::trade_generation_scope& scope,
     auto issuers = scope.issuer_ids;
     std::ranges::sort(issuers);
     return issuers[tenor_years % issuers.size()];
+}
+
+}
+
+namespace ores::synthetic::service {
+
+namespace {
+
+/*
+ * The trade types the routing table sends to rate_instrument, less the
+ * inflation swap. That one is booked by the inflation family, because its fact
+ * row states an inflation index and this generator has no such vocabulary. The
+ * list is stated rather than read from the table, because a planner is pure and
+ * has no database: a type the table routes later has to be added here.
+ */
+constexpr std::string_view rate_types[] = {"Swap",
+                                           "CrossCurrencySwap",
+                                           "ForwardRateAgreement",
+                                           "CapFloor",
+                                           "Swaption",
+                                           "FlexiSwap",
+                                           "BalanceGuaranteedSwap",
+                                           "CallableSwap",
+                                           "KnockOutSwap"};
+constexpr std::size_t rate_type_count = sizeof(rate_types) / sizeof(rate_types[0]);
+
+/*
+ * The day counts a fixed leg cycles through. A leg that states a code the
+ * store does not hold is refused, so these are reference data codes and not a
+ * vocabulary of the generator's own.
+ */
+constexpr std::string_view fixed_day_counts[] = {"30/360", "ActAct(ISDA)", "A360"};
+constexpr std::size_t fixed_day_count_count =
+    sizeof(fixed_day_counts) / sizeof(fixed_day_counts[0]);
+
+}
+
+
+namespace {
+
+/*
+ * The index a slot resets on. A catalogue code carries its currency as a
+ * prefix, such as =GBP-SONIA=, so a population denominated in one currency
+ * picks from the indices of that currency rather than from every currency the
+ * tenant holds. A set with no index of the scope's currency falls back to the
+ * whole catalogue, because a leg in a currency with no index of its own is
+ * still better stated than refused.
+ */
+/*
+ * The index a cross currency swap resets on: one of a currency other than the
+ * book's, because two legs in one currency are not a cross currency swap. A
+ * catalogue with no such index falls back to the whole set, and the leg then
+ * states the book's currency rather than pretending to be cross currency.
+ */
+const std::string* foreign_index_for(const domain::trade_generation_scope& scope,
+                                     std::uint32_t slot) {
+    const auto own = std::string(scope.currency_code) + "-";
+    std::vector<const std::string*> foreign;
+    for (const auto& code : scope.floating_index_codes) {
+        if (!code.starts_with(own))
+            foreign.push_back(&code);
+    }
+    if (foreign.empty())
+        return nullptr;
+    return foreign[slot % foreign.size()];
+}
+
+const std::string& index_for(const domain::trade_generation_scope& scope, std::uint32_t slot) {
+    const auto own = std::string(scope.currency_code) + "-";
+    std::vector<const std::string*> matching;
+    for (const auto& code : scope.floating_index_codes) {
+        if (code.starts_with(own))
+            matching.push_back(&code);
+    }
+    if (!matching.empty())
+        return *matching[slot % matching.size()];
+    return scope.floating_index_codes[slot % scope.floating_index_codes.size()];
+}
+
+}
+
+std::string_view rate_trade_planner::asset_class_code() const { return "interest_rates"; }
+
+domain::trade_population_plan
+rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
+    validate_scope(scope);
+
+    if (scope.floating_index_codes.empty())
+        throw trade_population_error(
+            "The tenant holds no benchmark rate, so no floating leg can name an index. Publish "
+            "the benchmark rate catalogue first.");
+
+    const auto min_years = tenor_years_of(scope.min_tenor_code);
+    const auto max_years = tenor_years_of(scope.max_tenor_code);
+
+    domain::trade_population_plan plan;
+    plan.config_id = scope.config_id;
+    plan.party_id = scope.party_id;
+    plan.as_of_date = scope.as_of_date;
+
+    const auto total = scope.trades_per_book * static_cast<std::uint32_t>(scope.book_ids.size());
+    for (std::uint32_t slot = 0; slot < total; ++slot) {
+        const auto& book_id = scope.book_ids[slot % scope.book_ids.size()];
+        const auto& counterparty_id = scope.counterparty_ids[slot % scope.counterparty_ids.size()];
+        const auto& trader = scope.trader_usernames[slot % scope.trader_usernames.size()];
+        const auto name = slot_name(scope, slot);
+
+        /*
+         * The type cycles rather than being drawn, so a population long enough
+         * to reach a type always states it and the coverage claim is testable.
+         */
+        const auto& type = rate_types[slot % rate_type_count];
+        const auto* foreign = (type == "CrossCurrencySwap") ? foreign_index_for(scope, slot)
+                                                           : nullptr;
+        const auto& index = foreign != nullptr ? *foreign : index_for(scope, slot);
+
+        const auto span = max_years - min_years + 1;
+        const auto drawn =
+            min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
+        auto tenor_years = std::clamp(drawn, min_years, max_years);
+
+        /*
+         * A forward rate agreement is a short-dated contract: a ten year one is
+         * not the product, so the band is capped here rather than left to a
+         * config that states one band for the whole family.
+         */
+        if (type == "ForwardRateAgreement")
+            tenor_years = std::min<std::uint32_t>(tenor_years, 1U);
+
+        domain::rate_terms terms;
+        terms.currency = scope.currency_code;
+        terms.start_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
+        terms.maturity_date = add_years(terms.start_date, static_cast<int>(tenor_years));
+        terms.notional =
+            price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
+        /*
+         * A rate is a decimal in the store, not a percentage: one per cent to
+         * six per cent, quantised to a ten-thousandth so a decimal column holds
+         * it exactly.
+         */
+        terms.fixed_rate = std::round((0.01 + 0.05 * draw(name, 2)) * 10000.0) / 10000.0;
+        terms.fixed_day_count_fraction_code =
+            std::string(fixed_day_counts[slot % fixed_day_count_count]);
+        terms.fixed_business_day_convention_code = "ModifiedFollowing";
+        terms.fixed_payment_frequency_code = "Annual";
+        terms.floating_index_code = index;
+        terms.spread = std::round(draw(name, 3) * 50.0) / 10000.0;
+        if (foreign != nullptr)
+            terms.floating_currency = foreign->substr(0, foreign->find('-'));
+        if (type == "CapFloor")
+            terms.strike = std::round((0.01 + 0.05 * draw(name, 4)) * 10000.0) / 10000.0;
+        if (type == "Swaption") {
+            /*
+             * An option is exercised after the population is written and
+             * before the swap it opens matures, so its expiry sits a year in.
+             */
+            terms.expiry_date = add_years(terms.start_date, 1);
+            terms.strike = terms.fixed_rate;
+        }
+        terms.floating_day_count_fraction_code = "ActAct(ISDA)";
+        terms.floating_business_day_convention_code = "ModifiedFollowing";
+        terms.floating_payment_frequency_code = "Semiannual";
+
+        domain::trade_population_slot entry;
+        entry.slot = slot;
+        entry.book_id = book_id;
+        entry.counterparty_id = counterparty_id;
+        entry.trader_username = trader;
+        entry.trade_type_code = std::string(type);
+        entry.trade_id = trade_id_for(scope, slot);
+        entry.internal_identifier = internal_identifier_for(scope, slot);
+        entry.trade_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
+        entry.notional = terms.notional;
+        entry.currency = scope.currency_code;
+        entry.terms = terms;
+
+        for (const auto& pair : scope.netting_sets) {
+            if (pair.first == counterparty_id) {
+                entry.netting_set_id = pair.second;
+                break;
+            }
+        }
+
+        plan.slots.push_back(std::move(entry));
+    }
+
+    return plan;
 }
 
 }

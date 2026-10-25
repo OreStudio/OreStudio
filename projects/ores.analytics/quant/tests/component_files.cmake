@@ -53,6 +53,7 @@ set(files
     "risk_recentering_tests.cpp"
     "service_calendar_arithmetic_tests.cpp"
     "service_tenor_resolution_engine_tests.cpp"
+    "shared_intensity_tests.cpp"
     "tick_clock_tests.cpp"
     "topology_builder_tests.cpp"
     "two_factor_gaussian_process_tests.cpp"

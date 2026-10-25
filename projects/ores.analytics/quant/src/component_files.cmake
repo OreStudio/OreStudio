@@ -81,6 +81,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/process_parameter_validation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/rate_snapshot.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/rate_status.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/shared_intensity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/staleness_policy.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/tenor_resolution.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/topology_build_error.hpp"

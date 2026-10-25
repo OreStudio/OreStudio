@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/carry-the-shared-endogenous-intensity
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Any tick anywhere raises a shared intensity that decays, so a panic spreads inst
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,30 @@ Any tick anywhere raises a shared intensity that decays, so a panic spreads inst
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three slices, in this order, because each one is what the next needs.
+
+1. *The heat.* =domain::shared_intensity=: every event adds a jump, the heat fades
+   at its own rate, and the stationary mean is the event rate times the jump over
+   the decay. Readers load one relaxed atomic; an event is one atomic add; the
+   owner fades with a compare-and-swap loop, so an event that lands during a fade
+   is never lost. It is tested for keeping every event under concurrency.
+2. *The baseline as a rate.* A series' intensity is
+   =sensitivity * (mean_rate * S + C)=, which is a rate, not a multiple of the
+   configured one. =i_arrival_process= therefore moves from
+   =set_baseline_multiplier= to =set_baseline_rate=, and the process keeps its own
+   Hawkes term on top. This is the slice that makes C(t) reach the feeds.
+3. *The one clock.* Aggregate thinning over every registered feed: a bound on the
+   total intensity, a candidate time, a stream chosen in proportion, and an
+   acceptance test. Every component of a stream's intensity is non-increasing
+   between events — the Hawkes excess decays, C decays, and S is constant between
+   transitions — so the value at the start of an interval bounds it, which is what
+   makes the thinning exact rather than approximate. Each process gains
+   =intensity_at(t)= and =accept_event(t)=, and a feed stops being a thread and
+   becomes a body the clock calls.
+
+The test that proves the whole thing is cross-series correlation of counts: it
+must be clearly positive under a live intensity and near zero with the intensity
+off, and every per-series statistic must still hold.
 
 * Measurements
 

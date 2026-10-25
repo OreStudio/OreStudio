@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 7A41E2C8-3B95-4D17-8F6A-2C5D9E0B4A31
+:END:
+#+title: The services refuse a hand-written list request
+#+description: A list request must state every member of its filter and its as_of, and it must read the rows from the reply field the response declares. A hand-written request that leaves any of them out is refused as bad_request, so a whole screen shows an error instead of rows.
+#+type: capture
+#+level: cross
+#+filetags: :web:bff:trading:protocol:bug:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+The Trades screen showed "A request did not finish / The server refused the request (bad_request)". Three separate faults, one shape: the BFF writes list requests by hand, and the service decodes them strictly.
+
+* What the service requires, and why
+
+A list request's struct has optional members with no default initialiser, so the decoder refuses a payload that leaves one out:
+
+#+begin_example
+Failed to decode trading.v1.trade_identifiers.list (383 bytes): Field named 'as_of' not found.
+Failed to decode trading.v1.trades.list (257 bytes): Failed to parse field 'filter': Found 3 errors:
+  1) Field named 'trade_type_one_of' not found.
+  2) Field named 'counterparty_scope_one_of' not found.
+  3) Field named 'search' not found.
+#+end_example
+
+So =as_of= must be stated even though it is optional, and *every* member of the filter struct must be named, with =null= where the screen means none. A request that states =filter: null= is accepted, which is why a page with no filters works.
+
+The third fault was silent rather than refused: the identifier rows live under =identifiers= in the reply, and the BFF read =trade_identifiers=, so =z.array(row).default([])= produced an empty array and every Id cell was blank while the request reported success.
+
+* Why it reached a screen
+
+The project already owns this knowledge. =REFDATA_RECORDS= carries =rows= and =asOf= per refdata list, and the classification builders spread =as_of: null= when the flag is set; =list-as-of.test.ts= holds those flags to the C++ structs. The trading lists are in no such table, so the trades route wrote its payloads by hand, and the unit test repeated the same wrong rows key, so it agreed with the bug instead of catching it.
+
+* What was fixed
+
+=trades.ts= states =as_of= and every filter member of the four reads it makes (summaries, identifiers, books, counterparties, trades), reads identifiers from =identifiers=, and the list test's fixture uses the reply's real key. The browser suite now asserts the screen answers with rows.
+
+* What is not fixed
+
+The same hand-written shape appears at about fifty other list call sites in =packages/bff/src=, each missing =as_of= where the C++ declares it, so each is refused the same way. The lever is to derive the payload from the protocol instead of writing it by hand: a descriptor per list carrying =rows=, =asOf= and the filter's members, generated from the C++ the way =REFDATA_RECORDS= is, plus a check that holds every call site to it. Then this class cannot come back, and the five dozen sites are fixed by construction rather than one at a time.

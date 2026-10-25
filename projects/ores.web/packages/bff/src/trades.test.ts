@@ -159,7 +159,7 @@ describe('trade list route', () => {
             [listSummaries]: SUMMARIES,
             'trading.v1.trade_identifiers.list': {
                 result: ok,
-                trade_identifiers: [
+                identifiers: [
                     { id: 'a', trade_id: TRADE, id_type: 'UTI', id_value: 'UTI-1' },
                     { id: 'b', trade_id: TRADE, id_type: 'Internal', id_value: 'ACME-100201' },
                 ],
@@ -203,7 +203,7 @@ describe('trade list route', () => {
     it('reads a structure row without a trade behind it', async () => {
         const { server, sessionId } = buildTestServer({
             [listSummaries]: SUMMARIES,
-            'trading.v1.trade_identifiers.list': { result: ok, trade_identifiers: [] },
+            'trading.v1.trade_identifiers.list': { result: ok, identifiers: [] },
             'refdata.v1.books.list': { result: ok, books: [] },
             'refdata.v1.counterparties.list': { result: ok, counterparties: [] },
             'trading.v1.trades.list': { result: ok, trades: [] },

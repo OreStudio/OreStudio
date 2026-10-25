@@ -262,8 +262,7 @@ trading_trade_population_writer::read_trade(const boost::uuids::uuid& trade_id) 
         .external_version = static_cast<std::uint32_t>(decoded->trades.front().external_version)};
 }
 
-void trading_trade_population_writer::ensure_issue(
-    const domain::trade_population_slot& slot) {
+void trading_trade_population_writer::ensure_issue(const domain::trade_population_slot& slot) {
     const auto& terms = std::get<domain::bond_terms>(slot.terms);
 
     if (issues_written_.contains(terms.issue_id))
@@ -395,9 +394,8 @@ void trading_trade_population_writer::ensure_issue(
     issues_written_.insert(terms.issue_id);
 }
 
-void trading_trade_population_writer::write_trade(
-    const domain::trade_population_slot& slot,
-    const domain::trade_generation_scope& scope) {
+void trading_trade_population_writer::write_trade(const domain::trade_population_slot& slot,
+                                                  const domain::trade_generation_scope& scope) {
     const auto& codec = ores::nats::default_wire_codec();
     const auto& terms = std::get<domain::bond_terms>(slot.terms);
 

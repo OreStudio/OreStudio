@@ -204,7 +204,8 @@ TEST_CASE("every_trade_date_derives_from_the_as_of_anchor", tags) {
 
     REQUIRE(first.slots.front().trade_date < second.slots.front().trade_date);
 
-    REQUIRE(bond_of(first.slots.front()).maturity_date < bond_of(second.slots.front()).maturity_date);
+    REQUIRE(bond_of(first.slots.front()).maturity_date <
+            bond_of(second.slots.front()).maturity_date);
 }
 
 TEST_CASE("a_tenor_or_notional_band_that_does_not_order_is_refused", tags) {
@@ -277,7 +278,8 @@ TEST_CASE("a_securitys_maturity_is_its_issue_date_plus_its_term", tags) {
 
     for (const auto& slot : plan.slots) {
         REQUIRE(bond_of(slot).maturity_date ==
-                bond_of(slot).issue_date + std::chrono::years{static_cast<int>(bond_of(slot).tenor_years)});
+                bond_of(slot).issue_date +
+                    std::chrono::years{static_cast<int>(bond_of(slot).tenor_years)});
         REQUIRE(slot.trade_date >= bond_of(slot).issue_date);
         REQUIRE(slot.trade_date < bond_of(slot).maturity_date);
     }

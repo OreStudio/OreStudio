@@ -92,9 +92,9 @@ struct controller_fixture {
     }
 
     std::shared_ptr<i_feed> feed(const std::string& kind,
-                                const std::string& source,
-                                const std::string& oresmd_uri,
-                                const std::string& role = {}) {
+                                 const std::string& source,
+                                 const std::string& oresmd_uri,
+                                 const std::string& role = {}) {
         return std::make_shared<stub_feed>(kind, source, oresmd_uri, role);
     }
 };

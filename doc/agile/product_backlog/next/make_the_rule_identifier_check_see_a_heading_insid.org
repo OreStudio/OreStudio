@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: DAB023AE-5D4C-4B01-BEC8-D2CE837C45BB
+:END:
+#+title: Make the rule identifier check see a heading inside an org b…
+#+description: Make the rule identifier check see a heading inside an org block and a vanished identifier. build/scripts/check_rule_identifiers.py skips bullets inside begin and end blocks but not headings, so an example block with a heading would start a false section. It also cannot see a deleted or renumbered identifier unless the checklist cites it, so the permanence rule the UX hub states is not enforced; comparing against origin/main would catch a removed identifier. Both came from the review of the identifier PR 3758.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

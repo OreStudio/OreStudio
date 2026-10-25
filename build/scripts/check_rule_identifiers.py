@@ -4,8 +4,7 @@
 A rule is a top-level bullet in a keyed section of a keyed page, or a paragraph
 that states a rule the page keeps as prose or as a table's lead. Its identifier
 stands at the start of the bullet or the paragraph in bold, such as
-=*RS-LIST-03*=: the page's
-code, the section's code and a number that is never reused. The identifier is
+=*RS-LIST-03*=: the page's code, the section's code and a number that is never reused. The identifier is
 permanent: a rule that moves keeps it, so the section code says where the rule
 was born and not where it lives.
 
@@ -16,7 +15,13 @@ Three rules:
 2. A section code is one the page declares below; a bullet under a heading with
    no code is a mistake in the page or in this table.
 3. Every line of the screen review checklist cites at least one identifier that
-   exists, or cites a page this script does not key yet.
+   exists, or cites a page this script does not key yet. A token shaped like an
+   identifier with the wrong number of digits is a problem.
+
+A bold identifier anywhere but the start of a rule is a reference to another
+rule and is not checked. A rule the page keeps as prose is seen only once it
+carries an identifier or a placeholder; a new paragraph rule with no marker is
+invisible to this check.
 
 Usage:
   python3 build/scripts/check_rule_identifiers.py            check
@@ -90,17 +95,16 @@ PAGES = {
 # only one of these passes rule 3.
 UNKEYED = ("UXL", "UDP", "CFG", "FSS")
 
-ID = re.compile(r"\*((?:RS|ES)-[A-Z]+-\d{2})\*")
-PLACEHOLDER = re.compile(r"\*((?:RS|ES)-[A-Z]+)-\?\?\*")
+START = re.compile(r"^(?:- )?\*((?:RS|ES)-[A-Z]+-\d{2})\* ")
+PLACEHOLDER = re.compile(r"^(?:- )?\*((?:RS|ES)-[A-Z]+)-\?\?\* ")
 BULLET = re.compile(r"^(?:- (?!\[ \])|\*(?:RS|ES)-[A-Z]+-(?:\d{2}|\?\?)\* )(.*)$")
-HEADING = re.compile(r"^(\*+) (.+?)\s*$")
+HEADING = re.compile(r"^(\*+) (.+?)\s*$", re.M)
+TOKEN = re.compile(r"\b((?:RS|ES)-[A-Z]+-\d+)\b")
 
 
 def sections_of(text: str):
     """Yield (level-two heading, start, end) over the page."""
-    heads = [(m.start(), len(m.group(1)), m.group(2)) for m in HEADING.finditer(text) if True]
-    heads = [(s, lv, t) for s, lv, t in [(m.start(), len(m.group(1)), m.group(2))
-                                          for m in re.finditer(r"^(\*+) (.+?)\s*$", text, re.M)]]
+    heads = [(m.start(), len(m.group(1)), m.group(2)) for m in HEADING.finditer(text)]
     tops = [(s, lv, t) for s, lv, t in heads if lv <= 2]
     for i, (start, level, title) in enumerate(tops):
         if level != 2:
@@ -137,15 +141,15 @@ def rules(page_code: str, text: str):
 
 def assign(page_code: str) -> int:
     path = PAGES[page_code]["path"]
-    text = path.read_text()
+    text = path.read_text(encoding="utf-8")
     lines = text.split("\n")
     highest: dict[str, int] = {}
-    for m in ID.finditer(text):
+    for m in START.finditer(text):
         _, section, number = m.group(1).split("-")
         highest[section] = max(highest.get(section, 0), int(number))
     added = 0
     for title, code, i, line in list(rules(page_code, text)):
-        if code is None or ID.search(line):
+        if code is None or START.match(line):
             continue
         highest[code] = highest.get(code, 0) + 1
         ident = f"{page_code}-{code}-{highest[code]:02d}"
@@ -155,7 +159,7 @@ def assign(page_code: str) -> int:
             lines[i] = f"- *{ident}* {line[2:]}"
         added += 1
         print(f"  {ident}  {lines[i][:72]}")
-    path.write_text("\n".join(lines))
+    path.write_text("\n".join(lines), encoding="utf-8")
     return added
 
 
@@ -163,31 +167,32 @@ def check() -> list[str]:
     problems: list[str] = []
     seen: dict[str, str] = {}
     for page_code, page in PAGES.items():
-        text = page["path"].read_text()
+        text = page["path"].read_text(encoding="utf-8")
         rel = page["path"].relative_to(ROOT).as_posix()
         for title, code, i, line in rules(page_code, text):
-            found = ID.findall(line)
+            start = START.match(line)
             if code is None:
-                if found:
+                if start:
                     problems.append(f"{rel}:{i + 1}: a rule under '{title}', a section this script does not key")
                 continue
-            if not found:
-                problems.append(f"{rel}:{i + 1}: a rule without an identifier under '{title}'")
+            if not start:
+                problems.append(f"{rel}:{i + 1}: a rule without an identifier at its start under '{title}'")
                 continue
-            if len(found) > 1:
-                problems.append(f"{rel}:{i + 1}: two identifiers on one rule")
-            ident = found[0]
+            ident = start.group(1)
             if not ident.startswith(f"{page_code}-"):
                 problems.append(f"{rel}:{i + 1}: {ident} carries another page's code")
             if ident in seen:
                 problems.append(f"{rel}:{i + 1}: {ident} is also at {seen[ident]}")
             seen[ident] = f"{rel}:{i + 1}"
-    checklist = CHECKLIST.read_text()
+    checklist = CHECKLIST.read_text(encoding="utf-8")
     rel = CHECKLIST.relative_to(ROOT).as_posix()
     for i, line in enumerate(checklist.split("\n")):
         if not line.startswith("- [ ]"):
             continue
-        cited = re.findall(r"\b((?:RS|ES)-[A-Z]+-\d{2})\b", line)
+        cited = TOKEN.findall(line)
+        for token in cited:
+            if not re.fullmatch(r"(?:RS|ES)-[A-Z]+-\d{2}", token):
+                problems.append(f"{rel}:{i + 1}: {token} is not an identifier; two digits are required")
         unkeyed = any(f"({p} " in line or f"; {p} " in line or f", {p} " in line for p in UNKEYED)
         if not cited and not unkeyed:
             problems.append(f"{rel}:{i + 1}: a checklist line that cites no identifier")
@@ -206,7 +211,8 @@ def main() -> int:
     for problem in problems:
         print(problem)
     total = sum(1 for page_code, page in PAGES.items()
-                for _ in ID.finditer(page["path"].read_text()))
+                for line in page["path"].read_text(encoding="utf-8").split("\n")
+                if START.match(line))
     print(f"{total} identifiers, {len(problems)} problem(s)")
     return 1 if problems else 0
 

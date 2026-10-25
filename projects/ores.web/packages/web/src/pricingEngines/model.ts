@@ -105,27 +105,24 @@ export function isKnownPair(
 }
 
 /** The models offered for a product type: the ones that price it, then every other model. */
+/** The models the pairs table says price a product type, and no others. */
 export function modelsFor(vocabulary: PricingVocabulary, typeCode: string): readonly string[] {
-    const own = new Set(pairsFor(vocabulary, typeCode).map((pair) => pair.model));
-    const rest = new Set(vocabulary.pairs.map((pair) => pair.model));
-    return [...own, ...[...rest].filter((model) => !own.has(model)).sort()];
+    return [...new Set(pairsFor(vocabulary, typeCode).map((pair) => pair.model))];
 }
 
-/** The engines offered for a model: the ones paired with it for the type, then the ones paired with it anywhere. */
+/** The engines the pairs table says price a product type with this model, and no others. */
 export function enginesFor(
     vocabulary: PricingVocabulary,
     typeCode: string,
     model: string,
 ): readonly string[] {
-    const own = new Set(
-        pairsFor(vocabulary, typeCode)
-            .filter((pair) => pair.model === model)
-            .map((pair) => pair.engine),
-    );
-    const anywhere = new Set(
-        vocabulary.pairs.filter((pair) => pair.model === model).map((pair) => pair.engine),
-    );
-    return [...own, ...[...anywhere].filter((engine) => !own.has(engine)).sort()];
+    return [
+        ...new Set(
+            pairsFor(vocabulary, typeCode)
+                .filter((pair) => pair.model === model)
+                .map((pair) => pair.engine),
+        ),
+    ];
 }
 
 /** What the vocabulary says about a model, when it says anything. */

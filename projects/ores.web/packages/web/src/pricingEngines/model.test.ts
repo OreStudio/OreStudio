@@ -200,7 +200,6 @@ describe('the vocabulary', () => {
         expect(modelsFor(vocabulary, 'Swap')).toEqual([
             'DiscountedCashflows',
             'CrossAssetModel',
-            'LGM',
         ]);
         expect(enginesFor(vocabulary, 'BermudanSwaption', 'LGM')).toEqual(['Grid', 'MC']);
     });

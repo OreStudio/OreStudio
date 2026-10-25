@@ -97,6 +97,9 @@ Found while building step 1:
   classification and its labels need a look in the test step.
 - The closing guard watched the write, not what was typed, so a half-typed
   value did not count as a change; it watches the typed values now.
+- The convention's versions have no Revert of their own in the pair's story:
+  a part is reverted through its parent, as RS-HIST-02 offers Revert on the
+  record's versions, and the calendar's rules have none either. Intended.
 
 From the journeys' judgement, for this task:
 
@@ -132,6 +135,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: web class | the three screens, records.tsx | Accept | Unit tests, harness and live screenshots before the raise; the two main-side test files formatted so the web check is green |
+| 2 | PR 3845 review: the convention's Revert, the typed check's key order, the half-failed pair save, the reserved line, the convention table's typing, the harness selector | currencyPairs.tsx, records.tsx | Accept 2 and the typing; decline 1, 3, the reserved line and the selector with reasons | The typed check compares spec by spec; the convention table is typed before it is mapped. A part has no Revert by RS-HIST-02, as a calendar's rules have none, so the convention's goes by design and the note says so. The half-failed pair save is the server's gap, captured as the write-together. The reserved line is drawn only by the record form's fields; a plain Field with no hint draws nothing. Every record form ends in the commentary textarea, so the selector always finds a field |
 
 * Result

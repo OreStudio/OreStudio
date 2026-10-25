@@ -85,7 +85,7 @@ const PAIR_FIELDS: readonly FieldSpec[] = [
     },
 ];
 
-const CONVENTION_FIELDS: readonly FieldSpec[] = [
+const CONVENTION_TABLE: readonly FieldSpec[] = [
     { field: 'pip_factor', history: 'Pip Factor', kind: { kind: 'decimal' } },
     { field: 'tick_size', history: 'Tick Size', kind: { kind: 'decimal' } },
     { field: 'decimal_places', history: 'Decimal Places', kind: { kind: 'int' } },
@@ -97,7 +97,11 @@ const CONVENTION_FIELDS: readonly FieldSpec[] = [
     },
     { field: 'spot_relative', history: 'Spot Relative', kind: { kind: 'bool' }, optional: true },
     { field: 'end_of_month', history: 'End Of Month', kind: { kind: 'bool' }, optional: true },
-].map((spec) => ({ ...spec, group: 'refdata.pairs.convention' }) as FieldSpec);
+];
+const CONVENTION_FIELDS: readonly FieldSpec[] = CONVENTION_TABLE.map((spec) => ({
+    ...spec,
+    group: 'refdata.pairs.convention',
+}));
 
 /** The one form of the pair and its convention: two groups, in the field table's order (RS-WRITE-09). */
 const PAIR_FORM: readonly FieldSpec[] = [...PAIR_FIELDS, ...CONVENTION_FIELDS];

@@ -648,7 +648,7 @@ export function RecordDialog({
     const invalid = invalidFields(specs, values);
     const broken = check?.(values) ?? [];
     // What the person typed, not what would be written: a half-typed value is a change too.
-    const typed = JSON.stringify(values) !== JSON.stringify(baseline);
+    const typed = specs.some((spec) => (values[spec.field] ?? '') !== (baseline[spec.field] ?? ''));
     const dirty = editing
         ? typed || commentary.trim() !== ''
         : Object.values(values).some((value) => value !== '');

@@ -141,3 +141,21 @@ via its "Verifies task" field.
 The split is written into =iam_roles_populate.sql=. Every code in the matrix is now held by at least one human role, =Trading= and =Operations= hold the arc's reads, and only =Trading= holds the trade and structure writes.
 
 What is not proved: the run. No database and no build tree exist in this worktree, so the positive and negative cases are stated and not exercised, and the gate ran without its build, database and ctest phases. That proof is the next thing this task owes.
+
+* The proof, first attempt
+
+The build is green and the database was recreated and populated. The count of trading grants per role, read from that database:
+
+| Role | Trading grants | Inbox grants |
+|---|---|---|
+| =Trading= | 0 | 0 |
+| =Operations= | 0 | 0 |
+| =Viewer= | 0 | 0 |
+| =ReportRun= | 2 | 0 |
+| =Member= | 0 | 0 |
+
+The two on =ReportRun= were already there. So the block added to =iam_roles_populate.sql= did not take effect, and the task is not done.
+
+It is not the function. Calling =ores_iam_role_permissions_assign_fn= by hand for =Trading= and =trading::trade_summaries:read= creates the row at once and the count becomes 1. So the fault is in the seed file: the block's position, a guard around it, or a later statement that clears it.
+
+The next step is to read the file around the block and the populate that includes it, and then the same count is the proof.

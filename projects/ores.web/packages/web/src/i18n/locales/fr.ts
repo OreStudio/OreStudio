@@ -69,6 +69,7 @@ const fr: SourceCatalogue = {
         },
         account: 'Votre compte',
         menu: {
+            trades: 'Transactions',
             marketdata: 'Données de marché',
             home: 'Accueil',
             accounts: 'Comptes',
@@ -3583,6 +3584,37 @@ const fr: SourceCatalogue = {
         Finish: 'Terminer',
         'Marks the tenant ready: it stops bootstrapping and becomes active.':
             'Marque le locataire comme prêt : il quitte le mode amorçage et devient actif.',
+    },
+
+    trading: {
+        trades: {
+            areaLead:
+                'Les transactions et structures que vous pouvez voir, et les livres où elles se trouvent.',
+            title: 'Transactions',
+            lead: 'Les transactions et structures de votre partie, et les livres où elles se trouvent.',
+            filterStatus: 'État',
+            filterAllStates: 'Tous les états',
+            filterType: 'Type',
+            filterAllTypes: 'Tous les types',
+            structureRow: 'Structure',
+            structureHolds: '{count} transactions',
+            versionPair: 'v{version} · ext {external}',
+        },
+        fields: {
+            identifier: 'Id',
+            instrumentType: 'Type',
+            counterparty: 'Contrepartie',
+            book: 'Livre',
+            state: 'État',
+            tradeDate: 'Date de transaction',
+            version: 'Version',
+        },
+        states: {
+            live: 'Vivante',
+            draft: 'Brouillon',
+            expired: 'Expirée',
+            cancelled: 'Annulée',
+        },
     },
 
     refdata: {

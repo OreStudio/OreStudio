@@ -75,6 +75,7 @@ export const en: SourceCatalogue = {
         },
         account: 'Your account',
         menu: {
+            trades: 'Trades',
             marketdata: 'Market data',
             home: 'Home',
             accounts: 'Accounts',
@@ -3541,6 +3542,36 @@ export const en: SourceCatalogue = {
         Finish: 'Finish',
         'Marks the tenant ready: it stops bootstrapping and becomes active.':
             'Marks the tenant ready: it stops bootstrapping and becomes active.',
+    },
+
+    trading: {
+        trades: {
+            areaLead: 'The trades and structures you may see, and the books they sit in.',
+            title: 'Trades',
+            lead: 'The trades and structures of your party, and the books they sit in.',
+            filterStatus: 'State',
+            filterAllStates: 'All states',
+            filterType: 'Type',
+            filterAllTypes: 'All types',
+            structureRow: 'Structure',
+            structureHolds: '{count} trades',
+            versionPair: 'v{version} · ext {external}',
+        },
+        fields: {
+            identifier: 'Id',
+            instrumentType: 'Type',
+            counterparty: 'Counterparty',
+            book: 'Book',
+            state: 'State',
+            tradeDate: 'Trade date',
+            version: 'Version',
+        },
+        states: {
+            live: 'Live',
+            draft: 'Draft',
+            expired: 'Expired',
+            cancelled: 'Cancelled',
+        },
     },
 
     refdata: {

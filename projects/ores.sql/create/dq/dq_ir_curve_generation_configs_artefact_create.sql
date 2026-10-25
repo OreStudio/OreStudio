@@ -51,10 +51,10 @@ create table if not exists "ores_dq_ir_curve_generation_configs_artefact_tbl" (
     "vintage_date" text null,
     "vintage_series_uri" text null,
     "provider_code" text null,
-    "arrival_mode" text not null,
-    "branching_ratio" double precision not null,
-    "decay" double precision not null,
-    "sensitivity" double precision not null
+    "arrival_mode" text not null default 'periodic',
+    "branching_ratio" double precision not null default 0.0,
+    "decay" double precision not null default 1.0,
+    "sensitivity" double precision not null default 1.0
 );
 
 create index if not exists dq_ir_curve_generation_configs_artefact_dataset_idx

@@ -631,6 +631,7 @@ One import row stands for a whole IR curve feed: the curve, its process paramete
 ** arrival_mode
 :PROPERTIES:
 :type: text
+:default: 'periodic'
 :END:
 
 How the feed's ticks arrive: periodic, poisson or hawkes.
@@ -638,6 +639,7 @@ How the feed's ticks arrive: periodic, poisson or hawkes.
 ** branching_ratio
 :PROPERTIES:
 :type: double precision
+:default: 0.0
 :END:
 
 For hawkes: the expected number of further ticks per tick, below one.
@@ -645,6 +647,7 @@ For hawkes: the expected number of further ticks per tick, below one.
 ** decay
 :PROPERTIES:
 :type: double precision
+:default: 1.0
 :END:
 
 For hawkes: how fast a burst fades, per second.
@@ -652,6 +655,7 @@ For hawkes: how fast a burst fades, per second.
 ** sensitivity
 :PROPERTIES:
 :type: double precision
+:default: 1.0
 :END:
 
 How strongly a market-wide regime moves this row, where one is the average.

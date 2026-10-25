@@ -26,7 +26,8 @@ for one kind of record.
 
 Source names: RSS is the Record screen standard, ESS is the Entity screen
 specification, UXL is [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]], UDP is [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]],
-CFG is the [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]].
+CFG is the [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]],
+OLS is the [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]].
 
 * Detail
 
@@ -166,6 +167,23 @@ CFG is the [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen stand
 - [ ] A change to an operational section writes directly, with a reason. (CFG The lifecycle)
 - [ ] An import parses on the server, names every dropped value, lists removed rows first with *Keep it* as the default, and never makes a file official. (CFG Import)
 
+** A value ORE reads
+
+For every screen that draws a product parameter, an engine run setting or a convention term.
+
+- [ ] Every word for a leaf comes from the =oreParameter= namespace; the screen keeps no copy, and names the leaf with its kind's noun. (OL-WORDS-01; OLS The words a screen prints)
+- [ ] One Simple and Advanced switch per page, remembered for every screen, named and explained in the words for leaves. (OL-MODE-01, OL-MODE-06; OLS The Simple and Advanced switch)
+- [ ] Advanced adds only the schema entry; the switch hides no value, control or gap. (OL-MODE-04, OL-MODE-05; OLS The Simple and Advanced switch)
+- [ ] A row has one label, from the documentation entry, then its marks, then the value in force; a leaf not set shows *Default: X*. (OL-READ-01, OL-READ-02, OL-READ-03; OLS Reading a leaf)
+- [ ] Every leaf the element type takes is a row, set or not. (OL-READ-04; OLS Reading a leaf)
+- [ ] A leaf that changes the numbers carries the mark in its row. (OL-READ-07; OLS Reading a leaf)
+- [ ] *Documentation* opens the shared panel under one leaf, *Show all documentation* opens it for the section, and focus in edit opens it. (OL-DOC-01, OL-DOC-03, OL-DOC-04, OL-DOC-07; OLS The documentation under a leaf)
+- [ ] The element type's card says what it is, with its asset class from data and its source tag. (OL-ELEMENT-01, OL-ELEMENT-04, OL-SOURCE-01; OLS The element type)
+- [ ] Every select starts with *Default (X)*, and no control offers a value the set refuses. (OL-CONTROL-01, OL-CONTROL-02; OLS The control)
+- [ ] A changed leaf shows *changed*, and the foot counts the changes. (OL-EDIT-02; OLS Changing a leaf)
+- [ ] *Set in this configuration* keeps every held value, a filter is drawn only where the data answers it, and no filter hides a problem. (OL-FILTER-02, OL-FILTER-03, OL-FILTER-04; OLS Filters)
+- [ ] A leaf with no documentation entry shows its ORE name, its value and *No documentation is held for {name}.*; a failed read of the documentation still shows every value. (OL-READ-02, OL-STATE-01; OLS Gaps and states)
+
 ** Exceptions
 
 - [ ] A part the screen lacks is named in the standard's list of how screens conform, with the reason. (RS-EXCEPT-01; RSS How today's record screens conform)
@@ -182,6 +200,7 @@ CFG is the [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen stand
 - [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the source of the list, record page, write and history lines.
 - [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — the source of the card, Edit, link and refresh lines.
 - [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]] — the source of the configuration lines.
+- [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]] — the source of the lines for a value ORE reads.
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the source of the colour, access mark and Audit lines.
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the source of the grid, type and control lines.
 - [[id:46F465EE-7693-4852-B125-12C56290B695][Icon reference]] — the icon for each action.

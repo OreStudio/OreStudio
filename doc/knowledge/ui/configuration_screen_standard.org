@@ -254,6 +254,11 @@ it too.
 A screen that shows a value without its documentation is a gap, not a variation.
 The conformance table records it as a gap.
 
+The row a parameter is drawn in, the words it carries and the control it takes
+are not a configuration's alone: a convention term is drawn the same way on a
+record page. The [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]]
+states them once, with the exact words, and this page does not restate them.
+
 ** Changing a group
 
 - *Edit* turns the section's card into a form in place. There is no dialog, so
@@ -502,6 +507,7 @@ work*, and it must use the words in this page.
 - [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the base this page extends.
 - [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — tabs, cards, the timeline and the edit pattern.
 - [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]] — the other extension, and the Simple and Advanced switch it shares.
+- [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]] — /completes/: the parameter row, its words and its control, stated once for a configuration and a convention alike.
 - [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the words and the colours this page uses.
 - [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the reading order this page joins.
 - [[id:21DF0AEE-76FA-4C8B-9C59-A8A490809942][Screen review checklist]] — one line per rule of this page.

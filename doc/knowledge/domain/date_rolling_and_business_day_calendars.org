@@ -74,3 +74,7 @@ holiday calendar sits as part of a term structure's metadata.
 - [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — irregular dates that interact with rolling and interpolation together.
 - [[id:DD828FB9-5901-4B9A-A767-71FD88472F0A][Business Centre]] — the FpML code that identifies which holiday
   calendar rolling is performed against.
+- [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]] — where these conventions
+  and calendars become values a person picks: a convention term that takes a
+  business day convention or a calendar is a choice from the catalogue, never
+  free text.

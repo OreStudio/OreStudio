@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 3D6ACCDB-6209-47BC-86F5-864A65C6389B
+:END:
+#+title: Story: Draw every ORE leaf the same way, starting with conventions
+#+description: A product parameter, an engine run setting and a convention term are leaves of ORE documents and read the same on every screen: one Simple and Advanced switch, the documentation under the leaf, the value in force, the control and the gaps, with the exact words. State it once as a standard and an Allium spec, and apply it first to conventions.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:standards:conventions:refdata:reporting:sprint_29:v0:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One standard says how every screen draws a leaf of an ORE document and the element type it belongs to, with the exact words, and an Allium specification carries its state rules so tests can follow them. Conventions are the first application: a convention's terms read exactly as a product's parameters and the engine run settings do, with their documentation in the one contract and their metadata in data. Product pricing and engine run settings follow through the gaps the standard records.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-25                               |
+
+* Acceptance
+
+- One knowledge page states the leaf and element type rules with identifiers and the exact words, and the UX hub, the knowledge index and the screen review checklist point to it.
+- An Allium specification states the switch, the documentation, the value in force, the control, the edit marks, the filters and the gaps.
+- The standard records conformance for engine run settings, product pricing and conventions, rule by rule.
+- A convention's terms are drawn with the shared parts and the one word namespace: documentation entries for conventions.xsd, the kind metadata in data, and the controls from value sets.
+- The owner decides the open words: the convention noun, the section button, the switch's name and the seed tag.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8AEFCFB3-0296-4773-B00F-C8B23226326B][Scaffold story: Draw every ORE leaf the same way, starting with conventions]] | STARTED | 2026-10-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:1F866583-D7B9-42A4-9D3A-6E26B151A9FA][Write the ORE element and leaf screen standard and its specification]] | BACKLOG | | | Initial task for: Draw every ORE leaf the same way, starting with conventions |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -2,10 +2,13 @@
 // prints PASS or FAIL with what was seen. Run from projects/ores.web so playwright resolves.
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const base = 'http://localhost:20402';
 const CODE = process.env.CODE ?? 'Acme.Scenario';
-const out = '/tmp/claude-1000/-home-marco-Development-OreStudio-ores-dev-brave-hopper/0517118c-2fba-4476-8f19-68c47d846811/scratchpad/scenario';
+// Screenshots go where SCENARIO_OUT says, or under the system's temporary folder.
+const out = process.env.SCENARIO_OUT ?? join(tmpdir(), 'calendar-scenario');
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1400, height: 1000 }, locale: 'en-GB' });
@@ -35,11 +38,8 @@ await step('Sign in as the tenant administrator', async () => {
 });
 // Leftovers from earlier runs are removed first, so the list counts 61 and the derive step can create the code.
 for (let round = 0; round < 6; round++) {
-    await page.goto(`${base}/refdata/calendars?q=Acme.`); await page.waitForTimeout(2000);
-    const rows = page.locator('table tbody tr'); const n = await rows.count();
-    const first = n ? (await rows.first().innerText()) : '';
-    if (!n || !first.includes('Acme.')) break;
-    await rows.first().getByRole('cell').first().click(); await page.waitForURL(/calendars\/Acme\./); await page.waitForTimeout(1500);
+    await page.goto(`${base}/refdata/calendars/${CODE}`); await page.waitForTimeout(2000);
+    if (!(await page.getByRole('button', { name: 'Delete', exact: true }).count())) break;
     await page.getByRole('button', { name: 'Delete', exact: true }).first().click(); await page.getByRole('dialog').waitFor();
     await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click(); await page.waitForTimeout(3000);
     console.log('removed a leftover', page.url());
@@ -120,8 +120,9 @@ await step('Build the business days and read them', async () => {
     let main = await text(page.locator('main')); expect(main.includes('No business days are built for 2026') && main.includes('Rebuild the calendar to build them'), 'empty state wrong');
     await page.getByRole('button', { name: 'Rebuild business days' }).first().click(); await page.getByRole('dialog').waitFor();
     const d = await text(page.getByRole('dialog')); expect(d.includes('Build up to the end of') && d.includes('does not change a day'), 'rebuild dialog words');
-    await page.getByRole('dialog').getByRole('button', { name: 'Rebuild', exact: true }).click(); await page.waitForTimeout(5000);
-    const d2 = await text(page.getByRole('dialog')); expect(/\d+ days written/.test(d2), 'no written count');
+    await page.getByRole('dialog').getByRole('button', { name: 'Rebuild', exact: true }).click();
+    await page.getByRole('dialog').getByText(/\d+ days written/).waitFor({ timeout: 30000 });
+    const d2 = await text(page.getByRole('dialog'));
     expect(await page.getByRole('dialog').getByRole('button', { name: 'Rebuild', exact: true }).isDisabled(), 'Rebuild still enabled');
     await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click(); await page.waitForTimeout(2500);
     main = await text(page.locator('main')); expect(/\d+ business days and \d+ weekday holidays in 2026/.test(main), 'no summary');
@@ -130,7 +131,8 @@ await step('Build the business days and read them', async () => {
     const picker = page.getByLabel('Compare with').first(); await picker.click(); await page.waitForTimeout(400); await page.keyboard.type('TARGET'); await page.waitForTimeout(600); const opt = page.getByRole('option', { name: /TARGET/ }).first(); if (await opt.count()) await opt.click(); else await page.keyboard.press('Enter');
     await page.waitForTimeout(2500); main = await text(page.locator('main'));
     await page.screenshot({ path: `${out}/07-days.png`, fullPage: true });
-    return (d2.match(/\d+ days written/) ?? [''])[0] + (main.includes('With TARGET') ? '; union sentence shown' : '; union sentence NOT shown');
+    expect(main.includes('With TARGET'), 'the union sentence is not shown after choosing TARGET');
+    return (d2.match(/\d+ days written/) ?? [''])[0] + '; union sentence shown';
 });
 await step('Amend the calendar against a stale version', async () => {
     const second = await ctx.newPage(); await second.goto(`${base}/refdata/calendars/${CODE}`); await second.waitForTimeout(2000);
@@ -186,7 +188,9 @@ await step('Look as a reader', async () => {
     await page.goto(`${base}/refdata/calendars/TARGET`); await page.waitForTimeout(2000);
     const b = await buttons(); const main = await text(page.locator('main'));
     await page.screenshot({ path: `${out}/11-reader.png`, fullPage: true });
-    return `buttons ${b.slice(0, 5)}; mark ${main.includes('Read only') ? 'Read only' : main.includes('Editable') ? 'Editable' : 'none'}`;
+    expect(main.includes('Read only'), 'no Read only mark');
+    expect(!b.includes('Edit') && !b.includes('Delete') && !b.includes('Rebuild business days'), `actions drawn for a reader: ${b}`);
+    return `buttons ${b.slice(0, 5)}; mark Read only; no Edit, Delete or Rebuild`;
 });
 await browser.close();
 console.log('\nSUMMARY'); for (const [n, r, w] of results) console.log(`${r}\t${n}\t${w}`);

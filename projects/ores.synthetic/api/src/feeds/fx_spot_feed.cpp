@@ -137,13 +137,18 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                                                                        initial_price,
                                                                        seed);
 
-    return std::make_shared<fx_spot_feed>(nats,
-                                          cfg.oresmd_uri,
-                                          cfg.source_name,
-                                          producer_subject(cfg.source_name),
-                                          std::move(process),
-                                          static_cast<double>(cfg.ticks_per_hour),
-                                          std::move(adapter));
+    return std::make_shared<fx_spot_feed>(
+        nats,
+        cfg.oresmd_uri,
+        cfg.source_name,
+        producer_subject(cfg.source_name),
+        std::move(process),
+        ores::analytics::quant::domain::arrival_spec{.mode = cfg.arrival_mode,
+                                                     .ticks_per_hour =
+                                                         static_cast<double>(cfg.ticks_per_hour),
+                                                     .branching_ratio = cfg.branching_ratio,
+                                                     .decay = cfg.decay},
+        std::move(adapter));
 }
 
 fx_spot_feed::fx_spot_feed(
@@ -152,21 +157,20 @@ fx_spot_feed::fx_spot_feed(
     std::string source_name,
     std::string nats_subject,
     std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process,
-    double ticks_per_hour,
+    const ores::analytics::quant::domain::arrival_spec& arrival,
     std::optional<adapter_target> adapter)
     : nats_(nats)
     , quote_uri_(std::move(quote_uri))
     , source_name_(std::move(source_name))
     , process_(std::move(process))
-    , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(
-          "periodic", ticks_per_hour))
+    , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(arrival))
     , clock_(*arrivals_)
     , nats_subject_(std::move(nats_subject))
     , adapter_(std::move(adapter)) {
 
     if (!process_)
         throw std::invalid_argument("fx_spot_feed: process must not be null");
-    if (ticks_per_hour <= 0.0)
+    if (arrival.ticks_per_hour <= 0.0)
         throw std::invalid_argument("fx_spot_feed: ticks_per_hour must be positive");
 
     namespace datum = ores::marketdata::datum;

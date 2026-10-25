@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_API_FEEDS_FX_SPOT_FEED_HPP
 #define ORES_SYNTHETIC_API_FEEDS_FX_SPOT_FEED_HPP
 
+#include "ores.analytics.quant/domain/arrival_spec.hpp"
 #include "ores.analytics.quant/domain/i_arrival_process.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.analytics.quant/service/tick_clock.hpp"
@@ -94,7 +95,7 @@ public:
                  std::string source_name,
                  std::string nats_subject,
                  std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process,
-                 double ticks_per_hour,
+                 const ores::analytics::quant::domain::arrival_spec& arrival,
                  std::optional<adapter_target> adapter = std::nullopt);
 
     /**

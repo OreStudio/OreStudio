@@ -57,7 +57,7 @@ ir_curve_feed::ir_curve_feed(
     std::string index_tenor,
     std::string role,
     std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
-    double ticks_per_hour,
+    const ores::analytics::quant::domain::arrival_spec& arrival,
     std::vector<ir_curve_resolved_entry> entries)
     : nats_(nats)
     , source_name_(std::move(source_name))
@@ -65,14 +65,13 @@ ir_curve_feed::ir_curve_feed(
     , currency_code_(std::move(currency_code))
     , role_(std::move(role))
     , process_(std::move(process))
-    , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(
-          "periodic", ticks_per_hour))
+    , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(arrival))
     , clock_(*arrivals_)
     , entries_(std::move(entries)) {
 
     if (!process_)
         throw std::invalid_argument("ir_curve_feed: process must not be null");
-    if (ticks_per_hour <= 0.0)
+    if (arrival.ticks_per_hour <= 0.0)
         throw std::invalid_argument("ir_curve_feed: ticks_per_hour must be positive");
     if (entries_.empty())
         throw std::invalid_argument("ir_curve_feed: entries must not be empty");
@@ -249,15 +248,20 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     // source_name is a persisted, editable column (see the field's own doc comment) -- the same
     // shape fx_spot_generation_config.source_name already uses, set at publish/save time rather
     // than computed here.
-    return std::make_shared<ir_curve_feed>(nats,
-                                           cfg.source_name,
-                                           producer_subject(cfg.source_name),
-                                           cfg.currency_code,
-                                           ir_curve_index_tenor(cfg),
-                                           cfg.role,
-                                           std::move(process),
-                                           static_cast<double>(cfg.ticks_per_hour),
-                                           std::move(resolved));
+    return std::make_shared<ir_curve_feed>(
+        nats,
+        cfg.source_name,
+        producer_subject(cfg.source_name),
+        cfg.currency_code,
+        ir_curve_index_tenor(cfg),
+        cfg.role,
+        std::move(process),
+        ores::analytics::quant::domain::arrival_spec{.mode = cfg.arrival_mode,
+                                                     .ticks_per_hour =
+                                                         static_cast<double>(cfg.ticks_per_hour),
+                                                     .branching_ratio = cfg.branching_ratio,
+                                                     .decay = cfg.decay},
+        std::move(resolved));
 }
 
 }

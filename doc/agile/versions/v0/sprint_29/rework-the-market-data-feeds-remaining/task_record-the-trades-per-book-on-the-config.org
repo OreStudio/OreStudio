@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 782516B3-1815-44E7-9D87-C4692B4622ED
+:END:
+#+title: Task: Record the trades per book on the provisoned config
+#+description: The provisioning step leaves the trades per book unset, so the insert sends garbage and the run fails.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/record-the-trades-per-book-on-the-config
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A generate_trades step records the config with the trades per book the profile states, and an entry that omits it takes the model default.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- The parser carries the entry's trades_per_book, and the handler writes it to the config.
+- An entry that omits trades_per_book records the default of 8.
+- A fresh provisioning run completes the generate_trades step.
+
+* Plan
+
+Read the failing run, then confirm the cause in the tree before changing it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Provisioning smoke on current main | passed, 10 subscriptions, 10 routes, 9,880 ticks, 26 of 26 ids accepted | =compass smoke ticks --fresh= | 8cff4bdfcf |
+
+* Result
+
+Already delivered on main before this branch was cut. No source change was
+needed.
+
+The insert overflow came from a write path that left =trades_per_book= unset
+while the column is =integer=. Commit =c1153cc812= (Story 3DA9DFFB, Task
+6172EE1E, solid_dirac) carries the count from the seed profile through the
+parser and sets it on the write, and commit =bde83272d4= (Task
+29DAA209, festive_dijkstra) makes the population size an =int=, as the column
+is. Both are ancestors of this branch.
+
+The failing run used binaries built before those commits. A rebuild and a
+fresh =compass smoke ticks --fresh= on the current main pass the provisioning
+step and every later step.

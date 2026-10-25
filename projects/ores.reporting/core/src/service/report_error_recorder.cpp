@@ -29,7 +29,9 @@
 #include <format>
 #include <map>
 #include <rfl/json.hpp>
+#include <set>
 #include <stdexcept>
+#include <tuple>
 
 namespace ores::reporting::service {
 
@@ -215,6 +217,28 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
                                       scope,
                                       std::nullopt,
                                       {}));
+
+        // The engine log can state the same reason more than once in one read,
+        // and the unique indexes make those rows one row. Collapsing the
+        // repeats here keeps the write a single statement that succeeds rather
+        // than one that is refused whole. A warning is left alone: the same
+        // warning twice is a warning about two things.
+        std::set<std::tuple<std::string,
+                            std::optional<std::string>,
+                            std::optional<std::string>,
+                            std::string,
+                            std::string>>
+            seen;
+        std::vector<domain::report_error_event> kept;
+        kept.reserve(rows.size());
+        for (auto& row : rows) {
+            const auto identity = std::make_tuple(
+                row.scope_code, row.subject, row.subject_id, row.message, row.detail);
+            if (row.severity == "error" && !seen.insert(identity).second)
+                continue;
+            kept.push_back(std::move(row));
+        }
+        rows = std::move(kept);
 
         repository::report_error_event_repository().write(ctx_, rows);
         return {};

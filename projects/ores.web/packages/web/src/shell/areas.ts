@@ -61,6 +61,11 @@ export const MENU: readonly MenuItem[] = [
             'marketdata::feed_bindings:read',
         ],
     },
+    {
+        nameKey: 'shell.menu.trades',
+        to: PATHS.trades,
+        permission: ['trading::trade_summaries:read', 'trading::trades:read'],
+    },
     { nameKey: 'shell.menu.requests', to: '/requests' },
     { nameKey: 'shell.menu.operations', to: PATHS.operations },
     {

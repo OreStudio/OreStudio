@@ -332,6 +332,25 @@ function writeOutcome(
 }
 
 export const counterparties = {
+    /** One counterparty and the identifiers it is known by. */
+    async one(id: string): Promise<{
+        readonly counterparty: Counterparty;
+        readonly identifiers: readonly Record<string, unknown>[];
+    }> {
+        const answer = z
+            .object({
+                counterparty: z.looseObject({}),
+                identifiers: z.array(z.looseObject({})).default([]),
+            })
+            .parse(
+                await request(`/api/counterparties/${encodeURIComponent(id)}`, { method: 'GET' }),
+            );
+        return {
+            counterparty: answer.counterparty as unknown as Counterparty,
+            identifiers: answer.identifiers,
+        };
+    },
+
     /** One page of counterparties, searched and filtered on the server. */
     async page(query: CounterpartyPageQuery): Promise<CounterpartyPage> {
         const params = new URLSearchParams({

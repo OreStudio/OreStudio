@@ -525,25 +525,35 @@ def mentions_profile(cmdline, profile_dir):
 
 
 def lock_holder_alive(profile_dir):
-    """Whether the process Chrome recorded in SingletonLock is still running.
+    """Whether a running Chrome holds this data directory, by Chrome's own record.
 
-    The lock is a symlink to "host-pid". Chrome's own record is stronger
-    than a scan of command lines, which a container or a hidden /proc defeats.
+    The lock is a symlink to "host-pid". A pid alone is not enough to decide:
+    a killed Chrome leaves its lock behind, the kernel reuses the number, and
+    the persona is then reported as open for as long as the stranger lives.
+    So the process behind the number must also be Chrome on this very profile.
+    The lock's host is checked too, because a lock copied from another machine
+    names a pid that means nothing here.
     """
     try:
         target = os.readlink(Path(profile_dir) / "SingletonLock")
     except OSError:
         return False
-    pid = target.rpartition("-")[2]
+    host, _, pid = target.rpartition("-")
     if not pid.isdigit():
         return False
-    try:
-        os.kill(int(pid), 0)
-    except ProcessLookupError:
+    if host != socket.gethostname():
         return False
-    except PermissionError:
+    try:
+        cmdline = Path("/proc", pid, "cmdline").read_bytes()
+    except OSError:
+        # The process is gone, or /proc is not ours to read. Fall back to the
+        # number alone: Chrome refuses a second instance on one profile anyway.
+        try:
+            os.kill(int(pid), 0)
+        except ProcessLookupError:
+            return False
         return True
-    return True
+    return mentions_profile(cmdline, profile_dir)
 
 
 def profile_in_use(profile_dir):

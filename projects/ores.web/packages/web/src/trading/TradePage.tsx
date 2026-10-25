@@ -27,21 +27,11 @@ import { useTranslation } from '../i18n/Provider.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { PATHS } from '../shell/paths.js';
-import { Notice, Tag } from '../ui/Primitives.js';
+import { Fact, Notice, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 
 /** The page's tabs, in the order the prototype settled: the trade first, then its parts. */
 const TABS = ['details', 'identifiers', 'links', 'history'] as const;
-
-/** One fact of the trade, as a label and a value. */
-function Fact({ label, value }: { readonly label: string; readonly value: string }): ReactNode {
-    return (
-        <div>
-            <dt className="text-xs uppercase tracking-wide text-ink-faint">{label}</dt>
-            <dd className="text-sm text-ink">{value === '' ? '—' : value}</dd>
-        </div>
-    );
-}
 
 /** A table of the trade's parts, with the columns each part has. */
 function PartTable({
@@ -204,11 +194,30 @@ export function TradePage(): ReactNode {
                             label={t('trading.fields.tradeDate')}
                             value={trade.trade_date ?? ''}
                         />
-                        <Fact
-                            label={t('trading.fields.counterparty')}
-                            value={trade.counterparty_name}
-                        />
-                        <Fact label={t('trading.fields.book')} value={trade.book_name} />
+                        <Fact label={t('trading.fields.counterparty')}>
+                            {trade.counterparty_id === null ? (
+                                trade.counterparty_name
+                            ) : (
+                                <Link
+                                    className="text-accent hover:text-accent-bright"
+                                    to={`${PATHS.counterparties}/${trade.counterparty_id}`}
+                                >
+                                    {trade.counterparty_name}
+                                </Link>
+                            )}
+                        </Fact>
+                        <Fact label={t('trading.fields.book')}>
+                            {trade.book_id === null ? (
+                                trade.book_name
+                            ) : (
+                                <Link
+                                    className="text-accent hover:text-accent-bright"
+                                    to={`${PATHS.books}/${trade.book_id}`}
+                                >
+                                    {trade.book_name}
+                                </Link>
+                            )}
+                        </Fact>
                         <Fact
                             label={t('trading.fields.version')}
                             value={trade.version === null ? '' : String(trade.version)}

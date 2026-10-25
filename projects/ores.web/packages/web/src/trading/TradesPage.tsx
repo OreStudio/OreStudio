@@ -20,6 +20,7 @@
  */
 
 import type { ReactNode } from 'react';
+import { Link } from 'react-router';
 import { trades, TRADE_SORTS, type TradeRow } from '../api/trades.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { RecordList, type ListSource } from '../refdata/RecordList.js';
@@ -117,12 +118,32 @@ export function TradesPage(): ReactNode {
                 {
                     id: 'counterparty',
                     header: t('trading.fields.counterparty'),
-                    cell: (row) => show(row.counterparty_name),
+                    cell: (row) =>
+                        row.counterparty_id === null ? (
+                            show(row.counterparty_name)
+                        ) : (
+                            <Link
+                                className="text-accent hover:text-accent-bright"
+                                to={`${PATHS.counterparties}/${row.counterparty_id}`}
+                            >
+                                {show(row.counterparty_name)}
+                            </Link>
+                        ),
                 },
                 {
                     id: 'book',
                     header: t('trading.fields.book'),
-                    cell: (row) => show(row.book_name),
+                    cell: (row) =>
+                        row.book_id === null ? (
+                            show(row.book_name)
+                        ) : (
+                            <Link
+                                className="text-accent hover:text-accent-bright"
+                                to={`${PATHS.books}/${row.book_id}`}
+                            >
+                                {show(row.book_name)}
+                            </Link>
+                        ),
                 },
                 {
                     id: 'status',

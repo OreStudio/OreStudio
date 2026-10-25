@@ -21,11 +21,11 @@ The permission seed defines every code the commodity handler checks, the two cod
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-25                               |
 
 * Acceptance
@@ -38,8 +38,8 @@ The permission seed defines every code the commodity handler checks, the two cod
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:3C52C4A6-C8B7-4EC2-BA4E-65C8CE9BE08D][Scaffold story: Seed the commodity permissions the handler needs]] | STARTED | 2026-10-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:87C86441-0B57-4357-B04D-C02986124023][Add the three commodity permission codes to the seed]] | STARTED | 2026-10-25 | | Initial task for: Seed the commodity permissions the handler needs |
+| [[id:3C52C4A6-C8B7-4EC2-BA4E-65C8CE9BE08D][Scaffold story: Seed the commodity permissions the handler needs]] | DONE | 2026-10-25 | 2026-10-25 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:87C86441-0B57-4357-B04D-C02986124023][Add the three commodity permission codes to the seed]] | DONE | 2026-10-25 | 2026-10-25 | Initial task for: Seed the commodity permissions the handler needs |
 
 * Decisions
 

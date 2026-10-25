@@ -93,6 +93,12 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Local review: docs and tooling classes | build/scripts, doc/knowledge/ui, .github/workflows | Accept | compass check green; the check script has no narrating comment and names its three rules in its docstring |
+| 2 | The identifier is matched anywhere on the line, not at the start | check_rule_identifiers.py | Accept | START matches the bullet or paragraph start only; a bold identifier elsewhere is a reference |
+| 3 | Dead code in sections_of | check_rule_identifiers.py | Accept | One heading scan with re.M |
+| 4 | A heading inside an org block is not skipped | check_rule_identifiers.py | Decline for now | Captured as Make the rule identifier check see block headings and vanished identifiers |
+| 5 | A malformed citation such as RS-LIST-3 passes | check_rule_identifiers.py | Accept | A token with the wrong digit count is a problem |
+| 6 | The permanence rule is not enforced | check_rule_identifiers.py | Decline for now | Same capture; comparing against origin/main is a design change |
+| 7 | No encoding on read and write; a prose rule with no marker is invisible | check_rule_identifiers.py | Accept | utf-8 passed; the docstring says so |
 
 * Result
 

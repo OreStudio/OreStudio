@@ -20,28 +20,39 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The History tab of a pricing engine configuration shows every version of the
+whole document: the configuration, its products and its parameters, in the
+shared timeline the other record pages use.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
 
--
+- The tab draws versions of the configuration, its products and its parameters.
+- Each event names the entity it came from.
+- The tab uses the shared timeline, not the legacy history panel.
+- An event states who changed it, when and why, and the fields that moved.
+- A change to a setting appears without a change to the configuration row.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Read the document, so the entity ids are known.
+2. Read the generic history of the configuration, each product and each
+   parameter. The reads travel in batches of 32, because a large configuration
+   holds hundreds of parameters.
+3. Answer the versions as one list, each carrying its entity, its name and its
+   changes.
+4. Draw the list with the shared timeline. The mapping lives in =model.ts=, so it
+   is a pure function with a test.
 
 * Measurements
 
@@ -55,9 +66,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Entities per document | 1 + one per product + one per parameter (25 for XVA Overnight) | =select count(*) from ores_analytics_pricing_model_products_tbl ...= | 095d48438d |
+| History reads in flight | 32 | =grep HISTORY_BATCH projects/ores.web/packages/bff/src/pricing-engines.ts= | 095d48438d |
+| Web suite | 1986 tests | =npm test -w @ores/web= | 095d48438d |
+| BFF suite | 945 tests | =npm test -w @ores/bff= | 095d48438d |
 
 * Notes
+
+- The history read is the generic one, so a new entity type needs no new read.
+- A configuration with hundreds of parameters reads one history per parameter.
+  The batch keeps the requests bounded; a single read for the whole document is
+  the server-side alternative if it ever gets slow.
 
 * Test Scenarios
 
@@ -83,3 +102,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The tab reads as the other record pages do. A save writes the configuration, its
+products and its parameters, so one timeline shows the version of each thing that
+changed, who changed it and why. The legacy panel is no longer used on this page.

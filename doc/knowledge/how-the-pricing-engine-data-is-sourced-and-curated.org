@@ -30,7 +30,7 @@ The pricing engine data is extracted from the ORE guide and source by a script, 
 |-------+----------+---------|
 | Source | ORE guide chapter and source, at a recorded commit | The facts |
 | Extract | =extract_vocabulary.py=, =pricing_vocabulary.json= | Product types, pairs, setting names, guide text |
-| Curate | =curation/*.json= (this methodology) | Authored texts, name fixes, instrument mappings, exemptions |
+| Curate | =curation/*.json= (this methodology) | Authored texts, name fixes, instrument mappings |
 | Generate | =generate_vocabulary_sql.py=, =generate_ore_parameters_dataset.py= | Deterministic SQL |
 | Store | Analytics tables, =ore_parameters= | The data the API reads |
 | Serve | =/api/reporting/pricing-engines/vocabulary= | The view a screen reads |
@@ -46,36 +46,42 @@ The extraction does not decide an instrument code. It records the trade type it 
 
 ** The curation
 
-Curation is data, not code. It will live in =projects/ores.seeder/datasets/ore_pricing_engines/curation/=, one file per concern, each entry keyed by the row it changes:
+Curation is data, not code. It lives in =projects/ores.seeder/datasets/ore_pricing_engines/curation/=, one file per concern, each entry keyed by the row it changes and carrying a =reason=, a =source=, a =source_ref=, a =curator= and a =date=:
+
+| File | Holds |
+|------+-------|
+| =types.json= | each product type's description, its =instrument= and any documentation the guide does not give |
+| =names.json= | the code spelling of a name the guide misspells, by kind (=types=, =models=, =engines=, =settings=), and its label words |
+| =text-fixes.json= | a misspelling in the guide prose |
+| =settings.json= | the text of a setting whose guide text is too short to read, and the list words that are values, not settings |
+| =models.json= | the description, the detail and the source of a model |
+| =engines.json= | the description, the detail and the source of an engine |
+| =templates.json= | the asset class, the method and the description of a sensitivity template |
+| =globals.json= | a global parameter: its domain, default, label, help and description |
 
 #+begin_src json
-{
-  "instrument": {
-    "AmericanSwaption_XCcy": {
-      "value": "SWPTN",
-      "reason": "A cross-currency swaption is a swaption; the pair table prices it with the swaption models.",
-      "source": "ore_guide: pricingengines.tex, Product Type: American-style Swaption, Cross Currency",
-      "curator": "marco",
-      "date": "2026-10-25"
-    }
-  },
-  "exempt": {
-    "CapFlooredAverageONIndexedCouponLeg": {
-      "reason": "A leg pricer, not a trade product; it moves to the instrument building blocks.",
-      "curator": "marco",
-      "date": "2026-10-25"
-    }
-  }
+"AmericanSwaption_XCcy": {
+  "description": "American Swaption X Ccy",
+  "instrument": "NONE",
+  "reason": "No instrument is mapped yet. The mapping task decides it. The description is the value the seeded table carried.",
+  "source": "seed",
+  "source_ref": "projects/ores.sql/populate/analytics/analytics_pricing_engine_types_populate.sql",
+  "curator": "marco",
+  "date": "2026-10-25"
 }
 #+end_src
 
-The concerns are: =instrument= (the trade type a product maps to), =type_text= (a product description the guide does not give), =setting_text= (a setting text the guide gives only as a value list), =name= (a mis-spelling in the guide or the code), =global= (a document-level parameter and its text), =exempt= (a row that is deliberately not a product), and =release= (a release floor the tags cannot answer).
+The =instrument= is the quality the screen groups by. It comes from the type, not from the trade, and this file is its only home. A product type the guide names but the file does not fails the generator, so the debt is visible and a person decides it.
+
+The =source= is one of four categories: =ore_guide= for the guide, =ore_code= for the ORE source, =authored= for a text a person wrote, and =seed= for a value carried over from the old literals. The =source_ref= points at the place: the guide section, the source path, or the file the value was carried from.
+
+The loader (=curation/__init__.py=) rejects an entry that lacks a reason, a source, a source reference, a curator or a date, and an entry whose source is not one of the four.
 
 A curation entry is reviewed like code: it appears in the diff, names its source and reason, and carries a person and a date.
 
 ** Provenance on every row
 
-The target is that the ore parameter contract carries, beside the text: =source= (=ore_guide=, =ore_code=, =authored=), =source_ref= (the guide section or the source file and line), =curation_note= (what a person changed), =reviewed_by= and =reviewed_at=, and that the analytics tables carry the same on the rows that describe an ORE element. A row without a source is a bug, not a default.
+The target is that the ore parameter contract carries, beside the text: =source= (=ore_guide=, =ore_code=, =authored=, =seed=), =source_ref= (the guide section or the source file and line), =curation_note= (what a person changed), =reviewed_by= and =reviewed_at=, and that the analytics tables carry the same on the rows that describe an ORE element. A row without a source is a bug, not a default.
 
 ** What the DQ framework carries
 
@@ -86,7 +92,7 @@ and adds what DQ does not hold:
 
 - The *source commit*, the *curation file version* and a link to this page go on
   the DQ dataset as its metadata, next to the licence and the description.
-- The *coverage report* (types mapped, types exempt, settings documented,
+- The *coverage report* (types mapped, types unmapped, settings documented,
   globals documented, rows authored) is written by the generator and recorded on
   the dataset, so a consumer reads coverage without rerunning the generator.
 - The *value rules* (domain, enumerated values, range, required) stay in the data
@@ -98,30 +104,34 @@ versioning, and the change provenance of the rows themselves.
 
 ** The gates
 
-The gates are the target. Today the generator checks only that every parameter has a text. The full set fails, rather than writing a guess, when:
+Some gates are live. The parameter generator fails on a parameter without a text. The vocabulary generator fails on a product type the guide names with no curation entry, and on a model or engine with no description. An entry without provenance fails when the curation loads. The rest are the target of the provenance task. The full set fails, rather than writing a guess, when:
 
 - a parameter has no text;
 - a parameter has no value domain;
-- a product type has no instrument code and no =exempt= entry;
-- a description is only the humanised code and has no =type_text= entry;
+- a product type has no instrument code;
+- a description is only the humanised code and the type has no curated documentation;
 - a global parameter has no domain or no text;
 - the same leaf would be written twice;
 - =--check= finds the committed SQL differs from the generated SQL.
 
-The coverage report prints, per run: types mapped, types exempt, settings documented, globals documented, and the rows whose text is authored rather than extracted. A reviewer reads the report before the diff.
+The coverage report prints, per run: types mapped, types unmapped, settings documented, globals documented, and the rows whose text is authored rather than extracted. A reviewer reads the report before the diff.
 
 ** Review
 
 1. Run the extractor against the recorded ORE commit.
 2. Read the coverage report: every count that moved is explained.
-3. Read the curation diff: every entry has a reason and a source.
+3. Read the curation diff: every entry has a reason, a source and a source reference.
 4. Spot-check one product from each asset class against the guide.
 5. Run the generator and =--check=.
 6. Run the screens' tests; the vocabulary fixtures are built from the same data shape.
 
 ** Current state and gaps
 
-The current seed curates inside Python literals (=descriptions.py=, =EXTRA_TYPES=, =GLOBAL_PARAMETERS=, =NAME_WORDS=), has no provenance columns yet, and lets the generator default an added product type to =NONE= for its instrument and to a humanised code for its description. The methodology above is the target; the tasks under the story move the current seed onto it.
+The curated facts now live in the curation files, and every generated row is unchanged by the move, which proves the files say what the literals said.
+
+The release floor is still not curated. =pricing_parameter_releases.json= is measured from the ORE tags, and a row with no measured release falls back to the literal =1.8.0.7 or earlier= in =pricing_parameter_rows.py=. A curated release file is not implemented; add one when a floor is a decision rather than a measurement.
+
+Still the target: the provenance columns on the rows, the coverage report, the value rules on the write path, and an instrument for each product type that has none.
 
 * See also
 

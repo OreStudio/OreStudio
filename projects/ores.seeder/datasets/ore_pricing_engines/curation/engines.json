@@ -1,0 +1,668 @@
+{
+  "AMC": {
+    "description": "American Monte Carlo engine for use inside an exposure simulation.",
+    "detail": "Builds an engine that prices the product on the paths of the exposure simulation with a regression, so the product is valued once for all dates. See the ORE AMC documentation.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AMCCG": {
+    "description": "American Monte Carlo engine on the computation graph.",
+    "detail": "The AMC engine for the computation graph. It supports automatic differentiation for sensitivities. See the ORE AMC documentation.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AccrualRepoEngine": {
+    "description": "Values a bond repo by accrual.",
+    "detail": "Builds an AccrualBondRepoEngine. The engine accrues the repo cash at the repo rate.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Analytic": {
+    "description": "Closed-form pricing engine of the product.",
+    "detail": "Prices the product with a closed formula of the model. The product decides which formula.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AnalyticBarrierEngine": {
+    "description": "Closed-form price of a single barrier option.",
+    "detail": "Prices a European barrier option with the formulas of Haug, Reiner and Rubinstein.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AnalyticCashSettledEuropeanEngine": {
+    "description": "Closed-form price of a cash-settled European option.",
+    "detail": "Prices a European option that settles in cash, so the payment follows the price at expiry and not the delivery of the underlying.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AnalyticContinuousGeometricAPEngine": {
+    "description": "Closed-form price of a continuous geometric average price Asian option.",
+    "detail": "The average is the geometric mean over a continuous window, which gives a closed formula.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AnalyticDigitalAmericanEngine": {
+    "description": "Closed-form price of a one-touch or no-touch digital option.",
+    "detail": "Builds an AnalyticDigitalAmericanEngine for a one touch, or an AnalyticDigitalAmericanKOEngine for a no touch.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AnalyticDiscreteGeometricAPEngine": {
+    "description": "Closed-form price of a discrete geometric average price Asian option.",
+    "detail": "The average is the geometric mean over fixing dates, which gives a closed formula.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AnalyticDiscreteGeometricASEngine": {
+    "description": "Closed-form price of a discrete geometric average strike Asian option.",
+    "detail": "The strike is the geometric mean over fixing dates, which gives a closed formula.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AnalyticDoubleBarrierBinaryEngine": {
+    "description": "Closed-form price of a double barrier binary option.",
+    "detail": "Prices a digital option that knocks in or out at an upper and a lower barrier.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AnalyticDoubleBarrierEngine": {
+    "description": "Closed-form price of a double barrier option.",
+    "detail": "Prices a vanilla option that knocks in or out at an upper and a lower barrier, with the Ikeda-Kunitomo series.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AnalyticEuropeanEngine": {
+    "description": "Closed-form Black-Scholes price of a European option.",
+    "detail": "Prices a European option with the Black-Scholes formula for the model of the pair.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AnalyticEuropeanForwardEngine": {
+    "description": "Closed-form price of an option on a forward.",
+    "detail": "Prices a European option on a forward or future with the Black formula. The underlying is the forward and not the spot.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "AnalyticalApproximation": {
+    "description": "Analytical approximation for average price options.",
+    "detail": "Builds a CommodityAveragePriceOptionAnalyticalEngine. The setting Volatility selects the model for the average.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BaroneAdesiWhaleyApproximationEngine": {
+    "description": "Barone-Adesi and Whaley approximation for American options.",
+    "detail": "A quick analytic approximation of the early exercise premium of an American option.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackAnalytic": {
+    "description": "Black or Bachelier CPI coupon pricer.",
+    "detail": "Builds a BlackCPICouponPricer or a BachelierCPICouponPricer, depending on the volatility input.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackAverageBMACouponPricer": {
+    "description": "Coupon pricer for capped and floored average BMA coupons.",
+    "detail": "Prices the cap and floor of an average BMA indexed coupon with Black or Bachelier.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackAverageONIndexedCouponPricer": {
+    "description": "Coupon pricer for capped and floored average overnight coupons.",
+    "detail": "Prices the cap and floor of an average overnight indexed coupon with Black or Bachelier.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackBachelierSwaptionEngine": {
+    "description": "Black or Bachelier price of a European swaption.",
+    "detail": "Builds a BlackMultiLegOptionEngine. The volatility surface decides between Black and Bachelier.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackBondOptionEngine": {
+    "description": "Black price of a bond option.",
+    "detail": "Builds a BlackBondOptionEngine. The option is on the forward price of the bond.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackCdsOptionEngine": {
+    "description": "Black price of an option on a credit default swap.",
+    "detail": "Builds a BlackCdsOptionEngine. The option is on the forward spread of the default swap.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackIborCouponPricer": {
+    "description": "Coupon pricer for capped and floored Ibor coupons.",
+    "detail": "Prices the cap and floor of an Ibor coupon with Black or Bachelier.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackIndexCdsOptionEngine": {
+    "description": "Black price of an option on an index credit default swap.",
+    "detail": "Builds a BlackIndexCdsOptionEngine. The option is on the forward spread of the index.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackInterpolatedIborCouponPricer": {
+    "description": "Coupon pricer for capped and floored interpolated Ibor coupons.",
+    "detail": "Prices the cap and floor of a coupon that interpolates two Ibor tenors, with Black or Bachelier.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackOvernightIndexedCouponPricer": {
+    "description": "Coupon pricer for capped and floored overnight coupons.",
+    "detail": "Prices the cap and floor of an overnight indexed coupon with Black or Bachelier.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "BlackQuantoEquityCouponPricer": {
+    "description": "Equity coupon pricer with a quanto adjustment.",
+    "detail": "Prices an equity coupon in another currency. The setting ApplyConvexityAdjustment switches the convexity adjustment.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Bucketing": {
+    "description": "Hull-White bucketing of the loss distribution of a tranche.",
+    "detail": "Builds an IndexCdsTrancheEngine. The loss distribution comes from the bucketing method of Hull and White.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CallSpreadCouponPricer": {
+    "description": "Range accrual pricer by call spread replication.",
+    "detail": "Builds a RangeAccrualPricerByCallSpread. The pricer reads the optionlet surface directly and prices each daily observation as a call spread on caplets.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CallSpreadEngine": {
+    "description": "Digital option price by call spread replication.",
+    "detail": "Prices a digital option as the spread of two vanilla options around the strike, so the volatility smile enters the price.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CapFlooredNonStdYYCouponPricer": {
+    "description": "Coupon pricer for non-standard year-on-year inflation coupons.",
+    "detail": "Builds a non-standard Black, unit displaced Black or Bachelier year-on-year coupon pricer, depending on the volatility input.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CapFlooredYYCouponPricer": {
+    "description": "Coupon pricer for year-on-year inflation coupons.",
+    "detail": "Builds a Black, unit displaced Black or Bachelier year-on-year coupon pricer, depending on the volatility input.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommodityCalendarSpreadOptionBachelierEngine": {
+    "description": "Bachelier price of a commodity calendar spread option.",
+    "detail": "Prices an option on the difference of two forward prices of one commodity at two delivery dates.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommoditySpreadOptionEngine": {
+    "description": "Analytic price of a commodity spread option.",
+    "detail": "Builds a CommoditySpreadOptionAnalyticalEngine. It uses the Bachelier model or the Kirk approximation of Clark, Commodity Option Pricing, section 2.9. The correlation of the two commodities comes from the market.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CommoditySwapEngine": {
+    "description": "Discounting price of a commodity swap.",
+    "detail": "Builds a DiscountingSwapEngine for the legs of a commodity swap.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "CpiCapEngine": {
+    "description": "Black or Bachelier price of a CPI cap or floor.",
+    "detail": "Builds a CPIBlackCapFloorEngine or a CPIBachelierCapFloorEngine, depending on the volatility type of the market surface.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DiscountingBondFutureEngine": {
+    "description": "Discounting price of a bond future.",
+    "detail": "Builds a DiscountingBondFutureEngine for the future on the cheapest to deliver bond.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DiscountingBondTRSEngine": {
+    "description": "Discounting price of a bond total return swap.",
+    "detail": "Builds a DiscountingBondTRSEngine. The bond leg and the funding leg are discounted.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DiscountingCommodityForwardEngine": {
+    "description": "Discounting price of a commodity forward.",
+    "detail": "Builds a DiscountingCommodityForwardEngine.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DiscountingCreditLinkedSwapEngine": {
+    "description": "Discounting price of a credit linked swap.",
+    "detail": "Builds a DiscountingCreditLinkedSwapEngine.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DiscountingCrossCurrencySwapEngine": {
+    "description": "Discounting price of a cross currency swap.",
+    "detail": "Builds the discounting currency swap engine. Each leg is discounted in its own currency and converted at the spot rate.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DiscountingEquityForwardEngine": {
+    "description": "Discounting price of an equity forward.",
+    "detail": "Builds a DiscountingEquityForwardEngine.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DiscountingForwardBondEngine": {
+    "description": "Discounting price of a forward bond.",
+    "detail": "Builds a DiscountingForwardBondEngine.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DiscountingFxForwardEngine": {
+    "description": "Discounting price of an FX forward.",
+    "detail": "Builds a DiscountingFxForwardEngine. Each currency leg is discounted and converted at the spot rate.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DiscountingRepoEngine": {
+    "description": "Discounting price of a bond repo.",
+    "detail": "Builds a DiscountingBondRepoEngine.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DiscountingRiskyBondEngine": {
+    "description": "Discounting price of a bond with credit risk.",
+    "detail": "Builds a DiscountingRiskyBondEngine. It discounts the coupons with the survival probability of the issuer and adds the recovery on default.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DiscountingRiskyBondEngineMultiState": {
+    "description": "Risky bond engine for the ORE credit model.",
+    "detail": "Builds a DiscountingRiskyBondEngineMultiState for use in the credit model. See the ORE credit model documentation.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "DiscountingSwapEngine": {
+    "description": "Discounting price of a swap.",
+    "detail": "Builds a DiscountingSwapEngine. Each leg is projected on its curve and discounted.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityCouponPricer": {
+    "description": "Pricer for an equity leg coupon.",
+    "detail": "Takes no setting. It prices the coupons of an equity leg from the equity forward.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "EquityVarianceSwap": {
+    "description": "Replicating price of a variance or volatility swap.",
+    "detail": "Builds a GeneralisedReplicatingVarianceSwapEngine or a VolatilityFromVarianceSwapEngine, depending on the moment type.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FD": {
+    "description": "Finite difference engine.",
+    "detail": "Solves the pricing equation of the model on a grid of state and time. The settings set the grid size, the scheme and the time steps.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FdBlackScholesBarrierEngine": {
+    "description": "Finite difference price of a barrier option.",
+    "detail": "Builds a FdBlackScholesBarrierEngine. It handles barriers that have no closed formula.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FdBlackScholesVanillaEngine": {
+    "description": "Finite difference price of an American vanilla option.",
+    "detail": "Builds a FdBlackScholesVanillaEngine. The grid handles early exercise.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "FloatingRateCouponPricer": {
+    "description": "Range accrual coupon pricer on a swaption smile.",
+    "detail": "Builds a RangeAccrualPricerByBgm for each coupon of the range accrual leg.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Grid": {
+    "description": "Convolution grid engine for the LGM model.",
+    "detail": "Rolls the value back on a grid of the LGM state with numerical integration, after Hagan, Methodology for callable swaps and Bermudan exercise into swaptions. The settings set the width and the point count of the grid.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "IborCapEngine": {
+    "description": "Black or Bachelier price of a cap or floor.",
+    "detail": "Builds a BlackCapFloorEngine or a BachelierCapFloorEngine, depending on the volatility type.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Intrinsic": {
+    "description": "Intrinsic value of the product.",
+    "detail": "Builds an IntrinsicAscotEngine. The value is the payoff at the current market with no time value.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "LinearTSRPricer": {
+    "description": "Linear terminal swap rate pricer for CMS coupons.",
+    "detail": "Builds a LinearTSRPricer. The settings choose the replication policy and the rate bounds.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MC": {
+    "description": "Monte Carlo engine.",
+    "detail": "Prices by simulation of the model with the Longstaff-Schwartz regression for early exercise. The settings choose the sequence, the seed, the number of samples and the regression basis.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MCCG": {
+    "description": "Monte Carlo engine on the computation graph.",
+    "detail": "Builds a MacCgMultiLegOptionEngine. It supports automatic differentiation for first-order sensitivities.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MCDiscreteArithmeticAPEngine": {
+    "description": "Monte Carlo price of an arithmetic average price Asian option.",
+    "detail": "Builds a MCDiscreteArithmeticAPEngine with Sobol sequences.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MCDiscreteArithmeticASEngine": {
+    "description": "Monte Carlo price of an arithmetic average strike Asian option.",
+    "detail": "Builds a MCDiscreteArithmeticASEngine with Sobol sequences.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MCDiscreteGeometricAPEngine": {
+    "description": "Monte Carlo price of a geometric average price Asian option.",
+    "detail": "Builds a MCDiscreteGeometricAPEngine with Sobol sequences.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MCScript": {
+    "description": "Monte Carlo engine that runs a script.",
+    "detail": "Builds a CliquetOptionMcScriptEngine, which uses the scripted trade framework.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MidPointCdsEngine": {
+    "description": "Mid-point price of a credit default swap.",
+    "detail": "Builds a MidPointCdsEngine. The default time in each period is the mid point of the period.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MidPointCdsEngineMultiState": {
+    "description": "Credit default swap engine for the ORE credit model.",
+    "detail": "Builds a MidPointCdsEngineMultiState. Only the credit model uses it. See the ORE credit model documentation.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MidPointIndexCdsEngine": {
+    "description": "Mid-point price of an index credit default swap.",
+    "detail": "Builds a MidPointIndexCdsEngine.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MonteCarlo": {
+    "description": "Monte Carlo engine.",
+    "detail": "Prices by simulation of the underlying. The settings choose the number of samples, the seed and the variance reduction.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "MonteCarloCBOEngine": {
+    "description": "Monte Carlo price of a collateralised bond obligation.",
+    "detail": "Builds a MonteCarloCBOEngine. It simulates the defaults of the pool and the waterfall of the tranches.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "Numerical": {
+    "description": "Numerical integration pricer for CMS coupons.",
+    "detail": "Builds a NumericHaganPricer. It integrates the replication integral numerically.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "NumericalIntegrationEngine": {
+    "description": "Numerical integration price of an index CDS option.",
+    "detail": "Builds a NumericalIntegrationIndexCdsOptionEngine.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "ScriptedTrade": {
+    "description": "Scripted trade pricing engine.",
+    "detail": "Builds a ScriptedInstrumentPricingEngine, or a variant. See the ORE scripted trade documentation.",
+    "reason": "The ORE documentation describes it; the text restates that account.",
+    "source": "ore_guide",
+    "source_ref": "Docs/UserGuide, the account of the model or engine",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "TurnbullWakemanAsianEngine": {
+    "description": "Turnbull-Wakeman approximation for arithmetic Asian options.",
+    "detail": "Prices an arithmetic average option by matching the first two moments of the average to a lognormal variable.",
+    "reason": "The ORE documentation does not describe it; the text is written from the standard literature and needs a domain reviewer.",
+    "source": "authored",
+    "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
+    "curator": "marco",
+    "date": "2026-10-25"
+  },
+  "YYCapEngine": {
+    "description": "Black or Bachelier price of a year-on-year inflation cap or floor.",
+    "detail": "Builds a Black, unit displaced Black or Bachelier year-on-year cap floor engine, depending on the volatility type of the market surface.",
+    "reason": "The ORE documentation does not describe it; the text restates the class the ORE code builds.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
+    "curator": "marco",
+    "date": "2026-10-25"
+  }
+}

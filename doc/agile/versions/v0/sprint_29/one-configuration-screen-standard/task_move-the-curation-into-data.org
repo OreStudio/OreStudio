@@ -7,41 +7,61 @@
 #+level: s1
 #+filetags: :one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-the-curation-into-data
+#+pr: 3746
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The pricing engine data is curated in data files, not in Python literals. Every
+curated fact carries a reason, a source, a curator and a date. The generators read
+the files and write the same SQL as before.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
 
--
+- The authored texts, the name fixes, the typo fixes, the product types and the
+  global parameters live in =curation/*.json= under the seeder dataset.
+- Every entry carries a =reason=, a =source=, a =source_ref=, a =curator= and a
+  =date=. The loader rejects an entry that lacks one, whose source is not one of the
+  four categories, or whose value is empty.
+- The generators read the curation. No priced text remains in a Python literal.
+- The generated SQL is unchanged.
+- =generate_ore_parameters_dataset.py --check= passes.
+- The methodology names the files and the gates that are live.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Read the literals and assign each to one concern: a type, a name, a text fix, a
+   setting text, a model, an engine, a template or a global parameter.
+2. Generate the JSON from the literals, so no value is retyped by hand.
+3. Add =curation/__init__.py=, which loads the files and checks the provenance.
+4. Rewire the extractor, the vocabulary generator and the parameter rows.
+5. Delete =descriptions.py=.
+6. Regenerate both datasets and prove the SQL is byte-identical.
+
+The instrument of a type was in the generated types SQL, because the generator read
+its own previous output. It moves to =types.json=, so the generator reads one source.
+
+=documentation= is optional on any type. Only the four types the guide does not
+describe use it today, but a curated text for a guide type needs no new field.
 
 * Measurements
 
@@ -55,9 +75,27 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Curation files | 8 | =ls projects/ores.seeder/datasets/ore_pricing_engines/curation/*.json= | d5223b271e |
+| Curated entries | 296, of which 188 are outside the types | =grep -c '"curator"' projects/ores.seeder/datasets/ore_pricing_engines/curation/*.json= | d5223b271e |
+| Product types | 108, of which 76 have instrument =NONE= | =grep -c '"instrument": "NONE"' projects/ores.seeder/datasets/ore_pricing_engines/curation/types.json= | d5223b271e |
+| Generated SQL files that changed | 0 | =git diff --stat d5223b271e^ d5223b271e -- projects/ores.sql/populate= | d5223b271e |
+| Ore parameter rows that changed | 0 of 1674 | =python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py --check= | d5223b271e |
+| Python lines | 235 added, 813 removed | =git diff --numstat d5223b271e^ d5223b271e -- '*.py'= | d5223b271e |
+| Files, all told | 17, 3042 added, 855 removed | =git diff --stat d5223b271e^ d5223b271e= | d5223b271e |
 
 * Notes
+
+- =CPICapFloor= is in the seeded type table, but the ORE code in this checkout has
+  no such literal: it builds =CpiCapFloor=. The curation entry records this. The
+  reclassification task decides whether the row stays.
+- 76 of the 108 product types have no instrument. Each entry says so in its reason,
+  so the mapping task sees the backlog in the file.
+- All 108 type entries cite =seed= for their description and instrument, because the
+  seeded table carried both. The guide is the origin, not the place the value came
+  from. The three types the guide does not describe say in their reason that their
+  documentation is written from the ORE code.
+- The =er-diagram= check fails on =origin/main=, because the synthetic SQL changed
+  after its diagram. This change does not touch either file.
 
 * Test Scenarios
 
@@ -74,12 +112,41 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3746][#3746]] | [seeder] Move the pricing curation out of the Python literals |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Provenance was presence-only; a null value passed. | =curation/__init__.py= | Fixed | Every field must be a non-empty string. |
+| 2 | The model and engine gate only checked that the key existed. | =generate_vocabulary_sql.py= | Fixed | The loader requires a non-empty description and detail. |
+| 3 | The exempt flag in the gate had no file that defines it. | methodology | Fixed | The gate now only asks for an instrument. |
+| 4 | 104 type entries said =ore_guide= while their values came from the seed. | =types.json= | Fixed | All 108 cite =seed= and the SQL path. |
+| 5 | Source was one string, not the category and reference the methodology names. | =curation/*.json= | Fixed | =source= and =source_ref= are separate; the loader checks the category. |
+| 6 | The methodology claimed no Python literal holds a curated fact, but the release floor is one. | methodology | Fixed | The floor is named as measured, with a literal fallback. |
+| 7 | The measurements cited =origin/main=, where the curation files do not exist. | this task | Fixed | The table cites the commit that holds the change. |
+| 8 | A guide type's =documentation= would override its generated text. | =pricing_parameter_rows.py= | Kept | A type may carry curated documentation. No guide type does today. |
+| 9 | =Curation= hands out raw dicts (feature envy, primitive obsession). | =curation/__init__.py= | Kept | Entries are records that callers iterate. A value object adds a layer with no second consumer. |
+| 10 | Missing =# noqa: E402= after the =sys.path= insert, and duplicate row shapes. | two modules | Fixed | Added the marker, =described_rows= and =documented_type_row=. |
+| 11 | The commit body ran past 72 columns, and the PR record commit had no trailers. | git history | Fixed | One commit, 72 columns, with the story, task, environment and co-author trailers. |
 
 * Result
+
+The curation is data. Eight JSON files under =curation/= hold the 296 curated facts,
+each with a reason, a source, a source reference, a curator and a date. The loader
+rejects an entry that lacks one or names a category outside the four. The
+extractor, the vocabulary generator and the parameter rows read the files, and
+=descriptions.py= is gone.
+
+The generated SQL did not move: 108 types, 194 pairs, 834 settings, 25 models,
+74 engines, 19 templates and 1674 ore parameter rows. That is the proof that the
+files say what the literals said.
+
+The review changed the shape of the provenance. A single =source= string became a
+category plus a reference, because 104 type entries claimed the guide as their
+source while their values came from the seeded table. All 108 now say =seed= and
+name the file.
+
+The release floor is still measured, not curated, and the methodology says so.
+Two checks fail on =main= before this branch, the ER diagram and the
+=analytics.quant= file list. Neither is in this change.

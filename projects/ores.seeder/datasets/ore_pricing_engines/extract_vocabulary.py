@@ -4,9 +4,10 @@ vocabulary of the pricing engine screens: the product types, the pairs of model 
 that price each type, and the settings each pair takes.
 
 The chapter is the source: Docs/UserGuide/pricing/pricingengines.tex in an ORE checkout.
-Where the chapter disagrees with the ORE code on a name, CORRECTIONS holds the code's
-spelling. Every model, engine and product type name is checked against the string literals
-of the code, and the names that the code does not know are reported and dropped.
+Where the chapter disagrees with the ORE code on a name, the curated names in
+curation/names.json hold the code's spelling. Every model, engine and product type name is
+checked against the string literals of the code, and the names that the code does not know
+are reported and dropped.
 
 Usage:
     python3 extract_vocabulary.py <ore-checkout> <out.json>
@@ -19,24 +20,11 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import descriptions as authored
+import curation  # noqa: E402
 
 CHAPTER = "Docs/UserGuide/pricing/pricingengines.tex"
 
-# The chapter spells these differently from the code.
-TYPE_FIX = {
-    "CurrencySwap": "CrossCurrencySwap",
-    "AmericanSwaption NonStandard": "AmericanSwaption_NonStandard",
-    "CappedFlooredYYLeg": "CapFlooredYYLeg",
-    "CappedFlooredNonStdYYLeg": "CapFlooredNonStdYYLeg",
-    "CapFlooredAverageBMAIndexedCouponLeg": "CapFlooredAverageBMACouponLeg",
-}
-ENGINE_FIX = {
-    "AnalyticEuroepanForwardEngine": "AnalyticEuropeanForwardEngine",
-    "FdGarmanKohlhagenVanillaEngine": "FdBlackScholesVanillaEngine",
-    "BlackAverageBMAIndexedCouponPricer": "BlackAverageBMACouponPricer",
-}
-MODEL_FIX = {"CapFlooredYNonStdYYModel": "CapFlooredNonStdYYModel"}
+CURATED = curation.CURATED
 
 TENOR = re.compile(r"^\d+[DWMY]$")
 NUMBER = re.compile(r"^-?\d+(\.\d+)?([eE]-?\d+)?$")
@@ -57,8 +45,7 @@ def clean(s):
 
 
 def plain(text):
-    for wrong, right in authored.TYPOS.items():
-        text = text.replace(wrong, right)
+    text = CURATED.fix_text(text)
     text = re.sub(r"\\(?:Phi|epsilon|eta|rho|sigma|alpha|cdot|frac)", lambda m: m.group(0)[1:], text)
     text = re.sub(r"[\\{}]", "", text)
     text = re.sub(r"\s+", " ", text).strip()
@@ -100,8 +87,8 @@ def parameters(chunk, sample):
                 continue
             for name in re.split(r"\s*,\s*| and ", mm.group(1)):
                 name = name.strip().replace("\\", "")
-                name = authored.SETTING_NAME_FIX.get(name, name)
-                if name and " " not in name and name not in authored.NOT_SETTINGS:
+                name = CURATED.rename("settings", name)
+                if name and " " not in name and CURATED.is_a_setting(name):
                     found.append({"name": name, "optional": bool(mm.group(2)), "text": mm.group(3).strip()})
     return found
 
@@ -130,8 +117,8 @@ def blocks_of(body):
         chunk = bm.group(2)
         lead = re.split(r"The parameters have the following meaning|\\begin\{longlisting\}|\\begin\{equation\}", chunk)[0]
         sample = sample_values(chunk)
-        blocks[ENGINE_FIX.get(engine, engine)] = {
-            "model": MODEL_FIX.get(model, model),
+        blocks[CURATED.rename("engines", engine)] = {
+            "model": CURATED.rename("models", model),
             "text": sentence(lead),
             "parameters": parameters(chunk, sample),
             "sample": sample,
@@ -142,7 +129,7 @@ def blocks_of(body):
 def build(text):
     by_type = collections.OrderedDict()
     for title, body in sections(text):
-        types = [TYPE_FIX.get(clean(t.strip()), clean(t.strip())) for t in title.split(",")]
+        types = [CURATED.rename("types", clean(t.strip())) for t in title.split(",")]
         used = re.search(r"Used by trade type:(.*?)Available Model/Engine pairs:", body, re.S)
         used = sentence(used.group(1)) if used else ""
         listed = []
@@ -152,8 +139,8 @@ def build(text):
                 name, note = split_name(clean(item))
                 if "/" in name:
                     model, engine = name.split("/", 1)
-                    listed.append((MODEL_FIX.get(model.strip(), model.strip()),
-                                   ENGINE_FIX.get(engine.strip(), engine.strip()), note))
+                    listed.append((CURATED.rename("models", model.strip()),
+                                   CURATED.rename("engines", engine.strip()), note))
         blocks = blocks_of(body)
         order = list(listed)
         known = {e for _, e, _ in listed}
@@ -245,7 +232,7 @@ def settings_of(pair):
         rows[(scope, name)] = {
             "scope": scope, "name": name, "kind": kind, "usual": value, "options": options,
             "required": not (p["optional"] or re.search(r"optional|default", p["text"], re.I)),
-            "text": authored.SETTING_TEXT.get(name) or plain(p["text"]),
+            "text": CURATED.setting_text(name) or plain(p["text"]),
         }
     return list(rows.values())
 

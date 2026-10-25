@@ -1,0 +1,276 @@
+{
+  "text": {
+    "Calibration": {
+      "value": "How the model is fitted to the market: Bootstrap fits one instrument at a time, BestFit fits all at once, None keeps the starting values.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "CalibrationStrategy": {
+      "value": "Which swaptions the fit uses: those that end with the deal and start at the money, those at the strike of the deal, or the delta gamma adjusted set.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "ReversionType": {
+      "value": "The form of the mean reversion parameter: Hagan or Hull-White.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "VolatilityType": {
+      "value": "The form of the volatility parameter: Hagan or Hull-White.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "Reversion": {
+      "value": "The mean reversion speed of the model. A calibrated model starts here.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "TimeStepsPerYear": {
+      "value": "The number of time steps for each year of the grid or of the simulation.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "p": {
+      "value": "The parameter p of the model that links the stock price to the default intensity.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "eta": {
+      "value": "The parameter eta of the model that links the stock price to the default intensity.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "Curve": {
+      "value": "Which curve the product reads: the index curve, or the curves of the constituents.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "FepCurve": {
+      "value": "Which curve is used for the front end protection: the index curve, or the curves of the constituents.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "SensitivityDecomposition": {
+      "value": "How the index sensitivity splits across the constituents: by underlying, by notional, by loss or by delta.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "Policy": {
+      "value": "How the replication limits its integration range: by rate bounds, by vega ratio, by price threshold or by standard deviations.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "VegaRatio": {
+      "value": "The vega ratio that sets the bounds of the replication when the policy is VegaRatio.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "PriceThreshold": {
+      "value": "The price threshold that sets the bounds of the replication when the policy is PriceThreshold.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "BsStdDev": {
+      "value": "The number of standard deviations that set the bounds of the replication when the policy is BsStdDev.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "steps": {
+      "value": "The number of steps of the numerical integration.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "useQuadrature": {
+      "value": "Whether to integrate by quadrature in place of by simulation.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "Samples": {
+      "value": "The number of Monte Carlo samples.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "samples": {
+      "value": "The number of Monte Carlo samples.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "LossDistributionPeriods": {
+      "value": "The periods at which the loss distribution of the pool is computed.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "XGrid": {
+      "value": "The specification of the state grid of the finite difference solver.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "seed": {
+      "value": "The seed of the random number generator.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "Seed": {
+      "value": "The seed of the random number generator.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "sy": {
+      "value": "The width of the grid on the value axis, in standard deviations, in the notation of Hagan.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "sx": {
+      "value": "The width of the grid on the state axis, in standard deviations, in the notation of Hagan.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "ny": {
+      "value": "The number of grid points on the value axis, in the notation of Hagan.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "nx": {
+      "value": "The number of grid points on the state axis, in the notation of Hagan.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "SensitivityTemplate": {
+      "value": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "Volatility": {
+      "value": "The volatility of the model. A calibrated model starts here.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "min": {
+      "value": "The lower bound of the standard deviation of the Gaussian copula.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "max": {
+      "value": "The upper bound of the standard deviation of the Gaussian copula.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "beta": {
+      "value": "The parameter of the correlation parametrization.",
+      "reason": "The guide's text for this setting is only a value list or a phrase too short to read on its own.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter description of each product type that names the setting",
+      "curator": "marco",
+      "date": "2026-10-25"
+    }
+  },
+  "not_a_setting": {
+    "LaggedFX": {
+      "reason": "The guide's parameter list includes it, but it is a value of another setting, not a name.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter lists of the product type sections",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "Simple": {
+      "reason": "The guide's parameter list includes it, but it is a value of another setting, not a name.",
+      "source": "ore_guide",
+      "source_ref": "Docs/UserGuide/pricing/pricingengines.tex, the parameter lists of the product type sections",
+      "curator": "marco",
+      "date": "2026-10-25"
+    }
+  }
+}

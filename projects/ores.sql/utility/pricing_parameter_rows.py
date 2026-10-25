@@ -22,9 +22,10 @@ chapter "Pricing Engine Configuration", through the vocabulary the seeder extrac
 from it. Each row is one (product type, scope, name) the guide describes, so the same
 name may carry a different text under another product type.
 
-The global parameters come from the guide's global parameter section and from the ORE
-source that reads them. The release each parameter entered is measured from the ORE
-release tags and kept in pricing_parameter_releases.json beside this file.
+The text of a setting whose guide text is too short, the name fixes, the product types the
+guide does not describe and the global parameters are curated data, in the curation files
+of the seeder's ore_pricing_engines dataset. The release each parameter entered is measured
+from the ORE release tags and kept in pricing_parameter_releases.json beside this file.
 """
 
 import json
@@ -36,10 +37,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(
     os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..")),
     "projects", "ores.seeder", "datasets", "ore_pricing_engines"))
-import descriptions  # noqa: E402
+import curation  # noqa: E402
 from ore_parameter_seed import TEXT_KEYS  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+CURATED = curation.CURATED
 VOCABULARY = os.path.join(ROOT, "projects", "ores.seeder", "datasets",
                           "ore_pricing_engines", "pricing_vocabulary.json")
 RELEASES = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -57,13 +59,11 @@ FORMAT_OF = {
     "reference": "The code of a sensitivity template.",
 }
 
-# A few names the guide writes as one word, and the capital letters it uses.
-NAME_WORDS = {"PseudoCurrency": "Pseudo-currency"}
-
 
 def humanise(name):
-    if name in NAME_WORDS:
-        return NAME_WORDS[name]
+    curated = CURATED.label(name)
+    if curated:
+        return curated
     parts = re.split(r"[._]", name)
     words = []
     for part in parts:
@@ -133,198 +133,14 @@ def setting_rows():
     return out
 
 
-GLOBAL_PARAMETERS = [
-    {
-        "name": "ContinueOnCalibrationError",
-        "domain": "boolean",
-        "default_text": "false",
-        "label": "Continue on a calibration error",
-        "help": "Whether a calibration error stops the trade build.",
-        "description": (
-            "When it is true, the build does not fail when a model misses its calibration "
-            "tolerance. It logs a warning and prices the trade anyway. Leave it false when a "
-            "calibration miss must be visible, as in a validation run."
-        ),
-    },
-    {
-        "name": "AllowModelFallbacks",
-        "domain": "boolean",
-        "default_text": "false",
-        "label": "Allow model fallbacks",
-        "help": "Whether a missing market object uses a fallback.",
-        "description": (
-            "When it is true, a model build that misses a market object does not fail. The "
-            "build uses a fallback instead, such as a zero volatility surface when the surface "
-            "is missing. The price then rests on the fallback, so read it with care."
-        ),
-    },
-    {
-        "name": "Calibrate",
-        "domain": "boolean",
-        "default_text": "true",
-        "label": "Calibrate",
-        "help": "Whether the model is calibrated.",
-        "description": (
-            "When it is false, model calibration is off. A person does not normally set it: "
-            "ORE uses it for its own workflows that do not need a calibration."
-        ),
-    },
-    {
-        "name": "GenerateAdditionalResults",
-        "domain": "boolean",
-        "default_text": "false",
-        "label": "Generate additional results",
-        "help": "Whether the engines produce results beyond the NPV.",
-        "description": (
-            "When it is false, the engines that support it do not produce their additional "
-            "results. ORE sets it false for a run that needs only the NPV, as in a sensitivity "
-            "or a stress, to save time."
-        ),
-    },
-    {
-        "name": "RunType",
-        "domain": "string",
-        "default_text": "",
-        "label": "Run type",
-        "help": "The kind of run the portfolio is built for.",
-        "description": (
-            "One of NPV, SensitivityDelta, SensitivityDeltaGamma, Stress, Exposure, Capital, "
-            "TradeDetails, PortfolioAnalyser, HistoricalPnL, BondSpreadImply or "
-            "AbsMaturityUpdate. ORE sets it from the context. Some engines change what they "
-            "compute to suit it, such as a first order pnl expansion for a sensitivity run."
-        ),
-    },
-    {
-        "name": "McType",
-        "domain": "string",
-        "default_text": "",
-        "label": "Monte Carlo type",
-        "help": "The kind of Monte Carlo the run uses.",
-        "description": (
-            "One of Classic or American. ORE sets it from the context in which the pricing "
-            "engine file is used. Some trade constructions change what they attach to suit it."
-        ),
-    },
-    {
-        "name": "StrikeSpread",
-        "domain": "double",
-        "default_text": "0.1",
-        "label": "Strike spread",
-        "help": "The strike spread that replication engines use.",
-        "description": (
-            "It overrides the default value a replication engine uses to compute the strike "
-            "spread of a replication portfolio."
-        ),
-    },
-    {
-        "name": "BondFutureAmericanAsEuropean",
-        "domain": "string",
-        "default_text": "false",
-        "label": "American bond future as European",
-        "help": "Whether an American bond future option is priced as European.",
-        "description": (
-            "It takes true, false or a regular expression. When it is true, every American "
-            "bond future option is priced as though its exercise were European. When it is a "
-            "regular expression, only the options whose underlying contract name matches it "
-            "are. When it is false, the default, it has no effect."
-        ),
-    },
-    {
-        "name": "PseudoCurrency.TreatAsFX",
-        "domain": "boolean",
-        "default_text": "true",
-        "label": "Pseudo-currency: treat as FX",
-        "help": "Whether the pseudo-currency market is treated as an FX market.",
-        "description": (
-            "It passes through to the pure FX handling of the pseudo-currency. With no global "
-            "parameters, ORE treats the pseudo-currency as FX."
-        ),
-    },
-    {
-        "name": "PseudoCurrency.BaseCurrency",
-        "domain": "string",
-        "default_text": "USD",
-        "label": "Pseudo-currency base currency",
-        "help": "The currency the pseudo-currency quotes against.",
-        "description": "It names the base currency of the pseudo-currency market, usually USD.",
-    },
-    {
-        "name": "PseudoCurrency.FXIndexTag",
-        "domain": "string",
-        "default_text": "GENERIC",
-        "label": "Pseudo-currency FX index tag",
-        "help": "The tag ORE uses when it asks for an FX correlation.",
-        "description": (
-            "It is the tag of the FX index, such as GENERIC, so ORE requests a correlation "
-            "named FX-GENERIC-USD-EUR rather than one named for a real currency pair."
-        ),
-    },
-    {
-        "name": "PseudoCurrency.Curve.XAU",
-        "domain": "string",
-        "default_text": "PM:XAUUSD",
-        "label": "Pseudo-currency curve for gold",
-        "help": "The curve that prices the pseudo-currency XAU.",
-        "description": "It maps the three-letter code XAU to the curve that prices it, such as PM:XAUUSD.",
-    },
-    {
-        "name": "PseudoCurrency.Curve.XAG",
-        "domain": "string",
-        "default_text": "PM:XAGUSD",
-        "label": "Pseudo-currency curve for silver",
-        "help": "The curve that prices the pseudo-currency XAG.",
-        "description": "It maps the three-letter code XAG to the curve that prices it, such as PM:XAGUSD.",
-    },
-    {
-        "name": "PseudoCurrency.Curve.XPT",
-        "domain": "string",
-        "default_text": "PM:XPTUSD",
-        "label": "Pseudo-currency curve for platinum",
-        "help": "The curve that prices the pseudo-currency XPT.",
-        "description": "It maps the three-letter code XPT to the curve that prices it, such as PM:XPTUSD.",
-    },
-    {
-        "name": "PseudoCurrency.Curve.XPD",
-        "domain": "string",
-        "default_text": "PM:XPDUSD",
-        "label": "Pseudo-currency curve for palladium",
-        "help": "The curve that prices the pseudo-currency XPD.",
-        "description": "It maps the three-letter code XPD to the curve that prices it, such as PM:XPDUSD.",
-    },
-    {
-        "name": "PseudoCurrency.DefaultCorrelation",
-        "domain": "double",
-        "default_text": "",
-        "label": "Pseudo-currency default correlation",
-        "help": "The correlation to use when the market has none.",
-        "description": (
-            "It is optional. When it is set, ORE uses it when the market holds no correlation "
-            "for the pseudo-currency."
-        ),
-    },
-    {
-        "name": "ImplyAbsMaturityForRegex",
-        "domain": "string",
-        "default_text": "^RED:[0-9A-Z]{9}$",
-        "label": "Imply absolute maturity for a trade id",
-        "help": "A regular expression on trade ids whose maturity ORE implies.",
-        "description": (
-            "The ORE examples set it to a regular expression on trade ids. The ORE source in "
-            "this checkout does not read it, so a configuration that carries it round-trips "
-            "unchanged and the run ignores it. Treat it as a parameter ORE does not document."
-        ),
-    },
-]
-
-
 def global_rows():
     releases_by_name = releases()
     out = []
-    for entry in GLOBAL_PARAMETERS:
+    for name, entry in CURATED.globals.items():
         row = {
             "scope": "GlobalParameters",
             "subtype": "",
-            "name": entry["name"],
+            "name": name,
             "domain": entry["domain"],
             "required": False,
             "label": entry["label"],
@@ -336,10 +152,9 @@ def global_rows():
                 "double": "A number.",
                 "string": "Text.",
             }[entry["domain"]],
-            "introduced_in": releases_by_name.get(entry["name"]) or "1.8.0.7 or earlier",
+            "introduced_in": releases_by_name.get(name) or "1.8.0.7 or earlier",
             "removed_in": None,
-            "xpath": (f"/PricingEngines/GlobalParameters/"
-                      f"Parameter[@name='{entry['name']}']"),
+            "xpath": f"/PricingEngines/GlobalParameters/Parameter[@name='{name}']",
         }
         out.append(row)
     return out
@@ -359,11 +174,12 @@ def release_at_least(*names):
 def model_rows():
     rows = []
     for scope, table, kind, path in (
-        ("Models", descriptions.MODELS, "model", "Model"),
-        ("Engines", descriptions.ENGINES, "engine", "Engine"),
+        ("Models", CURATED.models, "model", "Model"),
+        ("Engines", CURATED.engines, "engine", "Engine"),
     ):
-        for code, (description, detail, _source) in sorted(table.items()):
-            text = detail if detail else description
+        for code, entry in sorted(table.items()):
+            description = entry["description"]
+            text = entry["detail"] if entry["detail"] else description
             rows.append({
                 "scope": scope,
                 "subtype": "",
@@ -416,49 +232,39 @@ def pair_rows():
     return rows
 
 
-# Product types the ORE guide chapter does not describe, with a text written from the
-# standard meaning of the name. The guide names the others.
-EXTRA_TYPES = {
-    "BalanceGuaranteedSwap": (
-        "A swap whose notional is guaranteed to a scheduled balance. Use it when the "
-        "amortisation follows the guaranteed balance rather than the actual one."
-    ),
-    "CallableSwap": (
-        "A swap that one side may cancel on a set of dates. Its price includes the "
-        "value of the cancellation right as well as the swap."
-    ),
-    "CPICapFloor": (
-        "A cap or a floor on a consumer price index. It pays when the index fixes above "
-        "or below the strike, and it needs the inflation curve and the index fixings."
-    ),
-    "FlexiSwap": (
-        "A swap with flexible notional or schedule terms. Use it when the standard swap "
-        "conventions do not describe the trade."
-    ),
-}
+def type_row(code, text, help_text):
+    return {
+        "scope": "Types",
+        "subtype": "",
+        "name": code,
+        "domain": "string",
+        "required": False,
+        "label": humanise(code),
+        "help": help_text,
+        "description": text,
+        "default_text": "The product type code.",
+        "format": "The product type code of an ORE pricing engine.",
+        "introduced_in": "1.8.0.7 or earlier",
+        "removed_in": None,
+        "xpath": f"/PricingEngines/Product[@type='{code}']",
+    }
+
+
+def documented_type_row(code, documentation):
+    return type_row(code, documentation, first_sentence(documentation))
 
 
 def type_rows():
     with open(VOCABULARY) as f:
         vocabulary = json.load(f)
     rows = []
-    for code, text in sorted(EXTRA_TYPES.items()):
-        rows.append({
-            "scope": "Types",
-            "subtype": "",
-            "name": code,
-            "domain": "string",
-            "required": False,
-            "label": humanise(code),
-            "help": first_sentence(text),
-            "description": text,
-            "default_text": "The product type code.",
-            "format": "The product type code of an ORE pricing engine.",
-            "introduced_in": "1.8.0.7 or earlier",
-            "removed_in": None,
-            "xpath": f"/PricingEngines/Product[@type='{code}']",
-        })
+    for code in sorted(set(CURATED.types) - set(vocabulary)):
+        rows.append(documented_type_row(code, CURATED.documentation(code)))
     for code, entry in sorted(vocabulary.items()):
+        documentation = CURATED.documentation(code)
+        if documentation:
+            rows.append(documented_type_row(code, documentation))
+            continue
         pairs = entry.get("pairs", [])
         usual = next((p for p in pairs if p.get("usual")), pairs[0] if pairs else None)
         used = (entry.get("used_by") or "").strip()
@@ -469,21 +275,9 @@ def type_rows():
             text += (f" {len(pairs)} model and engine pair"
                      f"{'s' if len(pairs) != 1 else ''} price it; the usual pair is "
                      f"{usual['model']} with {usual['engine']}.")
-        rows.append({
-            "scope": "Types",
-            "subtype": "",
-            "name": code,
-            "domain": "string",
-            "required": False,
-            "label": humanise(code),
-            "help": f"Used by {used.rstrip('.')}." if used else f"The {humanise(code)} product type.",
-            "description": text,
-            "default_text": "The product type code.",
-            "format": "The product type code of an ORE pricing engine.",
-            "introduced_in": "1.8.0.7 or earlier",
-            "removed_in": None,
-            "xpath": f"/PricingEngines/Product[@type='{code}']",
-        })
+        rows.append(type_row(
+            code, text,
+            f"Used by {used.rstrip('.')}." if used else f"The {humanise(code)} product type."))
     return rows
 
 

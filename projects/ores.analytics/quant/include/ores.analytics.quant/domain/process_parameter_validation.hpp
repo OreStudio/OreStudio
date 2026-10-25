@@ -115,11 +115,8 @@ validate_yield_curve_process_parameters(const std::string& process_type,
  * A branching ratio of one or more gives a stream that does not settle, so it
  * is refused rather than left to produce gaps that shrink without bound.
  */
-ORES_ANALYTICS_QUANT_EXPORT process_parameter_validation_result
-validate_arrival_process_parameters(const std::string& mode,
-                                    double ticks_per_hour,
-                                    double branching_ratio,
-                                    double decay);
+ORES_ANALYTICS_QUANT_EXPORT process_parameter_validation_result validate_arrival_process_parameters(
+    const std::string& mode, double ticks_per_hour, double branching_ratio, double decay);
 
 }
 

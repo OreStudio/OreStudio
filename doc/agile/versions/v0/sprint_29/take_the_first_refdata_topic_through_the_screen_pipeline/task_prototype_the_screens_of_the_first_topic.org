@@ -28,8 +28,8 @@ The screens are agreed on paper. Each prototype follows the settled standard, so
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] |
-| Now          | The prototype is drawn and its note written; the PR is raised. |
-| Waiting on   | The owner's sign off of the prototype before the build starts. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
@@ -122,5 +122,7 @@ year, its comparison, its producers and its empty state. The design note cites
 the rule identifiers each screen follows, defines the derived view rule for
 the standard to take, names the operation dialog as a fourth shared shape for
 RS-WRITE-31, and says what is fake. The group page and the top prototypes page
-list it; the journey's Prototype section links it. The owner's sign off is the
-gate before the build.
+list it; the journey's Prototype section links it. The owner reviewed it on
+2026-10-25, caught the legacy history shape and asked for the country link;
+both were fixed in PR 3787, and the owner signed the prototype off the same
+day.

@@ -3751,6 +3751,7 @@ const pt: SourceCatalogue = {
         },
         records: {
             deletePartWarning: 'A linha é fechada. O histórico fica.',
+            historyOf: 'Histórico de {name}',
             yes: 'Sim',
             no: 'Não',
             cancel: 'Cancelar',
@@ -4078,11 +4079,28 @@ const pt: SourceCatalogue = {
             compare: 'Comparar com',
             quantlibBaseWarning:
                 '{base} obtém os feriados do QuantLib, mas a reconstrução não os lê. Os dias abaixo mostram só os fins de semana e estas exceções.',
-            notBuilt:
-                'Nenhum dia útil está construído para {year}. Reconstrua o calendário para os construir.',
+            notBuilt: 'Nenhum dia útil está construído para {year}.',
+            notBuiltAction: 'Reconstrua o calendário para os construir.',
+            notBuiltReader:
+                'Peça a um administrador de dados de referência que reconstrua o calendário.',
+            unionSummary:
+                'Com {other}: {business} dias úteis e {holidays} feriados na união, que é a definição pela qual um par liquida.',
+            daysNote:
+                'Um dia a verde é um dia útil aberto por uma exceção. Um dia em itálico é um feriado apenas do calendário comparado.',
+            from: {
+                rule: 'Regra',
+                exception: 'Exceção',
+                base: 'Base',
+            },
             summary: '{business} dias úteis e {holidays} feriados em dias de semana em {year}.',
             noHolidays: 'Sem feriados.',
             rebuildTo: 'Construir até ao fim de',
+            rebuildLead:
+                'Constrói os dias de {name} ainda não construídos, a partir das suas regras e exceções.',
+            rebuildLeadDerived:
+                'Constrói os dias de {name} ainda não construídos, a partir da sua base e exceções.',
+            rebuildAction: 'Reconstruir',
+            rebuildYearHint: 'Um ano com quatro dígitos.',
             rebuild: 'Reconstruir os dias úteis',
             rebuildNote:
                 'Uma reconstrução adiciona os dias ainda não construídos. Não muda um dia já construído, por isso uma alteração a uma regra ou exceção não aparece num ano já construído.',

@@ -144,6 +144,26 @@ The report instance went to =failed= and the result carried that message, which
 is the verdict fix from #3733 working on a real report. The analytics themselves
 were named correctly by the engine, so this is not a wrong switch.
 
+*First run of the fix, 2026-10-25.* The package handler now moves the run's date
+to the data's when the data has no line for the requested one. Instance
+=b5dd684e-bce3-41dd-8900-c154c359cf11= was triggered against the same definition:
+
+- The package it built states =asofDate= =2026-05-05=, the last date the market
+  data carries, where the previous package stated =2026-10-23=. The fallback
+  works.
+- It still failed, for a real reason: =No quote for Mandatory ID
+  IR_SWAP/RATE/GBP/0D/1D/1M with as of date 2026-05-05= while building
+  =Yield/GBP/GBP1D=.
+- *The engine attributes the failure to trades itself.* Its structured log names
+  the missing mandatory id, the curve, and each trade with its type, for
+  example =tradeId 28e6d1c3-b0aa-55fa-9c14-142e3e34092e, tradeType Bond=. So the
+  per-trade attribution this task thought needed a new map is already in the
+  engine's log.
+- The instance's message still carries only the generic =Error in ORE
+  analytics=, because the verdict reports the alert line and not the structured
+  fields. Surfacing the mandatory id, the curve and the trade ids there is the
+  next step, and it needs no new mapping.
+
 * Test Scenarios
 
 | Scenario | State | Notes |

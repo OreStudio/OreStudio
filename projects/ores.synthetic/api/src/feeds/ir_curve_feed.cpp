@@ -133,6 +133,7 @@ void ir_curve_feed::start() {
 }
 
 std::string ir_curve_feed::tick(double elapsed_seconds) {
+    published_.fetch_add(1, std::memory_order_relaxed);
 
     const auto elapsed_ticks = elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0;
     process_->next(elapsed_ticks);

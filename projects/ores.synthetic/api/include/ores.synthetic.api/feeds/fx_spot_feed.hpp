@@ -35,6 +35,7 @@
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/adapter_faults.hpp"
+#include <atomic>
 #include <memory>
 #include <optional>
 #include <string>
@@ -125,7 +126,7 @@ public:
     std::string tick(double elapsed_seconds);
     void stop() override;
     std::uint64_t publish_count() const override {
-        return clock_.publish_count();
+        return published_.load(std::memory_order_relaxed);
     }
 
 private:
@@ -147,6 +148,8 @@ private:
     ores::analytics::quant::service::tick_scheduler* scheduler_;
     /// The series' registration in the scheduler, while it is registered.
     std::optional<std::size_t> handle_;
+    /// Ticks this feed has published, whichever clock drove them.
+    std::atomic<std::uint64_t> published_{0};
     ores::analytics::quant::service::tick_clock clock_;
     /// The arrival rate in ticks per second, the unit a step is counted in and
     /// the one the arrival process itself divides by.

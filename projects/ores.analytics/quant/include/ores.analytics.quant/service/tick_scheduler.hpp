@@ -23,6 +23,7 @@
 #include "ores.analytics.quant/domain/market_link.hpp"
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <functional>
 #include <limits>
 #include <map>
@@ -70,6 +71,7 @@ public:
         const auto guard = std::lock_guard(mutex_);
         const auto id = next_id_++;
         streams_.emplace(id, stream{&arrivals, link, std::move(body), 0.0, false});
+        waiting_.notify_one();
         return id;
     }
 
@@ -114,8 +116,19 @@ public:
     void run(std::chrono::milliseconds refresh_period = std::chrono::milliseconds(100)) {
         const double period = std::chrono::duration<double>(refresh_period).count();
         while (!stop_flag_.load(std::memory_order_relaxed)) {
-            if (!tick_once(true, period))
-                return;
+            {
+                // A run starts before its feeds do, so an empty registry means
+                // "nothing to do yet", not "finished".
+                std::unique_lock lock(mutex_);
+                waiting_.wait_for(lock, refresh_period, [this] {
+                    return !streams_.empty() || stop_flag_.load(std::memory_order_relaxed);
+                });
+                if (stop_flag_.load(std::memory_order_relaxed))
+                    return;
+                if (streams_.empty())
+                    continue;
+            }
+            tick_once(true, period);
         }
     }
 
@@ -124,6 +137,7 @@ public:
     }
 
     void set_hooks(published_hook on_published, failure_hook on_failed) {
+        const auto guard = std::lock_guard(mutex_);
         on_published_ = std::move(on_published);
         on_failed_ = std::move(on_failed);
     }
@@ -170,6 +184,14 @@ private:
                 return std::nullopt;
         }
 
+        {
+            // The series may have stopped while the scheduler slept, and a
+            // stopped feed has destroyed the object its body points at.
+            const auto guard = std::lock_guard(mutex_);
+            if (streams_.find(winner) == streams_.end())
+                return std::nullopt;
+        }
+
         try {
             const auto summary = body(earliest);
             const auto n = published_.fetch_add(1, std::memory_order_relaxed) + 1;
@@ -195,6 +217,7 @@ private:
                 }
             }
         }
+        dispatch_error();
         return std::pair{winner, earliest};
     }
 
@@ -212,11 +235,25 @@ private:
             const double gap = s.arrivals->next_gap();
             s.pending = std::isfinite(gap) && gap > 0.0 ? gap : 0.0;
         } catch (const std::exception& ex) {
-            if (on_failed_)
-                on_failed_(ex);
-            s.pending = 0.0;
+            // A process that cannot draw a gap is reported and set aside for a
+            // second rather than re-armed at once, which would spin the loop.
+            defer_error(ex);
+            s.pending = 1.0;
         }
         s.armed = true;
+    }
+
+    void defer_error(const std::exception& ex) {
+        pending_error_ = ex.what();
+    }
+
+    void dispatch_error() {
+        if (!pending_error_)
+            return;
+        const auto message = *pending_error_;
+        pending_error_.reset();
+        if (on_failed_)
+            on_failed_(std::runtime_error(message));
     }
 
     static void sleep_for(double seconds) {
@@ -229,6 +266,8 @@ private:
     mutable std::mutex mutex_;
     std::map<std::size_t, stream> streams_;
     std::size_t next_id_ = 0;
+    std::condition_variable waiting_;
+    std::optional<std::string> pending_error_;
     std::atomic<bool> stop_flag_{false};
     std::atomic<std::uint64_t> published_{0};
     published_hook on_published_;

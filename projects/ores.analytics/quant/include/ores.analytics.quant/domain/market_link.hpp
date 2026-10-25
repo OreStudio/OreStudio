@@ -57,13 +57,11 @@ struct market_link final {
      * with.
      */
     [[nodiscard]] double rate_multiplier() const {
-        double factor = 0.0;
-        if (market != nullptr)
-            factor += market->multiplier();
+        // The market factor is one when there is no market, and the heat adds to
+        // it: a run with heat but no market must not lose its baseline.
+        double factor = market != nullptr ? market->multiplier() : 1.0;
         if (intensity != nullptr && mean_rate > 0.0)
             factor += intensity->value() / mean_rate;
-        if (market == nullptr && intensity == nullptr)
-            return 1.0;
         return sensitivity * factor;
     }
 };

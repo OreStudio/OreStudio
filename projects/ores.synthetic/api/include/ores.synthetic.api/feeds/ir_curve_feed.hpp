@@ -106,7 +106,7 @@ public:
     std::string tick(double elapsed_seconds);
     void stop() override;
     std::uint64_t publish_count() const override {
-        return clock_.publish_count();
+        return published_.load(std::memory_order_relaxed);
     }
     std::string_view kind() const override {
         return ir_curve_feed_kind;
@@ -161,6 +161,8 @@ private:
     ores::analytics::quant::service::tick_scheduler* scheduler_;
     /// The series' registration in the scheduler, while it is registered.
     std::optional<std::size_t> handle_;
+    /// Ticks this feed has published, whichever clock drove them.
+    std::atomic<std::uint64_t> published_{0};
     std::vector<ir_curve_resolved_entry> entries_;
 };
 

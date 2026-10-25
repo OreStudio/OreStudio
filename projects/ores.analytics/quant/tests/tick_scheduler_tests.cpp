@@ -17,9 +17,12 @@
  *
  */
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
+#include <atomic>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <string>
+#include <thread>
 #include <vector>
 
 using ores::analytics::quant::domain::i_arrival_process;
@@ -98,9 +101,9 @@ TEST_CASE("the scheduler re-rates a series from its link", "[tick_scheduler]") {
 
     scheduler.step();
     REQUIRE_FALSE(process.multipliers.empty());
-    // No factors, so the link's multiplier falls back to one and the sensitivity
-    // is not applied to nothing.
-    CHECK(process.multipliers.front() == Catch::Approx(1.0));
+    // No factors, so the market term is one, and the row's sensitivity still
+    // applies to it: 2 * 1.
+    CHECK(process.multipliers.front() == Catch::Approx(2.0));
 }
 
 TEST_CASE("the scheduler survives a body that throws", "[tick_scheduler]") {
@@ -162,4 +165,28 @@ TEST_CASE("the scheduler ticks one series and leaves the rest pending", "[tick_s
 
     CHECK(fast_calls == 5);
     CHECK(slow_calls == 0);
+}
+
+TEST_CASE("the scheduler waits for its first series and stops when asked", "[tick_scheduler]") {
+    // A run starts its clock before its feeds exist, so an empty registry means
+    // "nothing yet": the thread must wait, not return.
+    fixed_gap_process process(0.001);
+    tick_scheduler scheduler;
+    std::atomic<int> ticks{0};
+
+    std::thread clock([&] { scheduler.run(); });
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    scheduler.add(process, {}, [&](double) {
+        ticks.fetch_add(1);
+        return std::string{};
+    });
+
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+    while (ticks.load() == 0 && std::chrono::steady_clock::now() < deadline)
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+
+    scheduler.stop();
+    clock.join();
+
+    CHECK(ticks.load() > 0);
 }

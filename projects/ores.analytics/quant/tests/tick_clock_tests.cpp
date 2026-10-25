@@ -255,6 +255,7 @@ TEST_CASE("tick_clock reads the shared intensity into the rate", tags) {
         [](const std::exception&) {});
 
     REQUIRE_FALSE(arrivals.multipliers().empty());
-    // sensitivity * heat / mean rate = 2 * 10 / 10 = 2.
-    CHECK(arrivals.multipliers().front() == Catch::Approx(2.0));
+    // sensitivity * (baseline + heat / mean rate) = 2 * (1 + 10 / 10) = 4, and
+    // the baseline stays because heat adds to it rather than replacing it.
+    CHECK(arrivals.multipliers().front() == Catch::Approx(4.0));
 }

@@ -40,14 +40,13 @@ namespace ores::analytics::quant::domain {
  * raises it further, until the decay wins.
  *
  * *Reads are one atomic load.* A feed asks for the value on every tick, so the
- * value is published as a relaxed atomic that the owner refreshes, and readers do
- * nothing else. The decay is applied by the owner (see market_regime for the same
- * shape): letting every reader decay it would take a lock, and at ten thousand
- * feeds a lock on the tick path is the bottleneck the factor exists to avoid.
+ * heat is a single relaxed atomic and readers do nothing else. The decay is
+ * applied by the owner (see market_regime for the same shape): letting every
+ * reader decay it would take a lock, and at ten thousand feeds a lock on the tick
+ * path is the bottleneck the factor exists to avoid.
  *
- * *Writes are one atomic add.* An event is rare compared with a tick, so the add
- * that an event performs is affordable; it is the only shared write in the
- * system's hot paths.
+ * *An event is one atomic add.* An event is rare compared with a tick, so the add
+ * is affordable; it is the only shared write in the system's hot paths.
  *
  * The stationary mean of the intensity is jump/decay: the rate at which events
  * add heat divided by how fast it fades.
@@ -71,7 +70,7 @@ public:
 
     /// @brief The intensity in force now. One atomic load, the tick-path read.
     [[nodiscard]] double value() const {
-        return published_.load(std::memory_order_relaxed);
+        return excess_.load(std::memory_order_relaxed);
     }
 
     /// @brief The heat one event adds.
@@ -97,8 +96,7 @@ public:
      * its next tick rather than at the owner's next refresh.
      */
     void record_event() {
-        const double next = excess_.fetch_add(jump_, std::memory_order_relaxed) + jump_;
-        published_.store(next, std::memory_order_relaxed);
+        excess_.fetch_add(jump_, std::memory_order_relaxed);
     }
 
     /**
@@ -120,9 +118,6 @@ public:
         while (!excess_.compare_exchange_weak(
             current, current * factor, std::memory_order_relaxed, std::memory_order_relaxed)) {
         }
-        // Publish what the excess actually holds, not the value this call
-        // computed, so an event that landed during the swap is not hidden.
-        published_.store(excess_.load(std::memory_order_relaxed), std::memory_order_relaxed);
     }
 
     /// @brief The heat before decay, for a test that wants the raw state.
@@ -134,7 +129,6 @@ private:
     const double jump_;
     const double decay_;
     std::atomic<double> excess_{0.0};
-    std::atomic<double> published_{0.0};
 };
 
 }

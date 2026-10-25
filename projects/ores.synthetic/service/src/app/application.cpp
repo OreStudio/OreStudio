@@ -285,12 +285,19 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ores::analytics::quant::domain::market_regime market;
     // The heat any event anywhere adds to. The same thread fades it, so the decay
     // is paid once a period rather than once per reader.
-    ores::analytics::quant::domain::shared_intensity intensity;
+    // Jumps and decay: half a rate per event, fading at twenty a second, which
+    // settles at an event rate of ten a second adding a quarter of a rate. Zero
+    // jump would leave the factor inert, so the default is explicit here.
+    ores::analytics::quant::domain::shared_intensity intensity(0.5, 20.0);
 
     // One clock for the whole run: every feed registers its tick body here at
     // start() and leaves at stop(), so the order in which series tick is decided
     // in one place and a series can see another's event.
     ores::analytics::quant::service::tick_scheduler scheduler;
+    scheduler.set_hooks([](std::uint64_t, const std::string&) {},
+                        [](const std::exception& ex) {
+                            BOOST_LOG_SEV(lg(), error) << "SYNTHETIC TICK FAILED: " << ex.what();
+                        });
     std::jthread scheduler_thread([&scheduler](const std::stop_token& stop) {
         scheduler.run();
         (void)stop;

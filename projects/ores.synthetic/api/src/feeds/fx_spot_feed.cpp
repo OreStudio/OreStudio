@@ -246,6 +246,7 @@ void fx_spot_feed::start() {
 }
 
 std::string fx_spot_feed::tick(double elapsed_seconds) {
+    published_.fetch_add(1, std::memory_order_relaxed);
 
     // The same rate the arrival process divides by, so a periodic feed
     // turns its own gap back into one tick rather than one-ulp-off one.
@@ -267,7 +268,7 @@ std::string fx_spot_feed::tick(double elapsed_seconds) {
         tick.field = adapter_->id.field;
         tick.value = value;
         tick.vendor_time = now;
-        tick.sequence = clock_.publish_count() + 1;
+        tick.sequence = published_.load(std::memory_order_relaxed);
         const auto plan = adapter_->faults ? adapter_->faults->get() : fault_plan{};
         for (const auto& out : faulted_ticks(plan, tick, previous_tick_))
             nats_.publish(adapter_->subject, codec.encode(out));

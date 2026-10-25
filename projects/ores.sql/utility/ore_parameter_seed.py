@@ -20,7 +20,10 @@
 A parameter row is a dict with the keys scope, subtype, name, position, domain,
 required, the text keys label, help, description, default_text, format and
 introduced_in, and removed_in. The schema name and the XPath follow from the
-scope, subtype and name.
+scope, subtype and name, unless the row names them: a leaf of another ORE
+document, such as a convention, carries its own schema_name and xpath. Such a
+row still carries scope, subtype and name, because the table stores them and a
+screen groups by them, but they no longer decide its XPath or its id.
 """
 
 import uuid
@@ -51,8 +54,12 @@ def xpath(row):
             f"/Parameter[@name='{row['name']}']")
 
 
+def schema_name(row):
+    return row.get("schema_name") or SCHEMA_NAME
+
+
 def parameter_id(row):
-    return uuid.uuid5(ID_NAMESPACE, f"{SCHEMA_NAME}|{xpath(row)}")
+    return uuid.uuid5(ID_NAMESPACE, f"{schema_name(row)}|{xpath(row)}")
 
 
 def artefact_row(row):
@@ -62,7 +69,7 @@ def artefact_row(row):
     return (f"        (v_dataset_id, ores_utility_system_tenant_id_fn(), "
             f"'{parameter_id(row)}', 0, "
             f"{sql_text(row['scope'])}, {sql_text(row['subtype'])}, {sql_text(row['name'])}, "
-            f"{sql_text(SCHEMA_NAME)}, {sql_text(xpath(row))}, {row['position']}, "
+            f"{sql_text(schema_name(row))}, {sql_text(xpath(row))}, {row['position']}, "
             f"{sql_text(row['domain'])}, {required}, "
             f"{text[0]}, {text[1]}, {text[2]}, {text[3]}, {text[4]}, {text[5]}, "
             f"{sql_text(row.get('removed_in'))})")

@@ -2,62 +2,69 @@
 :ID: 27DB38D7-F43E-4D58-BB7F-6CCAE7B8B58C
 :END:
 #+title: Task: Document the convention terms in the one contract
-#+description: Give every leaf of conventions.xsd a documentation entry and a value set, extracted from the conventions chapter of the ORE guide and the ORE conventions parser, with provenance per row; a calendar, a day counter, an index or a business day convention is a catalogue set.
+#+description: Give the leaves of conventions.xsd their documentation entries in the one contract, extracted from the ORE conventions parser and the conventions chapter of the ORE guide, with the source of every fact recorded.
 #+type: task
 #+level: s1
 #+filetags: :draw_every_ore_leaf_the_same_way:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/document-the-convention-terms
+#+pr: 3828
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Document the terms of ORE's conventions document in the one ORE parameter contract, so a convention screen reads a term's label, help, description, default and format from data, as product pricing and engine run settings do. The value sets are the next task, [[id:47D039AC-300C-4FE9-86EA-7FB473F07692][Give the convention terms their value sets]].
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
 
--
+- Every term the ORE conventions parser reads is extracted with the element it belongs to, whether it is required, the type its value is parsed to, and the source line of each fact.
+- Every term with a text, from the guide or from curation, is a row of =ore.parameters= keyed by =conventions.xsd= and its XPath, and no existing row changes its id.
+- A term with no text is not given an invented one: the generator names it, and the gap is recorded.
+- The seed gate runs when a convention source changes.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Read the structure from the ORE source, not the guide: each convention class's =fromXML= names its element with =checkNode=, and each read says the term and whether it is mandatory. A read inside a branch is mandatory only there, so it is recorded as conditional. =build= names the parse function of a term, which gives its type.
+2. Read the prose from the guide: each section names its element and lists "Name [Optional]: text".
+3. Write the rows in a fifth row module beside the setup, block, analytic and pricing modules, with =conventions.xsd= as the schema.
+4. Let a row name its schema. The default stays =ore.xsd=, so every existing row keeps its id.
+5. Curate only the text the guide does not give, with a reason, a source, a source reference, a curator and a date per entry.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Conventions and terms the parser reads | 27 conventions, 296 terms | =python3 -I projects/ores.sql/utility/extract_convention_terms.py= | 090d881d15 |
+| Terms with guide text; typed; conditional | 220; 190; 54 | the same | 090d881d15 |
+| Convention rows written to the seed | 238 | =python3 -I projects/ores.sql/utility/generate_ore_parameters_dataset.py --check= | 090d881d15 |
+| Parameters in the seed, before and after | 1782, 2020 | the same, on =origin/main= and on this branch | 090d881d15 |
+| Convention terms with no text | 58, listed in [[file:evidence/undocumented_convention_terms.org][evidence/undocumented_convention_terms.org]] | the same | 090d881d15 |
 
 * Notes
+
+- *The schema was never per row.* =ore_parameter_seed.py= wrote every row with =ore.xsd=, including the pricing rows whose XPath starts at =/PricingEngines=, so the documented key, the schema and the XPath, was not the stored key. A row may now name its schema; the pricing rows still carry =ore.xsd=, because changing them moves their ids in every tenant. That correction belongs to the pricing work.
+- *The service key is the name.* =ore_parameter_service= reads a parameter by its name, which pricing already repeats across product types, and convention terms such as =Calendar= repeat it again. Nothing in the screens reads by name today; a read by schema and XPath is the fix when one does.
+- *Defaults are generic.* The guide states a default for few terms. A term the guide gives none says "Not given: ORE applies its own rule." or that the convention must give it; the rule ORE applies, such as the fixed calendar falling back to the index's calendar, is in =build= and not extracted.
+- *Releases are not measured.* Every convention row takes the floor the pricing rows use, =1.8.0.7 or earlier=.
+- *ORE's own spelling stays.* The parser reads =OvernightLockouDays= for the BMA basis swap, so that is the element name the contract keys.
 
 * Test Scenarios
 
@@ -74,12 +81,27 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3828][#3828]] | [sql] Document the convention terms in the ORE parameter contract |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The ORE path is hard-coded | extract_convention_terms.py | Accept | The checkout comes from --ore, then ORES_ORE_ENGINE, then the default the guide extractor uses; a missing checkout fails with a message that names the path. |
+| 2 | The release floor reads as a measurement | convention_parameter_rows.py | Decline | The value is the floor the pricing rows already carry, "1.8.0.7 or earlier", which says it is a floor; the Notes record that no convention release is measured. |
+| 3 | A default can be cut at the first comma | convention_parameter_rows.py | Accept | The spot-check found five: "NullCalendar i.", "0 i.", an "otherwise" clause lost, a choices list cut, and two defaults merged. A default now reads to the end of its sentence past an abbreviation, stops before a parenthesis, and falls back to the generic text when the clause states a second default; the guide's LaTeX is stripped. |
+| 4 | Regex parsing of C++ is fragile | extract_convention_terms.py | Decline | The output is committed, so any change the script makes after ORE moves shows in the convention_terms.json diff, and the script prints the counts to compare. |
+| 5 | Same-named terms under different sub-paths | convention_parameter_rows.py | No change | The XPath separates them and the duplicate-id guard would catch a collision. |
+| 6 | Say which keys an explicit XPath leaves unused | ore_parameter_seed.py | Accept | The docstring says scope, subtype and name are still stored but decide neither the XPath nor the id. |
+| 7 | Confirm the four failing checks on main | none | Accept | No file they read changes in this branch, and main's seed holds the 108 pricing code settings that fail the XPath test. Shown from the content, not by a run on a main checkout. |
 
 * Result
+
+The contract now documents the conventions document. 238 of the 296 terms the ORE conventions parser reads, across 27 conventions, are rows of =ore.parameters= keyed by =conventions.xsd= and their XPath, and the seed grew from 1782 to 2020 parameters with no existing row changed.
+
+- =extract_convention_terms.py= reads the structure from the ORE source and the prose from the guide, at ORE commit =3d75a6908=, and records the source line of every fact in =convention_terms.json=.
+- =convention_parameter_rows.py= writes the rows; =convention_term_curation.json= holds the one curated text, the =Id= of every convention, with its reason, source and curator.
+- 58 terms have no text. They are not written, the generator names them, and [[file:evidence/undocumented_convention_terms.org][evidence/undocumented_convention_terms.org]] lists each with the line that reads it.
+- A row may name its own schema now; the =ore-parameters-seed= gate runs when a convention source changes.
+
+The local gate passes the seed, the build, the database and the ticks smoke test. Four checks fail on what this change does not touch, as the PR records: the pgTAP XPath test, on 108 pricing code settings with no product type; the pgTAP trading suites, on the origin rule; =ores.analytics.core.tests=, on the value set trigger; and =er-diagram=, on seven warnings of the strict validator. The value sets are the next task.

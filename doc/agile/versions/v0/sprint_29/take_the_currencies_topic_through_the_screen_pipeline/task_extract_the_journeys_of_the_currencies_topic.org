@@ -8,7 +8,7 @@
 #+filetags: :take_the_currencies_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
 #+branch: feature/extract-the-journeys-of-the-currencies-topic
-#+pr: 3827
+#+pr: 3829
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]] |
-| Now          | The three journeys are judged and the PR is raised. |
-| Waiting on   | The owner's sign off of the judgement and of the import and export decision. |
-| Next         | [[id:958AA2EF-041E-4266-AFE8-A57A6C345F6E][Prototype the screens of the currencies topic]], once the owner signs off. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -65,8 +65,22 @@ task and name that file in the Command column.
 | Steps judged | 26 rows, the export and the import counted apart: 23 standard, 1 own action waiting on the server, 1 missing operation, 0 workflows | the three tables | ad0cf13ae9 |
 | Gaps linked to captures | 9 of 13; 1 done since written, 3 without a capture yet | What is missing, the three pages | ad0cf13ae9 |
 | Decisions proposed to the owner | 2: export as an own action once the server returns the document; the Qt import of one file dropped | the currency journey, step 9 | ad0cf13ae9 |
+| Rules added to the record screen standard | 7, the Import and Export section, RS-ORE-01 to RS-ORE-07 | =python3 build/scripts/check_rule_identifiers.py= | this PR |
 
 * Notes
+
+The owner's sign off, 2026-10-25. The judgement stands. The two decisions
+became one: the owner asked for a server operation that exports currencies as
+ORE XML, standard for the dialogs that need it, engine settings among them,
+with two standard buttons, Import and Export, that call these operations, and
+chose the bare verbs and currencies as the first kind ("import and export
+sounds good, keep it simple"). The proposal was read from the record screen
+standard's own actions, the configuration standard's Import and Export, the
+ORE service's run configuration pair and the messaging reference's namespace
+rule, and is recorded as the Import and Export section of the record screen
+standard, on the journey's step 9, on the story's Decisions, and on the
+prototype and build tasks. The earlier proposal to drop the import of one
+file is superseded.
 
 * Test Scenarios
 
@@ -83,6 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3829][#3829]] | [docs] Settle Import and Export as one standard pair over the server's ORE operations |
 | [[https://github.com/OreStudio/OreStudio/pull/3827][#3827]] | [docs] Judge the currencies journeys for the screen pipeline |
 
 * Review
@@ -91,6 +106,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: docs class | journeys/currencies | Accept | Each judgement cites the identifier it rests on; the pair's own dialog is named against RS-WRITE-31 and left to the prototype to redraw as the shared one |
 | 2 | PR 3827 review: the measurements' commit, a pointer from the pair's step 4 to its capture for the prototype, the task's Next, the long step 9 cell | this task, the journey, the prototype task | Accept | The measurements name ad0cf13ae9; the prototype task's Notes point at the pair's write-together capture; step 9 is two rows, export and import, so the owner's two decisions read apart; Next names the prototype task |
+| 3 | PR 3829 review: seven points on the pair | the standards, the icon pages, messaging.org | Accept 2, 4, 5, 6, 7; decline 1 and 3 | The icon guidelines gain the two icons and the true file count; RS-LIST-03 and the checklist point at RS-ORE-02 for Export on the record header; RS-ORE-02 says the preview needs write; the messaging row states only what exists; RS-NAME-02 rewrapped. The entity specification is superseded and kept as a record, so its icon rows stay; the build task's Notes already name the Icon.tsx registration |
 
 * Result
 
@@ -104,5 +120,8 @@ which the prototype redraws as the shared one; the convention is a part of the
 pair and joins its history under RS-HIST-01. Group currencies for the desk is a
 CRUD variation with a members link panel. No step keeps state across a reply,
 so no workflow is needed. Nine gaps link to their captures; one is done since
-the journey was written. The owner's sign off of the judgement and of the two
-decisions is the gate before the prototype.
+the journey was written. The owner signed off the judgement on 2026-10-25 and
+turned the two decisions into one standard: every kind with an ORE document
+exchanges it through the Import and Export pair, two buttons on the server's
+three operations per document, recorded as the Import and Export section of
+the record screen standard; currencies build the first pair.

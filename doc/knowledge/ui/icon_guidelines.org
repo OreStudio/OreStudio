@@ -2,12 +2,12 @@
 :ID: 6EF42145-CEE7-4035-806A-A4200A3E003A
 :END:
 #+title: Icon guidelines
-#+description: ORE Studio's visual language reference — variants, sizes, and the 68 live icons grouped by semantic category.
+#+description: ORE Studio's visual language reference — variants, sizes, and the 73 live icons grouped by semantic category.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:ui:icons:design:
 #+created: 2026-05-21
-#+updated: 2026-09-27
+#+updated: 2026-10-25
 
 #+startup: inlineimages
 ORE Studio's icon catalogue lives here as a single visual-language
@@ -16,7 +16,7 @@ variant (Regular for default / Filled for active) to the UI state.
 UI skills drive icon selection from this catalogue; for the broader
 UI design context see [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
-*The live icon assets are 68 SVG files in
+*The live icon assets are 73 SVG files in
 =projects/ores.web/packages/web/src/assets/icons/=. Every icon link below
 resolves in this tree. The file name is =ic_fluent_{concept}_{size}_regular.svg=;
 the set carries the Regular variant only. An entry whose file is absent says
@@ -255,7 +255,23 @@ Download content, export data.
 - Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_download_20_regular.svg]]
 - Filled: None in the asset set
 
-*Usage*: Download buttons, export actions.
+*Usage*: Download buttons.
+
+*** Arrow Import
+Import: bring an ORE document in. The record screen standard's /Import/.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_import_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: The Import button of a kind with an ORE document.
+
+*** Arrow Export
+Export: write an ORE document out. The record screen standard's /Export/.
+
+- Regular: [[proj:projects/ores.web/packages/web/src/assets/icons/ic_fluent_arrow_export_20_regular.svg]]
+- Filled: None in the asset set
+
+*Usage*: The Export button of a kind with an ORE document.
 
 *** Arrow Download CSV
 Import CSV data.
@@ -891,6 +907,8 @@ Text validation, spell check, language processing.
 | Terminal             | window_console_20                | Default | Active |
 | Back                 | arrow_left_20                    | Default | Active |
 | Download             | arrow_download_20                | Default | Active |
+| Import               | arrow_import_20                  | Default | Active |
+| Export               | arrow_export_20                  | Default | Active |
 | Sync                 | arrow_sync_20                    | Default | Active |
 | Trades               | arrow_trending_20                | Default | Active |
 | Undo/Revert          | arrow_rotate_counterclockwise_20 | Default | Active |

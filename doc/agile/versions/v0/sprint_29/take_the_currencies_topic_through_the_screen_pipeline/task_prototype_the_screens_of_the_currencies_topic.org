@@ -68,8 +68,12 @@ From the journeys' judgement, for this task:
   prototype decides their kinds. The numbers are text inputs.
 - The currencies list shows codes where the page shows names; the prototype
   draws the names.
-- Export for ORE is an own action of the currencies list, drawn once the
-  server returns the document; there is no import on this screen.
+- The currencies list header draws the standard Import and Export pair of the
+  record screen standard's Import and Export section, between Refresh and
+  Add: the Export dialog that names the document and its count, and the
+  Import dialog of five steps on the server's preview. Both are the shared
+  =OreExchange= the build adds; the prototype draws every state of both at an
+  address.
 
 * Test Scenarios
 

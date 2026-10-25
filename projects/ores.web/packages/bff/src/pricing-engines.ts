@@ -299,15 +299,21 @@ function summaryOf(
     };
 }
 
-/** The three tables' rows for a document, in the shape the analytics service saves. */
+/**
+ * The three tables' rows for a document, in the shape the analytics service saves.
+ *
+ * The tenant is the session's, because the service's tenant type refuses the nil
+ * uuid, and the row the service stamps with the session's tenant is the same row.
+ */
 function rowsOf(
     body: DocumentBody,
     id: string,
     version: number,
     configurationId: string,
+    tenantId: string,
 ): Readonly<Record<string, unknown>> {
     const stamp = {
-        tenant_id: NIL,
+        tenant_id: tenantId,
         party_id: NIL,
         modified_by: '',
         performed_by: '',
@@ -737,7 +743,7 @@ export function registerPricingEngineRoutes(
         const id = randomUUID();
         const configurationId = await createHeader(session, body.name, body.intent);
         try {
-            await save(session, rowsOf(body, id, 0, configurationId));
+            await save(session, rowsOf(body, id, 0, configurationId, session.tenantId));
         } catch (failure) {
             await removeHeader(session, body.name, body.intent);
             throw failure;
@@ -753,7 +759,13 @@ export function registerPricingEngineRoutes(
         const stored = await readStored(session, id);
         await save(
             session,
-            rowsOf(body, id, body.version, text(stored.config['configuration_id'])),
+            rowsOf(
+                body,
+                id,
+                body.version,
+                text(stored.config['configuration_id']),
+                session.tenantId,
+            ),
         );
         return documentOf(await readStored(session, id), await readPartyNames(session));
     });

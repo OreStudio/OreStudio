@@ -612,6 +612,9 @@ describe('pricing engine routes', () => {
             id: CONFIG_ID,
             version: 3,
             configuration_id: HEADER_ID,
+            // The service's tenant type refuses the nil uuid, so the save carries
+            // the session's tenant; a nil here fails the whole document decode.
+            tenant_id: '44444444-4444-4444-4444-444444444444',
         });
     });
 

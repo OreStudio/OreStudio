@@ -30,9 +30,9 @@ forces it with a switch that takes effect on the next tick.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Started: the clock is proven to drive every feed and count it. The screen is not touched. |
-| Waiting on   | The work in flight on the screen and market-data trees. |
-| Next         | The regime verb, then the screen. |
+| Now          | The clock is proven and the two verbs are in. The screen is not touched. |
+| Waiting on   | The work in flight on the screen and market-data trees for the screen itself. |
+| Next         | The screen, once the UI tree is free. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -97,3 +97,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result so far
+
+The backend is in: one verb reads the regime (state, multiplier, pinned), one pins
+calm, active or back to automatic. A read needs a session so it is attributable; a
+pin needs what starting a feed needs, because it changes what every feed publishes.
+Both sit on the synthetic service's own subjects, so nothing touched the scheduler
+service or the market data tree.
+
+The clock is also proven at the feed level: two feeds register with one scheduler,
+twenty steps are taken, and their own counts add up to the steps.
+
+What is left is the screen, which is the part that collides with the work in flight
+on the UI tree.

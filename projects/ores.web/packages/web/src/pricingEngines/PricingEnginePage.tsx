@@ -657,7 +657,7 @@ function ProductsTab({
                                         <button
                                             key={product.id}
                                             type="button"
-                                            title={product.typeCode}
+                                            title={typeName(vocabulary, product.typeCode)}
                                             onClick={() => {
                                                 if (
                                                     editingId !== null &&
@@ -814,7 +814,9 @@ function Workbench({
             <section className="card space-y-2 p-4">
                 <header className="flex flex-wrap items-baseline justify-between gap-2">
                     <div>
-                        <h2 className="text-lg font-semibold">{product.typeCode}</h2>
+                        <h2 className="text-lg font-semibold">
+                            {typeName(vocabulary, product.typeCode)}
+                        </h2>
                         <p className="text-xs text-ink-faint">
                             {[
                                 assetClassLabel(assetClassOf(vocabulary, product.typeCode)),
@@ -906,7 +908,9 @@ function Workbench({
             )}
             {saving !== null && vocabulary !== undefined && (
                 <SaveDialog
-                    title={t('pricingEngines.change.productTitle', { type: product.typeCode })}
+                    title={t('pricingEngines.change.productTitle', {
+                        type: typeName(vocabulary, product.typeCode),
+                    })}
                     document={document}
                     after={saving}
                     vocabulary={vocabulary}
@@ -1293,7 +1297,9 @@ function ProductEditor({
         <div className="space-y-4">
             <section className="card space-y-2 p-4">
                 <div>
-                    <h2 className="text-lg font-semibold">{product.typeCode}</h2>
+                    <h2 className="text-lg font-semibold">
+                        {typeName(vocabulary, product.typeCode)}
+                    </h2>
                     <p className="text-xs text-ink-faint">
                         {[
                             assetClassLabel(assetClassOf(vocabulary, product.typeCode)),
@@ -1755,7 +1761,9 @@ function RemoveProductDialog({
     };
     return (
         <SaveDialog
-            title={t('pricingEngines.change.removeTitle', { type: product?.typeCode ?? '' })}
+            title={t('pricingEngines.change.removeTitle', {
+                type: product === undefined ? '' : typeName(vocabulary, product.typeCode),
+            })}
             document={document}
             after={after}
             vocabulary={vocabulary}

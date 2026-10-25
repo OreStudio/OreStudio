@@ -19,15 +19,17 @@
  *
  */
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import type { RecordRow } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
-import { Notice } from '../ui/Primitives.js';
-import { HistoryPanel } from './HistoryPanel.js';
+import { useEntityChanges } from '../events/useEntityChanges.js';
+import { useLoadState } from '../events/useLoadState.js';
 import { RecordList, useRecordSource } from './RecordList.js';
+import { RecordTimeline } from './RecordTimeline.js';
 import {
     ClassifiedValue,
     LinkPanel,
@@ -38,13 +40,17 @@ import {
     RemoveRecordDialog,
     RevertDialog,
     show,
+    useRecord,
     useRecordPermissions,
     useRecordTabs,
     useRecords,
+    useRegistry,
     type FieldSpec,
 } from './records.js';
 
 const RESOURCE = 'currencies';
+const ENTITY = 'ores.refdata.currency';
+const LINKS = ['currency-countries', 'currency-calendars', 'currency-memberships'] as const;
 
 /** The currency fields a person edits, in form order, with the names the history gives them. */
 export const CURRENCY_FIELDS: readonly FieldSpec[] = [
@@ -178,7 +184,7 @@ export function CurrencyPage(): ReactNode {
     const { code } = useParams();
     return (
         <RecordGate resource={RESOURCE} recordKey={code ?? ''} listPath={currencyPath()}>
-            {(row) => <CurrencyBody row={row} />}
+            {(row) => <CurrencyBody key={show(row['iso_code'])} row={row} />}
         </RecordGate>
     );
 }
@@ -186,12 +192,16 @@ export function CurrencyPage(): ReactNode {
 function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const queries = useQueryClient();
+    const registry = useRegistry();
     const code = show(row['iso_code']);
+    const name = show(row['name']) || code;
     const may = useRecordPermissions(RESOURCE);
     const { tab, bar } = useRecordTabs({
         label: code,
         tabs: ['details', 'countries', 'calendars', 'groups', 'history'],
     });
+    const record = useRecord(RESOURCE, code);
     const countries = useRecords('countries');
     const calendars = useRecords('calendars');
     const groups = useRecords('currency-groups');
@@ -200,6 +210,24 @@ function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
     const [reverting, setReverting] = useState<HistoryVersion | null>(null);
     const choices = (rows: readonly RecordRow[] | undefined, value: string, label: string) =>
         (rows ?? []).map((choice) => ({ value: show(choice[value]), label: show(choice[label]) }));
+    // The page never reloads by itself: a change the server tells of turns Refresh gold (ES-REFRESH-15).
+    const pageKeys = [
+        ['records', RESOURCE, 'key', code],
+        ...LINKS.map((junction) => ['records', junction]),
+        ['history', ENTITY, code],
+    ];
+    const load = useLoadState(pageKeys);
+    const watches = (registry.data ?? [])
+        .filter(
+            (entry) => entry.key === RESOURCE || (LINKS as readonly string[]).includes(entry.key),
+        )
+        .flatMap((entry) => (entry.events === undefined ? [] : [entry.events]));
+    const news = useEntityChanges(watches, load);
+    const refresh = (): void => {
+        for (const key of pageKeys) {
+            void queries.invalidateQueries({ queryKey: key });
+        }
+    };
 
     return (
         <div className="space-y-4">
@@ -209,20 +237,16 @@ function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
                     { label: t('refdata.currencies.title'), to: currencyPath() },
                     { label: code },
                 ]}
-                title={show(row['name'])}
+                title={name}
                 recordKey={code}
                 version={row.version}
                 flag="currency"
+                refresh={{ onClick: refresh, load, news }}
                 onEdit={may.write ? () => setEditing(true) : undefined}
                 onDelete={may.remove ? () => setRemoving(true) : undefined}
             />
             {bar}
-            {tab === 'details' && (
-                <div className="space-y-4">
-                    <RecordDetails specs={CURRENCY_FIELDS} row={row} />
-                    <Notice tone="info">{t('refdata.currencies.oreExport')}</Notice>
-                </div>
-            )}
+            {tab === 'details' && <RecordDetails specs={CURRENCY_FIELDS} row={row} />}
             {tab === 'countries' && (
                 <LinkPanel
                     title={t('refdata.currencies.countries')}
@@ -257,27 +281,26 @@ function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
                 />
             )}
             {tab === 'history' && (
-                <HistoryPanel
-                    entityType="ores.refdata.currency"
+                <RecordTimeline
+                    entityType={ENTITY}
                     entityId={code}
-                    {...(may.write
-                        ? { onRevert: (version: HistoryVersion) => setReverting(version) }
-                        : {})}
+                    {...(may.write ? { onRevert: setReverting } : {})}
                 />
             )}
             {editing && (
                 <RecordDialog
-                    title={t('refdata.records.editTitle', { code })}
+                    title={t('refdata.records.editTitle', { code: name })}
                     resource={RESOURCE}
                     specs={CURRENCY_FIELDS}
                     row={row}
+                    loadedAt={record.dataUpdatedAt}
                     onClose={() => setEditing(false)}
                 />
             )}
             {removing && (
                 <RemoveRecordDialog
                     resource={RESOURCE}
-                    title={t('refdata.records.deleteTitle', { code })}
+                    title={t('refdata.records.deleteTitle', { code: name })}
                     warning={t('refdata.currencies.removeWarning')}
                     recordKey={{ iso_code: code }}
                     version={row.version}

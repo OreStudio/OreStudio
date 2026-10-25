@@ -2630,7 +2630,7 @@ export const en: SourceCatalogue = {
         gaps: 'What this history cannot show',
         gapFor: {
             record_parts_removed:
-                'A rule, exception or diary event deleted from the record is not in this stream: the screen reads the history of the parts the record holds now.',
+                'A part deleted from the record is not in this stream: the screen reads the history of the parts the record holds now.',
             party_country:
                 'The countries it works in could not be read, so adding or removing one is not shown.',
             party_currency:
@@ -4172,8 +4172,6 @@ export const en: SourceCatalogue = {
             countries: 'Countries',
             calendars: 'Calendars',
             groups: 'Desk groups',
-            oreExport:
-                'Exporting currencies as an ORE currency configuration needs a server operation that does not exist yet.',
             removeWarning:
                 'Nothing checks whether trades, books or pairs still use this currency. A record that still names it will fail its next save.',
         },
@@ -4228,6 +4226,7 @@ export const en: SourceCatalogue = {
             lead: 'The pairs the desk trades, with how each quotes, displays and settles.',
             add: 'Add pair',
             addTitle: 'Add a currency pair',
+            pairGroup: 'The pair',
             codeLine: 'Pair code: {code}',
             sameLegs: 'The base and quote currencies must differ.',
             convention: 'Quoting convention',

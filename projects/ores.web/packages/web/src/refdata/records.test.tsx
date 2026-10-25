@@ -208,7 +208,7 @@ describe('the currency screens', () => {
         expect(html).toContain('There are no currencies yet.');
     });
 
-    it('shows a currency with its fields, the export note, Edit and Delete, and its links as tabs', () => {
+    it('shows a currency with its fields, Edit and Delete, and its links as tabs', () => {
         const html = render('/refdata/currencies/EUR', (client) => {
             client.setQueryData(['records', 'currencies', 'key', 'EUR'], euro);
             client.setQueryData(['my-access'], accessOf(['*']));
@@ -216,7 +216,6 @@ describe('the currency screens', () => {
         expect(html).toContain('ACT/360');
         expect(html).toContain('>Countries<');
         expect(html).toContain('>Desk groups<');
-        expect(html).toContain('needs a server operation that does not exist yet');
         expect(html).toContain('Edit');
         expect(html).toContain('Delete');
         expect(html).not.toContain('>Remove<');

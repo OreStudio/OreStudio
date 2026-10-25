@@ -44,6 +44,8 @@ export interface TimelinePart {
     readonly entityType: string;
     readonly rows: readonly RecordRow[];
     readonly name: (row: RecordRow) => string;
+    /** The key the history is read by, when it is not the row's id, such as a convention keyed by its pair. */
+    readonly id?: (row: RecordRow) => string;
 }
 
 /**
@@ -74,15 +76,16 @@ export function RecordTimeline({
     const { isService } = usePeopleDirectory();
     const reads = [
         { entityType, entityId, name: undefined as string | undefined },
-        ...parts.flatMap((part) =>
-            part.rows
-                .filter((row) => show(row['id']) !== '')
+        ...parts.flatMap((part) => {
+            const idOf = part.id ?? ((row: RecordRow) => show(row['id']));
+            return part.rows
+                .filter((row) => idOf(row) !== '')
                 .map((row) => ({
                     entityType: part.entityType,
-                    entityId: show(row['id']),
+                    entityId: idOf(row),
                     name: part.name(row),
-                })),
-        ),
+                }));
+        }),
     ];
     const results = useQueries({
         queries: reads.map((read) => ({

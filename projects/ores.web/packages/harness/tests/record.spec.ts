@@ -187,9 +187,10 @@ for (const screen of allScreens()) {
 
             test('[RS-WRITE-24] closing with changes asks first', async ({ page }) => {
                 const dialog = page.getByRole('dialog');
+                // A field that takes words: a number field drops a letter, so typing one changes nothing.
                 const field = dialog
                     .locator(
-                        'input[type="text"]:not([disabled]), input:not([type]):not([disabled])',
+                        'input[type="text"]:not([disabled]):not([inputmode]), input:not([type]):not([disabled]):not([inputmode]), textarea:not([disabled])',
                     )
                     .first();
                 await expect(field).toBeVisible();

@@ -28,7 +28,7 @@ import {
     type QueryClient,
     type QueryKey,
 } from '@tanstack/react-query';
-import { useState, type ReactNode } from 'react';
+import { Fragment, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
@@ -117,6 +117,12 @@ export interface FieldSpec {
      * each and an `other` for a value the list lacks.
      */
     readonly means?: { readonly key: string; readonly values?: readonly string[] };
+    /**
+     * The key of the titled section the field stands in, for a kind with many
+     * fields (RS-WRITE-09). Fields of one group stand together, in the field
+     * table's order; a form whose fields declare no group has no sections.
+     */
+    readonly group?: string;
 }
 
 /** The words that say what a field's value means, when the field has them. */
@@ -388,7 +394,7 @@ export function FieldInput({
             : spec.help === undefined
               ? disabled && spec.fixed === true
                   ? { hint: t('refdata.records.fixedHint') }
-                  : {}
+                  : { hint: '' }
               : {
                     hint:
                         spec.kind.kind === 'choice'
@@ -601,6 +607,7 @@ export function RecordDialog({
     after,
     complete,
     check,
+    note,
     loadedAt,
 }: {
     readonly title: string;
@@ -611,14 +618,19 @@ export function RecordDialog({
     readonly loadedAt?: number | undefined;
     readonly keep?: readonly string[];
     readonly given?: Readonly<Record<string, unknown>>;
+    /** A new row's first values; for an edit, the values of a part the row itself does not carry. */
     readonly initial?: FieldValues;
     readonly complete?: (write: Readonly<Record<string, unknown>>) => Record<string, unknown>;
     readonly check?: (values: FieldValues) => readonly string[];
+    /** A line the form says about its values, such as a derived key or a sample (RS-WRITE-07, RS-WRITE-12). */
+    readonly note?: (values: FieldValues) => ReactNode;
     readonly onClose: () => void;
     readonly onSaved?: (write: Readonly<Record<string, unknown>>) => void;
+    /** A write that belongs with the record's, given the record's write and every typed value. */
     readonly after?: (
         write: Readonly<Record<string, unknown>>,
         intent: { reasonCode: string; commentary: string },
+        typed: Readonly<Record<string, unknown>>,
     ) => Promise<void>;
 }): ReactNode {
     const { t } = useTranslation();
@@ -628,15 +640,17 @@ export function RecordDialog({
     const [commentary, setCommentary] = useState('');
     const [touched, setTouched] = useState<ReadonlySet<string>>(new Set());
     const editing = row !== undefined;
+    const baseline = editing ? { ...valuesOf(specs, row), ...initial } : valuesOf(specs, row);
     const changed =
-        JSON.stringify(writeOf(specs, values)) !==
-        JSON.stringify(writeOf(specs, valuesOf(specs, row)));
+        JSON.stringify(writeOf(specs, values)) !== JSON.stringify(writeOf(specs, baseline));
     const reason = useReason('amend', changed);
     const missing = editing && reason.needsCommentary && commentary.trim() === '';
     const invalid = invalidFields(specs, values);
     const broken = check?.(values) ?? [];
+    // What the person typed, not what would be written: a half-typed value is a change too.
+    const typed = JSON.stringify(values) !== JSON.stringify(baseline);
     const dirty = editing
-        ? changed || commentary.trim() !== ''
+        ? typed || commentary.trim() !== ''
         : Object.values(values).some((value) => value !== '');
     const guard = useCloseGuard(dirty, onClose);
     const errorOf = (spec: FieldSpec): string | undefined => {
@@ -649,13 +663,13 @@ export function RecordDialog({
     };
     const save = useMutation({
         mutationFn: async () => {
-            const typed = { ...kept(keep, row), ...given, ...writeOf(specs, values) };
-            const write = complete === undefined ? typed : complete(typed);
+            const typedWrite = { ...kept(keep, row), ...given, ...writeOf(specs, values) };
+            const write = complete === undefined ? typedWrite : complete(typedWrite);
             const intent = editing
                 ? { reasonCode: reason.code, commentary: commentary.trim() }
                 : { reasonCode: NEW_RECORD_REASON, commentary: '' };
             await store.save(resource, { write, version: row?.version ?? null, ...intent });
-            await after?.(write, intent);
+            await after?.(write, intent, typedWrite);
             return write;
         },
         onSuccess: (write) => {
@@ -701,18 +715,30 @@ export function RecordDialog({
                 <div className="grid gap-3 sm:grid-cols-2">
                     {specs
                         .filter((spec) => asked(spec, values))
-                        .map((spec) => (
-                            <FieldInput
-                                key={spec.field}
-                                spec={spec}
-                                value={values[spec.field] ?? ''}
-                                disabled={editing && spec.fixed === true}
-                                onChange={(value) => setValues({ ...values, [spec.field]: value })}
-                                onBlur={() => setTouched(new Set([...touched, spec.field]))}
-                                error={errorOf(spec)}
-                            />
+                        .map((spec, index, asked) => (
+                            <Fragment key={spec.field}>
+                                {spec.group !== undefined &&
+                                    spec.group !== asked[index - 1]?.group && (
+                                        <h3
+                                            className={`text-sm font-medium sm:col-span-2 ${index === 0 ? '' : 'border-t border-line-subtle pt-3'}`}
+                                        >
+                                            {t(spec.group)}
+                                        </h3>
+                                    )}
+                                <FieldInput
+                                    spec={spec}
+                                    value={values[spec.field] ?? ''}
+                                    disabled={editing && spec.fixed === true}
+                                    onChange={(value) =>
+                                        setValues({ ...values, [spec.field]: value })
+                                    }
+                                    onBlur={() => setTouched(new Set([...touched, spec.field]))}
+                                    error={errorOf(spec)}
+                                />
+                            </Fragment>
                         ))}
                 </div>
+                {note?.(values)}
                 {guard.leaving && <Notice tone="warn">{t('refdata.records.unsaved')}</Notice>}
                 {editing ? (
                     <ReasonFields

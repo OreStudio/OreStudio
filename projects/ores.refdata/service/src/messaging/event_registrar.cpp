@@ -65,6 +65,7 @@
 #include "ores.refdata.service/messaging/cds_volatility_term_event_registrar.hpp"
 #include "ores.refdata.service/messaging/cms_spread_option_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_curve_config_event_registrar.hpp"
+#include "ores.refdata.service/messaging/commodity_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_forward_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_future_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_price_segment_event_registrar.hpp"
@@ -213,6 +214,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_benchmark_rate_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_business_process_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_cashflow_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_commodity_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_calendar_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_country_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_currency_group_event_mapping(event_source, event_bus, nats));

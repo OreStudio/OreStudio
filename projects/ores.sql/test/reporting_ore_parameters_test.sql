@@ -34,7 +34,7 @@
 
 begin;
 
-select plan(5);
+select plan(6);
 
 create temporary table t_parameters on commit drop as
 select d.scope, d.subtype, d.name, d.schema_name, d.xpath, d.label, d.help,
@@ -56,7 +56,7 @@ select is_empty(
 
 select is_empty(
     $$select name from t_parameters
-      where schema_name = 'ore.xsd'
+      where schema_name = 'ore.xsd' and scope <> 'Pairs'
         and xpath is distinct from case scope
               when 'Setup' then format('/ORE/Setup/Parameter[@name=''%s'']', name)
               when 'Logging' then format('/ORE/Logging/Parameter[@name=''%s'']', name)
@@ -64,8 +64,32 @@ select is_empty(
               when 'analytic' then format(
                   '/ORE/Analytics/Analytic[@type=''%s'']/Parameter[@name=''%s'']',
                   subtype, name)
+              when 'EngineParameters' then format(
+                  '/PricingEngines/Product[@type=''%s'']/EngineParameters/Parameter[@name=''%s'']',
+                  subtype, name)
+              when 'ModelParameters' then format(
+                  '/PricingEngines/Product[@type=''%s'']/ModelParameters/Parameter[@name=''%s'']',
+                  subtype, name)
+              when 'GlobalParameters' then format(
+                  '/PricingEngines/GlobalParameters/Parameter[@name=''%s'']', name)
+              when 'Types' then format(
+                  '/PricingEngines/Product[@type=''%s'']', name)
+              when 'Engines' then format(
+                  '/PricingEngines/Product/Engine[@name=''%s'']', name)
+              when 'Models' then format(
+                  '/PricingEngines/Product/Model[@name=''%s'']', name)
             end$$,
     'the XPath of an ore.xsd parameter follows from its scope, subtype and name');
+
+-- A pair carries its model and engine in its name, separated by a pipe, and
+-- its product in the subtype.
+select is_empty(
+    $$select name from t_parameters
+      where schema_name = 'ore.xsd' and scope = 'Pairs'
+        and xpath is distinct from format(
+            '/PricingEngines/Product[@type=''%s'']/Model[@name=''%s'']/Engine[@name=''%s'']',
+            subtype, split_part(name, '|', 1), split_part(name, '|', 2))$$,
+    'the XPath of an ore engine pair follows from its product, model and engine');
 
 select is_empty(
     $$select scope, subtype, name from t_parameters

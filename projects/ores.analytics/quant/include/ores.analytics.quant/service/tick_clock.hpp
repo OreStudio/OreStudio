@@ -56,7 +56,7 @@ namespace ores::analytics::quant::service {
  * slept is not shortened, so a feed on a slow arrival can take one long gap to
  * notice.
  */
-class ORES_ANALYTICS_QUANT_EXPORT tick_clock final {
+class tick_clock final {
 public:
     /**
      * @param arrivals The process that draws each gap, in seconds.

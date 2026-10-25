@@ -30,6 +30,7 @@
 #include "ores.shell/app/commands/refdata/cds_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/cds_volatility_term_commands.hpp"
 #include "ores.shell/app/commands/refdata/cms_spread_option_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/commodity_commands.hpp"
 #include "ores.shell/app/commands/refdata/commodity_curve_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/commodity_forward_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/commodity_future_convention_commands.hpp"
@@ -198,6 +199,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     cds_volatility_config_commands::register_commands(root_menu, session);
     cds_volatility_term_commands::register_commands(root_menu, session);
     cms_spread_option_convention_commands::register_commands(root_menu, session);
+    commodity_commands::register_commands(root_menu, session);
     commodity_curve_config_commands::register_commands(root_menu, session);
     commodity_forward_convention_commands::register_commands(root_menu, session);
     commodity_future_convention_commands::register_commands(root_menu, session);

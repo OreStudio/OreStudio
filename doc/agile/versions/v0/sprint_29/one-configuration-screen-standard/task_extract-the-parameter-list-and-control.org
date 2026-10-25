@@ -68,7 +68,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[file:scenario_verify-the-parameter-controls-on-both-screens.org][Verify the parameter controls on both screens]] | PENDING | Runs on 21002 after provisioning. |
 
 * PRs
 

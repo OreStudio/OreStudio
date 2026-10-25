@@ -1,0 +1,279 @@
+:PROPERTIES:
+:ID: 7264EDF6-479C-427F-BA5B-91C1C28A7A4F
+:END:
+#+title: Test Scenario: Verify the parameter controls on both screens
+#+description: A person edits a parameter on product pricing and on engine run settings and sees the same control for the same kind of value, with the bounds, the choices and the required mark the data states.
+#+type: test_scenario
+#+level: s1
+#+filetags: :one-configuration-screen-standard:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:86DEC5CB-E1C3-4E34-A223-027D45BFF732][Extract the shared parameter list, control and edit lifecycle]] in [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+# System-readiness prerequisites (build, database state, provisioning)
+# belong here, performed by *you* (build/recreate/provision yourself,
+# never hand this to the tester) before opening the client with this
+# scenario -- not folded into Step 1 as a conditional the tester has to
+# evaluate. By the time the tester opens this doc, the system must
+# already be in the state Step 1 assumes. See [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an
+# environment?]] for the standard confirm/recreate/provision sequence.
+# Delete this whole section if the scenario has no such prerequisites
+# (e.g. it only reads static reference data).
+
+- The database must be freshly provisioned (state what tenant/data the
+  scenario needs, e.g. "via =--source acme=") — confirm via
+  =compass db status=, recreating only if stale: =compass db recreate
+  -y -k= then the relevant =compass shell -f= provisioning script.
+  Confirm the run completes with no failed steps before starting.
+
+* Scenario Info
+
+# A non-empty Clients cell below means "this is a multi-client
+# scenario": every step then nests one level deeper, under a
+# per-client heading. Leave the cell genuinely blank — no placeholder
+# text, not even "(single client)" — for the common single-client
+# case; a non-empty cell here with flat `**` steps (no per-client
+# `**`/`***` nesting) is a malformed scenario. Only put text in it
+# when the scenario truly needs several running client instances at
+# once (e.g. a NATS notification lands on a second instance) — list
+# the instance labels, e.g. "blue, red", and nest every step one
+# level deeper under a `**` heading per client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:86DEC5CB-E1C3-4E34-A223-027D45BFF732][Extract the shared parameter list, control and edit lifecycle]] |
+| Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
+| Target screen | (UI screen under test, if any.)         |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as the tenant administrator
+
+- Open =http://localhost:21002=.
+- Log in as =tenant_admin@acme_corporation= with =Secure-Password-123=.
+- Choose the party *ACME Corporation HK Ltd*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open a configuration and edit a product
+
+- Open Reporting, then Product pricing.
+- Open *XVA Overnight*.
+- Open the *Products* tab and press *Expand all*.
+- Press *Edit* on the first product card.
+- The product's model, engine and parameter rows become editable.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** A sequence is a list of words
+
+- Find *Training sequence* and *Pricing sequence* in the engine's parameters.
+- Each is a dropdown, not a text field.
+- Each lists MersenneTwister, MersenneTwisterAntithetic, Sobol, SobolBrownianBridge and Burley2020SobolBrownianBridge.
+- The value the configuration holds is the one selected.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** A curve set is a list
+
+- Find *Training basis function*.
+- It is a dropdown with Monomial, Laguerre, Hermite, Hyperbolic, Legendre, Chebyshev and Chebyshev2nd.
+- The held value is selected.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** A whole number is a whole number
+
+- Find *Training samples*.
+- It is a number field, not a text field.
+- The spinner and the keyboard move it by one; a decimal is refused.
+- The field shows no free text.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** A bounded number states its bounds
+
+- Find a setting the value set bounds, for example *Time steps* or *Training samples* where the data states a minimum.
+- The field refuses a value below its minimum and above its maximum.
+- When a value outside the bounds is saved, the screen states the problem beside the field and the field is marked invalid.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** A flag is true and false
+
+- Find a flag, for example *Antithetic variate* or *Brownian bridge*.
+- It is a dropdown of true and false, not a text field.
+- A value the set no longer offers, if the configuration holds one, stays visible and selected rather than being silently dropped.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** A required parameter says so
+
+- Find a parameter the contract marks required.
+- Its label carries the word *required* after the name.
+- A parameter that is not required carries no mark.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** The engine run settings draw the same controls
+
+- Open Reporting, then Engine run settings, and open *HK - Exposure simulation engine settings*.
+- Open the group editors and find the building group's *Observation model*: it is a dropdown of None, Disable, Defer and Unregister.
+- Find *Threads* in the execution group: it is a whole-number field with a minimum of 1.
+- Find a flag, for example *Lazy market building*: it is a dropdown of true and false.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Both screens save
+
+- Change one value on the product pricing screen, give a reason and save. The dialog closes and the new value is shown.
+- Change one value in an engine settings group, give a reason and save. The value is shown under the group.
+- No error is shown on either save.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results=.
+
+* Before you start
+
+# System-readiness prerequisites (build, database state, provisioning)
+# belong here, performed by *you* (build/recreate/provision yourself,
+# never hand this to the tester) before opening the client with this
+# scenario -- not folded into Step 1 as a conditional the tester has to
+# evaluate. By the time the tester opens this doc, the system must
+# already be in the state Step 1 assumes. See [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an
+# environment?]] for the standard confirm/recreate/provision sequence.
+# Delete this whole section if the scenario has no such prerequisites
+# (e.g. it only reads static reference data).
+
+- The database must be freshly provisioned (state what tenant/data the
+  scenario needs, e.g. "via =--source acme=") — confirm via
+  =compass db status=, recreating only if stale: =compass db recreate
+  -y -k= then the relevant =compass shell -f= provisioning script.
+  Confirm the run completes with no failed steps before starting.
+
+* Scenario Info
+
+# A non-empty Clients cell below means "this is a multi-client
+# scenario": every step then nests one level deeper, under a
+# per-client heading. Leave the cell genuinely blank — no placeholder
+# text, not even "(single client)" — for the common single-client
+# case; a non-empty cell here with flat `**` steps (no per-client
+# `**`/`***` nesting) is a malformed scenario. Only put text in it
+# when the scenario truly needs several running client instances at
+# once (e.g. a NATS notification lands on a second instance) — list
+# the instance labels, e.g. "blue, red", and nest every step one
+# level deeper under a `**` heading per client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:86DEC5CB-E1C3-4E34-A223-027D45BFF732][Extract the shared parameter list, control and edit lifecycle]] |
+| Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
+| Target screen | (UI screen under test, if any.)         |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. Record each step's PASS/FAIL/PENDING outcome and notes as
+a =*** Result= child heading directly under it.
+
+** Log in as <persona>
+
+# This must be the scenario's first step (only * Steps entries
+# carry a pass/fail outcome) -- name the *specific* persona this scenario
+# actually needs: the exact account to log in as and its password
+# (e.g. =tenant_admin@acme_corporation= / =Secure-Password-123=, or a
+# specific staff username -- see doc/agile/versions/.../
+# acme_corporation_holding_group/story.org for how generated staff
+# usernames work, they're randomised per provisioning run so look one
+# up via `accounts list` rather than assuming a fixed name). Assume
+# the system is already in the state * Before you start establishes --
+# this step is pure tester mechanics, not a readiness check. Never
+# leave the tester to guess credentials -- and never copy this
+# placeholder verbatim.
+
+** (Next manual step the tester should perform.)
+
+(Optional longer instructions for this step.)
+
+# For a multi-client scenario (Clients field above is non-empty),
+# nest steps one level deeper instead, under one sub-heading per
+# client, e.g.:
+#
+#   ** blue
+#   *** Open the counterparty lookup and search
+#   ** red
+#   *** Confirm the notification arrived and the list refreshed
+#
+# Single-client scenarios (the common case) keep steps as direct
+# children of * Steps, as above.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

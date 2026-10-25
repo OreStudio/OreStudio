@@ -1,0 +1,7 @@
+# Answer
+#
+# GENERATED from doc/recipes/shell/report_operations/how_do_i_prove_a_report_runs_end_to_end.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+connect $ORES_NATS_URL
+report_operations trigger-report-instance <report_definition_id> <tenant_id>

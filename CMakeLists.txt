@@ -136,6 +136,12 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 #
 set(ORES_TEST_ENV "ORES_TEST_PASSWORD_FAST=1")
 
+# A local test run shares the NATS server with any running fleet, so it gets its
+# own subject namespace: the suffix appended to ORES_NATS_SUBJECT_PREFIX below.
+# Without it a running service answers the announces and consumes the feed
+# messages the suites publish, and the suites fail on the interference.
+set(ORES_TEST_SUBJECT_SUFFIX ".tests")
+
 # Compiler cache selection (sccache/ccache), read from .env below. Empty
 # means "no compiler cache" — CI overrides this to sccache unconditionally.
 set(ORES_COMPILER_CACHE "")
@@ -158,6 +164,9 @@ if(NOT DEFINED ENV{CI})
             # Skip the JWT private key — too long and tests don't need it
             if(_line MATCHES "^ORES_IAM_SERVICE_JWT_PRIVATE_KEY")
                 continue()
+            endif()
+            if(_line MATCHES "^ORES_NATS_SUBJECT_PREFIX=(.*)$")
+                set(_line "ORES_NATS_SUBJECT_PREFIX=${CMAKE_MATCH_1}${ORES_TEST_SUBJECT_SUFFIX}")
             endif()
             if(_line MATCHES "^ORES_COMPILER_CACHE=(.*)$")
                 set(ORES_COMPILER_CACHE "${CMAKE_MATCH_1}")

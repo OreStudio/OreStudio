@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 4FABC503-2218-42FA-9086-1E94A367A638
+:END:
+#+title: Purge the streams a test run creates
+#+description: The test environment now appends .tests to ORES_NATS_SUBJECT_PREFIX so suites cannot collide with a running fleet. nats purge reads the .env prefix, so the streams the suites create under the .tests namespace are never removed and accumulate on the developer machine.
+#+type: capture
+#+level: cross
+#+filetags: :compute:nats:testing:test_isolation:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

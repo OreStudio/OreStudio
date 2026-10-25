@@ -50,13 +50,13 @@ struct engine_run_outcome {
  *
  * The engine's exit code is not a verdict. ORE is a Java process that logs its
  * own errors and returns 0, so a run that priced nothing looks exactly like a
- * run that priced everything to whoever reads the code alone. What the run left
- * behind is the verdict: a run that wrote no analytics failed, and the engine's
- * own =ERROR= lines say why.
+ * run that priced everything to whoever reads the code alone.
  *
- * The log is *not* evidence that anything was computed. The engine writes it
- * beside its results, so a directory holding only the log is a run that
- * produced nothing.
+ * Two things decide it. A run that wrote no analytics failed, and the engine's
+ * =ERROR= lines say why. A run that wrote analytics succeeded, unless its log
+ * carries the engine's own =Error in ORE analytics= verdict, because ORE writes
+ * its calibration and timing reports whether or not the analytic it was asked
+ * for ran.
  *
  * @param output_file_names  the file names in the engine's output directory.
  * @param engine_log         the engine's own log, as it wrote it.

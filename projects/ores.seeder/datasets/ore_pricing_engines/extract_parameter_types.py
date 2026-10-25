@@ -38,9 +38,18 @@ PARSERS = ("OREData/ored/utilities/parsers.cpp",
            "OREData/ored/utilities/parsers.hpp")
 
 CALL = re.compile(
-    r'(parse[A-Za-z0-9_]+)\s*(?:<[^>]*>)?\s*\(\s*(engine|model)Parameter\("([A-Za-z0-9_.]+)"',
+    r'(?:(parse[A-Za-z0-9_]+)\s*(?:<[^>]*>)?\s*\(\s*)?'
+    r'(?:[A-Za-z_][A-Za-z0-9_]*\.)*(engine|model|global)Parameter\("([A-Za-z0-9_.]+)"',
     re.S)
-INNER = re.compile(r'&(parse[A-Za-z0-9_]+)')
+INNER = re.compile(r'&\s*(parse[A-Za-z0-9_]+)')
+COMPARE = re.compile(r'(?:==|!=)\s*"([^"]+)"')
+GLOBAL = re.compile(
+    r'global(?:Engine)?Parameters(?:\(\)|_)?\s*(?:\.\s*(?:at|find|count)\(|\[)\s*"([A-Za-z0-9_.]+)"')
+COMPARED_CALL = re.compile(
+    r'Parameter\("([A-Za-z0-9_.]+)"\)\s*(?:==|!=)\s*"([^"]+)"')
+TERNARY = re.compile(
+    r'(engine|model)Parameter\(.{0,200}?\?\s*"([A-Za-z0-9_.]+)"\s*:\s*"([A-Za-z0-9_.]+)"',
+    re.S)
 DEF = re.compile(r'^\s*[A-Za-z_:<>0-9]+\s+(parse[A-Za-z0-9_]+)\s*\(\s*const\s+std::string&')
 MAP_KEY = re.compile(r'"([^"]+)"\s*,')
 
@@ -86,18 +95,84 @@ def types(ore):
                 path = os.path.join(dirpath, filename)
                 text = open(path, encoding="utf-8", errors="replace").read()
                 for match in CALL.finditer(text):
-                    parser, scope, name = match.group(1), match.group(2), match.group(3)
-                    kind, values = classify(parser, enums)
+                    parser, scope, name = match.group(1) or "", match.group(2), match.group(3)
+                    tail = text[match.end():match.end() + 160]
+                    kind, values = None, []
+                    if parser == "parseListOfValues":
+                        inner = INNER.search(tail)
+                        if inner:
+                            parser = inner.group(1)
+                            kind, values = classify(parser, enums)
+                    else:
+                        kind, values = classify(parser, enums)
                     if kind is None:
-                        continue
+                        compared = []
+                        for literal in COMPARE.findall(tail):
+                            if literal not in compared:
+                                compared.append(literal)
+                        if len(compared) >= 2:
+                            kind, values = "enum", compared
+                        else:
+                            kind, values = "text", []
                     number = text.count("\n", 0, match.start()) + 1
-                    found.setdefault(name, {
+                    found.setdefault(f"{scope}|{name}", {
                         "kind": kind,
                         "scope": scope,
+                        "name": name,
                         "parser": parser,
                         "values": values,
                         "source_ref": f"{os.path.relpath(path, ore)}:{number}",
                     })
+    for folder in SOURCES:
+        for dirpath, _dirnames, filenames in os.walk(os.path.join(ore, folder)):
+            for filename in filenames:
+                if not filename.endswith((".cpp", ".hpp")):
+                    continue
+                path = os.path.join(dirpath, filename)
+                text = open(path, encoding="utf-8", errors="replace").read()
+                for match in GLOBAL.finditer(text):
+                    name = match.group(1)
+                    before = text[max(0, match.start() - 60):match.start()]
+                    kind = "boolean" if ("parseBool(" in before or "matchesViaBoolOrRegex" in before) else "text"
+                    number = text.count("\n", 0, match.start()) + 1
+                    found.setdefault(f"global|{name}", {
+                        "kind": kind, "scope": "global", "name": name, "parser": "",
+                        "values": [],
+                        "source_ref": f"{os.path.relpath(path, ore)}:{number}",
+                    })
+                for match in TERNARY.finditer(text):
+                    scope, left, right = match.group(1), match.group(2), match.group(3)
+                    before = text[max(0, match.start() - 40):match.start()]
+                    kind = ("boolean" if "parseBool(" in before else
+                            "integer" if "parseInteger(" in before else
+                            "real" if "parseReal(" in before or "parseDouble(" in before else "text")
+                    number = text.count("\n", 0, match.start()) + 1
+                    for name in (left, right):
+                        found.setdefault(f"{scope}|{name}", {
+                            "kind": kind, "scope": scope, "name": name, "parser": "",
+                            "values": [],
+                            "source_ref": f"{os.path.relpath(path, ore)}:{number}",
+                        })
+    compared = {}
+    for folder in SOURCES:
+        for dirpath, _dirnames, filenames in os.walk(os.path.join(ore, folder)):
+            for filename in filenames:
+                if not filename.endswith((".cpp", ".hpp")):
+                    continue
+                text = open(os.path.join(dirpath, filename), encoding="utf-8",
+                            errors="replace").read()
+                for name, literal in COMPARED_CALL.findall(text):
+                    compared.setdefault(name, [])
+                    if literal not in compared[name]:
+                        compared[name].append(literal)
+    for name, literals in compared.items():
+        entry = next((value for key, value in found.items() if value["name"] == name), None)
+        if entry is None or len(literals) < 2:
+            continue
+        if {literal.lower() for literal in literals} == {"true", "false"}:
+            entry["kind"], entry["values"] = "boolean", []
+        elif entry["kind"] in ("text", "enum"):
+            entry["kind"], entry["values"] = "enum", literals
     return found, enums
 
 
@@ -131,10 +206,19 @@ def sets_of(found):
     sets = {}
     links = {}
     flags = 0
-    for name in sorted(found):
-        entry = found[name]
+    by_name = {}
+    for key in sorted(found):
+        entry = found[key]
         kind = entry["kind"]
-        scope = "ModelParameters" if entry["scope"] == "model" else "EngineParameters"
+        original = entry["name"]
+        name = original
+        scope = ("ModelParameters" if entry["scope"] == "model"
+                 else "GlobalParameters" if entry["scope"] == "global"
+                 else "EngineParameters")
+        signature = (kind, tuple(entry["values"]))
+        if original in by_name and by_name[original] != signature:
+            name = f"{entry['scope']}_{original}"
+        by_name.setdefault(original, signature)
         if kind == "boolean":
             set_code = "flag"
             if set_code not in sets:
@@ -155,25 +239,32 @@ def sets_of(found):
             }
         elif kind == "enum":
             set_code = slug(name)
-            values = [
-                {
-                    "value": value,
-                    "label": value,
-                    "description": f"{value} is one of the values the ORE code accepts for {name}.",
-                    "order": index,
-                }
-                for index, value in enumerate(entry["values"])
-            ]
             sets[set_code] = {
                 "name": name.replace("_", " ").replace(".", " ").strip().capitalize(),
                 "description": f"The values the {name} setting accepts.",
                 "source_kind": "enumerated",
                 "is_ordered": False,
-                "values": values,
+                "values": [
+                    {
+                        "value": value,
+                        "label": value,
+                        "description": f"{value} is one of the values the ORE code accepts for {original}.",
+                        "order": index,
+                    }
+                    for index, value in enumerate(entry["values"])
+                ],
+            }
+        elif kind == "text":
+            set_code = slug(name)
+            sets[set_code] = {
+                "name": name.replace("_", " ").replace(".", " ").strip().capitalize(),
+                "description": f"The values the {name} setting accepts.",
+                "source_kind": "text",
+                "is_ordered": False,
             }
         else:
             continue
-        links[f"{scope}|{name}"] = set_code
+        links[f"{scope}|{original}"] = set_code
     return sets, links, flags
 
 

@@ -120,6 +120,64 @@ def rows_of(data):
     return catalogues, sets, values, links
 
 
+CONTRACT_SOURCES = {
+    "vocabulary": os.path.join(ROOT, "projects", "ores.seeder", "datasets",
+                               "ore_pricing_engines", "pricing_vocabulary.json"),
+    "code": os.path.join(ROOT, "projects", "ores.seeder", "datasets",
+                         "ore_pricing_engines", "curation", "settings-code.json"),
+    "globals": os.path.join(ROOT, "projects", "ores.seeder", "datasets",
+                            "ore_pricing_engines", "curation", "globals.json"),
+}
+
+
+def contract_pairs():
+    """Every parameter the contract holds, as the (scope, name) its rows use."""
+    pairs = set()
+    with open(CONTRACT_SOURCES["vocabulary"], encoding="utf-8") as handle:
+        vocabulary = json.load(handle)
+    for entry in vocabulary.values():
+        for pair in entry.get("pairs", []):
+            for setting in pair.get("settings", []):
+                pairs.add((scope_of(setting["scope"]), setting["name"]))
+    with open(CONTRACT_SOURCES["code"], encoding="utf-8") as handle:
+        for entry in json.load(handle).values():
+            pairs.add((scope_of(entry["scope"]), entry.get("name", entry.get("setting", ""))))
+    with open(CONTRACT_SOURCES["globals"], encoding="utf-8") as handle:
+        for name in json.load(handle):
+            pairs.add(("GlobalParameters", name))
+    return {pair for pair in pairs if pair[1]}
+
+
+def scope_of(scope):
+    return {"model": "ModelParameters", "engine": "EngineParameters",
+            "global": "GlobalParameters", "GlobalParameters": "GlobalParameters",
+            "ModelParameters": "ModelParameters",
+            "EngineParameters": "EngineParameters"}.get(scope, scope)
+
+
+def resolve(data):
+    """Give every contract parameter its set, failing on one that has none."""
+    linked = {}
+    for key, set_code in data["links"].items():
+        scope, _, name = key.partition("|")
+        linked.setdefault((scope, name), set_code)
+    by_name = {}
+    for (scope, name), set_code in linked.items():
+        by_name.setdefault(name, set()).add(set_code)
+    problems = []
+    for scope, name in sorted(contract_pairs()):
+        if (scope, name) in linked:
+            continue
+        candidates = by_name.get(name, set())
+        if len(candidates) == 1:
+            data["links"][f"{scope}|{name}"] = next(iter(candidates))
+        elif len(candidates) > 1:
+            problems.append(f"{scope}|{name} could be {sorted(candidates)}")
+        else:
+            problems.append(f"{scope}|{name} has no value set")
+    return problems
+
+
 def load():
     """The guide's sets, with the code's sets over the top.
 
@@ -200,7 +258,8 @@ def main():
                         help="fail if the committed script differs from the data")
     args = parser.parse_args()
     data = load()
-    problems = validate(data)
+    problems = resolve(data)
+    problems = problems + validate(data)
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 1

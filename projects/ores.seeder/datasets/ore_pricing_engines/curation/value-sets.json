@@ -638,6 +638,96 @@
         }
       ],
       "description": "The values the volatilitytype setting accepts."
+    },
+    "upper_rate_bound_log_normal": {
+      "name": "Upper rate bound, log normal",
+      "description": "The ceiling the log-normal rate model applies, as a number.",
+      "source_kind": "number",
+      "is_ordered": false
+    },
+    "upper_rate_bound_normal": {
+      "name": "Upper rate bound, normal",
+      "description": "The ceiling the normal rate model applies, as a number.",
+      "source_kind": "number",
+      "is_ordered": false
+    },
+    "bond_future_american_as_european": {
+      "name": "Bond future American as European",
+      "description": "Whether a bond future option is priced as a European one.",
+      "source_kind": "boolean",
+      "is_ordered": false
+    },
+    "imply_abs_maturity_for_regex": {
+      "name": "Imply absolute maturity for a regex",
+      "description": "Whether the maturity of a regex trade is implied from its underlyings.",
+      "source_kind": "boolean",
+      "is_ordered": false
+    },
+    "pseudo_currency_base_currency": {
+      "name": "Pseudo currency base currency",
+      "description": "The currency a pseudo currency is quoted in.",
+      "source_kind": "text",
+      "is_ordered": false
+    },
+    "pseudo_currency_curve_xag": {
+      "name": "Pseudo currency curve, silver",
+      "description": "The curve that prices the silver pseudo currency.",
+      "source_kind": "text",
+      "is_ordered": false
+    },
+    "pseudo_currency_curve_xau": {
+      "name": "Pseudo currency curve, gold",
+      "description": "The curve that prices the gold pseudo currency.",
+      "source_kind": "text",
+      "is_ordered": false
+    },
+    "pseudo_currency_curve_xpd": {
+      "name": "Pseudo currency curve, palladium",
+      "description": "The curve that prices the palladium pseudo currency.",
+      "source_kind": "text",
+      "is_ordered": false
+    },
+    "pseudo_currency_curve_xpt": {
+      "name": "Pseudo currency curve, platinum",
+      "description": "The curve that prices the platinum pseudo currency.",
+      "source_kind": "text",
+      "is_ordered": false
+    },
+    "pseudo_currency_default_correlation": {
+      "name": "Pseudo currency default correlation",
+      "description": "The correlation the pseudo currency uses when none is stated.",
+      "source_kind": "number",
+      "is_ordered": false
+    },
+    "pseudo_currency_fx_index_tag": {
+      "name": "Pseudo currency FX index tag",
+      "description": "The tag that marks the FX index of a pseudo currency.",
+      "source_kind": "text",
+      "is_ordered": false
+    },
+    "pseudo_currency_treat_as_fx": {
+      "name": "Pseudo currency treated as FX",
+      "description": "Whether a pseudo currency is priced as an FX pair.",
+      "source_kind": "boolean",
+      "is_ordered": false
+    },
+    "lower_rate_bound_log_normal": {
+      "name": "Lower rate bound, log normal",
+      "description": "The floor the log-normal rate model applies, as a number.",
+      "source_kind": "number",
+      "is_ordered": false
+    },
+    "lower_rate_bound_normal": {
+      "name": "Lower rate bound, normal",
+      "description": "The floor the normal rate model applies, as a number.",
+      "source_kind": "number",
+      "is_ordered": false
+    },
+    "conversion_ratio_discretization_grid": {
+      "name": "Conversion ratio discretisation grid",
+      "description": "The grid the conversion ratio is discretised on, as the ORE grid string.",
+      "source_kind": "text",
+      "is_ordered": false
     }
   },
   "links": {
@@ -692,6 +782,21 @@
     "ModelParameters|VolatilityType": "volatilitytype",
     "ModelParameters|ZeroRecoveryOverwrite": "flag",
     "ModelParameters|useAssumedRecovery": "flag",
-    "ModelParameters|useStochasticRecovery": "flag"
+    "ModelParameters|useStochasticRecovery": "flag",
+    "EngineParameters|UpperRateBoundLogNormal": "upper_rate_bound_log_normal",
+    "EngineParameters|UpperRateBoundNormal": "upper_rate_bound_normal",
+    "GlobalParameters|BondFutureAmericanAsEuropean": "bond_future_american_as_european",
+    "GlobalParameters|ImplyAbsMaturityForRegex": "imply_abs_maturity_for_regex",
+    "GlobalParameters|PseudoCurrency.BaseCurrency": "pseudo_currency_base_currency",
+    "GlobalParameters|PseudoCurrency.Curve.XAG": "pseudo_currency_curve_xag",
+    "GlobalParameters|PseudoCurrency.Curve.XAU": "pseudo_currency_curve_xau",
+    "GlobalParameters|PseudoCurrency.Curve.XPD": "pseudo_currency_curve_xpd",
+    "GlobalParameters|PseudoCurrency.Curve.XPT": "pseudo_currency_curve_xpt",
+    "GlobalParameters|PseudoCurrency.DefaultCorrelation": "pseudo_currency_default_correlation",
+    "GlobalParameters|PseudoCurrency.FXIndexTag": "pseudo_currency_fx_index_tag",
+    "GlobalParameters|PseudoCurrency.TreatAsFX": "pseudo_currency_treat_as_fx",
+    "EngineParameters|LowerRateBoundLogNormal": "lower_rate_bound_log_normal",
+    "EngineParameters|LowerRateBoundNormal": "lower_rate_bound_normal",
+    "EngineParameters|ConversionRatioDiscretizationGrid": "conversion_ratio_discretization_grid"
   }
 }

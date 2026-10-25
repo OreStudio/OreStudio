@@ -183,6 +183,14 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
 std::string report_error_recorder::record_run_failure(const std::string& report_instance_id,
                                                       const std::string& reason) {
     try {
+        // The engine's own account repeats what the run's reasons already say.
+        // The row points at them when they are there, and carries the account
+        // when they are not, because then it is the only account a reader has.
+        const auto failure_text =
+            run_holds_errors(ctx_, report_instance_id) ?
+                std::string("The run failed. Its reasons are the errors recorded against it.") :
+                reason;
+
         const auto instance_id = parse_instance_id(report_instance_id);
         const auto party_id = party_of_run(ctx_, report_instance_id);
         const auto event_time = std::chrono::system_clock::now();
@@ -193,7 +201,7 @@ std::string report_error_recorder::record_run_failure(const std::string& report_
                                                                       event_time,
                                                                       std::string(scope_report),
                                                                       "error",
-                                                                      reason,
+                                                                      failure_text,
                                                                       std::nullopt,
                                                                       std::nullopt,
                                                                       std::nullopt,

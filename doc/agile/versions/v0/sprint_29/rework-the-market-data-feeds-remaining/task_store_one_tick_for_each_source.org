@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/store-one-tick-for-each-source
-#+pr:
+#+pr: 3769
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -114,7 +114,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3769][#3769]] | [codegen] Model the tick table under codegen |
 
 * Review
 

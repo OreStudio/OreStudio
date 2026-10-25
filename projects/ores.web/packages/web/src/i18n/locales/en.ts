@@ -3722,6 +3722,7 @@ export const en: SourceCatalogue = {
         },
         records: {
             deletePartWarning: 'The row closes. Its history stays.',
+            historyOf: 'History of {name}',
             yes: 'Yes',
             no: 'No',
             cancel: 'Cancel',
@@ -4045,10 +4046,27 @@ export const en: SourceCatalogue = {
             compare: 'Compare with',
             quantlibBaseWarning:
                 '{base} takes its holidays from QuantLib, but the rebuild does not read them. The days below show weekends and these exceptions only.',
-            notBuilt: 'No business days are built for {year}. Rebuild the calendar to build them.',
+            notBuilt: 'No business days are built for {year}.',
+            notBuiltAction: 'Rebuild the calendar to build them.',
+            notBuiltReader: 'Ask a reference data administrator to rebuild the calendar.',
+            unionSummary:
+                'With {other}: {business} business days and {holidays} holidays in the union, which is the definition a pair settles on.',
+            daysNote:
+                'A day in green is a business day an exception opened. A day in italics is a holiday of the compared calendar only.',
+            from: {
+                rule: 'Rule',
+                exception: 'Exception',
+                base: 'Base',
+            },
             summary: '{business} business days and {holidays} weekday holidays in {year}.',
             noHolidays: 'No holidays.',
             rebuildTo: 'Build up to the end of',
+            rebuildLead:
+                'Builds the days of {name} that are not built yet, from its rules and its exceptions.',
+            rebuildLeadDerived:
+                'Builds the days of {name} that are not built yet, from its base and its exceptions.',
+            rebuildAction: 'Rebuild',
+            rebuildYearHint: 'A four-digit year.',
             rebuild: 'Rebuild business days',
             rebuildNote:
                 'A rebuild adds the days not built yet. It does not change a day that is already built, so a change to a rule or an exception does not show in a year already built.',

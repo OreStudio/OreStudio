@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :take_the_first_refdata_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-screens-of-the-first-topic
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The screens exist as the prototype shows them and the harness passes on each. An
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -42,9 +42,20 @@ The screens exist as the prototype shows them and the harness passes on each. An
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The calendars screen exists, so the build moves it to the signed off prototype
+and lands each move in the shared part the standard names, so that no screen
+builds a dialog of its own and every record screen gains the fix: a
+=RecordTimeline= over the generic history, drawn by the shared =Timeline=,
+replaces =HistoryPanel= in the History tab and in every parts panel's history
+dialog; =RecordHeader= takes Refresh with its load time; =RecordDialog= and
+=PartsPanel= take the load time under the title and the display field in the
+title; a record field with a flag draws the flag and the name. On the calendars
+screen itself: Rebuild business days becomes an operation dialog opened from
+the header beside Derive, the Business days view names what produced each day
+and gives the calendar's counts and the union's, and its empty state names the
+action. The harness gains the check that the History tab is the timeline, so
+the legacy shape cannot pass a sign off. The strings exist in English, French
+and Portuguese before the screen ships.
 
 * Measurements
 
@@ -58,7 +69,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Harness on the calendars screen | 17 passed, 1 failed, 6 skipped; the failure, RS-LIST-10, passed when run alone and was timing against a screenshot script on the same web | =npx playwright test --grep "record calendars"= | this branch |
+| The dialog checks the harness skipped | 6, because the first row is a QuantLib calendar with no Edit; on a derived calendar the title read Edit Acme test calendar with its load time | the live run that derived Acme.Test from TARGET | this branch |
+| Reference data unit tests | 133 passed in 13 files | =npx vitest run src/refdata= in =packages/web= | this branch |
+| Typecheck and format | clean | =tsc --build= through =npm run build=; =prettier --check= | this branch |
+| Strings added in three languages | 15 keys each | the locale diffs | this branch |
+| Screens still on the legacy history panel | 10 of 11 files; =records.tsx= moved | =grep -rl HistoryPanel packages/web/src= | this branch |
 
 * Notes
 
@@ -83,6 +99,23 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: web and docs classes | refdata/RecordTimeline.tsx, records.tsx, calendars.tsx, the locales, the harness | Accept | Rebuild first borrowed the Refresh icon, against RS-ICON-02, and took the calendar icon; a greedy locale edit was caught by the typecheck and redone line by line; the shared Dialog closes on Escape without the guard, which the currencies sheet already carries as a gap |
 
 * Result
+
+The live calendars screen now draws what the signed off prototype draws, and
+each move landed in the shared part the standard names. =RecordTimeline=
+draws a record's history as the shared =Timeline= and replaces the legacy
+=HistoryPanel= in the History tab and in every parts panel's history dialog;
+=RecordHeader= takes Refresh with its load time; =RecordDialog= and
+=PartsPanel= say when the record was loaded and title the dialog by the
+display field; a record field with a flag draws the flag and the name. On
+calendars, Rebuild business days is an operation dialog opened from the header
+beside Derive, the Business days view names what produced each day and gives
+the calendar's counts and the union's, and its empty state names the action.
+The harness checks that the History tab is the timeline (ES-HIST-18); on the
+calendars screen it now passes that check, the page's load time and the
+dialog's title and load time, which the baseline found broken. The strings
+exist in English, French and Portuguese. A test calendar, Acme.Test, derived
+from TARGET, stays on the environment for the sign off task. The country is
+a flag and a name; its link waits for the countries page.

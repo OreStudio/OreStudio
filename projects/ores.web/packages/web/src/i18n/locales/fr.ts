@@ -3774,6 +3774,7 @@ const fr: SourceCatalogue = {
         },
         records: {
             deletePartWarning: 'La ligne est fermée. Son historique reste.',
+            historyOf: 'Historique de {name}',
             yes: 'Oui',
             no: 'Non',
             cancel: 'Annuler',
@@ -4101,11 +4102,28 @@ const fr: SourceCatalogue = {
             compare: 'Comparer avec',
             quantlibBaseWarning:
                 '{base} prend ses jours fériés de QuantLib, mais la reconstruction ne les lit pas. Les jours ci-dessous montrent seulement les week-ends et ces exceptions.',
-            notBuilt:
-                "Aucun jour ouvré n'est construit pour {year}. Reconstruisez le calendrier pour les construire.",
+            notBuilt: "Aucun jour ouvré n'est construit pour {year}.",
+            notBuiltAction: 'Reconstruisez le calendrier pour les construire.',
+            notBuiltReader:
+                'Demandez à un administrateur des données de référence de reconstruire le calendrier.',
+            unionSummary:
+                "Avec {other} : {business} jours ouvrés et {holidays} jours fériés dans l'union, qui est la définition sur laquelle une paire règle.",
+            daysNote:
+                'Un jour en vert est un jour ouvré ouvert par une exception. Un jour en italique est un jour férié du calendrier comparé seulement.',
+            from: {
+                rule: 'Règle',
+                exception: 'Exception',
+                base: 'Base',
+            },
             summary: '{business} jours ouvrés et {holidays} jours fériés en semaine en {year}.',
             noHolidays: 'Aucun jour férié.',
             rebuildTo: "Construire jusqu'à la fin de",
+            rebuildLead:
+                'Construit les jours de {name} pas encore construits, à partir de ses règles et de ses exceptions.',
+            rebuildLeadDerived:
+                'Construit les jours de {name} pas encore construits, à partir de sa base et de ses exceptions.',
+            rebuildAction: 'Reconstruire',
+            rebuildYearHint: 'Une année à quatre chiffres.',
             rebuild: 'Reconstruire les jours ouvrés',
             rebuildNote:
                 "Une reconstruction ajoute les jours pas encore construits. Elle ne change pas un jour déjà construit : une modification d'une règle ou d'une exception n'apparaît pas dans une année déjà construite.",

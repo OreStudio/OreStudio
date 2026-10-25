@@ -121,6 +121,17 @@ for (const screen of allScreens()) {
             await expect(page.getByText(/^Last changed/).first()).toBeVisible();
         });
 
+        test('[ES-HIST-18] the History tab is the shared timeline', async ({ page }) => {
+            await page.getByRole('tab', { name: 'History' }).click();
+            await expect(
+                page.getByRole('button', { name: /system activity/ }),
+                'the timeline draws the system activity toggle',
+            ).toBeVisible();
+            // The legacy panel compares two versions side by side; the timeline never does.
+            await expect(page.getByText(/^Compare\b/)).toHaveCount(0);
+            await expect(page.getByRole('button', { name: 'Only changes' })).toHaveCount(0);
+        });
+
         test.describe('the Edit dialog', () => {
             test.beforeEach(async ({ page }) => {
                 // The access mark is drawn with the actions, so once it shows, Edit is

@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: AC70CC11-7819-419A-A317-E543DE837160
+:END:
+#+title: Story: Carry a market-wide arrival regime
+#+description: Let the whole market speed up together: an exogenous calm/active state and a shared endogenous intensity, driven by one clock per run, so a panic is representable and cross-series counts correlate.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The synthetic generators can represent a fast market: every series speeds up
+together for a while, and then calms down. A panic can be pinned for a scenario,
+and the per-series laws survive it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Scoped by the Market Arrival Regime note. Authored, not started. |
+| Waiting on    | The per-series arrival parameters (the previous story). |
+| Next          | Carry a shared market state and one clock. |
+| Last touched  | 2026-10-25                               |
+
+* Acceptance
+
+- One clock per run schedules every feed, and the feeds keep no clock of their
+  own.
+- A calm/active state moves every series' rate by its sensitivity, and a
+  scenario can pin the active state.
+- Any event raises a shared intensity that decays, so a panic spreads.
+- Cross-series counts are correlated in the active state and near zero in the
+  calm one.
+- The per-series checks still hold: mean rate, Fano factor and time rescaling.
+- An unstable parameter set is refused before anything is built.
+- Both factors are configurable and both are supported: the exogenous state and
+  the shared endogenous intensity, each with its own numbers.
+- A control panel on the feeds screen shows the current state and sets the
+  regime: auto, pinned calm or pinned active, the transition rate, and the shared
+  intensity's jump and decay. A user does not edit a database row to do it.
+- A manual switch forces the state at runtime, from the screen and from the
+  shell, so a tester can trigger a panic mid-run and watch every series answer.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B12C5D02-2CC8-48A5-9ABB-805AE2C901D6][Carry a shared market state and one clock]] | BACKLOG | | | Add a calm/active market state, a per-series sensitivity, and a single shared clock that schedules every feed, so the market can speed up together. |
+| [[id:FA7CE833-E35F-4CEE-A039-E527AD353AFB][Carry the shared endogenous intensity]] | BACKLOG | | | Let any event raise a common intensity that decays, so a panic spreads rather than being switched on, and prove it with cross-series correlation. |
+| [[id:5D4A9369-BA25-436A-8845-80810041BC9A][Configure the market regime from the feeds screen]] | BACKLOG | | | A control panel on the feeds screen that shows the current market state and lets a user set the regime: auto, pinned calm or pinned active, the transition rate, and the shared intensity's jump and decay, with the sensitivity per feed. |
+
+* Decisions
+
+- /The factor is market-wide, not per-row:/ the state and the shared intensity
+  live on the run, and each row contributes its baseline and its sensitivity.
+- /Rank one, not a kernel matrix:/ every cross term is the same shared process,
+  so the cost stays linear and stability is closed form. Named pair-to-pair
+  contagion is a separate concern.
+- /The shared clock is the price of contagion:/ an exogenous factor alone would
+  keep per-feed clocks, but a feed cannot see another's events, so it cannot
+  carry the endogenous part.
+- /Both factors, each configurable:/ the state and the shared intensity are
+  separate parameters with separate effects, and a user turns either off by
+  setting it neutral rather than by choosing one of them.
+- /The panel is the control surface:/ the regime is set from the feeds screen,
+  not from SQL. Pinning is the operational switch a demonstration or a stress
+  run uses, and the panel shows which state is in force.
+- /The design is the note:/ =doc/knowledge/domain/market_arrival_regime.org=
+  states the intensity, the rank-one result, the scheduler and the checks.
+
+* Out of scope
+
+- An arbitrary kernel matrix, where one series excites some and not others.
+- A market factor driven by real market data rather than by a state machine.
+-

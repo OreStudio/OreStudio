@@ -21,6 +21,7 @@
 #define ORES_SYNTHETIC_API_FEEDS_IR_CURVE_FEED_HPP
 
 #include "ir_curve_template_resolver.hpp"
+#include "ores.analytics.quant/domain/arrival_spec.hpp"
 #include "ores.analytics.quant/domain/i_arrival_process.hpp"
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/service/tick_clock.hpp"
@@ -93,7 +94,7 @@ public:
                   std::string index_tenor,
                   std::string role,
                   std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
-                  double ticks_per_hour,
+                  const ores::analytics::quant::domain::arrival_spec& arrival,
                   std::vector<ir_curve_resolved_entry> entries);
 
     void start() override;

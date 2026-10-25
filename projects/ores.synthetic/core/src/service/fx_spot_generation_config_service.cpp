@@ -118,6 +118,10 @@ to_domain(const messaging::fx_spot_generation_config_write& write) {
     v.vintage_date = write.vintage_date;
     v.folder_id = write.folder_id;
     v.asset_class_code = write.asset_class_code;
+    v.arrival_mode = write.arrival_mode;
+    v.branching_ratio = write.branching_ratio;
+    v.decay = write.decay;
+    v.sensitivity = write.sensitivity;
     return v;
 }
 

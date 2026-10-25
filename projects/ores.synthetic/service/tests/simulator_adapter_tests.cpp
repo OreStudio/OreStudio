@@ -26,6 +26,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.analytics.quant/domain/arrival_spec.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
@@ -361,7 +362,8 @@ TEST_CASE("the adapter announces, answers the demand and sends ticks and heartbe
                     "test.eur_usd",
                     "unused",
                     std::make_unique<flat_process>(),
-                    36000000.0,
+                    ores::analytics::quant::domain::arrival_spec{
+                        .mode = "periodic", .ticks_per_hour = 36000000.0},
                     ores::synthetic::feed::adapter_target{
                         .id = target,
                         .subject =

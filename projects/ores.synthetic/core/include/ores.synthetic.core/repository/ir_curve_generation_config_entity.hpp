@@ -74,6 +74,10 @@ struct ir_curve_generation_config_entity {
     std::string source_name;
     std::optional<std::string> folder_id;
     std::string asset_class_code = "interest_rates";
+    std::string arrival_mode = "periodic";
+    double branching_ratio = 0.0;
+    double decay = 1.0;
+    double sensitivity = 1.0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

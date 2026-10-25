@@ -206,3 +206,27 @@ TEST_CASE("the factory converts ticks per hour to the process unit and refuses a
         ores::analytics::quant::service::process_factory::make_arrival_process("periodic", 0.0),
         std::invalid_argument);
 }
+
+TEST_CASE("the factory builds what a spec names", tags) {
+    using ores::analytics::quant::domain::arrival_spec;
+    using ores::analytics::quant::service::process_factory;
+
+    const auto periodic = process_factory::make_arrival_process(
+        arrival_spec{.mode = "periodic", .ticks_per_hour = 3600.0});
+    CHECK(periodic->next_gap() == Catch::Approx(1.0));
+
+    const auto hawkes = process_factory::make_arrival_process(
+        arrival_spec{.mode = "hawkes",
+                     .ticks_per_hour = 3600.0,
+                     .branching_ratio = 0.5,
+                     .decay = 10.0});
+    REQUIRE(hawkes);
+    CHECK(hawkes->next_gap() > 0.0);
+
+    CHECK_THROWS_AS(process_factory::make_arrival_process(
+                        arrival_spec{.mode = "hawkes",
+                                     .ticks_per_hour = 3600.0,
+                                     .branching_ratio = 1.0,
+                                     .decay = 10.0}),
+                    std::invalid_argument);
+}

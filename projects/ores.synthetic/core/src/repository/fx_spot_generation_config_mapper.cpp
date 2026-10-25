@@ -72,6 +72,10 @@ fx_spot_generation_config_mapper::map(const fx_spot_generation_config_entity& v)
                       std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.folder_id)) :
                       std::nullopt;
     r.asset_class_code = v.asset_class_code;
+    r.arrival_mode = v.arrival_mode;
+    r.branching_ratio = v.branching_ratio;
+    r.decay = v.decay;
+    r.sensitivity = v.sensitivity;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -113,6 +117,10 @@ fx_spot_generation_config_mapper::map(const domain::fx_spot_generation_config& v
     r.folder_id = v.folder_id.has_value() ? std::optional(boost::uuids::to_string(*v.folder_id)) :
                                             std::nullopt;
     r.asset_class_code = v.asset_class_code;
+    r.arrival_mode = v.arrival_mode;
+    r.branching_ratio = v.branching_ratio;
+    r.decay = v.decay;
+    r.sensitivity = v.sensitivity;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

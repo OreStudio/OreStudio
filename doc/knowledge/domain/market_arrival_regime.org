@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: 7A6E2C55-3F1B-4E8D-9C7A-2B5E8D4F1A63
+:END:
+#+title: Market Arrival Regime
+#+description: A market-wide factor on top of the per-series arrival processes — an exogenous calm/active state and an endogenous shared intensity that events feed — carried by one clock per run, with the rank-one result that keeps the cost linear instead of an N-by-N kernel matrix.
+#+filetags: :synthetic:arrival:hawkes:regime:design:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+* Summary
+
+A per-series Hawkes process explains why one series clusters. It cannot explain
+why the whole market clusters at the same time, which is what a fast market or a
+panic is. This note adds the missing layer: a market-wide factor that every
+series shares.
+
+The factor has two parts. A *state* =S(t)= says whether the market is calm or
+active, and can be pinned for a stressed scenario. A *shared intensity* =C(t)=
+rises when any series anywhere ticks, and decays. The state gives co-movement;
+the shared intensity gives contagion. Together they make the kernel matrix
+rank one, which is what keeps the cost linear.
+
+* Why per-series clustering is not enough
+
+Take N independent self-exciting streams. Each one clusters on its own events,
+and each passes the mean-rate, Fano-factor and time-rescaling checks. Yet the
+counts of two streams are uncorrelated, so nothing makes the desk panic
+together. A simulator with the right per-series statistics and no cross-series
+correlation cannot represent a fast market at all.
+
+That is the trap the per-series work leaves: every test we wrote would pass a
+model that cannot panic. The missing measurement is the correlation of counts
+across series, not another per-series statistic.
+
+* The intensity
+
+For series $i$:
+
+\begin{equation}
+\lambda_i(t) = s_i \left( \mu_i S(t) + C(t) \right)
+  + \sum_{t^i_k < t} \alpha_i e^{-\beta_i (t - t^i_k)}
+\end{equation}
+
+| Symbol | Meaning | Lives |
+|--------+---------+-------|
+| $\mu_i$ | the series' baseline rate, the long-run rate a config names | config row |
+| $s_i$ | how much the market factor moves this series | config row |
+| $S(t)$ | the calm/active state, a positive multiplier with long-run mean one | run |
+| $C(t)$ | the shared intensity, in the same unit as a rate | run |
+| $\alpha_i, \beta_i$ | the series' own jump and decay | config row |
+
+$S(t)$ is exogenous: it depends on time alone, so a feed that reads it needs to
+know nothing about the other feeds. It is a two-state Markov chain with rates
+that give a chosen share of the time in the active state, or a single state
+pinned by a scenario.
+
+$C(t)$ is endogenous: every event of every series adds $\alpha_c$ to it, and it
+decays at $\beta_c$. That is what makes a panic start and spread rather than
+being switched on by a calendar.
+
+* The rank-one result
+
+Write the kernel matrix of the N series. The diagonal holds each series' own
+$\alpha_i$. The off-diagonal holds the common term. Because every series feeds
+and reads the same $C(t)$, every cross entry is the same process scaled by the
+sensitivities, so the matrix is:
+
+\begin{equation}
+K = \operatorname{diag}(\alpha_i) + \mathbf{1} c^\top
+\end{equation}
+
+It has rank one outside the diagonal. Two consequences matter:
+
+1. *Cost.* The shared part costs one number, not $N^2$ kernels. Thinning on the
+   aggregate stays O(N) per event: bound the total rate, draw a candidate from
+   the bound, pick a series with probability $\lambda_i / \Lambda$, reject with
+   the usual probability.
+2. *Stability.* The branching matrix is $\operatorname{diag}(n_i) + \mathbf{1}
+   m^\top$ with $m_i = \alpha_c s_i / \beta_c$. A sufficient condition, and the
+   one the rules enforce, is $\max_i n_i + \sum_j m_j < 1$: each diagonal entry
+   plus the whole common row must stay below one (Gershgorin). For equal $n_i$
+   the radius is exactly $n + \sum_j m_j$, so two values of 0.9 do not pass —
+   they sum to 1.8. The check is closed form, so the parameter rules refuse an
+   unstable set before anything is built.
+
+An arbitrary kernel matrix, where series A excites series B but not C, is
+strictly more expensive and is not needed for a market-wide regime. It stays a
+separate concern for named pair-to-pair contagion.
+
+* One clock per run
+
+The per-series design lets every feed own a clock and sleep. That cannot carry
+$C(t)$: a feed computing its own rate would need every other feed's events.
+
+So the shared factor forces a scheduler. One clock per run holds the factors and
+the per-series processes and decides which series ticks next. A feed stops being
+a thread with a sleep loop and becomes a body the clock drives: =start()=
+registers it, the clock calls its body, =stop()= deregisters it. The stop
+semantics, the failure hook and the "one tick body" seam built for the
+per-series clock survive; only the caller changes.
+
+The alternative is to keep per-feed clocks and accept an exogenous factor only.
+That is cheaper and still gives panic windows, but it cannot give contagion,
+because no feed can see another's events. The choice between them is a choice
+about what the simulator claims to model, not about effort.
+
+* Where the parameters live
+
+- Per series, on the generation config row: the mode, the branching ratio, the
+  decay and the sensitivity $s_i$. One row per currency pair, per curve, per
+  series, so a major pair and a curve may carry different regimes.
+- Per run, on a market regime entity: the state machine and its transition
+  rates, the shared intensity's jump and decay, and whether the state is pinned
+  for a scenario. This is one object per simulated environment, not one per row.
+- Per scenario: a pinned state and, later, a shock injected at a time, so a
+  demonstration or a test can say "panic now" and every series answers.
+- Per operator, on the feeds screen: a control panel that shows the state in
+  force and sets the regime — auto, pinned calm or pinned active — together with
+  the transition rate and the shared intensity's jump and decay. A user tunes a
+  run from the screen, never from SQL. The panel is the same surface the
+  sensitivity per feed is edited on, so one screen answers "how does the market
+  behave" and "how much does this pair follow it".
+- As a switch, for testing: forcing the state takes effect on the next tick,
+  needs no restart, is available from the screen and from the shell, and reports
+  what it forced. A test that has to wait for a Markov chain to reach the active
+  state is not a test; it is a hope.
+
+* How to check it
+
+- Cross-series correlation of counts over windows, which is the statistic the
+  per-series tests cannot see. It must be clearly positive in the active state
+  and near zero in the calm one.
+- Occupancy of the state machine over a long run, against its transition rates.
+- A pinned panic raises every series' mean count by its sensitivity and then
+  decays back.
+- The per-series checks stay: a market factor must not spoil the mean rate, the
+  Fano factor or the time rescaling of a single stream.
+
+* Sequence
+
+1. Per-series arrival parameters: mode, branching ratio, decay on each config
+   row. Needed whichever factor design follows.
+2. The exogenous state and the shared clock, which is the step that changes
+   ownership and makes panic representable.
+3. The endogenous shared intensity, with the correlation test that proves
+   contagion.
+
+* See also
+
+- [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]] — the single-stream form, the branching ratio and the two
+  simulation methods.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the tick modes this note
+  extends.
+- [[id:FD28C144-FAC0-44D1-9E90-BE433A90061E][tick]] — the library whose ideas the arrival processes follow.

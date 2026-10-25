@@ -52,6 +52,10 @@ export interface IrCurveGenerationConfigWrite {
     source_name: string;
     folder_id: string | null;
     asset_class_code: string;
+    arrival_mode: string;
+    branching_ratio: number;
+    decay: number;
+    sensitivity: number;
 }
 
 export interface IrCurveGenerationConfigChange {
@@ -71,6 +75,7 @@ export interface IrCurveGenerationConfigLookup {
 
 export interface IrCurveGenerationConfigsFilter {
     id_one_of: string[] | null;
+    search: string | null;
 }
 
 export interface IrCurveGenerationConfigEvent {

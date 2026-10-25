@@ -122,4 +122,11 @@ process_factory::make_arrival_process(const std::string& mode,
                                 mode + "'");
 }
 
+std::unique_ptr<ores::analytics::quant::domain::i_arrival_process>
+process_factory::make_arrival_process(const ores::analytics::quant::domain::arrival_spec& spec,
+                                      std::uint32_t seed) {
+    return make_arrival_process(
+        spec.mode, spec.ticks_per_hour, spec.branching_ratio, spec.decay, seed);
+}
+
 }

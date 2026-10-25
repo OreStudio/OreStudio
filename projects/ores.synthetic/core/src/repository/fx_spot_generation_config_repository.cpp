@@ -77,6 +77,7 @@ bool fx_spot_generation_config_repository::is_sortable(std::string_view field) {
         "source_name",
         "oresmd_uri",
         "ticks_per_hour",
+        "arrival_mode",
     };
     return std::ranges::find(sortable, field) != sortable.end();
 }
@@ -115,9 +116,12 @@ filter_condition(const std::optional<messaging::fx_spot_generation_configs_filte
         r.push_back(one_of("id", std::move(values)));
     }
     if (filter->search && !filter->search->empty())
-        r.push_back(
-            contains_any({"base_currency_code", "quote_currency_code", "source_name", "oresmd_uri"},
-                         *filter->search));
+        r.push_back(contains_any({"base_currency_code",
+                                  "quote_currency_code",
+                                  "source_name",
+                                  "oresmd_uri",
+                                  "arrival_mode"},
+                                 *filter->search));
     return all_of(std::move(r));
 }
 

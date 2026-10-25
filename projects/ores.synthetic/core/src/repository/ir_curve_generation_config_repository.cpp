@@ -71,7 +71,9 @@ std::string ir_curve_generation_config_repository::sql() {
 }
 
 bool ir_curve_generation_config_repository::is_sortable(std::string_view field) {
-    const std::initializer_list<std::string_view> sortable = {};
+    const std::initializer_list<std::string_view> sortable = {
+        "arrival_mode",
+    };
     return std::ranges::find(sortable, field) != sortable.end();
 }
 
@@ -108,6 +110,8 @@ filter_condition(const std::optional<messaging::ir_curve_generation_configs_filt
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
     }
+    if (filter->search && !filter->search->empty())
+        r.push_back(contains_any({"arrival_mode"}, *filter->search));
     return all_of(std::move(r));
 }
 

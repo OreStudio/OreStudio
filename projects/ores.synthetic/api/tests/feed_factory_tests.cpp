@@ -377,3 +377,23 @@ TEST_CASE("factory::make dispatches to a replacement registration for a kind", t
     CHECK(dynamic_cast<const stub_feed*>(feed.get()) != nullptr);
     CHECK(feed->source_name() == "stub");
 }
+
+TEST_CASE("a config row's arrival mode reaches the feed it builds", tags) {
+    const auto factory = make_default_feed_factory();
+
+    auto hawkes_config = make_fx_config();
+    hawkes_config.arrival_mode = "hawkes";
+    hawkes_config.branching_ratio = 0.5;
+    hawkes_config.decay = 10.0;
+    const auto hawkes = fx_spot_feed_build_input{hawkes_config, {make_component(0.0, 0.1, 1.0)}};
+    CHECK(factory.make(std::string(fx_spot_feed_kind), make_build_context(), hawkes));
+
+    auto refused_config = make_fx_config();
+    refused_config.arrival_mode = "hawkes";
+    refused_config.branching_ratio = 1.0;
+    refused_config.decay = 10.0;
+    const auto refused =
+        fx_spot_feed_build_input{refused_config, {make_component(0.0, 0.1, 1.0)}};
+    CHECK_THROWS_AS(factory.make(std::string(fx_spot_feed_kind), make_build_context(), refused),
+                    std::invalid_argument);
+}

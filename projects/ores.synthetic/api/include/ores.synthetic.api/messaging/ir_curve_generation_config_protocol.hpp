@@ -59,6 +59,10 @@ struct ir_curve_generation_config_write {
     std::string source_name;
     std::optional<boost::uuids::uuid> folder_id;
     std::string asset_class_code;
+    std::string arrival_mode;
+    double branching_ratio;
+    double decay;
+    double sensitivity;
 };
 
 struct ir_curve_generation_config_change {
@@ -78,6 +82,7 @@ struct ir_curve_generation_config_lookup {
 
 struct ir_curve_generation_configs_filter {
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::string> search;
 };
 
 struct ir_curve_generation_config_event {

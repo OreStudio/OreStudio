@@ -13,24 +13,24 @@
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The shell asks a run's health and reads the same answer the web does.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -83,3 +83,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The shell asks a run's health, and the answer is the service's own.
+
+=report_operations get-run-health <report_instance_id>= is a generated verb. The
+operation is declared in =ores.reporting.operations.org= with subject
+=reporting.v1.ops.get_run_health=, and the protocol, the shell command unit, its
+tests and the shell recipe are generated from it.
+
+The service side is hand-written but asks nothing new. It calls
+=report_instance_service::get_report_instance_health=, the read the web already
+makes, with the one id, and projects the row onto the one-run answer. A read
+that answers no row is a run that does not exist or is not the session's, and
+the answer is =missing= rather than an empty word a caller would read as a
+state.
+
+Proven from the shell against a triggered package run. Instance =c0922bbf=:
+=state_name= completed, =health= completed clean. An id that does not exist
+answers =missing= with "The report instance does not exist."
+

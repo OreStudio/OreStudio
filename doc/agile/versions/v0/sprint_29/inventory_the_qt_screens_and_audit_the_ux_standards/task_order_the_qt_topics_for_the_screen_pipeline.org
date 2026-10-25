@@ -26,11 +26,11 @@ The pipeline has a queue. Each topic names its entities, the journeys it needs, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Inventory the Qt reference data screens and audit the UX standards]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -42,9 +42,13 @@ The pipeline has a queue. Each topic names its entities, the journeys it needs, 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Group the 63 entities of the matrix into topics by the records a person keeps
+together, name the journeys that already exist for each from the journey
+catalogue, judge each topic's shape from the record and entity standards, and
+order them: the owner's choice first, then the shapes the standards must prove
+in order, then by the size of the gap. Write the order as a knowledge page, file
+a capture per later topic tagged pipeline, name calendars in the fourth story and
+record the decision on the first.
 
 * Measurements
 
@@ -58,7 +62,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Topics | 11 | the table on The screen pipeline topics | 08852769ec |
+| Topics with a journey already | 7 | =compass list --type user_journey=, matched by hand | 08852769ec |
+| Captures filed, tagged pipeline | 10 | =compass list --type capture --tag pipeline= | 08852769ec |
 
 * Notes
 
@@ -83,6 +89,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review of the docs class: no findings | doc/knowledge/ui, product_backlog/next | Accept | compass check green, misspell-fixer clean; the ten captures carry a short title, a capped description, tags, bucket, Why and References |
 
 * Result
+
+The knowledge page The screen pipeline topics orders the 63 Qt entities into
+eleven topics, each with its entities, the journeys that exist, its shape and
+why it stands where it does. Calendars go first by the owner's choice, and the
+fourth story names them. The other ten topics are captures in the next bucket
+tagged pipeline. The first story records the decision.

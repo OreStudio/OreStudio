@@ -1,0 +1,228 @@
+:PROPERTIES:
+:ID: C82ED7AD-7E13-46FA-B7E9-C4E66E823478
+:END:
+#+title: Qt to web reference data matrix
+#+description: What each Qt reference data screen offered against what ores.web shows today: fields, children, actions and history.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:ui:ux:web:qt:refdata:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+* Summary
+
+The Qt client had 63 reference data entities, each with a list window and 61
+of them with a detail dialog. The web covers them in three shapes: 12 have a
+record screen of their own, 24 are rows of the one classification screen, and
+9 are kinds of the one convention screen. Six more are reached from another
+area, such as books in the trading journey. Five exist in the record registry
+but have no screen, and seven are not in the web at all. The field tables
+agree on most entities. The largest gaps are the calendar's source, editability
+and base calendar, the event's source, and the terms of seven convention kinds,
+which the web lists by id only. The section The gaps, judged lists every gap,
+including the calendar dates browser, the party hierarchy tab and the currency
+import and export. The web is richer than Qt on currencies, parties and every
+classification.
+
+This page is a measurement, taken on 2026-10-25 against the Qt vault, which is
+not versioned, and against this checkout. The script that produced it is
+=doc/agile/versions/v0/sprint_29/inventory_the_qt_screens_and_audit_the_ux_standards/evidence/qt_web_matrix.py=,
+and a reviewer reruns it against the Qt sources and this checkout. The
+judgements, which fields are not a gap and why, are in the script too, so the
+tables below are the script's output and not a hand copy.
+
+* Detail
+
+** How the matrix was built
+
+The Qt side is read from =ores.qt/refdata=. An entity exists where a
+=<Entity>MdiWindow=, a =<Entity>DetailDialog= or a =Client<Entity>Model= exists.
+The fields of a dialog are the members of the entity struct that the dialog
+source reads into widgets or writes back from them. The widget names are not
+read, because they differ from the wire names and because some dialogs build
+their combo boxes in code. The columns of a list are the struct members its
+model returns for the display role. The actions are the toolbar actions the
+window adds.
+
+The web side is read from the registries: =REFDATA_RECORDS= and
+=CLASSIFICATION_LISTS= in the wire protocol package, the convention kinds in
+=conventionKinds.ts=, and the =FieldSpec[]= table beside each record screen. A
+Qt entity is matched to a web surface by its entity type, such as
+=ores.refdata.currency=. An entity the registries do not name is matched by
+hand in the script, with the surface that covers it.
+
+Three kinds of field are not counted as a gap. The provenance fields
+(=version=, =modified_by=, =performed_by=, =recorded_at=, the change reason and
+commentary) are read by every web screen and asked of no one, per the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]. A parent key such as =calendar_code= is implied by
+the address of a part. A =party_id= is the party scope the web lists under.
+The script names each such field and the standard section that explains it.
+
+** Coverage at a glance
+
+| Web surface | Qt entities | Note |
+|-------------+-------------+------|
+| Record screen | 12 | A list, a record page and dialogs of its own |
+| Classification screen | 24 | One shared screen; a row is code, name, description and display order. Four lists are read only |
+| Convention screen | 9 | One shared screen; swap, deposit and tenor basis swap have editable terms, the rest list ids only |
+| Another area | 6 | Books and portfolios in the trading journey; tenors on the resolution page; the counterparty composite on the party page; the bootstrap config in synthetic feeds |
+| Registry only | 5 | Reachable as a picker or a tab of another record, with no screen of its own |
+| None | 7 | The calendar date browser, the three CRM configurations, instrument codes, payment frequencies and tenor schedules |
+
+** The matrix
+
+Qt fields and web fields are the counts after the provenance fields are
+removed. A field only in Qt is a candidate gap. A field only in the web is
+something the web added. A blank web count means the web surface has no field
+table to compare, because the entity is reached from another area, exists in
+the registry only, or is not there.
+
+# begin matrix
+| Qt entity | Qt parts | Web coverage | Qt fields | Web fields | Fields only in Qt | Fields only in the web |
+|-----------+----------+--------------+-----------+------------+-------------------+------------------------|
+| AssetClassCode | detail dialog, list model, mdi window, history | classification =asset-class-code= | 4 | 4 |  |  |
+| Book | detail dialog, list model, mdi window, history | Book structure journey (trading area), =api/books.ts= | 9 |  |  |  |
+| BookPurposeType | detail dialog, list model, mdi window, history | classification =book-purpose-type= | 3 | 4 |  | =display_order= |
+| BookStatus | detail dialog, list model, mdi window, history | classification =book-status= | 3 | 4 |  | =display_order= |
+| BusinessCentre | detail dialog, list model, mdi window, history | registry only =business-centres= (read only) | 6 |  |  |  |
+| BusinessDayConventionType | detail dialog, list model, mdi window, history | classification =business-day-convention-type= (read only) | 4 | 4 |  |  |
+| BusinessUnit | detail dialog, list model, mdi window, history | record =business-units= | 6 | 5 |  |  |
+| BusinessUnitType | detail dialog, list model, mdi window, history | registry only =business-unit-types= (read only) | 5 |  |  |  |
+| Calendar | detail dialog, list model, mdi window, history | record =calendars= | 7 | 5 | =is_editable=, =base_calendar_code=, =source= | =image_id= |
+| CalendarDate | list model, mdi window | none | 3 |  |  |  |
+| CalendarEvent | detail dialog, list model, mdi window, history | record =calendar-events= | 6 | 4 | =source= |  |
+| CalendarException | detail dialog, list model, mdi window, history | record =calendar-exceptions= | 4 | 3 |  |  |
+| CalendarRule | detail dialog, list model, mdi window, history | record =calendar-rules= | 10 | 9 |  |  |
+| CalendarType | detail dialog, list model, mdi window, history | classification =calendar-type= | 3 | 4 |  | =display_order= |
+| CdsConvention | detail dialog, list model, mdi window, history | convention =cds= (read only) | 10 | 0 | =calendar=, =frequency=, =payment_convention=, =rule=, =day_count_fraction=, =settlement_days=, =upfront_settlement_days=, =last_period_day_count_fraction=, =settles_accrual=, =pays_at_default_time= |  |
+| ContactType | detail dialog, list model, mdi window, history | classification =contact-type= | 4 | 4 |  |  |
+| Counterparty | detail dialog, list model, mdi window, history, child entity tables, hierarchy tab | registry only =counterparties= (read only) | 7 |  |  |  |
+| CounterpartyContactInformation | detail dialog, list model, mdi window, history | part of the counterparty composite, =api/counterparties.ts= | 10 |  |  |  |
+| CounterpartyIdentifier | detail dialog, list model, mdi window, history | part of the counterparty composite, =api/counterparties.ts= | 3 |  |  |  |
+| Country | detail dialog, list model, mdi window, history | registry only =countries= (read only) | 6 |  |  |  |
+| CrmDriverPair | detail dialog, list model, mdi window, history | none | 5 |  |  |  |
+| CrmEnabledDerivedPair | detail dialog, list model, mdi window, history | none | 5 |  |  |  |
+| CrmTopologyConfig | detail dialog, list model, mdi window, history | none | 4 |  |  |  |
+| Currency | detail dialog, list model, mdi window, history | record =currencies= | 12 | 16 |  | =ore_currency_type=, =spot_days=, =day_basis=, =base_precedence= |
+| CurrencyGroup | detail dialog, list model, mdi window, history | record =currency-groups= | 3 | 4 |  | =display_order= |
+| CurrencyMarketTier | detail dialog, list model, mdi window, history | classification =currency-market-tier= | 3 | 4 |  | =display_order= |
+| CurrencyPair | detail dialog, list model, mdi window, history | record =currency-pairs= | 4 | 3 |  |  |
+| CurrencyPairClassification | detail dialog, list model, mdi window, history | classification =currency-pair-classification= | 3 | 4 |  | =display_order= |
+| CurrencyPairConvention | detail dialog, list model, mdi window, history | record =currency-pair-conventions= | 7 | 6 |  |  |
+| CurveRole | detail dialog, list model, mdi window, history | classification =curve-role= | 4 | 4 |  |  |
+| DayCountFractionType | detail dialog, list model, mdi window, history | classification =day-count-fraction-type= | 4 | 4 |  |  |
+| DepositConvention | detail dialog, list model, mdi window, history | convention =deposit= | 7 | 8 |  | =oresmd_uri= |
+| DiaryEntryType | detail dialog, list model, mdi window, history | classification =diary-entry-type= | 4 | 4 |  |  |
+| FloatingIndexType | detail dialog, list model, mdi window, history | classification =floating-index-type= (read only) | 2 | 4 |  | =name=, =display_order= |
+| FraConvention | detail dialog, list model, mdi window, history | convention =fra= (read only) | 1 | 0 | =index= |  |
+| IborIndexConvention | detail dialog, list model, mdi window, history | convention =ibor-index= (read only) | 5 | 0 | =fixing_calendar=, =day_count_fraction=, =settlement_days=, =business_day_convention=, =end_of_month= |  |
+| InstrumentCode | detail dialog, list model, mdi window, history | none | 7 |  |  |  |
+| IrCurveBootstrapConfig | list model, mdi window, history | synthetic IR feeds (market data area), =marketdata/synthetic/irFeeds.tsx= | 6 |  |  |  |
+| LedgerFeedType | detail dialog, list model, mdi window, history | classification =ledger-feed-type= | 3 | 4 |  | =display_order= |
+| LegType | detail dialog, list model, mdi window, history | classification =leg-type= (read only) | 2 | 4 |  | =name=, =display_order= |
+| MonetaryNature | detail dialog, list model, mdi window, history | classification =monetary-nature= | 3 | 4 |  | =display_order= |
+| OisConvention | detail dialog, list model, mdi window, history | convention =ois= (read only) | 12 | 0 | =index=, =spot_lag=, =fixed_day_count_fraction=, =fixed_calendar=, =payment_lag=, =fixed_frequency=, =fixed_convention=, =fixed_payment_convention=, =rule=, =payment_calendar=, =rate_cutoff=, =end_of_month= |  |
+| OvernightIndexConvention | detail dialog, list model, mdi window, history | convention =overnight-index= (read only) | 3 | 0 | =fixing_calendar=, =day_count_fraction=, =settlement_days= |  |
+| Party | detail dialog, list model, mdi window, history, child entity tables, hierarchy tab | record =parties= | 7 | 11 |  | =transliterated_name=, =codename=, =party_category=, =is_registration_default= |
+| PartyContactInformation | detail dialog, list model, mdi window, history | record =party-contacts= | 11 | 11 |  | =is_primary= |
+| PartyIdScheme | detail dialog, list model, mdi window, history | registry only =party-id-schemes= (read only) | 6 |  |  |  |
+| PartyIdentifier | detail dialog, list model, mdi window, history | record =party-identifiers= | 4 | 3 |  |  |
+| PartyStatus | detail dialog, list model, mdi window, history | classification =party-status= | 4 | 4 |  |  |
+| PartyType | detail dialog, list model, mdi window, history | classification =party-type= | 4 | 4 |  |  |
+| PaymentFrequency | detail dialog, list model, mdi window, history | none | 6 |  |  |  |
+| Portfolio | detail dialog, list model, mdi window, history | Book structure journey (trading area), =api/books.ts= | 7 |  |  |  |
+| PurposeType | detail dialog, list model, mdi window, history | classification =purpose-type= | 3 | 4 |  | =display_order= |
+| RegulatoryBookType | detail dialog, list model, mdi window, history | classification =regulatory-book-type= | 3 | 4 |  | =display_order= |
+| RoundingType | detail dialog, list model, mdi window, history | classification =rounding-type= | 3 | 4 |  | =display_order= |
+| SwapConvention | detail dialog, list model, mdi window, history | convention =swap= | 7 | 8 |  | =oresmd_uri= |
+| Tenor | detail dialog, list model, mdi window, history | Tenor resolution page, =api/tenors.ts= writes tenors and memberships | 7 |  |  |  |
+| TenorAnchor | detail dialog, list model, mdi window, history | classification =tenor-anchor= | 3 | 4 |  | =name= |
+| TenorConvention | detail dialog, list model, mdi window, history | convention =tenor= (read only) | 4 | 0 | =code=, =measured_from=, =resolution_algorithm=, =description= |  |
+| TenorKind | detail dialog, list model, mdi window, history | classification =tenor-kind= | 4 | 4 |  |  |
+| TenorResolutionAlgorithm | detail dialog, list model, mdi window, history | classification =tenor-resolution-algorithm= | 4 | 4 |  |  |
+| TenorSchedule | detail dialog, list model, mdi window, history | none | 7 |  |  |  |
+| TenorUnit | detail dialog, list model, mdi window, history | classification =tenor-unit= | 4 | 4 |  |  |
+| ZeroConvention | detail dialog, list model, mdi window, history | convention =zero= (read only) | 6 | 0 | =day_count_fraction=, =compounding=, =compounding_frequency=, =tenor_calendar=, =spot_calendar=, =roll_convention= |  |
+# end matrix
+
+** What the Qt screens had beyond the standard
+
+Every Qt list window had the same toolbar: Reload, Add, Edit, Delete and
+History. Every dialog had the same shape: a tab widget with a General tab and
+a Provenance tab, a Save, a Delete and a Close button. Currency alone split its
+fields over four tabs: General, Formatting, Rounding and Provenance. The table
+lists the windows that added to that standard or lacked part of it.
+
+# begin actions
+| Qt entity | Beyond the standard toolbar | Child parts |
+|-----------+-----------------------------+-------------|
+| Book | show book statuses, show regulatory book types, show book purpose types, show ledger feed types |  |
+| CalendarDate | without add, edit, delete, history |  |
+| Counterparty | show party types, show party statuses, show party id schemes | child entity tables, hierarchy tab |
+| Currency | import XML, export CSV, export XML, show rounding types, show monetary natures, show market tiers |  |
+| CurrencyPair | show conventions |  |
+| CurrencyPairConvention | show calendars |  |
+| Party | show party types, show party statuses, show party id schemes | child entity tables, hierarchy tab |
+| Tenor | show conventions, show anchors |  |
+| TenorConvention | show anchors, show resolution algorithms |  |
+# end actions
+
+The shared history dialog showed a timeline of versions on the left and, on
+the right, two combo boxes to choose the versions to compare, a toggle between
+all fields and only the changes, and the difference as text.
+
+** What the web has that Qt did not
+
+- Children on the record page. The currency page has countries, calendars and
+  groups tabs. The party page has identifiers, contacts, memberships, centres
+  and counterparties tabs. The Qt currency window had no children at all.
+- Every classification carries a =display_order=, and the two lists that Qt
+  kept as code and description only carry a =name=.
+- The party carries =transliterated_name=, =codename=, =party_category= and
+  =is_registration_default=. The contact carries =is_primary=.
+- The currency carries =ore_currency_type=, =spot_days=, =day_basis= and
+  =base_precedence=. The calendar carries an =image_id=.
+- The convention screen knows 26 kinds, and Qt had dialogs for 9. Tenor basis
+  swap, which is one of the three kinds with editable terms, had no Qt dialog
+  at all; nor did the FX, inflation, commodity and bond kinds.
+- Workflows on the list header, and the change notification that turns Refresh
+  gold, which Qt did not have.
+
+** The gaps, judged
+
+A gap is a Qt field or part that a person could use and the web does not
+offer. Each row says what the pipeline must decide.
+
+| Entity | Gap | What it means |
+|--------+-----+---------------|
+| Calendar | =source=, =is_editable=, =base_calendar_code= | The web cannot say where a calendar came from, whether it may be edited, or which calendar it derives from. The record page has a Derive action but no base |
+| CalendarEvent | =source= | Same as the calendar: where the event came from |
+| CalendarDate | the whole browser | Qt listed the resolved dates of a calendar. The web has no view of a calendar's dates |
+| Seven convention kinds | every term | CDS, FRA, IBOR index, OIS, overnight index, tenor and zero are listed by id. A person reads no term and edits none. Swap, deposit and tenor basis swap are the only kinds with terms |
+| Party, Counterparty | the hierarchy tab | Qt drew the parent and child tree. The web shows =parent_party_id= as one field |
+| Currency | import XML, export CSV, export XML | Qt had file import and export on the list. The web has no import or export on a record screen. Conventions import through documents instead |
+| Registry only, five | a screen | Business centres, business unit types, countries, party id schemes and counterparties are pickers or tabs, with no list and no record page of their own |
+| None, seven | everything | The three CRM configurations, instrument codes, payment frequencies and tenor schedules have no web surface. Whether each is still wanted is for the topic order to decide |
+
+** Dropped on purpose
+
+These Qt parts are absent from the web because a standard section replaces
+them, and the pipeline does not bring them back.
+
+| Qt part | Replaced by |
+|---------+-------------|
+| The Provenance tab on every dialog | The last-changed line under the details and the History tab (RSS Last changed; RSS History) |
+| The show-related toolbar actions, such as Show rounding types on the currency window | A code that names another record is a link to its page (RSS Fields) |
+| Save, Delete and Close in one dialog | Edit opens a dialog that saves or cancels; Delete is an action of the record page with its own confirmation (RSS Amend; RSS Delete) |
+| Reload on the toolbar | Refresh in the header, which turns gold when the server changed (ESS Refresh) |
+| Two combo boxes to pick the versions to compare | The timeline draws each version and its difference from the one before (ESS History and the timeline) |
+| A Provenance tab's modified by and recorded at as fields | Hidden audit columns in the list and the last-changed line (RSS The table) |
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the sections the judgements cite.
+- [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — the refresh and history sections the judgements cite.
+- [[id:67E68899-3D29-4861-B4F8-B0C9536EC4C1][The entity specification (superseded)]] — the earlier reading of the Qt client, which named its two archetypes.
+- [[id:2BF2FFC1-B6A0-495E-9B14-E26ACF09EA55][Qt account screen: raw reference analysis]] — the same method applied to one IAM screen.
+- [[id:BA684AB7-B13F-4D8E-A3E1-7C9BFBD977BA][Story: Inventory the Qt reference data screens and audit the UX standards]] — the story this page answers.

@@ -1,0 +1,65 @@
+| Qt entity | Qt parts | Web coverage | Qt fields | Web fields | Fields only in Qt | Fields only in the web |
+|-----------+----------+--------------+-----------+------------+-------------------+------------------------|
+| AssetClassCode | detail dialog, list model, mdi window, history | classification =asset-class-code= | 4 | 4 |  |  |
+| Book | detail dialog, list model, mdi window, history | Book structure journey (trading area), =api/books.ts= | 9 |  |  |  |
+| BookPurposeType | detail dialog, list model, mdi window, history | classification =book-purpose-type= | 3 | 4 |  | =display_order= |
+| BookStatus | detail dialog, list model, mdi window, history | classification =book-status= | 3 | 4 |  | =display_order= |
+| BusinessCentre | detail dialog, list model, mdi window, history | registry only =business-centres= (read only) | 6 |  |  |  |
+| BusinessDayConventionType | detail dialog, list model, mdi window, history | classification =business-day-convention-type= (read only) | 4 | 4 |  |  |
+| BusinessUnit | detail dialog, list model, mdi window, history | record =business-units= | 6 | 5 |  |  |
+| BusinessUnitType | detail dialog, list model, mdi window, history | registry only =business-unit-types= (read only) | 5 |  |  |  |
+| Calendar | detail dialog, list model, mdi window, history | record =calendars= | 7 | 5 | =is_editable=, =base_calendar_code=, =source= | =image_id= |
+| CalendarDate | list model, mdi window | none | 3 |  |  |  |
+| CalendarEvent | detail dialog, list model, mdi window, history | record =calendar-events= | 6 | 4 | =source= |  |
+| CalendarException | detail dialog, list model, mdi window, history | record =calendar-exceptions= | 4 | 3 |  |  |
+| CalendarRule | detail dialog, list model, mdi window, history | record =calendar-rules= | 10 | 9 |  |  |
+| CalendarType | detail dialog, list model, mdi window, history | classification =calendar-type= | 3 | 4 |  | =display_order= |
+| CdsConvention | detail dialog, list model, mdi window, history | convention =cds= (read only) | 10 | 0 | =calendar=, =frequency=, =payment_convention=, =rule=, =day_count_fraction=, =settlement_days=, =upfront_settlement_days=, =last_period_day_count_fraction=, =settles_accrual=, =pays_at_default_time= |  |
+| ContactType | detail dialog, list model, mdi window, history | classification =contact-type= | 4 | 4 |  |  |
+| Counterparty | detail dialog, list model, mdi window, history, child entity tables, hierarchy tab | registry only =counterparties= (read only) | 7 |  |  |  |
+| CounterpartyContactInformation | detail dialog, list model, mdi window, history | part of the counterparty composite, =api/counterparties.ts= | 10 |  |  |  |
+| CounterpartyIdentifier | detail dialog, list model, mdi window, history | part of the counterparty composite, =api/counterparties.ts= | 3 |  |  |  |
+| Country | detail dialog, list model, mdi window, history | registry only =countries= (read only) | 6 |  |  |  |
+| CrmDriverPair | detail dialog, list model, mdi window, history | none | 5 |  |  |  |
+| CrmEnabledDerivedPair | detail dialog, list model, mdi window, history | none | 5 |  |  |  |
+| CrmTopologyConfig | detail dialog, list model, mdi window, history | none | 4 |  |  |  |
+| Currency | detail dialog, list model, mdi window, history | record =currencies= | 12 | 16 |  | =ore_currency_type=, =spot_days=, =day_basis=, =base_precedence= |
+| CurrencyGroup | detail dialog, list model, mdi window, history | record =currency-groups= | 3 | 4 |  | =display_order= |
+| CurrencyMarketTier | detail dialog, list model, mdi window, history | classification =currency-market-tier= | 3 | 4 |  | =display_order= |
+| CurrencyPair | detail dialog, list model, mdi window, history | record =currency-pairs= | 4 | 3 |  |  |
+| CurrencyPairClassification | detail dialog, list model, mdi window, history | classification =currency-pair-classification= | 3 | 4 |  | =display_order= |
+| CurrencyPairConvention | detail dialog, list model, mdi window, history | record =currency-pair-conventions= | 7 | 6 |  |  |
+| CurveRole | detail dialog, list model, mdi window, history | classification =curve-role= | 4 | 4 |  |  |
+| DayCountFractionType | detail dialog, list model, mdi window, history | classification =day-count-fraction-type= | 4 | 4 |  |  |
+| DepositConvention | detail dialog, list model, mdi window, history | convention =deposit= | 7 | 8 |  | =oresmd_uri= |
+| DiaryEntryType | detail dialog, list model, mdi window, history | classification =diary-entry-type= | 4 | 4 |  |  |
+| FloatingIndexType | detail dialog, list model, mdi window, history | classification =floating-index-type= (read only) | 2 | 4 |  | =name=, =display_order= |
+| FraConvention | detail dialog, list model, mdi window, history | convention =fra= (read only) | 1 | 0 | =index= |  |
+| IborIndexConvention | detail dialog, list model, mdi window, history | convention =ibor-index= (read only) | 5 | 0 | =fixing_calendar=, =day_count_fraction=, =settlement_days=, =business_day_convention=, =end_of_month= |  |
+| InstrumentCode | detail dialog, list model, mdi window, history | none | 7 |  |  |  |
+| IrCurveBootstrapConfig | list model, mdi window, history | synthetic IR feeds (market data area), =marketdata/synthetic/irFeeds.tsx= | 6 |  |  |  |
+| LedgerFeedType | detail dialog, list model, mdi window, history | classification =ledger-feed-type= | 3 | 4 |  | =display_order= |
+| LegType | detail dialog, list model, mdi window, history | classification =leg-type= (read only) | 2 | 4 |  | =name=, =display_order= |
+| MonetaryNature | detail dialog, list model, mdi window, history | classification =monetary-nature= | 3 | 4 |  | =display_order= |
+| OisConvention | detail dialog, list model, mdi window, history | convention =ois= (read only) | 12 | 0 | =index=, =spot_lag=, =fixed_day_count_fraction=, =fixed_calendar=, =payment_lag=, =fixed_frequency=, =fixed_convention=, =fixed_payment_convention=, =rule=, =payment_calendar=, =rate_cutoff=, =end_of_month= |  |
+| OvernightIndexConvention | detail dialog, list model, mdi window, history | convention =overnight-index= (read only) | 3 | 0 | =fixing_calendar=, =day_count_fraction=, =settlement_days= |  |
+| Party | detail dialog, list model, mdi window, history, child entity tables, hierarchy tab | record =parties= | 7 | 11 |  | =transliterated_name=, =codename=, =party_category=, =is_registration_default= |
+| PartyContactInformation | detail dialog, list model, mdi window, history | record =party-contacts= | 11 | 11 |  | =is_primary= |
+| PartyIdScheme | detail dialog, list model, mdi window, history | registry only =party-id-schemes= (read only) | 6 |  |  |  |
+| PartyIdentifier | detail dialog, list model, mdi window, history | record =party-identifiers= | 4 | 3 |  |  |
+| PartyStatus | detail dialog, list model, mdi window, history | classification =party-status= | 4 | 4 |  |  |
+| PartyType | detail dialog, list model, mdi window, history | classification =party-type= | 4 | 4 |  |  |
+| PaymentFrequency | detail dialog, list model, mdi window, history | none | 6 |  |  |  |
+| Portfolio | detail dialog, list model, mdi window, history | Book structure journey (trading area), =api/books.ts= | 7 |  |  |  |
+| PurposeType | detail dialog, list model, mdi window, history | classification =purpose-type= | 3 | 4 |  | =display_order= |
+| RegulatoryBookType | detail dialog, list model, mdi window, history | classification =regulatory-book-type= | 3 | 4 |  | =display_order= |
+| RoundingType | detail dialog, list model, mdi window, history | classification =rounding-type= | 3 | 4 |  | =display_order= |
+| SwapConvention | detail dialog, list model, mdi window, history | convention =swap= | 7 | 8 |  | =oresmd_uri= |
+| Tenor | detail dialog, list model, mdi window, history | Tenor resolution page, =api/tenors.ts= writes tenors and memberships | 7 |  |  |  |
+| TenorAnchor | detail dialog, list model, mdi window, history | classification =tenor-anchor= | 3 | 4 |  | =name= |
+| TenorConvention | detail dialog, list model, mdi window, history | convention =tenor= (read only) | 4 | 0 | =code=, =measured_from=, =resolution_algorithm=, =description= |  |
+| TenorKind | detail dialog, list model, mdi window, history | classification =tenor-kind= | 4 | 4 |  |  |
+| TenorResolutionAlgorithm | detail dialog, list model, mdi window, history | classification =tenor-resolution-algorithm= | 4 | 4 |  |  |
+| TenorSchedule | detail dialog, list model, mdi window, history | none | 7 |  |  |  |
+| TenorUnit | detail dialog, list model, mdi window, history | classification =tenor-unit= | 4 | 4 |  |  |
+| ZeroConvention | detail dialog, list model, mdi window, history | convention =zero= (read only) | 6 | 0 | =day_count_fraction=, =compounding=, =compounding_frequency=, =tenor_calendar=, =spot_calendar=, =roll_convention= |  |

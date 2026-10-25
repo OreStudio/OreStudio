@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:ui:ux:structure_note:
 #+created: 2026-10-10
-#+updated: 2026-10-24
+#+updated: 2026-10-25
 
 A screen in ORE Studio is built from decisions made at four levels. The first
 is how it looks. The second is what its marks mean. The third is where it
@@ -88,6 +88,13 @@ Each line names the section that states it.
 [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the goal each
 screen serves. A journey decides which records a person works with. The pages
 above decide how each screen looks and behaves.
+
+** Where the screens came from
+
+[[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]] — what
+each Qt reference data screen offered against what the web shows today. Read it
+to find a gap before a topic enters the screen pipeline. It is a measurement,
+produced by a script a reviewer can rerun, and it adds no rule.
 
 # aside
 

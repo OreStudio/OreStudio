@@ -106,7 +106,8 @@ against the screen the web draws today, by the
 | 6 Set the desk groups | The Desk groups tab, a link panel | Standard links |
 | 7 Check the history | The History tab | Standard history, drawn by the shared timeline once the build moves this screen off the legacy panel (RS-HIST-01); the links have no history |
 | 8 Revert a change | Revert on an older version | Standard (RS-HIST-02) |
-| 9 Exchange with ORE | Nothing today; the Details end with a notice that the export needs a server operation | Two decisions for the owner. Export: an own action of the list, /Export for ORE/, by RS-PAGE-03 and RS-LIST-03, once the server returns the document; not a workflow, one reply. Import: not an action of this screen; the ORE import area owns it, and the Qt import of one file is dropped. The notice that explains an absent export goes (ES-WORDS-07) |
+| 9a Export for ORE | Nothing today; the Details end with a notice that the export needs a server operation | For the owner: an own action of the list, /Export for ORE/, by RS-PAGE-03 and RS-LIST-03, once the server returns the document; one reply, not a workflow. The notice that explains the absent export goes (ES-WORDS-07) |
+| 9b Import from ORE | Nothing today | For the owner: not an action of this screen; the ORE import area imports the bundle the currency configuration is one part of, and the Qt import of one file is dropped |
 | 10 Leave | The breadcrumb | Standard |
 
 The journey is a CRUD variation of the standard record screen with links; the one own action, the ORE export, waits on the server; no step keeps state across a reply, so no workflow is needed.

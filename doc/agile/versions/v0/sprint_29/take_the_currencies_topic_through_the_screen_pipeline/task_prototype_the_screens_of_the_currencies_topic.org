@@ -59,6 +59,18 @@ task and name that file in the Command column.
 
 * Notes
 
+From the journeys' judgement, for this task:
+
+- The pair's create dialog is the shared record dialog with two groups, the
+  pair and its convention, and a derived pair code; the two writes behind it
+  are the server's gap, [[id:56C6A5CA-1A0D-435A-9AC5-1263CBB29485][Write a currency pair and its convention together, and check the pair code]], and the dialog must say what a failed second write leaves.
+- The currency's Day basis and ORE currency type are free text today; the
+  prototype decides their kinds. The numbers are text inputs.
+- The currencies list shows codes where the page shows names; the prototype
+  draws the names.
+- Export for ORE is an own action of the currencies list, drawn once the
+  server returns the document; there is no import on this screen.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

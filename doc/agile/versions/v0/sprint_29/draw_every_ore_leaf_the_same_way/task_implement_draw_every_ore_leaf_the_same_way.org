@@ -13,55 +13,53 @@
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-One standard says how every screen draws a leaf of an ORE document and the element type it belongs to, with the exact words, and an Allium specification carries its state rules so tests can follow them. Conventions are the first application: a convention's terms read exactly as a product's parameters and the engine run settings do, with their documentation in the one contract and their metadata in data. Product pricing and engine run settings follow through the gaps the standard records.
+Write the one standard for how a screen draws a leaf of an ORE document and the element type it belongs to, with the exact words, and the Allium specification of its state rules. Review it against the two built screens, product pricing and engine run settings, and record where each one, and conventions, conforms. Conventions are the first screen to apply it, in the tasks that follow.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
 
 - One knowledge page states the leaf and element type rules with identifiers and the exact words, and the UX hub, the knowledge index and the screen review checklist point to it.
 - An Allium specification states the switch, the documentation, the value in force, the control, the edit marks, the filters and the gaps.
-- The standard records conformance for engine run settings, product pricing and conventions, rule by rule.
-- A convention's terms are drawn with the shared parts and the one word namespace: documentation entries for conventions.xsd, the kind metadata in data, and the controls from value sets.
-- The owner decides the open words: the convention noun, the section button, the switch's name and the seed tag.
+- The standard records conformance for engine run settings, product pricing and conventions, rule by rule, measured at a named commit.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Compare the product pricing and convention data and screens, to find what a product and a convention share. The answer: the leaf and its documentation are the same; identity, ownership, reach and selection differ.
+2. Take the words from the translations the built screens use, not from memory, and pick one where two screens differ.
+3. Write the page, review it against the two built screens rule by rule, and take into the standard what the built screens do better.
+4. Write the Allium specification of the state rules, leaving the words and the layout to the harness, as the record screen specification does.
+5. Link the page into the graph with the relation of each link, and back-link it from every page it names.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Rules on the page | 55 identifiers | =grep -oE '\*OL-[A-Z]+-[0-9]{2}\*' doc/knowledge/ui/ore_element_and_leaf_screen_standard.org \| sort -u \| wc -l= | da2d8f8858 |
+| Rules, invariants and surfaces in the specification | 20 | =grep -c '^rule \|^invariant \|^surface ' doc/llm/specs/ore-leaf-behaviour.allium= | da2d8f8858 |
+| Rule identifiers checked across the keyed pages | 302, 0 problems | =python3 build/scripts/check_rule_identifiers.py= | da2d8f8858 |
 
 * Notes
+
+The Allium CLI is not installed, so the specification was checked against the syntax of =record-screen-behaviour.allium= by hand, not by the tool.
+
+The rule identifier check keys only the record standard and the entity specification. This page is cited from the checklist as an unkeyed source, =OLS=, like the configuration standard.
 
 * Test Scenarios
 
@@ -87,3 +85,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The standard is [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]], and its specification is =doc/llm/specs/ore-leaf-behaviour.allium=.
+
+- A product parameter, an engine run setting and a convention term are leaves. The page states how a leaf and its element type are drawn, with the exact words in one =oreParameter= namespace; four words are marked new and wait for the owner.
+- The review against the built screens moved five rules from the engine run settings page into the standard and added two from the gaps of product pricing. Engine run settings fails mostly on its own copies of words and parts; product pricing shares the parts, but its data cannot yet answer three rules, because a parameter is held only when set.
+- Conventions draw no leaf on any screen, so every rule is a gap there. The three tasks that follow apply the standard to conventions.
+- The page is linked from the UX hub, the knowledge index and the screen review checklist, which has twelve lines for it, and back-linked from every page it names, with the relation of each link.
+

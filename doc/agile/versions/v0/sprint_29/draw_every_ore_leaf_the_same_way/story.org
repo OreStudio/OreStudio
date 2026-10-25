@@ -23,9 +23,9 @@ One standard says how every screen draws a leaf of an ORE document and the eleme
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Now           | The standard and its specification are written; conventions are next. |
+| Waiting on    | The owner's choice of the four open words. |
+| Next          | Document the convention terms in the one contract. |
 | Last touched  | 2026-10-25                               |
 
 * Acceptance
@@ -41,7 +41,10 @@ One standard says how every screen draws a leaf of an ORE document and the eleme
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:8AEFCFB3-0296-4773-B00F-C8B23226326B][Scaffold story: Draw every ORE leaf the same way, starting with conventions]] | DONE | 2026-10-25 | 2026-10-25 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:1F866583-D7B9-42A4-9D3A-6E26B151A9FA][Write the ORE element and leaf screen standard and its specification]] | BACKLOG | | | Initial task for: Draw every ORE leaf the same way, starting with conventions |
+| [[id:1F866583-D7B9-42A4-9D3A-6E26B151A9FA][Write the ORE element and leaf screen standard and its specification]] | DONE | 2026-10-25 | 2026-10-25 | Initial task for: Draw every ORE leaf the same way, starting with conventions |
+| [[id:27DB38D7-F43E-4D58-BB7F-6CCAE7B8B58C][Document the convention terms in the one contract]] | BACKLOG | | | Give every leaf of conventions.xsd a documentation entry and a value set, extracted from the conventions chapter of the ORE guide and the ORE conventions parser, with provenance per row; a calendar, a day counter, an index or a business day convention is a catalogue set. |
+| [[id:F8CA3B52-F299-4A92-84A0-CF4F9A2694F0][Move the convention kind metadata into data]] | BACKLOG | | | Move the asset class and the holder of each convention kind out of conventionKinds.ts, and the term labels out of the codegen models, into data the screen reads, so the screen restates nothing about a kind. |
+| [[id:813FD0C3-10EF-4B64-A6EF-0C1F52B72A1E][Draw a convention's terms with the shared leaf parts]] | BACKLOG | | | Give a convention a record page whose terms follow the ORE element and leaf screen standard: the shared switch, documentation panel, controls and filters, the oreParameter words, and the kind card; record its conformance line. |
 
 * Decisions
 

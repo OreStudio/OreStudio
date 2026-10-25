@@ -23,6 +23,8 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
+import { subjects as bondIssueSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_issue_protocol';
+import { subjects as bondSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_instrument_protocol';
 import { subjects as bookingSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_booking_protocol';
 import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
 import { subjects as linkSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_link_protocol';
@@ -170,6 +172,57 @@ export function registerTradeRoutes(
 }
 
 /**
+ * The instrument tables a trade's terms can live in, by the type the read model
+ * states.
+ *
+ * A trade's terms sit in the table for its product type, so the type decides
+ * which list answers. Only the tables that exist today are named here: a type
+ * that is missing has no terms stored yet, which the page states rather than
+ * inventing.
+ */
+const INSTRUMENT_TABLES: Readonly<
+    Record<string, { readonly subject: string; readonly rows: string }>
+> = {
+    Bond: { subject: bondSubjects.list_bond_instruments_request, rows: 'bond_instruments' },
+};
+
+/** One trade's instrument terms, or null when its type has no table yet. */
+async function readInstrument(
+    session: LiveSession,
+    instrumentType: string,
+    tradeId: string,
+): Promise<Record<string, unknown> | null> {
+    const table = INSTRUMENT_TABLES[instrumentType];
+    if (table === undefined) {
+        return null;
+    }
+    const rows = await readAll(session, table.subject, table.rows, {
+        filter: { trade_id_one_of: [tradeId] },
+    });
+    const terms = rows[0];
+    if (terms === undefined) {
+        return null;
+    }
+    // The terms name their issue by id, which a person cannot read. The issue's
+    // own reference is read here so the page shows a name and not a uuid.
+    const issueId = text(terms['issue_id']);
+    const issue =
+        issueId === ''
+            ? null
+            : ((
+                  await readAll(
+                      session,
+                      bondIssueSubjects.list_bond_issues_request,
+                      'bond_issues',
+                      {
+                          filter: { issue_id_one_of: [issueId] },
+                      },
+                  )
+              )[0] ?? null);
+    return { ...terms, issue_reference: issue === null ? '' : text(issue['security_id']) };
+}
+
+/**
  * One trade, as its own page reads it.
  *
  * Every read is narrowed to the trade: the summary by id, its identifiers, the
@@ -227,6 +280,8 @@ function registerTradePageRoute(
             identifiers,
             roles,
             booking: bookings[0] ?? null,
+            instrument: await readInstrument(session, text(summary['instrument_type']), id),
+            isInstrumentRouted: text(summary['instrument_type']) in INSTRUMENT_TABLES,
             links: { from: fromLinks, to: toLinks },
             history: versions,
         };

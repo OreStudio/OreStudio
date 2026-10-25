@@ -31,7 +31,7 @@ import { Fact, Notice, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 
 /** The page's tabs, in the order the prototype settled: the trade first, then its parts. */
-const TABS = ['details', 'identifiers', 'links', 'history'] as const;
+const TABS = ['details', 'instrument', 'identifiers', 'links', 'history'] as const;
 
 /** A table of the trade's parts, with the columns each part has. */
 function PartTable({
@@ -93,6 +93,43 @@ function stateTone(state: string): 'up' | 'warn' | 'muted' | 'neutral' {
         default:
             return 'neutral';
     }
+}
+
+/**
+ * The trade's terms, from the table its type is stored in.
+ *
+ * A type with no table states that plainly: the trade is understood, its terms
+ * are simply not held anywhere yet. A type with a table and no row says that
+ * instead, because the two are different facts about the trade.
+ */
+function InstrumentTab({ record }: { readonly record: TradePageRecord }): ReactNode {
+    const { t } = useTranslation();
+    const terms = record.instrument;
+    if (!record.isInstrumentRouted) {
+        return (
+            <Notice tone="info">
+                {t('trading.page.instrumentNotRouted', { type: record.trade.instrument_type })}
+            </Notice>
+        );
+    }
+    if (terms === null) {
+        return <Notice tone="info">{t('trading.page.instrumentNoTerms')}</Notice>;
+    }
+    const identity = terms['identity'] as Readonly<Record<string, unknown>> | undefined;
+    const notional = terms['notional'];
+    return (
+        <dl className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <Fact
+                label={t('trading.page.tradeTypeCode')}
+                value={identity === undefined ? '' : String(identity['trade_type_code'] ?? '')}
+            />
+            <Fact label={t('trading.page.issue')} value={String(terms['issue_reference'] ?? '')} />
+            <Fact
+                label={t('trading.page.notional')}
+                value={notional === undefined || notional === null ? '' : String(notional)}
+            />
+        </dl>
+    );
 }
 
 /** The tabs of one trade, drawn from the one read the page makes. */
@@ -240,6 +277,7 @@ export function TradePage(): ReactNode {
                         />
                     </dl>
                 )}
+                {tabs.tab === 'instrument' && <InstrumentTab record={record} />}
                 {tabs.tab === 'identifiers' && (
                     <div className="space-y-4">
                         <PartTable

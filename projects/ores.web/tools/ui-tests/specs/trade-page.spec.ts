@@ -25,7 +25,7 @@ test('a trade opens its own page and every tab answers', async ({ page }) => {
     await expect(page).toHaveURL(/\/trading\/trades\/[0-9a-f-]{36}$/);
     await expect(page.getByRole('tab', { name: 'Details' })).toBeVisible();
 
-    for (const tab of ['Identifiers and roles', 'Links', 'History']) {
+    for (const tab of ['Instrument', 'Identifiers and roles', 'Links', 'History']) {
         await page.getByRole('tab', { name: tab }).click();
         await expect(page.getByRole('tab', { name: tab })).toHaveAttribute('aria-selected', 'true');
     }

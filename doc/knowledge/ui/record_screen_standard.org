@@ -143,7 +143,8 @@ one path segment, as the pair code =EUR/USD= is.
   [[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][Menu structure]] page's, then the
   plural as the title, in sentence case (=PageHeader=).
 - *RS-LIST-02* One sentence that says what the records are.
-- *RS-LIST-03* At the right, /Refresh/, then /Workflows/, then /Add/. Add is the primary
+- *RS-LIST-03* At the right, /Refresh/, then /Import/ and /Export/ for a kind that has an
+  ORE document (see [[*Import and Export][Import and Export]]), then /Workflows/, then /Add/. Add is the primary
   button and is drawn only for a person who may write. Workflows is a menu of the
   guided workflows that act on this kind of record, such as onboarding a party.
   It lists only those the person may start, and is not drawn when there are none.
@@ -506,6 +507,58 @@ rules, exceptions and diary events. The parts panel:
 Neither panel edits in the table. Neither offers Add while the parent is being
 created: the parent is saved first, and its page then offers the panel.
 
+** Import and Export
+
+A kind that ORE reads as one document exchanges that document with ORE through
+two standard actions, /Import/ and /Export/, and through nothing else: no screen
+parses or writes XML in the browser, and no kind draws a dialog of its own for
+it (decided 2026-10-25, when the currencies topic needed a server export and
+the owner asked for one standard pair across the screens).
+
+- *RS-ORE-01* The pair is drawn for a kind that declares an ORE document: its
+  root element and the operations that serve it. The currency configuration,
+  the calendar adjustments, the conventions, the engine run settings and a
+  pricing engine configuration are such kinds. A kind with no ORE document has
+  neither button.
+- *RS-ORE-02* Import stands on the list header, between Refresh and Workflows
+  (RS-LIST-03), because it brings records in. Export stands where the
+  document's scope is: beside Import on the list header for a kind whose
+  document is the whole table, such as currencies; on the record header, as the
+  kind's own action (RS-PAGE-03), for a kind whose document is one record, such
+  as an engine run setting. Each is drawn only for a person who may take it:
+  Export needs read and Import needs write (RS-FEEDBACK-01).
+- *RS-ORE-03* The words are the bare verbs /Import/ and /Export/ (RS-NAME-02),
+  each with its icon from the icon table. The dialog names the document and its
+  scope, such as "Writes currencyconfig.xml with 158 currencies."
+- *RS-ORE-04* Export is one reply. The dialog states what it will write; on the
+  press the server writes the document with the one ORE exporter and answers
+  with the files, a name and a content each; the browser saves each under the
+  name the server gave and the dialog states it. Nothing is written in the
+  browser.
+- *RS-ORE-05* Import is the five steps of the
+  [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]]'s
+  Import section, on the steps UI: the file, what it holds, what the system
+  does not know, the target, and the difference with /Keep it/ as the default
+  for a removed row. The parse is the server's; the screen shows the counts and
+  the lists and writes nothing before the review. The target step is drawn
+  only for a kind that has configurations to choose between; for a table kind
+  the target is the table. Every import carries a change reason and a
+  commentary (RS-FEEDBACK-06), and nothing is dropped in silence.
+- *RS-ORE-06* The server operations live in the ORE component's namespace,
+  =ore.v1.>=, as the [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][messaging reference]] requires of every subject,
+  and take the verb-first shape of its operations: =ore.v1.ops.export_<document>=
+  returns the files; =ore.v1.ops.preview_<document>_import= parses the file and
+  returns what the import would do; =ore.v1.ops.import_<document>= writes with
+  the person's choices and returns what it saved and the item errors. The
+  kind's own component holds no XML; the ORE service reads and writes the kind
+  through that component's messages, as its bundle import does today. The BFF
+  serves the triple as =GET /api/<kind>/ore-document=,
+  =POST /api/<kind>/ore-import/preview= and =POST /api/<kind>/ore-import=.
+- *RS-ORE-07* One shared module carries the two buttons and the two dialogs
+  (=OreExchange=). A kind declares its document once and draws nothing else.
+  The currencies topic builds the first triple and the module; every later
+  kind declares its document and gains the pair.
+
 ** Flags and images
 
 A screen never works out a flag itself. Flags come from one place, as they did
@@ -562,6 +615,8 @@ where its meaning is not plain.
 | Search | =search= | (the search box) |
 | Filter | =filter= | (the filter select) |
 | Copy | =copy= | Copy |
+| Import | =arrow_import= | Import |
+| Export | =arrow_export= | Export |
 
 *RS-ICON-02* =arrow_clockwise= and =link_dismiss= joined the asset set from the
 Fluent set for this table; Refresh does not borrow =arrow_rotate_counterclockwise=,
@@ -636,7 +691,7 @@ refused.
 *RS-NAME-01* Interface words are in sentence case, as the table says.
 
 *RS-NAME-02* The verbs are Add, Edit, Save, Delete, Remove (for a link only), Revert,
-Refresh, Cancel and Propose. This is the one list; the Entity screen
+Refresh, Cancel, Propose, Import and Export (for an ORE document only). This is the one list; the Entity screen
 specification points here. A kind's own action is a verb and its object, such
 as /Derive a calendar/ or /Rebuild business days/.
 
@@ -696,6 +751,7 @@ component carries it today.
 | Permissions | =useRecordPermissions= | Exists |
 | Access mark | =AccessMark= in =ui/AccessMark.tsx=, drawn by =RecordHeader= | Exists |
 | Workflows of a kind | =WorkflowMenu= in =shell/WorkflowMenu.tsx= | Exists on Parties |
+| Import and Export | =OreExchange=; =ore.v1.ops.export_<document>=, =preview_<document>_import=, =import_<document>= | Missing; the currencies topic builds the first, for the currency configuration |
 
 ** How today's record screens conform
 

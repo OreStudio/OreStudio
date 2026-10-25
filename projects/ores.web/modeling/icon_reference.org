@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:ores.web:
 #+created: 2026-09-19
-#+updated: 2026-10-05
+#+updated: 2026-10-25
 
 The icon vocabulary for this interface, and the process for adding to it.
 
@@ -70,7 +70,7 @@ today.
 
 * 3. The inventory
 
-Sixty-eight concepts in twelve categories. Each concept names a file in
+Seventy concepts in twelve categories. Each concept names a file in
 =projects/ores.web/packages/web/src/assets/icons/=. The file is the concept with
 the size and the =regular= variant appended, for example
 =ic_fluent_add_20_regular.svg=.
@@ -99,7 +99,9 @@ the size and the =regular= variant appended, for example
 | /Navigation/ | | |
 | Arrow left | =ic_fluent_arrow_left= | Back, scrolling left |
 | Arrow clockwise | =ic_fluent_arrow_clockwise= | Refreshing a list from the server |
-| Arrow download | =ic_fluent_arrow_download= | Downloading, importing a file |
+| Arrow download | =ic_fluent_arrow_download= | Downloading a file |
+| Arrow import | =ic_fluent_arrow_import= | Import: bringing an ORE document in |
+| Arrow export | =ic_fluent_arrow_export= | Export: writing an ORE document out |
 | Arrow sync | =ic_fluent_arrow_sync= | Synchronising |
 | Arrow trending | =ic_fluent_arrow_trending= | Trends, movement |
 | Arrow rotate counterclockwise | =ic_fluent_arrow_rotate_counterclockwise= | Reverting to an earlier state |
@@ -226,8 +228,8 @@ on when they need the same actions.
 | Filter | =filter= | 20 |
 | Settings | =settings= | 20 |
 | Generate | =wand= | 20 |
-| Import | =arrow_download= | 20 |
-| Export | =arrow_upload= | 20 |
+| Import | =arrow_import= | 20 |
+| Export | =arrow_export= | 20 |
 | Purge | =delete_dismiss= | 20 |
 | Lock | =lock_closed= | 20 |
 | Read only (the access mark) | =lock_closed= | 16 |

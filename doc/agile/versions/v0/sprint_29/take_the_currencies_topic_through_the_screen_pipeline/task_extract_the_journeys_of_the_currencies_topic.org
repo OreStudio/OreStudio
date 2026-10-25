@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]] |
-| Now          | The three journeys are judged and the PR is raised. |
-| Waiting on   | The owner's sign off of the judgement and of the import and export decision. |
-| Next         | [[id:958AA2EF-041E-4266-AFE8-A57A6C345F6E][Prototype the screens of the currencies topic]], once the owner signs off. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -65,8 +65,22 @@ task and name that file in the Command column.
 | Steps judged | 26 rows, the export and the import counted apart: 23 standard, 1 own action waiting on the server, 1 missing operation, 0 workflows | the three tables | ad0cf13ae9 |
 | Gaps linked to captures | 9 of 13; 1 done since written, 3 without a capture yet | What is missing, the three pages | ad0cf13ae9 |
 | Decisions proposed to the owner | 2: export as an own action once the server returns the document; the Qt import of one file dropped | the currency journey, step 9 | ad0cf13ae9 |
+| Rules added to the record screen standard | 7, the Import and Export section, RS-ORE-01 to RS-ORE-07 | =python3 build/scripts/check_rule_identifiers.py= | this PR |
 
 * Notes
+
+The owner's sign off, 2026-10-25. The judgement stands. The two decisions
+became one: the owner asked for a server operation that exports currencies as
+ORE XML, standard for the dialogs that need it, engine settings among them,
+with two standard buttons, Import and Export, that call these operations, and
+chose the bare verbs and currencies as the first kind ("import and export
+sounds good, keep it simple"). The proposal was read from the record screen
+standard's own actions, the configuration standard's Import and Export, the
+ORE service's run configuration pair and the messaging reference's namespace
+rule, and is recorded as the Import and Export section of the record screen
+standard, on the journey's step 9, on the story's Decisions, and on the
+prototype and build tasks. The earlier proposal to drop the import of one
+file is superseded.
 
 * Test Scenarios
 
@@ -104,5 +118,8 @@ which the prototype redraws as the shared one; the convention is a part of the
 pair and joins its history under RS-HIST-01. Group currencies for the desk is a
 CRUD variation with a members link panel. No step keeps state across a reply,
 so no workflow is needed. Nine gaps link to their captures; one is done since
-the journey was written. The owner's sign off of the judgement and of the two
-decisions is the gate before the prototype.
+the journey was written. The owner signed off the judgement on 2026-10-25 and
+turned the two decisions into one standard: every kind with an ORE document
+exchanges it through the Import and Export pair, two buttons on the server's
+three operations per document, recorded as the Import and Export section of
+the record screen standard; currencies build the first pair.

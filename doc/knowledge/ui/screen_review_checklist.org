@@ -34,7 +34,8 @@ OLS is the [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf scree
 ** The list
 
 - [ ] The header has the breadcrumb, the plural title in sentence case and one sentence on what the records are. (RS-LIST-01; RSS The list › Header)
-- [ ] Refresh, then Workflows, then Add stand at the right. Add shows only for a person who may write. (RS-LIST-03; RSS The list › Header)
+- [ ] Refresh, then Import and Export for a kind with an ORE document, then Workflows, then Add stand at the right. Add shows only for a person who may write. (RS-LIST-03; RSS The list › Header)
+- [ ] Import and Export are the shared pair: bare verbs with their icons, the server's =ore.v1.ops= triple behind them, no XML in the browser, Export where the document's scope is. (RS-ORE-01, RS-ORE-02, RS-ORE-03, RS-ORE-06; RSS Import and Export)
 - [ ] Search, sort, filter and page go to the server. The list never reads every row. (RS-LIST-07, RS-LIST-04, RS-LIST-19; RSS Search and filter, Paging; ESS Paging)
 - [ ] The pager shows the count first, then First, Previous, Next, Last and page size. The default is 15. (RS-LIST-17; RSS Paging)
 - [ ] Page, page size, search, filter and order live in the address. (RS-LIST-20, RS-LIST-19; RSS Paging)
@@ -165,7 +166,7 @@ OLS is the [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf scree
 - [ ] History is the shared timeline, and a change names the section and moves the version of the whole. (CFG History)
 - [ ] A change to a numbers-changing section of a bound configuration is a proposal: the version in force stays and the proposer cannot sign. (CFG The lifecycle)
 - [ ] A change to an operational section writes directly, with a reason. (CFG The lifecycle)
-- [ ] An import parses on the server, names every dropped value, lists removed rows first with *Keep it* as the default, and never makes a file official. (CFG Import)
+- [ ] An import parses on the server, names every dropped value, lists removed rows first with *Keep it* as the default, and never makes a file official. (RS-ORE-05; CFG Import)
 
 ** A value ORE reads
 

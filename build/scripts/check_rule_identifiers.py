@@ -54,6 +54,7 @@ PAGES = {
             "Writes": "WRITE",
             "History": "HIST",
             "Related records": "RELATED",
+            "Import and Export": "ORE",
             "Flags and images": "FLAG",
             "Icons and cells": "ICON",
             "Feedback, access and safety": "FEEDBACK",
@@ -154,7 +155,8 @@ def assign(page_code: str) -> int:
         highest[code] = highest.get(code, 0) + 1
         ident = f"{page_code}-{code}-{highest[code]:02d}"
         if PLACEHOLDER.match(line):
-            lines[i] = PLACEHOLDER.sub(f"*{ident}*", line, count=1)
+            bullet = "- " if line.startswith("- ") else ""
+            lines[i] = PLACEHOLDER.sub(f"{bullet}*{ident}* ", line, count=1)
         else:
             lines[i] = f"- *{ident}* {line[2:]}"
         added += 1

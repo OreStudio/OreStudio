@@ -48,6 +48,11 @@ A row that needs a seam the code lacks says so.
 | 36 | surface provides | RecordPage | Edit and Delete appear only when drawn and the record exists; Revert only on older versions to a writer | RS-FEEDBACK-01, RS-HIST-02 | two accounts |
 | 37 | surface exposure | RecordList | The gold, the loaded time and the marked rows are visible | | none |
 | 38 | surface provides | RecordList | Add appears only when drawn | RS-FEEDBACK-01 | two accounts |
+| 40 | rule success | FirstVersionWritten | A new record's history shows version one with the new record reason | RS-WRITE-18, RS-FEEDBACK-06 | none |
+| 41 | rule success | ReloadMarksTheRowsThatChanged | The rows the reload returns as changed are the ones marked, and no other | ES-REFRESH-21, 22 | a second browser that saves |
+| 42 | rule success | FieldEditedFollowsTheReasons | Editing a field back to its value clears a reason picked while it was changed | RS-WRITE-22 | none |
+| 43 | rule failure | RevertRefusedAsStale | A revert after another browser saved is refused and the page says so | RS-WRITE-23, RS-HIST-02 | a second browser |
+| 44 | invariant | NoSilentDelete | A deleted record carries the reason of its delete; a removed link carries none | RS-FEEDBACK-06, RS-RELATED-03 | a record with links |
 | 39 | open question | the first page after a write | Decide before the test: does Refresh after a write return to page one always, or only when the sort could move the record | RS Paging | the owner |
 
 Thirty nine obligations. Thirteen need a second browser or a second account,

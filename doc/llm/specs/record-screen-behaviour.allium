@@ -69,6 +69,9 @@ entity Record {
     -- one parent and has its own versions (RS Words).
     shape: own | link | part
     parent: Record?
+    -- The reason the delete carried. A delete is a closing write, and the
+    -- server records its reason with the closed row (RS-WRITE-26).
+    closed_reason: String?
 
     versions: Version with record = this
     current: versions where is_current
@@ -104,7 +107,6 @@ entity Screen {
     person: Person
     load_began_at: Timestamp
     loaded_at: Timestamp?
-    stale: Boolean
     refresh_gold: Boolean
     -- The rows marked after a reload, and when the mark goes.
     marked_rows: Set<String>
@@ -113,6 +115,10 @@ entity Screen {
     add_drawn: Boolean
     edit_drawn: Boolean
     delete_drawn: Boolean
+    -- The reason the person typed in the remove or the revert dialog, and
+    -- what the last delete or revert was refused for.
+    entered_reason: String
+    write_refusal: none | stale_version | part_failed
 
     -- The news that concerns this screen: any change of its kind for a
     -- list, and for a record page a change that names its record or
@@ -177,7 +183,6 @@ rule NewsMakesScreenStale {
     for screen in Screens where kind = news.kind
             and (record = null or not news.names_keys or record.key in news.keys)
             and news.arrived_at > load_began_at:
-        ensures: screen.stale = true
         ensures: screen.refresh_gold = true
 }
 
@@ -197,12 +202,18 @@ rule PersonPressesRefresh {
     requires: screen.person = person
     ensures: screen.load_began_at = now
     ensures: screen.loaded_at = now
-    ensures: screen.stale = false
     ensures: screen.refresh_gold = false
+}
+
+-- ES-REFRESH-21, ES-REFRESH-22: the reload returns with the rows that
+-- were not on the page before or whose content is not what it was. The
+-- comparison is with the same page read before and uses no clock; a first
+-- load returns none. Those rows are marked, and the mark has an end.
+rule ReloadMarksTheRowsThatChanged {
+    when: ReloadReturned(screen, changed_rows)
+    requires: screen.loaded_at != null
+    ensures: screen.marked_rows = changed_rows
     ensures: screen.marks_expire_at = now + config.changed_row_mark
-    @guidance
-        -- The marked rows are found by comparing the page with the same
-        -- page read before, with no clock. A first load marks nothing.
 }
 
 -- ES-REFRESH-21: the mark goes after a moment.
@@ -256,8 +267,23 @@ rule NewerVersionWarnsTheDialog {
         ensures: dialog.newer_version_seen = true
 }
 
+-- RS-WRITE-22: an edit that moves the form between changed and unchanged
+-- changes the reasons on offer, so a reason picked under the old offer is
+-- cleared and the person picks again.
+rule FieldEditedFollowsTheReasons {
+    when: FieldEdited(person, dialog, now_changed)
+    requires: dialog.state = open and dialog.is_amend
+    let was_changed = dialog.changed
+    ensures: dialog.changed = now_changed
+    ensures:
+        if was_changed != now_changed:
+            dialog.reason = null
+}
+
 -- ES-REFRESH-27: Keep my edit makes the newest version the base, so the
--- save replaces it knowingly. The person's values stay.
+-- save replaces it knowingly. The person's values stay. The base is the
+-- version the record holds at the click; a change that lands after it is
+-- refused by the stale rule like any other.
 rule PersonKeepsTheirEdit {
     when: KeepMyEditChosen(person, dialog)
     requires: dialog.newer_version_seen and dialog.state = open
@@ -274,6 +300,7 @@ rule PersonTakesTheNewValues {
     ensures: dialog.base_version = dialog.record.version
     ensures: dialog.loaded_at = now
     ensures: dialog.changed = false
+    ensures: dialog.reason = null
     ensures: dialog.newer_version_seen = false
 }
 
@@ -306,6 +333,9 @@ rule SaveAccepted {
         commentary: dialog.commentary,
         revert_offered: false
     )
+    ensures:
+        for v in dialog.record.versions:
+            v.revert_offered = true
     ensures: dialog.record.version = dialog.record.version + 1
     ensures: dialog.state = closed
 }
@@ -387,17 +417,32 @@ rule CreateAccepted {
     when: SavePressed(person, dialog)
     requires: dialog.state = open and dialog.can_save and dialog.is_create
         and dialog.key_entered != null
-        and (Records where kind = dialog.screen.kind and key = dialog.key_entered).count = 0
+        and (Records where kind = dialog.screen.kind and key = dialog.key_entered and exists).count = 0
     ensures: Record.created(
         kind: dialog.screen.kind,
         key: dialog.key_entered,
         version: 1,
         exists: true,
         shape: own,
-        parent: null
+        parent: null,
+        closed_reason: null
     )
     ensures: dialog.state = closed
     ensures: PageOpened(dialog.screen, dialog.key_entered)
+}
+
+-- RS-WRITE-18, RS-FEEDBACK-06: a new record's first version carries the
+-- one reason a new record has, so no record exists without a reasoned
+-- version.
+rule FirstVersionWritten {
+    when: record: Record.created
+    ensures: Version.created(
+        record: record,
+        number: 1,
+        reason: config.new_record_reason,
+        commentary: "",
+        revert_offered: false
+    )
 }
 
 -- RS-WRITE-18: adding a key that exists is refused, and the refusal
@@ -406,7 +451,7 @@ rule CreateRefusedAsDuplicate {
     when: SavePressed(person, dialog)
     requires: dialog.state = open and dialog.can_save and dialog.is_create
         and dialog.key_entered != null
-        and (Records where kind = dialog.screen.kind and key = dialog.key_entered).count > 0
+        and (Records where kind = dialog.screen.kind and key = dialog.key_entered and exists).count > 0
     ensures: dialog.state = open
     ensures: dialog.last_refusal = key_exists
 }
@@ -423,7 +468,9 @@ rule DeleteAccepted {
     ensures:
         for p in own_parts:
             p.exists = false
+            p.closed_reason = reason
     ensures: record.exists = false
+    ensures: record.closed_reason = reason
     ensures: ListOpened(record.kind)
 }
 
@@ -433,6 +480,8 @@ rule DeleteRefusedAsStale {
     when: DeleteConfirmed(person, record, version_read, reason)
     requires: person.may_delete and record.exists
         and record.version != version_read
+    for screen in Screens where person = person and record = record:
+        ensures: screen.write_refusal = stale_version
     ensures: record.exists = true
 }
 
@@ -442,16 +491,23 @@ rule DeleteRefusedAsStale {
 rule DeleteStopsWhenAPartFails {
     when: PartDeleteFailed(record, part)
     requires: record.exists and part.parent = record
+    for screen in Screens where record = record:
+        ensures: screen.write_refusal = part_failed
     ensures: record.exists = true
+    ensures: part.exists = true
 }
 
 -- RS-HIST-02, RS-FEEDBACK-05: Revert is offered on any version but the
 -- current one. It writes the old values as a new version, with a reason,
 -- against the current version. No version is lost.
 rule RevertAccepted {
-    when: RevertConfirmed(person, version, reason)
+    when: RevertConfirmed(person, version, version_read, reason)
     requires: person.may_write and not version.is_current
         and version.record.exists and reason != ""
+        and version.record.version = version_read
+    ensures:
+        for v in version.record.versions:
+            v.revert_offered = true
     ensures: Version.created(
         record: version.record,
         number: version.record.version + 1,
@@ -462,12 +518,22 @@ rule RevertAccepted {
     ensures: version.record.version = version.record.version + 1
 }
 
+-- RS-WRITE-23 applied to a revert: a revert that claims a version the
+-- record has left is refused, and the screen says so.
+rule RevertRefusedAsStale {
+    when: RevertConfirmed(person, version, version_read, reason)
+    requires: person.may_write and version.record.exists
+        and version.record.version != version_read
+    for screen in Screens where person = person and record = version.record:
+        ensures: screen.write_refusal = stale_version
+}
+
 -- ES-HIST-11, RS-HIST-02: the current version offers no Revert, because
--- there is nothing to revert to; every older version offers it to a
--- person who may write.
-invariant NoRevertOnTheCurrentVersion {
-    for version in Versions where is_current:
-        not version.revert_offered
+-- there is nothing to revert to; every older version of a record that
+-- exists offers it to a person who may write.
+invariant RevertOfferedOnEveryOlderVersion {
+    for version in Versions:
+        version.revert_offered = (not version.is_current and version.record.exists)
 }
 
 -- RS-FEEDBACK-05: a revert never loses a version. The versions of a
@@ -514,10 +580,17 @@ invariant ActionsNotDrawnWithoutPermission {
         and (screen.delete_drawn implies screen.person.may_delete)
 }
 
--- RS-FEEDBACK-06: every write carries a change reason.
+-- RS-FEEDBACK-06: every write carries a change reason: a version its
+-- reason, and a deleted record the reason of its closing write. A removed
+-- link carries none, because it has no versions.
 invariant NoSilentWrite {
     for version in Versions:
         version.reason != ""
+}
+
+invariant NoSilentDelete {
+    for record in Records where not exists and shape != link:
+        record.closed_reason != null and record.closed_reason != ""
 }
 
 -- ------------------------------------------------------------
@@ -534,6 +607,7 @@ surface RecordPage {
         screen.record.version
         screen.refresh_gold
         screen.loaded_at
+        screen.write_refusal
         for v in screen.record.versions:
             v.number
             v.reason
@@ -544,10 +618,11 @@ surface RecordPage {
         RefreshPressed(viewer, screen)
         EditPressed(viewer, screen, screen.record)
             when screen.edit_drawn and screen.record.exists
-        DeleteConfirmed(viewer, screen.record, screen.record.version, reason)
+        DeleteConfirmed(viewer, screen.record, screen.record.version, screen.entered_reason)
             when screen.delete_drawn and screen.record.exists
-        RevertConfirmed(viewer, version, reason)
-            when viewer.may_write and not version.is_current
+        for v in screen.record.versions:
+            RevertConfirmed(viewer, v, screen.record.version, screen.entered_reason)
+                when v.revert_offered and viewer.may_write
 
     @guarantee RefreshIsTheOnlyReload
         -- The page reads again only on RefreshPressed. News, a save, the

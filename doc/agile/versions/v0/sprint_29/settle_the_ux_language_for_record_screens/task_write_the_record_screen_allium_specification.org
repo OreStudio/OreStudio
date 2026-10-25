@@ -63,10 +63,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Rules, invariants and surfaces in the specification | 21, 8, 2 | =grep -c '^rule \|^invariant \|^surface ' doc/llm/specs/record-screen-behaviour.allium= | 37c854bdbd |
-| Distinct rule identifiers the specification cites | 41 | =grep -o '\(RS\|ES\)-[A-Z]*-[0-9][0-9]'= on the spec, unique | 37c854bdbd |
-| Test obligations derived | 39 | the table in =evidence/record_screen_test_obligations.org= | 37c854bdbd |
-| Obligations that need a second browser or account, a clock, or the owner | 13, 2, 1 | the Seam column of that table | 37c854bdbd |
+| Rules, invariants and surfaces in the specification | 25, 9, 2 | =grep -c '^rule \|^invariant \|^surface ' doc/llm/specs/record-screen-behaviour.allium= | 37c854bdbd |
+| Distinct rule identifiers the specification cites | 42 | =grep -o '\(RS\|ES\)-[A-Z]*-[0-9][0-9]'= on the spec, unique | 37c854bdbd |
+| Test obligations derived | 44 | the table in =evidence/record_screen_test_obligations.org= | 37c854bdbd |
+| Obligations that need a second browser or account, a clock, or the owner | 15, 2, 1 | the Seam column of that table | 37c854bdbd |
 
 * Notes
 
@@ -96,11 +96,11 @@ via its "Verifies task" field.
 * Result
 
 =doc/llm/specs/record-screen-behaviour.allium= states the record screen's
-behaviour in 21 rules, 8 invariants and 2 surfaces,
-citing 41 rule identifiers. The Allium CLI is not installed in this
+behaviour in 25 rules, 9 invariants and 2 surfaces,
+citing 42 rule identifiers. The Allium CLI is not installed in this
 environment, so the specification is unvalidated by a tool and its test
-obligations, 39 of them, are derived by hand in
-=evidence/record_screen_test_obligations.org= for the harness story. Thirteen
+obligations, 44 of them, are derived by hand in
+=evidence/record_screen_test_obligations.org= for the harness story. Fifteen
 need a second browser or account, two a controllable clock, and one is an open
 question for the owner: whether Refresh after a write returns to the first
 page always or only when the sort could move the record.

@@ -244,6 +244,13 @@ std::string("")
 
 * Foreign keys
 
+** origin
+:PROPERTIES:
+:table:         ores_trading_origin_types_tbl
+:nullable:      false
+:error_message: Invalid origin: %. No origin type found with this code.
+:END:
+
 ** party_id
 :PROPERTIES:
 :table:         ores_refdata_parties_tbl

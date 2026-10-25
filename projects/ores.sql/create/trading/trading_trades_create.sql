@@ -178,6 +178,17 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate origin (soft FK to ores_trading_origin_types_tbl)
+    if not exists (
+        select 1 from ores_trading_origin_types_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.origin
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid origin: %. No origin type found with this code.', NEW.origin
+            using errcode = '23503';
+    end if;
+
     -- Validate party_id (soft FK to ores_refdata_parties_tbl)
     if not exists (
         select 1 from ores_refdata_parties_tbl

@@ -38,7 +38,7 @@ PARSERS = ("OREData/ored/utilities/parsers.cpp",
            "OREData/ored/utilities/parsers.hpp")
 
 CALL = re.compile(
-    r'(parse[A-Za-z0-9_]+)\s*(?:<[^>]*>)?\s*\((.{0,200}?)(engine|model)Parameter\("([A-Za-z0-9_.]+)"',
+    r'(parse[A-Za-z0-9_]+)\s*(?:<[^>]*>)?\s*\(\s*(engine|model)Parameter\("([A-Za-z0-9_.]+)"',
     re.S)
 INNER = re.compile(r'&(parse[A-Za-z0-9_]+)')
 DEF = re.compile(r'^\s*[A-Za-z_:<>0-9]+\s+(parse[A-Za-z0-9_]+)\s*\(\s*const\s+std::string&')
@@ -86,12 +86,7 @@ def types(ore):
                 path = os.path.join(dirpath, filename)
                 text = open(path, encoding="utf-8", errors="replace").read()
                 for match in CALL.finditer(text):
-                    parser, between = match.group(1), match.group(2)
-                    scope, name = match.group(3), match.group(4)
-                    if parser == "parseListOfValues":
-                        inner = INNER.search(between)
-                        if inner:
-                            parser = inner.group(1)
+                    parser, scope, name = match.group(1), match.group(2), match.group(3)
                     kind, values = classify(parser, enums)
                     if kind is None:
                         continue
@@ -174,29 +169,20 @@ def sets_of(found):
     return sets, links, flags
 
 
-def merge(curation_path, sets, links):
-    """Merge the code's sets into the curation and report what changed.
+def merge(path, sets, links):
+    """Write the code's sets as their own curation file.
 
-    The code is authoritative for a setting's type, so a code set replaces the
-    guide's set of the same name. A set no setting names is pruned: it cannot be
-    seeded, and its link now points at the set the code states.
+    The guide's sets and the code's sets stay apart: the guide's file is edited
+    by a person, this one is rewritten on every extraction, and the seed
+    generator composes them with the code over the guide. Writing a whole file
+    keeps a re-extraction from leaving a stale link behind.
     """
-    with open(curation_path, encoding="utf-8") as handle:
-        curation = json.load(handle)
-    before = set(curation["sets"])
-    curation["sets"].update(sets)
-    curation["links"].update(links)
-    named = set(curation["links"].values())
-    pruned = sorted(code for code in curation["sets"] if code not in named)
-    for code in pruned:
-        del curation["sets"][code]
-    with open(curation_path, "w", encoding="utf-8") as handle:
-        json.dump(curation, handle, indent=2, ensure_ascii=False)
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump({"sets": sets, "links": links}, handle, indent=2,
+                  sort_keys=True, ensure_ascii=False)
         handle.write("\n")
-    added = sorted(set(sets) - before)
-    print(f"{len(added)} sets added, {len(pruned)} pruned, {len(curation['sets'])} total")
-    for code in pruned:
-        print(f"  pruned {code}: the code types its setting differently")
+    flags = sum(1 for set_code in sets if len(sets[set_code].get("values", [])) == 0)
+    print(f"{len(sets)} sets ({flags} flags) and {len(links)} links written to {path}")
 
 
 def main():

@@ -31,8 +31,10 @@ import os
 import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-SOURCE = os.path.join(ROOT, "projects", "ores.seeder", "datasets", "ore_pricing_engines",
-                      "curation", "value-sets.json")
+GUIDE = os.path.join(ROOT, "projects", "ores.seeder", "datasets", "ore_pricing_engines",
+                     "curation", "value-sets.json")
+CODE = os.path.join(ROOT, "projects", "ores.seeder", "datasets", "ore_pricing_engines",
+                    "curation", "value-sets-code.json")
 OUT = os.path.join(ROOT, "projects", "ores.sql", "populate", "reporting",
                    "reporting_ore_parameter_value_sets_populate.sql")
 
@@ -118,6 +120,26 @@ def rows_of(data):
     return catalogues, sets, values, links
 
 
+def load():
+    """The guide's sets, with the code's sets over the top.
+
+    The guide states some choices; the code states a setting's type for every
+    setting. A code set replaces the guide's set of the same name. A guide set no
+    setting names after that is dropped, because its link now points at the set
+    the code states.
+    """
+    with open(GUIDE, encoding="utf-8") as handle:
+        data = json.load(handle)
+    with open(CODE, encoding="utf-8") as handle:
+        code = json.load(handle)
+    data["sets"].update(code["sets"])
+    data["links"].update(code["links"])
+    named = set(data["links"].values())
+    for name in [code_ for code_ in data["sets"] if code_ not in named]:
+        del data["sets"][name]
+    return data
+
+
 def validate(data):
     problems = []
     for code, entry in data["sets"].items():
@@ -176,8 +198,7 @@ def main():
     parser.add_argument("--check", action="store_true",
                         help="fail if the committed script differs from the data")
     args = parser.parse_args()
-    with open(SOURCE, encoding="utf-8") as handle:
-        data = json.load(handle)
+    data = load()
     problems = validate(data)
     if problems:
         print("\n".join(problems), file=sys.stderr)

@@ -1,0 +1,615 @@
+{
+  "links": {
+    "EngineParameters|AdditionalResultsPathLevel": "flag",
+    "EngineParameters|AlwaysRecomputeOptionRepresentation": "flag",
+    "EngineParameters|AntitheticVariate": "flag",
+    "EngineParameters|ApplyConvexityAdjustment": "flag",
+    "EngineParameters|ApplySimmExemptions": "flag",
+    "EngineParameters|BrownianBridge": "flag",
+    "EngineParameters|BrownianBridgeOrdering": "brownianbridgeordering",
+    "EngineParameters|ByCallSpread": "flag",
+    "EngineParameters|CalibrateUnderlyingCurves": "flag",
+    "EngineParameters|ComputeBPS": "flag",
+    "EngineParameters|ComputeDelta": "flag",
+    "EngineParameters|ComputeDeltaVega": "flag",
+    "EngineParameters|ComputeGamma": "flag",
+    "EngineParameters|ControlVariate": "flag",
+    "EngineParameters|EnableCgOptimization": "flag",
+    "EngineParameters|ExternalDeviceCompatibilityMode": "flag",
+    "EngineParameters|FxVolIsStatic": "flag",
+    "EngineParameters|Heston.QuantoProcessDiscretization": "heston_quantoprocessdiscretization",
+    "EngineParameters|IncludePastCashflows": "flag",
+    "EngineParameters|Interactive": "flag",
+    "EngineParameters|LinearInZero": "flag",
+    "EngineParameters|MesherIsStatic": "flag",
+    "EngineParameters|MinObsDate": "flag",
+    "EngineParameters|PolynomType": "polynomtype",
+    "EngineParameters|Pricing.Sequence": "pricing_sequence",
+    "EngineParameters|RecalibrateOnStickyCloseOutDates": "flag",
+    "EngineParameters|ReevaluateExerciseInStickyRun": "flag",
+    "EngineParameters|SalvagingAlgorithm": "salvagingalgorithm",
+    "EngineParameters|Scheme": "scheme",
+    "EngineParameters|ScriptedLibraryOverride": "flag",
+    "EngineParameters|SequenceType": "sequencetype",
+    "EngineParameters|SobolDirectionIntegers": "soboldirectionintegers",
+    "EngineParameters|SobolOrdering": "sobolordering",
+    "EngineParameters|SpreadOnIncomeCurve": "flag",
+    "EngineParameters|StaticNpvMem": "flag",
+    "EngineParameters|Training.BasisFunction": "training_basisfunction",
+    "EngineParameters|Training.Sequence": "training_sequence",
+    "EngineParameters|TrainingSequenceType": "trainingsequencetype",
+    "EngineParameters|UseAD": "flag",
+    "EngineParameters|UseCG": "flag",
+    "EngineParameters|UseDoublePrecisionForExternalCalculation": "flag",
+    "EngineParameters|UseExternalComputeDevice": "flag",
+    "EngineParameters|ZeroVolatility": "flag",
+    "EngineParameters|calibrateConstituentCurves": "flag",
+    "EngineParameters|homogeneousPoolWhenJustified": "flag",
+    "EngineParameters|withFlatVol": "flag",
+    "ModelParameters|AdjustCreditSpreadToRR": "flag",
+    "ModelParameters|AdjustDiscounting": "flag",
+    "ModelParameters|AdjustEquityForward": "flag",
+    "ModelParameters|AdjustEquityVolatility": "flag",
+    "ModelParameters|EnableCredit": "flag",
+    "ModelParameters|EnforceBaseCcy": "flag",
+    "ModelParameters|FullDynamicFx": "flag",
+    "ModelParameters|FullDynamicIr": "flag",
+    "ModelParameters|IncludeSecurityLeg": "flag",
+    "ModelParameters|MatchUnderlyingTenor": "flag",
+    "ModelParameters|StaticTodaysSpot": "flag",
+    "ModelParameters|SurvivalWeightedFundingReturnCashflows": "flag",
+    "ModelParameters|TreatSecuritySpreadAsCreditSpread": "flag",
+    "ModelParameters|ZeroRecoveryOverwrite": "flag",
+    "ModelParameters|useAssumedRecovery": "flag",
+    "ModelParameters|useQuadrature": "flag",
+    "ModelParameters|useStochasticRecovery": "flag"
+  },
+  "sets": {
+    "brownianbridgeordering": {
+      "description": "The values the BrownianBridgeOrdering setting accepts.",
+      "is_ordered": false,
+      "name": "Brownianbridgeordering",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Factors is one of the values the ORE code accepts for BrownianBridgeOrdering.",
+          "label": "Factors",
+          "order": 0,
+          "value": "Factors"
+        },
+        {
+          "description": "Steps is one of the values the ORE code accepts for BrownianBridgeOrdering.",
+          "label": "Steps",
+          "order": 1,
+          "value": "Steps"
+        },
+        {
+          "description": "Diagonal is one of the values the ORE code accepts for BrownianBridgeOrdering.",
+          "label": "Diagonal",
+          "order": 2,
+          "value": "Diagonal"
+        }
+      ]
+    },
+    "flag": {
+      "description": "A switch that is either on or off.",
+      "is_ordered": false,
+      "name": "Flag",
+      "source_kind": "boolean"
+    },
+    "heston_quantoprocessdiscretization": {
+      "description": "The values the Heston.QuantoProcessDiscretization setting accepts.",
+      "is_ordered": false,
+      "name": "Heston quantoprocessdiscretization",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "PartialTruncation is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "PartialTruncation",
+          "order": 0,
+          "value": "PartialTruncation"
+        },
+        {
+          "description": "FullTruncation is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "FullTruncation",
+          "order": 1,
+          "value": "FullTruncation"
+        },
+        {
+          "description": "Reflection is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "Reflection",
+          "order": 2,
+          "value": "Reflection"
+        },
+        {
+          "description": "NonCentralChiSquareVariance is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "NonCentralChiSquareVariance",
+          "order": 3,
+          "value": "NonCentralChiSquareVariance"
+        },
+        {
+          "description": "QuadraticExponential is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "QuadraticExponential",
+          "order": 4,
+          "value": "QuadraticExponential"
+        },
+        {
+          "description": "QuadraticExponentialMartingale is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "QuadraticExponentialMartingale",
+          "order": 5,
+          "value": "QuadraticExponentialMartingale"
+        },
+        {
+          "description": "BroadieKayaExactSchemeLobatto is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "BroadieKayaExactSchemeLobatto",
+          "order": 6,
+          "value": "BroadieKayaExactSchemeLobatto"
+        },
+        {
+          "description": "BroadieKayaExactSchemeLaguerre is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "BroadieKayaExactSchemeLaguerre",
+          "order": 7,
+          "value": "BroadieKayaExactSchemeLaguerre"
+        },
+        {
+          "description": "BroadieKayaExactSchemeTrapezoidal is one of the values the ORE code accepts for Heston.QuantoProcessDiscretization.",
+          "label": "BroadieKayaExactSchemeTrapezoidal",
+          "order": 8,
+          "value": "BroadieKayaExactSchemeTrapezoidal"
+        }
+      ]
+    },
+    "polynomtype": {
+      "description": "The values the PolynomType setting accepts.",
+      "is_ordered": false,
+      "name": "Polynomtype",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Monomial is one of the values the ORE code accepts for PolynomType.",
+          "label": "Monomial",
+          "order": 0,
+          "value": "Monomial"
+        },
+        {
+          "description": "Laguerre is one of the values the ORE code accepts for PolynomType.",
+          "label": "Laguerre",
+          "order": 1,
+          "value": "Laguerre"
+        },
+        {
+          "description": "Hermite is one of the values the ORE code accepts for PolynomType.",
+          "label": "Hermite",
+          "order": 2,
+          "value": "Hermite"
+        },
+        {
+          "description": "Hyperbolic is one of the values the ORE code accepts for PolynomType.",
+          "label": "Hyperbolic",
+          "order": 3,
+          "value": "Hyperbolic"
+        },
+        {
+          "description": "Legendre is one of the values the ORE code accepts for PolynomType.",
+          "label": "Legendre",
+          "order": 4,
+          "value": "Legendre"
+        },
+        {
+          "description": "Chebyshev is one of the values the ORE code accepts for PolynomType.",
+          "label": "Chebyshev",
+          "order": 5,
+          "value": "Chebyshev"
+        },
+        {
+          "description": "Chebyshev2nd is one of the values the ORE code accepts for PolynomType.",
+          "label": "Chebyshev2nd",
+          "order": 6,
+          "value": "Chebyshev2nd"
+        }
+      ]
+    },
+    "pricing_sequence": {
+      "description": "The values the Pricing.Sequence setting accepts.",
+      "is_ordered": false,
+      "name": "Pricing sequence",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "MersenneTwister is one of the values the ORE code accepts for Pricing.Sequence.",
+          "label": "MersenneTwister",
+          "order": 0,
+          "value": "MersenneTwister"
+        },
+        {
+          "description": "MersenneTwisterAntithetic is one of the values the ORE code accepts for Pricing.Sequence.",
+          "label": "MersenneTwisterAntithetic",
+          "order": 1,
+          "value": "MersenneTwisterAntithetic"
+        },
+        {
+          "description": "Sobol is one of the values the ORE code accepts for Pricing.Sequence.",
+          "label": "Sobol",
+          "order": 2,
+          "value": "Sobol"
+        },
+        {
+          "description": "SobolBrownianBridge is one of the values the ORE code accepts for Pricing.Sequence.",
+          "label": "SobolBrownianBridge",
+          "order": 3,
+          "value": "SobolBrownianBridge"
+        },
+        {
+          "description": "Burley2020SobolBrownianBridge is one of the values the ORE code accepts for Pricing.Sequence.",
+          "label": "Burley2020SobolBrownianBridge",
+          "order": 4,
+          "value": "Burley2020SobolBrownianBridge"
+        }
+      ]
+    },
+    "salvagingalgorithm": {
+      "description": "The values the SalvagingAlgorithm setting accepts.",
+      "is_ordered": false,
+      "name": "Salvagingalgorithm",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "None is one of the values the ORE code accepts for SalvagingAlgorithm.",
+          "label": "None",
+          "order": 0,
+          "value": "None"
+        },
+        {
+          "description": "Spectral is one of the values the ORE code accepts for SalvagingAlgorithm.",
+          "label": "Spectral",
+          "order": 1,
+          "value": "Spectral"
+        },
+        {
+          "description": "Hypersphere is one of the values the ORE code accepts for SalvagingAlgorithm.",
+          "label": "Hypersphere",
+          "order": 2,
+          "value": "Hypersphere"
+        },
+        {
+          "description": "LowerDiagonal is one of the values the ORE code accepts for SalvagingAlgorithm.",
+          "label": "LowerDiagonal",
+          "order": 3,
+          "value": "LowerDiagonal"
+        },
+        {
+          "description": "Higham is one of the values the ORE code accepts for SalvagingAlgorithm.",
+          "label": "Higham",
+          "order": 4,
+          "value": "Higham"
+        },
+        {
+          "description": "Principal is one of the values the ORE code accepts for SalvagingAlgorithm.",
+          "label": "Principal",
+          "order": 5,
+          "value": "Principal"
+        }
+      ]
+    },
+    "scheme": {
+      "description": "The values the Scheme setting accepts.",
+      "is_ordered": false,
+      "name": "Scheme",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "CrankNicolson is one of the values the ORE code accepts for Scheme.",
+          "label": "CrankNicolson",
+          "order": 0,
+          "value": "CrankNicolson"
+        },
+        {
+          "description": "Hundsdorfer is one of the values the ORE code accepts for Scheme.",
+          "label": "Hundsdorfer",
+          "order": 1,
+          "value": "Hundsdorfer"
+        },
+        {
+          "description": "Douglas is one of the values the ORE code accepts for Scheme.",
+          "label": "Douglas",
+          "order": 2,
+          "value": "Douglas"
+        },
+        {
+          "description": "CraigSneyd is one of the values the ORE code accepts for Scheme.",
+          "label": "CraigSneyd",
+          "order": 3,
+          "value": "CraigSneyd"
+        },
+        {
+          "description": "ModifiedCraigSneyd is one of the values the ORE code accepts for Scheme.",
+          "label": "ModifiedCraigSneyd",
+          "order": 4,
+          "value": "ModifiedCraigSneyd"
+        },
+        {
+          "description": "ImplicitEuler is one of the values the ORE code accepts for Scheme.",
+          "label": "ImplicitEuler",
+          "order": 5,
+          "value": "ImplicitEuler"
+        },
+        {
+          "description": "ExplicitEuler is one of the values the ORE code accepts for Scheme.",
+          "label": "ExplicitEuler",
+          "order": 6,
+          "value": "ExplicitEuler"
+        },
+        {
+          "description": "MethodOfLines is one of the values the ORE code accepts for Scheme.",
+          "label": "MethodOfLines",
+          "order": 7,
+          "value": "MethodOfLines"
+        },
+        {
+          "description": "TrBDF2 is one of the values the ORE code accepts for Scheme.",
+          "label": "TrBDF2",
+          "order": 8,
+          "value": "TrBDF2"
+        }
+      ]
+    },
+    "sequencetype": {
+      "description": "The values the SequenceType setting accepts.",
+      "is_ordered": false,
+      "name": "Sequencetype",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "MersenneTwister is one of the values the ORE code accepts for SequenceType.",
+          "label": "MersenneTwister",
+          "order": 0,
+          "value": "MersenneTwister"
+        },
+        {
+          "description": "MersenneTwisterAntithetic is one of the values the ORE code accepts for SequenceType.",
+          "label": "MersenneTwisterAntithetic",
+          "order": 1,
+          "value": "MersenneTwisterAntithetic"
+        },
+        {
+          "description": "Sobol is one of the values the ORE code accepts for SequenceType.",
+          "label": "Sobol",
+          "order": 2,
+          "value": "Sobol"
+        },
+        {
+          "description": "SobolBrownianBridge is one of the values the ORE code accepts for SequenceType.",
+          "label": "SobolBrownianBridge",
+          "order": 3,
+          "value": "SobolBrownianBridge"
+        },
+        {
+          "description": "Burley2020SobolBrownianBridge is one of the values the ORE code accepts for SequenceType.",
+          "label": "Burley2020SobolBrownianBridge",
+          "order": 4,
+          "value": "Burley2020SobolBrownianBridge"
+        }
+      ]
+    },
+    "soboldirectionintegers": {
+      "description": "The values the SobolDirectionIntegers setting accepts.",
+      "is_ordered": false,
+      "name": "Soboldirectionintegers",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Unit is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "Unit",
+          "order": 0,
+          "value": "Unit"
+        },
+        {
+          "description": "Jaeckel is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "Jaeckel",
+          "order": 1,
+          "value": "Jaeckel"
+        },
+        {
+          "description": "SobolLevitan is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "SobolLevitan",
+          "order": 2,
+          "value": "SobolLevitan"
+        },
+        {
+          "description": "SobolLevitanLemieux is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "SobolLevitanLemieux",
+          "order": 3,
+          "value": "SobolLevitanLemieux"
+        },
+        {
+          "description": "JoeKuoD5 is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "JoeKuoD5",
+          "order": 4,
+          "value": "JoeKuoD5"
+        },
+        {
+          "description": "JoeKuoD6 is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "JoeKuoD6",
+          "order": 5,
+          "value": "JoeKuoD6"
+        },
+        {
+          "description": "JoeKuoD7 is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "JoeKuoD7",
+          "order": 6,
+          "value": "JoeKuoD7"
+        },
+        {
+          "description": "Kuo is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "Kuo",
+          "order": 7,
+          "value": "Kuo"
+        },
+        {
+          "description": "Kuo2 is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "Kuo2",
+          "order": 8,
+          "value": "Kuo2"
+        },
+        {
+          "description": "Kuo3 is one of the values the ORE code accepts for SobolDirectionIntegers.",
+          "label": "Kuo3",
+          "order": 9,
+          "value": "Kuo3"
+        }
+      ]
+    },
+    "sobolordering": {
+      "description": "The values the SobolOrdering setting accepts.",
+      "is_ordered": false,
+      "name": "Sobolordering",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Factors is one of the values the ORE code accepts for SobolOrdering.",
+          "label": "Factors",
+          "order": 0,
+          "value": "Factors"
+        },
+        {
+          "description": "Steps is one of the values the ORE code accepts for SobolOrdering.",
+          "label": "Steps",
+          "order": 1,
+          "value": "Steps"
+        },
+        {
+          "description": "Diagonal is one of the values the ORE code accepts for SobolOrdering.",
+          "label": "Diagonal",
+          "order": 2,
+          "value": "Diagonal"
+        }
+      ]
+    },
+    "training_basisfunction": {
+      "description": "The values the Training.BasisFunction setting accepts.",
+      "is_ordered": false,
+      "name": "Training basisfunction",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "Monomial is one of the values the ORE code accepts for Training.BasisFunction.",
+          "label": "Monomial",
+          "order": 0,
+          "value": "Monomial"
+        },
+        {
+          "description": "Laguerre is one of the values the ORE code accepts for Training.BasisFunction.",
+          "label": "Laguerre",
+          "order": 1,
+          "value": "Laguerre"
+        },
+        {
+          "description": "Hermite is one of the values the ORE code accepts for Training.BasisFunction.",
+          "label": "Hermite",
+          "order": 2,
+          "value": "Hermite"
+        },
+        {
+          "description": "Hyperbolic is one of the values the ORE code accepts for Training.BasisFunction.",
+          "label": "Hyperbolic",
+          "order": 3,
+          "value": "Hyperbolic"
+        },
+        {
+          "description": "Legendre is one of the values the ORE code accepts for Training.BasisFunction.",
+          "label": "Legendre",
+          "order": 4,
+          "value": "Legendre"
+        },
+        {
+          "description": "Chebyshev is one of the values the ORE code accepts for Training.BasisFunction.",
+          "label": "Chebyshev",
+          "order": 5,
+          "value": "Chebyshev"
+        },
+        {
+          "description": "Chebyshev2nd is one of the values the ORE code accepts for Training.BasisFunction.",
+          "label": "Chebyshev2nd",
+          "order": 6,
+          "value": "Chebyshev2nd"
+        }
+      ]
+    },
+    "training_sequence": {
+      "description": "The values the Training.Sequence setting accepts.",
+      "is_ordered": false,
+      "name": "Training sequence",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "MersenneTwister is one of the values the ORE code accepts for Training.Sequence.",
+          "label": "MersenneTwister",
+          "order": 0,
+          "value": "MersenneTwister"
+        },
+        {
+          "description": "MersenneTwisterAntithetic is one of the values the ORE code accepts for Training.Sequence.",
+          "label": "MersenneTwisterAntithetic",
+          "order": 1,
+          "value": "MersenneTwisterAntithetic"
+        },
+        {
+          "description": "Sobol is one of the values the ORE code accepts for Training.Sequence.",
+          "label": "Sobol",
+          "order": 2,
+          "value": "Sobol"
+        },
+        {
+          "description": "SobolBrownianBridge is one of the values the ORE code accepts for Training.Sequence.",
+          "label": "SobolBrownianBridge",
+          "order": 3,
+          "value": "SobolBrownianBridge"
+        },
+        {
+          "description": "Burley2020SobolBrownianBridge is one of the values the ORE code accepts for Training.Sequence.",
+          "label": "Burley2020SobolBrownianBridge",
+          "order": 4,
+          "value": "Burley2020SobolBrownianBridge"
+        }
+      ]
+    },
+    "trainingsequencetype": {
+      "description": "The values the TrainingSequenceType setting accepts.",
+      "is_ordered": false,
+      "name": "Trainingsequencetype",
+      "source_kind": "enumerated",
+      "values": [
+        {
+          "description": "MersenneTwister is one of the values the ORE code accepts for TrainingSequenceType.",
+          "label": "MersenneTwister",
+          "order": 0,
+          "value": "MersenneTwister"
+        },
+        {
+          "description": "MersenneTwisterAntithetic is one of the values the ORE code accepts for TrainingSequenceType.",
+          "label": "MersenneTwisterAntithetic",
+          "order": 1,
+          "value": "MersenneTwisterAntithetic"
+        },
+        {
+          "description": "Sobol is one of the values the ORE code accepts for TrainingSequenceType.",
+          "label": "Sobol",
+          "order": 2,
+          "value": "Sobol"
+        },
+        {
+          "description": "SobolBrownianBridge is one of the values the ORE code accepts for TrainingSequenceType.",
+          "label": "SobolBrownianBridge",
+          "order": 3,
+          "value": "SobolBrownianBridge"
+        },
+        {
+          "description": "Burley2020SobolBrownianBridge is one of the values the ORE code accepts for TrainingSequenceType.",
+          "label": "Burley2020SobolBrownianBridge",
+          "order": 4,
+          "value": "Burley2020SobolBrownianBridge"
+        }
+      ]
+    }
+  }
+}

@@ -8,7 +8,7 @@
 #+filetags: :take_the_currencies_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
 #+branch: feature/extract-the-journeys-of-the-currencies-topic
-#+pr: 3827
+#+pr: 3829
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -97,6 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3829][#3829]] | [docs] Settle Import and Export as one standard pair over the server's ORE operations |
 | [[https://github.com/OreStudio/OreStudio/pull/3827][#3827]] | [docs] Judge the currencies journeys for the screen pipeline |
 
 * Review

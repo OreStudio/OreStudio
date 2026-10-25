@@ -46,7 +46,7 @@ The extraction does not decide an instrument code. It records the trade type it 
 
 ** The curation
 
-Curation is data, not code. It lives in =projects/ores.seeder/datasets/ore_pricing_engines/curation/=, one file per concern, each entry keyed by the row it changes:
+Curation is data, not code. It will live in =projects/ores.seeder/datasets/ore_pricing_engines/curation/=, one file per concern, each entry keyed by the row it changes:
 
 #+begin_src json
 {
@@ -98,7 +98,7 @@ versioning, and the change provenance of the rows themselves.
 
 ** The gates
 
-The generator fails, rather than writing a guess, when:
+The gates are the target. Today the generator checks only that every parameter has a text. The full set fails, rather than writing a guess, when:
 
 - a parameter has no text;
 - a parameter has no value domain;

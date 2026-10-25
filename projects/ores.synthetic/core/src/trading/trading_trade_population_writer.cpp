@@ -130,6 +130,7 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     scope.max_notional = config.max_notional.to_double();
     scope.as_of_date = config.as_of_date;
     scope.seed = config.seed;
+    scope.trades_per_book = config.trades_per_book;
     scope.reference_curve_id = config.reference_curve_id;
 
     synthetic::list_trade_generation_books_request book_scope_req;

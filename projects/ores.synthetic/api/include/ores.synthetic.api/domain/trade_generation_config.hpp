@@ -154,6 +154,16 @@ struct trade_generation_config final {
     std::uint64_t seed = 1;
 
     /**
+     * @brief How many trades one book of the scope receives. The size is a property of the
+     * population and not of the generator, so a tenant that wants a larger or smaller book states
+     * it here rather than in code: the generator holds no count of its own.
+     *
+     * It is a count per book and not a total, so a configuration scoped to four books states four
+     * times this many trades.
+     */
+    std::uint32_t trades_per_book = 8;
+
+    /**
      * @brief Whether the configuration is active and eligible for generation.
      */
     bool enabled = false;

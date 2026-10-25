@@ -50,15 +50,6 @@ public:
 inline constexpr std::string_view bond_trade_type_code = "Bond";
 
 /**
- * @brief How many trades one book receives per generation.
- *
- * The count is a property of the generator and not of the config, because the
- * config states the shape of the population and not its size: a reviewer reads
- * the bands and the scope, and the size is a constant the acceptance can name.
- */
-inline constexpr std::uint32_t trades_per_book = 8;
-
-/**
  * @brief Builds the population one asset class states.
  *
  * A planner is pure and deterministic: the answer is a function of the scope

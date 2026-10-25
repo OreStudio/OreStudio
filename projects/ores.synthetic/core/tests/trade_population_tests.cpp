@@ -74,6 +74,13 @@ const boost::uuids::uuid bank =
 const boost::uuids::uuid second_bank =
     boost::uuids::string_generator()("55555555-5555-5555-5555-555555555555");
 
+/*
+ * How many trades each book of the scene receives. The case states it rather
+ * than leaning on the struct's default, so a change to that default cannot
+ * quietly change what these cases assert.
+ */
+constexpr std::uint32_t scene_trades_per_book = 8;
+
 domain::trade_generation_scope bond_scope() {
     domain::trade_generation_scope scope;
     scope.config_id = config_id;
@@ -85,6 +92,7 @@ domain::trade_generation_scope bond_scope() {
     scope.max_notional = 10000000.0;
     scope.as_of_date = std::chrono::year{2026} / 1 / 2;
     scope.seed = 7;
+    scope.trades_per_book = scene_trades_per_book;
     scope.book_ids = {bond_book, second_book};
     scope.counterparty_ids = {bank, second_bank};
     scope.issuer_ids = {bank, second_bank};
@@ -140,10 +148,20 @@ std::optional<std::uint32_t> version_of(const recording_writer& writer,
 
 }
 
+TEST_CASE("the_population_size_is_the_configs_and_not_the_generators", tags) {
+    auto narrower = bond_scope();
+    narrower.trades_per_book = 2;
+
+    const auto plan = plan_of(narrower);
+
+    REQUIRE(plan.slots.size() == 2u * narrower.book_ids.size());
+    REQUIRE(plan.slots.size() < plan_of(bond_scope()).slots.size());
+}
+
 TEST_CASE("a_bond_scope_states_one_trade_per_slot_across_its_books", tags) {
     const auto plan = plan_of(bond_scope());
 
-    REQUIRE(plan.slots.size() == trades_per_book * 2);
+    REQUIRE(plan.slots.size() == scene_trades_per_book * 2);
     REQUIRE(plan.slots.front().trade_type_code == "Bond");
     REQUIRE(plan.slots.front().book_id == bond_book);
     REQUIRE(plan.slots[1].book_id == second_book);
@@ -306,18 +324,18 @@ TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", tags) {
     trade_population_service service(writer);
 
     const auto first = service.run(config_id);
-    REQUIRE(first.planned == trades_per_book * 2);
-    REQUIRE(first.written == trades_per_book * 2);
+    REQUIRE(first.planned == scene_trades_per_book * 2);
+    REQUIRE(first.written == scene_trades_per_book * 2);
     REQUIRE(first.already_present == 0);
-    REQUIRE(writer.bookings == trades_per_book * 2);
+    REQUIRE(writer.bookings == scene_trades_per_book * 2);
 
     const auto versions_after_first = writer.versions;
 
     const auto second = service.run(config_id);
-    REQUIRE(second.planned == trades_per_book * 2);
+    REQUIRE(second.planned == scene_trades_per_book * 2);
     REQUIRE(second.written == 0);
-    REQUIRE(second.already_present == trades_per_book * 2);
-    REQUIRE(writer.bookings == trades_per_book * 2);
+    REQUIRE(second.already_present == scene_trades_per_book * 2);
+    REQUIRE(writer.bookings == scene_trades_per_book * 2);
 
     /*
      * The convergence acceptance, stated as the two properties it names: no

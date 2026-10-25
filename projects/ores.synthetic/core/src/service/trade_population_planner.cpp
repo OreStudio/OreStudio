@@ -222,7 +222,8 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
-    const auto total = trades_per_book * static_cast<std::uint32_t>(scope.book_ids.size());
+    const auto total =
+        scope.trades_per_book * static_cast<std::uint32_t>(scope.book_ids.size());
     for (std::uint32_t slot = 0; slot < total; ++slot) {
         const auto& book_id = scope.book_ids[slot % scope.book_ids.size()];
         const auto& counterparty_id = scope.counterparty_ids[slot % scope.counterparty_ids.size()];

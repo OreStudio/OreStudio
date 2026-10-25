@@ -54,6 +54,14 @@ struct trade_generation_scope final {
     double max_notional = 0.0;
     std::chrono::year_month_day as_of_date;
     std::uint64_t seed = 0;
+    /**
+     * @brief How many trades each book of the scope receives.
+     *
+     * The size belongs to the configuration and not to the generator: a tenant
+     * that wants a thinner or a fuller book changes a row. It is a count per
+     * book, so a scope over four books states four times this many trades.
+     */
+    std::uint32_t trades_per_book = 8;
     std::vector<boost::uuids::uuid> book_ids;
     std::vector<boost::uuids::uuid> counterparty_ids;
     /**

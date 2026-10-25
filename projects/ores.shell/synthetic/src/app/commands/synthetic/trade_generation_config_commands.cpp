@@ -143,8 +143,8 @@ void trade_generation_config_commands::register_commands(cli::Menu& root_menu,
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> "
-        "<min_notional> <max_notional> <as_of_date> <seed> <enabled> <reference_curve_id> <reason> "
-        "<commentary>");
+        "<min_notional> <max_notional> <as_of_date> <seed> <trades_per_book> <enabled> "
+        "<reference_curve_id> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -152,8 +152,8 @@ void trade_generation_config_commands::register_commands(cli::Menu& root_menu,
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> "
-        "<min_notional> <max_notional> <as_of_date> <seed> <enabled> <reference_curve_id> <reason> "
-        "<commentary> [--version <n>]");
+        "<min_notional> <max_notional> <as_of_date> <seed> <trades_per_book> <enabled> "
+        "<reference_curve_id> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -161,8 +161,8 @@ void trade_generation_config_commands::register_commands(cli::Menu& root_menu,
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <name> <description> <asset_class_code> <min_tenor_code> "
-        "<max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <enabled> "
-        "<reference_curve_id> <reason> <commentary>");
+        "<max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <trades_per_book> "
+        "<enabled> <reference_curve_id> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -357,8 +357,8 @@ void trade_generation_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -373,6 +373,8 @@ void trade_generation_config_commands::process_add(std::ostream& out,
         read_token(req.change.write.max_notional, parsed->positionals[next++], "max_notional");
         read_token(req.change.write.as_of_date, parsed->positionals[next++], "as_of_date");
         read_token(req.change.write.seed, parsed->positionals[next++], "seed");
+        read_token(
+            req.change.write.trades_per_book, parsed->positionals[next++], "trades_per_book");
         read_token(req.change.write.enabled, parsed->positionals[next++], "enabled");
         read_token(
             req.change.write.reference_curve_id, parsed->positionals[next++], "reference_curve_id");
@@ -418,8 +420,8 @@ void trade_generation_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -434,6 +436,8 @@ void trade_generation_config_commands::process_set(std::ostream& out,
         read_token(req.change.write.max_notional, parsed->positionals[next++], "max_notional");
         read_token(req.change.write.as_of_date, parsed->positionals[next++], "as_of_date");
         read_token(req.change.write.seed, parsed->positionals[next++], "seed");
+        read_token(
+            req.change.write.trades_per_book, parsed->positionals[next++], "trades_per_book");
         read_token(req.change.write.enabled, parsed->positionals[next++], "enabled");
         read_token(
             req.change.write.reference_curve_id, parsed->positionals[next++], "reference_curve_id");
@@ -491,8 +495,8 @@ void trade_generation_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 12 + 2) {
-            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 13 + 2) {
+            fail(out) << "Expected " << (change_count * 13 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -509,6 +513,8 @@ void trade_generation_config_commands::process_put_many(std::ostream& out,
             read_token(change.write.max_notional, parsed->positionals[next++], "max_notional");
             read_token(change.write.as_of_date, parsed->positionals[next++], "as_of_date");
             read_token(change.write.seed, parsed->positionals[next++], "seed");
+            read_token(
+                change.write.trades_per_book, parsed->positionals[next++], "trades_per_book");
             read_token(change.write.enabled, parsed->positionals[next++], "enabled");
             read_token(
                 change.write.reference_curve_id, parsed->positionals[next++], "reference_curve_id");

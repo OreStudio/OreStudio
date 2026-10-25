@@ -156,18 +156,29 @@ function FeedBody({
                 own={
                     <>
                         <FeedStatus running={running} />
-                        {mayRun && running !== undefined && (
-                            <Button
-                                size="sm"
-                                pending={runs.pending}
-                                onClick={() =>
-                                    runs.run(running ? 'stop' : 'start', [
-                                        { id, label: show(feed['source_name']) },
-                                    ])
-                                }
-                            >
-                                {running ? t('marketdata.runs.stop') : t('marketdata.runs.start')}
-                            </Button>
+                        {mayRun && (
+                            <span className="flex gap-2">
+                                <Button
+                                    size="sm"
+                                    disabled={running === true}
+                                    onClick={() =>
+                                        runs.run('start', [
+                                            { id, label: show(feed['source_name']) },
+                                        ])
+                                    }
+                                >
+                                    {t('marketdata.runs.start')}
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    disabled={running !== true}
+                                    onClick={() =>
+                                        runs.run('stop', [{ id, label: show(feed['source_name']) }])
+                                    }
+                                >
+                                    {t('marketdata.runs.stop')}
+                                </Button>
+                            </span>
                         )}
                     </>
                 }

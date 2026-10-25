@@ -361,14 +361,15 @@ describe('the FX feed screens', () => {
         expect(html).toContain('The mixture needs at least one component.');
     });
 
-    it('offers Stop on a running feed and Start on a stopped one', () => {
+    it('enables Start on a feed whose source serves nothing and Stop on one whose source serves', () => {
         const running = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
             client.setQueryData(ADAPTERS_KEY, adapters('bloomberg', 'serving', 1));
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(running).toContain('>Running<');
-        expect(running).toContain('>Stop<');
+        expect(running).toMatch(/<button[^>]*disabled=""[^>]*>Start<\/button>/);
+        expect(running).not.toMatch(/<button[^>]*disabled=""[^>]*>Stop<\/button>/);
         expect(running).toContain('EUR/USD · version 3 · Geometric');
         const stopped = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
@@ -376,7 +377,8 @@ describe('the FX feed screens', () => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(stopped).toContain('>Stopped<');
-        expect(stopped).toContain('>Start<');
+        expect(stopped).not.toMatch(/<button[^>]*disabled=""[^>]*>Start<\/button>/);
+        expect(stopped).toMatch(/<button[^>]*disabled=""[^>]*>Stop<\/button>/);
     });
 
     it('plots the last ticks with the last price and the move over them', () => {

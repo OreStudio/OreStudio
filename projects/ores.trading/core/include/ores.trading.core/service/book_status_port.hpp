@@ -21,6 +21,8 @@
 #ifndef ORES_TRADING_CORE_SERVICE_BOOK_STATUS_PORT_HPP
 #define ORES_TRADING_CORE_SERVICE_BOOK_STATUS_PORT_HPP
 
+#include <string_view>
+
 #include <boost/uuid/uuid.hpp>
 
 namespace ores::trading::service {
@@ -49,7 +51,7 @@ public:
     virtual ~book_status_port() = default;
 
     /**
-     * @brief The state of the book a booking names.
+     * @brief The state of the book a booking names, asked as @p actor_token.
      *
      * `unknown` means the answer could not be had: the book was not found, or
      * the ask was refused, or the other service did not answer. A caller that
@@ -58,13 +60,14 @@ public:
      * `unknown`, which it logs. A booking refused because refdata was busy would
      * be a worse fault than the one this rule prevents.
      */
-    [[nodiscard]] virtual state of(const boost::uuids::uuid& book_id) const = 0;
+        [[nodiscard]] virtual state of(const boost::uuids::uuid& book_id,
+                                   std::string_view actor_token) const = 0;
 };
 
 /** A port that knows nothing, for callers that cannot ask. */
 class unknown_book_status final : public book_status_port {
 public:
-    [[nodiscard]] state of(const boost::uuids::uuid&) const override {
+    [[nodiscard]] state of(const boost::uuids::uuid&, std::string_view) const override {
         return state::unknown;
     }
 };

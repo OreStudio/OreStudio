@@ -65,7 +65,14 @@ public:
      * context. A trade id that is already booked is answered with a conflict
      * and writes nothing.
      */
-    messaging::book_trade_response book_trade(const messaging::book_trade_request& request);
+    /**
+     * @brief Books a trade, asking the book's status as @p actor_token.
+     *
+     * The token is the caller's own, forwarded so the status read answers for
+     * the person booking rather than for this service.
+     */
+    messaging::book_trade_response book_trade(const messaging::book_trade_request& request,
+                                              std::string_view actor_token);
 
     /**
      * @brief Creates a bond issue with its legs and their child rows, in one

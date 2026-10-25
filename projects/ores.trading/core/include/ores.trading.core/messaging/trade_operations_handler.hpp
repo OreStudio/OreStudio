@@ -25,6 +25,7 @@
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -111,7 +112,7 @@ public:
         }
         service::trade_operations_service svc(req_ctx, books_);
         try {
-            reply(nats_, msg, svc.book_trade(*req));
+            reply(nats_, msg, svc.book_trade(*req, ores::nats::service::extract_bearer(msg)));
         } catch (const std::exception& e) {
             // The service reports a conflict in the response; an exception is
             // the store refusing the write, such as a check the trade fails.

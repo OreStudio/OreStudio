@@ -28,6 +28,7 @@
 #include <chrono>
 #include <map>
 #include <set>
+#include <sstream>
 #include <string>
 #include <variant>
 
@@ -326,6 +327,45 @@ TEST_CASE("a_family_the_generator_does_not_cover_is_refused_by_name", tags) {
     equity.asset_class_code = "equity";
 
     CHECK_THROWS_WITH(plan_of(equity), Catch::Matchers::ContainsSubstring("equity"));
+}
+
+/*
+ * The fields every planner states through the shared envelope, rendered in a
+ * fixed order. Two plans render the same exactly when they agree on the
+ * envelope, which is what shows that extracting it changed nothing.
+ */
+std::string render_envelope(const domain::trade_population_plan& plan) {
+    std::ostringstream s;
+    for (const auto& slot : plan.slots) {
+        s << slot.slot << ' ' << boost::uuids::to_string(slot.trade_id) << ' '
+          << boost::uuids::to_string(slot.book_id) << ' '
+          << boost::uuids::to_string(slot.counterparty_id) << ' '
+          << (slot.netting_set_id ? boost::uuids::to_string(*slot.netting_set_id) : "-") << ' '
+          << slot.trader_username << ' ' << slot.trade_type_code << ' '
+          << slot.internal_identifier << ' ' << slot.trade_date << ' ' << slot.notional << ' '
+          << slot.currency << '\n';
+    }
+    return s.str();
+}
+
+/*
+ * A 64-bit FNV-1a over the envelope, so the recorded value is one number rather
+ * than a paragraph. A collision would have to be found on purpose to pass a
+ * plan the extraction changed.
+ */
+std::uint64_t envelope_hash(const std::string& rendered) {
+    std::uint64_t hash = 1469598103934665603ULL;
+    for (const auto character : rendered) {
+        hash ^= static_cast<std::uint64_t>(static_cast<unsigned char>(character));
+        hash *= 1099511628211ULL;
+    }
+    return hash;
+}
+
+TEST_CASE("the_envelope_of_a_bond_plan_is_the_one_that_was_agreed", tags) {
+    // Recorded from the planner as it stood before the envelope was extracted,
+    // so this case fails if the extraction changed anything a slot states.
+    CHECK(envelope_hash(render_envelope(plan_of(bond_scope()))) == 9368398884618711992ULL);
 }
 
 TEST_CASE("a_rate_population_states_two_legs_of_one_currency", tags) {

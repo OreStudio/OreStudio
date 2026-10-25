@@ -72,6 +72,7 @@ The investigation this story commissioned is
 | [[id:A5DA1085-F781-4467-92AE-6D4A8769FE79][Populate the inflation family]] | BACKLOG | | | Book the inflation-linked trade types, in the 3% share the weights page sets. The refdata asset class has one catalogue code and it routes to rate_instrument. |
 | [[id:31F6526B-7E6E-4BA0-907F-71A361F0030D][Populate the scripted family]] | BACKLOG | | | Book the four routed scripted trade types, in the 3% share the weights page sets. The refdata catalogue has no scripted asset class, so the mapping must be declared. |
 | [[id:2CD53957-A19B-493B-BB81-662B6308BF07][Extend the generator across the instruments]] | ABANDONED | | | Replaced by one task per asset class, because a family cannot land as a single verifiable unit. |
+| [[id:8EBC26FE-5004-4EC5-90F7-745C9E2B1AB4][Factor out the shared planner loop]] | BACKLOG | | | The bond, commodity and interest rate planners each carry a verbatim copy of the slot loop: the book, counterparty and trader lookups, the identifiers, the trade date and the netting set scan. A fourth family would copy it again. Extract the envelope every family shares, so a planner states only what its family adds. |
 
 * Decisions
 

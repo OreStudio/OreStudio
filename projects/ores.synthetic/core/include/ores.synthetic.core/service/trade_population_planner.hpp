@@ -159,6 +159,25 @@ ORES_SYNTHETIC_CORE_EXPORT std::vector<std::string_view> planned_asset_classes()
 ORES_SYNTHETIC_CORE_EXPORT void validate_scope(const domain::trade_generation_scope& scope);
 
 /**
+ * @brief The number of slots a scope states.
+ *
+ * The config states a count per book, so a scope over four books states four
+ * times that count. It is a function of the scope alone.
+ */
+ORES_SYNTHETIC_CORE_EXPORT std::uint32_t slot_count(const domain::trade_generation_scope& scope);
+
+/**
+ * @brief States the envelope every family shares for one slot.
+ *
+ * The book, the counterparty, the trader, the identifiers, the trade date and
+ * the netting set are the same for all of them, so a planner states what its
+ * family adds and nothing else. A planner that computed these itself would be
+ * a copy, and the copies drift.
+ */
+ORES_SYNTHETIC_CORE_EXPORT domain::trade_population_slot
+common_slot(const domain::trade_generation_scope& scope, std::uint32_t slot);
+
+/**
  * @brief Derives the id a trade slot carries.
  *
  * A name-based UUID over the scope's own identifiers and the slot, so a slot

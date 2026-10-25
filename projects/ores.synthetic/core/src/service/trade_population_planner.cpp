@@ -212,6 +212,37 @@ const trade_planner& planner_for(const std::string& asset_class_code) {
     return *entry->second;
 }
 
+std::uint32_t slot_count(const domain::trade_generation_scope& scope) {
+    return scope.trades_per_book * static_cast<std::uint32_t>(scope.book_ids.size());
+}
+
+domain::trade_population_slot common_slot(const domain::trade_generation_scope& scope,
+                                          std::uint32_t slot) {
+    domain::trade_population_slot entry;
+    entry.slot = slot;
+    entry.book_id = scope.book_ids[slot % scope.book_ids.size()];
+    entry.counterparty_id = scope.counterparty_ids[slot % scope.counterparty_ids.size()];
+    entry.trader_username = scope.trader_usernames[slot % scope.trader_usernames.size()];
+    entry.trade_id = trade_id_for(scope, slot);
+    entry.internal_identifier = internal_identifier_for(scope, slot);
+    entry.trade_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
+    entry.currency = scope.currency_code;
+
+    /*
+     * The set a counterparty is cleared under is a fact of the counterparty, so
+     * every slot of it states the same one. A counterparty with no set is
+     * ordinary: a booking without a set is one the database accepts.
+     */
+    for (const auto& pair : scope.netting_sets) {
+        if (pair.first == entry.counterparty_id) {
+            entry.netting_set_id = pair.second;
+            break;
+        }
+    }
+
+    return entry;
+}
+
 std::string_view bond_trade_planner::asset_class_code() const {
     return "bond";
 }
@@ -228,11 +259,7 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
-    const auto total = scope.trades_per_book * static_cast<std::uint32_t>(scope.book_ids.size());
-    for (std::uint32_t slot = 0; slot < total; ++slot) {
-        const auto& book_id = scope.book_ids[slot % scope.book_ids.size()];
-        const auto& counterparty_id = scope.counterparty_ids[slot % scope.counterparty_ids.size()];
-        const auto& trader = scope.trader_usernames[slot % scope.trader_usernames.size()];
+    for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
 
         const auto span = max_years - min_years + 1;
@@ -256,25 +283,10 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         terms.issue_date = add_months(scope.as_of_date, -security_age_months);
         terms.maturity_date = add_years(terms.issue_date, static_cast<int>(terms.tenor_years));
 
-        domain::trade_population_slot entry;
-        entry.slot = slot;
-        entry.book_id = book_id;
-        entry.counterparty_id = counterparty_id;
-        entry.trader_username = trader;
+        auto entry = common_slot(scope, slot);
         entry.trade_type_code = std::string(bond_trade_type_code);
-        entry.trade_id = trade_id_for(scope, slot);
-        entry.internal_identifier = internal_identifier_for(scope, slot);
-        entry.trade_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
         entry.notional = notional_from(scope, draw(name, 1));
-        entry.currency = scope.currency_code;
         entry.terms = terms;
-
-        for (const auto& pair : scope.netting_sets) {
-            if (pair.first == counterparty_id) {
-                entry.netting_set_id = pair.second;
-                break;
-            }
-        }
 
         plan.slots.push_back(std::move(entry));
     }
@@ -371,11 +383,7 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
-    const auto total = scope.trades_per_book * static_cast<std::uint32_t>(scope.book_ids.size());
-    for (std::uint32_t slot = 0; slot < total; ++slot) {
-        const auto& book_id = scope.book_ids[slot % scope.book_ids.size()];
-        const auto& counterparty_id = scope.counterparty_ids[slot % scope.counterparty_ids.size()];
-        const auto& trader = scope.trader_usernames[slot % scope.trader_usernames.size()];
+    for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
 
         /*
@@ -454,25 +462,11 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
                 break;
         }
 
-        domain::trade_population_slot entry;
-        entry.slot = slot;
-        entry.book_id = book_id;
-        entry.counterparty_id = counterparty_id;
-        entry.trader_username = trader;
+        auto entry = common_slot(scope, slot);
         entry.trade_type_code = std::string(type.code);
-        entry.trade_id = trade_id_for(scope, slot);
-        entry.internal_identifier = internal_identifier_for(scope, slot);
-        entry.trade_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
-        entry.notional = price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
-        entry.currency = scope.currency_code;
+        entry.notional =
+            price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
         entry.terms = terms;
-
-        for (const auto& pair : scope.netting_sets) {
-            if (pair.first == counterparty_id) {
-                entry.netting_set_id = pair.second;
-                break;
-            }
-        }
 
         plan.slots.push_back(std::move(entry));
     }
@@ -653,11 +647,7 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
-    const auto total = scope.trades_per_book * static_cast<std::uint32_t>(scope.book_ids.size());
-    for (std::uint32_t slot = 0; slot < total; ++slot) {
-        const auto& book_id = scope.book_ids[slot % scope.book_ids.size()];
-        const auto& counterparty_id = scope.counterparty_ids[slot % scope.counterparty_ids.size()];
-        const auto& trader = scope.trader_usernames[slot % scope.trader_usernames.size()];
+    for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
 
         /*
@@ -716,25 +706,10 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         terms.floating_business_day_convention_code = "ModifiedFollowing";
         terms.floating_payment_frequency_code = "Semiannual";
 
-        domain::trade_population_slot entry;
-        entry.slot = slot;
-        entry.book_id = book_id;
-        entry.counterparty_id = counterparty_id;
-        entry.trader_username = trader;
+        auto entry = common_slot(scope, slot);
         entry.trade_type_code = std::string(type);
-        entry.trade_id = trade_id_for(scope, slot);
-        entry.internal_identifier = internal_identifier_for(scope, slot);
-        entry.trade_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
         entry.notional = terms.notional;
-        entry.currency = scope.currency_code;
         entry.terms = terms;
-
-        for (const auto& pair : scope.netting_sets) {
-            if (pair.first == counterparty_id) {
-                entry.netting_set_id = pair.second;
-                break;
-            }
-        }
 
         plan.slots.push_back(std::move(entry));
     }

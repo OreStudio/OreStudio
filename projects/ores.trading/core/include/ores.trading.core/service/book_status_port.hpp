@@ -21,9 +21,8 @@
 #ifndef ORES_TRADING_CORE_SERVICE_BOOK_STATUS_PORT_HPP
 #define ORES_TRADING_CORE_SERVICE_BOOK_STATUS_PORT_HPP
 
-#include <string_view>
-
 #include <boost/uuid/uuid.hpp>
+#include <string_view>
 
 namespace ores::trading::service {
 
@@ -60,7 +59,7 @@ public:
      * `unknown`, which it logs. A booking refused because refdata was busy would
      * be a worse fault than the one this rule prevents.
      */
-        [[nodiscard]] virtual state of(const boost::uuids::uuid& book_id,
+    [[nodiscard]] virtual state of(const boost::uuids::uuid& book_id,
                                    std::string_view actor_token) const = 0;
 };
 

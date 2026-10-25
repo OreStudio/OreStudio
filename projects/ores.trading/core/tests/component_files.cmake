@@ -26,6 +26,7 @@ set(files
     "average_type_eventing_integration_tests.cpp"
     "balance_guaranteed_swap_instrument_eventing_integration_tests.cpp"
     "barrier_type_eventing_integration_tests.cpp"
+    "bus_book_status_tests.cpp"
     "callable_swap_instrument_eventing_integration_tests.cpp"
     "cap_floor_instrument_eventing_integration_tests.cpp"
     "commodity_instrument_eventing_integration_tests.cpp"

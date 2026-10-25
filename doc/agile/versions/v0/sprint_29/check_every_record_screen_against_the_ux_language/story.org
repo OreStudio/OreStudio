@@ -8,7 +8,7 @@
 #+filetags: :ux:web:refdata:playwright:testing:sprint_29:v0:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ The checks exist before the screens change, so the first screen work proves the 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
 | Waiting on    | The stable rule identifiers of [[id:90CDEBC8-3D87-479A-82FD-A8E0B9CE09A2][Settle the UX language for record screens]] for the harness checks. The Playwright setup can start before them. |
@@ -41,7 +41,7 @@ The checks exist before the screens change, so the first screen work proves the 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:0E35B0D2-19D4-4876-B46C-9B589E643BEC][Run Playwright against the environment]] | BACKLOG | | | Add Playwright to ores.web: read .env, sign in as a seeded Acme user and open a record screen, from one command. |
+| [[id:0E35B0D2-19D4-4876-B46C-9B589E643BEC][Run Playwright against the environment]] | STARTED | 2026-10-25 | | Add Playwright to ores.web: read .env, sign in as a seeded Acme user and open a record screen, from one command. |
 | [[id:BC3F6289-110F-4380-9B0A-0EA598B656A4][Build the conformance harness over the registries]] | BACKLOG | | | Walk every record kind the registries name and run one check per checkable rule; a failure names the rule identifier. |
 | [[id:CA7E3A05-7865-41E6-980E-E514ACCEF1E9][Record the baseline of today's screens]] | BACKLOG | | | Run the harness over every record screen of today and file each failure per screen family as a capture or a task. |
 | [[id:49EEB245-FDF4-410A-99ED-D89F47BE9543][Write the screen sign off recipe]] | BACKLOG | | | Write the sign off recipe: run the harness, walk the manual checklist lines and record the outcome on the task. |

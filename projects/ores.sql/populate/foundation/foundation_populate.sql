@@ -113,6 +113,7 @@ select ores_utility_allow_version_replace_fn();
 \echo '--- Reference Data Lookup Tables ---'
 \ir ../refdata/refdata_business_day_convention_types_populate.sql
 \ir ../refdata/refdata_convention_kinds_populate.sql
+\ir ../refdata/refdata_convention_kind_terms_populate.sql
 \ir ../refdata/refdata_day_count_fraction_types_populate.sql
 \ir ../refdata/refdata_tenor_kinds_populate.sql
 \ir ../refdata/refdata_tenor_units_populate.sql

@@ -1552,6 +1552,40 @@
           "type": "integer"
         },
         {
+          "conditional": false,
+          "guide_optional": true,
+          "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:1266",
+          "guide_text": "The number of business days that the option expiry date is before the future expiry date. Any non-negative integer is allowed here. If omitted, this takes a default value of zero and the expiry date of an option on the future contract is assumed to equal the expiry date of the future contract.",
+          "list_item": null,
+          "mandatory": false,
+          "member": null,
+          "name": "OptionExpiryOffset",
+          "parser": null,
+          "path": [
+            "CommodityFuture"
+          ],
+          "read": "getNodeValue",
+          "source_ref": "OREData/ored/configuration/conventions.cpp:2137",
+          "type": "text"
+        },
+        {
+          "conditional": false,
+          "guide_optional": true,
+          "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:1269",
+          "guide_text": "This node can contain any integer in the range 1,\\ldots,31 indicating the day of the month on which an option expiry date is anchored. A value of 31 will guarantee that the last day in the month is used a base date. If omitted, this is not used. Setting this field takes precedence over OptionExpiryOffset.\\item OptionBusinessDayConvention [Optional]: The business day convention used to adjust the option expiry date to a good business day if OptionExpiryDay is used.",
+          "list_item": null,
+          "mandatory": false,
+          "member": null,
+          "name": "OptionExpiryDay",
+          "parser": null,
+          "path": [
+            "CommodityFuture"
+          ],
+          "read": "getNodeValue",
+          "source_ref": "OREData/ored/configuration/conventions.cpp:2145",
+          "type": "text"
+        },
+        {
           "conditional": true,
           "guide_optional": null,
           "guide_ref": "",
@@ -1586,6 +1620,57 @@
           "read": "getChildValue",
           "source_ref": "OREData/ored/configuration/conventions.cpp:2162",
           "type": "weekday"
+        },
+        {
+          "conditional": false,
+          "guide_optional": true,
+          "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:1273",
+          "guide_text": "This node is used to indicate a date in a given month in the form of the last named weekday of that month e.g. last Wednesday. The node takes a weekday in the form of the first three characters of the weekday with the first character capitalised.",
+          "list_item": null,
+          "mandatory": false,
+          "member": null,
+          "name": "OptionExpiryLastWeekdayOfMonth",
+          "parser": null,
+          "path": [
+            "CommodityFuture"
+          ],
+          "read": "getNodeValue",
+          "source_ref": "OREData/ored/configuration/conventions.cpp:2167",
+          "type": "text"
+        },
+        {
+          "conditional": false,
+          "guide_optional": true,
+          "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:1274",
+          "guide_text": "This node is used to indicate a date in a given week in the form of the named weekday, e.g. Wednesday. The node takes a weekday in the form of the first three characters of the weekday with the first character capitalised. This node is mandatory for weekly expiring options. The node is not allowed to use with any other option contract frequency.",
+          "list_item": null,
+          "mandatory": false,
+          "member": null,
+          "name": "OptionExpiryWeeklyDayOfTheWeek",
+          "parser": null,
+          "path": [
+            "CommodityFuture"
+          ],
+          "read": "getNodeValue",
+          "source_ref": "OREData/ored/configuration/conventions.cpp:2178",
+          "type": "text"
+        },
+        {
+          "conditional": false,
+          "guide_optional": true,
+          "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:1275",
+          "guide_text": "This node can contain any non-negative integer. The option expiry date is this number of calendar days before the first calendar day of the contract month.",
+          "list_item": null,
+          "mandatory": false,
+          "member": null,
+          "name": "OptionCalendarDaysBefore",
+          "parser": null,
+          "path": [
+            "CommodityFuture"
+          ],
+          "read": "getNodeValue",
+          "source_ref": "OREData/ored/configuration/conventions.cpp:2190",
+          "type": "text"
         },
         {
           "conditional": false,
@@ -4714,6 +4799,23 @@
           "list_item": null,
           "mandatory": false,
           "member": null,
+          "name": "ShortPayTenor",
+          "parser": null,
+          "path": [
+            "TenorBasisSwap"
+          ],
+          "read": "getNodeValue",
+          "source_ref": "OREData/ored/configuration/conventions.cpp:756",
+          "type": "text"
+        },
+        {
+          "conditional": false,
+          "guide_optional": null,
+          "guide_ref": "",
+          "guide_text": "",
+          "list_item": null,
+          "mandatory": false,
+          "member": null,
           "name": "SpreadOnShort",
           "parser": null,
           "path": [
@@ -5216,24 +5318,6 @@
           "read": "getChildValue",
           "source_ref": "OREData/ored/configuration/conventions.cpp:2791",
           "type": "currency"
-        },
-        {
-          "conditional": true,
-          "guide_optional": null,
-          "guide_ref": "",
-          "guide_text": "",
-          "list_item": null,
-          "mandatory": false,
-          "member": null,
-          "name": "Event",
-          "parser": "parseReal",
-          "path": [
-            "ZeroInflationIndex",
-            "RebasingEvents"
-          ],
-          "read": "getNodeValue",
-          "source_ref": "OREData/ored/configuration/conventions.cpp:2794",
-          "type": "double"
         }
       ]
     }

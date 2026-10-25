@@ -611,6 +611,20 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Run projects/ores.sql/utility/generate_value_sets.py and commit the populate script.",
     ),
     Check(
+        id="convention-kind-terms",
+        title="The convention kind terms match the mapper and the ORE terms",
+        argv=("python3", "projects/ores.sql/utility/generate_convention_kind_terms.py", "--check"),
+        classes=("sql", "cpp"),
+        paths=(
+            "projects/ores.sql/populate/refdata/refdata_convention_kind_terms_populate.sql",
+            "projects/ores.sql/utility/generate_convention_kind_terms.py",
+            "projects/ores.sql/utility/convention_terms.json",
+            "projects/ores.ore/core/src/domain/conventions_family_*.cpp",
+            "projects/ores.ore/core/src/domain/conventions_fx_projection.cpp",
+        ),
+        fix="Run projects/ores.sql/utility/generate_convention_kind_terms.py and commit the populate script.",
+    ),
+    Check(
         id="marketdata-identity-columns",
         title="The series identity projection matches the codec schema",
         argv=("python3", "build/scripts/check_marketdata_identity_columns.py"),

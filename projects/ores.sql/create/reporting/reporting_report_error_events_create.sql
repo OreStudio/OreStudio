@@ -105,11 +105,11 @@ create index if not exists report_error_events_subject_idx
 on "ores_reporting_report_error_events_tbl" (tenant_id, subject, subject_id);
 
 create unique index if not exists report_error_events_run_subject_idx
-on "ores_reporting_report_error_events_tbl" (tenant_id, report_instance_id, scope_code, subject, subject_id, message)
+on "ores_reporting_report_error_events_tbl" (tenant_id, report_instance_id, scope_code, subject, subject_id, message, detail)
 where subject_id is not null and severity = 'error';
 
 create unique index if not exists report_error_events_run_report_idx
-on "ores_reporting_report_error_events_tbl" (tenant_id, report_instance_id, scope_code, message)
+on "ores_reporting_report_error_events_tbl" (tenant_id, report_instance_id, scope_code, message, detail)
 where subject_id is null and severity = 'error';
 
 create or replace function ores_reporting_report_error_events_insert_fn()

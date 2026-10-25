@@ -29,6 +29,7 @@
  * are not represented at all.
  */
 
+export { completeListRequest } from './list-requests.js';
 export { SYSTEM_TENANT_ID, isUuid, uuid } from './primitives.js';
 export type { Uuid } from './primitives.js';
 

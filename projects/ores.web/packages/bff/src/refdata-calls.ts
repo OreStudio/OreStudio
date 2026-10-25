@@ -22,6 +22,7 @@
 import type { FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
+import { completeListRequest } from '@ores/wire-protocol';
 import type { LiveSession } from './sessions.js';
 
 /*
@@ -107,7 +108,7 @@ export async function readAll(
     for (let offset = 0; ; offset += PAGE) {
         const reply = await session.client.callAuthenticated(
             subject,
-            { ...request, offset, limit: PAGE, order: NO_ORDER },
+            completeListRequest(subject, { ...request, offset, limit: PAGE, order: NO_ORDER }),
             z.looseObject({ result: resultSchema }),
         );
         if (reply.result.outcome !== 'ok') {

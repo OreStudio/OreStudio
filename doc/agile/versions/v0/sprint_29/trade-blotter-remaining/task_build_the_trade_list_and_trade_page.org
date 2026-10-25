@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-the-trade-list-and-trade-page
-#+pr: 3784
+#+pr: 3788
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -88,6 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3788][#3788]] | [web] Complete a list request from the protocol |
 | [[https://github.com/OreStudio/OreStudio/pull/3784][#3784]] | [web] State every list member the service decodes |
 | [[https://github.com/OreStudio/OreStudio/pull/3783][#3783]] | [compass] Show the app page before filling the sign-in form |
 | [[https://github.com/OreStudio/OreStudio/pull/3734][#3734]] | [web] Build the trade list of the blotter |

@@ -129,10 +129,12 @@ export function registerBookRoutes(
                 'portfolios',
                 {
                     filter: null,
+                    as_of: null,
                 },
             ),
             books: await readAll(session, bookSubjects.list_books_request, 'books', {
                 filter: null,
+                as_of: null,
             }),
         };
     });
@@ -159,7 +161,7 @@ export function registerBookRoutes(
             session,
             businessUnitSubjects.list_business_units_request,
             'business_units',
-            { filter: null },
+            { filter: null, as_of: null },
         );
         return lists;
     });

@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 4F1C8E27-9D63-4A05-B8E1-7A2C5D9F3B68
+:END:
+#+title: The conventions pick-lists route cannot reach the bus
+#+description: /api/conventions/pick-lists answers 503 with a transport error in forty-five milliseconds, while the six lists it reads answer from the shell and /api/books/pick-lists answers from the same route shape.
+#+type: capture
+#+level: cross
+#+filetags: :web:bff:refdata:conventions:bug:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+Found by sweeping every GET route the BFF declares, after the list requests were completed from the protocol. Every route answered or asked for missing parameters, except this one.
+
+* What is seen
+
+#+begin_example
+$ curl -b cookies http://127.0.0.1:20802/api/conventions/pick-lists
+{"code":"upstream-unavailable","message":"Cannot reach the message bus."}   [503]
+real    0m0.045s
+#+end_example
+
+The answer is immediate, so this is not a timeout. =TransportError= is raised by the wire client rather than by a service refusal, and a refusal would have been a =502= with the code, as the missing-member refusals were.
+
+* What is ruled out
+
+- The lists answer: =calendar_names= returns 471 rows, and =business_day_convention_types=, =floating_index_types= and =payment_frequencies= each return rows, all through =compass shell=.
+- The route shape works: =/api/books/pick-lists= reads its lists through the same =readAll= and answers 200 from the same session.
+- A large reply is not the cause: =calendar_names list --limit 500= answers 471 rows from the shell.
+- The wire shape is not the cause: the requests now come from the generated table, and none of these six subjects is missing from it.
+
+* What is left
+
+Either the web service's own NATS credentials may not publish one of the six subjects, or its connection rejects the publish for another reason; the client reports both as a transport error. The next step is the web service's journal at debug level for the failing subject, then a comparison of its publish permissions with the shell's.
+
+It is not the sweep's class, which is why it is captured apart from it.

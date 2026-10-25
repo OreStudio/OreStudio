@@ -182,7 +182,7 @@ async function enrich(
         identifierSubjects.list_trade_identifiers_request,
         'identifiers',
         {
-            filter: { trade_id: null, trade_id_one_of: ids, correlation_id: null },
+            filter: { trade_id: null, trade_id_one_of: ids },
             as_of: null,
         },
     );
@@ -191,7 +191,6 @@ async function enrich(
             parent_portfolio_id: null,
             id_one_of: bookIds,
             parent_portfolio_id_one_of: null,
-            correlation_id: null,
         },
         as_of: null,
     });
@@ -199,7 +198,7 @@ async function enrich(
         session,
         counterpartySubjects.list_counterparties_request,
         'counterparties',
-        { filter: { id_one_of: counterpartyIds, correlation_id: null }, as_of: null },
+        { filter: { id_one_of: counterpartyIds }, as_of: null },
     );
     const trades =
         ids.length === 0
@@ -214,7 +213,6 @@ async function enrich(
                       trade_type_one_of: null,
                       counterparty_scope_one_of: null,
                       search: null,
-                      correlation_id: null,
                   },
                   as_of: null,
               });

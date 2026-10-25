@@ -802,6 +802,16 @@ CATALOGUE: tuple[Check, ...] = (
         phase=PREPARE,
     ),
     Check(
+        id="bff-list-requests",
+        title="Every hand-written list request states what the protocol decodes",
+        argv=(
+            CODEGEN_PY,
+            "projects/ores.codegen/scripts/check_bff_list_requests.py",
+        ),
+        classes=("web", "modeling", "codegen"),
+        fix="State the member the report names, or pass filter: null.",
+    ),
+    Check(
         id="backlog-indexes",
         title="The backlog bucket indexes match the captures",
         argv=(

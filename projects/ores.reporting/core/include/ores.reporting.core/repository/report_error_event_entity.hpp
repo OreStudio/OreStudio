@@ -52,6 +52,8 @@ struct report_error_event_entity {
     std::string message;
     std::optional<std::string> subject;
     std::optional<std::string> subject_id;
+    std::optional<int> subject_version;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> subject_as_of;
     std::optional<std::string> detail;
     std::string event_time;
 };

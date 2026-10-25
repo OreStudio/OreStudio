@@ -1871,6 +1871,7 @@ const pt: SourceCatalogue = {
                     'A execução de um relatório que enviou um lote: o seu estado, as suas horas e o lote que criou.',
                 loading: 'A ler a execução de relatório...',
                 run: 'Execução',
+                errors: 'Erros',
                 name: 'Nome',
                 kind: 'Tipo',
                 state: 'Estado',

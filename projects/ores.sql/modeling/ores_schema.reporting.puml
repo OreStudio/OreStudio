@@ -612,6 +612,8 @@ package "reporting" #E0F7FA {
         * message : text
           subject : text
           subject_id : text <<FK>>
+          subject_version : integer
+          subject_as_of : timestamptz
           detail : jsonb
         * event_time : timestamptz
     }

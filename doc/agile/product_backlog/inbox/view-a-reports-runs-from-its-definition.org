@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: B38612CC-1F8F-4130-A460-9B6CA5A4BC29
+:END:
+#+title: View a report's runs from its definition screen
+#+description: The report definition screen says what a report is configured to run, but not what it has actually run. There is no way to walk from a definition to its runs, so a person who has just changed a definition cannot see whether the next run behaved, and a person investigating a failure starts from the grid's job list instead of from the report.
+
+Add a Runs tab to the report definition screen. It lists the definition's recent report runs, newest first, with the state, the party, when it started and finished, and how many errors and warnings each recorded. A row opens the run page, and the Errors tab of that page carries the reasons.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

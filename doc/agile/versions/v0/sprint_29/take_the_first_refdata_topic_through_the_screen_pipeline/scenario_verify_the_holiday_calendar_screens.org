@@ -33,7 +33,7 @@ The session did the following. Confirm the system is in this state before you st
 | Parent story  | [[id:1E0EF4FA-60C0-4F2F-AAE1-848E84675449][Take the first reference data topic through the screen pipeline]]   |
 | Target screen | Reference data → Holiday calendars, =http://localhost:20402/refdata/calendars=, and one calendar's page under it |
 | Clients       |                                          |
-| State         | PASSED                               |
+| State         | FAILED |
 
 * Steps
 
@@ -45,6 +45,11 @@ The session did the following. Confirm the system is in this state before you st
 - The landing page opens with *Your account* in the header. If it does not, stop here.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 
 PASS. Landed with Your account in the header.
 
@@ -58,6 +63,12 @@ PASS. Landed with Your account in the header.
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | if target is EUR area it should have EUR flag. |
+
+
 PASS. Crumbs, Refresh then Add, the load time, the pager 1–15 of 61, the search in the address. Add is drawn about 100 ms after the rows, once the person's access is read.
 
 ** Open a QuantLib calendar
@@ -69,6 +80,12 @@ PASS. Crumbs, Refresh then Add, the load time, the pager 1–15 of 61, the searc
 - Details end with the notice that QuantLib supplies the holidays, and with the last-changed line.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | [[file:scenario_verify_the_holiday_calendar_screens_step3_20261025_170031.png]] |
+
 
 PASS. Refresh and Derive only; Read only; the tabs Details, Diary events, History; the QuantLib notice.
 
@@ -83,6 +100,12 @@ PASS. Refresh and Derive only; Read only; the tabs Details, Diary events, Histor
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | can't choose a flag. rest worked. A request did not finish; ; NATS publish failed: Maximum Payload Exceeded (GET /api/images, request 41ed3823) |
+
+
 PASS. Opened on the new page with Refresh, Derive, Rebuild, Edit, Delete in that order and the five tabs.
 
 ** Add an exception and a diary event
@@ -94,6 +117,11 @@ PASS. Opened on the new page with Refresh, Derive, Rebuild, Edit, Delete in that
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 PASS. Both rows appeared after Refresh, as ES-REFRESH-15 says.
 
 ** Edit a part and read its history
@@ -102,8 +130,15 @@ PASS. Both rows appeared after Refresh, as ES-REFRESH-15 says.
 - Change the description to =Office closed for the move=, keep the reason, and click *Save*; press *Refresh* and the row shows the new words.
 - Click *History* on the row: the dialog is titled *History of 2026-06-12* and shows the timeline, two entries, the newest marked as the current version, with *Hide system activity* above it and no *Compare* control.
 - Open *Details* on the newest entry: the description's old and new values stand in one table row.
+- On the calendar's *History* tab, the same two entries stand in the calendar's own stream, each named *Exception 2026-06-12*, between the calendar's versions; a box under the rail says a deleted part is not in the stream.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | the changes to the exceptions are not in history. ; [[file:scenario_verify_the_holiday_calendar_screens_step6_20261025_170509.png]] |
+
 
 PASS. Edit 2026-06-12 with its load time; History of 2026-06-12 is the timeline with two entries and the old and new description in one row.
 
@@ -118,6 +153,11 @@ PASS. Edit 2026-06-12 with its load time; History of 2026-06-12 is the timeline 
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 PASS. Empty state with the action; the dialog wrote 1461 days and its Rebuild then disabled; June shows the exception with its producer; the union sentence with TARGET.
 
 ** Amend the calendar against a stale version
@@ -130,16 +170,26 @@ PASS. Empty state with the action; the dialog wrote 1461 days and its Rebuild th
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 PASS. The stale save was refused with the reload offer; Reload closed the dialog. Gap: after the first tab's own save, Refresh did not turn gold within 15 seconds (ES-REFRESH-15); captured.
 
 ** Read the calendar's history and revert
 
-- On the History tab, the timeline shows the chart and two entries for the calendar, newest first, each on one line with the kind, *calendar Acme.Scenario v2* or *v1*, the reason, you, and the field that changed; the note stands on its own line.
+- On the History tab, the timeline shows the chart and the calendar's story: its two versions, newest first, each on one line with the kind, *calendar Acme.Scenario v2* or *v1*, the reason, you, and the field that changed, with the exception's and the diary event's entries between them, each named by its part; the note stands on its own line.
 - The newest entry carries the current-version emblem in the gutter and offers no Revert; the first offers *Revert*.
 - Click *Revert* on version 1: the dialog says what changes, asks for a reason, and writes a new version; the timeline then shows version 3 with the old name and the title reads *Acme scenario calendar* again after Refresh.
 - *Hide system activity* hides nothing here, because you wrote every entry; the toggle stays drawn.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 
 PASS. Two entries, then three after the revert and Refresh; Revert on every version but the newest; the title back to the old name.
 
@@ -152,6 +202,11 @@ PASS. Two entries, then three after the revert and Refresh; Revert on every vers
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 PASS. Delete Acme scenario calendar? with the warning and the reason; the list opened; the address answers no such record.
 
 ** Look as a reader
@@ -162,14 +217,19 @@ PASS. Delete Acme scenario calendar? with the warning and the reason; the list o
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 PASS. adrian.vance sees Read only and Derive only on TARGET, a QuantLib calendar; a user calendar was not checked as this person, so the step says nothing about a writer.
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PASSED, with one gap captured |
-| Completed at  | 2026-10-25 16:05 UTC |
+| Status        | FAILED |
+| Completed at  | 2026-10-25T17:09:06Z |
 | Branch        | feature/test-and-sign-off-the-screens-of-the-first-topic |
 | Commit        | aebd19b746, with main at the merge of PR 3790 built and served |
 | Worktree      | brave_hopper |
@@ -183,3 +243,10 @@ and on leftovers of earlier runs, which surfaced two server gaps now captured: a
 deleted calendar leaves its business days behind, and a re-created code
 continues the deleted one's history. A person has not walked the scenario yet;
 the sign off sheet says so.
+
+The owner ran the scenario by hand on 2026-10-25 at 17:00 UTC and recorded the
+results above: ten steps passed and two failed. Step 6 failed because the
+changes to the exceptions were not in the calendar's history; the build now
+merges every part's versions into the record's story (RS-HIST-01) and the step
+says so. Step 3 was marked failed with a screenshot and no words; the owner
+names what failed.

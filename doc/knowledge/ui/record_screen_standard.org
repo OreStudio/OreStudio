@@ -455,8 +455,13 @@ The History tab is the shared timeline (=Timeline=), defined once in the
 History and the timeline. A record screen draws it as that section says and adds
 two things:
 
-- *RS-HIST-01* The stream is the record's own versions, read through the generic history request
-  (=GET /api/history=, =refdata.v1.history.get=).
+- *RS-HIST-01* The stream is the record's story: its own versions and the versions of every
+  part it holds now, merged newest first and each entry named by its part, read
+  through the generic history request (=GET /api/history=,
+  =refdata.v1.history.get=) once per record and per part. A part deleted from
+  the record is not read, and the stream states that gap in words (decided
+  2026-10-25, when the owner's run of the calendars scenario looked for an
+  exception's change in the calendar's history).
 - *RS-HIST-02* /Revert/ is offered on any version but the current one, to a person who may write.
   It opens the revert dialog, which says that the values of version /n/ are written
   back as a new version and that no version is lost. It asks for a reason, and

@@ -113,7 +113,11 @@ await step('Edit a part and read its history', async () => {
     await page.screenshot({ path: `${out}/06-part-history.png`, fullPage: true });
     const d2 = await text(page.getByRole('dialog')); expect(d2.includes('Office closed') && d2.includes('Office closed for the move'), 'old and new not shown');
     await page.getByRole('dialog').getByRole('button', { name: 'Close' }).click(); await page.waitForTimeout(400);
-    return `"${title}", "${ht}", timeline with two entries, old and new values`;
+    await page.getByRole('tab', { name: 'History' }).click(); await page.waitForTimeout(3000);
+    const story = await text(page.locator('main'));
+    expect((story.match(/Exception 2026-06-12/g) ?? []).length >= 2, "the calendar's history does not carry the exception's versions");
+    expect(story.includes('deleted from the record'), 'the deleted-part gap is not stated');
+    return `"${title}", "${ht}", timeline with two entries, old and new values; the calendar's history carries the exception`;
 });
 await step('Build the business days and read them', async () => {
     await page.getByRole('tab', { name: 'Business days' }).click(); await page.waitForTimeout(2500);

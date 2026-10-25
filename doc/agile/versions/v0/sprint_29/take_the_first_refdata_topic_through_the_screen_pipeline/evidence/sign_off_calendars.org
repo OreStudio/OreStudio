@@ -80,7 +80,7 @@ Not checked on every line marked walk, and the Note with what was seen.
 | A link is removed with Remove, not Delete. | RS-RELATED-03 |  | N/A | a calendar has parts, not links |
 | Revert writes a new version and says so. | RS-HIST-02 |  | Meets | 'Revert to version 1?' wrote version 3 and the timeline gained an entry |
 | *History* | | | | |
-| History is the versions of one record. A log of events is Audit and has Refresh only. | UXL History and Audit |  | Meets | the calendar's versions; a part's history is its own |
+| History is the versions of one record. A log of events is Audit and has Refresh only. | UXL History and Audit |  | Meets | the calendar's versions and, since the owner's run of 2026-10-25 asked for them, the versions of its rules, exceptions and events, each named by its part (RS-HIST-01); a part's own history dialog shows the one part |
 | The tab is named History, never Timeline. | ES-HIST-40 |  | Meets |  |
 | The shared timeline draws it. Headers are one line, details open on demand. | ES-HIST-18, ES-HIST-09 | ES-HIST-18 ✓ | Meets | the harness does not check ES-HIST-09; the chart, the day divider, one line per entry, Details on demand |
 | The author's photo stands at the left of each entry. The note is on its own line. | ES-HIST-08, ES-HIST-07 |  | Meets | the person's picture at the left; the note on its own line |

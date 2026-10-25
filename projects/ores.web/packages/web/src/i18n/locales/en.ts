@@ -5148,6 +5148,11 @@ export const en: SourceCatalogue = {
         },
     },
     // pricingEngines:end
+    parameters: {
+        required: 'required',
+        true: 'true',
+        false: 'false',
+    },
     reporting: {
         area: {
             title: 'Reporting',

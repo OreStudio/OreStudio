@@ -72,19 +72,12 @@ import { useAreaRoot } from '../shell/AreaTrail.js';
 import { PATHS, reportPath } from '../shell/paths.js';
 import { EditingModeToggle, useEditingMode, type EditingMode } from '../ui/EditingMode.js';
 import { FilterChip, ParameterDocumentationPanel } from '../ui/OreParameter.js';
+import { ParameterControl } from '../parameters/ParameterControl.js';
+import { ParameterRow } from '../parameters/ParameterRow.js';
+import { controlOfEngineSetting } from '../parameters/control.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { useTabs } from '../ui/Tabs.js';
-import {
-    Button,
-    Detail,
-    Dialog,
-    Field,
-    Input,
-    Notice,
-    Select,
-    Tag,
-    Textarea,
-} from '../ui/Primitives.js';
+import { Button, Detail, Dialog, Field, Input, Notice, Tag, Textarea } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
 import {
     NO_FILTERS,
@@ -751,59 +744,66 @@ export function SettingRow({
     const standard = shortDefault(setting.defaultText);
     const unset = t('engineSettings.defaultOption', { value: standard });
     const shown = valueLabel(saved, t);
+    const marks = (
+        <>
+            {setting.changesNumbers && (
+                <Tag tone="warn" small>
+                    {t('engineSettings.changesNumbers')}
+                </Tag>
+            )}
+            {changed && (
+                <Tag tone="accent" small>
+                    {t('engineSettings.changed')}
+                </Tag>
+            )}
+        </>
+    );
     return (
         <li className={changed ? 'space-y-2 bg-accent/5 py-3' : 'space-y-2 py-3'}>
-            <div className="flex flex-wrap items-baseline justify-between gap-3">
-                <div className="min-w-0">
-                    <span className="text-sm font-medium">{label}</span>{' '}
-                    {setting.changesNumbers && (
-                        <Tag tone="warn" small>
-                            {t('engineSettings.changesNumbers')}
-                        </Tag>
-                    )}
-                    {changed && (
-                        <Tag tone="accent" small>
-                            {t('engineSettings.changed')}
-                        </Tag>
-                    )}
-                </div>
-                <div className="text-sm">
-                    {text === null ? (
-                        shown === null ? (
+            {text === null ? (
+                <div className="flex flex-wrap items-baseline justify-between gap-3">
+                    <div className="min-w-0">
+                        <span className="text-sm font-medium">{label}</span> {marks}
+                    </div>
+                    <div className="text-sm">
+                        {shown === null ? (
                             <span className="text-ink-faint">
                                 {t('engineSettings.default', { value: standard })}
                             </span>
                         ) : (
                             <span className="font-mono text-xs">{shown}</span>
-                        )
-                    ) : (
-                        <>
-                            <Control
-                                setting={setting}
-                                label={label}
-                                text={text}
-                                unset={unset}
-                                describedBy={
-                                    problem === null ? undefined : `problem-${setting.column}`
-                                }
-                                onText={onText}
-                                onFocus={onFocus}
-                            />
-                            {problem !== null && (
-                                <p
-                                    id={`problem-${setting.column}`}
-                                    role="alert"
-                                    className="mt-1 text-xs text-down"
-                                >
-                                    {t(problem.key, problem.params)}
-                                </p>
-                            )}
-                        </>
-                    )}
+                        )}
+                    </div>
                 </div>
-            </div>
-            {text !== null && setting.help !== '' && (
-                <p className="text-xs text-ink-faint">{setting.help}</p>
+            ) : (
+                <>
+                    {(setting.changesNumbers || changed) && (
+                        <div className="flex flex-wrap items-baseline gap-2">{marks}</div>
+                    )}
+                    <ParameterRow
+                        label={label}
+                        {...(setting.help === '' ? {} : { hint: setting.help })}
+                    >
+                        <Control
+                            setting={setting}
+                            label={label}
+                            text={text}
+                            unset={unset}
+                            describedBy={problem === null ? undefined : `problem-${setting.column}`}
+                            onText={onText}
+                            onFocus={onFocus}
+                        />
+                    </ParameterRow>
+                    {problem !== null && (
+                        <p
+                            id={`problem-${setting.column}`}
+                            role="alert"
+                            className="mt-1 text-xs text-down"
+                        >
+                            {t(problem.key, problem.params)}
+                        </p>
+                    )}
+                </>
             )}
             <button
                 type="button"
@@ -850,45 +850,36 @@ function Control({
     readonly onText: (text: string) => void;
     readonly onFocus: () => void;
 }): ReactNode {
-    const { t } = useTranslation();
-    if (setting.kind === 'whole') {
-        return (
-            <Input
-                aria-label={label}
-                aria-invalid={describedBy !== undefined}
-                aria-describedby={describedBy}
-                inputMode="numeric"
-                value={text}
-                placeholder={unset}
-                onFocus={onFocus}
-                onChange={(event) => onText(event.target.value)}
-            />
-        );
-    }
-    const options =
-        setting.kind === 'flag'
-            ? [
-                  { value: 'yes', label: t('engineSettings.yes') },
-                  { value: 'no', label: t('engineSettings.no') },
-              ]
-            : setting.options.map((option) => ({ value: option, label: option }));
+    const model = controlOfEngineSetting(setting.kind, setting.options, setting.min, setting.max);
+    // The shared control states a flag as true and false; the group holds the
+    // words its own reading of a flag is written in.
+    const flag = model.kind === 'boolean';
     return (
-        <Select
-            aria-label={label}
-            aria-invalid={describedBy !== undefined}
-            aria-describedby={describedBy}
-            value={text}
+        <ParameterControl
+            model={model}
+            label={label}
+            value={flag ? flagValue(text) : text}
+            unset={unset}
+            invalid={describedBy !== undefined}
+            {...(describedBy === undefined ? {} : { describedBy })}
             onFocus={onFocus}
-            onChange={(event) => onText(event.target.value)}
-        >
-            <option value="">{unset}</option>
-            {options.map((option) => (
-                <option key={option.value} value={option.value}>
-                    {option.label}
-                </option>
-            ))}
-        </Select>
+            onChange={(value) => onText(flag ? flagText(value) : value)}
+        />
     );
+}
+
+/** The value of a flag as the shared control states it, or the empty text of the default. */
+function flagValue(text: string): string {
+    if (text === 'yes') return 'true';
+    if (text === 'no') return 'false';
+    return '';
+}
+
+/** The text of a flag from the value the shared control states, or the empty text of the default. */
+function flagText(value: string): string {
+    if (value === 'true') return 'yes';
+    if (value === 'false') return 'no';
+    return '';
 }
 
 /** The reports that bind the configuration, and what a change reaches. */

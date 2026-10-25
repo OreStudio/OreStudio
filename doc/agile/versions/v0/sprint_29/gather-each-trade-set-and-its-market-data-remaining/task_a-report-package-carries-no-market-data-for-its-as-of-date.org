@@ -8,7 +8,7 @@
 #+filetags: :gather-each-trade-set-and-its-market-data-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/a-report-package-carries-no-market-data-for-its-as-of-date
-#+pr:
+#+pr: 3775
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -242,7 +242,7 @@ errors, seventeen distinct reasons, and the GBP card holding eight trades.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3775][#3775]] | [reporting] Record a run's errors one reason at a time and show them |
 
 * Review
 

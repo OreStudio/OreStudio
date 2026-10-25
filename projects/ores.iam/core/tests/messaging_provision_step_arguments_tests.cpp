@@ -364,7 +364,7 @@ TEST_CASE("a trade generation step reads each config's recipe in the order it na
              "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
              "min_tenor_code": "1Y", "max_tenor_code": "10Y",
              "min_notional": "100000", "max_notional": "10000000", "seed": 42,
-             "as_of_date": "2026-10-15"}
+             "as_of_date": "2026-10-15", "trades_per_book": 24}
         ]})");
 
     REQUIRE(assignments.size() == 2);
@@ -377,9 +377,26 @@ TEST_CASE("a trade generation step reads each config's recipe in the order it na
     // An entry that states no anchor has none, so the step anchors it on the
     // day it runs rather than on a date the profile cannot know.
     CHECK_FALSE(assignments[0].as_of_date.has_value());
+    // A count per book the entry leaves out stays unset, so the step takes the
+    // generator's own rather than a number this step invented.
+    CHECK_FALSE(assignments[0].trades_per_book.has_value());
+    CHECK(assignments[1].trades_per_book == 24);
     CHECK(assignments[1].as_of_date == std::chrono::year_month_day(std::chrono::year{2026},
                                                                    std::chrono::month{10},
                                                                    std::chrono::day{15}));
+}
+
+TEST_CASE("a trade generation step refuses a count per book of zero", tags) {
+    CHECK_THROWS_WITH(
+        parse_trade_generation_assignments(
+            R"({"configs": [
+            {"party": "Acme Corporation Plc", "name": "ACME ACMCOR bond population",
+             "asset_class_code": "bond", "book": "Group Intercompany Loans",
+             "min_tenor_code": "1Y", "max_tenor_code": "10Y",
+             "min_notional": "100000", "max_notional": "10000000", "seed": 42,
+             "trades_per_book": 0}
+        ]})"),
+        "The step's config 'ACME ACMCOR bond population' states a trades_per_book of 0.");
 }
 
 TEST_CASE("a trade generation step that states no config is refused", tags) {

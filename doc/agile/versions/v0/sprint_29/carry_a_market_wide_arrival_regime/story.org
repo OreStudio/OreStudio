@@ -41,6 +41,11 @@ and the per-series laws survive it.
   calm one.
 - The per-series checks still hold: mean rate, Fano factor and time rescaling.
 - An unstable parameter set is refused before anything is built.
+- Both factors are configurable and both are supported: the exogenous state and
+  the shared endogenous intensity, each with its own numbers.
+- A control panel on the feeds screen shows the current state and sets the
+  regime: auto, pinned calm or pinned active, the transition rate, and the shared
+  intensity's jump and decay. A user does not edit a database row to do it.
 
 * Tasks
 
@@ -48,6 +53,7 @@ and the per-series laws survive it.
 |------+-------+-------+-----+-------------|
 | [[id:B12C5D02-2CC8-48A5-9ABB-805AE2C901D6][Carry a shared market state and one clock]] | BACKLOG | | | Add a calm/active market state, a per-series sensitivity, and a single shared clock that schedules every feed, so the market can speed up together. |
 | [[id:FA7CE833-E35F-4CEE-A039-E527AD353AFB][Carry the shared endogenous intensity]] | BACKLOG | | | Let any event raise a common intensity that decays, so a panic spreads rather than being switched on, and prove it with cross-series correlation. |
+| [[id:5D4A9369-BA25-436A-8845-80810041BC9A][Configure the market regime from the feeds screen]] | BACKLOG | | | A control panel on the feeds screen that shows the current market state and lets a user set the regime: auto, pinned calm or pinned active, the transition rate, and the shared intensity's jump and decay, with the sensitivity per feed. |
 
 * Decisions
 
@@ -59,6 +65,12 @@ and the per-series laws survive it.
 - /The shared clock is the price of contagion:/ an exogenous factor alone would
   keep per-feed clocks, but a feed cannot see another's events, so it cannot
   carry the endogenous part.
+- /Both factors, each configurable:/ the state and the shared intensity are
+  separate parameters with separate effects, and a user turns either off by
+  setting it neutral rather than by choosing one of them.
+- /The panel is the control surface:/ the regime is set from the feeds screen,
+  not from SQL. Pinning is the operational switch a demonstration or a stress
+  run uses, and the panel shows which state is in force.
 - /The design is the note:/ =doc/knowledge/domain/market_arrival_regime.org=
   states the intensity, the rank-one result, the scheduler and the checks.
 

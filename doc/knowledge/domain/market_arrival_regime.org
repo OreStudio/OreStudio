@@ -112,6 +112,12 @@ about what the simulator claims to model, not about effort.
   for a scenario. This is one object per simulated environment, not one per row.
 - Per scenario: a pinned state and, later, a shock injected at a time, so a
   demonstration or a test can say "panic now" and every series answers.
+- Per operator, on the feeds screen: a control panel that shows the state in
+  force and sets the regime — auto, pinned calm or pinned active — together with
+  the transition rate and the shared intensity's jump and decay. A user tunes a
+  run from the screen, never from SQL. The panel is the same surface the
+  sensitivity per feed is edited on, so one screen answers "how does the market
+  behave" and "how much does this pair follow it".
 
 * How to check it
 

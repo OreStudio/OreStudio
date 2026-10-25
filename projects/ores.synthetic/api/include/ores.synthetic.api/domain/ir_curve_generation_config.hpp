@@ -263,20 +263,20 @@ struct ir_curve_generation_config final {
      * gaps and "hawkes" gives gaps that cluster. The long-run mean rate is ticks_per_hour in every
      * mode, so switching mode changes only how the same load is spread in time.
      */
-    std::string arrival_mode;
+    std::string arrival_mode = "periodic";
 
     /**
      * @brief For "hawkes": how much one tick raises the rate of the next, as the expected number of
      * further ticks. At least zero and strictly below one; one or more has no stationary rate and
      * is refused. Ignored by the other modes.
      */
-    double branching_ratio;
+    double branching_ratio = 0.0;
 
     /**
      * @brief For "hawkes": how fast a burst fades, in units of one over a second, so a value means
      * the same thing at any tick rate. Finite and strictly positive. Ignored by the other modes.
      */
-    double decay;
+    double decay = 1.0;
 
     /**
      * @brief How strongly the market-wide arrival factor moves this row, where one is the average
@@ -284,7 +284,7 @@ struct ir_curve_generation_config final {
      * It does nothing until the market factor lands; a value of one leaves today's behaviour
      * unchanged.
      */
-    double sensitivity;
+    double sensitivity = 1.0;
 
     /**
      * @brief Username of the person who last modified this IR curve generation config.

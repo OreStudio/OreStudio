@@ -34,11 +34,10 @@ and =tab= for the detail.
 
 - Dashboard. Five tiles, then the provider list. A demanded provider that does
   not serve is the only alert.
-- Provider. A combo at the top, then a group-by control and a collection
-  filter, then the feed grid grouped by a feed property: asset class by
-  default, instrument or engine. No folder tree. The low folder levels were
-  derived containers for asset class and instrument, and the grid can group by
-  the same properties directly. Start and Stop are the operator test control.
+- Provider. A combo at the top, then a collection filter and an asset class
+  combo, All or one class, then one plain list. No folder tree, no grouping and
+  no separator rows. The underlying leads, then state, enabled, name, engine and
+  frequency. Start and Stop are the operator test control.
 - Feed. The record page and its tabs: Details, Price behaviour or Process,
   Ticks, History. The demand line says who makes it run.
 - Sources. The operations board as it stands.

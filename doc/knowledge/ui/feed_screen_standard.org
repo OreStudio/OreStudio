@@ -402,12 +402,11 @@ The Provider tab (=ProviderTab.tsx=) is the feeds of one provider.
   Start and Stop, which act on the provider's feeds as the test control.
 - A collection filter, drawn only when the provider holds more than one
   collection.
-- A group-by control: asset class, instrument or engine. The grid gathers under
-  a header for each group. The group header counts the feeds on the page, not
-  the provider's total, because the grid pages.
-- The grid columns are state, enabled, name, asset class, underlying, engine and
-  frequency. A feed's state is Running or Stopped. The oresmd URI column is
-  gone; the series is reached from the feed's page.
+- An asset class combo: All, or one asset class. The grid is one plain list,
+  with no group headers and no separator rows.
+- The grid columns are underlying, state, enabled, name, engine and frequency.
+  The underlying leads. A feed's state is Running or Stopped. The oresmd URI
+  column is gone; the series is reached from the feed's page.
 - There is no folder tree, no pick bar and no oresmd URI column. The lower
   folders were derived containers for asset class and instrument, and the grid
   groups by the same properties.

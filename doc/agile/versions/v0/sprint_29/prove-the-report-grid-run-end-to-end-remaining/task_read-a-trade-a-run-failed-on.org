@@ -13,27 +13,32 @@
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The trade a run failed on opens at the version the run read, and the screen says
+whether that version is still the current one.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
+
+- The blotter opens the trade the link names, at the version in the link.
+- A version that no longer exists is said, not shown as a failure.
+- A trade whose version the run did not record is named, not linked.
 
 -
 
@@ -83,3 +88,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The blotter opens the trade a run failed on, at the version the run read.
+
+The trades route gained =GET /api/trades/:id/versions/:version=, which asks the
+trading service for the versioned trade rather than filtering a list the screen
+already holds. The server answers a version the trade never had as a missing
+answer, so the screen can say so instead of showing a read failure.
+
+The trades page reads =trade= and =version= from its address and, when both are
+there, shows the trade above the blotter with its type, state and trade date,
+and the words saying that the blotter shows the current version. A version that
+is not there is said in words. The error screen links a trade only when the run
+recorded its version; otherwise it names the trade, because a link that lands on
+an unfiltered blotter is worse than a name.
+
+Proven in a browser: /trades?trade=26b4ff60-…&version=5 showed the panel with
+"Version 5", and version 99 said there is no such version.

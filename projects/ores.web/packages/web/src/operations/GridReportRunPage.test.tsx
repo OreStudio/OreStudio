@@ -90,6 +90,7 @@ function tradeRow(overrides: Record<string, unknown> = {}): Record<string, unkno
         scope: 'Trade',
         subject: 'trade',
         subject_id: '28e6d1c3-b0aa-55fa-9c14-142e3e34092e',
+        subject_version: 3,
         message:
             'Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)])',
         ...overrides,
@@ -149,6 +150,16 @@ describe('the report run page', () => {
         expect(html).toContain('View all 2 errors');
     });
 
+    it('names a trade the run recorded no version for, without linking it', () => {
+        const html = render(runView({ health: 'failed' }), {
+            errors: [errorRow(), tradeRow({ subject_version: null })],
+            tab: 'errors',
+        });
+
+        expect(html).toContain('28e6d1c3…');
+        expect(html).not.toContain('/trades?trade=');
+    });
+
     it('groups a failure by the curve, with the trades that named it as links', () => {
         const html = render(runView({ health: 'failed' }), {
             errors: [errorRow(), tradeRow()],
@@ -156,7 +167,7 @@ describe('the report run page', () => {
         });
 
         expect(html).toContain('Yield/GBP/GBP1D');
-        expect(html).toContain('/trades?trade=28e6d1c3-b0aa-55fa-9c14-142e3e34092e');
+        expect(html).toContain('/trades?trade=28e6d1c3-b0aa-55fa-9c14-142e3e34092e&amp;version=3');
         expect(html).toContain('Grouped');
         expect(html).toContain('Split');
     });

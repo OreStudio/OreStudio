@@ -101,8 +101,27 @@ const toError = (raw: unknown): RunError => {
     };
 };
 
-const tradeHref = (error: RunError): string =>
-    `/trades?trade=${error.subjectId}${error.version === null ? '' : `&version=${error.version}`}`;
+const tradeHref = (error: RunError): string | null =>
+    error.version === null ? null : `/trades?trade=${error.subjectId}&version=${error.version}`;
+
+/** The trade a run failed on: a link when the run recorded its version, a name otherwise. */
+function TradeRef({ trade }: { readonly trade: RunError }) {
+    const href = tradeHref(trade);
+    const label = `${trade.subjectId.slice(0, 8)}… · v${trade.version ?? '?'}`;
+    return href === null ? (
+        <span className="rounded-full border border-line px-2 py-0.5 font-mono text-[11px] text-ink-muted">
+            {label}
+        </span>
+    ) : (
+        <a
+            href={href}
+            title={`Open ${trade.subjectId} at version ${trade.version ?? 'unknown'}`}
+            className="rounded-full border border-line px-2 py-0.5 font-mono text-[11px] hover:border-accent"
+        >
+            {label}
+        </a>
+    );
+}
 
 /** The errors of one run, read once and shared by the two screens. */
 function useRunErrors(id: string) {
@@ -300,14 +319,7 @@ function RunErrors({ id, outputMessage }: { readonly id: string; readonly output
                             {group.trades.length > 0 && (
                                 <div className="flex flex-wrap gap-2">
                                     {group.trades.map((trade) => (
-                                        <a
-                                            key={trade.subjectId}
-                                            href={tradeHref(trade)}
-                                            title={`Open ${trade.subjectId} at version ${trade.version ?? 'unknown'}`}
-                                            className="rounded-full border border-line px-2 py-0.5 font-mono text-[11px] hover:border-accent"
-                                        >
-                                            {`${trade.subjectId.slice(0, 8)}… · v${trade.version ?? '?'}${trade.asOf === '' ? '' : ` @ ${trade.asOf}`}`}
-                                        </a>
+                                        <TradeRef key={trade.subjectId} trade={trade} />
                                     ))}
                                 </div>
                             )}
@@ -391,9 +403,13 @@ function RunErrors({ id, outputMessage }: { readonly id: string; readonly output
                                                 {error.scope !== 'Trade' ||
                                                 error.subjectId === '' ? (
                                                     '—'
+                                                ) : tradeHref(error) === null ? (
+                                                    <span title="The run recorded no version for this trade.">
+                                                        {error.subjectId}
+                                                    </span>
                                                 ) : (
                                                     <a
-                                                        href={tradeHref(error)}
+                                                        href={tradeHref(error) ?? undefined}
                                                         onClick={(event) => event.stopPropagation()}
                                                         className="underline"
                                                     >
@@ -429,9 +445,11 @@ function RunErrors({ id, outputMessage }: { readonly id: string; readonly output
                                     <span className="block text-ink-muted">
                                         {`version ${current.version ?? 'unknown'}${current.asOf === '' ? '' : ` · as of ${current.asOf}`}`}
                                     </span>
-                                    <a className="underline" href={tradeHref(current)}>
-                                        {`Open the trade at version ${current.version ?? 'unknown'} →`}
-                                    </a>
+                                    {tradeHref(current) !== null && (
+                                        <a className="underline" href={tradeHref(current) ?? '#'}>
+                                            {`Open the trade at version ${current.version ?? 'unknown'} →`}
+                                        </a>
+                                    )}
                                 </p>
                             )}
                         </aside>

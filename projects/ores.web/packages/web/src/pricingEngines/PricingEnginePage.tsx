@@ -360,7 +360,15 @@ function GlobalParametersTab({
     readonly mode: EditingMode;
 }): ReactNode {
     const { t } = useTranslation();
+    const [setOnly, setSetOnly] = useState(false);
+    const [numbersOnly, setNumbersOnly] = useState(false);
     const globals = document.parameters.filter((parameter) => parameter.productId === null);
+    const docOf = (name: string) => (vocabulary?.globals ?? []).find((entry) => entry.name === name);
+    const shown = globals.filter((parameter) => {
+        if (!setOnly) return true;
+        const doc = docOf(parameter.name);
+        return (doc?.defaultText ?? '') === '' || parameter.value !== doc?.defaultText;
+    });
     return (
         <section className="card space-y-4 p-4">
             <header className="space-y-1">
@@ -370,18 +378,26 @@ function GlobalParametersTab({
             {globals.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('pricingEngines.globals.empty')}</p>
             ) : (
-                <div>
-                    {globals.map((parameter) => (
-                        <ParameterRow
-                            key={parameter.id}
-                            parameter={parameter}
-                            doc={(vocabulary?.globals ?? []).find(
-                                (entry) => entry.name === parameter.name,
-                            )}
-                            mode={mode}
-                        />
-                    ))}
-                </div>
+                <>
+                    <ParameterFilters
+                        set={setOnly}
+                        numbers={numbersOnly}
+                        onSet={() => setSetOnly((before) => !before)}
+                        onNumbers={() => setNumbersOnly((before) => !before)}
+                        shown={shown.length}
+                        total={globals.length}
+                    />
+                    <ul className="divide-y divide-line-subtle">
+                        {shown.map((parameter) => (
+                            <ParameterRow
+                                key={parameter.id}
+                                parameter={parameter}
+                                doc={docOf(parameter.name)}
+                                mode={mode}
+                            />
+                        ))}
+                    </ul>
+                </>
             )}
         </section>
     );
@@ -411,7 +427,10 @@ function ProductsTab({
 }): ReactNode {
     const { t } = useTranslation();
     const [filter, setFilter] = useState('');
-    const [closed, setClosed] = useState<ReadonlySet<string>>(() => new Set());
+    const first = [...document.products].sort((a, b) => a.position - b.position)[0];
+    const [openClasses, setOpenClasses] = useState<ReadonlySet<string>>(
+        () => new Set(first === undefined ? [] : [assetClassOf(vocabulary, first.typeCode)]),
+    );
     const products = [...document.products].sort((a, b) => a.position - b.position);
     const needle = filter.trim().toLowerCase();
     const visible =
@@ -452,16 +471,16 @@ function ProductsTab({
                         type="button"
                         className="px-1 text-xs text-accent hover:text-accent-bright"
                         onClick={() =>
-                            setClosed(
-                                classes.every((assetClass) => closed.has(assetClass))
-                                    ? new Set(classes)
-                                    : new Set(),
+                            setOpenClasses(
+                                classes.every((assetClass) => openClasses.has(assetClass))
+                                    ? new Set()
+                                    : new Set(classes),
                             )
                         }
                     >
-                        {classes.every((assetClass) => closed.has(assetClass))
-                            ? t('pricingEngines.workbench.expandAll')
-                            : t('pricingEngines.workbench.collapseAll')}
+                        {classes.every((assetClass) => openClasses.has(assetClass))
+                            ? t('pricingEngines.workbench.collapseAll')
+                            : t('pricingEngines.workbench.expandAll')}
                     </button>
                 )}
                 {products.length === 0 ? (
@@ -480,15 +499,15 @@ function ProductsTab({
                         return (
                             <details
                                 key={assetClass}
-                                open={!closed.has(assetClass)}
+                                open={openClasses.has(assetClass)}
                                 onToggle={(event) => {
                                     const isOpen = event.currentTarget.open;
-                                    setClosed((before) => {
+                                    setOpenClasses((before) => {
                                         const next = new Set(before);
                                         if (isOpen) {
-                                            next.delete(assetClass);
-                                        } else {
                                             next.add(assetClass);
+                                        } else {
+                                            next.delete(assetClass);
                                         }
                                         return next;
                                     });
@@ -509,7 +528,14 @@ function ProductsTab({
                                             key={product.id}
                                             type="button"
                                             title={product.typeCode}
-                                            onClick={() => onSelect(product.id)}
+                                            onClick={() => {
+                                                setOpenClasses((before) =>
+                                                    new Set(before).add(
+                                                        assetClassOf(vocabulary, product.typeCode),
+                                                    ),
+                                                );
+                                                onSelect(product.id);
+                                            }}
                                             className={
                                                 product.id === chosen?.id
                                                     ? 'block w-full rounded border-l-2 border-accent bg-panel-2 px-2 py-1 text-left text-sm break-words text-ink [overflow-wrap:anywhere]'
@@ -633,6 +659,7 @@ function Workbench({
                     document={document}
                     vocabulary={vocabulary}
                     productId={product.id}
+                    mode={mode}
                     onCancel={() => setEditing(false)}
                     onSave={(after) => setSaving(after)}
                 />
@@ -749,7 +776,6 @@ function RoleCard({
     const { t } = useTranslation();
     const [setOnly, setSetOnly] = useState(false);
     const [numbersOnly, setNumbersOnly] = useState(false);
-    const [openDocs, setOpenDocs] = useState(false);
     const shown = parameters.filter((parameter) => {
         const doc = settingOf(parameter.scope, parameter.name);
         if (setOnly && (doc?.defaultText ?? '') !== '' && parameter.value === doc?.defaultText) {
@@ -765,29 +791,35 @@ function RoleCard({
             </header>
             <div className="space-y-1">
                 <div className="font-mono text-sm">{code}</div>
-                {description === '' ? (
-                    <p className="text-sm text-ink-faint">
-                        {t('pricingEngines.workbench.noDescription')}
-                    </p>
-                ) : (
-                    <p className="text-sm text-ink-muted">{description}</p>
-                )}
-                {detail !== '' && <p className="text-sm text-ink-muted">{detail}</p>}
-                {source !== '' && (
-                    <p className="text-xs text-ink-faint">{t(`pricingEngines.source.${source}`)}</p>
-                )}
-                {pairKnown === false && (
-                    <p className="text-xs text-ink-faint">
-                        {t('pricingEngines.change.unknownPair')}
-                    </p>
-                )}
+                <Docs>
+                    <div className="space-y-1">
+                        {description === '' ? (
+                            <p className="text-sm text-ink-faint">
+                                {t('pricingEngines.workbench.noDescription')}
+                            </p>
+                        ) : (
+                            <p className="text-sm text-ink-muted">{description}</p>
+                        )}
+                        {detail !== '' && <p className="text-sm text-ink-muted">{detail}</p>}
+                        {source !== '' && (
+                            <p className="text-xs text-ink-faint">
+                                {t(`pricingEngines.source.${source}`)}
+                            </p>
+                        )}
+                        {pairKnown === false && (
+                            <p className="text-xs text-ink-faint">
+                                {t('pricingEngines.change.unknownPair')}
+                            </p>
+                        )}
+                    </div>
+                </Docs>
             </div>
             <div>
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
-                    <h4 className="text-xs text-ink-faint">
-                        {t('pricingEngines.workbench.parameters')}
-                    </h4>
-                    {parameters.length > 0 && (
+                <h4 className="pb-1 text-xs text-ink-faint">
+                    {t('pricingEngines.workbench.parameters')}
+                </h4>
+                {parameters.length > 0 && (
+                    <div className="pb-1">
                         <ParameterFilters
                             set={setOnly}
                             numbers={numbersOnly}
@@ -796,8 +828,8 @@ function RoleCard({
                             shown={shown.length}
                             total={parameters.length}
                         />
-                    )}
-                </div>
+                    </div>
+                )}
                 {parameters.length === 0 ? (
                     <p className="text-sm text-ink-faint">
                         {t('pricingEngines.workbench.noParameters')}
@@ -848,9 +880,6 @@ function ParameterRow({
             <div className="flex flex-wrap items-baseline justify-between gap-3">
                 <div className="min-w-0">
                     <span className="text-sm font-medium">{label}</span>
-                    {doc?.required === true && (
-                        <span className="ml-2 text-[10px] text-ink-faint">required</span>
-                    )}
                 </div>
                 <div className="text-sm">
                     <span className="font-mono text-xs">{parameter.value}</span>
@@ -950,12 +979,14 @@ function ProductEditor({
     document,
     vocabulary,
     productId,
+    mode,
     onCancel,
     onSave,
 }: {
     readonly document: PricingDocument;
     readonly vocabulary: PricingVocabulary;
     readonly productId: string;
+    readonly mode: EditingMode;
     readonly onCancel: () => void;
     readonly onSave: (after: Draft) => void;
 }): ReactNode {
@@ -992,118 +1023,247 @@ function ProductEditor({
     const kept = parametersOf(after, productId);
 
     return (
-        <section className="card space-y-4 p-4">
-            <header className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-sm font-medium">
-                    {t('pricingEngines.change.productTitle', { type: product.typeCode })}
-                </h2>
-            </header>
-            <div className="space-y-4">
-                <ModelEnginePanels
-                    vocabulary={vocabulary}
-                    typeCode={product.typeCode}
-                    model={model}
-                    engine={engine}
-                    models={models}
-                    engines={engines}
-                    onModel={(next) => {
-                        setModel(next);
+        <div className="space-y-4">
+            <section className="card space-y-2 p-4">
+                <div>
+                    <h2 className="text-lg font-semibold">{product.typeCode}</h2>
+                    <p className="text-xs text-ink-faint">
+                        {[
+                            assetClassLabel(assetClassOf(vocabulary, product.typeCode)),
+                            vocabulary.types.find((entry) => entry.code === product.typeCode)
+                                ?.instrumentTypeCode ?? '',
+                        ]
+                            .filter((part) => part !== '')
+                            .join(' · ')}
+                    </p>
+                </div>
+            </section>
+            <section className="card space-y-3 p-4">
+                <header className="space-y-1">
+                    <h3 className="text-sm font-medium">{t('pricingEngines.fields.model')}</h3>
+                    <p className="text-xs text-ink-faint">
+                        {t('pricingEngines.workbench.definitionModel')}
+                    </p>
+                </header>
+                <Select
+                    aria-label={t('pricingEngines.fields.model')}
+                    value={model}
+                    onChange={(event) => {
+                        setModel(event.target.value);
                         setDrop([]);
                         setAdd([]);
                     }}
-                    onEngine={(next) => {
-                        setEngine(next);
+                >
+                    {models.map((entry) => (
+                        <option key={entry} value={entry}>
+                            {entry}
+                        </option>
+                    ))}
+                </Select>
+                {model !== '' && (
+                    <p className="text-sm text-ink-muted">
+                        {vocabulary.models.find((entry) => entry.code === model)?.description ??
+                            t('pricingEngines.workbench.noDescription')}
+                    </p>
+                )}
+                <ul className="divide-y divide-line-subtle">
+                    {kept
+                        .filter((parameter) => parameter.scope !== 'engine')
+                        .map((parameter) => {
+                            const doc = vocabulary.settings.find(
+                                (setting) =>
+                                    setting.scope === parameter.scope &&
+                                    setting.name === parameter.name,
+                            );
+                            return (
+                                <li key={parameter.id} className="space-y-2 py-3">
+                                    <div className="flex flex-wrap items-baseline justify-between gap-3">
+                                        <span className="text-sm font-medium">
+                                            {doc?.label !== undefined && doc.label !== ''
+                                                ? doc.label
+                                                : parameter.name}
+                                        </span>
+                                        <div className="text-sm">
+                                            <SettingValue
+                                                vocabulary={vocabulary}
+                                                typeCode={product.typeCode}
+                                                model={model}
+                                                engine={engine}
+                                                name={parameter.name}
+                                                scope={parameter.scope}
+                                                value={parameter.value}
+                                                onChange={(value) =>
+                                                    setValues({ ...values, [parameter.id]: value })
+                                                }
+                                            />
+                                        </div>
+                                    </div>
+                                    <ParameterDocuments
+                                        doc={{
+                                            documented: doc?.documented === true,
+                                            name: parameter.name,
+                                            description: doc?.description ?? '',
+                                            defaultText: doc?.defaultText ?? '',
+                                            format: doc?.format ?? '',
+                                            introducedIn: doc?.introducedIn ?? '',
+                                            removedIn: doc?.removedIn ?? '',
+                                            xpath: doc?.xpath ?? '',
+                                        }}
+                                        mode={mode}
+                                    />
+                                </li>
+                            );
+                        })}
+                </ul>
+            </section>
+            <section className="card space-y-3 p-4">
+                <header className="space-y-1">
+                    <h3 className="text-sm font-medium">{t('pricingEngines.fields.engine')}</h3>
+                    <p className="text-xs text-ink-faint">
+                        {t('pricingEngines.workbench.definitionEngine')}
+                    </p>
+                </header>
+                <Select
+                    aria-label={t('pricingEngines.fields.engine')}
+                    value={engine}
+                    onChange={(event) => {
+                        setEngine(event.target.value);
                         setDrop([]);
                         setAdd([]);
                     }}
-                />
+                >
+                    {engines.map((entry) => (
+                        <option key={entry} value={entry}>
+                            {entry}
+                        </option>
+                    ))}
+                </Select>
+                {engine !== '' && (
+                    <p className="text-sm text-ink-muted">
+                        {vocabulary.methods.find((entry) => entry.code === engine)?.description ??
+                            t('pricingEngines.workbench.noDescription')}
+                    </p>
+                )}
                 {!known && <Notice tone="warn">{t('pricingEngines.change.unknownPair')}</Notice>}
-                {change.dropped.length > 0 && (
-                    <fieldset className="space-y-1">
-                        <legend className="text-sm font-medium">
-                            {t('pricingEngines.change.dropHeading')}
-                        </legend>
-                        <p className="text-xs text-ink-faint">
-                            {t('pricingEngines.change.dropHint')}
-                        </p>
-                        {change.dropped.map((parameter) => (
-                            <label key={parameter.id} className="flex items-center gap-2 text-sm">
-                                <input
-                                    type="checkbox"
-                                    checked={drop.includes(
-                                        settingKey(parameter.scope, parameter.name),
-                                    )}
-                                    onChange={() =>
-                                        setDrop(
-                                            toggle(
-                                                drop,
-                                                settingKey(parameter.scope, parameter.name),
-                                            ),
-                                        )
-                                    }
-                                />
-                                <span>{parameter.name}</span>
-                                <span className="font-mono text-xs text-ink-faint">
-                                    {parameter.value}
-                                </span>
-                            </label>
-                        ))}
-                    </fieldset>
-                )}
-                {change.added.length > 0 && (
-                    <fieldset className="space-y-1">
-                        <legend className="text-sm font-medium">
-                            {t('pricingEngines.change.addHeading')}
-                        </legend>
-                        <p className="text-xs text-ink-faint">
-                            {t('pricingEngines.change.addHint')}
-                        </p>
-                        {change.added.map((setting) => (
-                            <label
-                                key={`${setting.scope}:${setting.name}`}
-                                className="flex items-center gap-2 text-sm"
-                            >
-                                <input
-                                    type="checkbox"
-                                    checked={add.includes(settingKey(setting.scope, setting.name))}
-                                    onChange={() =>
-                                        setAdd(toggle(add, settingKey(setting.scope, setting.name)))
-                                    }
-                                />
-                                <span>{setting.name}</span>
-                                <span className="font-mono text-xs text-ink-faint">
-                                    {setting.usual}
-                                </span>
-                            </label>
-                        ))}
-                    </fieldset>
-                )}
-                {kept.length > 0 && (
-                    <fieldset className="space-y-2">
-                        <legend className="text-sm font-medium">
-                            {t('pricingEngines.change.valuesHeading')}
-                        </legend>
-                        <div className="grid gap-3 sm:grid-cols-2">
-                            {kept.map((parameter) => (
-                                <SettingValue
-                                    key={parameter.id}
-                                    vocabulary={vocabulary}
-                                    typeCode={product.typeCode}
-                                    model={model}
-                                    engine={engine}
-                                    name={parameter.name}
-                                    scope={parameter.scope}
-                                    value={parameter.value}
-                                    onChange={(value) =>
-                                        setValues({ ...values, [parameter.id]: value })
-                                    }
-                                />
+                <ul className="divide-y divide-line-subtle">
+                    {kept
+                        .filter((parameter) => parameter.scope === 'engine')
+                        .map((parameter) => {
+                            const doc = vocabulary.settings.find(
+                                (setting) =>
+                                    setting.scope === parameter.scope &&
+                                    setting.name === parameter.name,
+                            );
+                            return (
+                                <li key={parameter.id} className="space-y-2 py-3">
+                                    <div className="flex flex-wrap items-baseline justify-between gap-3">
+                                        <span className="text-sm font-medium">
+                                            {doc?.label !== undefined && doc.label !== ''
+                                                ? doc.label
+                                                : parameter.name}
+                                        </span>
+                                        <div className="text-sm">
+                                            <SettingValue
+                                                vocabulary={vocabulary}
+                                                typeCode={product.typeCode}
+                                                model={model}
+                                                engine={engine}
+                                                name={parameter.name}
+                                                scope={parameter.scope}
+                                                value={parameter.value}
+                                                onChange={(value) =>
+                                                    setValues({ ...values, [parameter.id]: value })
+                                                }
+                                            />
+                                        </div>
+                                    </div>
+                                    <ParameterDocuments
+                                        doc={{
+                                            documented: doc?.documented === true,
+                                            name: parameter.name,
+                                            description: doc?.description ?? '',
+                                            defaultText: doc?.defaultText ?? '',
+                                            format: doc?.format ?? '',
+                                            introducedIn: doc?.introducedIn ?? '',
+                                            removedIn: doc?.removedIn ?? '',
+                                            xpath: doc?.xpath ?? '',
+                                        }}
+                                        mode={mode}
+                                    />
+                                </li>
+                            );
+                        })}
+                </ul>
+            </section>
+            {(change.dropped.length > 0 || change.added.length > 0) && (
+                <section className="card space-y-3 p-4">
+                    {change.dropped.length > 0 && (
+                        <fieldset className="space-y-1">
+                            <legend className="text-sm font-medium">
+                                {t('pricingEngines.change.dropHeading')}
+                            </legend>
+                            <p className="text-xs text-ink-faint">
+                                {t('pricingEngines.change.dropHint')}
+                            </p>
+                            {change.dropped.map((parameter) => (
+                                <label key={parameter.id} className="flex items-center gap-2 text-sm">
+                                    <input
+                                        type="checkbox"
+                                        checked={drop.includes(
+                                            settingKey(parameter.scope, parameter.name),
+                                        )}
+                                        onChange={() =>
+                                            setDrop(
+                                                toggle(
+                                                    drop,
+                                                    settingKey(parameter.scope, parameter.name),
+                                                ),
+                                            )
+                                        }
+                                    />
+                                    <span>{parameter.name}</span>
+                                    <span className="font-mono text-xs text-ink-faint">
+                                        {parameter.value}
+                                    </span>
+                                </label>
                             ))}
-                        </div>
-                    </fieldset>
-                )}
-            </div>
-            <div className="flex justify-end gap-2 border-t border-line-subtle pt-2">
+                        </fieldset>
+                    )}
+                    {change.added.length > 0 && (
+                        <fieldset className="space-y-1">
+                            <legend className="text-sm font-medium">
+                                {t('pricingEngines.change.addHeading')}
+                            </legend>
+                            <p className="text-xs text-ink-faint">
+                                {t('pricingEngines.change.addHint')}
+                            </p>
+                            {change.added.map((setting) => (
+                                <label
+                                    key={`${setting.scope}:${setting.name}`}
+                                    className="flex items-center gap-2 text-sm"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={add.includes(
+                                            settingKey(setting.scope, setting.name),
+                                        )}
+                                        onChange={() =>
+                                            setAdd(
+                                                toggle(add, settingKey(setting.scope, setting.name)),
+                                            )
+                                        }
+                                    />
+                                    <span>{setting.name}</span>
+                                    <span className="font-mono text-xs text-ink-faint">
+                                        {setting.usual}
+                                    </span>
+                                </label>
+                            ))}
+                        </fieldset>
+                    )}
+                </section>
+            )}
+            <div className="flex justify-end gap-2">
                 <Button variant="ghost" onClick={onCancel}>
                     {t('common.cancel')}
                 </Button>
@@ -1111,7 +1271,7 @@ function ProductEditor({
                     {t('pricingEngines.save.save')}
                 </Button>
             </div>
-        </section>
+        </div>
     );
 }
 

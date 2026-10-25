@@ -5308,7 +5308,7 @@ const pt: SourceCatalogue = {
         cancel: 'Cancelar',
     },
     oreParameter: {
-        documentation: 'Mostrar documentação',
+        documentation: 'Documentação',
         hideDocumentation: 'Ocultar documentação',
         undocumented: 'Não há documentação para {name}.',
         defaultIs: 'O valor por omissão é {text}.',

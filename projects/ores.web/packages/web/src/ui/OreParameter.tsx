@@ -148,21 +148,19 @@ export function ParameterFilters({
 }): ReactNode {
     const { t } = useTranslation();
     return (
-        <>
-            <div className="flex flex-wrap items-center gap-2">
-                <FilterChip pressed={set} onClick={onSet}>
-                    {t('oreParameter.filters.set')}
-                </FilterChip>
-                <FilterChip pressed={numbers} onClick={onNumbers}>
-                    {t('oreParameter.filters.numbers')}
-                </FilterChip>
-            </div>
+        <div className="flex flex-wrap items-center gap-2">
+            <FilterChip pressed={set} onClick={onSet}>
+                {t('oreParameter.filters.set')}
+            </FilterChip>
+            <FilterChip pressed={numbers} onClick={onNumbers}>
+                {t('oreParameter.filters.numbers')}
+            </FilterChip>
             <span className="text-xs text-ink-faint">
                 {t('oreParameter.filters.shown', {
                     shown: String(shown),
                     total: String(total),
                 })}
             </span>
-        </>
+        </div>
     );
 }

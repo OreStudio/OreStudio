@@ -5341,7 +5341,7 @@ const fr: SourceCatalogue = {
         cancel: 'Annuler',
     },
     oreParameter: {
-        documentation: 'Afficher la documentation',
+        documentation: 'Documentation',
         hideDocumentation: 'Masquer la documentation',
         undocumented: "Aucune documentation n'est disponible pour {name}.",
         defaultIs: 'La valeur par défaut est {text}.',

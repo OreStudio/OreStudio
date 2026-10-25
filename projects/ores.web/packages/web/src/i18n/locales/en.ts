@@ -5267,7 +5267,7 @@ export const en: SourceCatalogue = {
         cancel: 'Cancel',
     },
     oreParameter: {
-        documentation: 'Show documentation',
+        documentation: 'Documentation',
         hideDocumentation: 'Hide documentation',
         undocumented: 'No documentation is held for {name}.',
         defaultIs: 'Default: {text}',

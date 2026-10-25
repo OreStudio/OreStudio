@@ -19,8 +19,10 @@ ores.analytics 13 (the credit_simulation_*, shift_type, stress_shift_family
 and todays_market_* families) and ores.reporting 8 (analytic_type,
 configuration, configuration_parameter, configuration_type,
 ore_parameter, ore_parameter_value_domain, report_configuration and
-report_type_configuration_type). Each of those needs its own story; this check
-keeps the component that is complete from regressing.
+report_type_configuration_type). ores.reporting joined on 2026-10-25, when its
+remaining units were wired and the run's errors became readable from the shell.
+ores.analytics still needs its own story; this check keeps a complete component
+from regressing.
 
 Run::
 
@@ -40,7 +42,7 @@ REGISTRATION = re.compile(r"\b(\w+)_commands::register_commands\s*\(")
 # Components whose every generated command unit is registered. ores.refdata
 # joined with the story Migrate the remaining refdata entities to the generated
 # shell command units, which wired 51 units the composite had fallen behind.
-CHECKED_COMPONENTS = ("refdata",)
+CHECKED_COMPONENTS = ("refdata", "reporting")
 
 
 def generated_units(component: str, shell: Path = SHELL) -> dict[str, str]:

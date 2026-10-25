@@ -36,6 +36,134 @@ These are yours to run before the tester opens the browser. Do not hand them to 
 
 
 
+
+* Steps
+
+** Log in as the tenant administrator
+
+- Open =http://localhost:21002=.
+- Log in as =tenant_admin@acme_corporation= with =Secure-Password-123=.
+- Choose the party *ACME Corporation HK Ltd*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Open a configuration and edit a product
+
+- Open Reporting, then Product pricing.
+- Open *XVA Overnight*.
+- Open the *Products* tab and press *Expand all*.
+- Press *Edit* on the first product card.
+- The product's model, engine and parameter rows become editable.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** A sequence is a list of words
+
+- Find *Training sequence* and *Pricing sequence* in the engine's parameters.
+- Each is a dropdown, not a text field.
+- Each lists MersenneTwister, MersenneTwisterAntithetic, Sobol, SobolBrownianBridge and Burley2020SobolBrownianBridge.
+- The value the configuration holds is the one selected.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** A curve set is a list
+
+- Find *Training basis function*.
+- It is a dropdown with Monomial, Laguerre, Hermite, Hyperbolic, Legendre, Chebyshev and Chebyshev2nd.
+- The held value is selected.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** A whole number is a whole number
+
+- Find *Training samples*.
+- It is a number field, not a text field.
+- The spinner and the keyboard move it by one; a decimal is refused.
+- The field shows no free text.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** A bounded number states its bounds
+
+- Find a setting the value set bounds, for example *Time steps* or *Training samples* where the data states a minimum.
+- The field refuses a value below its minimum and above its maximum.
+- When a value outside the bounds is saved, the screen states the problem beside the field and the field is marked invalid.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** A flag is true and false
+
+- Find a flag, for example *Antithetic variate* or *Brownian bridge*.
+- It is a dropdown of true and false, not a text field.
+- A value the set no longer offers, if the configuration holds one, stays visible and selected rather than being silently dropped.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** A required parameter says so
+
+- Find a parameter the contract marks required.
+- Its label carries the word *required* after the name.
+- A parameter that is not required carries no mark.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** The engine run settings draw the same controls
+
+- Open Reporting, then Engine run settings, and open *HK - Exposure simulation engine settings*.
+- Open the group editors and find the building group's *Observation model*: it is a dropdown of None, Disable, Defer and Unregister.
+- Find *Threads* in the execution group: it is a whole-number field with a minimum of 1.
+- Find a flag, for example *Lazy market building*: it is a dropdown of true and false.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Both screens save
+
+- Change one value on the product pricing screen, give a reason and save. The dialog closes and the new value is shown.
+- Change one value in an engine settings group, give a reason and save. The value is shown under the group.
+- No error is shown on either save.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Step | Status | Notes |

@@ -184,6 +184,31 @@ export type PricingSummary = z.infer<typeof summarySchema>;
 /** The product types, the pairs that price them and the settings a pair takes. */
 export type PricingVocabulary = z.infer<typeof vocabularySchema>;
 
+/** One field of one version of an entity of the document. */
+const historyField = z.object({ name: z.string(), value: z.string() });
+
+/** One field that differs from the version before. */
+const historyChange = z.object({
+    field: z.string(),
+    before: z.string(),
+    after: z.string(),
+});
+
+/** One version of one entity of the document, as the history tab draws it. */
+export const documentVersionSchema = z.object({
+    entityType: z.string(),
+    entityId: z.string(),
+    entityName: z.string(),
+    version: z.int().nonnegative(),
+    modifiedBy: z.string(),
+    recordedAt: z.string(),
+    fields: z.array(historyField),
+    changes: z.array(historyChange),
+});
+
+/** Every version of every entity of the document. */
+export type DocumentVersion = z.infer<typeof documentVersionSchema>;
+
 /** Why a write is made. */
 export interface PricingIntent {
     readonly reason_code: string;
@@ -219,6 +244,14 @@ export const pricingEngines = {
     /** The pick lists the combo boxes draw from. */
     async vocabulary(): Promise<PricingVocabulary> {
         return vocabularySchema.parse(await request(`${ROOT}/vocabulary`, { method: 'GET' }));
+    },
+
+    /** Every version of the configuration, its products and its parameters. */
+    async history(id: string): Promise<readonly DocumentVersion[]> {
+        return z
+            .object({ versions: z.array(documentVersionSchema) })
+            .parse(await request(`${ROOT}/${encodeURIComponent(id)}/history`, { method: 'GET' }))
+            .versions;
     },
 
     /** One configuration with its products and parameters. */

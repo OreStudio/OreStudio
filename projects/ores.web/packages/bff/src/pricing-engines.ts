@@ -21,7 +21,7 @@
 import { randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
-import { readMyParties } from '@ores/wire-protocol';
+import { readEntityHistory, readMyParties } from '@ores/wire-protocol';
 import { subjects as configSubjects } from '@ores/wire-protocol/generated/analytics/protocol/pricing_model_config_protocol';
 import { subjects as productSubjects } from '@ores/wire-protocol/generated/analytics/protocol/pricing_model_product_protocol';
 import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/analytics/protocol/pricing_model_product_parameter_protocol';
@@ -579,6 +579,88 @@ async function removeHeader(
         .catch(() => undefined);
 }
 
+/**
+ * One version of one entity of the document, as the History tab draws it.
+ *
+ * The generic history read states every field of a version and what changed
+ * from the one before. A configuration's versions, its products' and its
+ * parameters' are read together, because a save writes all three and a person
+ * reads one timeline.
+ */
+interface DocumentVersion {
+    readonly entityType: string;
+    readonly entityId: string;
+    readonly entityName: string;
+    readonly version: number;
+    readonly modifiedBy: string;
+    readonly recordedAt: string;
+    readonly fields: readonly Readonly<Record<string, string>>[];
+    readonly changes: readonly Readonly<Record<string, string>>[];
+}
+
+/** How many history reads travel at once. A large document holds hundreds of entities. */
+const HISTORY_BATCH = 32;
+
+/** Every version of the configuration, its products and its parameters. */
+async function documentHistory(
+    session: LiveSession,
+    id: string,
+): Promise<readonly DocumentVersion[]> {
+    const stored = await readStored(session, id);
+    const typeOfProduct = new Map(
+        stored.products.map((product) => [
+            text(product['id']),
+            text(product['pricing_engine_type_code']),
+        ]),
+    );
+    const entities = [
+        {
+            entityType: 'ores.analytics.pricing_model_config',
+            entityId: id,
+            entityName: text(stored.config['name']),
+        },
+        ...stored.products.map((product) => ({
+            entityType: 'ores.analytics.pricing_model_product',
+            entityId: text(product['id']),
+            entityName: text(product['pricing_engine_type_code']),
+        })),
+        ...stored.parameters.map((parameter) => ({
+            entityType: 'ores.analytics.pricing_model_product_parameter',
+            entityId: text(parameter['id']),
+            entityName: [
+                typeOfProduct.get(text(parameter['pricing_model_product_id'])) ?? '',
+                text(parameter['parameter_name']),
+            ]
+                .filter((part) => part !== '')
+                .join(' · '),
+        })),
+    ];
+    const read = async (entity: (typeof entities)[number]): Promise<DocumentVersion[]> => {
+        const versions = await readEntityHistory(
+            session.client,
+            entity.entityType,
+            entity.entityId,
+        );
+        return versions.map((version) => ({
+            entityType: entity.entityType,
+            entityId: entity.entityId,
+            entityName: entity.entityName,
+            version: version.version,
+            modifiedBy: version.modifiedBy,
+            recordedAt: version.recordedAt,
+            fields: version.fields,
+            changes: version.changes,
+        }));
+    };
+    const out: DocumentVersion[] = [];
+    for (let start = 0; start < entities.length; start += HISTORY_BATCH) {
+        const batch = entities.slice(start, start + HISTORY_BATCH);
+        const read_ = await Promise.all(batch.map(read));
+        out.push(...read_.flat());
+    }
+    return out;
+}
+
 export function registerPricingEngineRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
@@ -641,6 +723,12 @@ export function registerPricingEngineRoutes(
         const document = documentOf(stored, parties);
         const reports = await readBoundReports(session, text(document['configurationId']));
         return { ...document, reports };
+    });
+
+    server.get('/api/reporting/pricing-engines/:id/history', async (request) => {
+        const session = requireSession(request);
+        const id = input(idSchema, (request.params as { id: string }).id);
+        return { versions: await documentHistory(session, id) };
     });
 
     server.post('/api/reporting/pricing-engines', async (request, reply) => {

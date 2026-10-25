@@ -19,7 +19,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { PricingDocument, PricingVocabulary } from '../api/pricingEngines.js';
+import type { DocumentVersion, PricingDocument, PricingVocabulary } from '../api/pricingEngines.js';
 import {
     EMPTY_DRAFT,
     blocked,
@@ -29,6 +29,8 @@ import {
     documentationOf,
     draftOf,
     enginesFor,
+    historyEventsOf,
+    historyNameOf,
     isKnownPair,
     methodInfo,
     missingUsual,
@@ -427,6 +429,61 @@ describe('authoring', () => {
             missingUsual(vocabulary, without, without.products[0]!).map((setting) => setting.name),
         ).toEqual(['sx']);
         expect(missingUsual(vocabulary, draft, draft.products[0]!)).toEqual([]);
+    });
+});
+
+describe('the history of a document', () => {
+    const versions: readonly DocumentVersion[] = [
+        {
+            entityType: 'ores.analytics.pricing_model_config',
+            entityId: 'c1',
+            entityName: 'XVA Overnight',
+            version: 1,
+            modifiedBy: 'analytics_service',
+            recordedAt: '2026-10-25 09:00:00.000000Z',
+            fields: [
+                { name: 'Name', value: 'XVA Overnight' },
+                { name: 'Change Reason Code', value: 'system.initial_load' },
+                { name: 'Change Commentary', value: 'Seeded from the DQ dataset.' },
+            ],
+            changes: [],
+        },
+        {
+            entityType: 'ores.analytics.pricing_model_product_parameter',
+            entityId: 'p1',
+            entityName: 'Swap · Training.Seed',
+            version: 2,
+            modifiedBy: 'maria',
+            recordedAt: '2026-10-25 10:00:00.000000Z',
+            fields: [
+                { name: 'Value', value: '43' },
+                { name: 'Change Reason Code', value: 'common.amend' },
+                { name: 'Change Commentary', value: 'Raise the seed for the rerun.' },
+            ],
+            changes: [{ field: 'Value', before: '42', after: '43' }],
+        },
+    ];
+
+    it('draws the first version as raised and the fields it held', () => {
+        const event = historyEventsOf(versions)[0]!;
+        expect(event.kind).toBe('raised');
+        expect(event.actor).toBe('analytics_service');
+        expect(event.reasonCode).toBe('system.initial_load');
+        expect(event.commentary).toBe('Seeded from the DQ dataset.');
+        expect(event.fields).toEqual([{ name: 'Name', value: 'XVA Overnight' }]);
+    });
+
+    it('draws a later version as changed and only what moved', () => {
+        const event = historyEventsOf(versions)[1]!;
+        expect(event.kind).toBe('changed');
+        expect(event.fields).toEqual([{ name: 'Value', value: '43' }]);
+        expect(event.entityName).toBeUndefined();
+    });
+
+    it('names the entity each version came from', () => {
+        expect(
+            historyNameOf(versions).get('ores.analytics.pricing_model_product_parameter|p1'),
+        ).toBe('Swap · Training.Seed');
     });
 });
 

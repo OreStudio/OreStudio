@@ -45,11 +45,14 @@ import {
 } from '../api/pricingEngines.js';
 import { ApiFailure } from '../api/transport.js';
 import { useHolds } from '../access/holds.js';
+import { actorPathFor } from '../access/PeoplePage.js';
+import { useActorPictures, usePeopleDirectory } from '../access/PersonRef.js';
 import { PERMISSION } from '../access/permissions.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { HistoryPanel } from '../refdata/HistoryPanel.js';
+import { Timeline } from '../timeline/Timeline.js';
+import { orderTimeline } from '@ores/wire-protocol/browser';
 import { RecordHeader } from '../refdata/records.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
@@ -71,6 +74,8 @@ import { SaveDialog } from './SaveDialog.js';
 import {
     documentationOf,
     draftOf,
+    historyEventsOf,
+    historyNameOf,
     enginesFor,
     templateInfo,
     type KnownTemplate,
@@ -99,9 +104,6 @@ export const VOCABULARY_KEY = ['pricing-engine-vocabulary'] as const;
 
 /** The five sections of the configuration page, in the order the standard fixes. */
 const TABS = ['details', 'globals', 'products', 'reports', 'history'] as const;
-
-/** The entity type of the configuration header, for its history. */
-const ENTITY_TYPE = 'ores.analytics.pricing_model_config';
 
 /** The eight characters a person reads to tell one identifier from another. */
 function shortId(id: string): string {
@@ -252,9 +254,7 @@ export function PricingEnginePage(): ReactNode {
                 />
             )}
             {tabs.tab === 'reports' && <ReportsTab reports={document.reports} />}
-            {tabs.tab === 'history' && (
-                <HistoryPanel entityType={ENTITY_TYPE} entityId={document.id} />
-            )}
+            {tabs.tab === 'history' && <HistoryTab document={document} />}
             {vocabulary.isError && (
                 <Notice tone="warn">
                     {t('pricingEngines.record.vocabularyUnread', {
@@ -1126,6 +1126,54 @@ function ReportsTab({ reports }: { readonly reports: PricingDocument['reports'] 
                 </ul>
             )}
         </section>
+    );
+}
+
+/** Where the versions of one configuration are cached. */
+function historyKey(id: string): readonly unknown[] {
+    return ['pricing-engine-history', id];
+}
+
+/**
+ * Every version of the configuration, its products and its parameters, drawn by
+ * the shared timeline. A save writes all three, and a person reads one history,
+ * so the versions are read together and each event names the entity it came from.
+ */
+function HistoryTab({ document }: { readonly document: PricingDocument }): ReactNode {
+    const { t } = useTranslation();
+    const holds = useHolds();
+    const pictureOf = useActorPictures();
+    const { isService } = usePeopleDirectory();
+    const history = useQuery({
+        queryKey: historyKey(document.id),
+        queryFn: () => pricingEngines.history(document.id),
+        meta: { quiet: true },
+    });
+    if (history.isPending) {
+        return (
+            <p className="text-sm text-ink-muted" role="status">
+                {t('common.loading')}
+            </p>
+        );
+    }
+    if (history.isError) {
+        return <Notice tone="error">{history.error.message}</Notice>;
+    }
+    const nameOf = historyNameOf(history.data);
+    return (
+        <Timeline
+            timeline={{
+                subject: 'pricing_engines',
+                id: document.id,
+                events: orderTimeline(historyEventsOf(history.data)),
+                gaps: [],
+            }}
+            hideUnchanged
+            recordName={(event) => nameOf.get(`${event.entityType}|${event.entityId}`)}
+            actorPath={actorPathFor(holds('iam::accounts:read'))}
+            actorPicture={pictureOf}
+            isService={isService}
+        />
     );
 }
 

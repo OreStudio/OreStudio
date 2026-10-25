@@ -95,6 +95,16 @@ const described = z.object({
     source: z.string(),
 });
 
+/** The values a setting accepts, as the value set it names states them. */
+const valueSetFields = {
+    valueSet: z.string().default(''),
+    sourceKind: z.string().default(''),
+    choices: z.array(z.object({ value: z.string(), label: z.string() })).default([]),
+    minimum: z.number().nullable().default(null),
+    maximum: z.number().nullable().default(null),
+    pattern: z.string().default(''),
+};
+
 const vocabularySchema = z.object({
     types: z.array(
         z.object({
@@ -128,6 +138,7 @@ const vocabularySchema = z.object({
             kind: z.string(),
             usual: z.string(),
             options: z.array(z.string()),
+            ...valueSetFields,
             required: z.boolean(),
             documented: z.boolean().default(false),
             label: z.string().default(''),
@@ -146,6 +157,7 @@ const vocabularySchema = z.object({
             z.object({
                 name: z.string(),
                 domain: z.string().default('string'),
+                ...valueSetFields,
                 label: z.string().default(''),
                 help: z.string().default(''),
                 description: z.string().default(''),

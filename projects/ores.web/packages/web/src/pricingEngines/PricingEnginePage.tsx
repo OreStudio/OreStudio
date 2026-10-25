@@ -69,7 +69,7 @@ import {
     type ParameterDocumentation,
 } from '../ui/OreParameter.js';
 import { PRICING_ENGINES_EVENTS } from './PricingEnginesPage.js';
-import { ModelEnginePanels, SettingValue } from './parts.js';
+import { ChoiceSelect, ModelEnginePanels, SettingValue } from './parts.js';
 import { SaveDialog } from './SaveDialog.js';
 import {
     documentationOf,
@@ -337,6 +337,49 @@ function DetailsTab({ document }: { readonly document: PricingDocument }): React
     );
 }
 
+/**
+ * One global parameter's field: the choices its value set states, the built-in
+ * pair of a boolean, or free text. A value the set no longer offers stays
+ * selectable, so editing another parameter never drops it.
+ */
+function GlobalValueField({
+    parameter,
+    doc,
+    value,
+    onChange,
+}: {
+    readonly parameter: PricingParameter;
+    readonly doc: PricingVocabulary['globals'][number] | undefined;
+    readonly value: string;
+    readonly onChange: (value: string) => void;
+}): ReactNode {
+    const label = doc?.label ?? parameter.name;
+    const choices = doc?.choices ?? [];
+    if (choices.length > 0) {
+        return <ChoiceSelect choices={choices} value={value} label={label} onChange={onChange} />;
+    }
+    if (doc?.domain === 'boolean') {
+        return (
+            <Select
+                aria-label={label}
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+            >
+                <option value="true">true</option>
+                <option value="false">false</option>
+            </Select>
+        );
+    }
+    return (
+        <Input
+            aria-label={label}
+            inputMode={doc?.domain === 'double' || doc?.domain === 'integer' ? 'numeric' : 'text'}
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+        />
+    );
+}
+
 /** The parameters of the whole document, with their documentation under them. */
 function GlobalParametersTab({
     document,
@@ -397,45 +440,17 @@ function GlobalParametersTab({
                                             {docOf(parameter.name)?.label ?? parameter.name}
                                         </span>
                                         <div className="text-sm">
-                                            {docOf(parameter.name)?.domain === 'boolean' ? (
-                                                <Select
-                                                    aria-label={
-                                                        docOf(parameter.name)?.label ??
-                                                        parameter.name
-                                                    }
-                                                    value={values[parameter.id] ?? parameter.value}
-                                                    onChange={(event) =>
-                                                        setValues({
-                                                            ...values,
-                                                            [parameter.id]: event.target.value,
-                                                        })
-                                                    }
-                                                >
-                                                    <option value="true">true</option>
-                                                    <option value="false">false</option>
-                                                </Select>
-                                            ) : (
-                                                <Input
-                                                    aria-label={
-                                                        docOf(parameter.name)?.label ??
-                                                        parameter.name
-                                                    }
-                                                    inputMode={
-                                                        docOf(parameter.name)?.domain ===
-                                                            'double' ||
-                                                        docOf(parameter.name)?.domain === 'integer'
-                                                            ? 'numeric'
-                                                            : 'text'
-                                                    }
-                                                    value={values[parameter.id] ?? parameter.value}
-                                                    onChange={(event) =>
-                                                        setValues({
-                                                            ...values,
-                                                            [parameter.id]: event.target.value,
-                                                        })
-                                                    }
-                                                />
-                                            )}
+                                            <GlobalValueField
+                                                parameter={parameter}
+                                                doc={docOf(parameter.name)}
+                                                value={values[parameter.id] ?? parameter.value}
+                                                onChange={(next) =>
+                                                    setValues({
+                                                        ...values,
+                                                        [parameter.id]: next,
+                                                    })
+                                                }
+                                            />
                                         </div>
                                     </div>
                                     <ParameterDocuments

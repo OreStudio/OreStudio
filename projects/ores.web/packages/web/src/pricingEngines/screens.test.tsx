@@ -176,6 +176,45 @@ const VOCABULARY: PricingVocabulary = {
             help: 'The step of the grid.',
             description: 'The step of the grid.',
         },
+        {
+            typeCode: 'BermudanSwaption',
+            model: 'LGM',
+            engine: 'Grid',
+            scope: 'model',
+            name: 'Calibration',
+            kind: 'select',
+            usual: 'Bootstrap',
+            options: ['Bootstrap', 'BestFit'],
+            valueSet: 'calibration',
+            sourceKind: 'enumerated',
+            choices: [
+                { value: 'Bootstrap', label: 'Bootstrap calibration' },
+                { value: 'BestFit', label: 'Best fit' },
+            ],
+            minimum: null,
+            maximum: null,
+            pattern: '',
+            required: false,
+            help: 'How the model is fitted.',
+            description: 'How the model is fitted.',
+        },
+        {
+            typeCode: 'BermudanSwaption',
+            model: 'LGM',
+            engine: 'Grid',
+            scope: 'engine',
+            name: 'TimeSteps',
+            kind: 'number',
+            usual: '100',
+            options: [],
+            valueSet: 'timesteps',
+            sourceKind: 'range',
+            choices: [],
+            minimum: 1,
+            maximum: 500,
+            pattern: '',
+            required: false,
+        },
     ],
     models: [
         {
@@ -534,5 +573,63 @@ describe('the value of a setting', () => {
             'IR · Finite difference. Interest rate products priced on a grid.',
         );
         expect(textOf(html)).not.toContain('required');
+    });
+
+    it('draws the choices of a setting as a select of their labels', () => {
+        const html = renderRecords(
+            '/setting',
+            [],
+            <Route
+                path="/setting"
+                element={
+                    <SettingValue
+                        vocabulary={VOCABULARY}
+                        typeCode="BermudanSwaption"
+                        model="LGM"
+                        engine="Grid"
+                        name="Calibration"
+                        scope="model"
+                        value="Bootstrap"
+                        onChange={() => undefined}
+                    />
+                }
+            />,
+            () => undefined,
+        );
+        expect(html).toContain(
+            '<option value="Bootstrap" selected="">Bootstrap calibration</option>',
+        );
+        expect(html).toContain('<option value="BestFit">Best fit</option>');
+    });
+
+    it('keeps a value the set no longer offers selectable', () => {
+        const html = renderRecords(
+            '/setting',
+            [],
+            <Route
+                path="/setting"
+                element={
+                    <SettingValue
+                        vocabulary={VOCABULARY}
+                        typeCode="BermudanSwaption"
+                        model="LGM"
+                        engine="Grid"
+                        name="Calibration"
+                        scope="model"
+                        value="Legacy"
+                        onChange={() => undefined}
+                    />
+                }
+            />,
+            () => undefined,
+        );
+        expect(html).toContain('<option value="Legacy" selected="">Legacy</option>');
+    });
+
+    it('bounds a number by the range its value set states', () => {
+        const html = setting('TimeSteps', '100');
+        expect(html).toContain('type="number"');
+        expect(html).toContain('min="1"');
+        expect(html).toContain('max="500"');
     });
 });

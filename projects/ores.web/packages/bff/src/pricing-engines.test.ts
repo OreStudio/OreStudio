@@ -356,6 +356,94 @@ function vocabularyReads(): Record<string, unknown> {
                 { code: 'ON', display_name: 'Overnight', unit: 'NONE', sort_order: 0 },
             ],
         },
+        'reporting.v1.ore_parameter_value_sets.list': {
+            result: ok,
+            sets: [
+                {
+                    code: 'calibration',
+                    name: 'Calibration',
+                    description: 'The values the calibration setting accepts.',
+                    source_kind: 'enumerated',
+                    catalogue_code: null,
+                    minimum: null,
+                    maximum: null,
+                    pattern: null,
+                    is_ordered: false,
+                },
+                {
+                    code: 'sensitivity_template',
+                    name: 'Sensitivity template',
+                    description: 'The values the sensitivity template setting accepts.',
+                    source_kind: 'catalogue',
+                    catalogue_code: 'analytics.sensitivity_template',
+                    minimum: null,
+                    maximum: null,
+                    pattern: null,
+                    is_ordered: false,
+                },
+            ],
+        },
+        'reporting.v1.ore_parameter_value_set_values.list': {
+            result: ok,
+            values: [
+                {
+                    code: 'calibration:BestFit',
+                    value_set_code: 'calibration',
+                    value: 'BestFit',
+                    label: 'Best fit',
+                    description: '',
+                    display_order: 1,
+                    is_active: true,
+                },
+                {
+                    code: 'calibration:Bootstrap',
+                    value_set_code: 'calibration',
+                    value: 'Bootstrap',
+                    label: 'Bootstrap',
+                    description: '',
+                    display_order: 0,
+                    is_active: true,
+                },
+                {
+                    code: 'calibration:None',
+                    value_set_code: 'calibration',
+                    value: 'None',
+                    label: 'No calibration',
+                    description: '',
+                    display_order: 2,
+                    is_active: true,
+                },
+            ],
+        },
+        'reporting.v1.ore_parameter_value_set_catalogues.list': {
+            result: ok,
+            catalogues: [
+                {
+                    code: 'analytics.sensitivity_template',
+                    name: 'Sensitivity templates',
+                    relation: 'ores_analytics_sensitivity_template_catalogue_v',
+                    description: '',
+                    is_active: true,
+                },
+            ],
+        },
+        'reporting.v1.ore_parameter_setting_value_sets.list': {
+            result: ok,
+            setting_value_sets: [
+                {
+                    code: 'ModelParameters:Calibration',
+                    scope: 'ModelParameters',
+                    name: 'Calibration',
+                    value_set_code: 'calibration',
+                },
+                {
+                    code: 'EngineParameters:SensitivityTemplate',
+                    scope: 'EngineParameters',
+                    name: 'SensitivityTemplate',
+                    value_set_code: 'sensitivity_template',
+                },
+            ],
+        },
     };
 }
 
@@ -474,7 +562,19 @@ describe('pricing engine routes', () => {
             usual: true,
         });
         expect(response.json().settings[0].options).toEqual(['Bootstrap', 'BestFit', 'None']);
-        expect(response.json().settings[0].required).toBe(true);
+        expect(response.json().settings[0]).toMatchObject({
+            valueSet: 'calibration',
+            sourceKind: 'enumerated',
+            required: true,
+            minimum: null,
+            maximum: null,
+            pattern: '',
+        });
+        expect(response.json().settings[0].choices).toEqual([
+            { value: 'Bootstrap', label: 'Bootstrap' },
+            { value: 'BestFit', label: 'Best fit' },
+            { value: 'None', label: 'No calibration' },
+        ]);
         const documented = response
             .json()
             .settings.find((setting: { name: string }) => setting.name === 'SensitivityTemplate');
@@ -487,6 +587,51 @@ describe('pricing engine routes', () => {
             xpath: "/PricingEngines/Product[@type='BermudanSwaption']/EngineParameters/Parameter[@name='SensitivityTemplate']",
         });
         expect(response.json().globals).toEqual([]);
+    });
+
+    it('resolves a catalogue set from the relation it names', async () => {
+        const { server, sessionId } = buildTestServer(vocabularyReads());
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/pricing-engines/vocabulary',
+        );
+        expect(response.statusCode).toBe(200);
+        const setting = response
+            .json()
+            .settings.find((entry: { name: string }) => entry.name === 'SensitivityTemplate');
+        expect(setting).toMatchObject({
+            valueSet: 'sensitivity_template',
+            sourceKind: 'catalogue',
+            choices: [{ value: 'IR_FD', label: 'IR_FD' }],
+        });
+    });
+
+    it('refuses a catalogue set whose relation no reader knows', async () => {
+        const { server, sessionId } = buildTestServer({
+            ...vocabularyReads(),
+            'reporting.v1.ore_parameter_value_set_catalogues.list': {
+                result: ok,
+                catalogues: [
+                    {
+                        code: 'analytics.sensitivity_template',
+                        name: 'Sensitivity templates',
+                        relation: 'ores_refdata_unknown_catalogue_v',
+                        description: '',
+                        is_active: true,
+                    },
+                ],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/pricing-engines/vocabulary',
+        );
+        expect(response.statusCode).toBe(500);
+        expect(response.json()).toEqual({ code: 'internal', message: 'Something went wrong.' });
     });
 
     it('describes each model, engine and sensitivity template', async () => {

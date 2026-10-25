@@ -235,9 +235,45 @@ export function ModelEnginePanels({
 }
 
 /**
- * One setting's value, drawn for the kind the vocabulary gives it: a select for a
- * list of values, a tenor or a sensitivity template, and a field for the rest. The
- * meaning of the setting stands under the field.
+ * The choices a value set states, as a select of their labels. A value the set
+ * no longer offers stays selectable, so a save never drops it unasked.
+ */
+export function ChoiceSelect({
+    choices,
+    value,
+    label,
+    onChange,
+}: {
+    readonly choices: readonly { readonly value: string; readonly label: string }[];
+    readonly value: string;
+    readonly label?: string;
+    readonly onChange: (value: string) => void;
+}): ReactNode {
+    return (
+        <Select
+            {...(label !== undefined ? { 'aria-label': label } : {})}
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+        >
+            {[
+                ...choices,
+                ...(choices.some((choice) => choice.value === value)
+                    ? []
+                    : [{ value, label: value }]),
+            ].map((choice) => (
+                <option key={choice.value} value={choice.value}>
+                    {choice.label}
+                </option>
+            ))}
+        </Select>
+    );
+}
+
+/**
+ * One setting's value, drawn for the values the vocabulary gives it: a select
+ * for a list the value set states, a tenor or a sensitivity template, a number
+ * bounded by the range, and a field for the rest. The meaning of the setting
+ * stands under the field.
  */
 export function SettingValue({
     vocabulary,
@@ -263,6 +299,8 @@ export function SettingValue({
         (candidate) => candidate.name === name && candidate.scope === scope,
     );
     const kind = setting?.kind ?? 'text';
+    const choices = setting?.choices ?? [];
+    const ranged = setting?.sourceKind === 'range';
     const options =
         kind === 'tenor'
             ? vocabulary.tenors.map((tenor) => tenor.code)
@@ -277,7 +315,9 @@ export function SettingValue({
     const label = `${name} (${scope})${setting?.required === true ? ` · ${t('pricingEngines.fields.required')}` : ''}`;
     return (
         <Field label={label} {...(meaning !== '' ? { hint: meaning } : {})}>
-            {options.length > 0 ? (
+            {choices.length > 0 ? (
+                <ChoiceSelect choices={choices} value={value} onChange={onChange} />
+            ) : options.length > 0 ? (
                 <Select value={value} onChange={(event) => onChange(event.target.value)}>
                     {[...new Set([...options, value])].map((entry) => (
                         <option key={entry} value={entry}>
@@ -288,7 +328,15 @@ export function SettingValue({
             ) : (
                 <Input
                     value={value}
-                    {...(kind === 'number' ? { inputMode: 'decimal' as const } : {})}
+                    {...(ranged ? { type: 'number' as const } : {})}
+                    {...(ranged && setting?.minimum !== null && setting?.minimum !== undefined
+                        ? { min: setting.minimum }
+                        : {})}
+                    {...(ranged && setting?.maximum !== null && setting?.maximum !== undefined
+                        ? { max: setting.maximum }
+                        : {})}
+                    {...(ranged ? { step: 'any' as const } : {})}
+                    {...(ranged || kind === 'number' ? { inputMode: 'decimal' as const } : {})}
                     onChange={(event) => onChange(event.target.value)}
                 />
             )}

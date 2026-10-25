@@ -33,9 +33,18 @@ import { subjects as methodSubjects } from '@ores/wire-protocol/generated/analyt
 import { subjects as templateSubjects } from '@ores/wire-protocol/generated/analytics/protocol/sensitivity_template_protocol';
 import { subjects as tenorSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_protocol';
 import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
+import { subjects as currencySubjects } from '@ores/wire-protocol/generated/refdata/protocol/currency_protocol';
+import { subjects as currencyPairSubjects } from '@ores/wire-protocol/generated/refdata/protocol/currency_pair_protocol';
+import { subjects as calendarSubjects } from '@ores/wire-protocol/generated/refdata/protocol/calendar_protocol';
+import { subjects as dayCounterSubjects } from '@ores/wire-protocol/generated/refdata/protocol/day_counter_protocol';
+import { subjects as businessDayConventionTypeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/business_day_convention_type_protocol';
 import { subjects as bindingSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_configuration_protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
 import { subjects as oreParameterSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_protocol';
+import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_protocol';
+import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_value_protocol';
+import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_catalogue_protocol';
+import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_setting_value_set_protocol';
 import { subjects as documentSubjects } from '@ores/wire-protocol/generated/analytics/protocol/configuration_document_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
@@ -391,22 +400,301 @@ function saveFailure(message: string): HttpFailure {
 const PERIOD_UNITS = new Set(['DAY', 'WEEK', 'MONTH', 'YEAR']);
 const PERIOD_CODE = /^\d+[DWMY]$/;
 
+/** One choice a combo offers: the value a configuration holds, and the words a person reads. */
+interface Choice {
+    readonly value: string;
+    readonly label: string;
+}
+
+/** The allowed values of one parameter, as the value set tables state them. */
+interface ValueFields {
+    readonly valueSet: string;
+    readonly sourceKind: string;
+    readonly choices: readonly Choice[];
+    readonly minimum: number | null;
+    readonly maximum: number | null;
+    readonly pattern: string;
+}
+
+/** A parameter whose setting names no value set carries these fields empty. */
+const NO_VALUE_SET: ValueFields = {
+    valueSet: '',
+    sourceKind: '',
+    choices: [],
+    minimum: null,
+    maximum: null,
+    pattern: '',
+};
+
+/** The built-in values of a boolean set. */
+const BOOLEAN_CHOICES: readonly Choice[] = [
+    { value: 'true', label: 'true' },
+    { value: 'false', label: 'false' },
+];
+
+/** The scope a setting's link row names, in the words the tables use. */
+const LINK_SCOPE: Readonly<Record<string, string>> = {
+    model: 'ModelParameters',
+    engine: 'EngineParameters',
+    GlobalParameters: 'GlobalParameters',
+};
+
+function linkScopeOf(scope: string): string {
+    return LINK_SCOPE[scope] ?? scope;
+}
+
+/** How one catalogue is read: the list, and the columns that hold its value and its label. */
+interface CatalogueReader {
+    readonly subject: string;
+    readonly key: string;
+    readonly valueOf: (row: Readonly<Record<string, unknown>>) => string;
+    readonly labelOf: (row: Readonly<Record<string, unknown>>) => string;
+}
+
+/**
+ * The catalogue relations a value set may name, each read as the pair a combo
+ * offers. A set names its relation in a row of the catalogue table, so only
+ * these relations are ever read; a row that names another one is a seed error
+ * and is refused rather than drawn empty.
+ */
+const CATALOGUE_READERS: ReadonlyMap<string, CatalogueReader> = new Map([
+    [
+        'ores_refdata_tenor_catalogue_v',
+        {
+            subject: tenorSubjects.list_tenors_request,
+            key: 'tenors',
+            valueOf: (row) => text(row['code']),
+            labelOf: (row) => text(row['display_name']),
+        },
+    ],
+    [
+        'ores_refdata_currency_catalogue_v',
+        {
+            subject: currencySubjects.list_currencies_request,
+            key: 'currencies',
+            valueOf: (row) => text(row['iso_code']),
+            labelOf: (row) => text(row['name']),
+        },
+    ],
+    [
+        'ores_refdata_currency_pair_catalogue_v',
+        {
+            subject: currencyPairSubjects.list_currency_pairs_request,
+            key: 'pairs',
+            valueOf: (row) => text(row['pair_code']),
+            labelOf: (row) => text(row['pair_code']),
+        },
+    ],
+    [
+        'ores_analytics_sensitivity_template_catalogue_v',
+        {
+            subject: templateSubjects.list_sensitivity_templates_request,
+            key: 'templates',
+            valueOf: (row) => text(row['code']),
+            labelOf: (row) => text(row['code']),
+        },
+    ],
+    [
+        'ores_refdata_instrument_code_catalogue_v',
+        {
+            subject: instrumentCodeSubjects.list_instrument_codes_request,
+            key: 'instruments',
+            valueOf: (row) => text(row['code']),
+            labelOf: (row) => text(row['name']),
+        },
+    ],
+    [
+        'ores_refdata_calendar_catalogue_v',
+        {
+            subject: calendarSubjects.list_calendars_request,
+            key: 'calendars',
+            valueOf: (row) => text(row['code']),
+            labelOf: (row) => text(row['name']),
+        },
+    ],
+    [
+        'ores_refdata_day_counter_catalogue_v',
+        {
+            subject: dayCounterSubjects.list_day_counters_request,
+            key: 'day_counters',
+            valueOf: (row) => text(row['code']),
+            labelOf: (row) => text(row['description']),
+        },
+    ],
+    [
+        'ores_refdata_business_day_convention_catalogue_v',
+        {
+            subject: businessDayConventionTypeSubjects.list_business_day_convention_types_request,
+            key: 'types',
+            valueOf: (row) => text(row['code']),
+            labelOf: (row) => text(row['name']),
+        },
+    ],
+]);
+
+/** The number a set row carries, or null when it carries none. */
+function optionalNumber(value: unknown): number | null {
+    return typeof value === 'number' ? value : null;
+}
+
+/** The four value set tables as the service returned them. */
+interface ValueSetTables {
+    readonly sets: readonly Readonly<Record<string, unknown>>[];
+    readonly values: readonly Readonly<Record<string, unknown>>[];
+    readonly catalogues: readonly Readonly<Record<string, unknown>>[];
+    readonly links: readonly Readonly<Record<string, unknown>>[];
+}
+
+/**
+ * Reads the value set tables and answers the allowed values of a setting by
+ * (scope, name). Every catalogue set is resolved once here, before the reply is
+ * built, and each relation is read once however many sets draw on it.
+ */
+async function readValueSets(
+    session: LiveSession,
+    tables: ValueSetTables,
+): Promise<(scope: string, name: string) => ValueFields> {
+    const setForSetting = new Map(
+        tables.links.map((row) => [
+            `${text(row['scope'])}|${text(row['name'])}`,
+            text(row['value_set_code']),
+        ]),
+    );
+    const setOf = new Map(tables.sets.map((row) => [text(row['code']), row]));
+    const relationOf = new Map(
+        tables.catalogues.map((row) => [text(row['code']), text(row['relation'])]),
+    );
+    const ordered = new Map<string, { readonly order: number; readonly choice: Choice }[]>();
+    for (const row of tables.values) {
+        const code = text(row['value_set_code']);
+        const entries = ordered.get(code) ?? [];
+        entries.push({
+            order: optionalNumber(row['display_order']) ?? 0,
+            choice: { value: text(row['value']), label: text(row['label']) },
+        });
+        ordered.set(code, entries);
+    }
+    const enumerated = new Map<string, readonly Choice[]>(
+        [...ordered].map(([code, entries]) => [
+            code,
+            [...entries].sort((a, b) => a.order - b.order).map((entry) => entry.choice),
+        ]),
+    );
+
+    const relationChoices = new Map<string, Promise<readonly Choice[]>>();
+    function readRelation(setCode: string, relation: string): Promise<readonly Choice[]> {
+        const reader = CATALOGUE_READERS.get(relation);
+        if (reader === undefined) {
+            throw new Error(
+                `The value set "${setCode}" names the catalogue relation "${relation}", which no reader knows.`,
+            );
+        }
+        let pending = relationChoices.get(relation);
+        if (pending === undefined) {
+            pending = readAll(session, reader.subject, reader.key, {
+                filter: null,
+                as_of: null,
+            }).then((rows) =>
+                rows
+                    .map((row) => ({ value: reader.valueOf(row), label: reader.labelOf(row) }))
+                    .filter((choice) => choice.value !== ''),
+            );
+            relationChoices.set(relation, pending);
+        }
+        return pending;
+    }
+
+    const resolved = new Map<string, readonly Choice[]>(
+        await Promise.all(
+            [...setOf].flatMap(([code, row]) => {
+                if (text(row['source_kind']) !== 'catalogue') return [];
+                const catalogueCode = text(row['catalogue_code']);
+                const relation = relationOf.get(catalogueCode);
+                if (relation === undefined) {
+                    throw new Error(
+                        `The value set "${code}" names the catalogue "${catalogueCode}", which no catalogue row holds.`,
+                    );
+                }
+                return [readRelation(code, relation).then((choices) => [code, choices] as const)];
+            }),
+        ),
+    );
+
+    function choicesFor(code: string, kind: string): readonly Choice[] {
+        if (kind === 'boolean') return BOOLEAN_CHOICES;
+        if (kind === 'catalogue') return resolved.get(code) ?? [];
+        if (kind === 'enumerated') return enumerated.get(code) ?? [];
+        return [];
+    }
+
+    const fields = new Map<string, ValueFields>();
+    return (scope, name) => {
+        const key = `${linkScopeOf(scope)}|${name}`;
+        const known = fields.get(key);
+        if (known !== undefined) return known;
+        const code = setForSetting.get(key) ?? '';
+        const row = setOf.get(code);
+        const found: ValueFields =
+            row === undefined
+                ? NO_VALUE_SET
+                : {
+                      valueSet: code,
+                      sourceKind: text(row['source_kind']),
+                      choices: choicesFor(code, text(row['source_kind'])),
+                      minimum: optionalNumber(row['minimum']),
+                      maximum: optionalNumber(row['maximum']),
+                      pattern: text(row['pattern']),
+                  };
+        fields.set(key, found);
+        return found;
+    };
+}
+
 /** The pick lists a screen draws its combo boxes from. */
 async function vocabulary(session: LiveSession): Promise<Readonly<Record<string, unknown>>> {
     const rows = (subject: string, key: string) =>
         readAll(session, subject, key, { filter: null, as_of: null });
-    const [types, pairs, settings, models, methods, templates, tenors, instruments, docs] =
-        await Promise.all([
-            rows(typeSubjects.list_pricing_engine_types_request, 'types'),
-            rows(pairSubjects.list_pricing_model_engine_pairs_request, 'pairs'),
-            rows(settingSubjects.list_pricing_pair_settings_request, 'settings'),
-            rows(modelSubjects.list_pricing_models_request, 'models'),
-            rows(methodSubjects.list_pricing_methods_request, 'methods'),
-            rows(templateSubjects.list_sensitivity_templates_request, 'templates'),
-            rows(tenorSubjects.list_tenors_request, 'tenors'),
-            rows(instrumentCodeSubjects.list_instrument_codes_request, 'instruments'),
-            rows(oreParameterSubjects.list_ore_parameters_request, 'parameters'),
-        ]);
+    const [
+        types,
+        pairs,
+        settings,
+        models,
+        methods,
+        templates,
+        tenors,
+        instruments,
+        docs,
+        valueSetRows,
+        valueSetValueRows,
+        catalogueRows,
+        linkRows,
+    ] = await Promise.all([
+        rows(typeSubjects.list_pricing_engine_types_request, 'types'),
+        rows(pairSubjects.list_pricing_model_engine_pairs_request, 'pairs'),
+        rows(settingSubjects.list_pricing_pair_settings_request, 'settings'),
+        rows(modelSubjects.list_pricing_models_request, 'models'),
+        rows(methodSubjects.list_pricing_methods_request, 'methods'),
+        rows(templateSubjects.list_sensitivity_templates_request, 'templates'),
+        rows(tenorSubjects.list_tenors_request, 'tenors'),
+        rows(instrumentCodeSubjects.list_instrument_codes_request, 'instruments'),
+        rows(oreParameterSubjects.list_ore_parameters_request, 'parameters'),
+        rows(valueSetSubjects.list_ore_parameter_value_sets_request, 'sets'),
+        rows(valueSetValueSubjects.list_ore_parameter_value_set_values_request, 'values'),
+        rows(
+            valueSetCatalogueSubjects.list_ore_parameter_value_set_catalogues_request,
+            'catalogues',
+        ),
+        rows(
+            settingValueSetSubjects.list_ore_parameter_setting_value_sets_request,
+            'setting_value_sets',
+        ),
+    ]);
+    const valueSetFields = await readValueSets(session, {
+        sets: valueSetRows,
+        values: valueSetValueRows,
+        catalogues: catalogueRows,
+        links: linkRows,
+    });
     const assetClassOf = new Map(
         instruments.map((row) => [text(row['code']), text(row['asset_class'])]),
     );
@@ -477,6 +765,7 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
                     kind: text(row['kind']),
                     usual: text(row['usual_value']),
                     options: text(row['options']) === '' ? [] : text(row['options']).split(','),
+                    ...valueSetFields(scope, text(row['name'])),
                     required: row['is_required'] === true,
                     documented: doc !== undefined,
                     label: text(doc?.['label']),
@@ -506,6 +795,7 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
                     kind: 'text',
                     usual: '',
                     options: [],
+                    ...valueSetFields(text(row['scope']), text(row['name'])),
                     required: false,
                     documented: true,
                     label: text(row['label']),
@@ -527,6 +817,7 @@ async function vocabulary(session: LiveSession): Promise<Readonly<Record<string,
             .map((row) => ({
                 name: text(row['name']),
                 domain: text(row['ore_parameter_value_domain_code']),
+                ...valueSetFields('GlobalParameters', text(row['name'])),
                 label: text(row['label']),
                 help: text(row['help']),
                 description: text(row['description']),

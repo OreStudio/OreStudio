@@ -85,6 +85,54 @@
       "source_ref": "OREData/ored/portfolio/builders/convertiblebond.cpp",
       "curator": "marco",
       "date": "2026-10-25"
+    },
+    "BasisFunctionOrder": {
+      "value": "Training.BasisFunctionOrder",
+      "reason": "The guide lists the setting without its Training prefix; the ORE code reads 'Training.BasisFunctionOrder'.",
+      "source": "ore_code",
+      "source_ref": "OREData/ored/portfolio/builders, the parameter the engine reads",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "BsStdDev": {
+      "value": "BSStdDevs",
+      "reason": "The guide writes the setting as a policy value; the ORE code reads 'BSStdDevs'.",
+      "source": "ore_code",
+      "source_ref": "OREData/ored/portfolio/builders, the parameter the engine reads",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "FXCalibration": {
+      "value": "FxCalibration",
+      "reason": "The guide writes the FX prefix in capitals; the ORE code reads 'FxCalibration'.",
+      "source": "ore_code",
+      "source_ref": "OREData/ored/portfolio/builders, the parameter the engine reads",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "LowerRateNormal": {
+      "value": "LowerRateBoundNormal",
+      "reason": "The guide shortens the name; the ORE code reads 'LowerRateBoundNormal'.",
+      "source": "ore_code",
+      "source_ref": "OREData/ored/portfolio/builders, the parameter the engine reads",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "MaxDiscretizationPoints": {
+      "value": "MaxDiscretisationPoints",
+      "reason": "The guide spells it with a z; the ORE code reads 'MaxDiscretisationPoints'.",
+      "source": "ore_code",
+      "source_ref": "OREData/ored/portfolio/builders, the parameter the engine reads",
+      "curator": "marco",
+      "date": "2026-10-25"
+    },
+    "UpperRateNormal": {
+      "value": "UpperRateBoundNormal",
+      "reason": "The guide shortens the name; the ORE code reads 'UpperRateBoundNormal'.",
+      "source": "ore_code",
+      "source_ref": "OREData/ored/portfolio/builders, the parameter the engine reads",
+      "curator": "marco",
+      "date": "2026-10-25"
     }
   },
   "label_words": {

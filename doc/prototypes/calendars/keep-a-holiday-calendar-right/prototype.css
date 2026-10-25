@@ -73,7 +73,8 @@ main { max-width: 86rem; margin: 0 auto; padding: 1.25rem 1.25rem 2rem; display:
 .btn.gold { border-color: var(--stale); color: var(--stale); }
 .btn.ghost { border-color: transparent; background: none; padding: 0.25rem 0.5rem; }
 .btn.sm { padding: 0.25rem 0.625rem; font-size: 13px; }
-.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+.btn[disabled], .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 4rem; z-index: 30; }
 .icon { width: 1em; height: 1em; display: inline-block; }
 .mark { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 12px; padding: 0.125rem 0.625rem; border-radius: 999px; border: 1px solid var(--accent-line); background: var(--accent-dim); color: var(--accent-bright); }
 .mark.ro { border-color: var(--line); background: var(--overlay); color: var(--ink-muted); }

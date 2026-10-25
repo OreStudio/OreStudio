@@ -88,8 +88,9 @@ Three questions the journey judgement left to the prototype:
   under a control (RS-WRITE-12); Why and Commentary close the form
   (ES-EDIT-02); the footer holds Cancel then Save, each with its icon, and no
   Delete (RS-WRITE-14); a create states its reason in a note and lists what is
-  still to fill (RS-WRITE-17, RS-WRITE-13); the ✕ asks /You have unsaved
-  changes. Close anyway?/ (RS-WRITE-24). Delete confirms, names the record,
+  still to fill (RS-WRITE-17, RS-WRITE-13); the ✕ and Cancel alike close at
+  once while nothing changed, and ask /You have unsaved changes. Close
+  anyway?/ once a field has, in every dialog (RS-WRITE-24). Delete confirms, names the record,
   says what is lost and asks for a reason (RS-WRITE-25, RS-WRITE-30).
 - *Derive a calendar.* The record dialog titled /Derive a calendar from
   <name>/, with the base shown as a fixed field and the type and the country

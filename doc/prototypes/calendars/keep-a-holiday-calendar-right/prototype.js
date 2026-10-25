@@ -168,7 +168,7 @@ const state = {
     dialog: q.get('dialog') ?? '',
     part: q.get('part') ?? '',
     who: q.get('who') ?? 'admin',
-    year: Number(q.get('year') ?? '2026'),
+    year: /^\d{4}$/.test(q.get('year') ?? '') ? Number(q.get('year')) : 2026,
     compare: q.get('compare') ?? '',
     built: q.get('built') ?? 'yes',
     search: q.get('q') ?? '',
@@ -275,8 +275,9 @@ function years(rule) {
 function holidays(c, year) {
     const out = new Map();
     const shape = shapeOf(c);
-    if (shape === 'quantlib') for (const d of BASE_HOLIDAYS[c.code] ?? []) out.set(d, { words: 'QuantLib', from: 'base' });
-    if (shape === 'derived') for (const d of BASE_HOLIDAYS[c.base_calendar_code] ?? []) out.set(d, { words: `From ${c.base_calendar_code}`, from: 'base' });
+    const inYear = (dates) => (dates ?? []).filter((d) => d.startsWith(String(year)));
+    if (shape === 'quantlib') for (const d of inYear(BASE_HOLIDAYS[c.code])) out.set(d, { words: 'QuantLib', from: 'base' });
+    if (shape === 'derived') for (const d of inYear(BASE_HOLIDAYS[c.base_calendar_code])) out.set(d, { words: `From ${c.base_calendar_code}`, from: 'base' });
     if (shape === 'bespoke') for (const r of RULES[c.code] ?? []) { const d = ruleDate(r, year); if (d) out.set(d, { words: ruleWords(r), from: 'rule' }); }
     for (const x of EXCEPTIONS[c.code] ?? []) {
         if (!x.exception_date.startsWith(String(year))) continue;
@@ -284,6 +285,10 @@ function holidays(c, year) {
         else out.set(x.exception_date, { words: x.description || 'Exception', from: 'exception' });
     }
     return out;
+}
+function inYearCount(c, year) {
+    const dates = BASE_HOLIDAYS[shapeOf(c) === 'derived' ? c.base_calendar_code : c.code] ?? [];
+    return dates.filter((d) => d.startsWith(String(year))).length;
 }
 function weekdaysIn(year) { let n = 0; for (let d = new Date(Date.UTC(year, 0, 1)); d.getUTCFullYear() === year; d = addDays(d, 1)) { const w = d.getUTCDay(); if (w !== 0 && w !== 6) n++; } return n; }
 
@@ -344,7 +349,23 @@ function renderList() {
           </span>
         </div>
       </section>`;
-    if (state.dialog === 'add') dialogCalendar('Add a bespoke calendar', null, null);
+    if (state.done) doneToast();
+    else if (state.dialog === 'add') dialogCalendar('Add a bespoke calendar', null, null);
+}
+
+/* The one notice a write leaves behind: the dialog has closed and Refresh is the way to the new version. */
+function doneToast() {
+    const to = /^\d{4}$/.test(q.get('to') ?? '') ? Number(q.get('to')) : 2027;
+    let written = 0;
+    for (let y = 2027; y <= to; y++) written += weekdaysIn(y);
+    const words = {
+        saved: 'Saved. Refresh shows the new version.',
+        added: 'Added. The page opened on the new record.',
+        rebuilt: `${written} days written, up to the end of ${to}.`,
+        removed: 'Removed. Its history stays.',
+        reverted: 'Reverted: a new version carries the old values.',
+    }[state.done];
+    layer.innerHTML = `<div class="notice ok toast">${esc(words)} <a href="${href({ done: '', to: '' })}">Dismiss</a></div>`;
 }
 
 function renderCalendar() {
@@ -442,15 +463,22 @@ function daysPanel(c) {
     }
     const mine = holidays(c, year);
     const theirs = other ? holidays(other, year) : new Map();
+    const whereOf = (from) => (from === 'rule' ? 'Rule' : from === 'exception' || from === 'business' ? 'Exception' : 'Base');
     const entries = [];
-    for (const [d, h] of mine) entries.push({ date: d, words: h.words, from: h.from, where: h.from === 'rule' ? 'Rule' : h.from === 'exception' ? 'Exception' : h.from === 'business' ? 'Exception' : 'Base' });
-    for (const [d, h] of theirs) if (!mine.has(d) && h.from !== 'business') entries.push({ date: d, words: `Holiday in ${other.code} only`, from: 'other', where: h.words });
+    for (const [d, h] of mine) entries.push({ date: d, words: h.words, from: h.from, where: whereOf(h.from) });
+    for (const [d, h] of theirs) if (!mine.has(d) && h.from !== 'business') entries.push({ date: d, words: `Holiday in ${other.code} only`, from: 'other', where: whereOf(h.from) });
     entries.sort((a, b) => a.date.localeCompare(b.date));
-    const holidayCount = entries.filter((e) => e.from !== 'business').length;
-    const business = weekdaysIn(year) - entries.filter((e) => e.from !== 'business' && new Date(e.date + 'T00:00:00Z').getUTCDay() % 6 !== 0).length;
-    const warn = base && shapeOf(base) === 'quantlib' && c.code === 'Acme.NewYork' ? `<div class="notice warn">${esc(base.code)} takes its holidays from QuantLib, but the rebuild does not read them yet. The days below show what the screen will show once it does.</div>` : '';
+    const onWeekday = (e) => new Date(e.date + 'T00:00:00Z').getUTCDay() % 6 !== 0;
+    const ownHolidays = entries.filter((e) => e.from !== 'business' && e.from !== 'other');
+    const unionHolidays = entries.filter((e) => e.from !== 'business');
+    const ownBusiness = weekdaysIn(year) - ownHolidays.filter(onWeekday).length;
+    const unionBusiness = weekdaysIn(year) - unionHolidays.filter(onWeekday).length;
+    const baseWithoutData = (shapeOf(c) === 'derived' || shapeOf(c) === 'quantlib') && inYearCount(c, year) === 0;
+    const warn = baseWithoutData
+        ? `<div class="notice warn">The prototype holds the QuantLib holidays of ${esc(c.base_calendar_code ?? c.code)} for 2026 only; ${year} shows the exceptions and nothing else.</div>`
+        : base && shapeOf(base) === 'quantlib' && c.code === 'Acme.NewYork' ? `<div class="notice warn">${esc(base.code)} takes its holidays from QuantLib, but the rebuild does not read them yet. The days below show what the screen will show once it does.</div>` : '';
     return `${bar}${warn}
-      <p class="muted small">${business} business days and ${holidayCount} weekday holidays in ${year}${other ? `, with ${esc(other.name)}: the union is the definition a pair settles on` : ''}.</p>
+      <p class="muted small">${ownBusiness} business days and ${ownHolidays.length} weekday holidays in ${year}${other ? `. With ${esc(other.name)}: ${unionBusiness} business days and ${unionHolidays.length} holidays in the union, which is the definition a pair settles on` : ''}.</p>
       <div class="months">${MONTHS.map((m, i) => {
         const inMonth = entries.filter((e) => Number(e.date.slice(5, 7)) === i + 1);
         return `<div class="month"><h4>${m}</h4>${inMonth.length === 0 ? '<p class="small faint">No holidays.</p>' : `<ul>${inMonth.map((e) => `<li class="${e.from}"><span class="d">${e.date.slice(8)}</span><span class="w">${esc(e.words)}</span><span class="from">${esc(e.where)}</span></li>`).join('')}</ul>`}</div>`;
@@ -492,12 +520,23 @@ function reasonFields(firstIsTouch) {
 }
 function dialogShell({ title, loaded, body, foot, narrow }) {
     layer.innerHTML = `<div class="scrim" role="presentation"><div class="dialog${narrow ? ' narrow' : ''}" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
-      <div class="dialog-head"><div><h2 id="dlg-title">${title}</h2>${loaded ? `<span class="loaded">Loaded ${esc(loaded)}</span>` : ''}</div><a class="x" aria-label="Close" href="${href({ dialog: '', part: '', guard: state.dialog === 'edit' ? '1' : '' })}">✕</a></div>
+      <div class="dialog-head"><div><h2 id="dlg-title">${title}</h2>${loaded ? `<span class="loaded">Loaded ${esc(loaded)}</span>` : ''}</div><a class="x closes" aria-label="Close" href="${href({ dialog: '', part: '', guard: '' })}">✕</a></div>
       <div class="dialog-body">${body}</div>
-      <div class="dialog-foot">${foot}</div></div></div>
-      ${state.guard ? '' : ''}`;
+      <div class="dialog-foot">${foot}</div></div></div>`;
+    guardChanges();
 }
-function cancelLink() { return `<a class="btn" href="${href({ dialog: '', part: '', guard: '' })}">${icon('cancel')} Cancel</a>`; }
+/* RS-WRITE-24: closing with changes asks first. The ✕ and Cancel alike close at once
+   while nothing changed, and raise the guard once a field has. */
+function guardChanges() {
+    let dirty = false;
+    layer.querySelectorAll('.dialog input, .dialog select, .dialog textarea').forEach((el) => el.addEventListener('input', () => { dirty = true; }));
+    layer.querySelectorAll('.dialog a.closes').forEach((a) => a.addEventListener('click', (event) => {
+        if (!dirty) return;
+        event.preventDefault();
+        go({ guard: '1' });
+    }));
+}
+function cancelLink() { return `<a class="btn closes" href="${href({ dialog: '', part: '', guard: '' })}">${icon('cancel')} Cancel</a>`; }
 function saveLink(label, iconName, done) { return `<a class="btn primary" href="${href({ dialog: '', part: '', done })}">${icon(iconName ?? 'save')} ${label}</a>`; }
 
 function dialogCalendar(title, c, base) {
@@ -524,9 +563,9 @@ function dialogRebuild(c) {
         title: `Rebuild business days`,
         loaded: null,
         body: `<p class="muted small">Builds the days of <strong>${esc(c.name)}</strong> that are not built yet, from its ${shapeOf(c) === 'derived' ? 'base and its exceptions' : 'rules and its exceptions'}.</p>
-          <div class="form-grid">${field('Build up to the end of', input(String(Math.max(state.year, 2027)), 'inputmode="numeric" maxlength="4"'), 'A four-digit year.')}</div>
+          <div class="form-grid">${field('Build up to the end of', input(String(Math.max(state.year, 2027)), 'id="rebuild-to" inputmode="numeric" maxlength="4"'), 'A four-digit year.')}</div>
           <p class="small faint">A rebuild adds the days not built yet. It does not change a day that is already built, so a change to a rule or an exception does not show in a year already built.</p>`,
-        foot: `${cancelLink()}<a class="btn primary" href="${href({ dialog: '', done: 'rebuilt', built: '' })}">${icon('rebuild')} Rebuild</a>`,
+        foot: `${cancelLink()}<button class="btn primary" type="button" onclick="go({dialog:'', done:'rebuilt', built:'', to: document.getElementById('rebuild-to').value})">${icon('rebuild')} Rebuild</button>`,
     });
 }
 
@@ -570,13 +609,9 @@ function dialogs(c) {
     const kind = ['rules', 'exceptions', 'events'].includes(tab) ? tab : '';
     const row = kind && state.part ? partRows(c, kind).find((r) => r.id === state.part) : null;
     const p = kind ? PART[kind] : null;
-    if (state.done) {
-        const words = { saved: 'Saved. Refresh shows the new version.', added: 'Added. The page opened on the new record.', rebuilt: '261 days written for 2027.', removed: 'Removed. Its history stays.', reverted: 'Reverted: a new version carries the old values.' }[state.done];
-        layer.innerHTML = `<div class="notice ok" style="position:fixed;left:50%;transform:translateX(-50%);bottom:4rem;z-index:30">${esc(words)} <a href="${href({ done: '' })}">Dismiss</a></div>`;
-        return;
-    }
+    if (state.done) { doneToast(); return; }
     if (state.guard) {
-        layer.innerHTML = `<div class="guard"><div class="box"><h3>You have unsaved changes. Close anyway?</h3><div class="actions"><a class="btn" href="${href({ guard: '', dialog: 'edit' })}">Keep editing</a><a class="btn danger" href="${href({ guard: '', dialog: '' })}">Close anyway</a></div></div></div>`;
+        layer.innerHTML = `<div class="guard"><div class="box"><h3>You have unsaved changes. Close anyway?</h3><div class="actions"><a class="btn" href="${href({ guard: '', dialog: state.dialog || 'edit' })}">Keep editing</a><a class="btn danger" href="${href({ guard: '', dialog: '', part: '' })}">Close anyway</a></div></div></div>`;
         return;
     }
     switch (state.dialog) {

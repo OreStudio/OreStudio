@@ -105,6 +105,7 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Local review: docs class | doc/prototypes/calendars | Accept | The states were rendered to screenshots and read against the checklist's list, page, edit, parts, history and words sections; the business day count double-counted an opened day and was corrected |
+| 2 | PR 3785 review of the script: the base holidays ignored the year, no toast on the list, dead code, an inconsistent closing guard, a hard-coded rebuild count, the compare counts and column, NaN years, pager links that still navigate, inline handlers | prototype.js, prototype.css, the note | Accept, one point unchanged | The base holidays filter by year and a notice says the prototype holds 2026 only; the toast renders on both screens; the guard is one rule in every dialog, stated in the note; the rebuild count is computed from the year typed; the compare line shows the calendar's counts and the union's, and the column says Base, Rule or Exception; a bad year falls back to 2026; a disabled pager link takes no click. Inline handlers unchanged: the data is mock and the note says the web app does not copy the pattern |
 
 * Result
 

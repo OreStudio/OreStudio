@@ -72,6 +72,9 @@ task and name that file in the Command column.
 | =ores.iam/core/src/messaging/registrar.cpp= | 96.0 s, 2.31 GiB; reflect-cpp 23.0 + 14.2 s (39%); sqlgen 0.2 s | same | =ced6c2fc70=, release preset, clang, no ccache |
 | =ores.refdata/core/src/repository/currency_repository.cpp=, a typical generated repository | 14.4 s, 0.58 GiB; reflect-cpp 2.0 + 1.0 s (21%); sqlgen 0.5 + 0.3 s | same | =ced6c2fc70=, release preset, clang, no ccache |
 | Objects in the build | 8,144, mean 0.3 s from the ninja log (mostly ccache hits) | =.ninja_log= | =ced6c2fc70=, release preset, clang, no ccache |
+| Random sample of 100 files, 3 at a time | 780 s CPU, mean 7.8 s; reflect-cpp 165 s = 21.2% pooled, 11.0% +/- 2.1% per file (95%); 2 files above 1.5 GiB, peak 3.16 GiB | =sample.py= (seed 20261026), exclusive reflect-cpp time from each trace | =ced6c2fc70=, release preset, clang, no ccache |
+| Full build without ccache, extrapolated | about 17.2 CPU hours, about 5.7 wall hours at 3 jobs | the sample's mean times the 7,948 files in =compile_commands.json= | =ced6c2fc70=, release preset, clang, no ccache |
+| Phases of =currency_repository.cpp= | 14.4 s: header parsing 4.3 s, instantiation about 6 s (reflect-cpp 2.0 s), backend 6.6 s (optimiser 4.5 s, code generation 2.1 s) | the =Total= events of its time trace | =ced6c2fc70=, release preset, clang, no ccache |
 
 * Notes
 
@@ -89,6 +92,11 @@ task and name that file in the Command column.
 - Peak memory per file (up to 3.72 GiB) is what holds the build slot to three
   jobs on eight cores, so lower peak memory shortens wall time beyond the CPU it
   saves.
+- reflect-cpp is about a fifth of the total build CPU. Repeated header parsing is
+  about a third of a typical file and the backend nearly half, so precompiled
+  headers or unity builds, and the optimisation level of tests and generated
+  code, are levers on total build time at least as large as the codecs, and they
+  stack with them.
 - Layout to prototype and measure: one file pair for each concern of each type.
   The type's header holds the plain struct. =_json_io.hpp=, =_msgpack.hpp= and the
   repository's header only declare; their =.cpp= files define the codec or the

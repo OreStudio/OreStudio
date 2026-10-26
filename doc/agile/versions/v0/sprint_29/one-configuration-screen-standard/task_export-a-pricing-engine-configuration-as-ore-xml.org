@@ -8,7 +8,7 @@
 #+filetags: :reporting:pricing:xml:shell:one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch:
-#+pr: 3865
+#+pr: 3882
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -162,6 +162,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3882][#3882]] | [ore] Export a pricing engine configuration as ORE XML |
 | [[https://github.com/OreStudio/OreStudio/pull/3865][#3865]] | [docs] Name an ORE document from the file types table |
 
 * Review

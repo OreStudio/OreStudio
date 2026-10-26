@@ -60,7 +60,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =ores.trading/service/tests/messaging_trade_origin_handler_tests.cpp= | 133.9 s, 3.72 GiB peak; reflect-cpp 47.4 s instantiation + 25.4 s backend (54%); sqlgen 0.1 s | =measure.py= (compile command from =compile_commands.json=, =-ftime-trace=, peak memory from =wait4=), =exclusive.py= on the trace | =ced6c2fc70=, release preset, clang, no ccache |
+| =ores.ore/service/src/messaging/report_package_handler.cpp= | 84.4 s, 2.50 GiB; reflect-cpp 31.1 + 13.9 s (53%); sqlgen 0.2 s | same | =ced6c2fc70=, release preset, clang, no ccache |
+| =ores.shell/application/src/app/commands/synthetic_commands.cpp= | 54.5 s, 1.44 GiB; reflect-cpp 14.5 + 8.6 s (42%) | same | =ced6c2fc70=, release preset, clang, no ccache |
+| =ores.iam/core/src/messaging/registrar.cpp= | 96.0 s, 2.31 GiB; reflect-cpp 23.0 + 14.2 s (39%); sqlgen 0.2 s | same | =ced6c2fc70=, release preset, clang, no ccache |
+| =ores.refdata/core/src/repository/currency_repository.cpp=, a typical generated repository | 14.4 s, 0.58 GiB; reflect-cpp 2.0 + 1.0 s (21%); sqlgen 0.5 + 0.3 s | same | =ced6c2fc70=, release preset, clang, no ccache |
+| Objects in the build | 8,144, mean 0.3 s from the ninja log (mostly ccache hits) | =.ninja_log= | =ced6c2fc70=, release preset, clang, no ccache |
 
 * Notes
 
@@ -70,6 +75,11 @@ task and name that file in the Command column.
   codec. Generated message codecs add files (about 516 for one each, about 40 for
   one for each component) but remove the repeated instantiation, so the total
   compile CPU of a full build is the number that decides, not the file count.
+- reflect-cpp's cost sits inside our own wrappers, such as the wire codec's
+  =encode<T>=, so attribution by outermost instantiation hides it. The figures
+  above are exclusive times: each instantiation less its nested children, and
+  the backend's per-function events by the function they name. Module-wide
+  optimisation is not attributed, so the shares are lower bounds.
 
 * Test Scenarios
 

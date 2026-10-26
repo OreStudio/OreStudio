@@ -193,6 +193,41 @@ import { ApiFailure, request } from './transport.js';
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
 
+const oreDocumentSchema = z.object({
+    success: z.boolean(),
+    message: z.string(),
+    count: z.int(),
+    files: z.array(z.object({ name: z.string(), content: z.string() })),
+});
+export type OreDocumentResult = z.infer<typeof oreDocumentSchema>;
+
+const orePreviewSchema = z.object({
+    success: z.boolean(),
+    message: z.string(),
+    root_element: z.string(),
+    in_file: z.int(),
+    held: z.int(),
+    changed: z.int(),
+    added: z.int(),
+    removed: z.int(),
+    rows: z.array(
+        z.object({ iso_code: z.string(), name: z.string(), change: z.string(), what: z.string() }),
+    ),
+    issues: z.array(z.object({ kind: z.string(), subject: z.string(), detail: z.string() })),
+});
+export type OrePreview = z.infer<typeof orePreviewSchema>;
+
+const oreImportResultSchema = z.object({
+    success: z.boolean(),
+    message: z.string(),
+    added: z.int(),
+    changed: z.int(),
+    deleted: z.int(),
+    kept: z.int(),
+    errors: z.array(z.object({ iso_code: z.string(), message: z.string() })),
+});
+export type OreImportResult = z.infer<typeof oreImportResultSchema>;
+
 export interface Credentials {
     readonly username: string;
     readonly password: string;
@@ -1901,6 +1936,45 @@ export const api = {
                 body: JSON.stringify({ endYear }),
             }),
         ).written;
+    },
+
+    /** The kind's ORE document, written by the server: the files to save and the count of records in them. */
+    async oreDocument(resource: string): Promise<OreDocumentResult> {
+        return oreDocumentSchema.parse(
+            await request(`/api/refdata/${encodeURIComponent(resource)}/ore-document`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /** What importing an ORE document would do: the counts, the difference and what the system does not know. */
+    async previewOreImport(resource: string, content: string): Promise<OrePreview> {
+        return orePreviewSchema.parse(
+            await request(`/api/refdata/${encodeURIComponent(resource)}/ore-import/preview`, {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ content }),
+            }),
+        );
+    },
+
+    /** Writes an ORE document with the person's choices and reason. */
+    async importOre(
+        resource: string,
+        body: {
+            readonly content: string;
+            readonly choices: readonly { readonly iso_code: string; readonly action: string }[];
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<OreImportResult> {
+        return oreImportResultSchema.parse(
+            await request(`/api/refdata/${encodeURIComponent(resource)}/ore-import`, {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify(body),
+            }),
+        );
     },
 
     /**

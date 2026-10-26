@@ -3894,6 +3894,70 @@ const fr: SourceCatalogue = {
             commentaryRequired: 'Ce motif exige un commentaire.',
             revertCommentary: 'Rétabli à la version {version}.',
         },
+        ore: {
+            import: 'Importer',
+            export: 'Exporter',
+            close: 'Fermer',
+            next: 'Suivant',
+            exportLead:
+                "Écrit {file}, le document ORE, avec les {plural} du tenant tels qu'ils sont maintenant.",
+            exportNote:
+                "Le serveur écrit le document ; votre navigateur l'enregistre. Rien ne change ici.",
+            exported: '{file} enregistré, {count} enregistrements.',
+            importTitle: 'Importer les {plural}',
+            importLead:
+                "Apporter un document ORE. Le serveur le lit, vous relisez la différence, et rien n'est écrit avant la dernière étape.",
+            fileSize: '{kb} Ko',
+            steps: {
+                file: 'Choisir le fichier',
+                fileLead:
+                    "Un document ORE dont l'élément racine est {root}. Un fichier d'un autre type est refusé.",
+                holds: 'Ce que contient le fichier',
+                holdsLead: "Le serveur a lu le fichier. Rien n'est encore écrit.",
+                unknown: 'Ce que le système ne connaît pas',
+                unknownLead:
+                    "Une valeur sans ligne, un élément sans colonne, ou un enregistrement nommé deux fois. Rien n'est abandonné en silence.",
+                review: 'La différence, et la relecture',
+                reviewLead:
+                    "Ce que l'import écrit, les lignes supprimées d'abord. Un fichier qui omet un enregistrement l'oublie le plus souvent par accident, donc Garder est le choix par défaut.",
+            },
+            counts: {
+                inFile: 'Dans le fichier',
+                held: 'Déjà détenus',
+                changed: 'Modifiés',
+                added: 'Nouveaux',
+                removed: 'Absents du fichier',
+            },
+            countsNote:
+                "Déjà détenu : un enregistrement que le tenant a avec les mêmes valeurs. Modifié : un qu'il a avec d'autres valeurs. Absent du fichier : un que le tenant a et que le fichier omet.",
+            nothingUnknown:
+                "Tout le fichier est connu : chaque valeur a sa ligne, chaque élément sa colonne, et aucun enregistrement n'apparaît deux fois.",
+            issues: {
+                value: 'Valeurs sans ligne',
+                valueLead:
+                    "Une valeur que les listes ne contiennent pas ; l'import écrit la ligne telle que le fichier l'énonce et nomme la valeur ici.",
+                dropped: 'Éléments sans colonne',
+                droppedLead:
+                    'Abandonnés, et nommés ici pour que rien ne soit abandonné en silence.',
+                duplicate: 'Doublons',
+                duplicateLead:
+                    'Un enregistrement nommé deux fois dans le fichier ; le premier est gardé.',
+            },
+            noDifference: "Le fichier contient ce que le tenant détient. Il n'y a rien à écrire.",
+            change: 'Changement',
+            what: 'Quoi',
+            choice: 'Choix',
+            changes: { added: 'Ajouté', changed: 'Modifié', removed: 'Supprimé' },
+            choices: {
+                take: 'Prendre celle du fichier',
+                keep: 'Garder la nôtre',
+                delete: 'La supprimer',
+                skip: "L'ignorer",
+            },
+            reach: "Les enregistrements écrits sont lus par tout ce qui les nomme. L'écriture revendique les versions que le serveur détient maintenant.",
+            imported:
+                'Importé : {added} ajoutés, {changed} modifiés, {deleted} supprimés, {kept} gardés. Actualiser montre les nouvelles versions.',
+        },
         records: {
             deletePartWarning: 'La ligne est fermée. Son historique reste.',
             historyOf: 'Historique de {name}',

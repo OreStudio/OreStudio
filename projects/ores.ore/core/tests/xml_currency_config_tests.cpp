@@ -96,6 +96,21 @@ TEST_CASE("a_currency_states_its_own_fields", tags) {
     require_round_trip(imported);
 }
 
+TEST_CASE("a_numeric_code_keeps_its_leading_zeros", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The document carries the code as a number, so 036 arrives as 36; the
+    // tenant holds the three digits ISO 4217 gives it.
+    std::string aud = text;
+    aud.replace(aud.find("392"), 3, "36");
+    const auto imported = ores::ore::xml::importer::import_currency_config_text(aud);
+    REQUIRE(imported.size() == 1);
+    BOOST_LOG_SEV(lg, info) << "numeric code: " << imported[0].numeric_code;
+
+    CHECK(imported[0].numeric_code == "036");
+    require_round_trip(imported);
+}
+
 TEST_CASE("a_currency_absent_optional_fields_stay_absent", tags) {
     auto lg(make_logger(test_suite));
 

@@ -1,0 +1,391 @@
+:PROPERTIES:
+:ID: AF63E82F-D4DD-41EC-A1FE-6B3B5824F462
+:END:
+#+title: ores.ore.currency_config_messages
+#+description: Codegen operation model for the ORE currency configuration's exchange: the export that writes currencyconfig.xml, the preview that says what a file would change, and the import that writes it with the person's choices. Rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: ore
+#+subcomponent: api
+#+entity_singular: currency_config
+#+namespace: ores::ore::messaging
+#+brief: Export, preview and import the ORE currency configuration.
+#+filetags: :model:operation:ore:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+The currency configuration is the ORE document =currencyconfig.xml=, whose root
+element is =CurrencyConfig=. These three operations are the first triple of
+the record screen standard's Import and Export pair: =export_<document>=
+returns the document as a file, =preview_<document>_import= parses a file and
+says what the import would do, and =import_<document>= writes with the
+person's choices. The ORE service reads and writes the currencies through
+refdata's own messages, under the caller's delegated session, and never
+touches refdata's tables. The pair's screen is the currencies list.
+
+The import writes one currency at a time through refdata's put and delete,
+so it is not one transaction: a write that fails part way leaves the rows
+before it written, and the response names every row it could not write, so
+the person sees what stands. Each write claims the version the import read
+just before it, not the one the preview showed, so a change made between the
+preview and the import is overwritten by the document's fields; the preview
+is a reading, and the import is the write.
+
+* Physical space
+
+The shell commands are switched off for the same reason as the ORE import's: the
+component has no part under =projects/ores.shell=.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** ore_document
+
+#+begin_src cpp :name comment
+/**
+ * @brief One ORE document, as the browser saves it: its file name and its text.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** content
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** export_currency_config_request
+:PROPERTIES:
+:subject: ore.v1.ops.export_currency_config
+:response: export_currency_config_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Writes the tenant's currencies as an ORE currency configuration.
+ *
+ * An empty list of codes exports every currency; a list exports those alone.
+ */
+#+end_src
+
+*** iso_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** export_currency_config_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The document, one file, and how many currencies it holds.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** count
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** files
+:PROPERTIES:
+:cpp_type: std::vector<ore_document>
+:END:
+
+** currency_import_row
+
+#+begin_src cpp :name comment
+/**
+ * @brief One currency the import would touch: added, changed or removed, and
+ * in words what differs.
+ */
+#+end_src
+
+*** iso_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** change
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** One of added, changed, removed. */
+#+end_src
+
+*** what
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** currency_import_issue
+
+#+begin_src cpp :name comment
+/**
+ * @brief Something in the file the system does not know: a value with no row,
+ * an element with no column, or a currency the file names twice.
+ */
+#+end_src
+
+*** kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** One of value, dropped, duplicate. */
+#+end_src
+
+*** subject
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** detail
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** preview_currency_config_import_request
+:PROPERTIES:
+:subject: ore.v1.ops.preview_currency_config_import
+:response: preview_currency_config_import_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Parses a currency configuration and says what importing it would do.
+ *
+ * Nothing is written. A file of another kind is refused, and the refusal
+ * names the root element found.
+ */
+#+end_src
+
+*** content
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** preview_currency_config_import_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The counts, the difference against what the tenant holds, and what
+ * the system does not know.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** root_element
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** in_file
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** held
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** Currencies the tenant holds with the same values. */
+#+end_src
+
+*** changed
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** added
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** removed
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+#+begin_src cpp :name comment
+/** Currencies the tenant holds and the file omits. */
+#+end_src
+
+*** rows
+:PROPERTIES:
+:cpp_type: std::vector<currency_import_row>
+:END:
+
+*** issues
+:PROPERTIES:
+:cpp_type: std::vector<currency_import_issue>
+:END:
+
+** currency_import_choice
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the person chose for one currency of the difference.
+ */
+#+end_src
+
+*** iso_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** action
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** One of take, keep, delete, skip. Take writes the file's row; keep leaves ours; delete removes a row the file omits; skip leaves a new row out. */
+#+end_src
+
+** import_currency_config_request
+:PROPERTIES:
+:subject: ore.v1.ops.import_currency_config
+:response: import_currency_config_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Writes a currency configuration with the person's choices.
+ *
+ * A currency the choices do not name takes the file's row when it is new or
+ * changed, and is kept when the file omits it.
+ */
+#+end_src
+
+*** content
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** choices
+:PROPERTIES:
+:cpp_type: std::vector<currency_import_choice>
+:END:
+
+*** reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** currency_import_error
+
+#+begin_src cpp :name comment
+/**
+ * @brief A currency the import could not write, and the owner's reason.
+ */
+#+end_src
+
+*** iso_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** import_currency_config_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the import wrote, kept and could not write.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** added
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** changed
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** deleted
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** kept
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** errors
+:PROPERTIES:
+:cpp_type: std::vector<currency_import_error>
+:END:
+
+* See also
+
+- [[id:D196F614-02AF-472E-9754-2BEED439A4F5][ores.ore.run_configuration_messages]] — the pair these operations follow in shape.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the Import and Export section that names the triple.

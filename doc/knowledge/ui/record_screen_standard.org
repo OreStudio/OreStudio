@@ -758,7 +758,7 @@ component carries it today.
 | Permissions | =useRecordPermissions= | Exists |
 | Access mark | =AccessMark= in =ui/AccessMark.tsx=, drawn by =RecordHeader= | Exists |
 | Workflows of a kind | =WorkflowMenu= in =shell/WorkflowMenu.tsx= | Exists on Parties |
-| Import and Export | =OreExchange=; =ore.v1.ops.export_<document>=, =preview_<document>_import=, =import_<document>= | Missing; the currencies topic builds the first, for the currency configuration |
+| Import and Export | =OreExchange= in =ore/OreExchange.tsx=; =ore.v1.ops.export_<document>=, =preview_<document>_import=, =import_<document>= | Exists for the currency configuration: the Export dialog on the currencies list and the Import steps at =/refdata/currencies/import=; the other documents declare theirs |
 
 ** How today's record screens conform
 

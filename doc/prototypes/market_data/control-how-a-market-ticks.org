@@ -137,6 +137,10 @@ jobs and belong in different places.
   gets its own tab: the state in force, the multiplier, the auto/calm/active
   switch, who pinned it and why, and the raster of every live feed. The tab sets
   the market and reads the feeds; it edits no feed's clustering.
+- No list of feeds on that tab. A table of each feed's mode, ratio, decay and
+  sensitivity is a table of configs, and the feed list and the editors already
+  are one; the raster says which feeds are busy without repeating their
+  settings.
 
 The two tabs share one state, so pressing Calm on the Market tab changes what the
 feed's own row is drawn under — one market, read twice, rather than two pictures

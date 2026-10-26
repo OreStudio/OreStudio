@@ -78,8 +78,8 @@ void usage_recorder::sync(const demand_catalogue& catalogue,
             std::erase_if(rows, [](const auto& r) { return r.interval_to.has_value(); });
             return rows;
         }();
-        const auto subscription_plan =
-            plan_subscription_intervals(subscription_states(catalogue), open_subscriptions, now);
+        const auto subscription_plan = plan_subscription_intervals(
+            subscription_states(catalogue), open_subscriptions, now, ctx_.service_account());
         apply<domain::subscription_interval, repository::subscription_interval_repository>(
             ctx_, subscription_plan);
 
@@ -88,8 +88,11 @@ void usage_recorder::sync(const demand_catalogue& catalogue,
             std::erase_if(rows, [](const auto& r) { return r.interval_to.has_value(); });
             return rows;
         }();
-        const auto demand_plan = plan_demand_intervals(
-            demand_states(compute_party_demand(catalogue, now)), open_demand, now);
+        const auto demand_plan =
+            plan_demand_intervals(demand_states(compute_party_demand(catalogue, now)),
+                                  open_demand,
+                                  now,
+                                  ctx_.service_account());
         apply<domain::demand_interval, repository::demand_interval_repository>(ctx_, demand_plan);
 
         BOOST_LOG_SEV(lg(), info) << "Usage intervals: " << subscription_plan.to_open.size()
@@ -122,8 +125,8 @@ void usage_recorder::flush(std::chrono::system_clock::time_point now) {
         row.period_start = c.key.period_start;
         row.flushed_at = now;
         row.deliveries = c.deliveries;
-        row.modified_by = service_name;
-        row.performed_by = service_name;
+        row.modified_by = ctx_.service_account();
+        row.performed_by = ctx_.service_account();
         row.change_reason_code = "system.new_record";
         row.change_commentary = "Deliveries counted by the fan-out";
         const auto tenant = c.key.tenant_id.to_string();

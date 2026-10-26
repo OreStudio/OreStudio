@@ -290,6 +290,13 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::engine_settings_building:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::engine_settings_execution:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::engine_settings_execution:write');
+    -- The screen's list reads the groups it draws and the settings each group
+    -- holds before it reads a single configuration: the three parts above are
+    -- the values and not the list. Nothing but the tenant administrator's
+    -- wildcard held these, so *Engine settings* answered every person with a
+    -- refusal while the screen that leads to it was offered to them.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::engine_settings_groups:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::engine_settings_group_settings:read');
 
     -- Assign permissions to Trading role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::currencies:read');
@@ -301,6 +308,34 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::routes:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::providers:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::market_data_sources:read');
+
+    -- The market data the desk authors and reads. A trader is the maker of a
+    -- curve: the synthetic feed journeys name "a quant or a trader who holds
+    -- the synthetic configuration permission", and the curve journeys name the
+    -- trader who holds the market-data management role. No other seeded role
+    -- held any of these, so the *Synthetic* screen, the *Curve evolution*
+    -- screen and the whole market-data area were drawn for nobody but a
+    -- tenant administrator.
+    --
+    -- The two feeds are read for the screen's list and written by the two
+    -- authoring journeys, which state the feed as theirs to author. The
+    -- folders are how the screen groups the feeds, so it cannot draw its list
+    -- without them.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::fx_spot_generation_configs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::ir_curve_generation_configs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::folders:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::fx_spot_generation_configs:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'synthetic::ir_curve_generation_configs:write');
+    -- The curve the desk sees evolve, and the slices it reads through: the
+    -- *Watch a curve or surface evolve* journey states the series read, and
+    -- the snapshot and observation reads are what the evolution screen draws
+    -- its window from.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::curve_snapshots:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::market_series:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::market_observations:read');
+    -- *Adjust a curve or surface by hand*: the trader is the maker, and the
+    -- correction is the write the journey makes.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::market_observations:write');
 
     -- Assign permissions to Sales role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Sales', 'refdata::currencies:read');
@@ -583,6 +618,60 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::tenors:delete');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'variability::flags:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'iam::accounts:read');
+
+    -- The market risk function's own screens. The pricing engine journeys name
+    -- "a market-risk owner or a tenant administrator" as the actor, and the
+    -- seed has no market-risk role: the person who owns the terms the desks
+    -- book on is an =Operations= account (the conventions journeys say the
+    -- same of the same person, and the demonstration's Head of Market Risk
+    -- holds this role). Nothing but the tenant administrator's wildcard held
+    -- these, so the *Pricing engines* screen was drawn for nobody else.
+    --
+    -- The write is the authoring workflow the series of journeys runs: author
+    -- a configuration, bring one in from a file, and change how a product is
+    -- priced. Deleting a configuration stays with the administrative roles.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'analytics::pricing_model_configs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'analytics::pricing_model_configs:write');
+    -- The screen counts the products and the parameters of each configuration,
+    -- and the authoring workflow picks from the engines, the models, the
+    -- methods, the model-and-engine pairs and the pair settings. Those reads
+    -- are the screen's and not a privilege: without them the list answered
+    -- with a refusal before it reached the configurations it was allowed to
+    -- read. The four writes are the products and the parameters an authoring
+    -- journey states, and the pairs those products are priced through.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'analytics::pricing_model_products:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'analytics::pricing_model_product_parameters:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'analytics::pricing_model_engine_pairs:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'analytics::pricing_pair_settings:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'analytics::pricing_models:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'analytics::pricing_engine_types:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'analytics::pricing_methods:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'analytics::sensitivity_templates:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'analytics::pricing_model_products:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'analytics::pricing_model_product_parameters:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'analytics::pricing_model_engine_pairs:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'analytics::pricing_pair_settings:write');
+    -- The vocabulary the authoring workflow picks from: the instrument codes a
+    -- product is written against, and the value sets and catalogues a parameter
+    -- takes its values from. The list needs none of them, the form fills from
+    -- all of them, and none is a business fact of the tenant.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'refdata::instrument_codes:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::ore_parameter_value_sets:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::ore_parameter_value_set_values:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::ore_parameter_value_set_catalogues:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'reporting::ore_parameter_setting_value_sets:read');
+    -- The market-risk decision an approval request waits for. *Decide a
+    -- publish* and *Decide a convention change* name a person from Market
+    -- Risk, other than the requester, and the request's kind carries this
+    -- code. The wildcard was the only holder, so no seeded person could
+    -- decide and every request raised waited for a tenant administrator.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'inbox::approvals:decide_market_risk');
+    -- *Manage market data subscriptions* states all three codes and names the
+    -- party administrator as the actor. The five roles that read a party's
+    -- subscriptions read only: Operations maintains the sources and the
+    -- routes they serve, so the write and the delete are its own.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'marketdata::subscriptions:write');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'marketdata::subscriptions:delete');
 
     -- Assign permissions to Support role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Support', 'iam::accounts:read');

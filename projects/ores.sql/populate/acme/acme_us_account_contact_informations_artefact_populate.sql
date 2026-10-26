@@ -76,5 +76,7 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '1f2ece1a-3895-5d8e-adac-bd0ce8a2c0d9', 0, 'john.sullivan', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'john.sullivan@acmecorp.com', null),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '4bb59d80-131f-50f3-9dbc-e71ec949545c', 0, 'stacy.lopez', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'stacy.lopez@acmecorp.com', null),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e31f6369-6454-56d2-a459-e171818eb3a1', 0, 'charles.nelson', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'charles.nelson@acmecorp.com', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'bf0ee385-036e-5248-a063-9031fc1acfff', 0, 'ashley.moore', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'ashley.moore@acmecorp.com', null);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'bf0ee385-036e-5248-a063-9031fc1acfff', 0, 'ashley.moore', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'ashley.moore@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '310db224-e596-5af0-82fa-a09b132acfa0', 0, 'sean.haney', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'sean.haney@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a6bdd304-ea12-5a79-a951-1084228ecfe8', 0, 'elizabeth.bates', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'elizabeth.bates@acmecorp.com', null);
 end $$;

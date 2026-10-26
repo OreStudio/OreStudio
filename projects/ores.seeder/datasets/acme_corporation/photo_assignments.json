@@ -1,6 +1,7 @@
 {
   "adrian.vance": "acme_staff_photo:male_age20_european_01",
   "ashley.moore": "acme_staff_photo:female_age20_east_asian_03",
+  "benjamin.matthews": "acme_staff_photo:male_age25_west_asian_02",
   "charles.nelson": "acme_staff_photo:male_age20_latin_american_03",
   "chi.wing.cheung": "acme_staff_photo:male_age20_southeast_asian_02",
   "chi.wing.lau": "acme_staff_photo:male_age30_southeast_asian_03",
@@ -10,6 +11,7 @@
   "diane.kay": "acme_staff_photo:female_age20_european_03",
   "eleanor.jackson": "acme_staff_photo:female_age25_european_03",
   "elizabeth.barrett": "acme_staff_photo:female_age30_african_01",
+  "elizabeth.bates": "acme_staff_photo:female_age30_european_03",
   "elizabeth.franklin": "acme_staff_photo:female_age20_south_asian_02",
   "emily.sanford": "acme_staff_photo:female_age20_latin_american_01",
   "harriet.french": "acme_staff_photo:female_age25_african_01",
@@ -25,10 +27,12 @@
   "ka.yee.lee": "acme_staff_photo:female_age25_east_asian_02",
   "ka.yee.ng": "acme_staff_photo:female_age40_east_asian_01",
   "kathryn.haynes": "acme_staff_photo:female_age25_african_02",
+  "kwok.wing.chan": "acme_staff_photo:female_age20_east_asian_02",
   "kwok.wing.yip": "acme_staff_photo:female_age30_east_asian_03",
   "laura.carlson": "acme_staff_photo:female_age30_european_02",
   "lawrence.davis": "acme_staff_photo:male_age25_south_asian_01",
   "leanne.shaw": "acme_staff_photo:female_age20_european_02",
+  "louise.taylor": "acme_staff_photo:female_age20_european_01",
   "man.yee.ng": "acme_staff_photo:female_age25_east_asian_03",
   "man.yee.tang": "acme_staff_photo:female_age40_east_asian_02",
   "mark.reid": "acme_staff_photo:male_age20_east_asian_02",
@@ -41,6 +45,7 @@
   "paul.armstrong": "acme_staff_photo:male_age20_east_asian_01",
   "sam.turnbull": "acme_staff_photo:male_age20_south_asian_01",
   "sandra.green": "acme_staff_photo:female_age20_east_asian_01",
+  "sean.haney": "acme_staff_photo:male_age30_south_asian_01",
   "shane.butcher": "acme_staff_photo:male_age20_west_asian_02",
   "shirley.stevens": "acme_staff_photo:female_age20_latin_american_02",
   "siu.fung.cheung": "acme_staff_photo:male_age30_southeast_asian_02",
@@ -56,5 +61,6 @@
   "wai.ming.lee": "acme_staff_photo:female_age35_east_asian_02",
   "william.thomson": "acme_staff_photo:male_age20_south_asian_02",
   "yesenia.choi": "acme_staff_photo:female_age20_south_asian_01",
+  "ying.ying.ho": "acme_staff_photo:male_age25_southeast_asian_02",
   "ying.ying.lam": "acme_staff_photo:male_age25_southeast_asian_01"
 }

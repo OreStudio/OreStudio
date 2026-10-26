@@ -16,6 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.analytics.quant/domain/market_link.hpp"
 #include "ores.analytics.quant/domain/shared_intensity.hpp"
 #include <algorithm>
 #include <array>
@@ -28,6 +29,7 @@
 #include <thread>
 #include <vector>
 
+using ores::analytics::quant::domain::market_link;
 using ores::analytics::quant::domain::shared_intensity;
 
 TEST_CASE("shared_intensity starts cold", "[shared_intensity]") {
@@ -174,4 +176,27 @@ TEST_CASE("two series on one heat move together and separately without it", "[sh
 
     CHECK(correlation(coupled) > 0.2);
     CHECK(std::abs(correlation(separate)) < 0.1);
+}
+
+TEST_CASE("the heat stays bounded however many series share it", "[shared_intensity]") {
+    // The synthetic service's own heat: half a rate per event, fading at twenty a
+    // second. Sixty series at one tick a second each is more than decay over jump,
+    // the count at which every series taking the whole heat makes it run away.
+    shared_intensity heat(0.5, 20.0);
+    constexpr int series = 60;
+    constexpr double mean_rate = 1.0;
+    const auto link = ores::analytics::quant::domain::with_mean_rate(
+        market_link{.intensity = &heat}, mean_rate * 3600.0);
+
+    const double bound = 2.0 * heat.stationary_mean(series * mean_rate);
+    constexpr double step = 0.001;
+    double owed = 0.0;
+    for (int s = 0; s < 10'000 && heat.value() < bound; ++s) {
+        owed += series * mean_rate * link.rate_multiplier() * step;
+        for (; owed >= 1.0; owed -= 1.0)
+            heat.record_event();
+        heat.fade(step);
+    }
+
+    CHECK(heat.value() < bound);
 }

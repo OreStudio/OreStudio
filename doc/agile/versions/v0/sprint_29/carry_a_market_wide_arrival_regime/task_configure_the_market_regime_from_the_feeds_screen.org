@@ -8,7 +8,7 @@
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
 #+branch: feature/set-the-market-regime-from-the-feeds-screen
-#+pr:
+#+pr: 3879
 #+pr: 3795
 #+blocked_on:
 #+blocked_since:
@@ -117,7 +117,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3879][#3879]] | [web] Show and set the market regime on the feeds screen |
 
 * Review
 

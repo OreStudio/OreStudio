@@ -56,12 +56,11 @@ h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--
     <h1>Control how a market ticks</h1>
     <span class="tag">prototype · throwaway · <a href="../../../../knowledge/ui/synthetic_data_generation_screens.org">screens standard</a></span>
   </div>
-  <p class="muted">Three shapes for the arrival regime: a pair's own clustering and sensitivity, and the run-wide market state. Each shows the same feed and the same numbers; only the place differs.</p>
+  <p class="muted">Two views, and the split is the point. A feed's arrival regime is edited and judged in its own editor: one row, that feed's ticks. The market is judged on the run: every feed's row at once, with the state and the pin that move them.</p>
 
   <div class="tabs" role="tablist">
-    <button role="tab" aria-selected="true"  data-v="A">A · inline in the editor</button>
-    <button role="tab" aria-selected="false" data-v="B">B · market panel beside the tree</button>
-    <button role="tab" aria-selected="false" data-v="C">C · one arrivals screen</button>
+    <button role="tab" aria-selected="true"  data-v="A">A · the feed · one row</button>
+    <button role="tab" aria-selected="false" data-v="B">B · the run · every row</button>
   </div>
 
   <!-- A ------------------------------------------------------------------ -->
@@ -75,15 +74,16 @@ h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--
       <div class="field"><label>Decay, per second</label><input id="dA" value="20"></div>
       <div class="field"><label>Sensitivity</label><input value="1.3"></div>
     </div>
-    <h3 class="of">What these numbers produce</h3>
-    <canvas class="gaps" id="gapsA" height="74"></canvas>
+    <h3 class="of">This feed's ticks</h3>
+    <canvas class="raster" id="rasterA" height="64"></canvas>
     <div class="row">
       <div class="field"><label>Long-run rate</label><div class="value mono">1.0 / s</div></div>
       <div class="field"><label>Fano factor of gaps</label><div class="value mono" id="fanoA">—</div></div>
       <div class="field"><label>Market now</label><div class="value"><span class="tag">active</span> ×2 · <a href="#" data-jump="B">manage</a></div></div>
     </div>
-    <div class="for"><b>For</b> the consequence sits beside the choice, and a person learns what 0.9 means by looking.</div>
-    <div class="for against"><b>Against</b> every feed repeats the market line, and the run's state still has no home of its own.</div>
+    <p class="faint" style="font-size:.8rem">One row: this feed's ticks, its own clustering, at the market's current state. The market is not edited here — it is read, and B is where it is set.</p>
+    <div class="for"><b>Local</b> the consequence sits beside the choice, and a person learns what 0.6 means by looking.</div>
+    <div class="for against"><b>Boundary</b> nothing on this screen changes the market, and nothing on it shows another feed.</div>
   </section>
 
   <!-- B ------------------------------------------------------------------ -->
@@ -138,38 +138,14 @@ h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--
           <tr><td>USD/JPY</td><td class="num">poisson</td><td class="num">0.9</td><td class="num">1.8 / s</td></tr>
           <tr><td>USD SOFR</td><td class="num">periodic</td><td class="num">0.4</td><td class="num">0.8 / s</td></tr>
         </tbody></table>
-        <p class="faint" style="font-size:.8rem">The selected row is the feed the editor is showing. Clustering is edited there, beside the engine and the tick clock, as the screen standard already sets out.</p>
+        <p class="faint" style="font-size:.8rem">Every live feed, ranked by how hard it follows the market. A row is read here; its clustering is edited in that feed's own editor, one row at a time, which is what A is for.</p>
       </div>
     </div>
-    <div class="for"><b>For</b> the raster is the only figure that shows what a market-wide factor means: rows densify together, and a burst in one row lifts the others.</div>
-    <div class="for against"><b>Against</b> clustering is still edited in the editor; the panel says what the market does to it, not how it was set.</div>
+    <div class="for"><b>Global</b> the raster is the only figure that shows what a market-wide factor means: rows densify together, and a burst in one row lifts the others.</div>
+    <div class="for against"><b>Boundary</b> it sets the market and reads the feeds; it edits no feed's clustering, so the two views never do the same job.</div>
   </section>
 
-  <!-- C ------------------------------------------------------------------ -->
-  <section id="vC" class="panel" hidden>
-    <h2>Arrivals · every feed's regime in one table</h2>
-    <div class="rail">
-      <button aria-selected="true">The run</button><button>The feeds</button><button>The preview</button>
-    </div>
-    <div class="row">
-      <div class="field"><label>Market</label><div class="value"><span class="tag">active</span> ×2 · pinned</div></div>
-      <div class="field"><label>Feeds live</label><div class="value mono">8 / 12</div></div>
-      <div class="field"><label>Auto · Calm · Active</label><div class="value mono">active</div></div>
-    </div>
-    <table><thead><tr><th>Feed</th><th>Mode</th><th class="num">Ratio</th><th class="num">Decay</th><th class="num">Sens.</th><th class="num">Rate</th><th></th></tr></thead>
-    <tbody>
-      <tr><td>EUR/USD</td><td>hawkes</td><td class="num">0.6</td><td class="num">20</td><td class="num">1.3</td><td class="num">3.1 / s</td><td><a href="#">preview</a></td></tr>
-      <tr><td>GBP/USD</td><td>hawkes</td><td class="num">0.5</td><td class="num">10</td><td class="num">1.1</td><td class="num">2.4 / s</td><td><a href="#">preview</a></td></tr>
-      <tr><td>USD/JPY</td><td>poisson</td><td class="num">—</td><td class="num">—</td><td class="num">0.9</td><td class="num">1.8 / s</td><td><a href="#">preview</a></td></tr>
-      <tr><td>USD SOFR</td><td>periodic</td><td class="num">—</td><td class="num">—</td><td class="num">0.4</td><td class="num">0.8 / s</td><td><a href="#">preview</a></td></tr>
-    </tbody></table>
-    <h3 class="of">Preview · EUR/USD</h3>
-    <canvas class="gaps" id="gapsC" height="74"></canvas>
-    <div class="for"><b>For</b> a table is the only shape that compares twenty feeds, and every control is in one place.</div>
-    <div class="for against"><b>Against</b> the choice is away from its row, and a rate now has two places it can be edited.</div>
-  </section>
-
-  <p class="faint" style="font-size:.8rem">The previews are drawn from the numbers above with a fixed seed, so the same input always draws the same gaps. A Hawkes preview bursts; a periodic one does not. That difference is the whole argument for showing it.</p>
+  <p class="faint" style="font-size:.8rem">Both rasters are drawn from the same model the service computes, with a fixed seed: a shared heat every event feeds and that fades, each feed's intensity scaled by the market state and by its own sensitivity, and its own Hawkes excess on top. Local shows one row; global shows them all.</p>
 </div>
 
 <script>
@@ -186,17 +162,34 @@ function gaps(mode, ratio, decay, seconds, meanRate, seed){
   }
   return out;
 }
-function drawGaps(id, mode, ratio, decay){
+function drawFeedRaster(id, mode, ratio, decay, sens){
   const c=document.getElementById(id); if(!c) return;
   const dpr=window.devicePixelRatio||1; c.width=c.clientWidth*dpr; c.height=c.clientHeight*dpr;
   const g=c.getContext('2d'); g.scale(dpr,dpr);
   const w=c.clientWidth,h=c.clientHeight;
   g.fillStyle='#26262b';g.fillRect(0,0,w,h);
-  const seconds=20, pts=gaps(mode,ratio,decay,seconds,1.0,7);
-  g.strokeStyle='#58a6ff';g.lineWidth=1;
-  pts.forEach(t=>{const x=8+(t/seconds)*(w-16);g.beginPath();g.moveTo(x,8);g.lineTo(x,h-8);g.stroke();});
-  g.fillStyle='#71717a';g.font='11px ui-monospace,monospace';
-  g.fillText(mode+' · '+pts.length+' ticks in 20 s',10,h-6);
+  const seconds=20, mean=1.0;
+  // This one feed, at the market's state now: sensitivity * (mean * S) plus its own
+  // Hawkes excess when the mode says it clusters.
+  let heat=0, excess=0; const r=rng(7); const marks=[];
+  const S=2.0;
+  for(let s=0;s<seconds;s+=0.01){
+    heat*=Math.exp(-20*0.01);
+    excess*=Math.exp(-decay*0.01);
+    const rate=Math.max(0.02, sens*(mean*S+heat*0)) + excess;
+    if(r()<rate*0.01){
+      marks.push(s);
+      if(mode==='hawkes') excess+=ratio*mean*2;
+      if(mode==='poisson') excess=0;
+    }
+  }
+  const y=h/2;
+  g.fillStyle='#3d444d';g.font='10px ui-monospace,monospace';
+  g.fillText('EUR/USD', 6, y-8);
+  g.fillStyle='#58a6ff';
+  marks.forEach(t=>{const x=78+(t/seconds)*(w-90); g.fillRect(x,y-4,2,8);});
+  g.fillStyle='#71717a';g.font='10px ui-monospace,monospace';
+  g.fillText(mode+' · '+marks.length+' ticks in 20 s', 78, h-6);
 }
 function drawRaster(id){
   const c=document.getElementById(id); if(!c) return;
@@ -259,16 +252,16 @@ function drawRaster(id){
   g.fillText('pinned active', 78+(pin/seconds)*(w-90)+4, 14);
 }
 function redraw(){
-  drawGaps('gapsA', document.getElementById('mA').value,
-           parseFloat(document.getElementById('nA').value)||0,
-           parseFloat(document.getElementById('dA').value)||1);
-  drawGaps('gapsB','hawkes',0.6,20);
-  drawGaps('gapsC','hawkes',0.6,20);
+  drawFeedRaster('rasterA',
+                 document.getElementById('mA').value,
+                 parseFloat(document.getElementById('nA').value)||0,
+                 parseFloat(document.getElementById('dA').value)||1,
+                 1.3);
   drawRaster('rasterB');
 }
 document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
   document.querySelectorAll('.tabs button').forEach(o=>o.setAttribute('aria-selected',String(o===b)));
-  ['A','B','C'].forEach(v=>document.getElementById('v'+v).hidden = ('v'+v)!==('v'+b.dataset.v));
+  ['A','B'].forEach(v=>document.getElementById('v'+v).hidden = ('v'+v)!==('v'+b.dataset.v));
   redraw();
 }));
 document.querySelectorAll('[data-jump]').forEach(a=>a.addEventListener('click',e=>{

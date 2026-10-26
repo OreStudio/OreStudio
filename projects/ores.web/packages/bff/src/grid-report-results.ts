@@ -573,7 +573,7 @@ export function withPortfolioTree(
         const children = [...(childrenOf.get(id) ?? [])].map((child) => build(child, depth + 1));
         const node = nodeOf(
             id,
-            portfolioName.get(id) ?? '',
+            portfolioName.get(id) ?? id,
             [...own, ...children.map((child) => child.node)],
             depth,
         );
@@ -586,6 +586,33 @@ export function withPortfolioTree(
         }
         return { node, rows };
     };
+    const reachable = new Set<string>();
+    const walk = (id: string): void => {
+        if (reachable.has(id)) {
+            return;
+        }
+        reachable.add(id);
+        for (const child of childrenOf.get(id) ?? []) {
+            walk(child);
+        }
+    };
+    for (const top of childrenOf.get('') ?? []) {
+        walk(top);
+    }
+    for (const id of nodeIds) {
+        if (reachable.has(id)) {
+            continue;
+        }
+        const parent = portfolioParent.get(id) ?? '';
+        if (parent !== '') {
+            childrenOf.set(
+                parent,
+                (childrenOf.get(parent) ?? []).filter((child) => child !== id),
+            );
+        }
+        childrenOf.set('', [...(childrenOf.get('') ?? []), id]);
+        reachable.add(id);
+    }
     const tops = [...(childrenOf.get('') ?? [])]
         .map((top) => build(top, 0))
         .sort((left, right) => figureOf(right.node) - figureOf(left.node));
@@ -652,7 +679,7 @@ export function withGroups(
             standing.push(row);
             continue;
         }
-        members.set(group, [...(members.get(group) ?? []), { ...row, group: groupName }]);
+        members.set(group, [...(members.get(group) ?? []), { ...row, group: groupName, depth: 1 }]);
     }
     const groups = [...members.entries()]
         .map(([parent, children]) => {

@@ -103,7 +103,7 @@ const toAggregate = (raw: unknown): AggregateRow => {
         change: money(row['change']),
         change_pct: money(row['change_pct']),
         is_removed: row['is_removed'] === true,
-        depth: typeof row['depth'] === 'number' ? row['depth'] : 0,
+        depth: typeof row['depth'] === 'number' ? Math.max(0, row['depth']) : 0,
     };
 };
 

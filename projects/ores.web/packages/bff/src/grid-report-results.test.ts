@@ -649,3 +649,53 @@ describe('withPortfolioTree', () => {
         expect(rows[0]?.is_group).toBe(false);
     });
 });
+
+describe('withGroups and withPortfolioTree, the depths and the cycles', () => {
+    const row = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'c1',
+        name: 'First',
+        trades: 1,
+        totals: [{ currency: 'GBP', total: '100.00' }],
+        notional: [{ currency: 'GBP', total: '1000.00' }],
+        group: '',
+        is_group: false,
+        previous: [],
+        change: [],
+        change_pct: [],
+        is_removed: false,
+        depth: 0,
+        ...over,
+    });
+
+    it('states a member at depth one under its group', () => {
+        const rows = withGroups(
+            [row({ key: 'c1' })],
+            new Map([['c1', 'p1']]),
+            new Map([['p1', 'The Group']]),
+        );
+
+        expect(rows[0]?.depth).toBe(0);
+        expect(rows[0]?.is_group).toBe(true);
+        expect(rows[1]?.depth).toBe(1);
+    });
+
+    it('keeps a portfolio that sits in a cycle rather than dropping its books', () => {
+        const rows = withPortfolioTree(
+            [row({ key: 'b1', name: 'Book One' })],
+            new Map([['b1', 'pa']]),
+            new Map([
+                ['pa', 'Portfolio A'],
+                ['pb', 'Portfolio B'],
+            ]),
+            new Map([
+                ['pa', 'pb'],
+                ['pb', 'pa'],
+            ]),
+        );
+
+        const names = rows.map((entry) => entry.name);
+        expect(names).toContain('Book One');
+        expect(names).toContain('Portfolio A');
+        expect(names).toContain('Portfolio B');
+    });
+});

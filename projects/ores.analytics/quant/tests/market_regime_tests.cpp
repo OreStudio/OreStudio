@@ -17,9 +17,9 @@
  *
  */
 #include "ores.analytics.quant/domain/market_regime.hpp"
+#include <atomic>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <atomic>
 #include <chrono>
 #include <stdexcept>
 #include <thread>

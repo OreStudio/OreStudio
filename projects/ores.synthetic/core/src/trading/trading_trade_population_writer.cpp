@@ -23,11 +23,11 @@
 #include "ores.iam.api/messaging/account_role_protocol.hpp"
 #include "ores.iam.api/messaging/role_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
-#include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/commodity_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
+#include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.refdata.api/messaging/netting_set_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
@@ -42,8 +42,8 @@
 #include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/domain/swaption_instrument.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
@@ -205,10 +205,10 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     ores::refdata::messaging::list_commodities_request commodity_req;
     commodity_req.limit = page;
     for (const auto& commodity : read(commodity_req).commodities)
-        scope.commodities.push_back(domain::commodity_reference{
-            .code = commodity.code,
-            .unit = commodity.unit_code,
-            .quotation_currency = commodity.quotation_currency_code});
+        scope.commodities.push_back(
+            domain::commodity_reference{.code = commodity.code,
+                                        .unit = commodity.unit_code,
+                                        .quotation_currency = commodity.quotation_currency_code});
 
     /*
      * A floating leg names an index from the floating index catalogue, which
@@ -508,7 +508,8 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
     if (const auto* bond = std::get_if<domain::bond_terms>(&slot.terms)) {
         ores::trading::domain::bond_instrument_data row;
         row.instrument.issue_id = bond->issue_id;
-        row.instrument.notional = ores::utility::decimal::decimal::from_double(slot.notional).value();
+        row.instrument.notional =
+            ores::utility::decimal::decimal::from_double(slot.notional).value();
         row.instrument.audit.change_reason_code = std::string(population_reason);
         row.instrument.audit.change_commentary = "Generated trade population.";
         book_req.instruments.bond_instruments.push_back(row);
@@ -695,8 +696,9 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
         const auto money = [](double value) {
             return ores::utility::decimal::decimal::from_double(value).value();
         };
-        const auto maybe_money = [&money](std::optional<double> value)
-            -> std::optional<ores::utility::decimal::decimal> {
+        const auto maybe_money =
+            [&money](
+                std::optional<double> value) -> std::optional<ores::utility::decimal::decimal> {
             if (!value.has_value())
                 return std::nullopt;
             return money(*value);

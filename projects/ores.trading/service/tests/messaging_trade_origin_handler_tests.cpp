@@ -34,8 +34,8 @@
 #include "ores.trading.api/generators/trade_booking_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.core/messaging/trade_operations_handler.hpp"
-#include "ores.trading.core/service/book_status_port.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
+#include "ores.trading.core/service/book_status_port.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>

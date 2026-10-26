@@ -71,7 +71,6 @@ const domain::fx_terms& fx_of(const domain::trade_population_slot& slot) {
 }
 
 
-
 const boost::uuids::uuid config_id =
     boost::uuids::string_generator()("0cd68b09-6ebc-4180-a298-0cc386590f31");
 const boost::uuids::uuid party_id =
@@ -133,8 +132,7 @@ domain::trade_generation_scope fx_scope() {
     auto scope = bond_scope();
     scope.asset_class_code = "fx";
     scope.currency_code = "EUR";
-    scope.currency_pairs = {{.base = "EUR", .quote = "USD"},
-                            {.base = "GBP", .quote = "USD"}};
+    scope.currency_pairs = {{.base = "EUR", .quote = "USD"}, {.base = "GBP", .quote = "USD"}};
     return scope;
 }
 
@@ -203,10 +201,10 @@ TEST_CASE("the_population_size_is_the_configs_and_not_the_generators", tags) {
 domain::trade_generation_scope commodity_scope() {
     auto scope = bond_scope();
     scope.asset_class_code = "commodity";
-    scope.commodities = {domain::commodity_reference{
-                             .code = "NYMEX:CL", .unit = "bbl", .quotation_currency = "USD"},
-                         domain::commodity_reference{
-                             .code = "NYMEX:NG", .unit = "MMBtu", .quotation_currency = "USD"}};
+    scope.commodities = {
+        domain::commodity_reference{.code = "NYMEX:CL", .unit = "bbl", .quotation_currency = "USD"},
+        domain::commodity_reference{
+            .code = "NYMEX:NG", .unit = "MMBtu", .quotation_currency = "USD"}};
     return scope;
 }
 
@@ -360,9 +358,8 @@ std::string render_envelope(const domain::trade_population_plan& plan) {
           << boost::uuids::to_string(slot.book_id) << ' '
           << boost::uuids::to_string(slot.counterparty_id) << ' '
           << (slot.netting_set_id ? boost::uuids::to_string(*slot.netting_set_id) : "-") << ' '
-          << slot.trader_username << ' ' << slot.trade_type_code << ' '
-          << slot.internal_identifier << ' ' << slot.trade_date << ' ' << slot.notional << ' '
-          << slot.currency << '\n';
+          << slot.trader_username << ' ' << slot.trade_type_code << ' ' << slot.internal_identifier
+          << ' ' << slot.trade_date << ' ' << slot.notional << ' ' << slot.currency << '\n';
     }
     return s.str();
 }

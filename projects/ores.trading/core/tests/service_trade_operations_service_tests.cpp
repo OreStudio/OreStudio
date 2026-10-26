@@ -646,8 +646,9 @@ TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", tags) {
     second.instruments.swap_legs =
         ores::trading::domain::find_all(exported.swap_legs, first.anchor.id);
     REQUIRE(second.instruments.swap_legs.size() == 2);
-    REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(second, {}).result.outcome ==
-            outcome::ok);
+    REQUIRE(
+        trade_operations_service(f.ctx, every_book_open).book_trade(second, {}).result.outcome ==
+        outcome::ok);
 
     ores::trading::domain::instrument_batch again;
     ores::trading::service::trade_export_service(f.ctx).export_books(

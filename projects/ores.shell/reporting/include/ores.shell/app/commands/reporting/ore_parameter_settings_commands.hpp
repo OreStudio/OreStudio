@@ -34,8 +34,7 @@ namespace ores::shell::app::commands {
  */
 class ore_parameter_settings_commands {
 public:
-    static void register_commands(cli::Menu& root_menu,
-                                  ores::nats::service::nats_client& session);
+    static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 };
 
 }

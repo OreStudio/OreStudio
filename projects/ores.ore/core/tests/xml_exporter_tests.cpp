@@ -22,21 +22,21 @@
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
-#include "ores.trading.api/domain/fx_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
+#include "ores.trading.api/domain/fra_instrument.hpp"
+#include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
+#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
-#include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
-#include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
+#include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
-#include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -527,7 +527,8 @@ struct fx_export final {
     boost::uuids::uuid activity_id;
 
     explicit fx_export(const std::string& trade_type) {
-        const auto imported = importer::import_portfolio_with_context(example_path("IR_Swap_Vanilla.xml"));
+        const auto imported =
+            importer::import_portfolio_with_context(example_path("IR_Swap_Vanilla.xml"));
         REQUIRE(!imported.empty());
         trade_id = boost::uuids::random_generator{}();
         activity_id = boost::uuids::random_generator{}();

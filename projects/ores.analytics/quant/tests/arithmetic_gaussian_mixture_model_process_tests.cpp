@@ -106,8 +106,8 @@ TEST_CASE("arithmetic_gaussian_mixture_model_process: the spread over a span doe
         std::vector<double> changes;
         changes.reserve(paths);
         for (int seed = 0; seed < paths; ++seed) {
-            arithmetic_gaussian_mixture_model_process p({0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3},
-                                                        100.0, seed);
+            arithmetic_gaussian_mixture_model_process p(
+                {0.0, 0.2}, {0.01, 0.05}, {0.7, 0.3}, 100.0, seed);
             for (int i = 0; i < steps; ++i)
                 p.next(each);
             changes.push_back(p.current() - 100.0);

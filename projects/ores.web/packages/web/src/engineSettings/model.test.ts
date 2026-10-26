@@ -20,6 +20,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { EngineHistoryEntry } from '../api/engineSettings.js';
+import { shortDefault } from '../parameters/control.js';
 import {
     changedColumns,
     controlText,
@@ -31,7 +32,6 @@ import {
     problemOf,
     revertValues,
     setCount,
-    shortDefault,
     stepsOf,
     valueOfText,
     visibleSettings,

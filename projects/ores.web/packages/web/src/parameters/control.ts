@@ -46,6 +46,15 @@ export type ControlModel =
 /** The value-set fields of one pricing setting, as the vocabulary serves them. */
 export type ValueSetFields = PricingVocabulary['valueSets'][string];
 
+/** The fields of a value set that decide its control, as any leaf carries them. */
+export interface ValueSetShape {
+    readonly sourceKind: string;
+    readonly choices: readonly ControlChoice[];
+    readonly minimum: number | null;
+    readonly maximum: number | null;
+    readonly pattern: string;
+}
+
 /**
  * The control a pricing value set calls for.
  *
@@ -54,7 +63,7 @@ export type ValueSetFields = PricingVocabulary['valueSets'][string];
  * set that states choices draws them whatever kind it names, because a list a
  * person may not type is the one thing the choices decide.
  */
-export function controlOfValueSet(fields: ValueSetFields | undefined): ControlModel {
+export function controlOfValueSet(fields: ValueSetShape | undefined): ControlModel {
     if (fields === undefined) {
         return { kind: 'text', pattern: '' };
     }
@@ -117,4 +126,14 @@ export function controlOfEngineSetting(
                 choices: options.map((option) => ({ value: option, label: option })),
             };
     }
+}
+
+/**
+ * The default of a leaf in a few words, as *Default (X)* prints it: the first
+ * sentence of its default text, which says the value and then what it means, as
+ * in No. Today's fixing is loaded.
+ */
+export function shortDefault(defaultText: string): string {
+    const first = defaultText.split(/\.(?:\s|$)/, 1)[0] ?? '';
+    return first.trim();
 }

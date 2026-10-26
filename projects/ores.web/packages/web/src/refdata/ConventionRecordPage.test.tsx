@@ -25,7 +25,7 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import type { ConventionDocument, ConventionTerm } from '../api/conventions.js';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { ConventionRecordPage, KindCard } from './ConventionRecordPage.js';
+import { ConventionRecordPage, KindCard, TermRow, changedTerms } from './ConventionRecordPage.js';
 
 const BLANK: ConventionTerm = {
     entity: 'swap_convention',
@@ -44,12 +44,17 @@ const BLANK: ConventionTerm = {
     removedIn: '',
     sourceKind: '',
     choices: [],
+    minimum: null,
+    maximum: null,
+    pattern: '',
 };
 
 const DOCUMENT: ConventionDocument = {
     family: 'swap',
     id: 'EUR-6M-SWAP',
     shared: false,
+    editable: true,
+    partyId: null,
     kind: {
         code: 'SWAP',
         name: 'Swap',
@@ -103,9 +108,10 @@ const DOCUMENT: ConventionDocument = {
     ],
 };
 
-function render(): string {
+function render(permissionCodes: readonly string[] = [], document = DOCUMENT): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['conventions', 'swap', 'documents', 'EUR-6M-SWAP', ''], DOCUMENT);
+    client.setQueryData(['conventions', 'swap', 'documents', 'EUR-6M-SWAP', ''], document);
+    client.setQueryData(['my-access'], { roles: [{ roleId: 'r', permissionCodes }] });
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -179,5 +185,100 @@ describe('the record page of a convention', () => {
         expect(kind('simple')).not.toContain('ORE element');
         expect(kind('advanced')).toContain('ORE element');
         expect(kind('advanced')).toContain('SWAP');
+    });
+
+    it('offers the edit only to a person who may write the entity', () => {
+        expect(render()).not.toContain('Edit terms');
+        expect(render(['refdata::swap_conventions:write'])).toContain('Edit terms');
+    });
+
+    it('offers no edit of a convention another party holds, and says how to change it', () => {
+        const html = render(['refdata::swap_conventions:write'], {
+            ...DOCUMENT,
+            partyId: '66666666-6666-4666-8666-666666666666',
+        });
+
+        expect(html).not.toContain('Edit terms');
+        expect(html).toContain('belongs to another party');
+    });
+
+    it('keeps a composite read-only and says why', () => {
+        const html = render(['refdata::swap_conventions:write'], { ...DOCUMENT, editable: false });
+
+        expect(html).not.toContain('Edit terms');
+        expect(html).toContain('held on two parts');
+    });
+});
+
+describe('a term in edit', () => {
+    const [frequency] = DOCUMENT.terms;
+    const row = (props: { text: string; changed?: boolean; refused?: string | null }) =>
+        renderToStaticMarkup(
+            <TranslationProvider>
+                <ul>
+                    <TermRow
+                        term={frequency!}
+                        mode="simple"
+                        text={props.text}
+                        changed={props.changed ?? false}
+                        refused={props.refused ?? null}
+                        open={false}
+                        onToggle={() => undefined}
+                        onText={() => undefined}
+                        onFocus={() => undefined}
+                    />
+                </ul>
+            </TranslationProvider>,
+        );
+
+    it('opens the select on Default (X), then the values of the set', () => {
+        const html = row({ text: 'A' });
+        const first = html.indexOf('<option');
+
+        expect(html.slice(first)).toMatch(
+            /^<option value="">Default \(None: the convention must give it\)<\/option>/,
+        );
+        expect(html).toContain('>Annual</option>');
+        expect(html).toContain('>Quarterly</option>');
+    });
+
+    it('marks a changed term', () => {
+        expect(row({ text: 'Q', changed: true })).toContain('changed');
+        expect(row({ text: 'A' })).not.toContain('>changed<');
+    });
+
+    it('shows a refusal on the term, in the server words', () => {
+        const html = row({
+            text: 'Q',
+            refused: 'Invalid value Q for Swap.FixedFrequency: the value is not in set x.',
+        });
+
+        expect(html).toContain('role="alert"');
+        expect(html).toContain('Invalid value Q for Swap.FixedFrequency');
+        expect(html).toContain('aria-invalid="true"');
+    });
+});
+
+describe('the changed terms of an edit', () => {
+    it('names only the columns whose text differs, and unsets an emptied term', () => {
+        const editing = {
+            fixed_frequency: 'Q',
+            float_frequency: '',
+            fixed_calendar: '',
+            overnight_lockout_days: '',
+        };
+
+        expect(changedTerms(DOCUMENT.terms, editing)).toEqual({
+            fixed_frequency: 'Q',
+            fixed_calendar: null,
+        });
+    });
+
+    it('is empty when nothing changed', () => {
+        const editing = Object.fromEntries(
+            DOCUMENT.terms.map((term) => [term.column, term.value ?? '']),
+        );
+
+        expect(changedTerms(DOCUMENT.terms, editing)).toEqual({});
     });
 });

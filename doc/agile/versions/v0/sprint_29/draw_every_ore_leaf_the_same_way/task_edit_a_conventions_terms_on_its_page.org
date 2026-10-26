@@ -7,41 +7,51 @@
 #+level: s1
 #+filetags: :draw_every_ore_leaf_the_same_way:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/edit-a-conventions-terms-on-its-page
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Change a convention's terms in place on its record page, as the ORE element and leaf screen standard states for a leaf in edit, so a person changes a term with its documentation in front of them and the database's refusal lands on the term it names.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] |
-| Now          | Not yet started.                       |
+| Now          | The plan is written; the BFF route is next. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
 
--
+- A person who holds the write permission of the convention's entity opens the terms in edit on the record page, changes them, gives a reason and saves; the page reads the new version.
+- Each term's control is the shared =ParameterControl=, drawn from the term's value set; a select opens on *Default (X)*, and a field that is not a select takes *Default (X)* as its placeholder (OL-CONTROL-01, OL-CONTROL-04).
+- A term whose value differs from the saved one shows *changed*, and the foot counts the changes (OL-EDIT-02).
+- A control that takes the focus opens the term's documentation, and the documentation stays in edit (OL-DOC-07, OL-EDIT-01).
+- A refusal of the value set check is shown on the term it names, in the server's words (OL-EDIT-03).
+- The server writes only the term columns of the kind, laid over the row it reads, against the version the page read.
+- The conformance table records the conventions column for the edit rules.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. BFF: the document carries =editable= (a family that is not a composite) and each term's bounds and pattern, so the shared control can be drawn.
+2. BFF: =PUT /api/conventions/:family/documents/:id/terms= takes the version read, the changed term columns and the reason. It reads the row, refuses a column that is not a term of the kind, lays the changes over the row and calls the family's put. A refusal that names =Scope.Name= is returned with that term's column as its field, so the page puts it on the term.
+3. Web: the terms card gets an edit state as the engine run settings group has: Edit, the shared control under each term, the changed mark, the count, the reason, Save and Cancel, and the conflict notice.
+4. Web: the edit words of a leaf go under =oreParameter=: *Default (X)*, *changed* and the count. The page words go under =refdata.conventions.record=.
+5. The journey keeps =writable= for the families it draws; the record page edits every family that is not a composite.
+
+A composite (the tenor basis swap) stays read-only on its record page: its terms live on two entities, and its write goes through the composite's own put. The engine run settings page keeps its copies of the edit words until it moves onto =oreParameter=, as the conformance table already records.
 
 * Measurements
 

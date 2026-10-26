@@ -4422,6 +4422,15 @@ const pt: SourceCatalogue = {
                 notFound: 'Esta convenção não existe.',
                 readFailed: 'Não foi possível ler a convenção. {message}',
                 shared: 'Todas as partes leem esta convenção. É detida uma única vez para o inquilino.',
+                otherParty:
+                    'Esta convenção pertence a outra parte. Mude para essa parte para alterá-la.',
+                edit: 'Editar termos',
+                save: 'Salvar',
+                conflict:
+                    'Esta convenção mudou desde que você a abriu. Leia-a de novo antes de alterá-la.',
+                reload: 'Ler de novo',
+                notEditable:
+                    'Os termos deste tipo são detidos em duas partes, por isso esta página ainda não os altera.',
             },
             search: 'Pesquisar tipos',
             assetClass: 'Classe de ativos',
@@ -5885,6 +5894,11 @@ const pt: SourceCatalogue = {
         hideDocumentation: 'Ocultar documentação',
         undocumented: 'Não há documentação para {name}.',
         defaultIs: 'O valor por omissão é {text}.',
+        defaultOption: 'Padrão ({value})',
+        changed: 'alterado',
+        noChanges: 'Nenhuma alteração ainda',
+        oneChange: '1 alteração',
+        changes: '{count} alterações',
         schema: {
             xml: 'XML ORE',
             format: 'Formato',

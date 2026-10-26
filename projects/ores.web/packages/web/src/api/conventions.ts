@@ -103,6 +103,8 @@ export interface ConventionPickLists {
 /** The outcome of a write as the screen renders it. */
 export interface ConventionWriteOutcome {
     readonly success: boolean;
+    /** Whether the row changed since it was read, so the write was refused on its version. */
+    readonly conflict: boolean;
     readonly code: string;
     readonly message: string;
     readonly fields: ConventionResult['fields'];
@@ -142,6 +144,11 @@ export interface ConventionTerm {
     /** How the term's value set states its values: enumerated, catalogue, boolean, a type or none. */
     readonly sourceKind: string;
     readonly choices: readonly { readonly value: string; readonly label: string }[];
+    /** The bounds a number takes, from the term's value set; null when it states none. */
+    readonly minimum: number | null;
+    readonly maximum: number | null;
+    /** The pattern a text value matches, from the term's value set; empty when it states none. */
+    readonly pattern: string;
 }
 
 /** One convention as its record page draws it: the kind it is, and its terms. */
@@ -149,6 +156,10 @@ export interface ConventionDocument {
     readonly family: string;
     readonly id: string;
     readonly shared: boolean;
+    /** Whether the record page changes the terms: a composite's terms are changed on its parts. */
+    readonly editable: boolean;
+    /** The party that holds the convention; null for a kind the tenant holds once. */
+    readonly partyId: string | null;
     readonly kind: {
         readonly code: string;
         readonly name: string;
@@ -179,12 +190,17 @@ const termSchema = z.object({
     removedIn: z.string(),
     sourceKind: z.string(),
     choices: z.array(z.object({ value: z.string(), label: z.string() })),
+    minimum: z.number().nullable(),
+    maximum: z.number().nullable(),
+    pattern: z.string(),
 });
 
 const documentSchema = z.object({
     family: z.string(),
     id: z.string(),
     shared: z.boolean(),
+    editable: z.boolean(),
+    partyId: z.string().nullable(),
     kind: z.object({
         code: z.string(),
         name: z.string(),
@@ -263,6 +279,46 @@ export const conventions = {
             .parse(await request('/api/conventions/pick-lists', { method: 'GET' }));
     },
 
+    /**
+     * Changes the terms of one convention against the version its record page
+     * read. A change names a term's column; null or empty unsets the term.
+     */
+    async saveTerms(
+        family: string,
+        id: string,
+        party: string | undefined,
+        version: number,
+        changes: Readonly<Record<string, string | null>>,
+        intent: ConventionIntent,
+    ): Promise<ConventionWriteOutcome> {
+        const answer = z
+            .looseObject({ result: resultSchema, convention: rowSchema.nullable().optional() })
+            .parse(
+                await request(
+                    `/api/conventions/${encodeURIComponent(family)}/documents/${encodeURIComponent(id)}/terms`,
+                    {
+                        method: 'PUT',
+                        headers: JSON_HEADERS,
+                        body: JSON.stringify({
+                            intent,
+                            version,
+                            changes,
+                            ...(party === undefined ? {} : { party }),
+                        }),
+                    },
+                ),
+            );
+        const ok = answer.result.outcome === 'ok';
+        return {
+            success: ok,
+            conflict: answer.result.outcome === 'conflict',
+            code: answer.result.code,
+            message: answer.result.message,
+            fields: answer.result.fields,
+            row: ok ? (answer.convention ?? undefined) : undefined,
+        };
+    },
+
     /** Writes a convention: as new when no version is given, else against the version read. */
     async write(
         family: string,
@@ -282,6 +338,7 @@ export const conventions = {
         const ok = answer.result.outcome === 'ok';
         return {
             success: ok,
+            conflict: answer.result.outcome === 'conflict',
             code: answer.result.code,
             message: answer.result.message,
             fields: answer.result.fields,

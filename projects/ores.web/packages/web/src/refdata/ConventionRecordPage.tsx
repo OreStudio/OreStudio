@@ -19,17 +19,28 @@
  *
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { useParams, useSearchParams } from 'react-router';
-import { conventions, type ConventionDocument, type ConventionTerm } from '../api/conventions.js';
+import { useHeld } from '../access/holds.js';
+import {
+    conventions,
+    type ConventionDocument,
+    type ConventionTerm,
+    type ConventionWriteOutcome,
+} from '../api/conventions.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { useActingPartyId } from '../session/SessionProvider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { conventionPath, PATHS } from '../shell/paths.js';
 import { EditingModeToggle, useEditingMode, type EditingMode } from '../ui/EditingMode.js';
+import { ParameterControl } from '../parameters/ParameterControl.js';
+import { ParameterRow } from '../parameters/ParameterRow.js';
+import { controlOfValueSet, shortDefault } from '../parameters/control.js';
 import { ParameterDocuments, ParameterFilters } from '../ui/OreParameter.js';
 import { Button, Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
-import { Crumbs } from './shared.js';
+import { markStale } from './records.js';
+import { Crumbs, ReasonFields, useReason } from './shared.js';
 
 /**
  * The record page of one convention, its terms drawn as the ORE element and
@@ -97,7 +108,7 @@ export function ConventionRecordPage(): ReactNode {
             />
             {record.shared && <Notice tone="warn">{t('refdata.conventions.record.shared')}</Notice>}
             <KindCard document={record} mode={mode} />
-            <TermsCard terms={record.terms} mode={mode} />
+            <TermsCard document={record} party={party} mode={mode} />
         </div>
     );
 }
@@ -145,22 +156,64 @@ export function KindCard({
     );
 }
 
-/** The terms of the convention, as rows with their documentation and their filters. */
+/** The changed terms of an edit: each column whose text differs from the value the convention holds. */
+export function changedTerms(
+    terms: readonly ConventionTerm[],
+    editing: Readonly<Record<string, string>>,
+): Readonly<Record<string, string | null>> {
+    const changes: Record<string, string | null> = {};
+    for (const term of terms) {
+        const text = editing[term.column] ?? '';
+        if (text !== (term.value ?? '')) {
+            changes[term.column] = text === '' ? null : text;
+        }
+    }
+    return changes;
+}
+
+/**
+ * The terms of the convention, as rows with their documentation and their
+ * filters, read in place or changed in place. Save writes the changed terms
+ * against the version the page read, with a reason; a refusal the server puts
+ * on a term is shown on that term.
+ */
 function TermsCard({
-    terms,
+    document,
+    party,
     mode,
 }: {
-    readonly terms: readonly ConventionTerm[];
+    readonly document: ConventionDocument;
+    readonly party: string | undefined;
     readonly mode: EditingMode;
 }): ReactNode {
     const { t } = useTranslation();
+    const queries = useQueryClient();
+    const held = useHeld();
+    const { terms } = document;
+    const entity = `${document.family.replaceAll('-', '_')}_convention`;
+    const acting = useActingPartyId();
+    // The service writes under the acting party, so a convention of another party
+    // is read here and changed only after switching to it.
+    const ours = document.partyId === null || document.partyId === acting;
+    const mayWrite = held(`refdata::${entity}s:write`);
     const [setOnly, setSetOnly] = useState(false);
     const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
+    const [editing, setEditing] = useState<Readonly<Record<string, string>> | null>(null);
+    const [commentary, setCommentary] = useState('');
+    const [refusal, setRefusal] = useState<ConventionWriteOutcome | null>(null);
     const noun = t('oreParameter.nouns.terms');
     // A composite lays its parts over its central row, so a column name alone may
     // name a term of two entities; the entity and the column together name one.
     const keyOf = (term: ConventionTerm): string => `${term.entity}.${term.column}`;
-    const visible = terms.filter((term) => !setOnly || term.value !== null);
+    const changes = editing === null ? {} : changedTerms(terms, editing);
+    const changed = Object.keys(changes);
+    const reason = useReason('amend', changed.length > 0);
+    const missing = reason.needsCommentary && commentary.trim() === '';
+    const refusedOf = new Map((refusal?.fields ?? []).map((field) => [field.field, field.message]));
+    // A filter never hides a problem: a refused term stays in view.
+    const visible = terms.filter(
+        (term) => !setOnly || term.value !== null || refusedOf.has(term.column),
+    );
     const allOpen = visible.length > 0 && visible.every((term) => opened.has(keyOf(term)));
     const toggle = (key: string): void =>
         setOpened((before) => {
@@ -170,6 +223,32 @@ function TermsCard({
             }
             return next;
         });
+    const leave = (): void => {
+        setEditing(null);
+        setCommentary('');
+        setRefusal(null);
+    };
+    const save = useMutation({
+        mutationFn: () =>
+            conventions.saveTerms(
+                document.family,
+                document.id,
+                party,
+                document.version ?? 0,
+                changes,
+                { reason_code: reason.code, commentary: commentary.trim() },
+            ),
+        onSuccess: (outcome) => {
+            if (!outcome.success) {
+                setRefusal(outcome);
+                return;
+            }
+            markStale(queries, [['conventions', document.family]]);
+            leave();
+        },
+    });
+    const conflict = refusal?.conflict === true;
+    const ready = changed.length > 0 && !missing && reason.code !== '' && !conflict;
     return (
         <section className="card space-y-4 p-4">
             <header className="space-y-1">
@@ -196,7 +275,32 @@ function TermsCard({
                         ? t('oreParameter.hideAllDocumentation')
                         : t('oreParameter.showAllDocumentation')}
                 </Button>
+                {mayWrite && document.editable && ours && editing === null && (
+                    <Button
+                        size="sm"
+                        icon="edit"
+                        onClick={() =>
+                            setEditing(
+                                Object.fromEntries(
+                                    terms.map((term) => [term.column, term.value ?? '']),
+                                ),
+                            )
+                        }
+                    >
+                        {t('refdata.conventions.record.edit')}
+                    </Button>
+                )}
             </div>
+            {mayWrite && !document.editable && (
+                <p className="text-xs text-ink-faint">
+                    {t('refdata.conventions.record.notEditable')}
+                </p>
+            )}
+            {mayWrite && document.editable && !ours && (
+                <p className="text-xs text-ink-faint">
+                    {t('refdata.conventions.record.otherParty')}
+                </p>
+            )}
             {visible.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('oreParameter.filters.none', { noun })}</p>
             ) : (
@@ -206,58 +310,170 @@ function TermsCard({
                             key={keyOf(term)}
                             term={term}
                             mode={mode}
+                            text={editing === null ? null : (editing[term.column] ?? '')}
+                            changed={term.column in changes}
+                            refused={refusedOf.get(term.column) ?? null}
                             open={opened.has(keyOf(term))}
                             onToggle={() => toggle(keyOf(term))}
+                            onText={(text) =>
+                                editing !== null && setEditing({ ...editing, [term.column]: text })
+                            }
+                            onFocus={() => setOpened((before) => new Set(before).add(keyOf(term)))}
                         />
                     ))}
                 </ul>
+            )}
+            {editing !== null && (
+                <div className="space-y-3 border-t border-line pt-4">
+                    {conflict && (
+                        <Notice tone="error">
+                            <span className="mr-2">{t('refdata.conventions.record.conflict')}</span>
+                            <Button
+                                size="sm"
+                                onClick={() => {
+                                    leave();
+                                    markStale(queries, [['conventions', document.family]]);
+                                }}
+                            >
+                                {t('refdata.conventions.record.reload')}
+                            </Button>
+                        </Notice>
+                    )}
+                    {refusal !== null && !conflict && refusal.fields.length === 0 && (
+                        <Notice tone="error">{refusal.message}</Notice>
+                    )}
+                    {save.isError && <Notice tone="error">{save.error.message}</Notice>}
+                    <ReasonFields
+                        reason={reason}
+                        commentary={commentary}
+                        onCommentary={setCommentary}
+                        missing={missing}
+                    />
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                            variant="primary"
+                            icon="save"
+                            disabled={!ready}
+                            pending={save.isPending}
+                            onClick={() => {
+                                setRefusal(null);
+                                save.mutate();
+                            }}
+                        >
+                            {t('refdata.conventions.record.save')}
+                        </Button>
+                        <Button variant="ghost" icon="cancel" onClick={leave}>
+                            {t('common.cancel')}
+                        </Button>
+                        <span className="text-xs text-ink-faint" aria-live="polite">
+                            {changed.length === 0
+                                ? t('oreParameter.noChanges')
+                                : changed.length === 1
+                                  ? t('oreParameter.oneChange')
+                                  : t('oreParameter.changes', { count: String(changed.length) })}
+                        </span>
+                    </div>
+                </div>
             )}
         </section>
     );
 }
 
-/** One term: its one label, its marks, the value in force and its documentation. */
-function TermRow({
+/**
+ * One term: its one label, its marks, and the value in force or, in edit, the
+ * shared control its value set calls for; then its documentation.
+ */
+export function TermRow({
     term,
     mode,
+    text,
+    changed,
+    refused,
     open,
     onToggle,
+    onText,
+    onFocus,
 }: {
     readonly term: ConventionTerm;
     readonly mode: EditingMode;
+    /** The text of the control while the terms are being changed, else null. */
+    readonly text: string | null;
+    readonly changed: boolean;
+    /** The server's words when it refused this term's value. */
+    readonly refused: string | null;
     readonly open: boolean;
     readonly onToggle: () => void;
+    readonly onText: (text: string) => void;
+    readonly onFocus: () => void;
 }): ReactNode {
     const { t } = useTranslation();
     const label = term.documented && term.label !== '' ? term.label : term.ore;
     const words = term.choices.find((choice) => choice.value === term.value)?.label;
+    const standard = shortDefault(term.defaultText);
+    const problemId = `refused-${term.entity}-${term.column}`;
+    const marks = (
+        <>
+            {term.required && (
+                <Tag tone="muted" small>
+                    {t('oreParameter.required')}
+                </Tag>
+            )}
+            {changed && (
+                <Tag tone="accent" small>
+                    {t('oreParameter.changed')}
+                </Tag>
+            )}
+        </>
+    );
     return (
-        <li className="space-y-2 py-3">
-            <div className="flex flex-wrap items-baseline justify-between gap-3">
-                <div className="min-w-0">
-                    <span className="text-sm font-medium">{label}</span>{' '}
-                    {term.required && (
-                        <Tag tone="muted" small>
-                            {t('oreParameter.required')}
-                        </Tag>
-                    )}
+        <li className={changed ? 'space-y-2 bg-accent/5 py-3' : 'space-y-2 py-3'}>
+            {text === null ? (
+                <div className="flex flex-wrap items-baseline justify-between gap-3">
+                    <div className="min-w-0">
+                        <span className="text-sm font-medium">{label}</span> {marks}
+                    </div>
+                    <div className="text-sm">
+                        {term.value === null ? (
+                            <span className="text-ink-faint">
+                                {term.documented
+                                    ? t('oreParameter.defaultIs', { text: term.defaultText })
+                                    : '—'}
+                            </span>
+                        ) : (
+                            <span className="font-mono text-xs">
+                                {words !== undefined && words !== term.value
+                                    ? `${words} (${term.value})`
+                                    : term.value}
+                            </span>
+                        )}
+                    </div>
                 </div>
-                <div className="text-sm">
-                    {term.value === null ? (
-                        <span className="text-ink-faint">
-                            {term.documented
-                                ? t('oreParameter.defaultIs', { text: term.defaultText })
-                                : '—'}
-                        </span>
-                    ) : (
-                        <span className="font-mono text-xs">
-                            {words !== undefined && words !== term.value
-                                ? `${words} (${term.value})`
-                                : term.value}
-                        </span>
+            ) : (
+                <>
+                    {(term.required || changed) && (
+                        <div className="flex flex-wrap items-baseline gap-2">{marks}</div>
                     )}
-                </div>
-            </div>
+                    <ParameterRow label={label} {...(term.help === '' ? {} : { hint: term.help })}>
+                        <ParameterControl
+                            model={controlOfValueSet(term)}
+                            label={label}
+                            value={text}
+                            unset={t('oreParameter.defaultOption', {
+                                value: standard === '' ? '—' : standard,
+                            })}
+                            invalid={refused !== null}
+                            {...(refused === null ? {} : { describedBy: problemId })}
+                            onFocus={onFocus}
+                            onChange={onText}
+                        />
+                    </ParameterRow>
+                    {refused !== null && (
+                        <p id={problemId} role="alert" className="mt-1 text-xs text-down">
+                            {refused}
+                        </p>
+                    )}
+                </>
+            )}
             <ParameterDocuments
                 doc={{
                     documented: term.documented,

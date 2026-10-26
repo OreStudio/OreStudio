@@ -296,6 +296,7 @@ async function termsOf(
             return {
                 entity: text(term['entity_name']),
                 column: text(term['column_name']),
+                scope,
                 ore: name,
                 xpath,
                 value: valueText(row[text(term['column_name'])]),
@@ -321,6 +322,64 @@ const pageQuerySchema = z.object({
 });
 
 const documentQuerySchema = z.object({ party: idSchema.optional() });
+
+const termsBodySchema = z.object({
+    intent: intentSchema,
+    version: z.int().nonnegative(),
+    party: idSchema.optional(),
+    changes: z.record(z.string(), z.string().nullable()),
+});
+
+/**
+ * The value a term's column holds for the text a control gives. A flag and a
+ * number are typed in the row, so the text is read by the kind of the term's
+ * value set; a value the text does not make is left as text, and the write's
+ * own check refuses it.
+ */
+function columnValue(sourceKind: string, value: string | null): unknown {
+    if (value === null || value === '') return null;
+    if (sourceKind === 'boolean') {
+        if (value === 'true') return true;
+        if (value === 'false') return false;
+        return value;
+    }
+    if (sourceKind === 'integer' || sourceKind === 'number' || sourceKind === 'range') {
+        const number = Number(value);
+        return Number.isFinite(number) ? number : value;
+    }
+    return value;
+}
+
+/**
+ * The database refuses a term's value with the term's scope and name, as in
+ * "Invalid value X for Swap.FixedFrequency: ...". A refusal that names no field
+ * is given the column of the term it names, so the screen puts it on that term.
+ */
+export function onTerm(
+    result: z.infer<typeof resultSchema>,
+    terms: readonly Readonly<Record<string, unknown>>[],
+): z.infer<typeof resultSchema> {
+    if (result.outcome === 'ok' || result.fields.length > 0) {
+        return result;
+    }
+    for (const term of terms) {
+        const named = ` for ${text(term['scope'])}.${text(term['ore'])}: `;
+        const at = result.message.indexOf(named);
+        if (at < 0) {
+            continue;
+        }
+        // The repository wraps the database's sentence in its own words and a
+        // context line; the term shows the sentence alone.
+        const from = result.message.lastIndexOf('Invalid value ', at);
+        const to = result.message.indexOf('\n', at);
+        const sentence = result.message.slice(from < 0 ? 0 : from, to < 0 ? undefined : to).trim();
+        return {
+            ...result,
+            fields: [{ field: text(term['column']), code: result.code, message: sentence }],
+        };
+    }
+    return result;
+}
 
 const writeBodySchema = z.object({
     intent: intentSchema,
@@ -372,7 +431,8 @@ function familyOf(request: FastifyRequest): ConventionFamily {
 
 /**
  * The convention routes: the families with their counts, one family's rows, the
- * pick lists, and the write of a family whose terms the screen draws.
+ * pick lists, the write of a family whose terms the journey draws, and the
+ * write of the changed terms of one convention from its record page.
  *
  * A plain family's own list is the page. A composite family is listed through
  * the convention entity filtered by kind, and its parts are read for that same
@@ -475,6 +535,8 @@ export function registerConventionRoutes(
             family: family.key,
             id,
             shared: family.shared,
+            editable: COMPOSITE_FAMILIES[family.key] === undefined,
+            partyId: text(row['party_id']) || null,
             kind: {
                 code,
                 name: text(kind?.['name']),
@@ -584,6 +646,56 @@ export function registerConventionRoutes(
             }),
             total: reply.total,
         };
+    });
+
+    server.put('/api/conventions/:family/documents/:id/terms', async (request) => {
+        const session = requireSession(request);
+        const family = familyOf(request);
+        if (COMPOSITE_FAMILIES[family.key] !== undefined) {
+            throw invalidRequest(
+                `The terms of a ${family.key} convention are changed on its parts.`,
+            );
+        }
+        const { id } = request.params as { id: string };
+        const body = input(termsBodySchema, request.body);
+        const row = await readConvention(session, family, id, body.party);
+        if (row === undefined) {
+            throw notFound(`There is no ${family.key} convention ${id}.`);
+        }
+        // The service writes a convention under the session's acting party, so a
+        // row of another party would be written as a change to the acting party's.
+        const owner = text(row['party_id']);
+        if (owner !== '' && owner !== session.party?.id) {
+            throw invalidRequest(
+                `The ${family.key} convention ${id} belongs to another party. Switch to it to change it.`,
+            );
+        }
+        const terms = await termsOf(session, kindCodeOf(family.key), row);
+        const kindOf = new Map(
+            terms.map((term) => [text(term['column']), text(term['sourceKind'])]),
+        );
+        const strangers = Object.keys(body.changes).filter((column) => !kindOf.has(column));
+        if (strangers.length > 0) {
+            throw invalidRequest(
+                `Not terms of a ${family.key} convention: ${strangers.join(', ')}.`,
+            );
+        }
+        const write: Record<string, unknown> = { ...row };
+        for (const [column, value] of Object.entries(body.changes)) {
+            write[column] = columnValue(kindOf.get(column) ?? '', value);
+        }
+        const reply = await session.client.callAuthenticated(
+            `refdata.v1.${family.prefix}.put`,
+            {
+                change: {
+                    write,
+                    precondition: { kind: 'must_match_version', version: body.version },
+                },
+                intent: body.intent,
+            },
+            z.looseObject({ result: resultSchema }),
+        );
+        return { result: onTerm(reply.result, terms), convention: reply[family.entity] ?? null };
     });
 
     server.put('/api/conventions/:family', async (request) => {

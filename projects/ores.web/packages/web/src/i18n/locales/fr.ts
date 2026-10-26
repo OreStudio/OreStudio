@@ -4451,6 +4451,15 @@ const fr: SourceCatalogue = {
                 notFound: "Cette convention n'existe pas.",
                 readFailed: "La convention n'a pas pu être lue. {message}",
                 shared: 'Toutes les parties lisent cette convention. Elle est détenue une seule fois pour le locataire.',
+                otherParty:
+                    'Cette convention appartient à une autre partie. Passez à cette partie pour la modifier.',
+                edit: 'Modifier les termes',
+                save: 'Enregistrer',
+                conflict:
+                    "Cette convention a changé depuis que vous l'avez ouverte. Relisez-la avant de la modifier.",
+                reload: 'Relire',
+                notEditable:
+                    'Les termes de ce type sont détenus sur deux parties, donc cette page ne les modifie pas encore.',
             },
             search: 'Rechercher un type',
             assetClass: 'Classe d’actifs',
@@ -5928,6 +5937,11 @@ const fr: SourceCatalogue = {
         hideDocumentation: 'Masquer la documentation',
         undocumented: "Aucune documentation n'est disponible pour {name}.",
         defaultIs: 'La valeur par défaut est {text}.',
+        defaultOption: 'Défaut ({value})',
+        changed: 'modifié',
+        noChanges: 'Aucun changement',
+        oneChange: '1 changement',
+        changes: '{count} changements',
         schema: {
             xml: 'XML ORE',
             format: 'Format',

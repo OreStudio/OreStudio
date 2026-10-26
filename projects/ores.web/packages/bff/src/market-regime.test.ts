@@ -228,7 +228,11 @@ describe('the market regime', () => {
                 total: 2,
                 feeds: [
                     { label: 'EUR/USD', source_name: 'live.eurusd', asset_class_code: 'fx' },
-                    { label: 'USD SOFR', source_name: 'live.usdsofr', asset_class_code: 'interest_rates' },
+                    {
+                        label: 'USD SOFR',
+                        source_name: 'live.usdsofr',
+                        asset_class_code: 'interest_rates',
+                    },
                 ],
             },
         });

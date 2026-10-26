@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: B7B8D0E5-EBA2-46C8-9055-3DE850133D75
+:END:
+#+title: Test Scenario: Export a pricing engine configuration as ORE XML
+#+description: Check that Export on a pricing engine configuration writes the ORE document the server names, that the file reads as ORE reads it, and that the shell writes the same bytes.
+#+type: test_scenario
+#+level: s1
+#+filetags: :one-configuration-screen-standard:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: solid_dirac
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:4393E8D0-A238-4F9B-8512-0BC3E87D542E][Export a pricing engine configuration as ORE XML]] in [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]. Run it on the provisioned environment and record each step's outcome in its own table.
+
+* Before you start
+
+These are yours to run before the tester opens the browser. Do not hand them to the tester.
+
+- Confirm the environment matches this checkout. =compass db status= shows the fingerprint in sync; if it is stale, run =compass db recreate -y -k=.
+- Start the fleet and confirm 24 services are active. =compass services status=.
+- Provision the tenant if it is not there, and confirm no step failed.
+- Confirm =xmllint= is on the tester's machine.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:4393E8D0-A238-4F9B-8512-0BC3E87D542E][Export a pricing engine configuration as ORE XML]] |
+| Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
+| Target screen | Reporting → Product pricing → XVA Overnight, on http://localhost:21002 |
+| Clients       |                                          |
+| State         | PENDING                                  |
+
+* Steps
+
+** Log in as the tenant administrator
+
+- Open =http://localhost:21002=.
+- Log in as =tenant_admin@acme_corporation= with =Secure-Password-123=.
+- Choose the party *ACME Corporation HK Ltd*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Open the configuration to export
+
+- Open Reporting, then Product pricing.
+- Open *XVA Overnight*.
+- Open the Products tab. The configuration holds five products, named in words.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Read what the Export press will write
+
+- In the record header, beside Edit, choose *Export*.
+- A dialog opens and says *Writes pricingengine.xml with 5 products.*
+- The dialog states that the server writes the file and the browser saves it.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Save the file the server names
+
+- Press *Export* in the dialog.
+- The browser saves a file named *pricingengine.xml*; the name comes from the response, not from the dialog.
+- No XML is shown in a text field and the page does not parse it.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Read the file as ORE reads it
+
+- Run =xmllint --noout pricingengine.xml=. It reports no error.
+- The root element is =PricingEngines=.
+- It holds five =Product= elements, in this order: Swap, CrossCurrencySwap, FxForward, CreditDefaultSwap, Bond.
+- Each product states a =Model=, a =ModelParameters=, an =Engine= and an =EngineParameters=.
+- =GlobalParameters= follows the products and holds =ContinueOnCalibrationError= true.
+- The engine parameters carry ORE's own names, such as =Training.Sequence=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Get the same bytes from the shell
+
+- In the shell, =pricing_engines export <configuration id> --file from_shell.xml=, with the id the record page shows.
+- The command reports the file it wrote as *pricingengine.xml*.
+- =cmp from_shell.xml pricingengine.xml= reports no difference.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PENDING |
+| Completed at  |   |
+| Branch        |   |
+| Commit        |   |
+| Worktree      |   |
+
+* Notes
+
+- The name comes from =ores_reporting_file_types_tbl=: the row for =pricing_engines= whose kind is =input_document= and whose direction is =input=, with =is_default= winning when a kind has several. A table with no such row refuses the export rather than inventing a name.
+- The dialog's sentence uses a constant for the name today, so a tenant that renames the row would see the old name before the press while the saved file still takes the server's name. That is the one known gap; the test checks the saved file, not the pre-press sentence.

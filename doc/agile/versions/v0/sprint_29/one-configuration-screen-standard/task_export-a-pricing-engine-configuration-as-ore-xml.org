@@ -145,7 +145,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[file:scenario_export-a-pricing-engine-configuration-as-ore-xml.org][Export a pricing engine configuration as ORE XML]] | PENDING | Runs on 21002 after provisioning. |
 
 * PRs
 

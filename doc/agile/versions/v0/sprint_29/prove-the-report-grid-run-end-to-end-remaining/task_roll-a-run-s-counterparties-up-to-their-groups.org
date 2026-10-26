@@ -107,3 +107,12 @@ trades; a group's trades are its members' and are read one by one.
 The group names come from the tenant's whole counterparty list rather than from
 the trades, because a parent need not trade in the run and would otherwise be
 unnamed.
+
+The review found the case where a parent does trade: its own row has no parent,
+so it was left standing beside a group with the same key, and the group's figure
+left its trades out. The parent is now one of its own group's members, so its
+trades are counted once and its row sits under the group it leads; group and
+member rows take distinct React keys. A parent whose name was not read is left
+standing, because grouping under a blank name hides the grouping the reader came
+for. The two summing helpers are one, and the comment that had drifted sits above
+the function it describes again.

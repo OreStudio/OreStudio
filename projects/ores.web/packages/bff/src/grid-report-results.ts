@@ -348,28 +348,14 @@ function totalsOf(
 
 /** The rows rolled up by the key they share. */
 
-/** The sums of a set of rows, each currency added apart. */
-function sumsOf(rows: readonly AggregateRow[]): readonly Money[] {
+/** One figure of a set of rows, each currency added apart. */
+function moneyOf(
+    rows: readonly AggregateRow[],
+    figureOfRow: (row: AggregateRow) => readonly Money[],
+): readonly Money[] {
     const totals = new Map<string, number>();
     for (const row of rows) {
-        for (const money of row.totals) {
-            const figure = Number.parseFloat(money.total);
-            if (Number.isFinite(figure)) {
-                totals.set(money.currency, (totals.get(money.currency) ?? 0) + figure);
-            }
-        }
-    }
-    return [...totals.entries()].map(([currency, total]) => ({
-        currency,
-        total: total.toFixed(2),
-    }));
-}
-
-/** The notional of a set of rows, each currency added apart. */
-function notionalOf(rows: readonly AggregateRow[]): readonly Money[] {
-    const totals = new Map<string, number>();
-    for (const row of rows) {
-        for (const money of row.notional) {
+        for (const money of figureOfRow(row)) {
             const figure = Number.parseFloat(money.total);
             if (Number.isFinite(figure)) {
                 totals.set(money.currency, (totals.get(money.currency) ?? 0) + figure);
@@ -386,26 +372,29 @@ function notionalOf(rows: readonly AggregateRow[]): readonly Money[] {
  * The counterparties with a group row above the members that share a parent.
  *
  * A group's figure is the sum of its members, so a reader can check one against
- * the other. A counterparty with no parent stands on its own, and a group with a
- * single member still gets its row, because the parent is a fact about the name.
+ * the other. A counterparty that is itself a parent and trades in the run is one
+ * of its own group's members, so its trades are counted once and its row is
+ * stated under the group it leads. A counterparty with no parent stands on its
+ * own, and a parent whose name was not read is left standing rather than grouped
+ * under a guess.
  */
 export function withCounterpartyGroups(
     rows: readonly AggregateRow[],
     parents: ReadonlyMap<string, string>,
     names: ReadonlyMap<string, string>,
 ): readonly AggregateRow[] {
+    const leading = new Set(parents.values());
     const members = new Map<string, AggregateRow[]>();
     const standing: AggregateRow[] = [];
     for (const row of rows) {
         const parent = parents.get(row.key) ?? '';
-        if (parent === '') {
+        const group = parent !== '' ? parent : leading.has(row.key) ? row.key : '';
+        const groupName = names.get(group) ?? '';
+        if (group === '' || groupName === '') {
             standing.push(row);
             continue;
         }
-        members.set(parent, [
-            ...(members.get(parent) ?? []),
-            { ...row, group: names.get(parent) ?? '' },
-        ]);
+        members.set(group, [...(members.get(group) ?? []), { ...row, group: groupName }]);
     }
     const groups = [...members.entries()]
         .map(([parent, children]) => {
@@ -414,8 +403,8 @@ export function withCounterpartyGroups(
                 key: parent,
                 name: names.get(parent) ?? '',
                 trades: children.reduce((sum, child) => sum + child.trades, 0),
-                totals: sumsOf(children),
-                notional: notionalOf(children),
+                totals: moneyOf(children, (row) => row.totals),
+                notional: moneyOf(children, (row) => row.notional),
                 group: '',
                 is_group: true,
             };
@@ -431,6 +420,7 @@ export function withCounterpartyGroups(
     return ordered;
 }
 
+/** The rows rolled up by the key they share. */
 export function aggregateRows(
     rows: readonly RunResultRow[],
     keyOf: (row: RunResultRow) => string,

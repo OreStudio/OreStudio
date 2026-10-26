@@ -470,9 +470,9 @@ function AggregateTable({
                 <tbody>
                     {rows.map((row) => (
                         <tr
-                            key={`${row.group}-${row.key}`}
+                            key={`${row.is_group ? 'group' : 'row'}-${row.key}`}
                             className={`border-t border-line-subtle ${
-                                row.is_group ? 'font-medium' : row.group === '' ? '' : 'pl-6'
+                                row.is_group ? 'font-medium' : ''
                             }`}
                         >
                             <td className={`px-2 py-1 uppercase ${row.group === '' ? '' : 'pl-8'}`}>

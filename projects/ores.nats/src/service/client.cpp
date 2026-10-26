@@ -18,6 +18,7 @@
  *
  */
 #include "ores.nats/service/client.hpp"
+#include "nats_handle.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/compression.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -257,16 +258,16 @@ void on_conn_closed(natsConnection* /*nc*/, void* closure) {
  *
  * The handle owns the cnats message, so the message outlives every copy of the
  * C++ view that carries this handle and dies exactly when the last of them
- * does. A delivery without a handle -- every core NATS message -- is destroyed
- * by the callback instead, as it always was.
+ * does. A delivery without a handle -- every core NATS message -- is freed by
+ * the callback's own msg_handle when the callback returns.
  *
  * Not thread-safe by itself; the transport answers each delivery once, on the
  * thread that delivered it.
  */
 class ack_sink final : public ack_handle {
 public:
-    explicit ack_sink(natsMsg* msg) noexcept
-        : msg_(msg, &natsMsg_Destroy) {}
+    explicit ack_sink(msg_handle msg) noexcept
+        : msg_(std::move(msg)) {}
 
     void accept() override {
         answer([this] { natsMsg_Ack(msg_.get(), nullptr); });
@@ -298,7 +299,7 @@ private:
         verb();
     }
 
-    std::unique_ptr<natsMsg, decltype(&natsMsg_Destroy)> msg_;
+    msg_handle msg_;
     bool answered_ = false;
 };
 
@@ -349,8 +350,13 @@ message extract_message(natsMsg* msg, std::shared_ptr<ack_sink> ack = {}) {
 // IMPORTANT: This is a C callback running on a NATS library thread.
 // Exceptions must NOT propagate out — they would cross a C frame boundary
 // and call std::terminate(), killing the service without any shutdown log.
-void on_msg(natsConnection*, natsSubscription*, natsMsg* msg, void* ud) {
+void on_msg(natsConnection*, natsSubscription*, natsMsg* delivered, void* ud) {
     auto* cl = static_cast<sub_closure*>(ud);
+    // The callback owns the delivery from here on, and the handle frees it on
+    // every path. A durable delivery hands it to its ack sink instead, which
+    // frees it when the last copy of the handler's message goes.
+    msg_handle owned(delivered);
+    natsMsg* msg = owned.get();
     // Read the subject directly off msg (cheap, non-throwing) so it's
     // available for the catch blocks below even if extract_message()
     // itself throws -- e.g. decompress_if_flagged() on a message that
@@ -366,19 +372,13 @@ void on_msg(natsConnection*, natsSubscription*, natsMsg* msg, void* ud) {
     // owns the cnats message, so a delivery that carries one is freed when the
     // last copy of the handler's message is. Held outside the try so the catch
     // blocks can answer a delivery whose handler threw.
-    auto ack = cl->durable ? std::make_shared<ack_sink>(msg) : nullptr;
+    auto ack = cl->durable ? std::make_shared<ack_sink>(std::move(owned)) : nullptr;
     try {
         cl->handler(extract_message(msg, ack));
     } catch (const std::exception& e) {
-        if (!ack && msg)
-            natsMsg_Destroy(msg);
-        msg = nullptr;
         BOOST_LOG_SEV(lg(), error) << "Unhandled exception in NATS message handler for subject '"
                                    << subject << "': " << e.what();
     } catch (...) {
-        if (!ack && msg)
-            natsMsg_Destroy(msg);
-        msg = nullptr;
         BOOST_LOG_SEV(lg(), error)
             << "Unknown exception in NATS message handler for subject '" << subject << "'";
     }
@@ -389,17 +389,16 @@ void on_msg(natsConnection*, natsSubscription*, natsMsg* msg, void* ud) {
         ack->retry();
 }
 
-// Build a natsMsg* with data and optional headers.
-// Caller owns the result and must call natsMsg_Destroy.
-natsMsg* make_msg(std::string_view subject,
-                  std::span<const std::byte> data,
-                  std::unordered_map<std::string, std::string> headers,
-                  const char* reply = nullptr) {
+// Build a message with data and optional headers.
+msg_handle make_msg(std::string_view subject,
+                    std::span<const std::byte> data,
+                    std::unordered_map<std::string, std::string> headers,
+                    const char* reply = nullptr) {
 
     const auto payload = ores::nats::compress_if_worthwhile(data, headers);
 
-    natsMsg* msg = nullptr;
-    const natsStatus s = natsMsg_Create(&msg,
+    natsMsg* created = nullptr;
+    const natsStatus s = natsMsg_Create(&created,
                                         std::string(subject).c_str(),
                                         reply,
                                         reinterpret_cast<const char*>(payload.data()),
@@ -408,8 +407,9 @@ natsMsg* make_msg(std::string_view subject,
     if (s != NATS_OK)
         throw std::runtime_error(std::string("natsMsg_Create failed: ") + natsStatus_GetText(s));
 
+    msg_handle msg(created);
     for (const auto& [k, v] : headers)
-        natsMsgHeader_Set(msg, k.c_str(), v.c_str());
+        natsMsgHeader_Set(msg.get(), k.c_str(), v.c_str());
 
     return msg;
 }
@@ -744,9 +744,8 @@ void client::publish(std::string_view subject,
     const std::string full_subject(make_subject(subject));
     log_publish(*impl_, "NATS publish", full_subject);
 
-    natsMsg* msg = make_msg(full_subject, data, headers);
-    const natsStatus s = natsConnection_PublishMsg(impl_->conn, msg);
-    natsMsg_Destroy(msg);
+    const auto msg = make_msg(full_subject, data, headers);
+    const natsStatus s = natsConnection_PublishMsg(impl_->conn, msg.get());
     if (s != NATS_OK)
         throw std::runtime_error(std::string("NATS publish failed: ") + natsStatus_GetText(s));
 }
@@ -759,11 +758,11 @@ message client::request_sync(std::string_view subject,
     const std::string full_subject(make_subject(subject));
     BOOST_LOG_SEV(lg(), debug) << "NATS request: " << full_subject;
 
-    natsMsg* req = make_msg(full_subject, data, headers);
-    natsMsg* reply = nullptr;
-    const natsStatus s =
-        natsConnection_RequestMsg(&reply, impl_->conn, req, static_cast<int64_t>(timeout.count()));
-    natsMsg_Destroy(req);
+    const auto req = make_msg(full_subject, data, headers);
+    natsMsg* received = nullptr;
+    const natsStatus s = natsConnection_RequestMsg(
+        &received, impl_->conn, req.get(), static_cast<int64_t>(timeout.count()));
+    const msg_handle reply(received);
 
     if (s != NATS_OK) {
         if (s == NATS_TIMEOUT)
@@ -775,9 +774,7 @@ message client::request_sync(std::string_view subject,
         throw std::runtime_error(std::string("NATS request failed: ") + natsStatus_GetText(s));
     }
 
-    message m = extract_message(reply);
-    natsMsg_Destroy(reply);
-    return m;
+    return extract_message(reply.get());
 }
 
 boost::asio::awaitable<message>
@@ -887,13 +884,11 @@ void client::js_publish(std::string_view subject,
     const std::string full_subject(make_subject(subject));
     log_publish(*impl_, "NATS js-publish", full_subject);
 
-    natsMsg* msg = make_msg(full_subject, data, headers);
-    jsPubAck* ack = nullptr;
+    const auto msg = make_msg(full_subject, data, headers);
+    jsPubAck* received = nullptr;
     // js_PublishMsg(jsPubAck**, jsCtx*, natsMsg*, jsPubOptions*, jsErrCode*)
-    const natsStatus s = js_PublishMsg(&ack, impl_->js, msg, nullptr, nullptr);
-    natsMsg_Destroy(msg);
-    if (ack)
-        jsPubAck_Destroy(ack);
+    const natsStatus s = js_PublishMsg(&received, impl_->js, msg.get(), nullptr, nullptr);
+    const pub_ack_handle ack(received);
 
     if (s != NATS_OK)
         throw std::runtime_error(std::string("JetStream publish failed: ") + natsStatus_GetText(s));

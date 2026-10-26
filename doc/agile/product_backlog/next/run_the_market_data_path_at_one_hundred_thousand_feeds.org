@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: B1B486EC-E42B-43CF-82AE-D9F2E70DAA79
+:END:
+#+title: Run the market data path at one hundred thousand feeds
+#+description: The finished system runs tens to hundreds of thousands of feeds. Synthetic, NATS and marketdata must carry about 29,000 source ticks a second at 100,000 feeds, and four times that in an active market, on one machine shared by ten environments.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:nats:scale:requirement:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The finished system runs tens to hundreds of thousands of feeds. The market data
+path, from the synthetic service through NATS to marketdata and back out to the
+subscribers, must carry that volume on one machine that also runs up to ten
+environments.
+
+| Feeds   | Source ticks/s | Stored rows/s (5 routes) | Rows a day     | Rows/s, active (x4) |
+|---------+----------------+--------------------------+----------------+---------------------|
+| 110     | about 32       | about 160                | about 14 million | about 640         |
+| 10,000  | about 2,900    | about 14,500             | about 1.25 billion | about 58,000    |
+| 100,000 | about 29,000   | about 145,000            | about 12.5 billion | about 580,000   |
+
+The figures scale today's configuration: 110 feeds configure about 115,000
+ticks an hour, about 0.29 a second for each feed, and each source tick is stored
+once for each of five party routes. A different mix of feeds or routes moves
+them, so treat them as the order of magnitude to design for, not a forecast.
+
+Each of these holds at today's 110 feeds and does not at 100,000:
+
+- The synthetic service drives every feed from one scheduler thread.
+- Every event of every feed adds to one shared heat with an atomic add, so the
+  heat's cache line is the one write all scheduler threads would contend on.
+- marketdata decodes, maps, stores and republishes on one ingest worker, with a
+  bounded queue of 65,536 ticks that drops the oldest when it is full.
+- marketdata subscribes to the whole ingress namespace with one wildcard, so it
+  decodes every tick of every adapter, routed or not. During the runaway it
+  decoded about 6,400 ticks a second it then dropped as unmapped.
+- Each source tick is republished once for each route, so the fan-out multiplies
+  the NATS traffic as it multiplies the stored rows.
+- A defect that costs a little per message costs a lot per second. The NATS
+  client's leak cost about 430 bytes a message and took the machine down at
+  about 11,000 rows a second.
+
+* Why
+
+Today's fleet runs 110 feeds and uses 0.7 percent of the machine in a calm
+market. That is three orders of magnitude below the target, so nothing measured
+today says the path will scale; the limits above are design limits that load
+has not reached yet. The requirement must shape the design now, while the
+pieces are small. [[id:2D94BF13-5BB2-4522-AD1B-098C2376D947][Measure the tick flow as a funnel with balance checks]] gives the measurement each change will need.
+
+* References
+
+- =projects/ores.analytics/quant/include/ores.analytics.quant/service/tick_scheduler.hpp=
+- =projects/ores.analytics/quant/include/ores.analytics.quant/domain/shared_intensity.hpp=
+- =projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp=
+
+* See also
+
+- [[id:1005A029-DD93-47DB-9959-DAD1A9818585][Store ticks at one hundred thousand feeds]]
+- [[id:2D94BF13-5BB2-4522-AD1B-098C2376D947][Measure the tick flow as a funnel with balance checks]]

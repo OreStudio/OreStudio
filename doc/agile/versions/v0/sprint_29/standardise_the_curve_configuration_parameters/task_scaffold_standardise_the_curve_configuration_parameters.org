@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
@@ -83,3 +83,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its scaffold task and its documentation task are scaffolded on
+=feature/standardise-the-curve-configuration-parameters=, and the story is
+wired into Sprint 29's =* Stories= table at STARTED.
+
+The story records the two decisions its first task depends on: a curve
+configuration's leaf is a /parameter/, with the comparison that rules out
+/setting/, /term/, /field/, /entry/, /option/ and /attribute/; and the element
+type is the ORE entry element that =curve_section= already holds.
+
+The documentation task carries the plan and the ORE-side measurements its work
+starts from, at ORE commit =3d75a6908=.

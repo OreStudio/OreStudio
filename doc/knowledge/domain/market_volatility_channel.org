@@ -57,15 +57,22 @@ differently under a rate change:
   unchanged. This is the correct behaviour, and it is what the arrival
   time-rescaling test asserts.
 - A process that answers =supports_variable_step() == false= takes one nominal
-  step per tick. The same nominal step now fits into a shorter gap, so **variance
-  per wall-clock second rises with the rate** — as the square root of it, in
-  sigma terms. A curve process that steps one calendar day per tick also runs its
-  calendar faster; a rate change quietly moves time.
+  step per tick. When each step's variance is the same, the same nominal step now
+  fits into a shorter gap, so **variance per wall-clock second rises in proportion
+  to the rate**, and sigma with its square root. A curve process that steps one
+  calendar day per tick also runs its calendar faster; a rate change quietly moves
+  time. Three processes answer true — the Gaussian mixture, the arithmetic
+  mixture and the Ornstein–Uhlenbeck process — and every other one answers false,
+  so it is the majority behaviour that is wrong.
 
 The second behaviour is a defect rather than a feature: an operator who doubles a
 feed's rate to get more ticks also doubles its realized volatility without asking.
 It must be fixed before a volatility loading is added, or the loading will be
 measured on top of an unintended one.
+
+The fix is to *convert*, not to refuse: a process that steps once per tick gains a
+time-scaled law, so the feed can hand it the gap. Refusing would break every feed
+that runs today, and the processes involved are the majority.
 
 The clean formulation is business time. Let
 
@@ -84,29 +91,50 @@ Three seams, each mirroring something the arrival work already has:
    of =i_arrival_process::set_baseline_multiplier=. The default refuses; the
    processes that can honour it scale their own sigma — a Gaussian mixture scales
    its stdevs, a short-rate model its sigma — and keep their means.
-2. =market_link= gains =volatility_sensitivity= beside =sensitivity=, and both
-   generation-config kinds gain the column. A feed that follows the market in
-   rate and not in volatility sets it to zero; the default follows the rate
-   loading, because a market that only ticks faster is the artefact this note
-   exists to remove.
+2. =market_link= gains =volatility_sensitivity= beside =sensitivity=. A feed that
+   follows the market in rate and not in volatility sets it to zero; the default
+   follows the rate loading, because a market that only ticks faster is the
+   artefact this note exists to remove. Both generation-config kinds gain the
+   column, which is a schema change with a migration and a codegen run — the one
+   part of the loading that is not a line of code, and the reason the task under
+   it is sized as it is.
 3. Each feed applies it on its tick, beside the arrival multiplier it already
    reads.
 
-The law, with gamma = 1 by default:
+The law, with the loading written as a volatility multiplier:
 
-  sigma_effective = sigma * sensitivity_vol * A(t)
+  M_vol(t) = (sensitivity_vol * A(t))^gamma
+  sigma_effective = sigma * M_vol(t)
 
-so variance is proportional to activity, which is the mixture-of-distributions
-reading: the same diffusion, with more time in it. gamma is a knob, not a
-conviction; gamma = 1/2 gives sigma proportional to activity, which is what a
-price process whose step count, not whose clock, drives the variance does.
+and the exponent is what decides which quantity follows activity:
+
+- *gamma = 1/2* gives variance proportional to activity, which is the
+  mixture-of-distributions reading and the default: the same diffusion with more
+  time in it, so Clark's mixture holds and a busy minute is a wider minute.
+- *gamma = 1* gives sigma proportional to activity, and variance proportional to
+  its square. That is the right choice for a series whose step count rather than
+  its clock drives the variance — which is what a fixed-step process does today,
+  and therefore the behaviour the first task removes.
+
+The exponent is a knob because the evidence does not settle it; the default is the
+one the literature supports.
 
 *Calibration is the work, not the plumbing.* A run's sigma must stay the sigma its
 configuration states unless a person pins a state. The state's long-run mean is
-one by construction, so it needs nothing; the heat's is not, so the volatility
-channel must centre it — subtract the heat's stationary mean from the margin — or
-a run's average volatility drifts up with the heat, and every calibration test
-built on generated prices fails for a reason nobody can see.
+one by construction, so it needs nothing. The heat's is not: it settles at a rate,
+the event rate times jump/decay, which is the derivation in
+[[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]].
+So the volatility margin centres it, with a floor:
+
+  A_centred(t) = max(S(t) + (C(t)/R(t) - E[C/R]), epsilon)
+  M_vol(t) = (sensitivity_vol * A_centred(t))^gamma
+
+Subtracting the heat's mean keeps the long-run mean of =A_centred= at one, so the
+run's average multiplier is the loading and the sigma stays calibrated. The floor
+is not cosmetic: without it a calm market with a negative margin can drive the
+multiplier to zero or below, which makes a price freeze. With the floor the
+long-run mean is one up to the mass of the draws that hit it, and the note's test
+must accept that tolerance rather than an exact one.
 
 *Two meanings of volatility* must be kept apart in every test:
 
@@ -125,8 +153,12 @@ components to the wide ones, renormalised so the mixture stays a distribution an
 the mean is unchanged.
 
 That is the cheapest way to make a pinned panic produce the gaps a person expects,
-and it composes with the loading: the loading sets the scale, the reweighting sets
-the shape.
+and it composes with the loading only if it is *variance-preserving*: after the
+weights move, the stdevs are rescaled so the mixture's variance is what it was,
+and the loading remains the only channel to sigma. Without that rescaling the
+reweighting raises the variance too, and the calibration test in the table below
+would fail for a second reason that has nothing to do with the loading. The
+reweighting sets the shape; the loading sets the scale.
 
 ** The control plane
 
@@ -165,7 +197,9 @@ rank-one kernel of the arrival note generalises:
 becomes a 2x2 block of the same shape, and stability stops being the scalar test
 =max n + sum m < 1= and becomes a spectral radius: the largest eigenvalue of the
 mean kernel must be below one. That is a model of its own, it depends on all of
-the above, and it is captured in the inbox rather than scoped here.
+the above, and it is captured rather than scoped here:
+[[id:4A00CBE5-E42B-46A8-A09B-FD698A09E4BB][Make activity and volatility excite
+each other]].
 
 * Literature
 

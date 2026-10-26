@@ -13,14 +13,16 @@
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The shared factor moves price variance, not only the tick clock: a feed's returns
+widen with the market and quieten with it, by a loading the feed carries, while a
+run's long-run sigma stays the one its configuration states.
 
 * Status
 
@@ -35,13 +37,30 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =i_stochastic_process= gains =set_volatility_multiplier(double)=, the sibling of
+  the arrival process's =set_baseline_multiplier=, and a process that cannot honour
+  it refuses rather than ignoring it.
+- =market_link= gains =volatility_sensitivity=, and both generation-config kinds
+  gain the column: schema, migration and codegen, as one change.
+- The multiplier is =(sensitivity_vol * A_centred)^gamma= with =gamma = 1/2= by
+  default, so variance is proportional to activity; the exponent is a stated
+  default, not a hidden one.
+- =A_centred= subtracts the heat's stationary mean, keeps the long-run mean at one,
+  and is floored above zero so a calm market cannot freeze a price.
+- Over a long run with the heat on, the realized sigma equals the configured
+  sigma; a pinned active market raises it by the loading, and calm lowers it.
+- A feed with =sensitivity_vol = 0= behaves exactly as it does today.
+- The Arrivals tab edits the loading beside the sensitivity, with the same audit.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Schema column on both config kinds, migration and codegen, and the link's
+   loading with its docstring.
+2. The setter and its override in every process that can scale its own law.
+3. The centring, with the floor, as a function beside =rate_multiplier()=.
+4. The three tests: calibration, response to a pinned state, and the zero-loading
+   no-op.
+5. The UI field, and the BFF read that backs it.
 
 * Measurements
 

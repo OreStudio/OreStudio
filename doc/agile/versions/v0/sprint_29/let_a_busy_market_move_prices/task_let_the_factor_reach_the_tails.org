@@ -13,14 +13,16 @@
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A pinned panic produces gaps and heavy tails, not only a wider walk: as activity
+rises, an FX feed's mixture moves weight toward its wide components, and the shape
+of its returns changes with the market.
 
 * Status
 
@@ -35,13 +37,22 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The weights move with =A= by a stated rule, renormalised to sum to one.
+- The reweighting is variance-preserving: the stdevs are rescaled after the
+  weights move, so the loading remains the only channel to sigma and the
+  calibration test of the previous task still holds.
+- The mean of the series is unchanged.
+- The kurtosis of returns rises with activity; a test states the window and the
+  sampling interval it measures.
+- A feed with the tail channel off behaves exactly as it does today.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. The reweighting function on the mixture the FX feeds carry, with its
+   renormalisation and the variance-preserving rescale.
+2. The test: the same seed under calm and under a pinned active market, kurtosis
+   and mean compared.
+3. A switch per feed, so the channel can be turned off while it is being proved.
 
 * Measurements
 

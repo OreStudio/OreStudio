@@ -13,14 +13,16 @@
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A rate change changes how often a series is observed and not how much time its
+process covers, for every process the feeds use. An operator who doubles a rate
+gets twice the samples of the same path, not twice the realized volatility.
 
 * Status
 
@@ -35,13 +37,28 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Variance per wall-clock second is invariant under a rate multiplier of two,
+  measured on a long run, for every process a feed can build.
+- The three processes that answer =supports_variable_step() == true= keep their
+  behaviour: the Gaussian mixture, the arithmetic mixture and the
+  Ornstein–Uhlenbeck process.
+- The processes that answer false gain a time-scaled law, so a feed can hand them
+  the gap. They are converted, not refused: refusing would break every feed that
+  runs today.
+- A non-periodic arrival mode is still refused for any process that cannot take a
+  gap, as it is today.
+- The existing time-rescaling test stays green, and the new test names the process
+  it measures.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Enumerate the processes and their =supports_variable_step()= answer; the list
+   is the test's parameter.
+2. Give each process that answers false a law in elapsed time, keeping its
+   existing parameters and its one-tick behaviour exact.
+3. Add the invariance test: the same seed, the same window, one run at the
+   configured rate and one at twice it, and the two realize the same variance per
+   second within sampling error.
 
 * Measurements
 

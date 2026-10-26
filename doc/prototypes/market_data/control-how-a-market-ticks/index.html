@@ -98,10 +98,10 @@ h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--
         <div class="node">USD/JPY <span class="state">stopped</span></div>
         <div class="node">IR</div>
         <div class="node">USD SOFR <span class="state">running</span></div>
-        <div class="node">EUR ESTR <span class="state">partial</span></div>
+        <div class="node">EUR ESTR <span class="state">1 of 3 running</span></div>
       </div>
       <div class="panel" style="background:var(--bg)">
-        <div class="mode"><span class="tag">Simple</span><button class="btn" data-mode-tab="advanced">Advanced</button></div>
+        <div class="mode"><button class="btn primary" data-mode-tab="simple">Simple</button><button class="btn" data-mode-tab="advanced">Advanced</button><span class="faint" style="font-size:.78rem;margin-left:auto">how much detail the panel shows</span></div>
         <h2>The market</h2>
         <div class="row">
           <div class="field"><label>State</label><div class="value"><span class="tag" id="stateB">active</span> <span class="muted">pinned</span></div></div>
@@ -116,24 +116,27 @@ h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--
         <h3 class="of">Every feed's ticks, at once</h3>
         <canvas class="raster" id="rasterB" height="150"></canvas>
         <div class="legend"><span><i class="sw" style="background:#58a6ff"></i>FX</span><span><i class="sw" style="background:#d29922"></i>IR</span><span class="faint">a pinned market starts at the mark</span></div>
-        <div class="adv" hidden>
-          <h3 class="of">Advanced · the chain that drives it</h3>
-          <table><tbody>
+        <h3 class="of">The chain that drives it</h3>
+        <table><tbody>
             <tr><td>Calm → active</td><td class="num mono">1 / 600 s</td><td>one turn every ten minutes</td></tr>
             <tr><td>Active → calm</td><td class="num mono">1 / 300 s</td><td>active a third of the time</td></tr>
             <tr><td>Active multiplier</td><td class="num mono">2.0</td><td>calm 0.5 keeps the mean at one</td></tr>
+          </tbody></table>
+        <div class="adv" hidden>
+          <table><tbody>
             <tr><td>Shared jump · decay</td><td class="num mono">0.5 · 20/s</td><td>heat settles at a quarter of a rate</td></tr>
+            <tr><td>Market state</td><td class="num mono">ores.synthetic.market_regime.state</td><td>the ORE XML path, Advanced only</td></tr>
           </tbody></table>
         </div>
       </div>
       <div class="panel">
         <h2>Who follows it</h2>
-        <table><thead><tr><th>Feed</th><th class="num">Mode</th><th class="num">Sens.</th><th class="num">Rate now</th></tr></thead>
+        <table><thead><tr><th>Feed</th><th class="num">Mode</th><th class="num">Sens.</th><th class="num">Intensity now</th></tr></thead>
         <tbody>
-          <tr class="sel"><td>EUR/USD</td><td class="num">hawkes .6</td><td class="num">1.3</td><td class="num">2.6 / s</td></tr>
-          <tr><td>GBP/USD</td><td class="num">hawkes .5</td><td class="num">1.1</td><td class="num">2.2 / s</td></tr>
+          <tr class="sel"><td>EUR/USD</td><td class="num">hawkes .6</td><td class="num">1.3</td><td class="num">3.1 / s</td></tr>
+          <tr><td>GBP/USD</td><td class="num">hawkes .5</td><td class="num">1.1</td><td class="num">2.4 / s</td></tr>
           <tr><td>USD/JPY</td><td class="num">poisson</td><td class="num">0.9</td><td class="num">1.8 / s</td></tr>
-          <tr><td>USD SOFR</td><td class="num">periodic</td><td class="num">0.4</td><td class="num">0.4 / s</td></tr>
+          <tr><td>USD SOFR</td><td class="num">periodic</td><td class="num">0.4</td><td class="num">0.8 / s</td></tr>
         </tbody></table>
         <p class="faint" style="font-size:.8rem">The selected row is the feed the editor is showing. Clustering is edited there, beside the engine and the tick clock, as the screen standard already sets out.</p>
       </div>
@@ -155,10 +158,10 @@ h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--
     </div>
     <table><thead><tr><th>Feed</th><th>Mode</th><th class="num">Ratio</th><th class="num">Decay</th><th class="num">Sens.</th><th class="num">Rate</th><th></th></tr></thead>
     <tbody>
-      <tr><td>EUR/USD</td><td>hawkes</td><td class="num">0.6</td><td class="num">20</td><td class="num">1.3</td><td class="num">2.6 / s</td><td><a href="#">preview</a></td></tr>
-      <tr><td>GBP/USD</td><td>hawkes</td><td class="num">0.5</td><td class="num">10</td><td class="num">1.1</td><td class="num">2.2 / s</td><td><a href="#">preview</a></td></tr>
+      <tr><td>EUR/USD</td><td>hawkes</td><td class="num">0.6</td><td class="num">20</td><td class="num">1.3</td><td class="num">3.1 / s</td><td><a href="#">preview</a></td></tr>
+      <tr><td>GBP/USD</td><td>hawkes</td><td class="num">0.5</td><td class="num">10</td><td class="num">1.1</td><td class="num">2.4 / s</td><td><a href="#">preview</a></td></tr>
       <tr><td>USD/JPY</td><td>poisson</td><td class="num">—</td><td class="num">—</td><td class="num">0.9</td><td class="num">1.8 / s</td><td><a href="#">preview</a></td></tr>
-      <tr><td>USD SOFR</td><td>periodic</td><td class="num">—</td><td class="num">—</td><td class="num">0.4</td><td class="num">0.4 / s</td><td><a href="#">preview</a></td></tr>
+      <tr><td>USD SOFR</td><td>periodic</td><td class="num">—</td><td class="num">—</td><td class="num">0.4</td><td class="num">0.8 / s</td><td><a href="#">preview</a></td></tr>
     </tbody></table>
     <h3 class="of">Preview · EUR/USD</h3>
     <canvas class="gaps" id="gapsC" height="74"></canvas>
@@ -200,50 +203,60 @@ function drawRaster(id){
   const dpr=window.devicePixelRatio||1; c.width=c.clientWidth*dpr; c.height=c.clientHeight*dpr;
   const g=c.getContext('2d'); g.scale(dpr,dpr);
   const w=c.clientWidth,h=c.clientHeight; g.fillStyle='#26262b';g.fillRect(0,0,w,h);
-  const feeds=[{name:'EUR/USD',rate:1.0,colour:'#58a6ff'},{name:'GBP/USD',rate:1.0,colour:'#58a6ff'},
-               {name:'USD/JPY',rate:1.0,colour:'#58a6ff'},{name:'AUD/USD',rate:1.0,colour:'#58a6ff'},
-               {name:'USD SOFR',rate:0.4,colour:'#d29922'},{name:'EUR ESTR',rate:0.4,colour:'#d29922'}];
-  const seconds=30, pin=12, rowH=(h-24)/feeds.length, r=rng(11);
-  // Shared heat: every event anywhere adds to it, and it fades. The pin lifts the
-  // level at 12 s, and the rows then cluster around the same moments.
+
+  // The eight feeds the tree says are live, each with what its own row means:
+  // a mean rate, its branching ratio and decay, and its sensitivity to the market.
+  const feeds=[
+    {name:'EUR/USD', mean:1.0, n:0.6, decay:20, sens:1.3, colour:'#58a6ff'},
+    {name:'GBP/USD', mean:1.0, n:0.5, decay:10, sens:1.1, colour:'#58a6ff'},
+    {name:'USD/JPY', mean:1.0, n:0.0, decay:1,  sens:0.9, colour:'#58a6ff'},
+    {name:'AUD/USD', mean:0.8, n:0.3, decay:8,  sens:1.0, colour:'#58a6ff'},
+    {name:'USD/CHF', mean:0.8, n:0.0, decay:1,  sens:0.8, colour:'#58a6ff'},
+    {name:'USD/CAD', mean:0.8, n:0.4, decay:12, sens:1.0, colour:'#58a6ff'},
+    {name:'USD SOFR', mean:0.4, n:0.0, decay:1, sens:0.4, colour:'#d29922'},
+    {name:'EUR ESTR', mean:0.4, n:0.0, decay:1, sens:0.4, colour:'#d29922'}
+  ];
+  const seconds=30, pin=12, rowH=(h-22)/feeds.length, r=rng(11);
+
+  // The chain before the pin, so the market is not flat before it: a third of the
+  // time active, which the calibration fixes.
+  function stateAt(s){
+    if(s>=pin) return 2.0;                      // pinned active
+    return (Math.floor(s/3)%3===0) ? 0.5 : 2.0; // the chain turning on its own
+  }
+
+  // What the service computes: a shared heat any event feeds and that fades, and
+  // each feed's rate = sensitivity * (mean * S + heat), with its own Hawkes excess
+  // on top, which is the branching ratio's job.
   let heat=0;
+  const excess=feeds.map(()=>0);
   const events=feeds.map(()=>[]);
   for(let s=0;s<seconds;s+=0.01){
-    const state = s<pin ? 1.0 : 2.0;
+    const S=stateAt(s);
     heat*=Math.exp(-20*0.01);
     feeds.forEach((f,i)=>{
-      const rate=Math.max(0.02, f.rate*state + heat/2);
-      if(r() < rate*0.01){ events[i].push(s); heat+=0.5; }
+      excess[i]*=Math.exp(-f.decay*0.01);
+      const rate=Math.max(0.02, f.sens*(f.mean*S + heat)) + excess[i];
+      if(r() < rate*0.01){
+        events[i].push(s);
+        excess[i]+=f.n*f.mean*2;
+        heat+=0.5;
+      }
     });
   }
+
   feeds.forEach((f,i)=>{
-    const y=14+i*rowH+rowH/2;
+    const y=12+i*rowH+rowH/2;
     g.fillStyle='#3d444d'; g.font='10px ui-monospace,monospace';
-    g.fillText(f.name, 6, y-6);
+    g.fillText(f.name, 6, y-5);
     g.fillStyle=f.colour;
-    events[i].forEach(s=>{ const x=70+(s/seconds)*(w-80); g.fillRect(x, y-3, 2, 6); });
+    events[i].forEach(s=>{ const x=78+(s/seconds)*(w-90); g.fillRect(x, y-3, 2, 6); });
   });
   g.strokeStyle='#f85149'; g.setLineDash([3,3]);
-  g.beginPath(); g.moveTo(70+(pin/seconds)*(w-80), 8); g.lineTo(70+(pin/seconds)*(w-80), h-10); g.stroke();
+  g.beginPath(); g.moveTo(78+(pin/seconds)*(w-90), 6); g.lineTo(78+(pin/seconds)*(w-90), h-8); g.stroke();
   g.setLineDash([]);
   g.fillStyle='#71717a'; g.font='10px ui-monospace,monospace';
-  g.fillText('pinned active', 70+(pin/seconds)*(w-80)+4, 16);
-}
-function drawCounts(id){
-  const c=document.getElementById(id); if(!c) return;
-  const dpr=window.devicePixelRatio||1; c.width=c.clientWidth*dpr; c.height=c.clientHeight*dpr;
-  const g=c.getContext('2d'); g.scale(dpr,dpr);
-  const w=c.clientWidth,h=c.clientHeight; g.fillStyle='#26262b';g.fillRect(0,0,w,h);
-  const windows=12, before=[3,4,3,5,4,3,4,5,3,4,3,4], after=[9,11,10,12,11,9,10,12,11,10,9,11];
-  const bw=(w-40)/windows, max=14;
-  for(let i=0;i<windows;i++){
-    const x=20+i*bw;
-    g.fillStyle='#58a6ff'; g.fillRect(x, h-14-(before[i]/max)*(h-30), bw*0.38, (before[i]/max)*(h-30));
-    g.fillStyle='#d29922'; g.fillRect(x+bw*0.42, h-14-(after[i]/max)*(h-30), bw*0.38, (after[i]/max)*(h-30));
-  }
-  g.fillStyle='#71717a';g.font='11px ui-monospace,monospace';
-  g.fillText('counts per 30 s · left of the mark before the pin, right of it after',20,h-2);
-  g.strokeStyle='#30363d';g.beginPath();g.moveTo(w/2,6);g.lineTo(w/2,h-16);g.stroke();
+  g.fillText('pinned active', 78+(pin/seconds)*(w-90)+4, 14);
 }
 function redraw(){
   drawGaps('gapsA', document.getElementById('mA').value,
@@ -263,14 +276,19 @@ document.querySelectorAll('[data-jump]').forEach(a=>a.addEventListener('click',e
   document.querySelector('.tabs button[data-v="'+a.dataset.jump+'"]').click();
 }));
 document.querySelectorAll('[data-mode-tab]').forEach(b=>b.addEventListener('click',()=>{
-  const adv=b.closest('.panel').querySelector('.adv');
-  adv.hidden=!adv.hidden;
-  b.classList.toggle('primary', !adv.hidden);
+  const advanced = b.dataset.modeTab === 'advanced';
+  const panel = b.closest('.panel');
+  panel.querySelector('.adv').hidden = !advanced;
+  panel.querySelector('[data-mode-tab="simple"]').classList.toggle('primary', !advanced);
+  panel.querySelector('[data-mode-tab="advanced"]').classList.toggle('primary', advanced);
 }));
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{
   const mode=b.dataset.mode;
-  document.getElementById('stateB').textContent = mode==='auto' ? 'calm (chain)' : mode;
-  document.getElementById('multB').textContent = mode==='active' ? '2.0' : (mode==='calm' ? '0.5' : '0.5');
+  const state = mode==='auto' ? 'calm (chain)' : mode;
+  document.getElementById('stateB').textContent = state;
+  document.getElementById('multB').textContent = mode==='active' ? '2.0' : '0.5';
+  document.querySelectorAll('[data-mode]').forEach(o=>o.classList.toggle('primary', o===b));
+  redraw();
 }));
 ['mA','nA','dA'].forEach(id=>document.getElementById(id).addEventListener('input',redraw));
 window.addEventListener('resize',redraw);

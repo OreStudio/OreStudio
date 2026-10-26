@@ -157,7 +157,14 @@ market: the tree on the left, the market in the middle with its Simple and
 Advanced switch and the raster of every feed's ticks, and the by-sensitivity list
 on the right.
 
-The raster is drawn from the same model the service uses — a shared heat that
-every event feeds and that fades, each feed's rate scaled by the state and by its
-own sensitivity — so the picture after the pin is not decoration: it is what the
-numbers in the fields produce.
+The raster is drawn from the same model the service uses: a shared heat that
+every event feeds and that fades, each feed's intensity
+=sensitivity × (mean × S + heat)=, and its own Hawkes excess on top, which is the
+branching ratio's job. The chain turns before the pin as well, so the field to the
+left of the mark is the market moving on its own and the field to the right is
+the same market held active.
+
+The panel keeps the screen standard's Simple and Advanced switch as a pair, and
+Advanced adds the raw rows rather than hiding anything: the chain's rates are in
+Simple because they are the value in force, and Advanced adds the shared heat and
+the ORE XML path behind the multiplier.

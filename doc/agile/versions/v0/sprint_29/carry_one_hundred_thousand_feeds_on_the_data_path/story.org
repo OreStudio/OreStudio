@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: A600B721-6BE3-4750-AF03-2438C3A06F94
+:END:
+#+title: Story: Carry one hundred thousand feeds on the data path
+#+description: Rebuild the data path so the system carries 100,000 feeds on one machine shared by ten environments: pooled long-lived connections, a transaction API, bounded concurrency, ticks stored once and written in bulk, a bounded tick store, work pushed to the grid, and built-in measurement.
+#+type: story
+#+level: s2
+#+filetags: :architecture:database:marketdata:compute:scale:sprint_29:v0:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The system carries one hundred thousand feeds on one machine that runs ten
+environments against one PostgreSQL instance. A service reaches the database
+through a few long-lived connections and a unit of work, handlers run on a
+bounded pool, ticks are stored once for each source by lanes writing in bulk
+into a bounded, compressed store, the grid is woken rather than polled, and
+every queue and session reports its own numbers. The target state is set out
+in [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]].
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | The target-state architecture is written and up for review. |
+| Waiting on    | Nothing.                               |
+| Next          | Review the approach, then pool every hand-written query. |
+| Last touched  | 2026-10-26                               |
+
+* Acceptance
+
+- Every page of the data path cluster describes the system as it runs.
+- No query opens a connection of its own, and a connection carries no tenant
+  between transactions.
+- The stored rows a second equal the source ticks a second, and the tick store
+  stays within its window.
+- An idle grid sends no claims.
+- A load of 116,000 source ticks a second, an active market at one hundred
+  thousand feeds, runs for ten minutes with bounded memory, no unplanned drops
+  and the numbers of every queue and session published.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4FE656C5-B055-42C6-AFAB-997BFC3DBC9D][Scaffold story: Carry one hundred thousand feeds on the data path]] | DONE | 2026-10-26 | 2026-10-26 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E6C74604-A10E-4301-81C9-00895979275D][Write the target-state architecture of the data path]] | DONE | 2026-10-26 | 2026-10-26 | The architecture notes of the target state, and every related note aligned to it. |
+| [[id:964B4B51-C5C7-4339-AC51-593CE49CFB07][Run every hand-written query on a pooled connection]] | BACKLOG | | | The raw query helpers take a session from the service's pool instead of opening a connection per query. |
+| [[id:8DFA22E1-F6EB-4F38-87CE-7F06BA4BFD93][Set the tenant context per transaction]] | BACKLOG | | | Tenant and party context is set local to each transaction, in the same round trip as its first statement, so a connection carries no tenant between transactions. |
+| [[id:63AFAA9D-42F6-465E-9423-9A3FE81148A4][Hand repositories an open transaction, not credentials]] | BACKLOG | | | Repositories receive an open transaction from a unit-of-work call and can no longer reach credentials or open connections. |
+| [[id:B1575A54-4B73-4E3C-B958-0041E01D1625][Declare hand-written statements once, prepared and typed]] | BACKLOG | | | Hand-written SQL is declared once with typed parameters and typed rows, prepared once per connection and read in the binary format. |
+| [[id:E750C5F0-5A59-466D-A33A-538B90A1F1B9][Say in every store error whether to retry]] | BACKLOG | | | Store operations return errors classed as retryable or refused, and callers retry by the class. |
+| [[id:2F0F5A1D-5167-4CF8-BF26-AD2C08088ABB][Run handlers on a bounded pool behind the delivery threads]] | BACKLOG | | | NATS delivery threads decode and enqueue; a fixed worker pool sized to the database pool runs handlers, with bounded queues and deadlines. |
+| [[id:E4BBD01F-EC3D-4C0C-9FD9-D35DACD617BD][Store each source tick once and entitle it on read]] | BACKLOG | | | The tick store holds each source tick once, owned by the installation, and entitlement is applied when a tick is read or republished. |
+| [[id:D1AFA66F-6D30-4A79-89B1-C8456FAEC9FB][Write ticks with sharded binary COPY in bounded batches]] | BACKLOG | | | Tick writers use binary COPY, sharded by series, with batches bounded by size or a short wait, idempotent on series, time and coordinate. |
+| [[id:FF456768-B04C-4F58-9706-8E7ACDEAA248][Bound the tick store with compression, chunk width and retention]] | BACKLOG | | | The tick store compresses closed chunks, sizes chunks so the hot index fits in memory, and drops chunks past retention on a schedule the service owns. |
+| [[id:F4548D08-02D5-45B8-AB43-F4E134C09C90][Push work to the grid instead of polling for it]] | BACKLOG | | | Compute work reaches a wrapper by a notice, with a long timeout for a lost one, and the claim runs only when work exists. |
+| [[id:C5D5D60F-54F3-4C34-A3B6-1294DBA743C1][Cap server connections across environments with a transaction pooler]] | BACKLOG | | | A transaction-mode pooler in front of the shared PostgreSQL instance caps server connections across the ten environments. |
+| [[id:6B715567-F9AC-45D0-AD5C-E722F4C6A414][Report every session's and queue's numbers]] | BACKLOG | | | Sessions report pool wait, execution time and rows, and queues report depth, drops and age, as telemetry samples. |
+
+* Decisions
+
+- *The target state is written first and reviewed before code.* The first pull
+  request holds the scaffolding and the architecture notes only.
+- *Two paths.* The control plane and the data plane reach the store by different
+  paths ([[id:662D0C1B-319C-4F85-A118-42D830661B40][The data path serves a control plane and a data plane]]).
+- *Tick points belong to the installation.* They carry no tenant and no
+  row-level security, entitlement is checked when a party reads, and so closed
+  chunks compress ([[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]]).
+- *TimescaleDB runs under the Timescale licence,* which the compression and the
+  policy jobs need ([[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded by compression, narrow chunks and retention policies]]).
+
+* Out of scope
+
+- The bus's subjects and message contract, beyond the delivery threads.
+- The market data model from vendor to party, beyond where its points are stored.
+- The ingest's lanes, ring buffer and age gate as designed in the tick ingest
+  pipeline note; this story builds the store side they write to.

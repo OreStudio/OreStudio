@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: E6C74604-A10E-4301-81C9-00895979275D
+:END:
+#+title: Task: Write the target-state architecture of the data path
+#+description: The architecture notes of the target state, and every related note aligned to it.
+#+type: task
+#+level: s1
+#+filetags: :carry_one_hundred_thousand_feeds_on_the_data_path:sprint_29:v0:
+#+owner: marco
+#+branch: feature/carry-one-hundred-thousand-feeds-on-the-data-path
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A600B721-6BE3-4750-AF03-2438C3A06F94][Carry one hundred thousand feeds on the data path]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write the target-state architecture of the data path as atomic notes ordered by a
+structure note, describing only the state the story delivers, and align every
+related note to it so no note states a different target.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A600B721-6BE3-4750-AF03-2438C3A06F94][Carry one hundred thousand feeds on the data path]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- One structure note orders the cluster and argues its order; each atomic note
+  makes one claim, in the present tense, with no current state and no history.
+- Every note the target changes either states the target or links to it.
+- The structure-note, pattern-use and link checks pass.
+
+* Plan
+
+1. Write the structure note [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] and thirteen atomic notes, one claim each.
+2. Reframe the tick storage note as the store-once target.
+3. Read every note on connections, sessions, the tick store, the ingest, the
+   compute claim and ownership, and change each statement that names another
+   target.
+4. Link the pattern pages both ways, add the hub to the knowledge index, and
+   run the structure-note and pattern checks.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The data path cluster is written: the structure note [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] orders thirteen
+notes, from the workload through connections, the transaction context, the unit
+of work, typed statements, error classes and the bounded handler pool, to the
+store-once tick store, its lanes, its bounds, the pooler, the pushed grid and
+the published numbers. The ingest loop, the ingest pipeline, the PostgreSQL,
+time, ownership, history-call, series, bootstrap and compute queue notes now
+state the same target, and the market data and storage structure notes and the
+knowledge index link the cluster.

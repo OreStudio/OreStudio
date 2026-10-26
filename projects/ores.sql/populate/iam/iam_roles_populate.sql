@@ -58,6 +58,14 @@ BEGIN
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'Trading operations - currency read access');
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'Sales', 'Sales operations - read-only currency access');
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'Operations - currency management and account viewing');
+    -- The two book-approval functions the role catalogue carried nobody for.
+    -- A book change asks the Controller first and then Finance beside Market
+    -- Risk and Operations, and each part names its own decide permission. The
+    -- parts and the permissions were seeded; no role held three of the four
+    -- codes, so only an administrator could answer them. See the approval
+    -- request notes for the parts and the controls note for who answers what.
+    PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'Controller - the first independent check on a book, and the accounting identity behind it');
+    PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'Finance - the accounting identity, the ledger feed and the closing of a book');
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'Support', 'Support - read-only access to all resources and admin screens');
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'Viewer - basic read-only access to domain data');
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'DataPublisher', 'Data Publisher - can publish datasets and bundles to production');
@@ -666,6 +674,16 @@ BEGIN
     -- code. The wildcard was the only holder, so no seeded person could
     -- decide and every request raised waited for a tenant administrator.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'inbox::approvals:decide_market_risk');
+    -- The operations decision the other three kinds carry: an operational
+    -- authorisation, a book change and a counterparty change all name this
+    -- code. *Operational Authorisation* says Operations, the Middle Office,
+    -- releases a trade, and the controls note gives Operations the book's
+    -- status, its portfolios and the counterparty links, so the function that
+    -- does the work is the function that answers for it. Trading raises and
+    -- Operations decides, which is the four eyes the control exists for; the
+    -- wildcard held the code alone before this line, so every request the
+    -- desks raised waited for a tenant administrator.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'inbox::approvals:decide_operations');
     -- *Manage market data subscriptions* states all three codes and names the
     -- party administrator as the actor. The five roles that read a party's
     -- subscriptions read only: Operations maintains the sources and the
@@ -709,6 +727,32 @@ BEGIN
     -- Write access for publishing datasets and bundles
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'DataPublisher', 'dq::datasets:write');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'DataPublisher', 'dq::dataset_bundles:write');
+
+    -- Assign permissions to the Controller role
+    -- The first part of a book change, and the part that answers first, so the
+    -- role reads the book the request is about before it decides. A part
+    -- decider holds no kind's decide code: the queue filters by kind and the
+    -- notification names the request, so the read of one request is what lets
+    -- the controller open it.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'inbox::approvals:decide_controller');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'inbox::approval_requests:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'inbox::approval_decisions:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'refdata::books:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'refdata::portfolios:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Controller', 'refdata::book_changes:read');
+
+    -- Assign permissions to the Finance role
+    -- The accounting identity, the ledger feed and closing a book. The same
+    -- read-before-decide as the controller, plus the units and parties whose
+    -- accounting the changed book belongs to.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'inbox::approvals:decide_finance');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'inbox::approval_requests:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'inbox::approval_decisions:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'refdata::books:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'refdata::portfolios:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'refdata::business_units:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'refdata::parties:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Finance', 'refdata::book_changes:read');
 
     -- =============================================================================
     -- Service Account Roles (one per NATS domain service)

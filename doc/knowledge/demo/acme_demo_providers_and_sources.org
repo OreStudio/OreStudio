@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: AC31B4F2-B1D7-4CE6-BE84-9A548ACE6754
+:END:
+#+title: Each Acme party takes one provider, and a simulated source serves it
+#+description: The seven providers the catalogue installs, the six sources under them, and which provider and source each of the four Acme parties takes in the demonstration.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:marketdata:acme:demo:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+startup: inlineimages
+
+* Summary
+
+The Acme demonstration gives each of its four legal entities one market data
+provider, and one simulated source serves that provider. The group and Hong Kong
+read =bloomberg= through =bloomberg-a=, London reads =demo= through =demo-a=,
+and New York reads =lseg= through =lseg-a=. Every source the parties take is
+of kind =simulated=, so the demonstration runs with no vendor connection and no
+licence. The provider is the row a subscription names. The source is the row a
+route names. The two are never the same row, which is what lets the
+demonstration move a party to a live feed by changing one route.
+
+* Detail
+
+** The seven providers
+
+The catalogue names seven providers. Five are data vendors the platform could
+connect to, and two are the platform's own.
+
+#+ATTR_HTML: :class hug-leading
+| Provider | Kind | What it stands for |
+|----------+------+--------------------|
+| =bloomberg= | data vendor | Bloomberg L.P., which identifies an instrument by a ticker and a yellow key |
+| =lseg= | data vendor | LSEG, known before as Reuters and Refinitiv, which identifies an instrument by a RIC |
+| =ice= | data vendor | ICE Data Services, which publishes under its own symbology |
+| =tradeweb= | data vendor | Tradeweb, which publishes fixed income and other OTC pricing |
+| =ore= | reference | The Open Source Risk Engine; the values of its example market data files are imported under it |
+| =demo= | reference | A fictional provider for exercises and demonstrations, whose notation is a slash pair such as EUR/USD |
+| =composite= | reference | The internal provider of the items the service derives from the quote series of other providers |
+
+The demonstration uses three of the seven. =ice= and =tradeweb= exist for the
+adapter contract and carry no party in the demonstration. =ore= is what the
+reference vintage is imported under, and =composite= is what a derived item is
+attributed to. [[id:68CE1E1D-7568-4911-BB71-CCF5A9E07BB7][Every source belongs to a provider in the
+catalogue]] says why the provider, and not the source, owns the id namespace and
+the mapping.
+
+** The six sources
+
+A source is an adapter instance, and its name says which provider and which
+instance and never the kind.
+
+#+ATTR_HTML: :class hug-leading
+| Source | Provider | Kind | Default | What it serves |
+|--------+----------+------+---------+----------------|
+| =bloomberg-a= | =bloomberg= | simulated | yes | the values the simulator generates for the ids of Bloomberg |
+| =lseg-a= | =lseg= | simulated | yes | the values the simulator generates for the ids of LSEG |
+| =demo-a= | =demo= | simulated | yes | the values the simulator generates for the exercises and demonstrations |
+| =ore-import= | =ore= | replay | yes | the values of an ORE market data file, as the import and the DQ publish write them |
+| =ore-derived= | =ore= | derived | no | the values the service computes from other series, such as a bootstrapped curve |
+| =composite-derived= | =composite= | derived | yes | the values the service computes from the inputs of a composite |
+
+The three simulated sources are the ones the demonstration routes to. A source
+of kind =derived= is written by the service and never subscribed to by a party.
+[[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The source kind]] says what each
+kind obliges, and [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may
+behave differently because a source is simulated]] says what a simulated source
+must not change.
+
+** Which party takes which
+
+#+ATTR_HTML: :class hug-leading
+| Party | Provider | Source | Entity of the group |
+|-------+----------+--------+---------------------|
+| Acme Corporation Plc | =bloomberg= | =bloomberg-a= | the holding company |
+| ACME Corporation UK plc | =demo= | =demo-a= | London |
+| ACME Corporation US Inc | =lseg= | =lseg-a= | New York |
+| ACME Corporation HK Ltd | =bloomberg= | =bloomberg-a= | Hong Kong |
+
+The split is not decoration. A synthetic feeds collection quotes the markets its
+own feeds serve, and one series has one running publisher: Bloomberg's feeds
+quote the USD spots and the curves every ACME book needs, LSEG's quote the
+fourteen cross pairs Bloomberg leaves to the cross-rates matrix, and the demo
+provider's quote eight majors and three emerging pairs on one exaggerated
+volatility. Giving each office a different provider therefore exercises three
+feed collections at once, and each office still marks its trades on a complete
+market. [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly
+one source for each provider]] is the rule that makes the choice a route and not
+a filter.
+
+The system party takes =bloomberg= through =bloomberg-a= as well, because a
+system collection runs once in the system tenant and a tenant sees it without
+owning it. That row is the one subscription in the tenant the demonstration does
+not create for a party of its own.
+
+** Why no live source appears
+
+A live adapter needs a vendor connection, credentials and a licence, and the
+demonstration must install and run on a laptop. The catalogue still carries the
+live providers, because the provider list is what a real installation's
+subscription screen offers, and a party on a live feed differs from this one only
+inside the adapter. [[id:FA280E9B-7E00-4747-8D29-42B3D4258873][A source switch
+changes one route and nothing else]] is the change a person makes to move a
+party from a simulated source to a live one.
+
+* What this note does not cover
+
+The rows and their reasons are here. The catalogue the rows belong to is
+[[id:F6094D03-3914-4046-8E57-3FF4AA14764B][the catalogue the bundle installs and
+the feeds generate]], the rows a party holds are
+[[id:9E8D00D3-5ADD-48E0-85AB-CC19693DEFFF][the party's subscription and its
+route]], and the step that writes them is
+[[id:6014CFE1-D978-4ABA-BBA9-D87040FE44BA][the acme_demo seed profile]].
+
+* See also
+
+- [[id:DB09267A-E589-4688-9773-9A7BF982247F][The Acme demonstration's market data and its approvals]] — the structure note that orders this cluster.
+- [[id:68CE1E1D-7568-4911-BB71-CCF5A9E07BB7][Every source belongs to a provider in the catalogue]] — completes: the rule this page instantiates for four parties.
+- [[id:C6D75337-0EA6-40F0-8E8B-52737558851D][The source kind]] — completes: the kinds the six sources carry.
+- [[id:922C155B-6733-4D2B-A675-A7361A5BDC63][A system bundle installs the catalogue and the simulator installs its own universe]] — completes: who installs the provider and source rows.
+- [[id:F64DB34E-084D-4437-B536-392AA26D8B77][No code path may behave differently because a source is simulated]] — exemplifies: a demonstration that runs entirely on simulated sources and must not be a special case.
+- [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data subscriptions]] — answers: the journey a party administrator follows to change these rows.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index of every knowledge hub.

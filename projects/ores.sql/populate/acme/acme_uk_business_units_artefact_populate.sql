@@ -63,5 +63,7 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '085c07ce-c725-576f-bf3a-2d62bd2d806f', 0, 'XVA London', '57e8e604-dcb6-515a-a6bd-38f0be805480', 'acme_uk.xva', 'GBLO', 'DESK'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '4b569cd9-9fc6-5b3a-b37b-100e62df7611', 0, 'Treasury London', null, 'acme_uk.treasury', 'GBLO', 'DIVISION'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a3c5e2ae-d25f-5f39-b334-e59d76ceff31', 0, 'Middle Office London', null, 'acme_uk.middle_office', 'GBLO', 'COST_CENTRE'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '648136b1-4548-59e8-80c7-2eb7639c4a89', 0, 'Market Risk London', null, 'acme_uk.market_risk', 'GBLO', 'COST_CENTRE');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '648136b1-4548-59e8-80c7-2eb7639c4a89', 0, 'Market Risk London', null, 'acme_uk.market_risk', 'GBLO', 'COST_CENTRE'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e75c5a6-8cfd-59ec-8f84-cead916284ae', 0, 'Financial Control London', null, 'acme_uk.financial_control', 'GBLO', 'COST_CENTRE'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '48ccb104-7200-5a6b-b018-682308e37f8a', 0, 'Finance London', null, 'acme_uk.finance', 'GBLO', 'COST_CENTRE');
 end $$;

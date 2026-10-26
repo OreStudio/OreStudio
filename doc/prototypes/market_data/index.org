@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :prototype:index:ui:market_data:
 #+created: 2026-10-08
-#+updated: 2026-10-13
+#+updated: 2026-10-26
 
 * Summary
 

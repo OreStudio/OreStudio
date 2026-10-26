@@ -59,5 +59,7 @@ begin
     )
     values
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f2fbfa25-d92f-5e80-9e16-71e13170499d', 0, 'adrian.vance', '25 Old Broad Street', null, 'London', null, 'GB', 'EC2N 1HQ', '+44 20 7946 0000', 'adrian.vance@acmecorp.com', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'bef5f785-0630-5eb7-8431-7f5148463d5d', 0, 'nadia.fischer', '25 Old Broad Street', null, 'London', null, 'GB', 'EC2N 1HQ', '+44 20 7946 0000', 'nadia.fischer@acmecorp.com', null);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'bef5f785-0630-5eb7-8431-7f5148463d5d', 0, 'nadia.fischer', '25 Old Broad Street', null, 'London', null, 'GB', 'EC2N 1HQ', '+44 20 7946 0000', 'nadia.fischer@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '0fcec2b1-ade4-5baf-a065-29fa9eed6095', 0, 'fiona.ashdown', '25 Old Broad Street', null, 'London', null, 'GB', 'EC2N 1HQ', '+44 20 7946 0000', 'fiona.ashdown@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '2922364d-7d56-5f53-8d97-493f6563661d', 0, 'graham.pierce', '25 Old Broad Street', null, 'London', null, 'GB', 'EC2N 1HQ', '+44 20 7946 0000', 'graham.pierce@acmecorp.com', null);
 end $$;

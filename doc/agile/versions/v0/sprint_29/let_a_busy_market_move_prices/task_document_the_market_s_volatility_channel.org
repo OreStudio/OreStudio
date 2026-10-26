@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :let_a_busy_market_move_prices:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/document-the-market-s-volatility-channel
 #+pr: 3890
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -122,3 +122,26 @@ The note's sections, which are also the outline of the work:
    switch, the same tab, one number per feed.
 6. *Out of scope.* The bivariate Hawkes, its 2x2 kernel and the spectral-radius
    stability condition, captured rather than scoped.
+
+* Result
+
+The note is written at
+[[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]], and
+the arrival note links to it, so the pair reads both ways.
+
+It settles the four things the story asked for. A rate change must change
+sampling and not time, and the note names the fixed-step processes that get that
+wrong today. The volatility loading is three seams that mirror what the arrival
+work already built, with calibration — not plumbing — named as the cost. The
+tails come from reweighting the FX mixture the feed already carries, not from a
+new model. The control plane is the switch, the read and the tab that exist, plus
+one number per feed.
+
+It also states two traps the next tasks must not fall into: the heat's long-run
+mean is not one, so it has to be centred in the volatility margin or calibration
+drifts; and "volatility" means two different things — the process's sigma, and the
+sigma a client computes from the ticks published — so every test has to say which
+it measures.
+
+The bivariate Hawkes is out of scope and stays captured: its 2x2 kernel replaces
+the scalar stability test with a spectral radius, which is a model of its own.

@@ -28,7 +28,7 @@ whether a higher tick rate changes how much time the price process covers.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Scoped by the discussion that closed the arrival regime story. |
 | Waiting on    | The design note, so the tasks are scoped from it rather than from a conversation. |
@@ -57,7 +57,7 @@ whether a higher tick rate changes how much time the price process covers.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:FE158821-22B9-4FDB-9E77-256BA2CF3D4E][Document the market's volatility channel]] | BACKLOG | | | Write the design note the volatility work is built from: what the factor does to a price law, business time against sampling, the volatility loading and its normalisation, the tail channel through the mixture, and the bivariate Hawkes whose one coordinate is today's heat. State the control plane, the tests each part must pass, and what is deliberately out of scope. |
+| [[id:FE158821-22B9-4FDB-9E77-256BA2CF3D4E][Document the market's volatility channel]] | STARTED | 2026-10-26 | | Write the design note the volatility work is built from: what the factor does to a price law, business time against sampling, the volatility loading and its normalisation, the tail channel through the mixture, and the bivariate Hawkes whose one coordinate is today's heat. State the control plane, the tests each part must pass, and what is deliberately out of scope. |
 
 * Decisions
 

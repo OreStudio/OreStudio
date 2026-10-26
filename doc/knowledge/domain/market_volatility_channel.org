@@ -1,0 +1,177 @@
+:PROPERTIES:
+:ID: 9D778F72-8FF6-4F01-AF4B-696DC7BA855A
+:END:
+#+title: The market's volatility channel
+#+description: What the market-wide factor should do to a price law: business time against sampling, a per-feed volatility loading with its normalisation, the tail channel through the mixture, and the bivariate Hawkes that would make activity and volatility excite each other.
+#+type: knowledge
+#+level: cross
+#+filetags: :marketdata:synthetic:volatility:design:factor:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+* Summary
+
+The market-wide factor moves the tick clock today and leaves the price law alone:
+a panic arrives as more observations of the same random walk. A market that is
+busy is also *more volatile*, and the same shared factor can carry that, because
+the arrival work already publishes it and every price process already holds the
+knobs a loading would scale. What is missing is three small seams — a setter on
+the price process, a loading on the link and the config row, and one line in each
+feed — plus the calibration that keeps a run's sigma what its configuration
+states. This note states those seams, the tail channel the mixture adds, and the
+bivariate Hawkes that would make activity and volatility excite each other; it
+also settles whether a rate change moves time at all.
+
+* Detail
+
+** What the factor is today
+
+One state machine and one shared heat, read once per tick:
+
+  A(t) = S(t) + C(t) / R(t)
+
+where =S= is the calm/active multiplier (calm derived so its long-run mean is
+one), =C= is the heat any event adds to and decay fades, and =R= is the summed
+mean rate of the series enrolled with the heat, so a series takes the share of
+=C= its own rate is of the total. A feed reads it through
+=market_link::rate_multiplier()=, which returns =sensitivity * A(t)=, and its
+arrival process is re-rated by that number. The rates move; the prices do not.
+
+The heat's long-run mean is not zero — it settles at the event rate times
+jump/decay — so with the heat on, the average rate is above the configured one.
+That is a known property of the rate channel, and it is the first thing the
+volatility channel has to decide about rather than inherit.
+
+** Sampling against time
+
+A diffusion's variance follows *elapsed time*, not the number of observations.
+Double the tick rate and a correctly written price law gives twice as many
+samples of the same path per second, not twice the variance.
+
+The processes in =ores.analytics.quant= are of two kinds and they behave
+differently under a rate change:
+
+- A process with a time-scaled law takes =next(elapsed_ticks)=, and the feed
+  passes =elapsed_seconds * ticks_per_second=. A higher rate shortens each gap,
+  so each step covers less time, and the variance per wall-clock second is
+  unchanged. This is the correct behaviour, and it is what the arrival
+  time-rescaling test asserts.
+- A process that answers =supports_variable_step() == false= takes one nominal
+  step per tick. The same nominal step now fits into a shorter gap, so **variance
+  per wall-clock second rises with the rate** — as the square root of it, in
+  sigma terms. A curve process that steps one calendar day per tick also runs its
+  calendar faster; a rate change quietly moves time.
+
+The second behaviour is a defect rather than a feature: an operator who doubles a
+feed's rate to get more ticks also doubles its realized volatility without asking.
+It must be fixed before a volatility loading is added, or the loading will be
+measured on top of an unintended one.
+
+The clean formulation is business time. Let
+
+  Theta(t) = integral of A(s) ds
+
+be the integrated activity, and let the price process run on business time with a
+volatility per unit of it. Then "more activity" and "more variance per second"
+are two dials instead of one, and a series that is merely observed more often is
+visibly unchanged.
+
+** The volatility loading
+
+Three seams, each mirroring something the arrival work already has:
+
+1. =i_stochastic_process= gains =set_volatility_multiplier(double)=, the sibling
+   of =i_arrival_process::set_baseline_multiplier=. The default refuses; the
+   processes that can honour it scale their own sigma — a Gaussian mixture scales
+   its stdevs, a short-rate model its sigma — and keep their means.
+2. =market_link= gains =volatility_sensitivity= beside =sensitivity=, and both
+   generation-config kinds gain the column. A feed that follows the market in
+   rate and not in volatility sets it to zero; the default follows the rate
+   loading, because a market that only ticks faster is the artefact this note
+   exists to remove.
+3. Each feed applies it on its tick, beside the arrival multiplier it already
+   reads.
+
+The law, with gamma = 1 by default:
+
+  sigma_effective = sigma * sensitivity_vol * A(t)
+
+so variance is proportional to activity, which is the mixture-of-distributions
+reading: the same diffusion, with more time in it. gamma is a knob, not a
+conviction; gamma = 1/2 gives sigma proportional to activity, which is what a
+price process whose step count, not whose clock, drives the variance does.
+
+*Calibration is the work, not the plumbing.* A run's sigma must stay the sigma its
+configuration states unless a person pins a state. The state's long-run mean is
+one by construction, so it needs nothing; the heat's is not, so the volatility
+channel must centre it — subtract the heat's stationary mean from the margin — or
+a run's average volatility drifts up with the heat, and every calibration test
+built on generated prices fails for a reason nobody can see.
+
+*Two meanings of volatility* must be kept apart in every test:
+
+- the sigma of the process, which is what the loading moves;
+- the sigma a client computes from the ticks published, which also moves with
+  sampling frequency and microstructure noise, and which rises even when the
+  process is unchanged.
+
+** The tails
+
+A diffusion whose sigma doubles gives wider returns but the same shape. A panic
+does not look like that: prices gap, and the kurtosis rises faster than the
+variance. An FX feed's law is already a Gaussian mixture, so the tail channel is
+a reweighting rather than a new model: as =A= rises, weight moves from the narrow
+components to the wide ones, renormalised so the mixture stays a distribution and
+the mean is unchanged.
+
+That is the cheapest way to make a pinned panic produce the gaps a person expects,
+and it composes with the loading: the loading sets the scale, the reweighting sets
+the shape.
+
+** The control plane
+
+No new verb and no new service. The pieces that exist carry the new number:
+
+- *The switch.* =synthetic.v1.ops.pin_market_regime= stays as it is. Auto, Calm
+  and Active move the rate and the volatility together, because a person pressing
+  Active expects the prices to move, not only the clock.
+- *The read.* =get_market_regime_response= gains the volatility multiplier beside
+  the rate multiplier, so the shell's =synthetic regime get= and the BFF's route
+  report both without a new subject.
+- *The screen.* The Market regime tab shows both multipliers and the same raster;
+  a feed's Arrivals tab gains one field, =volatility sensitivity=, beside
+  =sensitivity=, edited and audited exactly as that one is.
+- *Permissions.* Unchanged: the same two subjects, the same session rules, the
+  same permissions.
+
+The tests each part must pass:
+
+| Part | Test |
+|------+------|
+| Sampling against time | A rate multiplier of two leaves the variance per wall-clock second unchanged for a process that takes the gap, and a fixed-step process is refused or converted before it can be re-rated |
+| The loading, calibration | Over a long run with the heat on, the realized sigma equals the configured sigma |
+| The loading, response | A pinned active market raises the realized sigma by the feed's loading, and calm lowers it |
+| The tails | The kurtosis of returns rises with activity while the mean and the long-run sigma hold |
+| The control plane | The switch, the read and the tab carry both multipliers without a new subject or permission |
+
+** Out of scope: activity and volatility exciting each other
+
+The complete object is a *bivariate* Hawkes: activity excites volatility and
+volatility excites activity, and today's heat is one coordinate of it. The
+rank-one kernel of the arrival note generalises:
+
+  K = diag(n) + m * 1'
+
+becomes a 2x2 block of the same shape, and stability stops being the scalar test
+=max n + sum m < 1= and becomes a spectral radius: the largest eigenvalue of the
+mean kernel must be below one. That is a model of its own, it depends on all of
+the above, and it is captured in the inbox rather than scoped here.
+
+* See also
+
+- [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] — the
+  story that carried the factor into the clock, and the constraint this note builds on.
+- [[id:D72B9899-C7EC-4F27-BE17-89AE6FC18A7A][Hawkes Process]] — the single-stream
+  form, its branching ratio and the two simulation methods.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
+  — the tick modes this note extends.

@@ -171,3 +171,6 @@ about what the simulator claims to model, not about effort.
 - [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] — the tick modes this note
   extends.
 - [[id:FD28C144-FAC0-44D1-9E90-BE433A90061E][tick]] — the library whose ideas the arrival processes follow.
+- [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]] — what
+  this factor should do to a price law, once a busy market is meant to move prices
+  and not only the clock.

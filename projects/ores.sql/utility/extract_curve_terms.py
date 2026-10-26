@@ -365,6 +365,153 @@ def dedupe(terms):
     return out
 
 
+GUIDE_DIRS = ("Docs/UserGuide/parameterisation", "Docs/UserGuide/curve_configurations")
+
+# The guide names an element three ways: a plain `\item Name:`, a
+# `\item \lstinline!Name! [Optional]:`, and a bare `\lstinline!Name!:`. Each
+# entry runs to the next entry, so a name quoted inside the prose does not end it.
+ITEM = re.compile(
+    r"^[ \t]*(?:\\item\s+)?(?:\\lstinline!([\w.]+)!|([A-Za-z][\w]*))\s*"
+    r"(?:\[([^\]]*)\])?\s*:\s*(.*?)"
+    r"(?=^[ \t]*(?:\\item\s+|\\lstinline!)"
+    r"|\\end\{itemize\}|\Z)",
+    re.S | re.M)
+EMPH = re.compile(r"\\emph\{([^}]*)\}")
+LISTING = re.compile(r"\\lstinline!([^!]*)!")
+REF = re.compile(r"\\ref\{[^}]*\}")
+
+
+def clean(text):
+    """The guide's prose as a sentence, with its LaTeX taken off."""
+    text = EMPH.sub(r"\1", text)
+    text = LISTING.sub(r"\1", text)
+    text = re.sub(r"\$([^$]*)\$", r"\1", text)
+    text = REF.sub("", text)
+    text = text.replace("~", " ").replace("\\\\", " ")
+    text = re.sub(r"\\[a-zA-Z]+\*?(\[[^\]]*\])?\{?", "", text)
+    text = text.replace("{", "").replace("}", "")
+    # A dropped reference leaves "in Table ." behind; name the guide instead.
+    text = re.sub(r"\b(?:Table|Listing)\s*\.", "the guide.", text)
+    text = re.sub(r"\b(?:Table|Listing)\s*$", "the guide", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+FILE_SECTION = {
+    "yieldcurves.tex": "YieldCurves",
+    "default_curves_from_cds.tex": "DefaultCurves",
+    "default_curves_other.tex": "DefaultCurves",
+    "capfloorvolatility.tex": "CapFloorVolatilities",
+    "commodity_curves.tex": "CommodityCurves",
+    "commodity_volatilities.tex": "CommodityVolatilities",
+    "bond_future_volatilities.tex": "BondFutureVolatilities",
+    "intradaypowercurves.tex": "IntradayPowerCurves",
+}
+
+SUBSECTION = re.compile(r"\\subsubsection\{([^}]*)\}")
+
+
+def stem(word):
+    """A word with its plural taken off, so prose and code names agree."""
+    word = word.lower()
+    if word.endswith("ies") and len(word) > 4:
+        return word[:-3] + "y"
+    if word.endswith("s") and len(word) > 3:
+        return word[:-1]
+    return word
+
+
+def words(text):
+    """The significant words of a name, whether it is prose or camel case."""
+    parts = re.findall(r"[A-Z]+(?![a-z])|[A-Z]?[a-z]+|[0-9]+", text)
+    return {stem(w) for w in parts} - {"and", "the", "of"}
+
+
+def alike(a, b):
+    """Whether two words name the same idea: equal, or sharing a long stem.
+
+    The guide writes "Volatility" where the document writes "Volatilities", so a
+    shared stem counts as a match and exact equality is not required.
+    """
+    if a == b:
+        return True
+    shortest = min(len(a), len(b))
+    return shortest >= 4 and a[:shortest] == b[:shortest]
+
+
+def shared(heading, name):
+    return sum(1 for a in heading if any(alike(a, b) for b in name))
+
+
+def resolve_section(heading, sections):
+    """The section a guide sub-heading describes, by the words they share.
+
+    The guide names a family in prose ("Swaption Volatility Structures") and the
+    document names it in code (=SwaptionVolatilities=). An exact match wins
+    outright; otherwise the heading takes the family it shares most words with,
+    and a tie is left unattributed rather than guessed.
+    """
+    normal = words(heading)
+    for name in sections:
+        if normal == words(name):
+            return name
+    best, score = None, 0
+    for name in sections:
+        count = shared(normal, words(name))
+        if count > score:
+            best, score = name, count
+        elif count == score and count:
+            best = None
+    return best if score else None
+
+
+def guide_entries(text, path, ore, section):
+    """The `\\item Name [Optional]: text` entries of one guide file."""
+    for match in ITEM.finditer(text):
+        quoted, plain, optional, body = match.groups()
+        leaf = quoted or plain
+        prose = clean(body)
+        if prose:
+            yield (section, leaf), {
+                "text": prose,
+                "optional": (optional or "").strip().lower() == "optional",
+                "source_ref": f"{os.path.relpath(path, ore)}:{line_of(text, match.start())}",
+            }
+
+
+def guide_terms(ore, sections):
+    """The prose the guide gives each leaf, keyed by the section and the name.
+
+    Where a name appears in more than one section the section decides which text
+    it takes, so a generic name such as CurveId reads as its own family's words
+    and not the first family the guide happens to describe.
+    """
+    found = {}
+    for directory in GUIDE_DIRS:
+        root = os.path.join(ore, directory)
+        if not os.path.isdir(root):
+            continue
+        for name in sorted(os.listdir(root)):
+            if not name.endswith(".tex"):
+                continue
+            path = os.path.join(root, name)
+            text = read(path)
+            section = FILE_SECTION.get(name)
+            if section:
+                for key, value in guide_entries(text, path, ore, section):
+                    found.setdefault(key, value)
+                continue
+            # The chapter names each family under a sub-heading, so read it in
+            # slices and attribute each slice to the family its heading names.
+            marks = list(SUBSECTION.finditer(text))
+            for index, mark in enumerate(marks):
+                end = marks[index + 1].start() if index + 1 < len(marks) else len(text)
+                part = text[mark.end():end]
+                part_section = resolve_section(mark.group(1), sections)
+                for key, value in guide_entries(part, path, ore, part_section):
+                    found.setdefault(key, value)
+    return found
+
+
 def commit(ore):
     try:
         return subprocess.run(["git", "-C", ore, "rev-parse", "--short", "HEAD"],
@@ -398,6 +545,8 @@ def main():
     found = inline_classes(paths, classes(paths))
     members_of = members(p for p in paths if p.endswith(".hpp"))
     by_element = {c["element"]: name for name, c in found.items() if c["element"]}
+    guide = guide_terms(ARGS.ore, [x["section"] for x in sections])
+    covered = 0
 
     out = {"schema": SCHEMA_NAME, "guide": GUIDE,
            "ore": {"path": ARGS.ore, "commit": commit(ARGS.ore)}, "sections": {}}
@@ -422,6 +571,13 @@ def main():
         terms = walk(entry_class, found, members_of, by_element,
                      [section["section"], entry], 0, frozenset())
         leaves = dedupe([t for t in terms if t.get("name")])
+        for term in leaves:
+            prose = (guide.get((section["section"], term["name"]))
+                     or guide.get((None, term["name"])))
+            term["guide_text"] = prose["text"] if prose else ""
+            term["guide_ref"] = prose["source_ref"] if prose else ""
+            term["guide_optional"] = prose["optional"] if prose else None
+            covered += 1 if prose else 0
         gaps = [t for t in terms if t.get("unresolved")]
         total += len(leaves)
         unresolved += len(gaps)
@@ -432,7 +588,7 @@ def main():
         json.dump(out, f, indent=1, sort_keys=True)
         f.write("\n")
     print(f"Wrote {OUT}")
-    print(f"{len(sections)} sections, {total} leaves, {unresolved} unresolved blocks.")
+    print(f"{len(sections)} sections, {total} leaves ({covered} with guide text), {unresolved} unresolved blocks.")
     return 0
 
 

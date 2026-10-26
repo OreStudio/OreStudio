@@ -61,7 +61,7 @@ they are not printed on a screen. The second group are printed.
 | /Element type/ | What a set of leaves belongs to: a product type, a group of engine run settings, a convention kind | No; the kind's own noun |
 | /Documentation entry/ | The one record of what a leaf means, in the ORE parameter contract | No |
 | /Value set/ | The values a leaf may take: a type, a closed list, a range or a catalogue of other ORE Studio data | No |
-| /Parameter/ | A leaf of a product or of the document's global parameters | Yes |
+| /Parameter/ | A leaf of a product, of the document's global parameters, or of a curve configuration | Yes |
 | /Setting/ | A leaf of the engine run settings, and of nothing else | Yes |
 | /Term/ | A leaf of a convention | Yes |
 | /Value in force/ | The value a run uses: the set value, or the default when the leaf is absent | Yes, as the value |
@@ -406,6 +406,14 @@ Decided by the owner on 2026-10-26:
   person edits.
 - *The fourth source tag says Carried over from the old seed, to review*, in the
   warning tone, because no reviewer has confirmed it.
+- *A curve configuration's leaf is also a /parameter/*, decided on 2026-10-26 with
+  [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]]. The
+  contract that stores every leaf is =ore_parameter=, and the configuration
+  standard already defines /Parameter/ as one leaf of an ORE document, so a curve
+  family needs no word of its own. /setting/ is reserved to the engine run
+  settings, /term/ collides with *term structure*, /field/ says nothing about
+  ORE, /entry/ is already the row, and /option/ and /attribute/ name other
+  things.
 
 Still open:
 

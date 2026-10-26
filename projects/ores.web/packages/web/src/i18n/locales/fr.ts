@@ -4138,6 +4138,7 @@ const fr: SourceCatalogue = {
             component_index: 'Indice',
         },
         choices: {
+            ore_currency_type: { Major: 'Majeure', Metal: 'Métal', Crypto: 'Crypto' },
             report_type: { risk: 'Rapport de risque' },
             regulatory_book_type: {
                 Trading: 'Portefeuille de négociation',
@@ -4316,6 +4317,7 @@ const fr: SourceCatalogue = {
             rebuilt: '{count} jours écrits.',
         },
         currencies: {
+            fieldGroups: { identity: 'Identité', display: 'Affichage', market: 'Marché' },
             title: 'Devises',
             lead: 'Les devises du locataire, avec les pays, calendriers et groupes auxquels chacune appartient.',
             add: 'Ajouter une devise',

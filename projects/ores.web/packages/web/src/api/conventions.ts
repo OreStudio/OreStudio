@@ -238,10 +238,11 @@ export const conventions = {
     },
 
     /** One convention with the kind it is and its terms, each documented from the contract. */
-    async document(family: string, id: string): Promise<ConventionDocument> {
+    async document(family: string, id: string, party?: string): Promise<ConventionDocument> {
+        const query = party === undefined ? '' : `?party=${encodeURIComponent(party)}`;
         return documentSchema.parse(
             await request(
-                `/api/conventions/${encodeURIComponent(family)}/documents/${encodeURIComponent(id)}`,
+                `/api/conventions/${encodeURIComponent(family)}/documents/${encodeURIComponent(id)}${query}`,
                 { method: 'GET' },
             ),
         );

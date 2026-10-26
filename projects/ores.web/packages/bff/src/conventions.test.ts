@@ -354,6 +354,54 @@ describe('convention routes', () => {
         });
     });
 
+    it('reads the row of the party named when several parties hold the id, and refuses to guess', async () => {
+        const replies: Record<string, unknown> = {
+            'refdata.v1.swap_conventions.list': {
+                result: ok,
+                swap_conventions: [
+                    {
+                        id: 'EUR-6M-SWAP',
+                        version: 1,
+                        party_id: '11111111-1111-4111-8111-111111111111',
+                        index: 'EUR-EURIBOR-6M',
+                    },
+                    {
+                        id: 'EUR-6M-SWAP',
+                        version: 4,
+                        party_id: '22222222-2222-4222-8222-222222222222',
+                        index: 'EUR-EURIBOR-3M',
+                    },
+                ],
+            },
+            'refdata.v1.convention_kinds.list': { result: ok, kinds: [] },
+            'refdata.v1.convention_kind_terms.list': { result: ok, terms: [] },
+            'reporting.v1.ore_parameters.list': { result: ok, parameters: [] },
+            'reporting.v1.ore_parameter_value_sets.list': { result: ok, sets: [] },
+            'reporting.v1.ore_parameter_value_set_values.list': { result: ok, values: [] },
+            'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+            'reporting.v1.ore_parameter_setting_value_sets.list': {
+                result: ok,
+                setting_value_sets: [],
+            },
+        };
+        const { server, sessionId } = buildTestServer(replies);
+        const named = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/conventions/swap/documents/EUR-6M-SWAP?party=22222222-2222-4222-8222-222222222222',
+        );
+        expect(named.statusCode).toBe(200);
+        expect(named.json().version).toBe(4);
+        const unnamed = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/conventions/swap/documents/EUR-6M-SWAP',
+        );
+        expect(unnamed.statusCode).toBe(400);
+    });
+
     it('answers 404 for a convention the family does not hold', async () => {
         const { server, sessionId } = buildTestServer({
             'refdata.v1.swap_conventions.list': { result: ok, swap_conventions: [] },

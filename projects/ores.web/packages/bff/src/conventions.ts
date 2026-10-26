@@ -190,28 +190,56 @@ function valueText(value: unknown): string | null {
 }
 
 /** One convention of a family by its key, the composite's parts laid over its central row. */
+/**
+ * The one row a key names. A convention is named by its id within a party, and a
+ * session may read the rows of several parties, so the party picks the row; with
+ * no party the id must name one row only.
+ */
+function oneOf<Row extends Readonly<Record<string, unknown>>>(
+    rows: readonly Row[],
+    party: string | undefined,
+): Row | undefined {
+    if (party !== undefined) {
+        return rows.find((row) => text(row['party_id']) === party);
+    }
+    if (rows.length > 1) {
+        throw invalidRequest('More than one party holds this convention; name the party.');
+    }
+    return rows[0];
+}
+
+/** The rows of one key that a read may return: one for each party that holds it. */
+const PARTIES_PER_KEY = 100;
+
 async function readConvention(
     session: LiveSession,
     family: ConventionFamily,
     id: string,
+    party: string | undefined,
 ): Promise<Readonly<Record<string, unknown>> | undefined> {
     const composite = COMPOSITE_FAMILIES[family.key];
     if (composite === undefined) {
         const reply = await session.client.callAuthenticated(
             `refdata.v1.${family.prefix}.list`,
-            { offset: 0, limit: 1, order: NO_ORDER, filter: { id_one_of: [id] }, as_of: null },
+            {
+                offset: 0,
+                limit: PARTIES_PER_KEY,
+                order: NO_ORDER,
+                filter: { id_one_of: [id] },
+                as_of: null,
+            },
             z.looseObject({ result: resultSchema }),
         );
         if (reply.result.outcome !== 'ok') {
             throw invalidRequest(reply.result.message);
         }
-        return z.array(z.looseObject({})).default([]).parse(reply[family.prefix])[0];
+        return oneOf(z.array(z.looseObject({})).default([]).parse(reply[family.prefix]), party);
     }
     const reply = await session.client.callAuthenticated(
         conventionSubjects.list_conventions_request,
         {
             offset: 0,
-            limit: 1,
+            limit: PARTIES_PER_KEY,
             order: NO_ORDER,
             filter: { kind_code: composite.kindCode, kind_code_one_of: null, id_one_of: [id] },
             as_of: null,
@@ -221,7 +249,7 @@ async function readConvention(
     if (reply.result.outcome !== 'ok') {
         throw invalidRequest(reply.result.message);
     }
-    const central = reply.conventions[0];
+    const central = oneOf(reply.conventions, party);
     if (central === undefined) {
         return undefined;
     }
@@ -304,6 +332,8 @@ const pageQuerySchema = z.object({
     offset: z.coerce.number().int().min(0).default(0),
     limit: z.coerce.number().int().min(1).max(MAX_ROWS).default(MAX_ROWS),
 });
+
+const documentQuerySchema = z.object({ party: idSchema.optional() });
 
 const writeBodySchema = z.object({
     intent: intentSchema,
@@ -438,7 +468,8 @@ export function registerConventionRoutes(
         const session = requireSession(request);
         const family = familyOf(request);
         const { id } = request.params as { id: string };
-        const row = await readConvention(session, family, id);
+        const { party } = input(documentQuerySchema, request.query);
+        const row = await readConvention(session, family, id, party);
         if (row === undefined) {
             throw notFound(`There is no ${family.key} convention ${id}.`);
         }

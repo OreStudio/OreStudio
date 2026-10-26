@@ -21,7 +21,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { useParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 import { conventions, type ConventionDocument, type ConventionTerm } from '../api/conventions.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
@@ -43,10 +43,12 @@ import { Crumbs } from './shared.js';
  */
 export function ConventionRecordPage(): ReactNode {
     const { family = '', id = '' } = useParams();
+    const [params] = useSearchParams();
+    const party = params.get('party') ?? undefined;
     const { t } = useTranslation();
     const document = useQuery({
-        queryKey: ['conventions', family, 'documents', id],
-        queryFn: () => conventions.document(family, id),
+        queryKey: ['conventions', family, 'documents', id, party ?? ''],
+        queryFn: () => conventions.document(family, id, party),
     });
     const [mode, setMode] = useEditingMode();
     const crumbs = [

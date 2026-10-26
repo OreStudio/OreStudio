@@ -483,7 +483,7 @@ export function ConventionDocumentsPage(): ReactNode {
             })}
             crumbs={crumbs}
             keyOf={(row) => row.id}
-            pathOf={(row) => conventionDocumentPath(family, row.id)}
+            pathOf={(row) => conventionDocumentPath(family, row.id, String(row['party_id'] ?? ''))}
             notes={
                 card.shared
                     ? [

@@ -99,7 +99,7 @@ const DOCUMENT: ConventionDocument = {
 
 function render(): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['conventions', 'swap', 'documents', 'EUR-6M-SWAP'], DOCUMENT);
+    client.setQueryData(['conventions', 'swap', 'documents', 'EUR-6M-SWAP', ''], DOCUMENT);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>

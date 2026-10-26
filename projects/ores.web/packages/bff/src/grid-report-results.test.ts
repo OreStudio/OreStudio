@@ -25,7 +25,7 @@ import {
     comparedWith,
     entriesOf,
     rowsOf,
-    withCounterpartyGroups,
+    withGroups,
 } from './grid-report-results.js';
 import type { AggregateRow, RunResultRow } from './grid-report-results.js';
 
@@ -172,7 +172,7 @@ describe('aggregateRows', () => {
     });
 });
 
-describe('withCounterpartyGroups', () => {
+describe('withGroups', () => {
     const aggregate = (over: Partial<AggregateRow>): AggregateRow => ({
         key: 'c1',
         name: 'First',
@@ -185,7 +185,7 @@ describe('withCounterpartyGroups', () => {
     });
 
     it('puts a group row above the members that share a parent', () => {
-        const rows = withCounterpartyGroups(
+        const rows = withGroups(
             [
                 aggregate({
                     key: 'c1',
@@ -223,18 +223,14 @@ describe('withCounterpartyGroups', () => {
     });
 
     it('leaves a counterparty with no parent standing on its own', () => {
-        const rows = withCounterpartyGroups(
-            [aggregate({ key: 'c3', name: 'Third' })],
-            new Map(),
-            new Map(),
-        );
+        const rows = withGroups([aggregate({ key: 'c3', name: 'Third' })], new Map(), new Map());
 
         expect(rows).toHaveLength(1);
         expect(rows[0]?.is_group).toBe(false);
     });
 });
 
-describe('withCounterpartyGroups, the cases a group hides', () => {
+describe('withGroups, the cases a group hides', () => {
     const aggregate = (over: Partial<AggregateRow>): AggregateRow => ({
         key: 'c1',
         name: 'First',
@@ -247,7 +243,7 @@ describe('withCounterpartyGroups, the cases a group hides', () => {
     });
 
     it('counts a parent that trades in the run as one of its own members', () => {
-        const rows = withCounterpartyGroups(
+        const rows = withGroups(
             [
                 aggregate({
                     key: 'p1',
@@ -280,7 +276,7 @@ describe('withCounterpartyGroups, the cases a group hides', () => {
     });
 
     it('leaves members standing when the parent name was not read', () => {
-        const rows = withCounterpartyGroups(
+        const rows = withGroups(
             [aggregate({ key: 'c1', name: 'First' }), aggregate({ key: 'c2', name: 'Second' })],
             new Map([
                 ['c1', 'p1'],
@@ -294,7 +290,7 @@ describe('withCounterpartyGroups, the cases a group hides', () => {
     });
 
     it('keeps each currency apart in a group total', () => {
-        const rows = withCounterpartyGroups(
+        const rows = withGroups(
             [
                 aggregate({ key: 'c1', totals: [{ currency: 'GBP', total: '100.00' }] }),
                 aggregate({
@@ -319,7 +315,7 @@ describe('withCounterpartyGroups, the cases a group hides', () => {
     });
 });
 
-describe('withCounterpartyGroups, the group ordering', () => {
+describe('withGroups, the group ordering', () => {
     const aggregate = (over: Partial<AggregateRow>): AggregateRow => ({
         key: 'c1',
         name: 'First',
@@ -332,7 +328,7 @@ describe('withCounterpartyGroups, the group ordering', () => {
     });
 
     it('orders the groups by their own figure, not by their members', () => {
-        const rows = withCounterpartyGroups(
+        const rows = withGroups(
             [
                 aggregate({ key: 'a1', totals: [{ currency: 'GBP', total: '10.00' }] }),
                 aggregate({ key: 'a2', totals: [{ currency: 'GBP', total: '20.00' }] }),
@@ -363,7 +359,7 @@ describe('withCounterpartyGroups, the group ordering', () => {
     });
 
     it('leaves a parent alone when none of its children traded', () => {
-        const rows = withCounterpartyGroups(
+        const rows = withGroups(
             [aggregate({ key: 'p1', name: 'The Group' })],
             new Map([['p1', 'p0']]),
             new Map([['p1', 'The Group']]),

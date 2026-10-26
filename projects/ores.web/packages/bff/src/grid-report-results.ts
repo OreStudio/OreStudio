@@ -24,6 +24,7 @@ import { gunzipSync } from 'node:zlib';
 import { z } from 'zod';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
+import { subjects as portfolioSubjects } from '@ores/wire-protocol/generated/refdata/protocol/portfolio_protocol';
 import { subjects as bookingSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_booking_protocol';
 import { invalidRequest, notFound } from './errors.js';
 import { readAll, resultSchema, row, text } from './refdata-calls.js';
@@ -255,6 +256,8 @@ interface TradeRecords {
     readonly counterpartyParent: ReadonlyMap<string, string>;
     readonly bookOf: ReadonlyMap<string, string>;
     readonly bookName: ReadonlyMap<string, string>;
+    readonly bookPortfolio: ReadonlyMap<string, string>;
+    readonly portfolioName: ReadonlyMap<string, string>;
     readonly complete: boolean;
 }
 
@@ -271,10 +274,12 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
         counterpartyParent: new Map<string, string>(),
         bookOf: new Map<string, string>(),
         bookName: new Map<string, string>(),
+        bookPortfolio: new Map<string, string>(),
+        portfolioName: new Map<string, string>(),
         complete: false,
     };
     try {
-        const [counterparties, bookings, books] = await Promise.all([
+        const [counterparties, bookings, books, portfolios] = await Promise.all([
             readAll(session, counterpartySubjects.list_counterparties_request, 'counterparties', {
                 filter: null,
                 as_of: null,
@@ -283,6 +288,9 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
                 filter: { trade_id_one_of: [...tradeIds] },
             }),
             readAll(session, bookSubjects.list_books_request, 'books', { filter: null }),
+            readAll(session, portfolioSubjects.list_portfolios_request, 'portfolios', {
+                filter: null,
+            }),
         ]);
         const counterpartyName = new Map(
             counterparties.map((counterparty) => [
@@ -307,6 +315,14 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
                 bookings.map((booking) => [text(booking['trade_id']), text(booking['book_id'])]),
             ),
             bookName: new Map(books.map((book) => [text(book['id']), text(book['name'])])),
+            bookPortfolio: new Map(
+                books
+                    .map((book) => [text(book['id']), text(book['parent_portfolio_id'])] as const)
+                    .filter(([, portfolio]) => portfolio !== ''),
+            ),
+            portfolioName: new Map(
+                portfolios.map((portfolio) => [text(portfolio['id']), text(portfolio['name'])]),
+            ),
             complete: true,
         };
     } catch {
@@ -323,6 +339,8 @@ async function withRecords(
     complete: boolean;
     counterpartyParent: ReadonlyMap<string, string>;
     counterpartyName: ReadonlyMap<string, string>;
+    bookPortfolio: ReadonlyMap<string, string>;
+    portfolioName: ReadonlyMap<string, string>;
 }> {
     const records = await recordsOf(
         session,
@@ -342,6 +360,8 @@ async function withRecords(
         complete: records.complete,
         counterpartyParent: records.counterpartyParent,
         counterpartyName: records.counterpartyName,
+        bookPortfolio: records.bookPortfolio,
+        portfolioName: records.portfolioName,
     };
 }
 
@@ -471,7 +491,7 @@ function moneyOf(
 }
 
 /**
- * The counterparties with a group row above the members that share a parent.
+ * The rows with a group row above the members that share a parent.
  *
  * A group's figure is the sum of its members, so a reader can check one against
  * the other. A counterparty that is itself a parent and trades in the run is one
@@ -480,7 +500,7 @@ function moneyOf(
  * own, and a parent whose name was not read is left standing rather than grouped
  * under a guess.
  */
-export function withCounterpartyGroups(
+export function withGroups(
     rows: readonly AggregateRow[],
     parents: ReadonlyMap<string, string>,
     names: ReadonlyMap<string, string>,
@@ -582,6 +602,8 @@ async function tradeRowsOfKey(
     recordsComplete: boolean;
     counterpartyParent: ReadonlyMap<string, string>;
     counterpartyName: ReadonlyMap<string, string>;
+    bookPortfolio: ReadonlyMap<string, string>;
+    portfolioName: ReadonlyMap<string, string>;
 }> {
     if (key === '') {
         return {
@@ -590,6 +612,8 @@ async function tradeRowsOfKey(
             recordsComplete: true,
             counterpartyParent: new Map(),
             counterpartyName: new Map(),
+            bookPortfolio: new Map(),
+            portfolioName: new Map(),
         };
     }
     const archive = await fetchStored(session, key);
@@ -604,6 +628,8 @@ async function tradeRowsOfKey(
             recordsComplete: true,
             counterpartyParent: new Map(),
             counterpartyName: new Map(),
+            bookPortfolio: new Map(),
+            portfolioName: new Map(),
         };
     }
     const rows = rowsOf(resultFile[1].toString('utf8'));
@@ -614,6 +640,8 @@ async function tradeRowsOfKey(
             recordsComplete: true,
             counterpartyParent: new Map(),
             counterpartyName: new Map(),
+            bookPortfolio: new Map(),
+            portfolioName: new Map(),
         };
     }
     const resolved = await withRecords(session, rows);
@@ -623,6 +651,8 @@ async function tradeRowsOfKey(
         recordsComplete: resolved.complete,
         counterpartyParent: resolved.counterpartyParent,
         counterpartyName: resolved.counterpartyName,
+        bookPortfolio: resolved.bookPortfolio,
+        portfolioName: resolved.portfolioName,
     };
 }
 
@@ -657,12 +687,13 @@ async function resultsOfKey(
         ]),
     );
     const rows = aggregateRows(read.rows, keyOf, names);
+    const grouped =
+        level === 'counterparty'
+            ? withGroups(rows, read.counterpartyParent, read.counterpartyName)
+            : withGroups(rows, read.bookPortfolio, read.portfolioName);
     return {
         level,
-        rows:
-            level === 'counterparty'
-                ? withCounterpartyGroups(rows, read.counterpartyParent, read.counterpartyName)
-                : rows,
+        rows: grouped,
         totals,
         reason: read.reason,
         recordsComplete: read.recordsComplete,

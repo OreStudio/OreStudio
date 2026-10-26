@@ -575,6 +575,12 @@ function AggregateTable({
                                     ) : (
                                         t(`${field}.unassigned`)
                                     )
+                                ) : row.is_group ? (
+                                    row.name === '' ? (
+                                        row.key
+                                    ) : (
+                                        row.name
+                                    )
                                 ) : level === 'book' ? (
                                     <Link
                                         to={bookPath(row.key)}

@@ -223,6 +223,14 @@ describe('the market regime', () => {
                 success: true,
                 running_source_names: ['live.eurusd', 'live.usdsofr'],
             },
+            'synthetic.v1.ops.list_folder_feeds': {
+                success: true,
+                total: 2,
+                feeds: [
+                    { label: 'EUR/USD', source_name: 'live.eurusd', asset_class_code: 'fx' },
+                    { label: 'USD SOFR', source_name: 'live.usdsofr', asset_class_code: 'interest_rates' },
+                ],
+            },
         });
         const now = Date.now();
         const at = (secondsAgo: number): string => new Date(now - secondsAgo * 1000).toISOString();
@@ -256,8 +264,20 @@ describe('the market regime', () => {
         expect(response.json()).toEqual({
             seconds: 60,
             feeds: [
-                { sourceName: 'live.eurusd', ticks: [at(20), at(5)] },
-                { sourceName: 'live.usdsofr', ticks: [at(10)] },
+                {
+                    sourceName: 'live.eurusd',
+                    label: 'EUR/USD',
+                    assetClass: 'fx',
+                    running: true,
+                    ticks: [at(20), at(5)],
+                },
+                {
+                    sourceName: 'live.usdsofr',
+                    label: 'USD SOFR',
+                    assetClass: 'interest_rates',
+                    running: true,
+                    ticks: [at(10)],
+                },
             ],
         });
     });
@@ -267,6 +287,11 @@ describe('the market regime', () => {
             'synthetic.v1.feed_configs.list': {
                 success: true,
                 running_source_names: ['live.eurusd'],
+            },
+            'synthetic.v1.ops.list_folder_feeds': {
+                success: true,
+                total: 1,
+                feeds: [{ label: 'EUR/USD', source_name: 'live.eurusd', asset_class_code: 'fx' }],
             },
         };
         const { server, sessionId, publish } = buildTestServer(replies);
@@ -280,6 +305,14 @@ describe('the market regime', () => {
             success: true,
             running_source_names: ['live.gbpusd'],
         };
+        replies['synthetic.v1.ops.list_folder_feeds'] = {
+            success: true,
+            total: 2,
+            feeds: [
+                { label: 'EUR/USD', source_name: 'live.eurusd', asset_class_code: 'fx' },
+                { label: 'GBP/USD', source_name: 'live.gbpusd', asset_class_code: 'fx' },
+            ],
+        };
         await send(server, sessionId, 'GET', '/api/synthetic/feed-raster');
         // The listener for the stopped feed is gone, so a publish for it is not
         // heard; the new feed's listener answers on the next read.
@@ -291,27 +324,55 @@ describe('the market regime', () => {
 
         expect(response.json()).toEqual({
             seconds: 120,
-            feeds: [{ sourceName: 'live.gbpusd', ticks: [] }],
+            feeds: [
+                // The feed that runs comes first, and the one that stopped keeps
+                // its row: a picture that dropped it could not show it is silent.
+                {
+                    sourceName: 'live.gbpusd',
+                    label: 'GBP/USD',
+                    assetClass: 'fx',
+                    running: true,
+                    ticks: [],
+                },
+                {
+                    sourceName: 'live.eurusd',
+                    label: 'EUR/USD',
+                    assetClass: 'fx',
+                    running: false,
+                    ticks: [],
+                },
+            ],
         });
     });
 
-    it('draws no row for a feed that is not running', async () => {
+    it('keeps the row of a feed that is not running, and marks it stopped', async () => {
         const replies: Record<string, unknown> = {
             'synthetic.v1.feed_configs.list': {
                 success: true,
                 running_source_names: ['live.eurusd'],
             },
+            'synthetic.v1.ops.list_folder_feeds': {
+                success: true,
+                total: 1,
+                feeds: [{ label: 'EUR/USD', source_name: 'live.eurusd', asset_class_code: 'fx' }],
+            },
         };
-        const { server, sessionId, publish } = buildTestServer(replies);
-        await send(server, sessionId, 'GET', '/api/synthetic/feed-raster');
-        publish('synthetic.v1.ops.feed_tick.live.eurusd', {
-            value: '1.1',
-            observation_time: new Date().toISOString(),
-        });
+        const { server, sessionId } = buildTestServer(replies);
 
         replies['synthetic.v1.feed_configs.list'] = { success: true, running_source_names: [] };
         const response = await send(server, sessionId, 'GET', '/api/synthetic/feed-raster');
 
-        expect(response.json()).toEqual({ seconds: 120, feeds: [] });
+        expect(response.json()).toEqual({
+            seconds: 120,
+            feeds: [
+                {
+                    sourceName: 'live.eurusd',
+                    label: 'EUR/USD',
+                    assetClass: 'fx',
+                    running: false,
+                    ticks: [],
+                },
+            ],
+        });
     });
 });

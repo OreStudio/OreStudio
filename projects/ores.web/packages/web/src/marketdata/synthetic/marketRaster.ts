@@ -66,3 +66,53 @@ export function arrivalPositions(
 export function multiplierText(multiplier: number): string {
     return `×${multiplier.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 }
+
+/** The factor the feeds were scaled by, as one read of it saw it. */
+export interface FactorSample {
+    /** When the read landed. */
+    readonly at: number;
+    /** The multiplier every feed's rate was scaled by then. */
+    readonly multiplier: number;
+}
+
+/**
+ * The path the factor traced over the window, as a step line, in the raster's
+ * own units: 0 to 100 across and 0 to 1 up from the baseline.
+ *
+ * A step, because the factor holds a value and then changes it: a diagonal
+ * between two readings would claim a value the market never had. The two ends of
+ * the range are put at the top and the foot, so the shape of the change reads
+ * even when a market only ever visits two values.
+ */
+export function factorPath(samples: readonly FactorSample[], seconds: number, now: number): string {
+    const span = seconds * 1000;
+    if (span <= 0) {
+        return '';
+    }
+    const placed = samples
+        .filter((sample) => now - sample.at <= span)
+        .map((sample) => ({
+            x: 100 * (1 - (now - sample.at) / span),
+            value: sample.multiplier,
+        }))
+        .sort((left, right) => left.x - right.x);
+    const first = placed[0];
+    if (first === undefined) {
+        return '';
+    }
+    const values = placed.map((point) => point.value);
+    const low = Math.min(...values);
+    const high = Math.max(...values);
+    // Up the box is a larger factor, and the drawing's y runs down.
+    const y = (value: number): number => (high === low ? 0.5 : 1 - (value - low) / (high - low));
+    let path = `M ${first.x.toFixed(2)} ${y(first.value).toFixed(3)}`;
+    let previous = first.value;
+    for (const point of placed.slice(1)) {
+        path += ` H ${point.x.toFixed(2)}`;
+        if (point.value !== previous) {
+            path += ` V ${y(point.value).toFixed(3)}`;
+            previous = point.value;
+        }
+    }
+    return `${path} H 100`;
+}

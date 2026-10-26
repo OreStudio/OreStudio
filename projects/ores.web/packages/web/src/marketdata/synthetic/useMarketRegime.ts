@@ -20,8 +20,9 @@
  */
 
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { api, type MarketRegime } from '../../api/client.js';
-import { multiplierText } from './marketRaster.js';
+import { multiplierText, RASTER_SECONDS, type FactorSample } from './marketRaster.js';
 
 /** How often the market state is read again, in milliseconds. */
 export const REGIME_EVERY_MS = 2_000;
@@ -58,4 +59,29 @@ export function stateName(state: MarketRegime['state'], t: (key: string) => stri
 /** The state and the multiplier as a sentence fragment, for a screen that only reads it. */
 export function regimeLabel(regime: MarketRegime, t: (key: string) => string): string {
     return `${stateName(regime.state, t)} ${multiplierText(regime.multiplier)}`;
+}
+
+/**
+ * The multiplier this screen saw, once per read, trimmed to the raster's window.
+ *
+ * The service reports the value in force and not its history, so the shape of a
+ * change is the reader's own observation: the trace begins when the tab opens,
+ * and the legend says so rather than implying a record that is not kept.
+ */
+export function useFactorTrace(
+    dataUpdatedAt: number,
+    multiplier: number | undefined,
+): readonly FactorSample[] {
+    const [trace, setTrace] = useState<readonly FactorSample[]>([]);
+    useEffect(() => {
+        if (multiplier === undefined) {
+            return;
+        }
+        const at = Date.now();
+        setTrace((seen) => [
+            ...seen.filter((sample) => at - sample.at <= RASTER_SECONDS * 1000),
+            { at, multiplier },
+        ]);
+    }, [dataUpdatedAt, multiplier]);
+    return trace;
 }

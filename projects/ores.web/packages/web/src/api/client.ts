@@ -416,10 +416,18 @@ export type MarketState = z.infer<typeof marketStateSchema>;
 export const REGIME_MODES = ['auto', 'calm', 'active'] as const;
 export type RegimeMode = (typeof REGIME_MODES)[number];
 
-/** The times one running feed's ticks arrived, and the window they were read over. */
+/** One row of the raster: a feed, whether it runs, and when its ticks arrived. */
 const feedRasterSchema = z.object({
     seconds: z.number(),
-    feeds: z.array(z.object({ sourceName: z.string(), ticks: z.array(z.string()) })),
+    feeds: z.array(
+        z.object({
+            sourceName: z.string(),
+            label: z.string(),
+            assetClass: z.string(),
+            running: z.boolean(),
+            ticks: z.array(z.string()),
+        }),
+    ),
 });
 
 export type FeedRaster = z.infer<typeof feedRasterSchema>;

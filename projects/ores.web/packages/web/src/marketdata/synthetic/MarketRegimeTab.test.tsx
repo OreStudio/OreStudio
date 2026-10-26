@@ -21,7 +21,8 @@
 
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { FeedRaster, MarketRegime, RegimeMode } from '../../api/client.js';
+import type { FeedRaster, MarketRegime, MarketState, RegimeMode } from '../../api/client.js';
+import type { FactorSample } from './marketRaster.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import { MarketRegimePanel } from './MarketRegimeTab.js';
 
@@ -35,8 +36,20 @@ function raster(over: Partial<FeedRaster> = {}): FeedRaster {
     return {
         seconds: 60,
         feeds: [
-            { sourceName: 'live.eurusd', ticks: [new Date(NOW - 10_000).toISOString()] },
-            { sourceName: 'live.usdsofr', ticks: [new Date(NOW - 20_000).toISOString()] },
+            {
+                sourceName: 'live.eurusd',
+                label: 'EUR/USD',
+                assetClass: 'fx',
+                running: true,
+                ticks: [new Date(NOW - 10_000).toISOString()],
+            },
+            {
+                sourceName: 'live.usdsofr',
+                label: 'USD SOFR',
+                assetClass: 'interest_rates',
+                running: true,
+                ticks: [new Date(NOW - 20_000).toISOString()],
+            },
         ],
         ...over,
     };
@@ -47,6 +60,8 @@ function render(
     rasterNow: FeedRaster | undefined = raster(),
     pending?: RegimeMode,
     onPin: (mode: RegimeMode) => void = () => undefined,
+    marked: { readonly at: number; readonly state: MarketState } | null = null,
+    factor: readonly FactorSample[] = [],
 ): string {
     return renderToStaticMarkup(
         <TranslationProvider>
@@ -56,6 +71,8 @@ function render(
                 now={NOW}
                 pending={pending}
                 error={null}
+                marked={marked}
+                factor={factor}
                 onPin={onPin}
             />
         </TranslationProvider>,
@@ -101,10 +118,60 @@ describe('the market regime tab', () => {
         expect(button(html, 'Auto')).toContain('aria-pressed="false"');
     });
 
-    it('shows a row for every running feed, named', () => {
+    it('shows a row for every feed, named what a person calls it', () => {
         const html = render(regime());
-        expect(html).toContain('live.eurusd');
-        expect(html).toContain('live.usdsofr');
+        expect(html).toContain('EUR/USD');
+        expect(html).toContain('USD SOFR');
+    });
+
+    it('draws a feed of each asset class in its class’s colour', () => {
+        const html = render(regime());
+        expect(html).toContain('bg-fx');
+        expect(html).toContain('bg-ir');
+    });
+
+    it('says a feed that is not running is stopped, and draws no dot for it', () => {
+        const html = render(regime(), {
+            seconds: 60,
+            feeds: [
+                {
+                    sourceName: 'live.eurusd',
+                    label: 'EUR/USD',
+                    assetClass: 'fx',
+                    running: false,
+                    ticks: [],
+                },
+            ],
+        });
+        expect(html).toContain('stopped');
+        expect(html).not.toContain('data-mark');
+    });
+
+    it('counts the arrivals of a feed that runs', () => {
+        const html = render(regime());
+        expect(html.match(/data-mark/g)).toHaveLength(2);
+    });
+
+    it('draws the factor the market ran at above the arrivals', () => {
+        const html = render(regime(), raster(), undefined, undefined, null, [
+            { at: NOW - 50_000, multiplier: 0.5 },
+            { at: NOW - 10_000, multiplier: 2 },
+        ]);
+        expect(html).toContain('the market factor');
+        expect(html).toContain('×2');
+        expect(html).toContain('<path');
+    });
+
+    it('draws no factor line before the tab has seen one', () => {
+        expect(render(regime(), raster())).not.toContain('the market factor');
+    });
+
+    it('marks where a switch landed', () => {
+        const html = render(regime(), raster(), undefined, undefined, {
+            at: NOW - 5_000,
+            state: 'active',
+        });
+        expect(html).toContain('the line is when the state was set: Active');
     });
 
     it('says a picture that has not filled yet starts when the tab opens', () => {
@@ -119,9 +186,9 @@ describe('the market regime tab', () => {
         expect(render(regime())).not.toContain('A row fills as its feed ticks');
     });
 
-    it('says there are no rows when no feed is running', () => {
+    it('says there is nothing to draw when there are no feeds', () => {
         const html = render(regime(), { seconds: 60, feeds: [] });
-        expect(html).toContain('No feed is running, so there are no rows.');
+        expect(html).toContain('There are no feeds to draw.');
         expect(html).not.toContain('data-mark');
     });
 

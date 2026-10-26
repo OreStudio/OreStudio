@@ -79,6 +79,7 @@ task and name that file in the Command column.
 | BFF suite | 1008 tests, 79 files, all pass | =npm test --workspace @ores/bff= | =dd4af2b9ca= |
 | Web suite | 2076 tests, 167 files, all pass | =npm test --workspace @ores/web= | =dd4af2b9ca= |
 | Harness, the regime tab | 3 checks, plus the 2 setup steps, all pass | =npx playwright test tests/market-regime.spec.ts= | =dd4af2b9ca= |
+| Raster rows on a demo environment, every feed listed | 44 that run, 64 that do not | =GET /api/synthetic/feed-raster?seconds=120= | =dd4af2b9ca= |
 | Ticks stored in a minute, market pinned calm | about 2,370 | =select count(*)= on =ores_marketdata_ticks_tbl= over the minute, after =POST /api/synthetic/market-regime= with ={"mode":"calm"}= | =dd4af2b9ca= |
 | Ticks stored in a minute, market pinned active | about 8,575, or 3.6 times the calm minute | same, with ={"mode":"active"}= | =dd4af2b9ca= |
 | Raster rows on a demo environment | 46 running feeds, 26 of them with a tick in the window | =GET /api/synthetic/feed-raster?seconds=120= | =dd4af2b9ca= |
@@ -87,11 +88,18 @@ task and name that file in the Command column.
 
 - The tab is =?tab=regime= on the synthetic screen, beside Dashboard and
   Provider.
-- The raster draws the feeds the service names as running, sorted by source
-  name, and stops at 120 rows. The service names sources and not tree paths, so
-  the tree order the prototype asked for is not available to this read; the
-  sorted order is at least the same on every poll. It draws times, not prices,
+- The raster draws every feed the service lists, the ones that run first and the
+  rest behind a line the reader opens, and stops at 120 rows. A feed's own label
+  is the axis, the dots take their colour from the asset class, and the count at
+  the end of the row says how many arrivals the window held: times, not prices,
   because what a shared factor changes is when ticks arrive.
+- The multiplier this tab saw is drawn above the rows as a step, with a line at
+  the moment a switch landed, so the arrivals sit under the factor that moved
+  them. The service reports the value in force and not its history, so the trace
+  begins when the tab opens and the legend says so.
+- The tree order the prototype asked for is not available: the service lists
+  sources, not tree paths. The feeds that run come first and the label order
+  holds inside each group.
 - A row is empty for three different reasons: a feed too slow to tick inside the
   window, a curve feed that serves an adapter and so publishes no display tick
   at all — a defect, captured for the backlog — and a tab that has just opened,
@@ -168,8 +176,11 @@ The screen is in and proven in a browser.
 
 The Market regime tab reads the factor and forces it: the state, the multiplier,
 whether a person or the chain holds it, and three switches. Beside them the
-raster gives every running feed a row, read from the ticks the browser already
-tails, so a reader sees one market rather than one feed's copy of it.
+raster gives every feed a row, read from the ticks the browser already tails, the
+feeds that run first and the rest behind a line, each row a label, its class's
+colour on every arrival, and the count the window held. Above the rows sits the
+multiplier the tab saw, with a line where a switch landed, so a reader sees one
+market rather than one feed's copy of it.
 
 The BFF holds the two routes and the raster, and a web test proves each. The
 harness opens the tab as the tenant administrator, presses Active, sees the

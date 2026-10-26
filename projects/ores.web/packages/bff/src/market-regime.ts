@@ -21,8 +21,9 @@
 
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
+import { subjects as feedOverviewSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_overview_protocol';
 import { input } from './refdata-calls.js';
-import { runningSourceNames, upstreamFailure } from './synthetic.js';
+import { operationReplySchema, runningSourceNames, upstreamFailure } from './synthetic.js';
 import type { LiveSession } from './sessions.js';
 import type { FeedTickBuffers } from './feed-ticks.js';
 
@@ -69,6 +70,34 @@ const regimeReply = z.union([answeredRegime, refusedRegime]);
  * feeds run.
  */
 export const RASTER_LANES = 120;
+
+/** The facts a raster row draws from the service's own feed list. */
+const feedRow = z.object({
+    label: z.string(),
+    source_name: z.string(),
+    asset_class_code: z.string().default(''),
+});
+
+const feedPage = operationReplySchema.extend({ feeds: z.array(feedRow).default([]) });
+
+/** What the service passes for a filter that narrows nothing. */
+const everyFeed = {
+    folder_id: '',
+    provider_code: '',
+    should_run: false,
+    search: '',
+    state: '',
+    asset_class: '',
+} as const;
+
+/** One row of the raster: a feed, whether it runs, and when its ticks arrived. */
+interface RasterRow {
+    readonly sourceName: string;
+    readonly label: string;
+    readonly assetClass: string;
+    readonly running: boolean;
+    readonly ticks: readonly string[];
+}
 
 /** The regime in force, as the screen reads it. */
 interface Regime {
@@ -117,13 +146,14 @@ export function registerMarketRegimeRoutes(
     });
 
     /**
-     * The times of the ticks each running feed published in the last window,
-     * oldest first, one row per feed.
+     * The times of the ticks each feed published in the last window, oldest
+     * first, one row per feed, the feeds that run first.
      *
-     * The rows are the feeds the service says run, so a stopped feed has no row
-     * and the picture follows the run rather than a list on the screen. A row
-     * carries times and not prices: the raster shows when ticks arrived, which is
-     * what a shared arrival factor changes.
+     * A stopped feed keeps its row, because a picture of the market that leaves
+     * out the feeds that are silent cannot show that they are: a reader sees the
+     * row and the mark that says the feed is not running. A row carries times and
+     * not prices: the raster shows when ticks arrived, which is what a shared
+     * arrival factor changes.
      *
      * The read names the sources it wants and drops the ones it no longer wants,
      * so the BFF listens to the feeds that run and not to every feed that ever
@@ -139,15 +169,37 @@ export function registerMarketRegimeRoutes(
                 .strict(),
             request.query,
         );
-        const running = [...(await runningSourceNames(session))].sort().slice(0, RASTER_LANES);
-        ticks.keepOnly(running);
+        const [page, running] = await Promise.all([
+            session.client.callAuthenticated(
+                feedOverviewSubjects.list_folder_feeds_request,
+                { ...everyFeed, offset: 0, limit: RASTER_LANES },
+                feedPage,
+            ),
+            runningSourceNames(session),
+        ]);
+        if (!page.success) {
+            throw upstreamFailure(page.message);
+        }
+        const rows = page.feeds
+            .map((feed) => ({ ...feed, running: running.has(feed.source_name) }))
+            // The feeds that run first, so a long list still opens on the market;
+            // the service's label order holds inside each group.
+            .sort((left, right) => Number(right.running) - Number(left.running))
+            .slice(0, RASTER_LANES);
+        ticks.keepOnly(rows.filter((row) => row.running).map((row) => row.source_name));
         const since = Date.now() - query.seconds * 1000;
-        return {
-            seconds: query.seconds,
-            feeds: running.map((sourceName) => {
-                ticks.watch(sourceName);
-                return { sourceName, ticks: ticks.arrivalTimes(sourceName, since) };
-            }),
-        };
+        const feeds: RasterRow[] = rows.map((row) => {
+            if (row.running) {
+                ticks.watch(row.source_name);
+            }
+            return {
+                sourceName: row.source_name,
+                label: row.label,
+                assetClass: row.asset_class_code,
+                running: row.running,
+                ticks: row.running ? ticks.arrivalTimes(row.source_name, since) : [],
+            };
+        });
+        return { seconds: query.seconds, feeds };
     });
 }

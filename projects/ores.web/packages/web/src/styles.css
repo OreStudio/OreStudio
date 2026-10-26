@@ -66,6 +66,13 @@
   --color-down: #f85149;
   --color-warn: #d29922;
 
+  /* The asset classes a series belongs to, as a colour. A raster draws a
+     series's arrivals in its class's colour, so a hue says what the row is
+     before the name is read; the hues are their own tokens rather than the
+     accent and the warning, because a series is neither a control nor a fault. */
+  --color-fx: #58a6ff;
+  --color-ir: #d29922;
+
   /* News: something the screen shows changed on the server. Gold, as ores.qt
      draws it, and used for nothing else, so it never means an error, a warning
      or an action. */

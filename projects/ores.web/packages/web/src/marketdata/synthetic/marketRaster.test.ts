@@ -20,7 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { arrivalPositions, multiplierText } from './marketRaster.js';
+import { arrivalPositions, factorPath, multiplierText } from './marketRaster.js';
 
 const NOW = Date.parse('2026-10-26T12:00:00Z');
 
@@ -68,5 +68,43 @@ describe('the multiplier as a screen writes it', () => {
 
     it('keeps two decimals and no more', () => {
         expect(multiplierText(1.23456)).toBe('×1.23');
+    });
+});
+
+describe('the factor a market ran at', () => {
+    it('draws a step, not a slope, between two readings', () => {
+        // Calm at 0.5 from the left edge to halfway, then active at 2 from there.
+        const path = factorPath(
+            [
+                { at: NOW - 60_000, multiplier: 0.5 },
+                { at: NOW - 30_000, multiplier: 2 },
+            ],
+            60,
+            NOW,
+        );
+
+        // Calm sits at the foot and active at the top, because a larger factor is higher on the picture.
+        expect(path).toBe('M 0.00 1.000 H 50.00 V 0.000 H 100');
+    });
+
+    it('draws a flat line through the middle for a factor that never moved', () => {
+        expect(
+            factorPath(
+                [
+                    { at: NOW - 60_000, multiplier: 2 },
+                    { at: NOW - 10_000, multiplier: 2 },
+                ],
+                60,
+                NOW,
+            ),
+        ).toBe('M 0.00 0.500 H 83.33 H 100');
+    });
+
+    it('draws nothing for a read older than the window', () => {
+        expect(factorPath([{ at: NOW - 120_000, multiplier: 2 }], 60, NOW)).toBe('');
+    });
+
+    it('draws nothing before the first read', () => {
+        expect(factorPath([], 60, NOW)).toBe('');
     });
 });

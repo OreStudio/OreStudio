@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 259C03EA-E8D2-44EF-ABE6-BA691312B701
+:END:
+#+title: Sample host resources onto the telemetry timeline
+#+description: Sample each fleet unit's memory and CPU from systemd outside the services and store them on the same time axis as the tick counters.
+#+type: capture
+#+level: cross
+#+filetags: :compass:telemetry:observability:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Sample each fleet unit's memory and CPU from outside the services, from systemd's
+=MemoryCurrent= and =CPUUsageNSec= per unit, and store them on the same time
+axis as the tick counters. The services do not measure themselves: memory and
+CPU are the host's concern, and systemd already accounts for every unit.
+
+* Why
+
+On 2026-10-26 the machine went down overnight. Two defects together caused it: the shared Hawkes heat ran the synthetic feeds at about 300 times their configured rate, and the NATS client kept every message it received. Finding both took ad hoc sampling of systemd and /proc, parsing marketdata's once-a-minute INGEST STATUS log line, NATS monitoring endpoints, Postgres row counts and a core dump. The leak was a straight line of about 195 MiB a minute in
+marketdata's memory, matched to the tick count. Seeing that took a hand-written
+sampler and a script to line it up with the log. With both series on one
+timeline it is one chart.
+
+* References
+
+- =compass services top= and =compass services tree=, which show the same numbers live
+
+* See also
+
+- [[id:2D94BF13-5BB2-4522-AD1B-098C2376D947][Measure the tick flow as a funnel with balance checks]]

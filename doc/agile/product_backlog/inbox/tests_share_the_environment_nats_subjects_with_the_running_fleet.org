@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 522DF428-FBCA-43D2-BCD8-C857A8DAF1B6
+:END:
+#+title: Tests share the environment NATS subjects with the running fleet
+#+description: The marketdata suite connects with the environment's own subject prefix, so the running fleet consumes and adds messages on the subjects a test counts, and two ingest tests fail while the fleet runs.
+#+type: capture
+#+level: cross
+#+filetags: :testing:nats:marketdata:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The marketdata service suite connects to NATS with the environment's own subject
+prefix, the one the running fleet uses. While the fleet runs, the fleet's
+services consume and publish on the subjects a test counts, and two ingest tests
+fail: =a_small_batch_does_not_pass_the_batches_that_are_in_the_stages= and the
+republish test before it. With only NATS running, all 160 cases pass. A test run
+should use a subject prefix of its own.
+
+* Why
+
+The tests also write to the environment database, which [[id:0CF3B77E-557B-4976-98D8-3E6B5566DA12][Give the test run its own database]] already
+captures. The two together let a test run break the live fleet: a test tenant
+the suite terminated kept its routes, and marketdata's usage sync failed on it
+for every tenant until the sync learnt to skip inactive tenants.
+
+* References
+
+- =projects/ores.marketdata/service/tests/app_feed_ingest_loop_tests.cpp=
+- =projects/ores.testing/include/ores.testing/nats_options_helper.hpp=
+
+* See also
+
+- [[id:0CF3B77E-557B-4976-98D8-3E6B5566DA12][Give the test run its own database]]

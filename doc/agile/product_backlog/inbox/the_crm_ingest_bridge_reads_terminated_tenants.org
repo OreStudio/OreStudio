@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: FBA73456-6BE3-4380-9FB0-099D3BCAB643
+:END:
+#+title: The CRM ingest bridge reads terminated tenants
+#+description: crm_ingest_bridge reads its configs and driver pairs across all tenants with no tenant status check, so a terminated tenant's derived writes fail, as the usage recorder's did.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:tenancy:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=crm_ingest_bridge= reads its configs, driver pairs and derived pairs with
+=read_latest_all_tenants= and checks no tenant status. A terminated tenant's
+rows stay latest, so the bridge keeps deriving values for it, and each write
+fails the database's tenant check. Filter the reads to live tenants with
+=live_tenant_repository= and =keep_live_tenants=, as the supervisor, the ingest
+loop and the usage recorder now do.
+
+* Why
+
+The usage recorder failed the same way on a test tenant that the marketdata
+suite left behind, and one failing write stopped the usage of every tenant. No
+bridge failure has been seen yet.
+
+* References
+
+- =projects/ores.marketdata/service/src/app/crm_ingest_bridge.cpp=
+
+* See also
+
+- None.

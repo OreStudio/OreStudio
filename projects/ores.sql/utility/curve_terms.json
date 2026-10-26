@@ -1,0 +1,5567 @@
+{
+ "guide": "Docs/UserGuide/parameterisation/curveconfig.tex",
+ "ore": {
+  "commit": "3d75a6908",
+  "path": "/home/marco/Vault/Development/ORE/Engine"
+ },
+ "schema": "curveconfig.xsd",
+ "sections": {
+  "BaseCorrelations": {
+   "entry_class": "BaseCorrelationCurveConfig",
+   "entry_element": "BaseCorrelation",
+   "section": "BaseCorrelations",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:739",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:151",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:153",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": true,
+     "name": "SettlementDays",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "SettlementDays"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:156",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": true,
+     "name": "Calendar",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "Calendar"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:157",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": true,
+     "name": "BusinessDayConvention",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "BusinessDayConvention"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:159",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": true,
+     "name": "DayCounter",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "DayCounter"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:159",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": true,
+     "name": "Extrapolate",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "Extrapolate"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:160",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": false,
+     "name": "QuoteName",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "QuoteName"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:161",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": false,
+     "name": "QuoteTypes",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "QuoteTypes"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:164",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": false,
+     "name": "QuoteType",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "QuoteType"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:172",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": false,
+     "name": "IndexTerm",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "IndexTerm"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:184",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": false,
+     "name": "IndexSpread",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "IndexSpread"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:190",
+     "type": "double"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": false,
+     "name": "Currency",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "Currency"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:192",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "false",
+     "element": "BaseCorrelation",
+     "mandatory": false,
+     "name": "CalibrateConstituentsToIndexSpread",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "CalibrateConstituentsToIndexSpread"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:198",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": "false",
+     "element": "BaseCorrelation",
+     "mandatory": false,
+     "name": "UseAssumedRecovery",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "UseAssumedRecovery"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:201",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": false,
+     "name": "StartDate",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "StartDate"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:178",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": false,
+     "name": "Rule",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "Rule"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:187",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BaseCorrelation",
+     "mandatory": false,
+     "name": "AdjustForLosses",
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "AdjustForLosses"
+     ],
+     "source_ref": "OREData/ored/configuration/basecorrelationcurveconfig.cpp:194",
+     "type": "text"
+    }
+   ],
+   "unresolved": [
+    {
+     "element": "RecoveryGrid",
+     "name": null,
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "RecoveryGrid"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "RecoveryProbabilities",
+     "name": null,
+     "path": [
+      "BaseCorrelations",
+      "BaseCorrelation",
+      "RecoveryProbabilities"
+     ],
+     "unresolved": "child node with no parser"
+    }
+   ]
+  },
+  "BondFutureVolatilities": {
+   "entry_class": "BondFutureVolatilityConfig",
+   "entry_element": "BondFutureVolatility",
+   "section": "BondFutureVolatilities",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:749",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BondFutureVolatility",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "BondFutureVolatilities",
+      "BondFutureVolatility",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/bondfuturevolcurveconfig.cpp:116",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BondFutureVolatility",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "BondFutureVolatilities",
+      "BondFutureVolatility",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/bondfuturevolcurveconfig.cpp:118",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BondFutureVolatility",
+     "mandatory": true,
+     "name": "ContractName",
+     "path": [
+      "BondFutureVolatilities",
+      "BondFutureVolatility",
+      "ContractName"
+     ],
+     "source_ref": "OREData/ored/configuration/bondfuturevolcurveconfig.cpp:119",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "A365",
+     "element": "BondFutureVolatility",
+     "mandatory": false,
+     "name": "DayCounter",
+     "path": [
+      "BondFutureVolatilities",
+      "BondFutureVolatility",
+      "DayCounter"
+     ],
+     "source_ref": "OREData/ored/configuration/bondfuturevolcurveconfig.cpp:124",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "NullCalendar",
+     "element": "BondFutureVolatility",
+     "mandatory": false,
+     "name": "Calendar",
+     "path": [
+      "BondFutureVolatilities",
+      "BondFutureVolatility",
+      "Calendar"
+     ],
+     "source_ref": "OREData/ored/configuration/bondfuturevolcurveconfig.cpp:126",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BondFutureVolatility",
+     "mandatory": false,
+     "name": "YieldCurveId",
+     "path": [
+      "BondFutureVolatilities",
+      "BondFutureVolatility",
+      "YieldCurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/bondfuturevolcurveconfig.cpp:127",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BondFutureVolatility",
+     "mandatory": false,
+     "name": "UseOnlyPutCall",
+     "path": [
+      "BondFutureVolatilities",
+      "BondFutureVolatility",
+      "UseOnlyPutCall"
+     ],
+     "source_ref": "OREData/ored/configuration/bondfuturevolcurveconfig.cpp:131",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BondFutureVolatility",
+     "mandatory": false,
+     "name": "StrikeFactor",
+     "path": [
+      "BondFutureVolatilities",
+      "BondFutureVolatility",
+      "StrikeFactor"
+     ],
+     "source_ref": "OREData/ored/configuration/bondfuturevolcurveconfig.cpp:128",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BondFutureVolatility",
+     "mandatory": false,
+     "name": "OneDimSolverConfig",
+     "path": [
+      "BondFutureVolatilities",
+      "BondFutureVolatility",
+      "OneDimSolverConfig"
+     ],
+     "source_ref": "OREData/ored/configuration/bondfuturevolcurveconfig.cpp:133",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BondFutureVolatility",
+     "mandatory": false,
+     "name": "PreferOutOfTheMoney",
+     "path": [
+      "BondFutureVolatilities",
+      "BondFutureVolatility",
+      "PreferOutOfTheMoney"
+     ],
+     "source_ref": "OREData/ored/configuration/bondfuturevolcurveconfig.cpp:136",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BondFutureVolatility",
+     "mandatory": false,
+     "name": "TreatAsEuropean",
+     "path": [
+      "BondFutureVolatilities",
+      "BondFutureVolatility",
+      "TreatAsEuropean"
+     ],
+     "source_ref": "OREData/ored/configuration/bondfuturevolcurveconfig.cpp:141",
+     "type": "text"
+    }
+   ],
+   "unresolved": []
+  },
+  "CDSVolatilities": {
+   "entry_class": "CDSVolatilityCurveConfig",
+   "entry_element": "CDSVolatility",
+   "section": "CDSVolatilities",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:738",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CDSVolatility",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "CDSVolatilities",
+      "CDSVolatility",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/cdsvolcurveconfig.cpp:164",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CDSVolatility",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "CDSVolatilities",
+      "CDSVolatility",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/cdsvolcurveconfig.cpp:166",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CDSVolatility",
+     "mandatory": false,
+     "name": "Terms",
+     "path": [
+      "CDSVolatilities",
+      "CDSVolatility",
+      "Terms"
+     ],
+     "source_ref": "OREData/ored/configuration/cdsvolcurveconfig.cpp:170",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CDSVolatility",
+     "mandatory": false,
+     "name": "QuoteName",
+     "path": [
+      "CDSVolatilities",
+      "CDSVolatility",
+      "QuoteName"
+     ],
+     "source_ref": "OREData/ored/configuration/cdsvolcurveconfig.cpp:177",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CDSVolatility",
+     "mandatory": false,
+     "name": "DayCounter",
+     "path": [
+      "CDSVolatilities",
+      "CDSVolatility",
+      "DayCounter"
+     ],
+     "source_ref": "OREData/ored/configuration/cdsvolcurveconfig.cpp:233",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CDSVolatility",
+     "mandatory": false,
+     "name": "Calendar",
+     "path": [
+      "CDSVolatilities",
+      "CDSVolatility",
+      "Calendar"
+     ],
+     "source_ref": "OREData/ored/configuration/cdsvolcurveconfig.cpp:237",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CDSVolatility",
+     "mandatory": false,
+     "name": "StrikeType",
+     "path": [
+      "CDSVolatilities",
+      "CDSVolatility",
+      "StrikeType"
+     ],
+     "source_ref": "OREData/ored/configuration/cdsvolcurveconfig.cpp:240",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CDSVolatility",
+     "mandatory": false,
+     "name": "StrikeFactor",
+     "path": [
+      "CDSVolatilities",
+      "CDSVolatility",
+      "StrikeFactor"
+     ],
+     "source_ref": "OREData/ored/configuration/cdsvolcurveconfig.cpp:243",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CDSVolatility",
+     "mandatory": false,
+     "name": "PriceInfo",
+     "path": [
+      "CDSVolatilities",
+      "CDSVolatility",
+      "PriceInfo"
+     ],
+     "source_ref": "OREData/ored/configuration/cdsvolcurveconfig.cpp:246",
+     "type": "text"
+    }
+   ],
+   "unresolved": []
+  },
+  "CapFloorVolatilities": {
+   "entry_class": "CapFloorVolatilityCurveConfig",
+   "entry_element": "CapFloorVolatility",
+   "section": "CapFloorVolatilities",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:736",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:99",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:100",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": true,
+     "name": "VolatilityType",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "VolatilityType"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:127",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": true,
+     "name": "Extrapolation",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Extrapolation"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:130",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": true,
+     "name": "IncludeAtm",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "IncludeAtm"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:132",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": true,
+     "name": "Calendar",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Calendar"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:135",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": true,
+     "name": "DayCounter",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "DayCounter"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:136",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": true,
+     "name": "BusinessDayConvention",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "BusinessDayConvention"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:138",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": true,
+     "name": "DiscountCurve",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "DiscountCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:148",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "false",
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "QuoteIncludesIndexName",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "QuoteIncludesIndexName"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:187",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": "false",
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "OptionalQuotes",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "OptionalQuotes"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:196",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": "true",
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "FlatFirstPeriod",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "FlatFirstPeriod"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:229",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": "false",
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "UseEffectiveVolatility",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "UseEffectiveVolatility"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:232",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "OutputVolatilityType",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "OutputVolatilityType"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:242",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "ModelShift",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "ModelShift"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:257",
+     "type": "double"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "OutputShift",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "OutputShift"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:260",
+     "type": "double"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "IborIndex",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "IborIndex"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:139",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "Index",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Index"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:143",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "RateComputationPeriod",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "RateComputationPeriod"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:152",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "ONCapSettlementDays",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "ONCapSettlementDays"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:158",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "SettlementDays",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "SettlementDays"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:164",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "InterpolateOn",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "InterpolateOn"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:172",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "TimeInterpolation",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "TimeInterpolation"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:178",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "StrikeInterpolation",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "StrikeInterpolation"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:184",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "InterpolationMethod",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "InterpolationMethod"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:200",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "BootstrapConfig",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "BootstrapConfig"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:210",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "ParametricSmileConfiguration",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "ParametricSmileConfiguration"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:217",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CapFloorVolatility",
+     "mandatory": false,
+     "name": "InputType",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "InputType"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:223",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnDeltaGrid",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Report",
+      "ReportOnDeltaGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnMoneynessGrid",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Report",
+      "ReportOnMoneynessGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnStrikeGrid",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Report",
+      "ReportOnStrikeGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnStrikeSpreadGrid",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Report",
+      "ReportOnStrikeSpreadGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Deltas",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Report",
+      "Deltas"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Moneyness",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Report",
+      "Moneyness"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Strikes",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Report",
+      "Strikes"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "StrikeSpreads",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Report",
+      "StrikeSpreads"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Expiries",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Report",
+      "Expiries"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "PillarDates",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Report",
+      "PillarDates"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "UnderlyingTenors",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Report",
+      "UnderlyingTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ContinuationExpiry",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "Report",
+      "ContinuationExpiry"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:94",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "1.0",
+     "element": "ProxyConfig",
+     "mandatory": false,
+     "name": "ScalingFactor",
+     "path": [
+      "CapFloorVolatilities",
+      "CapFloorVolatility",
+      "ProxyConfig",
+      "ScalingFactor"
+     ],
+     "source_ref": "OREData/ored/configuration/capfloorvolcurveconfig.cpp:120",
+     "type": "double"
+    }
+   ],
+   "unresolved": []
+  },
+  "CommodityCurves": {
+   "entry_class": "CommodityCurveConfig",
+   "entry_element": "CommodityCurve",
+   "section": "CommodityCurves",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:746",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityCurve",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:202",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityCurve",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:204",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityCurve",
+     "mandatory": true,
+     "name": "Currency",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "Currency"
+     ],
+     "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:205",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityCurve",
+     "mandatory": true,
+     "name": "BaseYieldCurve",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "BaseYieldCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:224",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityCurve",
+     "mandatory": true,
+     "name": "YieldCurve",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "YieldCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:225",
+     "type": "text"
+    },
+    {
+     "conditional": true,
+     "default": null,
+     "element": "CommodityCurve",
+     "mandatory": false,
+     "name": "DayCounter",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "DayCounter"
+     ],
+     "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:237",
+     "type": "text"
+    },
+    {
+     "conditional": true,
+     "default": null,
+     "element": "CommodityCurve",
+     "mandatory": false,
+     "name": "InterpolationMethod",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "InterpolationMethod"
+     ],
+     "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:239",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityCurve",
+     "mandatory": false,
+     "name": "SpotQuote",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "SpotQuote"
+     ],
+     "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:250",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "Quote",
+     "element": "CommodityCurve",
+     "mandatory": false,
+     "name": "Quotes",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "Quotes"
+     ],
+     "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:251",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityCurve",
+     "mandatory": false,
+     "name": "Conventions",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:257",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityCurve",
+     "mandatory": false,
+     "name": "Extrapolation",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "Extrapolation"
+     ],
+     "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:258",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityCurve",
+     "mandatory": false,
+     "name": "BasisConfiguration",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "BasisConfiguration"
+     ],
+     "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:206",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityCurve",
+     "mandatory": false,
+     "name": "BasePriceCurve",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "BasePriceCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:220",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityCurve",
+     "mandatory": false,
+     "name": "PriceSegments",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "PriceSegments"
+     ],
+     "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:226",
+     "type": "text"
+    }
+   ],
+   "unresolved": [
+    {
+     "element": "BootstrapConfig",
+     "name": null,
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "BootstrapConfig"
+     ],
+     "unresolved": "child node with no parser"
+    }
+   ]
+  },
+  "CommodityVolatilities": {
+   "entry_class": "CommodityVolatilityConfig",
+   "entry_element": "CommodityVolatility",
+   "section": "CommodityVolatilities",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:747",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityVolatility",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:161",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityVolatility",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:163",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityVolatility",
+     "mandatory": true,
+     "name": "Currency",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "Currency"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:164",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityVolatility",
+     "mandatory": false,
+     "name": "FutureConventions",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "FutureConventions"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:177",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityVolatility",
+     "mandatory": false,
+     "name": "PriceCurveId",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "PriceCurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:183",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityVolatility",
+     "mandatory": false,
+     "name": "YieldCurveId",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "YieldCurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:185",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityVolatility",
+     "mandatory": false,
+     "name": "QuoteSuffix",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "QuoteSuffix"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:186",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "COMMODITY_OPTION",
+     "element": "CommodityVolatility",
+     "mandatory": false,
+     "name": "InstrumentType",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "InstrumentType"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:192",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "0",
+     "element": "CommodityVolatility",
+     "mandatory": false,
+     "name": "CalendarSpreadOffset",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "CalendarSpreadOffset"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:195",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityVolatility",
+     "mandatory": false,
+     "name": "CalendarSpreadUnderlyingName",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "CalendarSpreadUnderlyingName"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:196",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityVolatility",
+     "mandatory": false,
+     "name": "DayCounter",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "DayCounter"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:169",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityVolatility",
+     "mandatory": false,
+     "name": "Calendar",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "Calendar"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:173",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityVolatility",
+     "mandatory": false,
+     "name": "OptionExpiryRollDays",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "OptionExpiryRollDays"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:179",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityVolatility",
+     "mandatory": false,
+     "name": "OneDimSolverConfig",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "OneDimSolverConfig"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:188",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CommodityVolatility",
+     "mandatory": false,
+     "name": "PreferOutOfTheMoney",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "PreferOutOfTheMoney"
+     ],
+     "source_ref": "OREData/ored/configuration/commodityvolcurveconfig.cpp:200",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnDeltaGrid",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "Report",
+      "ReportOnDeltaGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnMoneynessGrid",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "Report",
+      "ReportOnMoneynessGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnStrikeGrid",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "Report",
+      "ReportOnStrikeGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnStrikeSpreadGrid",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "Report",
+      "ReportOnStrikeSpreadGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Deltas",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "Report",
+      "Deltas"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Moneyness",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "Report",
+      "Moneyness"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Strikes",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "Report",
+      "Strikes"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "StrikeSpreads",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "Report",
+      "StrikeSpreads"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Expiries",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "Report",
+      "Expiries"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "PillarDates",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "Report",
+      "PillarDates"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "UnderlyingTenors",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "Report",
+      "UnderlyingTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ContinuationExpiry",
+     "path": [
+      "CommodityVolatilities",
+      "CommodityVolatility",
+      "Report",
+      "ContinuationExpiry"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:94",
+     "type": "text"
+    }
+   ],
+   "unresolved": []
+  },
+  "Correlations": {
+   "entry_class": "CorrelationCurveConfig",
+   "entry_element": "Correlation",
+   "section": "Correlations",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:748",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:108",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:110",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": true,
+     "name": "CorrelationType",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "CorrelationType"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:111",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": true,
+     "name": "QuoteType",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "QuoteType"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:119",
+     "type": "text"
+    },
+    {
+     "conditional": true,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": false,
+     "name": "Calendar",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "Calendar"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:136",
+     "type": "text"
+    },
+    {
+     "conditional": true,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": false,
+     "name": "DayCounter",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "DayCounter"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:139",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": true,
+     "name": "Dimension",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "Dimension"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:151",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": true,
+     "name": "BusinessDayConvention",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "BusinessDayConvention"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:163",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": true,
+     "name": "Extrapolation",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "Extrapolation"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:165",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": true,
+     "name": "Index1",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "Index1"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:174",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": true,
+     "name": "Index2",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "Index2"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:175",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": true,
+     "name": "Currency",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "Currency"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:183",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": false,
+     "name": "Conventions",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:184",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": true,
+     "name": "SwaptionVolatility",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "SwaptionVolatility"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:185",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Correlation",
+     "mandatory": true,
+     "name": "DiscountCurve",
+     "path": [
+      "Correlations",
+      "Correlation",
+      "DiscountCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/correlationcurveconfig.cpp:186",
+     "type": "text"
+    }
+   ],
+   "unresolved": []
+  },
+  "DefaultCurves": {
+   "entry_class": "DefaultCurveConfig",
+   "entry_element": "DefaultCurve",
+   "section": "DefaultCurves",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:737",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "DefaultCurve",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/defaultcurveconfig.cpp:82",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "DefaultCurve",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/defaultcurveconfig.cpp:83",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "DefaultCurve",
+     "mandatory": true,
+     "name": "Currency",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "Currency"
+     ],
+     "source_ref": "OREData/ored/configuration/defaultcurveconfig.cpp:84",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnDeltaGrid",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "Report",
+      "ReportOnDeltaGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnMoneynessGrid",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "Report",
+      "ReportOnMoneynessGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnStrikeGrid",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "Report",
+      "ReportOnStrikeGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnStrikeSpreadGrid",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "Report",
+      "ReportOnStrikeSpreadGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Deltas",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "Report",
+      "Deltas"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Moneyness",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "Report",
+      "Moneyness"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Strikes",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "Report",
+      "Strikes"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "StrikeSpreads",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "Report",
+      "StrikeSpreads"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Expiries",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "Report",
+      "Expiries"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "PillarDates",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "Report",
+      "PillarDates"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "UnderlyingTenors",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "Report",
+      "UnderlyingTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ContinuationExpiry",
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "Report",
+      "ContinuationExpiry"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:94",
+     "type": "text"
+    }
+   ],
+   "unresolved": [
+    {
+     "element": "Configurations",
+     "name": null,
+     "path": [
+      "DefaultCurves",
+      "DefaultCurve",
+      "Configurations"
+     ],
+     "unresolved": "child node with no parser"
+    }
+   ]
+  },
+  "EquityCurves": {
+   "entry_class": "EquityCurveConfig",
+   "entry_element": "EquityCurve",
+   "section": "EquityCurves",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:740",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityCurve",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "EquityCurves",
+      "EquityCurve",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:50",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityCurve",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "EquityCurves",
+      "EquityCurve",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:52",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityCurve",
+     "mandatory": true,
+     "name": "ForecastingCurve",
+     "path": [
+      "EquityCurves",
+      "EquityCurve",
+      "ForecastingCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:53",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityCurve",
+     "mandatory": true,
+     "name": "Currency",
+     "path": [
+      "EquityCurves",
+      "EquityCurve",
+      "Currency"
+     ],
+     "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:54",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityCurve",
+     "mandatory": false,
+     "name": "Calendar",
+     "path": [
+      "EquityCurves",
+      "EquityCurve",
+      "Calendar"
+     ],
+     "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:55",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityCurve",
+     "mandatory": true,
+     "name": "Type",
+     "path": [
+      "EquityCurves",
+      "EquityCurve",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:56",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityCurve",
+     "mandatory": true,
+     "name": "ExerciseStyle",
+     "path": [
+      "EquityCurves",
+      "EquityCurve",
+      "ExerciseStyle"
+     ],
+     "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:58",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityCurve",
+     "mandatory": true,
+     "name": "SpotQuote",
+     "path": [
+      "EquityCurves",
+      "EquityCurve",
+      "SpotQuote"
+     ],
+     "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:59",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityCurve",
+     "mandatory": false,
+     "name": "DayCounter",
+     "path": [
+      "EquityCurves",
+      "EquityCurve",
+      "DayCounter"
+     ],
+     "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:60",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "Quote",
+     "element": "EquityCurve",
+     "mandatory": false,
+     "name": "Quotes",
+     "path": [
+      "EquityCurves",
+      "EquityCurve",
+      "Quotes"
+     ],
+     "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:61",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "false",
+     "element": "EquityCurve",
+     "mandatory": false,
+     "name": "DividendExtrapolation",
+     "path": [
+      "EquityCurves",
+      "EquityCurve",
+      "DividendExtrapolation"
+     ],
+     "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:73",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": "false",
+     "element": "EquityCurve",
+     "mandatory": false,
+     "name": "Extrapolation",
+     "path": [
+      "EquityCurves",
+      "EquityCurve",
+      "Extrapolation"
+     ],
+     "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:75",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "DividendInterpolation",
+     "mandatory": true,
+     "name": "InterpolationVariable",
+     "path": [
+      "EquityCurves",
+      "EquityCurve",
+      "DividendInterpolation",
+      "InterpolationVariable"
+     ],
+     "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:68",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "DividendInterpolation",
+     "mandatory": true,
+     "name": "InterpolationMethod",
+     "path": [
+      "EquityCurves",
+      "EquityCurve",
+      "DividendInterpolation",
+      "InterpolationMethod"
+     ],
+     "source_ref": "OREData/ored/configuration/equitycurveconfig.cpp:69",
+     "type": "text"
+    }
+   ],
+   "unresolved": []
+  },
+  "EquityVolatilities": {
+   "entry_class": "EquityVolatilityCurveConfig",
+   "entry_element": "EquityVolatility",
+   "section": "EquityVolatilities",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:741",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityVolatility",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/equityvolcurveconfig.cpp:97",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityVolatility",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/equityvolcurveconfig.cpp:99",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityVolatility",
+     "mandatory": false,
+     "name": "EquityId",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "EquityId"
+     ],
+     "source_ref": "OREData/ored/configuration/equityvolcurveconfig.cpp:100",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityVolatility",
+     "mandatory": true,
+     "name": "Currency",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Currency"
+     ],
+     "source_ref": "OREData/ored/configuration/equityvolcurveconfig.cpp:101",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityVolatility",
+     "mandatory": false,
+     "name": "Calendar",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Calendar"
+     ],
+     "source_ref": "OREData/ored/configuration/equityvolcurveconfig.cpp:102",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityVolatility",
+     "mandatory": false,
+     "name": "Dimension",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Dimension"
+     ],
+     "source_ref": "OREData/ored/configuration/equityvolcurveconfig.cpp:123",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityVolatility",
+     "mandatory": true,
+     "name": "TimeExtrapolation",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "TimeExtrapolation"
+     ],
+     "source_ref": "OREData/ored/configuration/equityvolcurveconfig.cpp:129",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityVolatility",
+     "mandatory": true,
+     "name": "StrikeExtrapolation",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "StrikeExtrapolation"
+     ],
+     "source_ref": "OREData/ored/configuration/equityvolcurveconfig.cpp:134",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityVolatility",
+     "mandatory": false,
+     "name": "OneDimSolverConfig",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "OneDimSolverConfig"
+     ],
+     "source_ref": "OREData/ored/configuration/equityvolcurveconfig.cpp:109",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "EquityVolatility",
+     "mandatory": false,
+     "name": "PreferOutOfTheMoney",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "PreferOutOfTheMoney"
+     ],
+     "source_ref": "OREData/ored/configuration/equityvolcurveconfig.cpp:116",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnDeltaGrid",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Report",
+      "ReportOnDeltaGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnMoneynessGrid",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Report",
+      "ReportOnMoneynessGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnStrikeGrid",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Report",
+      "ReportOnStrikeGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnStrikeSpreadGrid",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Report",
+      "ReportOnStrikeSpreadGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Deltas",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Report",
+      "Deltas"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Moneyness",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Report",
+      "Moneyness"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Strikes",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Report",
+      "Strikes"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "StrikeSpreads",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Report",
+      "StrikeSpreads"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Expiries",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Report",
+      "Expiries"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "PillarDates",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Report",
+      "PillarDates"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "UnderlyingTenors",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Report",
+      "UnderlyingTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ContinuationExpiry",
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "Report",
+      "ContinuationExpiry"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:94",
+     "type": "text"
+    }
+   ],
+   "unresolved": [
+    {
+     "element": "TimeExtrapolation",
+     "name": null,
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "TimeExtrapolation"
+     ],
+     "unresolved": "child node with no parser"
+    },
+    {
+     "element": "StrikeExtrapolation",
+     "name": null,
+     "path": [
+      "EquityVolatilities",
+      "EquityVolatility",
+      "StrikeExtrapolation"
+     ],
+     "unresolved": "child node with no parser"
+    }
+   ]
+  },
+  "FXSpots": {
+   "entry_class": "FXSpotConfig",
+   "entry_element": "FXSpot",
+   "section": "FXSpots",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:745",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXSpot",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "FXSpots",
+      "FXSpot",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/fxspotconfig.hpp:59",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXSpot",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "FXSpots",
+      "FXSpot",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/fxspotconfig.hpp:65",
+     "type": "text"
+    }
+   ],
+   "unresolved": []
+  },
+  "FXVolatilities": {
+   "entry_class": "FXVolatilityCurveConfig",
+   "entry_element": "FXVolatility",
+   "section": "FXVolatilities",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:733",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:99",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:101",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": true,
+     "name": "Dimension",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Dimension"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:102",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": false,
+     "name": "Calendar",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Calendar"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:103",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": false,
+     "name": "SmileInterpolation",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "SmileInterpolation"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:104",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": true,
+     "name": "FXSpotID",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "FXSpotID"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:105",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": false,
+     "name": "DayCounter",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "DayCounter"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:115",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": true,
+     "name": "BaseVolatility1",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "BaseVolatility1"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:123",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": true,
+     "name": "BaseVolatility2",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "BaseVolatility2"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:124",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": false,
+     "name": "FXIndexTag",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "FXIndexTag"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:125",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": false,
+     "name": "Conventions",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:134",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": false,
+     "name": "SmileType",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "SmileType"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:136",
+     "type": "text"
+    },
+    {
+     "conditional": true,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": false,
+     "name": "SmileDelta",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "SmileDelta"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:147",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "Flat",
+     "element": "FXVolatility",
+     "mandatory": false,
+     "name": "SmileExtrapolation",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "SmileExtrapolation"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:165",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": false,
+     "name": "FXForeignCurveID",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "FXForeignCurveID"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:213",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": false,
+     "name": "FXDomesticCurveID",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "FXDomesticCurveID"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:215",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "V",
+     "element": "FXVolatility",
+     "mandatory": false,
+     "name": "TimeInterpolation",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "TimeInterpolation"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:219",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FXVolatility",
+     "mandatory": false,
+     "name": "TimeWeighting",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "TimeWeighting"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:220",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "0.01",
+     "element": "FXVolatility",
+     "mandatory": false,
+     "name": "ButterflyErrorTolerance",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "ButterflyErrorTolerance"
+     ],
+     "source_ref": "OREData/ored/configuration/fxvolcurveconfig.cpp:221",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnDeltaGrid",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Report",
+      "ReportOnDeltaGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnMoneynessGrid",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Report",
+      "ReportOnMoneynessGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnStrikeGrid",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Report",
+      "ReportOnStrikeGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnStrikeSpreadGrid",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Report",
+      "ReportOnStrikeSpreadGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Deltas",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Report",
+      "Deltas"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Moneyness",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Report",
+      "Moneyness"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Strikes",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Report",
+      "Strikes"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "StrikeSpreads",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Report",
+      "StrikeSpreads"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Expiries",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Report",
+      "Expiries"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "PillarDates",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Report",
+      "PillarDates"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "UnderlyingTenors",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Report",
+      "UnderlyingTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ContinuationExpiry",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "Report",
+      "ContinuationExpiry"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:94",
+     "type": "text"
+    }
+   ],
+   "unresolved": [
+    {
+     "element": "ParametricSmileConfiguration",
+     "name": null,
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "ParametricSmileConfiguration"
+     ],
+     "unresolved": "child node with no parser"
+    }
+   ]
+  },
+  "InflationCapFloorVolatilities": {
+   "entry_class": "InflationCapFloorVolatilityCurveConfig",
+   "entry_element": "InflationCapFloorVolatility",
+   "section": "InflationCapFloorVolatilities",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:743",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:128",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:130",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": true,
+     "name": "Type",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:131",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": true,
+     "name": "QuoteType",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "QuoteType"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:139",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": true,
+     "name": "VolatilityType",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "VolatilityType"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:148",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": true,
+     "name": "Extrapolation",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Extrapolation"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:160",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": true,
+     "name": "Calendar",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Calendar"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:195",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": true,
+     "name": "DayCounter",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "DayCounter"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:197",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": true,
+     "name": "BusinessDayConvention",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "BusinessDayConvention"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:198",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": true,
+     "name": "Index",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Index"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:199",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": true,
+     "name": "IndexCurve",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "IndexCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:200",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": true,
+     "name": "YieldTermStructure",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "YieldTermStructure"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:201",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": true,
+     "name": "ObservationLag",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "ObservationLag"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:202",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": false,
+     "name": "QuoteIndex",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "QuoteIndex"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:203",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "",
+     "element": "InflationCapFloorVolatility",
+     "mandatory": false,
+     "name": "Conventions",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:204",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": false,
+     "name": "BootstrapConfig",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "BootstrapConfig"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:181",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCapFloorVolatility",
+     "mandatory": false,
+     "name": "SettlementDays",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "SettlementDays"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcapfloorvolcurveconfig.cpp:189",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnDeltaGrid",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Report",
+      "ReportOnDeltaGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnMoneynessGrid",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Report",
+      "ReportOnMoneynessGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnStrikeGrid",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Report",
+      "ReportOnStrikeGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnStrikeSpreadGrid",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Report",
+      "ReportOnStrikeSpreadGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Deltas",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Report",
+      "Deltas"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Moneyness",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Report",
+      "Moneyness"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Strikes",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Report",
+      "Strikes"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "StrikeSpreads",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Report",
+      "StrikeSpreads"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Expiries",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Report",
+      "Expiries"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "PillarDates",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Report",
+      "PillarDates"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "UnderlyingTenors",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Report",
+      "UnderlyingTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ContinuationExpiry",
+     "path": [
+      "InflationCapFloorVolatilities",
+      "InflationCapFloorVolatility",
+      "Report",
+      "ContinuationExpiry"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:94",
+     "type": "text"
+    }
+   ],
+   "unresolved": []
+  },
+  "InflationCurves": {
+   "entry_class": "InflationCurveConfig",
+   "entry_element": "InflationCurve",
+   "section": "InflationCurves",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:742",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCurve",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:107",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCurve",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:109",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCurve",
+     "mandatory": true,
+     "name": "NominalTermStructure",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "NominalTermStructure"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:110",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCurve",
+     "mandatory": true,
+     "name": "Type",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "Type"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:111",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCurve",
+     "mandatory": false,
+     "name": "Quotes",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "Quotes"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:131",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCurve",
+     "mandatory": true,
+     "name": "Conventions",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "Conventions"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:133",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCurve",
+     "mandatory": false,
+     "name": "Extrapolation",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "Extrapolation"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:135",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCurve",
+     "mandatory": true,
+     "name": "Calendar",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "Calendar"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:138",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCurve",
+     "mandatory": true,
+     "name": "DayCounter",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "DayCounter"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:141",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCurve",
+     "mandatory": true,
+     "name": "Lag",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "Lag"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:144",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCurve",
+     "mandatory": true,
+     "name": "Frequency",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "Frequency"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:146",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCurve",
+     "mandatory": false,
+     "name": "BaseRate",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "BaseRate"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:152",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCurve",
+     "mandatory": false,
+     "name": "InterpolationVariable",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "InterpolationVariable"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:155",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "Linear",
+     "element": "InflationCurve",
+     "mandatory": false,
+     "name": "InterpolationMethod",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "InterpolationMethod"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:161",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "InflationCurve",
+     "mandatory": true,
+     "name": "Tolerance",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "Tolerance"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:164",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "false",
+     "element": "InflationCurve",
+     "mandatory": false,
+     "name": "UseLastFixingDate",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "UseLastFixingDate"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:167",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Seasonality",
+     "mandatory": true,
+     "name": "BaseDate",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "Seasonality",
+      "BaseDate"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:175",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Seasonality",
+     "mandatory": true,
+     "name": "Frequency",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "Seasonality",
+      "Frequency"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:176",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Seasonality",
+     "mandatory": false,
+     "name": "Factors",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "Seasonality",
+      "Factors"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:177",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Seasonality",
+     "mandatory": false,
+     "name": "OverrideFactors",
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "Seasonality",
+      "OverrideFactors"
+     ],
+     "source_ref": "OREData/ored/configuration/inflationcurveconfig.cpp:178",
+     "type": "text"
+    }
+   ],
+   "unresolved": [
+    {
+     "element": "Segments",
+     "name": null,
+     "path": [
+      "InflationCurves",
+      "InflationCurve",
+      "Segments"
+     ],
+     "unresolved": "child node with no parser"
+    }
+   ]
+  },
+  "IntradayPowerCurves": {
+   "entry_class": "IntradayPowerCurveConfig",
+   "entry_element": "IntradayPowerCurve",
+   "section": "IntradayPowerCurves",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:750",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "IntradayPowerCurve",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "IntradayPowerCurves",
+      "IntradayPowerCurve",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/intradaypowercurveconfig.cpp:37",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "IntradayPowerCurve",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "IntradayPowerCurves",
+      "IntradayPowerCurve",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/intradaypowercurveconfig.cpp:39",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "IntradayPowerCurve",
+     "mandatory": true,
+     "name": "Currency",
+     "path": [
+      "IntradayPowerCurves",
+      "IntradayPowerCurve",
+      "Currency"
+     ],
+     "source_ref": "OREData/ored/configuration/intradaypowercurveconfig.cpp:40",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "IntradayPowerCurve",
+     "mandatory": true,
+     "name": "DailyAveragePriceCurve",
+     "path": [
+      "IntradayPowerCurves",
+      "IntradayPowerCurve",
+      "DailyAveragePriceCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/intradaypowercurveconfig.cpp:41",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "IntradayPowerCurve",
+     "mandatory": true,
+     "name": "ShapeQuoteName",
+     "path": [
+      "IntradayPowerCurves",
+      "IntradayPowerCurve",
+      "ShapeQuoteName"
+     ],
+     "source_ref": "OREData/ored/configuration/intradaypowercurveconfig.cpp:42",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "IntradayPowerCurve",
+     "mandatory": true,
+     "name": "Convention",
+     "path": [
+      "IntradayPowerCurves",
+      "IntradayPowerCurve",
+      "Convention"
+     ],
+     "source_ref": "OREData/ored/configuration/intradaypowercurveconfig.cpp:43",
+     "type": "text"
+    }
+   ],
+   "unresolved": []
+  },
+  "Securities": {
+   "entry_class": "SecurityConfig",
+   "entry_element": "Security",
+   "section": "Securities",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:744",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Security",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "Securities",
+      "Security",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/securityconfig.hpp:67",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Security",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "Securities",
+      "Security",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/securityconfig.hpp:68",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Security",
+     "mandatory": false,
+     "name": "SpreadQuote",
+     "path": [
+      "Securities",
+      "Security",
+      "SpreadQuote"
+     ],
+     "source_ref": "OREData/ored/configuration/securityconfig.hpp:69",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Security",
+     "mandatory": false,
+     "name": "RecoveryRateQuote",
+     "path": [
+      "Securities",
+      "Security",
+      "RecoveryRateQuote"
+     ],
+     "source_ref": "OREData/ored/configuration/securityconfig.hpp:70",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Security",
+     "mandatory": false,
+     "name": "CPRQuote",
+     "path": [
+      "Securities",
+      "Security",
+      "CPRQuote"
+     ],
+     "source_ref": "OREData/ored/configuration/securityconfig.hpp:71",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Security",
+     "mandatory": false,
+     "name": "PriceQuote",
+     "path": [
+      "Securities",
+      "Security",
+      "PriceQuote"
+     ],
+     "source_ref": "OREData/ored/configuration/securityconfig.hpp:72",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Security",
+     "mandatory": false,
+     "name": "ConversionFactor",
+     "path": [
+      "Securities",
+      "Security",
+      "ConversionFactor"
+     ],
+     "source_ref": "OREData/ored/configuration/securityconfig.hpp:73",
+     "type": "text"
+    }
+   ],
+   "unresolved": []
+  },
+  "SwaptionVolatilities": {
+   "entry_class": "SwaptionVolatilityCurveConfig",
+   "entry_element": "SwaptionVolatility",
+   "section": "SwaptionVolatilities",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:734",
+   "terms": [],
+   "unresolved": []
+  },
+  "YieldCurves": {
+   "entry_class": "YieldCurveConfig",
+   "entry_element": "YieldCurve",
+   "section": "YieldCurves",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:732",
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": "YieldCurve",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:224",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "YieldCurve",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:225",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "YieldCurve",
+     "mandatory": true,
+     "name": "Currency",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Currency"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:226",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "YieldCurve",
+     "mandatory": true,
+     "name": "DiscountCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "DiscountCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:227",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "Discount",
+     "element": "YieldCurve",
+     "mandatory": false,
+     "name": "InterpolationVariable",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "InterpolationVariable"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:285",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "YieldCurve",
+     "mandatory": false,
+     "name": "InterpolationMethod",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "InterpolationMethod"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:286",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "1",
+     "element": "YieldCurve",
+     "mandatory": false,
+     "name": "MixedInterpolationCutoff",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "MixedInterpolationCutoff"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:287",
+     "type": "integer"
+    },
+    {
+     "conditional": false,
+     "default": "A365",
+     "element": "YieldCurve",
+     "mandatory": false,
+     "name": "YieldCurveDayCounter",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "YieldCurveDayCounter"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:288",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "true",
+     "element": "YieldCurve",
+     "mandatory": false,
+     "name": "Extrapolation",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Extrapolation"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:289",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": "ContinuousForward",
+     "element": "YieldCurve",
+     "mandatory": false,
+     "name": "ExtrapolationMethod",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "ExtrapolationMethod"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:290",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "false",
+     "element": "YieldCurve",
+     "mandatory": false,
+     "name": "ExcludeT0FromInterpolation",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "ExcludeT0FromInterpolation"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:291",
+     "type": "boolean"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "YieldCurve",
+     "mandatory": false,
+     "name": "Tolerance",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Tolerance"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:301",
+     "type": "double"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Simple",
+     "mandatory": false,
+     "name": "ProjectionCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Simple",
+      "ProjectionCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:495",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "AverageOIS",
+     "mandatory": false,
+     "name": "ProjectionCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "AverageOIS",
+      "ProjectionCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:521",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "TenorBasis",
+     "mandatory": false,
+     "name": "ProjectionCurveReceive",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "TenorBasis",
+      "ProjectionCurveReceive"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:550",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "TenorBasis",
+     "mandatory": false,
+     "name": "ProjectionCurvePay",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "TenorBasis",
+      "ProjectionCurvePay"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:551",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "TenorBasis",
+     "mandatory": false,
+     "name": "ProjectionCurveShort",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "TenorBasis",
+      "ProjectionCurveShort"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:552",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "TenorBasis",
+     "mandatory": false,
+     "name": "ProjectionCurveLong",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "TenorBasis",
+      "ProjectionCurveLong"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:559",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CrossCurrency",
+     "mandatory": true,
+     "name": "DiscountCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "CrossCurrency",
+      "DiscountCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:599",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CrossCurrency",
+     "mandatory": true,
+     "name": "SpotRate",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "CrossCurrency",
+      "SpotRate"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:600",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CrossCurrency",
+     "mandatory": false,
+     "name": "ProjectionCurveDomestic",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "CrossCurrency",
+      "ProjectionCurveDomestic"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:601",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CrossCurrency",
+     "mandatory": false,
+     "name": "ProjectionCurveForeign",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "CrossCurrency",
+      "ProjectionCurveForeign"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:602",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "ZeroSpread",
+     "mandatory": false,
+     "name": "ReferenceCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "ZeroSpread",
+      "ReferenceCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:633",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "DiscountRatio",
+     "mandatory": false,
+     "name": "BaseCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "DiscountRatio",
+      "BaseCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:660",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FittedBond",
+     "mandatory": false,
+     "name": "ExtrapolateFlat",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "FittedBond",
+      "ExtrapolateFlat"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:732",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BondYieldShifted",
+     "mandatory": true,
+     "name": "ReferenceCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "BondYieldShifted",
+      "ReferenceCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:889",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BondYieldShifted",
+     "mandatory": false,
+     "name": "ExtrapolateFlat",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "BondYieldShifted",
+      "ExtrapolateFlat"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:909",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "WeightedAverage",
+     "mandatory": true,
+     "name": "ReferenceCurve1",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "WeightedAverage",
+      "ReferenceCurve1"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:785",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "WeightedAverage",
+     "mandatory": true,
+     "name": "ReferenceCurve2",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "WeightedAverage",
+      "ReferenceCurve2"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:786",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "WeightedAverage",
+     "mandatory": true,
+     "name": "Weight1",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "WeightedAverage",
+      "Weight1"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:787",
+     "type": "double"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "WeightedAverage",
+     "mandatory": true,
+     "name": "Weight2",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "WeightedAverage",
+      "Weight2"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:788",
+     "type": "double"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "YieldPlusDefault",
+     "mandatory": true,
+     "name": "ReferenceCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "YieldPlusDefault",
+      "ReferenceCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:818",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "YieldPlusDefault",
+     "mandatory": false,
+     "name": "DefaultCurves",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "YieldPlusDefault",
+      "DefaultCurves"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:820",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "YieldPlusDefault",
+     "mandatory": false,
+     "name": "Weights",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "YieldPlusDefault",
+      "Weights"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:821",
+     "type": "double"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "IborFallback",
+     "mandatory": true,
+     "name": "IborIndex",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "IborFallback",
+      "IborIndex"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:850",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "IborFallback",
+     "mandatory": true,
+     "name": "RfrCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "IborFallback",
+      "RfrCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:851",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "IborFallback",
+     "mandatory": false,
+     "name": "RfrIndex",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "IborFallback",
+      "RfrIndex"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:853",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "IborFallback",
+     "mandatory": false,
+     "name": "Spread",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "IborFallback",
+      "Spread"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:856",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "mandatory": false,
+     "name": "Accuracy",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "BootstrapConfig",
+      "Accuracy"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:35",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "mandatory": false,
+     "name": "GlobalAccuracy",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "BootstrapConfig",
+      "GlobalAccuracy"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:41",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "mandatory": false,
+     "name": "DontThrow",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "BootstrapConfig",
+      "DontThrow"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:46",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "mandatory": false,
+     "name": "MaxAttempts",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "BootstrapConfig",
+      "MaxAttempts"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:51",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "mandatory": false,
+     "name": "MaxFactor",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "BootstrapConfig",
+      "MaxFactor"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:58",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "mandatory": false,
+     "name": "MinFactor",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "BootstrapConfig",
+      "MinFactor"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:63",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "mandatory": false,
+     "name": "DontThrowSteps",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "BootstrapConfig",
+      "DontThrowSteps"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:68",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "mandatory": false,
+     "name": "Global",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "BootstrapConfig",
+      "Global"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:75",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "mandatory": false,
+     "name": "SmoothnessLambda",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "BootstrapConfig",
+      "SmoothnessLambda"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:80",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnDeltaGrid",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Report",
+      "ReportOnDeltaGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnMoneynessGrid",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Report",
+      "ReportOnMoneynessGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnStrikeGrid",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Report",
+      "ReportOnStrikeGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ReportOnStrikeSpreadGrid",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Report",
+      "ReportOnStrikeSpreadGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Deltas",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Report",
+      "Deltas"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Moneyness",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Report",
+      "Moneyness"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Strikes",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Report",
+      "Strikes"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "StrikeSpreads",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Report",
+      "StrikeSpreads"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "Expiries",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Report",
+      "Expiries"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "PillarDates",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Report",
+      "PillarDates"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "UnderlyingTenors",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Report",
+      "UnderlyingTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "mandatory": false,
+     "name": "ContinuationExpiry",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Report",
+      "ContinuationExpiry"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:94",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Simple",
+     "mandatory": false,
+     "name": "ProjectionCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "Simple",
+      "ProjectionCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:495",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "AverageOIS",
+     "mandatory": false,
+     "name": "ProjectionCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "AverageOIS",
+      "ProjectionCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:521",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "TenorBasis",
+     "mandatory": false,
+     "name": "ProjectionCurveReceive",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "TenorBasis",
+      "ProjectionCurveReceive"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:550",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "TenorBasis",
+     "mandatory": false,
+     "name": "ProjectionCurvePay",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "TenorBasis",
+      "ProjectionCurvePay"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:551",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "TenorBasis",
+     "mandatory": false,
+     "name": "ProjectionCurveShort",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "TenorBasis",
+      "ProjectionCurveShort"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:552",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "TenorBasis",
+     "mandatory": false,
+     "name": "ProjectionCurveLong",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "TenorBasis",
+      "ProjectionCurveLong"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:559",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CrossCurrency",
+     "mandatory": true,
+     "name": "DiscountCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "CrossCurrency",
+      "DiscountCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:599",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CrossCurrency",
+     "mandatory": true,
+     "name": "SpotRate",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "CrossCurrency",
+      "SpotRate"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:600",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CrossCurrency",
+     "mandatory": false,
+     "name": "ProjectionCurveDomestic",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "CrossCurrency",
+      "ProjectionCurveDomestic"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:601",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "CrossCurrency",
+     "mandatory": false,
+     "name": "ProjectionCurveForeign",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "CrossCurrency",
+      "ProjectionCurveForeign"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:602",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "ZeroSpread",
+     "mandatory": false,
+     "name": "ReferenceCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "ZeroSpread",
+      "ReferenceCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:633",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "DiscountRatio",
+     "mandatory": false,
+     "name": "BaseCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "DiscountRatio",
+      "BaseCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:660",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "FittedBond",
+     "mandatory": false,
+     "name": "ExtrapolateFlat",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "FittedBond",
+      "ExtrapolateFlat"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:732",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BondYieldShifted",
+     "mandatory": true,
+     "name": "ReferenceCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "BondYieldShifted",
+      "ReferenceCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:889",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BondYieldShifted",
+     "mandatory": false,
+     "name": "ExtrapolateFlat",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "BondYieldShifted",
+      "ExtrapolateFlat"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:909",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "WeightedAverage",
+     "mandatory": true,
+     "name": "ReferenceCurve1",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "WeightedAverage",
+      "ReferenceCurve1"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:785",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "WeightedAverage",
+     "mandatory": true,
+     "name": "ReferenceCurve2",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "WeightedAverage",
+      "ReferenceCurve2"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:786",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "WeightedAverage",
+     "mandatory": true,
+     "name": "Weight1",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "WeightedAverage",
+      "Weight1"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:787",
+     "type": "double"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "WeightedAverage",
+     "mandatory": true,
+     "name": "Weight2",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "WeightedAverage",
+      "Weight2"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:788",
+     "type": "double"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "YieldPlusDefault",
+     "mandatory": true,
+     "name": "ReferenceCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "YieldPlusDefault",
+      "ReferenceCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:818",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "YieldPlusDefault",
+     "mandatory": false,
+     "name": "DefaultCurves",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "YieldPlusDefault",
+      "DefaultCurves"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:820",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "YieldPlusDefault",
+     "mandatory": false,
+     "name": "Weights",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "YieldPlusDefault",
+      "Weights"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:821",
+     "type": "double"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "IborFallback",
+     "mandatory": true,
+     "name": "IborIndex",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "IborFallback",
+      "IborIndex"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:850",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "IborFallback",
+     "mandatory": true,
+     "name": "RfrCurve",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "IborFallback",
+      "RfrCurve"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:851",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "IborFallback",
+     "mandatory": false,
+     "name": "RfrIndex",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "IborFallback",
+      "RfrIndex"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:853",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "IborFallback",
+     "mandatory": false,
+     "name": "Spread",
+     "path": [
+      "YieldCurves",
+      "YieldCurve",
+      "Segments",
+      "IborFallback",
+      "Spread"
+     ],
+     "source_ref": "OREData/ored/configuration/yieldcurveconfig.cpp:856",
+     "type": "text"
+    }
+   ],
+   "unresolved": []
+  },
+  "YieldVolatilities": {
+   "entry_class": "YieldVolatilityCurveConfig",
+   "entry_element": "YieldVolatility",
+   "section": "YieldVolatilities",
+   "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:735",
+   "terms": [],
+   "unresolved": []
+  }
+ }
+}

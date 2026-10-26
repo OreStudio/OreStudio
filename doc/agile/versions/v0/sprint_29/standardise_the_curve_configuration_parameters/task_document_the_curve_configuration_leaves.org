@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/document-the-curve-configuration-leaves
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every leaf of curveconfig.xsd that ORE reads is documented once, in the ORE para
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | Not yet started. The story is scaffolded and the branch exists. |
+| Now          | The extractor reads the ORE source and writes =curve_terms.json=. It resolves 19 sections and 366 leaves and records 8 blocks it cannot resolve. |
 | Waiting on   | Nothing.                               |
-| Next         | Build =extract_curve_terms.py=, then the contract rows and their value sets. |
+| Next         | Turn the terms into contract rows and give each one its value set. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
@@ -77,6 +77,10 @@ task and name that file in the Command column.
 | Curve config parser sources the extractor reads | 22 | =ls OREData/ored/configuration/{curveconfigurations,*curveconfig,volatilityconfig,parametricsmileconfiguration,bootstrapconfig,reportconfig}.cpp \| wc -l= | =3d75a6908= (ORE) |
 | Lines across those sources | 7,437 | =wc -l= over the same list | =3d75a6908= (ORE) |
 | The guide chapter of =curveconfig.xml= | 92,273 bytes | =wc -c Docs/UserGuide/parameterisation/curveconfig.tex= | =3d75a6908= (ORE) |
+| Sections the document names | 19 | =python3 projects/ores.sql/utility/extract_curve_terms.py= | =3d75a6908= (ORE) |
+| Leaves extracted | 366 | the same run | =3d75a6908= (ORE) |
+| Leaves ORE reads in more than one branch | 5 | the same run | =3d75a6908= (ORE) |
+| Blocks the extractor cannot resolve | 8 | the same run | =3d75a6908= (ORE) |
 
 * Notes
 
@@ -101,6 +105,24 @@ task and name that file in the Command column.
 - *The contract id derives from =schema_name= and =XPath=*
   (=ore_parameter_seed.py=), so the schema must be right on the first write. The
   pricing rows still carry =ore.xsd=, and their correction is separate work.
+- *The extractor reads five parser idioms*, because the curve document is not
+  written the way the conventions document is. A leaf is a direct
+  =getChildValue=; a child node whose value is read with =getNodeValue=; a
+  child node whose own children are read; a member that parses a block, whose
+  type names the class; and a dispatch on the child's node name, where the block
+  holds alternatives (=Segments= holds =Direct=, =Simple= and the rest). A
+  derived config may also inherit =fromXML= from a base class, which parses the
+  same node, so its leaves belong to the derived entry too.
+- *The same leaf is read in more than one branch.* A commodity curve reads
+  =DayCounter= once for its piecewise form and once for its direct form. Both
+  are one leaf of the document, so the extractor writes one term and marks it
+  conditional. Five leaves are conditional this way.
+- *Eight blocks stay unresolved*, each recorded with the source line that reads
+  it: =RecoveryGrid=, =BootstrapConfig= under =CommodityCurve=, =Configurations=,
+  =TimeExtrapolation=, =ParametricSmileConfiguration=, =Segments= under
+  =InflationCurve=, and the two volatility entries whose parser is inherited.
+  Each is a gap the next pass closes or records a reason for; none is silently
+  dropped.
 
 * Test Scenarios
 

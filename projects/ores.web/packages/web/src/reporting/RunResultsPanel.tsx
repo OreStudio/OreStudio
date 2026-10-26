@@ -575,7 +575,7 @@ function AggregateTable({
                                     ) : (
                                         t(`${field}.unassigned`)
                                     )
-                                ) : row.is_group ? (
+                                ) : level === 'book' && row.is_group ? (
                                     row.name === '' ? (
                                         row.key
                                     ) : (

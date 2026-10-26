@@ -493,12 +493,16 @@ function moneyOf(
 /**
  * The rows with a group row above the members that share a parent.
  *
+ * One helper serves both levels: books group under their portfolios, and
+ * counterparties under their parent counterparty. The two id spaces never mix,
+ * because each call is given one parent map.
+ *
  * A group's figure is the sum of its members, so a reader can check one against
- * the other. A counterparty that is itself a parent and trades in the run is one
- * of its own group's members, so its trades are counted once and its row is
- * stated under the group it leads. A counterparty with no parent stands on its
- * own, and a parent whose name was not read is left standing rather than grouped
- * under a guess.
+ * the other. A parent that also trades in the run is one of its own group's
+ * members, so its trades are counted once and its row is stated under the group
+ * it leads; at the book level that branch cannot match, because a portfolio is
+ * never a book. A row with no parent stands on its own, and a parent whose name
+ * was not read is left standing rather than grouped under a guess.
  */
 export function withGroups(
     rows: readonly AggregateRow[],

@@ -516,11 +516,14 @@ parses or writes XML in the browser, and no kind draws a dialog of its own for
 it (decided 2026-10-25, when the currencies topic needed a server export and
 the owner asked for one standard pair across the screens).
 
-- *RS-ORE-01* The pair is drawn for a kind that declares an ORE document: its
-  root element and the operations that serve it. The currency configuration,
-  the calendar adjustments, the conventions, the engine run settings and a
-  pricing engine configuration are such kinds. A kind with no ORE document has
-  neither button.
+- *RS-ORE-01* The pair is drawn for a kind that declares an ORE document: a row
+  in =ores_reporting_file_types_tbl= whose =configuration_type_code= matches it,
+  an =input_document= that ORE reads on its own, and the operations that serve
+  it. The currency configuration, the calendar adjustments, the conventions and
+  a pricing engine configuration are such kinds. A kind that has no row, or
+  whose settings are a section of another document rather than a document ORE
+  reads on its own, has neither button; the engine run settings are the second
+  case, because they are the =Setup= section of the run's =ore.xml=.
 - *RS-ORE-02* Import stands on the list header, between Refresh and Workflows
   (RS-LIST-03), because it brings records in. Export stands where the
   document's scope is: beside Import on the list header for a kind whose

@@ -244,6 +244,10 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                     batch.equity_position_option_underlyings.end(),
                     v.underlyings.begin(),
                     v.underlyings.end());
+                batch.equity_basket_constituents.insert(
+                    batch.equity_basket_constituents.end(),
+                    v.basket_constituents.begin(),
+                    v.basket_constituents.end());
             } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {
                 append(batch, v.instrument);
                 batch.commodity_basket_constituents.insert(

@@ -31,6 +31,7 @@
 #include "ores.trading.api/domain/credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/credit_linked_swap_instrument.hpp"
+#include "ores.trading.api/domain/equity_basket_constituent.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
@@ -289,6 +290,14 @@ auto visit_credit_facts(Visitor&& visitor, const credit_instrument_data& data) {
 struct equity_instrument_data {
     equity_instrument_variant instrument;
     std::vector<equity_position_option_underlying> underlyings;
+    /**
+     * @brief The constituents of a worst-of basket, in the document's order.
+     *
+     * A plain swap states one underlying on its facts and leaves this empty; a
+     * basket swap states the list here and leaves the fact null. The order is
+     * the document's, carried by each row's ordinal.
+     */
+    std::vector<equity_basket_constituent> basket_constituents;
 };
 
 /**

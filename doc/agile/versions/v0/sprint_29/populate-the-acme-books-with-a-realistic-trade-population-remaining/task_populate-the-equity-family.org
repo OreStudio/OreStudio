@@ -169,8 +169,15 @@ underlyings:
 | =GB0005405286= | ISIN | a single name |
 | =TR20H-EUR-SEK=, =TR20H-USD-CAD= | basket constituent | only in worst-of basket swaps |
 
-Two things follow. The set is **small**: a population of eighteen types over
-eight underlyings means each is traded many times, which is realistic for
+That count is *Equity-typed trades only*, and it undercounts the shares. The
+corpus also prices single names in its total return swaps, which are not Equity
+typed: =AMZN.O=, =CR.N= and =MSFT.O=, three exchange-listed shares. Adding them
+gives about eleven instruments, of which four are shares (=GB0005405286= as an
+ISIN, and those three tickers) and the rest indices. So the catalogue is not
+indices only, and the question is the width of the set rather than its kind.
+
+Two further things follow. The set is **small**: a population of eighteen types
+over eleven underlyings means each is traded many times, which is realistic for
 indices and less so for a book that claims breadth. And the set carries
 **aliases**: =.SPX= and =RIC:.SPX= are one instrument under two names.
 

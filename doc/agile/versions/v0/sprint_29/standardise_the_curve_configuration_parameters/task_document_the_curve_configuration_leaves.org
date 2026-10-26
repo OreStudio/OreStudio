@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/standardise-the-curve-configuration-parameters
-#+pr:
+#+pr: 3885
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
@@ -111,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3885][#3885]] | [agile] Scaffold the curve configuration parameters story |
 
 * Review
 

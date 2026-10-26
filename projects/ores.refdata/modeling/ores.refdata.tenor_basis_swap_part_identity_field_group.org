@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: dc61b37e-336e-4a4c-9f62-fef720b1ac74
+:END:
+#+title: ores.refdata.tenor_basis_swap_part_identity
+#+description: Codegen field-group model for ores::refdata::domain::tenor_basis_swap_part_identity.
+#+type: ores.codegen.field_group
+#+component: refdata
+#+subcomponent: api
+#+product: ores
+#+entity_singular: tenor_basis_swap_part_identity
+#+namespace: ores::refdata::domain
+#+brief: The key, the version and the owning party of a tenor basis swap convention part.
+#+filetags: :model:field_group:refdata:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+The surrogate key, the convention it belongs to and the owning party, with
+the scaffold's version and tenant. Both parts of a tenor basis swap carry
+this block, and every read of a part starts here, so it is one struct
+rather than the same six members written twice.
+
+Extracted as a plain nested sub-struct so that
+rfl::internal::no_duplicate_field_names never instantiates a Literal
+wider than 5 fields for this block. See the decomposition section of
+doc/knowledge/architecture/data_oriented_design.org.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
+#+end_src
+
+* Fields
+
+** version
+:PROPERTIES:
+:cpp_type: int
+:default_value: 0
+:END:
+
+Version number for optimistic locking and change tracking.
+
+** tenant_id
+:PROPERTIES:
+:cpp_type: utility::uuid::tenant_id
+:default_value: utility::uuid::tenant_id::system()
+:END:
+
+Tenant identifier for multi-tenancy isolation.
+
+** id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The surrogate key of this part row.
+
+** convention_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The central convention row this part belongs to.
+
+** party_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The party that owns the convention this part belongs to.
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

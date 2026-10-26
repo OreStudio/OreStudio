@@ -89,7 +89,7 @@ read_one(repository::tenor_basis_swap_long_short_repository& repo,
  */
 messaging::tenor_basis_swap_long_short_key key_from(const domain::tenor_basis_swap_long_short& v) {
     messaging::tenor_basis_swap_long_short_key key;
-    key.id = v.id;
+    key.id = v.identity.id;
     return key;
 }
 
@@ -103,15 +103,15 @@ messaging::tenor_basis_swap_long_short_key key_from(const domain::tenor_basis_sw
 domain::tenor_basis_swap_long_short
 to_domain(const messaging::tenor_basis_swap_long_short_write& write) {
     domain::tenor_basis_swap_long_short v;
-    v.id = write.id;
-    v.convention_id = write.convention_id;
-    v.long_index = write.long_index;
-    v.long_pay_tenor = write.long_pay_tenor;
-    v.short_index = write.short_index;
-    v.short_pay_tenor = write.short_pay_tenor;
-    v.spread_on_short = write.spread_on_short;
-    v.include_spread = write.include_spread;
-    v.sub_periods_coupon_type = write.sub_periods_coupon_type;
+    v.identity.id = write.id;
+    v.identity.convention_id = write.convention_id;
+    v.legs.long_index = write.long_index;
+    v.legs.long_pay_tenor = write.long_pay_tenor;
+    v.legs.short_index = write.short_index;
+    v.legs.short_pay_tenor = write.short_pay_tenor;
+    v.legs.spread_on_short = write.spread_on_short;
+    v.coupon.include_spread = write.include_spread;
+    v.coupon.sub_periods_coupon_type = write.sub_periods_coupon_type;
     return v;
 }
 
@@ -304,12 +304,13 @@ tenor_basis_swap_long_short_service::delete_tenor_basis_swap_long_short(
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
             const auto live = read_one(repo_, ctx_, request.removal.key);
-            response.result = refuse(
-                outcome_code::version_conflict,
-                {.entity = "tenor_basis_swap_long_short",
-                 .field = "id",
-                 .expected = expected ? std::to_string(*expected) : std::string{},
-                 .current = live.empty() ? std::string{} : std::to_string(live.front().version)});
+            response.result =
+                refuse(outcome_code::version_conflict,
+                       {.entity = "tenor_basis_swap_long_short",
+                        .field = "id",
+                        .expected = expected ? std::to_string(*expected) : std::string{},
+                        .current = live.empty() ? std::string{} :
+                                                  std::to_string(live.front().identity.version)});
             break;
         }
         case repository::tenor_basis_swap_long_short_repository::remove_status::unsupported:
@@ -410,7 +411,7 @@ ores::utility::domain::result tenor_basis_swap_long_short_service::prepare_chang
             // The protocol states the version as a uint32 and the row carries it
             // as an int, so the comparison states the conversion.
             if (!change.precondition.version ||
-                static_cast<std::uint32_t>(current.front().version) !=
+                static_cast<std::uint32_t>(current.front().identity.version) !=
                     *change.precondition.version) {
                 return refuse(outcome_code::version_conflict,
                               {.entity = "tenor_basis_swap_long_short",
@@ -418,7 +419,7 @@ ores::utility::domain::result tenor_basis_swap_long_short_service::prepare_chang
                                .expected = change.precondition.version ?
                                                std::to_string(*change.precondition.version) :
                                                std::string{},
-                               .current = std::to_string(current.front().version)});
+                               .current = std::to_string(current.front().identity.version)});
             }
             break;
         case precondition_kind::any:
@@ -427,12 +428,20 @@ ores::utility::domain::result tenor_basis_swap_long_short_service::prepare_chang
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the
     // two come to disagree.
-    stamp(out,
+    // The audit reaches the row through whichever member carries it, so a
+    // grouped entity is stamped member by member; stamping it whole would
+    // find no audit column and leave the row without one.
+    stamp(out.identity,
           ctx_,
           intent.reason_code.empty() ?
               std::string(ores::service::messaging::change_reasons::new_record) :
               intent.reason_code);
-    out.change_commentary = intent.commentary;
+    stamp(out.audit,
+          ctx_,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    out.audit.change_commentary = intent.commentary;
     return result;
 }
 
@@ -520,26 +529,28 @@ tenor_basis_swap_long_short_service::get_tenor_basis_swap_long_shorts(
 
 void tenor_basis_swap_long_short_service::save_tenor_basis_swap_long_short(
     const domain::tenor_basis_swap_long_short& v) {
-    if (v.id.is_nil())
+    if (v.identity.id.is_nil())
         throw std::invalid_argument("Tenor Basis Swap Long Short id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving tenor basis swap long short. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving tenor basis swap long short. " << "id: " << v.identity.id;
     auto t = v;
-    stamp(t, ctx_);
+    stamp(t.identity, ctx_);
+    stamp(t.audit, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved tenor basis swap long short. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved tenor basis swap long short. " << "id: " << v.identity.id;
 }
 
 void tenor_basis_swap_long_short_service::save_tenor_basis_swap_long_shorts(
     const std::vector<domain::tenor_basis_swap_long_short>& tenor_basis_swap_long_shorts) {
     for (const auto& e : tenor_basis_swap_long_shorts) {
-        if (e.id.is_nil())
+        if (e.identity.id.is_nil())
             throw std::invalid_argument("Tenor Basis Swap Long Short id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << tenor_basis_swap_long_shorts.size()
                                << " tenor basis swap long shorts";
     auto ts = tenor_basis_swap_long_shorts;
     for (auto& e : ts) {
-        stamp(e, ctx_);
+        stamp(e.identity, ctx_);
+        stamp(e.audit, ctx_);
     }
     repo_.write(ctx_, ts);
 }

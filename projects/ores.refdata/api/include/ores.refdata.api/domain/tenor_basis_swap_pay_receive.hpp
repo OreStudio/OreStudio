@@ -25,12 +25,14 @@
 #ifndef ORES_REFDATA_API_DOMAIN_TENOR_BASIS_SWAP_PAY_RECEIVE_HPP
 #define ORES_REFDATA_API_DOMAIN_TENOR_BASIS_SWAP_PAY_RECEIVE_HPP
 
-#include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/uuid.hpp>
+#include "ores.dq.api/domain/audit_record.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_part_identity.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive_coupon.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive_legs.hpp"
 #include <chrono>
-#include <optional>
-#include <string>
+#include <span>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::refdata::domain {
 
@@ -44,111 +46,10 @@ namespace ores::refdata::domain {
  * convention fills exactly one of the two.
  */
 struct tenor_basis_swap_pay_receive final {
-    /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
-    /**
-     * @brief Tenant identifier for multi-tenancy isolation.
-     */
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief The surrogate key of this part row.
-     */
-    boost::uuids::uuid id;
-
-    /**
-     * @brief The central convention row this part belongs to.
-     */
-    boost::uuids::uuid convention_id;
-
-    /**
-     * @brief The party that owns the convention this part belongs to. Carried so row level security
-     * can isolate the part without a join, and stamped from the session that writes the document.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
-     * @brief Index the paying leg references, in the paying and receiving form.
-     */
-    std::optional<std::string> pay_index;
-
-    /**
-     * @brief Payment frequency of the paying leg, as ORE's period code.
-     */
-    std::optional<std::string> pay_frequency;
-
-    /**
-     * @brief Index the receiving leg references, in the paying and receiving form.
-     */
-    std::optional<std::string> receive_index;
-
-    /**
-     * @brief Payment frequency of the receiving leg, as ORE's period code.
-     */
-    std::optional<std::string> receive_frequency;
-
-    /**
-     * @brief Whether the quoted spread is added to the receiving leg rather than the paying one.
-     */
-    std::optional<bool> spread_on_rec;
-
-    /**
-     * @brief Whether the spread is included in the coupon that carries it.
-     */
-    std::optional<bool> include_spread;
-
-    /**
-     * @brief How a coupon built from sub-periods is combined, as the canonical code the mapper
-     * stores.
-     */
-    std::optional<std::string> sub_periods_coupon_type;
-
-    /**
-     * @brief Whether the paying leg's coupons are averaged rather than compounded.
-     */
-    std::optional<bool> pay_is_averaged;
-
-    /**
-     * @brief Whether the receiving leg's coupons are averaged rather than compounded.
-     */
-    std::optional<bool> rec_is_averaged;
-
-    /**
-     * @brief Username of the person who last modified this tenor basis swap pay receive.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     *
-     * References change_reasons table (soft FK).
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     *
-     * The transaction-time window's start, which the store sets from its own
-     * clock. It travels with the audit members because it is only ever read
-     * with them: the history builder takes a version type that carries an
-     * actor *and* this timestamp, so an entity without the actor has no use
-     * for the timestamp either.
-     */
-    std::chrono::system_clock::time_point recorded_at;
-
+    tenor_basis_swap_part_identity identity;
+    tenor_basis_swap_pay_receive_legs legs;
+    tenor_basis_swap_pay_receive_coupon coupon;
+    ores::dq::domain::audit_record audit;
     /**
      * @brief Value equality.
      *
@@ -162,6 +63,17 @@ struct tenor_basis_swap_pay_receive final {
     friend bool operator==(const tenor_basis_swap_pay_receive&,
                            const tenor_basis_swap_pay_receive&) = default;
 };
+
+/**
+ * @brief Names the members of tenor_basis_swap_pay_receive that are economic.
+ *
+ * The economic digest reads this at compile time and decides nothing by a
+ * field's name. A type without this overload cannot be digested.
+ */
+[[nodiscard]] constexpr std::span<const std::string_view>
+economic_fields_of(std::type_identity<tenor_basis_swap_pay_receive>) {
+    return {};
+}
 
 /**
  * @brief Dispatch-key identifier for tenor_basis_swap_pay_receive, e.g. for the

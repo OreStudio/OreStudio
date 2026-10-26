@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 3f64c7fc-10db-4c0c-a77c-742147203703
+:END:
+#+title: ores.refdata.tenor_basis_swap_long_short_legs
+#+description: Codegen field-group model for ores::refdata::domain::tenor_basis_swap_long_short_legs.
+#+type: ores.codegen.field_group
+#+component: refdata
+#+subcomponent: api
+#+product: ores
+#+entity_singular: tenor_basis_swap_long_short_legs
+#+namespace: ores::refdata::domain
+#+brief: The two legs of the long and short form of a tenor basis swap.
+#+filetags: :model:field_group:refdata:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+The long leg and the short leg, each naming an index and an optional payment
+tenor, and the spread flag the short leg carries. A row fills all five or
+none: the convention carries this form or the paying and receiving form.
+
+Extracted as a plain nested sub-struct so that
+rfl::internal::no_duplicate_field_names never instantiates a Literal
+wider than 5 fields for this block. See the decomposition section of
+doc/knowledge/architecture/data_oriented_design.org.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** long_index
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Index the long leg references, in the long and short form.
+
+** long_pay_tenor
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Payment tenor of the long leg, as ORE's period code.
+
+** short_index
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Index the short leg references, in the long and short form.
+
+** short_pay_tenor
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Payment tenor of the short leg, as ORE's period code.
+
+** spread_on_short
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+Whether the quoted spread is added to the short leg rather than the long one.
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

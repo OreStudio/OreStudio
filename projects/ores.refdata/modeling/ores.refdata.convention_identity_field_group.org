@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: fd4b969c-53f7-4210-83d1-03fd5a0cd76f
+:END:
+#+title: ores.refdata.convention_identity
+#+description: Codegen field-group model for ores::refdata::domain::convention_identity.
+#+type: ores.codegen.field_group
+#+component: refdata
+#+subcomponent: api
+#+product: ores
+#+entity_singular: convention_identity
+#+namespace: ores::refdata::domain
+#+brief: The key, the version and the owning party of a convention.
+#+filetags: :model:field_group:refdata:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+What makes a convention the one a caller means: its surrogate key, the party
+that holds it and the kind it is, with the scaffold's version and tenant. Every
+read of a convention starts here, so it is one struct rather than five members
+scattered through the row.
+
+Extracted as a plain nested sub-struct so that
+rfl::internal::no_duplicate_field_names never instantiates a Literal
+wider than 5 fields for this block. See the decomposition section of
+doc/knowledge/architecture/data_oriented_design.org.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#include "ores.utility/uuid/tenant_id.hpp"
+#+end_src
+
+* Fields
+
+** version
+:PROPERTIES:
+:cpp_type: int
+:default_value: 0
+:END:
+
+Version number for optimistic locking and change tracking.
+
+** tenant_id
+:PROPERTIES:
+:cpp_type: utility::uuid::tenant_id
+:default_value: utility::uuid::tenant_id::system()
+:END:
+
+Tenant identifier for multi-tenancy isolation.
+
+** id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The surrogate key of this convention.
+
+** party_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The party that owns the convention.
+
+** kind_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The convention kind this row is, such as TENOR_BASIS_SWAP.
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

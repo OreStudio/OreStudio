@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 5de08b09-834b-4a02-9624-bb417156eacc
+:END:
+#+title: ores.refdata.convention_payload
+#+description: Codegen field-group model for ores::refdata::domain::convention_payload.
+#+type: ores.codegen.field_group
+#+component: refdata
+#+subcomponent: api
+#+product: ores
+#+entity_singular: convention_payload
+#+namespace: ores::refdata::domain
+#+brief: What a convention carries besides its identity.
+#+filetags: :model:field_group:refdata:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+The name the convention carries in the source document and the address of the
+market data it needs, when its kind names one index. Everything kind-specific
+lives in a part table, so this is all a central row holds beyond its identity.
+
+Extracted as a plain nested sub-struct so that
+rfl::internal::no_duplicate_field_names never instantiates a Literal
+wider than 5 fields for this block. See the decomposition section of
+doc/knowledge/architecture/data_oriented_design.org.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The name the convention carries in the source document, its ORE Id element.
+
+** oresmd_uri
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The oresmd URI of the market data this convention needs, when the kind names one index.
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

@@ -50,8 +50,9 @@ std::string convert_to_table(const std::vector<tenor_basis_swap_pay_receive>& v)
           << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& pr : v) {
-        table << opt_str(pr.pay_index) << opt_str(pr.receive_index)
-              << opt_str(pr.sub_periods_coupon_type) << pr.modified_by << pr.version << fort::endr;
+        table << opt_str(pr.legs.pay_index) << opt_str(pr.legs.receive_index)
+              << opt_str(pr.coupon.sub_periods_coupon_type) << pr.audit.modified_by
+              << pr.identity.version << fort::endr;
     }
     return table.to_string();
 }

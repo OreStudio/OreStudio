@@ -41,26 +41,26 @@ generate_synthetic_tenor_basis_swap_pay_receive(utility::generation::generation_
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::tenor_basis_swap_pay_receive r;
-    r.version = 0;
-    r.tenant_id =
+    r.identity.version = 0;
+    r.identity.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.id = ctx.generate_uuid();
-    r.convention_id = ctx.generate_uuid();
-    r.party_id = ctx.generate_uuid();
-    r.pay_index = std::nullopt;
-    r.pay_frequency = std::nullopt;
-    r.receive_index = std::nullopt;
-    r.receive_frequency = std::nullopt;
-    r.spread_on_rec = std::nullopt;
-    r.include_spread = std::nullopt;
-    r.sub_periods_coupon_type = std::nullopt;
-    r.pay_is_averaged = std::nullopt;
-    r.rec_is_averaged = std::nullopt;
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
+    r.identity.id = ctx.generate_uuid();
+    r.identity.convention_id = ctx.generate_uuid();
+    r.identity.party_id = ctx.generate_uuid();
+    r.legs.pay_index = std::nullopt;
+    r.legs.pay_frequency = std::nullopt;
+    r.legs.receive_index = std::nullopt;
+    r.legs.receive_frequency = std::nullopt;
+    r.coupon.spread_on_rec = std::nullopt;
+    r.coupon.include_spread = std::nullopt;
+    r.coupon.sub_periods_coupon_type = std::nullopt;
+    r.legs.pay_is_averaged = std::nullopt;
+    r.legs.rec_is_averaged = std::nullopt;
+    r.audit.modified_by = modified_by;
+    r.audit.performed_by = modified_by;
+    r.audit.change_reason_code = "system.test";
+    r.audit.change_commentary = "Synthetic test data";
+    r.audit.recorded_at = ctx.past_timepoint();
     return r;
 }
 

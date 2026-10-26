@@ -120,20 +120,23 @@ conventions_bundle conventions_bundle_service::read() {
             // covers one of them.
             if (family == central_family) {
                 const auto decoded = rfl::json::read<domain::convention>(payload);
-                if (!decoded || decoded->kind_code != tenor_basis_swap_kind)
+                if (!decoded ||
+                    decoded->identity.kind_code != tenor_basis_swap_kind)
                     continue;
-                covered_central.insert(boost::uuids::to_string(decoded->id));
+                covered_central.insert(boost::uuids::to_string(decoded->identity.id));
             }
             if (family == pay_receive_family) {
                 const auto decoded = rfl::json::read<domain::tenor_basis_swap_pay_receive>(payload);
                 if (!decoded ||
-                    !covered_central.contains(boost::uuids::to_string(decoded->convention_id)))
+                    !covered_central.contains(
+                        boost::uuids::to_string(decoded->identity.convention_id)))
                     continue;
             }
             if (family == long_short_family) {
                 const auto decoded = rfl::json::read<domain::tenor_basis_swap_long_short>(payload);
                 if (!decoded ||
-                    !covered_central.contains(boost::uuids::to_string(decoded->convention_id)))
+                    !covered_central.contains(
+                        boost::uuids::to_string(decoded->identity.convention_id)))
                     continue;
             }
             bundle.rows.push_back(conventions_bundle_row{

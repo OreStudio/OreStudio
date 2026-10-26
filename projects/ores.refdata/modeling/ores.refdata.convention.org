@@ -214,13 +214,18 @@ parent; the finder reads the parent and each of them.
 :entity_plural_words:   conventions
 :END:
 
-** Domain includes
+** Domain groups
 
-#+begin_src cpp :name includes
-#include <string>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#+end_src
+The struct carries three concerns at once, so it is its member list rather
+than one flat block: what makes the convention the one a caller means, what it
+carries, and the change audit that =ores.dq= owns. Everything kind-specific
+lives in a part table, so no group here is per-kind.
+
+| member   | field_group                      |
+|----------+----------------------------------|
+| identity | ores.refdata.convention_identity |
+| payload  | ores.refdata.convention_payload  |
+| audit    | ores.dq.audit_record             |
 
 ** Entity includes
 

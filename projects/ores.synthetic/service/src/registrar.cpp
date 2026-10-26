@@ -93,8 +93,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     // The market-wide arrival factor: one read and one pin, both for the run.
     BOOST_LOG_SEV(registrar_lg(), ores::logging::info)
-        << "SUBSCRIBE: " << nats.make_subject(
-               std::string(messaging::get_market_regime_request::nats_subject))
+        << "SUBSCRIBE: "
+        << nats.make_subject(std::string(messaging::get_market_regime_request::nats_subject))
         << " and "
         << nats.make_subject(std::string(messaging::pin_market_regime_request::nats_subject))
         << " for the market regime.";

@@ -58,8 +58,8 @@ auto fetch_all(nats_client& session, Accessor accessor)
         request.offset = offset;
         request.limit = page_size;
         std::ostringstream errors;
-        auto response = do_auth_request<Response>(
-            errors, session, std::string(Request::nats_subject), request);
+        auto response =
+            do_auth_request<Response>(errors, session, std::string(Request::nats_subject), request);
         if (!response)
             return std::nullopt;
         auto& rows = accessor(*response);
@@ -81,9 +81,9 @@ struct model {
 
 std::optional<model> load(nats_client& session) {
     model loaded;
-    auto parameters = fetch_all<messaging::list_ore_parameters_request,
-                                messaging::list_ore_parameters_response>(
-        session, [](auto& response) -> auto& { return response.parameters; });
+    auto parameters =
+        fetch_all<messaging::list_ore_parameters_request, messaging::list_ore_parameters_response>(
+            session, [](auto& response) -> auto& { return response.parameters; });
     auto links = fetch_all<messaging::list_ore_parameter_setting_value_sets_request,
                            messaging::list_ore_parameter_setting_value_sets_response>(
         session, [](auto& response) -> auto& { return response.setting_value_sets; });
@@ -103,8 +103,7 @@ std::optional<model> load(nats_client& session) {
 }
 
 bool is_parameter_scope(const std::string& scope) {
-    return scope == "ModelParameters" || scope == "EngineParameters" ||
-           scope == "GlobalParameters";
+    return scope == "ModelParameters" || scope == "EngineParameters" || scope == "GlobalParameters";
 }
 
 std::string scope_of(const std::string& raw) {
@@ -141,8 +140,8 @@ bool compatible(const std::string& kind, const std::string& domain) {
     if (domain == "double")
         return kind == "number" || kind == "range";
     if (domain == "string")
-        return kind == "text" || kind == "enumerated" || kind == "catalogue" ||
-               kind == "regex" || kind == "range";
+        return kind == "text" || kind == "enumerated" || kind == "catalogue" || kind == "regex" ||
+               kind == "range";
     return true;
 }
 
@@ -214,8 +213,8 @@ void print_rows(std::ostream& out, const std::vector<row>& rows) {
         << "KIND" << std::setw(34) << "SET" << "CHOICES" << '\n';
     for (const auto& entry : rows) {
         out << std::left << std::setw(18) << entry.scope << std::setw(36) << entry.name
-            << std::setw(12) << entry.kind << std::setw(34) << entry.set_code
-            << choices_of(entry) << '\n';
+            << std::setw(12) << entry.kind << std::setw(34) << entry.set_code << choices_of(entry)
+            << '\n';
     }
     out << rows.size() << " parameter(s)." << '\n';
 }
@@ -225,19 +224,19 @@ void print_one(std::ostream& out, const row& entry) {
         << std::setw(12) << "Name" << entry.name << '\n'
         << std::setw(12) << "Set" << entry.set_code << '\n'
         << std::setw(12) << "Kind" << entry.kind << '\n'
-        << std::setw(12) << "Catalogue" << (entry.catalogue.empty() ? "-" : entry.catalogue)
-        << '\n'
+        << std::setw(12) << "Catalogue" << (entry.catalogue.empty() ? "-" : entry.catalogue) << '\n'
         << std::setw(12) << "Pattern" << (entry.pattern.empty() ? "-" : entry.pattern) << '\n'
-        << std::setw(12) << "Minimum"
-        << (entry.minimum ? std::to_string(*entry.minimum) : "-") << '\n'
-        << std::setw(12) << "Maximum"
-        << (entry.maximum ? std::to_string(*entry.maximum) : "-") << '\n'
+        << std::setw(12) << "Minimum" << (entry.minimum ? std::to_string(*entry.minimum) : "-")
+        << '\n'
+        << std::setw(12) << "Maximum" << (entry.maximum ? std::to_string(*entry.maximum) : "-")
+        << '\n'
         << std::setw(12) << "Choices" << choices_of(entry) << '\n';
 }
 
 }
 
-void ore_parameter_settings_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
+void ore_parameter_settings_commands::register_commands(cli::Menu& root_menu,
+                                                        nats_client& session) {
     auto menu = std::make_unique<cli::Menu>("ore_parameter_settings");
 
     menu->Insert(
@@ -339,8 +338,8 @@ void ore_parameter_settings_commands::register_commands(cli::Menu& root_menu, na
                         << entry.set_code << ")" << '\n';
                 } else if (!compatible(entry.kind, entry.domain)) {
                     ++mismatched;
-                    out << "kind/domain  " << entry.scope << " " << entry.name << " ("
-                        << entry.kind << " set, " << entry.domain << " domain)" << '\n';
+                    out << "kind/domain  " << entry.scope << " " << entry.name << " (" << entry.kind
+                        << " set, " << entry.domain << " domain)" << '\n';
                 }
             }
             std::set<std::string> contract;

@@ -75,7 +75,8 @@ TEST_CASE("record_run_pricing stores the date and the note on the run", tags) {
     const auto stored = service.get_instance(run_id);
     REQUIRE(stored.has_value());
     CHECK(stored->priced_at.has_value());
-    CHECK(ores::platform::time::datetime::to_db_string(*stored->priced_at) == "2026-05-05 00:00:00.000000");
+    CHECK(ores::platform::time::datetime::to_db_string(*stored->priced_at) ==
+          "2026-05-05 00:00:00.000000");
     CHECK(stored->price_note == request.price_note);
 }
 

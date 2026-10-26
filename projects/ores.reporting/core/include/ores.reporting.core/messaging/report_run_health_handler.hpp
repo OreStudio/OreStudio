@@ -56,8 +56,7 @@ using namespace ores::logging;
  * session's to read, and the projection says so rather than answering an
  * empty word that a caller would read as a state.
  */
-inline get_run_health_response project_run_health(
-    const get_report_instance_health_response& read) {
+inline get_run_health_response project_run_health(const get_report_instance_health_response& read) {
     get_run_health_response response;
     response.result = read.result;
     if (response.result.outcome != ores::utility::domain::outcome::ok)

@@ -195,10 +195,8 @@ const trade_planner& planner_for(const std::string& asset_class_code) {
     static const commodity_trade_planner commodity;
     static const rate_trade_planner rates;
     static const fx_trade_planner fx;
-    static const std::map<std::string, const trade_planner*> planners{{"bond", &bond},
-                                                                     {"commodity", &commodity},
-                                                                     {"fx", &fx},
-                                                                     {"interest_rates", &rates}};
+    static const std::map<std::string, const trade_planner*> planners{
+        {"bond", &bond}, {"commodity", &commodity}, {"fx", &fx}, {"interest_rates", &rates}};
 
     const auto entry = planners.find(asset_class_code);
     if (entry == planners.end()) {
@@ -352,8 +350,7 @@ constexpr commodity_type commodity_types[] = {
     {"CommodityBestEntryOption", commodity_shape::basket_option},
 };
 
-constexpr std::size_t commodity_type_count =
-    sizeof(commodity_types) / sizeof(commodity_types[0]);
+constexpr std::size_t commodity_type_count = sizeof(commodity_types) / sizeof(commodity_types[0]);
 
 /*
  * A price in the band a commodity plausibly trades in, quantised to a
@@ -366,7 +363,9 @@ double price_from(const std::string& name, std::uint32_t stream, double floor, d
 
 }
 
-std::string_view commodity_trade_planner::asset_class_code() const { return "commodity"; }
+std::string_view commodity_trade_planner::asset_class_code() const {
+    return "commodity";
+}
 
 domain::trade_population_plan
 commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const {
@@ -630,7 +629,9 @@ const std::string& index_for(const domain::trade_generation_scope& scope, std::u
 
 }
 
-std::string_view rate_trade_planner::asset_class_code() const { return "interest_rates"; }
+std::string_view rate_trade_planner::asset_class_code() const {
+    return "interest_rates";
+}
 
 domain::trade_population_plan
 rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
@@ -657,8 +658,8 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
          * to reach a type always states it and the coverage claim is testable.
          */
         const auto& type = rate_types[slot % rate_type_count];
-        const auto* foreign = (type == "CrossCurrencySwap") ? foreign_index_for(scope, slot)
-                                                           : nullptr;
+        const auto* foreign =
+            (type == "CrossCurrencySwap") ? foreign_index_for(scope, slot) : nullptr;
         const auto& index = foreign != nullptr ? *foreign : index_for(scope, slot);
 
         const auto span = max_years - min_years + 1;
@@ -754,8 +755,8 @@ constexpr std::size_t fx_type_count = sizeof(fx_types) / sizeof(fx_types[0]);
  * whole catalogue rather than refusing, because a pair in another currency is
  * still a pair it holds.
  */
-const domain::currency_pair_reference&
-pair_for(const domain::trade_generation_scope& scope, std::uint32_t slot) {
+const domain::currency_pair_reference& pair_for(const domain::trade_generation_scope& scope,
+                                                std::uint32_t slot) {
     const auto& own = scope.currency_code;
     std::vector<const domain::currency_pair_reference*> matching;
     for (const auto& pair : scope.currency_pairs) {
@@ -773,7 +774,9 @@ std::string pair_name(const domain::currency_pair_reference& pair) {
 
 }
 
-std::string_view fx_trade_planner::asset_class_code() const { return "fx"; }
+std::string_view fx_trade_planner::asset_class_code() const {
+    return "fx";
+}
 
 domain::trade_population_plan
 fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {

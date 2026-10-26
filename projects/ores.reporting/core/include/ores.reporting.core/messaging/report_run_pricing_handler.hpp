@@ -61,8 +61,8 @@ using namespace ores::logging;
  * row-level policy on the table decides which of the two it is, and this
  * function never distinguishes them.
  */
-inline record_run_pricing_response apply_run_pricing(
-    service::report_instance_service& instances, const record_run_pricing_request& request) {
+inline record_run_pricing_response apply_run_pricing(service::report_instance_service& instances,
+                                                     const record_run_pricing_request& request) {
     record_run_pricing_response response;
     using ores::database::domain::outcome_code;
     using ores::database::domain::refuse;

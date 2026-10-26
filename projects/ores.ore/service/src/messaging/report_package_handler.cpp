@@ -345,10 +345,9 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             pricing.report_instance_id = boost::uuids::string_generator()(req.report_instance_id);
             pricing.priced_at = priced_date;
             if (priced_date != requested_date) {
-                pricing.price_note =
-                    "The run asked for " + requested_date +
-                    " and the gathered market data ends at " + priced_date +
-                    ", so the run priced at the data's date.";
+                pricing.price_note = "The run asked for " + requested_date +
+                                     " and the gathered market data ends at " + priced_date +
+                                     ", so the run priced at the data's date.";
             }
             std::string pricing_error;
             if (const auto priced = nats_call(owners, pricing, pricing_error);

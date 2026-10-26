@@ -71,8 +71,7 @@ private:
      * whole or absent, so a security the tenant already holds with equal terms
      * is taken as present.
      */
-    void ensure_issue(const domain::trade_population_slot& slot,
-                      const domain::bond_terms& terms);
+    void ensure_issue(const domain::trade_population_slot& slot, const domain::bond_terms& terms);
 
     ores::nats::service::nats_client& nats_;
     /*

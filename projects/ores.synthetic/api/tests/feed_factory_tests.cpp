@@ -454,8 +454,8 @@ TEST_CASE("one clock drives every feed and each counts what it ticks", tags) {
     // The defect this pins: a feed's publish count used to come from a clock it
     // no longer runs, so it read zero however many ticks the scheduler made.
     ores::analytics::quant::service::tick_scheduler scheduler;
-    const auto context = feed_build_context{
-        .nats = nats(), .auth_nats = auth_nats(), .scheduler = &scheduler};
+    const auto context =
+        feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .scheduler = &scheduler};
 
     const auto factory = make_default_feed_factory();
     auto eur = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};

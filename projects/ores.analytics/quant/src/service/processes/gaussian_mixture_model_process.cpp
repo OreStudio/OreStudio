@@ -85,8 +85,7 @@ void gaussian_mixture_model_process::step_partial_tick(double part) {
     const int k = component_dist_(rng_);
     const double sd = stdevs_[k] * std::sqrt(part);
     const double mean = means_[k] * part;
-    const double log_return =
-        sd > 0.0 ? std::normal_distribution<double>(mean, sd)(rng_) : mean;
+    const double log_return = sd > 0.0 ? std::normal_distribution<double>(mean, sd)(rng_) : mean;
     price_ *= std::exp(log_return);
 }
 

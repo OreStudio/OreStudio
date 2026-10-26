@@ -61,8 +61,7 @@ public:
         constexpr double one_tick_tolerance = 1e-9;
         if (std::abs(elapsed_ticks - 1.0) <= one_tick_tolerance)
             return next();
-        throw std::invalid_argument(
-            "this process cannot step by other than one nominal tick");
+        throw std::invalid_argument("this process cannot step by other than one nominal tick");
     }
 
     /**

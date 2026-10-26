@@ -21,8 +21,8 @@
 
 #include <atomic>
 #include <chrono>
-#include <cstdint>
 #include <cmath>
+#include <cstdint>
 #include <optional>
 #include <random>
 #include <stdexcept>
@@ -138,7 +138,9 @@ public:
     ///
     /// The owner republishes on its next advance, within one period. Nothing is
     /// published here: the chain's own state belongs to the owner.
-    void unpin() { pinned_.store(automatic, std::memory_order_relaxed); }
+    void unpin() {
+        pinned_.store(automatic, std::memory_order_relaxed);
+    }
 
     /**
      * @brief Advance to now, by the time the wall clock reports since the last
@@ -147,8 +149,7 @@ public:
     void advance_to_now() {
         const auto now = std::chrono::steady_clock::now();
         if (last_advanced_) {
-            const auto elapsed =
-                std::chrono::duration<double>(now - *last_advanced_).count();
+            const auto elapsed = std::chrono::duration<double>(now - *last_advanced_).count();
             advance_chain(elapsed);
         }
         last_advanced_ = now;
@@ -168,7 +169,9 @@ public:
     }
 
     /// @brief How long the current state still holds, in seconds. Owner-only.
-    [[nodiscard]] double remaining_seconds() const { return remaining_; }
+    [[nodiscard]] double remaining_seconds() const {
+        return remaining_;
+    }
 
 private:
     static constexpr int automatic = -1;
@@ -176,8 +179,7 @@ private:
     static constexpr int active = 1;
 
     void publish(state s) {
-        published_state_.store(s == state::active ? active : calm,
-                               std::memory_order_relaxed);
+        published_state_.store(s == state::active ? active : calm, std::memory_order_relaxed);
         published_multiplier_.store(s == state::active ? active_multiplier_ : calm_multiplier_,
                                     std::memory_order_relaxed);
     }

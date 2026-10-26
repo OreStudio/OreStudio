@@ -429,24 +429,20 @@ describe('the FX feed screens', () => {
         expect(html).toContain('The mixture needs at least one component.');
     });
 
-    it('enables Start on a feed whose source serves nothing and Stop on one whose source serves', () => {
-        const running = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
-            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
-            client.setQueryData(ADAPTERS_KEY, adapters('bloomberg', 'serving', 1));
-            client.setQueryData(['my-access'], access(['synthetic::*']));
-        });
-        expect(running).toContain('>Running<');
-        expect(running).toMatch(/<button[^>]*disabled=""[^>]*>Start<\/button>/);
-        expect(running).not.toMatch(/<button[^>]*disabled=""[^>]*>Stop<\/button>/);
-        expect(running).toContain('EUR/USD · version 3 · Geometric');
-        const stopped = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
-            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
-            client.setQueryData(ADAPTERS_KEY, adapters('bloomberg', 'ready', 0));
-            client.setQueryData(['my-access'], access(['synthetic::*']));
-        });
-        expect(stopped).toContain('>Stopped<');
-        expect(stopped).not.toMatch(/<button[^>]*disabled=""[^>]*>Start<\/button>/);
-        expect(stopped).toMatch(/<button[^>]*disabled=""[^>]*>Stop<\/button>/);
+    it('offers Start and Stop as the test control whatever the source says', () => {
+        for (const [state, demanded, word] of [
+            ['serving', 1, '>Running<'],
+            ['ready', 0, '>Stopped<'],
+        ] as const) {
+            const html = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
+                client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+                client.setQueryData(ADAPTERS_KEY, adapters('bloomberg', state, demanded));
+                client.setQueryData(['my-access'], access(['synthetic::*']));
+            });
+            expect(html).toContain(word);
+            expect(html).not.toMatch(/<button[^>]*disabled=""[^>]*>Start<\/button>/);
+            expect(html).not.toMatch(/<button[^>]*disabled=""[^>]*>Stop<\/button>/);
+        }
     });
 
     it('plots the last ticks with the last price and the move over them', () => {

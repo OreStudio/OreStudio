@@ -157,7 +157,6 @@ function FeedBody({
                             <span className="flex gap-2">
                                 <Button
                                     size="sm"
-                                    disabled={running === true}
                                     onClick={() =>
                                         runs.run('start', [
                                             { id, label: show(feed['source_name']) },
@@ -168,7 +167,6 @@ function FeedBody({
                                 </Button>
                                 <Button
                                     size="sm"
-                                    disabled={running !== true}
                                     onClick={() =>
                                         runs.run('stop', [{ id, label: show(feed['source_name']) }])
                                     }

@@ -162,18 +162,10 @@ export function ProviderTab(): ReactNode {
                         <span className="ml-auto flex items-center gap-2">
                             {runs.mayRun && (
                                 <>
-                                    <Button
-                                        size="sm"
-                                        disabled={servesFeeds(source)}
-                                        onClick={() => ask('start')}
-                                    >
+                                    <Button size="sm" onClick={() => ask('start')}>
                                         {t('marketdata.synthetic.runs.start')}
                                     </Button>
-                                    <Button
-                                        size="sm"
-                                        disabled={!servesFeeds(source)}
-                                        onClick={() => ask('stop')}
-                                    >
+                                    <Button size="sm" onClick={() => ask('stop')}>
                                         {t('marketdata.synthetic.runs.stop')}
                                     </Button>
                                 </>
@@ -238,11 +230,11 @@ export function ProviderTab(): ReactNode {
                                     {(
                                         [
                                             'underlying',
-                                            'state',
                                             'enabled',
                                             'name',
                                             'engine',
                                             'frequency',
+                                            'state',
                                         ] as const
                                     ).map((column) => (
                                         <th key={column} className="px-3 py-2 font-medium">
@@ -263,15 +255,6 @@ export function ProviderTab(): ReactNode {
                                         >
                                             <td className="px-3 py-2">
                                                 <Underlying feed={feed} />
-                                            </td>
-                                            <td className="px-3 py-2">
-                                                <Tag tone={serving ? 'up' : 'muted'}>
-                                                    {t(
-                                                        serving
-                                                            ? 'marketdata.synthetic.state.running'
-                                                            : 'marketdata.synthetic.state.stopped',
-                                                    )}
-                                                </Tag>
                                             </td>
                                             <td className="px-3 py-2">
                                                 <Tag tone={feed.enabled ? 'up' : 'down'}>
@@ -297,6 +280,15 @@ export function ProviderTab(): ReactNode {
                                                     `marketdata.synthetic.provider.every.${every.unit}`,
                                                     { n: every.n },
                                                 )}
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <Tag tone={serving ? 'up' : 'muted'}>
+                                                    {t(
+                                                        serving
+                                                            ? 'marketdata.synthetic.state.running'
+                                                            : 'marketdata.synthetic.state.stopped',
+                                                    )}
+                                                </Tag>
                                             </td>
                                         </tr>
                                     );

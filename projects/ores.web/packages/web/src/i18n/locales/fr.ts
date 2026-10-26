@@ -4628,9 +4628,11 @@ const fr: SourceCatalogue = {
             sensitivity: 'Sensibilité au marché',
             sensitivityHelp: 'À quel point ce flux suit le marché, où un représente le flux moyen.',
             ratio: 'Rapport de branchement',
-            ratioHelp: 'Hawkes uniquement : combien de ticks supplémentaires un tick provoque, en dessous de un.',
+            ratioHelp:
+                'Hawkes uniquement : combien de ticks supplémentaires un tick provoque, en dessous de un.',
             decay: 'Décroissance, par seconde',
-            decayHelp: 'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, en unités de un sur une seconde.',
+            decayHelp:
+                'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, en unités de un sur une seconde.',
             market: 'Marché maintenant : {state}. Il se lit ici et se règle dans l’onglet Régime de marché.',
             marketUnknown: 'l’onglet Régime de marché n’est pas encore branché',
             unsaved: 'Modifications non enregistrées',
@@ -5521,6 +5523,8 @@ const fr: SourceCatalogue = {
             errors: 'Lire les erreurs de cette exécution',
         },
         results: {
+            runTagOne: '{count} transaction · valorisée le {date}',
+            runTagMany: '{count} transactions · valorisées le {date}',
             oneRowPer: {
                 trade: 'Une ligne par transaction',
                 book: 'Une ligne par livre',
@@ -5532,8 +5536,6 @@ const fr: SourceCatalogue = {
                 book: 'Livre',
                 counterparty: 'Contrepartie',
             },
-            runTag_one: '{count} transaction · valorisée le {date}',
-            runTag_other: '{count} transactions · valorisées le {date}',
             sourceNote:
                 "Ce tableau lit npv.csv dans l'archive de sortie de l'exécution. Chaque ligne est une transaction évaluée par le moteur ; une transaction qu'il n'a pas pu construire n'écrit aucune ligne.",
             aggregateNote:

@@ -4598,7 +4598,8 @@ const pt: SourceCatalogue = {
             ratio: 'Rácio de ramificação',
             ratioHelp: 'Apenas Hawkes: quantos ticks adicionais um tick provoca, abaixo de um.',
             decay: 'Decaimento, por segundo',
-            decayHelp: 'Apenas Hawkes: com que rapidez uma rajada desaparece, em unidades de um por segundo.',
+            decayHelp:
+                'Apenas Hawkes: com que rapidez uma rajada desaparece, em unidades de um por segundo.',
             market: 'Mercado agora: {state}. Lê-se aqui e define-se no separador Regime de mercado.',
             marketUnknown: 'o separador Regime de mercado ainda não está ligado',
             unsaved: 'Alterações por guardar',
@@ -5484,6 +5485,8 @@ const pt: SourceCatalogue = {
             errors: 'Ler os erros desta execução',
         },
         results: {
+            runTagOne: '{count} transação · avaliada em {date}',
+            runTagMany: '{count} transações · avaliadas em {date}',
             oneRowPer: {
                 trade: 'Uma linha por transação',
                 book: 'Uma linha por livro',
@@ -5495,8 +5498,6 @@ const pt: SourceCatalogue = {
                 book: 'Livro',
                 counterparty: 'Contraparte',
             },
-            runTag_one: '{count} transação · avaliada em {date}',
-            runTag_other: '{count} transações · avaliadas em {date}',
             sourceNote:
                 'Esta tabela lê npv.csv do arquivo de saída da execução. Cada linha é uma transação avaliada pelo motor; uma transação que ele não conseguiu construir não escreve linha.',
             aggregateNote:

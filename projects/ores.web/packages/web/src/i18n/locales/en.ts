@@ -4563,7 +4563,8 @@ export const en: SourceCatalogue = {
             'model.poisson': 'Poisson — exponential gaps',
             'model.hawkes': 'Hawkes — bursts of ticks',
             sensitivity: 'Sensitivity to the market',
-            sensitivityHelp: 'How hard this feed follows the market, where one is the average series.',
+            sensitivityHelp:
+                'How hard this feed follows the market, where one is the average series.',
             ratio: 'Branching ratio',
             ratioHelp: 'Hawkes only: how many further ticks one tick causes, below one.',
             decay: 'Decay, per second',
@@ -5443,6 +5444,8 @@ export const en: SourceCatalogue = {
             errors: "Read this run's errors",
         },
         results: {
+            runTagOne: '{count} trade · priced {date}',
+            runTagMany: '{count} trades · priced {date}',
             oneRowPer: {
                 trade: 'One row per trade',
                 book: 'One row per book',
@@ -5454,8 +5457,6 @@ export const en: SourceCatalogue = {
                 book: 'Book',
                 counterparty: 'Counterparty',
             },
-            runTag_one: '{count} trade · priced {date}',
-            runTag_other: '{count} trades · priced {date}',
             sourceNote:
                 "This table reads npv.csv from the run's output archive. Every row is a trade the engine priced; a trade it could not build writes no row.",
             aggregateNote:

@@ -97,6 +97,8 @@ const toAggregate = (raw: unknown): AggregateRow => {
         trades: typeof row['trades'] === 'number' ? row['trades'] : 0,
         totals: money(row['totals']),
         notional: money(row['notional']),
+        group: asText(row['group']),
+        is_group: row['is_group'] === true,
     };
 };
 
@@ -218,7 +220,10 @@ export function RunResultsPanel({
             <header className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-lg font-medium">{t(`${field}.oneRowPer.${level}`)}</h2>
                 <span className="rounded border border-line px-2 py-0.5 text-xs text-ink-muted">
-                    {t(`${field}.runTag`, { count: tradeCount, date: pricedAt })}
+                    {t(`${field}.${tradeCount === 1 ? 'runTagOne' : 'runTagMany'}`, {
+                        count: tradeCount,
+                        date: pricedAt,
+                    })}
                 </span>
             </header>
             <label className="flex items-center gap-2 text-sm">
@@ -464,8 +469,13 @@ function AggregateTable({
                 </thead>
                 <tbody>
                     {rows.map((row) => (
-                        <tr key={row.key} className="border-t border-line-subtle">
-                            <td className="px-2 py-1 uppercase">
+                        <tr
+                            key={`${row.group}-${row.key}`}
+                            className={`border-t border-line-subtle ${
+                                row.is_group ? 'font-medium' : row.group === '' ? '' : 'pl-6'
+                            }`}
+                        >
+                            <td className={`px-2 py-1 uppercase ${row.group === '' ? '' : 'pl-8'}`}>
                                 {row.key === '' ? (
                                     level === 'book' ? (
                                         t(`${field}.unbooked`)
@@ -506,13 +516,17 @@ function AggregateTable({
                                 ))}
                             </td>
                             <td className="px-2 py-1">
-                                <button
-                                    type="button"
-                                    onClick={() => onTrades(row.key)}
-                                    className="text-accent hover:text-accent-bright"
-                                >
-                                    {t(`${field}.showTrades`)}
-                                </button>
+                                {row.is_group ? (
+                                    ''
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => onTrades(row.key)}
+                                        className="text-accent hover:text-accent-bright"
+                                    >
+                                        {t(`${field}.showTrades`)}
+                                    </button>
+                                )}
                             </td>
                         </tr>
                     ))}

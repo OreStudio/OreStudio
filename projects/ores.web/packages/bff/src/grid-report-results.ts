@@ -79,6 +79,10 @@ export interface AggregateRow {
     readonly trades: number;
     readonly totals: readonly Money[];
     readonly notional: readonly Money[];
+    /** The counterparty group a member belongs to, empty when it is top level. */
+    readonly group: string;
+    /** Whether the row is a group's roll-up rather than a member of one. */
+    readonly is_group: boolean;
 }
 
 /** Why a report has no rows to show. */
@@ -229,6 +233,7 @@ export function rowsOf(rawCsv: string): readonly RunResultRow[] | null {
 /** What the records say about the trades in a run. */
 interface TradeRecords {
     readonly counterpartyName: ReadonlyMap<string, string>;
+    readonly counterpartyParent: ReadonlyMap<string, string>;
     readonly bookOf: ReadonlyMap<string, string>;
     readonly bookName: ReadonlyMap<string, string>;
     readonly complete: boolean;
@@ -244,6 +249,7 @@ interface TradeRecords {
 async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Promise<TradeRecords> {
     const empty = {
         counterpartyName: new Map<string, string>(),
+        counterpartyParent: new Map<string, string>(),
         bookOf: new Map<string, string>(),
         bookName: new Map<string, string>(),
         complete: false,
@@ -267,6 +273,17 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
         );
         return {
             counterpartyName,
+            counterpartyParent: new Map(
+                counterparties
+                    .map(
+                        (counterparty) =>
+                            [
+                                text(counterparty['id']),
+                                text(counterparty['parent_counterparty_id']),
+                            ] as const,
+                    )
+                    .filter(([, parent]) => parent !== ''),
+            ),
             bookOf: new Map(
                 bookings.map((booking) => [text(booking['trade_id']), text(booking['book_id'])]),
             ),
@@ -282,7 +299,12 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
 async function withRecords(
     session: LiveSession,
     rows: readonly RunResultRow[],
-): Promise<{ rows: readonly RunResultRow[]; complete: boolean }> {
+): Promise<{
+    rows: readonly RunResultRow[];
+    complete: boolean;
+    counterpartyParent: ReadonlyMap<string, string>;
+    counterpartyName: ReadonlyMap<string, string>;
+}> {
     const records = await recordsOf(
         session,
         rows.map((row) => row.trade_id),
@@ -296,7 +318,12 @@ async function withRecords(
             book_name: records.bookName.get(bookId) ?? '',
         };
     });
-    return { rows: resolved, complete: records.complete };
+    return {
+        rows: resolved,
+        complete: records.complete,
+        counterpartyParent: records.counterpartyParent,
+        counterpartyName: records.counterpartyName,
+    };
 }
 
 /** The per-currency total of a figure the rows carry. */
@@ -320,6 +347,90 @@ function totalsOf(
 }
 
 /** The rows rolled up by the key they share. */
+
+/** The sums of a set of rows, each currency added apart. */
+function sumsOf(rows: readonly AggregateRow[]): readonly Money[] {
+    const totals = new Map<string, number>();
+    for (const row of rows) {
+        for (const money of row.totals) {
+            const figure = Number.parseFloat(money.total);
+            if (Number.isFinite(figure)) {
+                totals.set(money.currency, (totals.get(money.currency) ?? 0) + figure);
+            }
+        }
+    }
+    return [...totals.entries()].map(([currency, total]) => ({
+        currency,
+        total: total.toFixed(2),
+    }));
+}
+
+/** The notional of a set of rows, each currency added apart. */
+function notionalOf(rows: readonly AggregateRow[]): readonly Money[] {
+    const totals = new Map<string, number>();
+    for (const row of rows) {
+        for (const money of row.notional) {
+            const figure = Number.parseFloat(money.total);
+            if (Number.isFinite(figure)) {
+                totals.set(money.currency, (totals.get(money.currency) ?? 0) + figure);
+            }
+        }
+    }
+    return [...totals.entries()].map(([currency, total]) => ({
+        currency,
+        total: total.toFixed(2),
+    }));
+}
+
+/**
+ * The counterparties with a group row above the members that share a parent.
+ *
+ * A group's figure is the sum of its members, so a reader can check one against
+ * the other. A counterparty with no parent stands on its own, and a group with a
+ * single member still gets its row, because the parent is a fact about the name.
+ */
+export function withCounterpartyGroups(
+    rows: readonly AggregateRow[],
+    parents: ReadonlyMap<string, string>,
+    names: ReadonlyMap<string, string>,
+): readonly AggregateRow[] {
+    const members = new Map<string, AggregateRow[]>();
+    const standing: AggregateRow[] = [];
+    for (const row of rows) {
+        const parent = parents.get(row.key) ?? '';
+        if (parent === '') {
+            standing.push(row);
+            continue;
+        }
+        members.set(parent, [
+            ...(members.get(parent) ?? []),
+            { ...row, group: names.get(parent) ?? '' },
+        ]);
+    }
+    const groups = [...members.entries()]
+        .map(([parent, children]) => {
+            const ordered = [...children].sort((left, right) => figureOf(right) - figureOf(left));
+            const group: AggregateRow = {
+                key: parent,
+                name: names.get(parent) ?? '',
+                trades: children.reduce((sum, child) => sum + child.trades, 0),
+                totals: sumsOf(children),
+                notional: notionalOf(children),
+                group: '',
+                is_group: true,
+            };
+            return { group, ordered };
+        })
+        .sort((left, right) => figureOf(right.group) - figureOf(left.group));
+
+    const ordered: AggregateRow[] = [];
+    for (const entry of groups) {
+        ordered.push(entry.group, ...entry.ordered);
+    }
+    ordered.push(...[...standing].sort((left, right) => figureOf(right) - figureOf(left)));
+    return ordered;
+}
+
 export function aggregateRows(
     rows: readonly RunResultRow[],
     keyOf: (row: RunResultRow) => string,
@@ -335,6 +446,8 @@ export function aggregateRows(
             key,
             name: names.get(key) ?? '',
             trades: members.length,
+            group: '',
+            is_group: false,
             totals: totalsOf(members, (row) => ({
                 amount: row.npv,
                 currency: row.npv_currency,
@@ -359,9 +472,21 @@ function figureOf(row: AggregateRow): number {
 async function tradeRowsOfKey(
     session: LiveSession,
     key: string,
-): Promise<{ rows: readonly RunResultRow[]; reason: ResultReason; recordsComplete: boolean }> {
+): Promise<{
+    rows: readonly RunResultRow[];
+    reason: ResultReason;
+    recordsComplete: boolean;
+    counterpartyParent: ReadonlyMap<string, string>;
+    counterpartyName: ReadonlyMap<string, string>;
+}> {
     if (key === '') {
-        return { rows: [], reason: 'no-output', recordsComplete: true };
+        return {
+            rows: [],
+            reason: 'no-output',
+            recordsComplete: true,
+            counterpartyParent: new Map(),
+            counterpartyName: new Map(),
+        };
     }
     const archive = await fetchStored(session, key);
     const tar = archive[0] === 0x1f && archive[1] === 0x8b ? gunzipSync(archive) : archive;
@@ -369,14 +494,32 @@ async function tradeRowsOfKey(
         ([name]) => name.split('/').pop()?.toLowerCase() === 'npv.csv',
     );
     if (resultFile === undefined) {
-        return { rows: [], reason: 'no-result-file', recordsComplete: true };
+        return {
+            rows: [],
+            reason: 'no-result-file',
+            recordsComplete: true,
+            counterpartyParent: new Map(),
+            counterpartyName: new Map(),
+        };
     }
     const rows = rowsOf(resultFile[1].toString('utf8'));
     if (rows === null) {
-        return { rows: [], reason: 'no-figures', recordsComplete: true };
+        return {
+            rows: [],
+            reason: 'no-figures',
+            recordsComplete: true,
+            counterpartyParent: new Map(),
+            counterpartyName: new Map(),
+        };
     }
     const resolved = await withRecords(session, rows);
-    return { rows: resolved.rows, reason: '', recordsComplete: resolved.complete };
+    return {
+        rows: resolved.rows,
+        reason: '',
+        recordsComplete: resolved.complete,
+        counterpartyParent: resolved.counterpartyParent,
+        counterpartyName: resolved.counterpartyName,
+    };
 }
 
 /** The answer for the level the reader asked for. */
@@ -409,9 +552,13 @@ async function resultsOfKey(
             level === 'book' ? row.book_name : row.counterparty_name,
         ]),
     );
+    const rows = aggregateRows(read.rows, keyOf, names);
     return {
         level,
-        rows: aggregateRows(read.rows, keyOf, names),
+        rows:
+            level === 'counterparty'
+                ? withCounterpartyGroups(rows, read.counterpartyParent, read.counterpartyName)
+                : rows,
         totals,
         reason: read.reason,
         recordsComplete: read.recordsComplete,

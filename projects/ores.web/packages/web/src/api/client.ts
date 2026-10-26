@@ -646,6 +646,8 @@ export interface AggregateRow {
     readonly trades: number;
     readonly totals: readonly Money[];
     readonly notional: readonly Money[];
+    readonly group: string;
+    readonly is_group: boolean;
 }
 
 /** A run's results, as the server answered them. */

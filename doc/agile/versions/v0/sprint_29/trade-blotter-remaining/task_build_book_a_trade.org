@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-book-a-trade
-#+pr: 3843
+#+pr: 3862
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -153,6 +153,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3862][#3862]] | [agile] Let the booking scenario prepare itself |
 | [[https://github.com/OreStudio/OreStudio/pull/3843][#3843]] | [web] Book a trade |
 | [[https://github.com/OreStudio/OreStudio/pull/3840][#3840]] | [agile] Capture the status command's bootstrap read |
 | [[https://github.com/OreStudio/OreStudio/pull/3838][#3838]] | [web] Give the browser cases one way to sign in |

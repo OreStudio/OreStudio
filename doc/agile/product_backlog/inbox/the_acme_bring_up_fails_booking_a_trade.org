@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 2F46F1CE-84AB-460C-9EA3-308083793963
+:END:
+#+title: The ACME bring-up fails booking a trade for a missing origin
+#+description: A fresh recreate followed by smoke ticks --start-services --leave-running runs the eight acme_demo steps and aborts at the eighth: generate_trades fails with 'Invalid origin: <NULL>. No active origin type found with this code' raised by ores_trading_trades_insert_fn at line 14. The origin type table has four rows, so the vocabulary exists; the trade being booked carries a null origin code, which the insert function refuses. The consequence is that a recreated database never finishes provisioning: the tenant is left bootstrapping, step 7 subscribe_market_data had already completed and step 8 is the last one, so nothing downstream runs. Reproduced on 2026-10-26 against main with a full smoke ticks run.
+#+type: capture
+#+level: cross
+#+filetags: :provisioning:trading:origin:acme:blocker:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

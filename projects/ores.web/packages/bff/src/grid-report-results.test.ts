@@ -312,3 +312,57 @@ describe('withCounterpartyGroups, the cases a group hides', () => {
         ]);
     });
 });
+
+describe('withCounterpartyGroups, the group ordering', () => {
+    const aggregate = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'c1',
+        name: 'First',
+        trades: 1,
+        totals: [{ currency: 'GBP', total: '100.00' }],
+        notional: [{ currency: 'GBP', total: '1000.00' }],
+        group: '',
+        is_group: false,
+        ...over,
+    });
+
+    it('orders the groups by their own figure, not by their members', () => {
+        const rows = withCounterpartyGroups(
+            [
+                aggregate({ key: 'a1', totals: [{ currency: 'GBP', total: '10.00' }] }),
+                aggregate({ key: 'a2', totals: [{ currency: 'GBP', total: '20.00' }] }),
+                aggregate({ key: 'b1', totals: [{ currency: 'GBP', total: '500.00' }] }),
+            ],
+            new Map([
+                ['a1', 'pa'],
+                ['a2', 'pa'],
+                ['b1', 'pb'],
+            ]),
+            new Map([
+                ['pa', 'Group A'],
+                ['pb', 'Group B'],
+            ]),
+        );
+
+        expect(rows.filter((row) => row.is_group).map((row) => row.name)).toEqual([
+            'Group B',
+            'Group A',
+        ]);
+        expect(rows.map((row) => row.name)).toEqual([
+            'Group B',
+            'First',
+            'Group A',
+            'First',
+            'First',
+        ]);
+    });
+
+    it('leaves a parent alone when none of its children traded', () => {
+        const rows = withCounterpartyGroups(
+            [aggregate({ key: 'p1', name: 'The Group' })],
+            new Map([['p1', 'p0']]),
+            new Map([['p1', 'The Group']]),
+        );
+
+        expect(rows.every((row) => !row.is_group)).toBe(true);
+    });
+});

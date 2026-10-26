@@ -346,8 +346,6 @@ function totalsOf(
     }));
 }
 
-/** The rows rolled up by the key they share. */
-
 /** One figure of a set of rows, each currency added apart. */
 function moneyOf(
     rows: readonly AggregateRow[],
@@ -383,7 +381,11 @@ export function withCounterpartyGroups(
     parents: ReadonlyMap<string, string>,
     names: ReadonlyMap<string, string>,
 ): readonly AggregateRow[] {
-    const leading = new Set(parents.values());
+    // Only a parent that has at least one child row in this run leads a group;
+    // a parent whose children did not trade would otherwise repeat its own row.
+    const leading = new Set(
+        rows.map((row) => parents.get(row.key) ?? '').filter((parent) => parent !== ''),
+    );
     const members = new Map<string, AggregateRow[]>();
     const standing: AggregateRow[] = [];
     for (const row of rows) {

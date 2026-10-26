@@ -74,6 +74,7 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
         ores.platform.lib
         ores.utility.lib
+        pugixml::pugixml
         Boost::boost)
 
 if(MSVC)

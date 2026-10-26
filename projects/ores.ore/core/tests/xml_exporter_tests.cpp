@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/portfolio_projection.hpp"
+#include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
@@ -41,6 +42,7 @@
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -937,4 +939,166 @@ TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards", tag
     CHECK(!translated.contains("<ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>"));
     CHECK(translated.contains("<ReferenceCurveId>EUR-ESTER</ReferenceCurveId>"));
     CHECK(translated.contains("<IncomeCurveId>EUR-EURIBOR-6M</IncomeCurveId>"));
+}
+
+// =============================================================================
+// export_pricing_engines tests
+// =============================================================================
+
+namespace {
+
+/** One row of the configuration, with the fields the document reads. */
+ores::analytics::domain::pricing_model_product
+product_at(const std::string& type, const std::string& model, const std::string& engine,
+           int position, const boost::uuids::uuid& id = boost::uuids::random_generator()()) {
+    ores::analytics::domain::pricing_model_product row;
+    row.id = id;
+    row.pricing_engine_type_code = type;
+    row.model = model;
+    row.engine = engine;
+    row.position = position;
+    return row;
+}
+
+ores::analytics::domain::pricing_model_product_parameter
+parameter_of(const std::string& scope,
+             const std::string& name,
+             const std::string& value,
+             int position,
+             const std::optional<boost::uuids::uuid>& product_id) {
+    ores::analytics::domain::pricing_model_product_parameter row;
+    row.id = boost::uuids::random_generator()();
+    row.pricing_model_product_id = product_id;
+    row.parameter_scope = scope;
+    row.parameter_name = name;
+    row.parameter_value = value;
+    row.position = position;
+    return row;
+}
+
+/** The document a configuration of one swap holds, as the export writes it. */
+ores::analytics::messaging::pricing_engines_document swap_configuration() {
+    ores::analytics::messaging::pricing_engines_document document;
+    const auto swap = product_at("Swap", "DiscountedCashflows", "DiscountingSwapEngine", 0);
+    document.products.push_back(swap);
+    document.parameters.push_back(parameter_of("model", "Calibration", "Bootstrap", 0, swap.id));
+    document.parameters.push_back(
+        parameter_of("global", "ContinueOnCalibrationError", "true", 0, std::nullopt));
+    return document;
+}
+
+}
+
+TEST_CASE("export_pricing_engines_writes_the_document_ore_reads", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto xml = exporter::export_pricing_engines(swap_configuration());
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    CHECK(xml == R"(<?xml version="1.0"?>
+<PricingEngines>
+  <Product type="Swap">
+    <Model>DiscountedCashflows</Model>
+    <ModelParameters>
+      <Parameter name="Calibration">Bootstrap</Parameter>
+    </ModelParameters>
+    <Engine>DiscountingSwapEngine</Engine>
+    <EngineParameters />
+  </Product>
+  <GlobalParameters>
+    <Parameter name="ContinueOnCalibrationError">true</Parameter>
+  </GlobalParameters>
+</PricingEngines>
+)");
+}
+
+TEST_CASE("export_pricing_engines_writes_the_products_in_position_order", tags) {
+    auto lg(make_logger(test_suite));
+
+    ores::analytics::messaging::pricing_engines_document document;
+    const auto second = product_at("ForwardBond", "DiscountedCashflows", "Second", 1);
+    const auto first = product_at("BondTRS", "DiscountedCashflows", "First", 0);
+    document.products.push_back(second);
+    document.products.push_back(first);
+
+    const auto xml = exporter::export_pricing_engines(document);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    CHECK(xml.find("BondTRS") < xml.find("ForwardBond"));
+}
+
+TEST_CASE("export_pricing_engines_writes_each_products_parameters_under_its_own_scope", tags) {
+    auto lg(make_logger(test_suite));
+
+    ores::analytics::messaging::pricing_engines_document document;
+    const auto swap = product_at("Swap", "DiscountedCashflows", "DiscountingSwapEngine", 0);
+    document.products.push_back(swap);
+    document.parameters.push_back(parameter_of("engine", "TimestepPeriod", "3M", 1, swap.id));
+    document.parameters.push_back(parameter_of("model", "Calibration", "Bootstrap", 0, swap.id));
+
+    const auto xml = exporter::export_pricing_engines(document);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    // The model parameter sits under ModelParameters and the engine parameter
+    // under EngineParameters, each in its own scope's order.
+    const auto model_at = xml.find("<ModelParameters>");
+    const auto calibration_at = xml.find(R"(<Parameter name="Calibration">Bootstrap</Parameter>)");
+    const auto engine_at = xml.find("<EngineParameters>");
+    const auto timestep_at = xml.find(R"(<Parameter name="TimestepPeriod">3M</Parameter>)");
+    REQUIRE(model_at != std::string::npos);
+    REQUIRE(calibration_at != std::string::npos);
+    REQUIRE(engine_at != std::string::npos);
+    REQUIRE(timestep_at != std::string::npos);
+    CHECK(model_at < calibration_at);
+    CHECK(calibration_at < engine_at);
+    CHECK(engine_at < timestep_at);
+}
+
+TEST_CASE("export_pricing_engines_escapes_the_values_it_writes", tags) {
+    auto lg(make_logger(test_suite));
+
+    ores::analytics::messaging::pricing_engines_document document;
+    const auto product = product_at("Scripted&Co", "Model<One>", "Engine", 0);
+    document.products.push_back(product);
+    document.parameters.push_back(
+        parameter_of("engine", "Script", R"(x < 1 && y > 2 && s == "z")", 0, product.id));
+
+    const auto xml = exporter::export_pricing_engines(document);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    CHECK(xml.contains(R"(type="Scripted&amp;Co")"));
+    CHECK(xml.contains("<Model>Model&lt;One&gt;</Model>"));
+    CHECK(xml.contains("x &lt; 1 &amp;&amp; y &gt; 2 &amp;&amp; s == \"z\""));
+
+    // The escaped document is one the reader takes back without a loss.
+    const auto read = ores::ore::domain::pricing_engine_projection::read(xml);
+    REQUIRE(read.product.size() == 1);
+    const auto& parameters = read.product.front().engine_parameters.parameter;
+    REQUIRE(parameters.size() == 1);
+    CHECK(parameters.front().name == "Script");
+    CHECK(parameters.front().value == R"(x < 1 && y > 2 && s == "z")");
+}
+
+TEST_CASE("export_pricing_engines_writes_an_empty_configuration_as_empty_sections", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto xml =
+        exporter::export_pricing_engines(ores::analytics::messaging::pricing_engines_document{});
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    CHECK(xml == R"(<?xml version="1.0"?>
+<PricingEngines>
+  <GlobalParameters />
+</PricingEngines>
+)");
+}
+
+TEST_CASE("export_pricing_engines_refuses_a_row_the_document_has_no_place_for", tags) {
+    auto lg(make_logger(test_suite));
+
+    ores::analytics::messaging::pricing_engines_document document;
+    document.parameters.push_back(
+        parameter_of("model", "Calibration", "Bootstrap", 0, boost::uuids::random_generator()()));
+
+    CHECK_THROWS_AS(exporter::export_pricing_engines(document), std::runtime_error);
 }

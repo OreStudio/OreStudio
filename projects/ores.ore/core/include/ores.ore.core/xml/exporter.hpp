@@ -25,6 +25,7 @@
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/export.hpp"
+#include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
@@ -64,6 +65,23 @@ public:
     using reference_curve_names = std::function<std::string(const std::string&)>;
 
     static std::string export_currency_config(const std::vector<refdata::domain::currency>& v);
+
+    /**
+     * @brief Writes one pricing engine configuration as the ORE document
+     * PricingEngines.
+     *
+     * The products come first, in the position their rows carry, and each
+     * carries its model, its model parameters, its engine and its engine
+     * parameters in that order. One GlobalParameters block follows them,
+     * holding the parameters no product owns.
+     *
+     * @param v The configuration's header, products and parameters, as
+     *          analytics' own messages answer them.
+     * @throws std::runtime_error for a parameter row the document has no place
+     * for; see pricing_engine_projection::reverse.
+     */
+    static std::string
+    export_pricing_engines(const analytics::messaging::pricing_engines_document& v);
 
     static std::string
     export_calendar_adjustments(const std::vector<refdata::messaging::calendar_adjustment>& v);

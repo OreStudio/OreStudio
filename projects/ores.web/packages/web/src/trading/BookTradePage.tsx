@@ -1,7 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { books } from '../api/books.js';
 import { counterparties } from '../api/counterparties.js';
 import { trades, type BookingRequest } from '../api/trades.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -38,7 +37,6 @@ export function BookTradePage(): ReactNode {
         queryKey: ['trades', 'booking-options'],
         queryFn: () => trades.bookingOptions(),
     });
-    const tree = useQuery({ queryKey: ['books', 'tree'], queryFn: () => books.tree() });
     const known = useQuery({
         queryKey: ['counterparties', 'pick'],
         queryFn: () => counterparties.page({ offset: 0, limit: 200, search: '', status: 'active' }),
@@ -59,7 +57,7 @@ export function BookTradePage(): ReactNode {
         },
     });
 
-    const openBooks = (tree.data?.books ?? []).filter((row) => row.book_status === 'Active');
+    const openBooks = offered.data?.books ?? [];
     const issues = offered.data?.issues ?? [];
     const idTypes = offered.data?.idTypes ?? [];
     const ready =
@@ -93,89 +91,114 @@ export function BookTradePage(): ReactNode {
                         });
                     }}
                 >
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <Field label={t('trading.booking.book')}>
-                            <Select
-                                value={bookId}
-                                onChange={(event) => setBookId(event.target.value)}
+                    <section className="space-y-4">
+                        <h2 className="text-sm font-medium text-ink">
+                            {t('trading.booking.tradeSection')}
+                        </h2>
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <Field label={t('trading.booking.book')}>
+                                <Select
+                                    value={bookId}
+                                    onChange={(event) => setBookId(event.target.value)}
+                                >
+                                    <option value="">{t('trading.booking.choose')}</option>
+                                    {openBooks.map((row) => (
+                                        <option key={row.id} value={row.id}>
+                                            {row.name}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </Field>
+                            <Field
+                                label={t('trading.booking.counterparty')}
+                                hint={t('trading.booking.counterpartyHint')}
                             >
-                                <option value="">{t('trading.booking.choose')}</option>
-                                {openBooks.map((row) => (
-                                    <option key={row.id} value={row.id}>
-                                        {row.name}
-                                    </option>
-                                ))}
-                            </Select>
-                        </Field>
-                        <Field
-                            label={t('trading.booking.counterparty')}
-                            hint={t('trading.booking.counterpartyHint')}
-                        >
-                            <Select
-                                value={counterpartyId}
-                                onChange={(event) => setCounterpartyId(event.target.value)}
+                                <Select
+                                    value={counterpartyId}
+                                    onChange={(event) => setCounterpartyId(event.target.value)}
+                                >
+                                    <option value="">{t('trading.booking.choose')}</option>
+                                    {(known.data?.rows ?? []).map((row) => (
+                                        <option key={row.id} value={row.id}>
+                                            {row.full_name}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </Field>
+                            <Field label={t('trading.booking.tradeDate')}>
+                                <Input
+                                    type="date"
+                                    value={tradeDate}
+                                    onChange={(event) => setTradeDate(event.target.value)}
+                                />
+                            </Field>
+                        </div>
+                    </section>
+                    <section className="space-y-4">
+                        <h2 className="text-sm font-medium text-ink">
+                            {t('trading.booking.instrumentSection', { type: 'Bond' })}
+                        </h2>
+                        <p className="text-xs text-ink-faint">
+                            {t('trading.booking.instrumentLead')}
+                        </p>
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <Field label={t('trading.booking.security')} className="md:col-span-2">
+                                <Select
+                                    value={issueId}
+                                    onChange={(event) => setIssueId(event.target.value)}
+                                >
+                                    <option value="">{t('trading.booking.choose')}</option>
+                                    {issues.map((issue) => (
+                                        <option key={issue.issue_id} value={issue.issue_id}>
+                                            {issue.calendar === null
+                                                ? issue.security_id
+                                                : `${issue.security_id} · ${issue.calendar}`}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </Field>
+                            <Field
+                                label={t('trading.booking.notional')}
+                                hint={t('trading.booking.notionalHint')}
                             >
-                                <option value="">{t('trading.booking.choose')}</option>
-                                {(known.data?.rows ?? []).map((row) => (
-                                    <option key={row.id} value={row.id}>
-                                        {row.full_name}
-                                    </option>
-                                ))}
-                            </Select>
-                        </Field>
-                        <Field label={t('trading.booking.tradeDate')}>
-                            <Input
-                                type="date"
-                                value={tradeDate}
-                                onChange={(event) => setTradeDate(event.target.value)}
-                            />
-                        </Field>
-                        <Field label={t('trading.booking.notional')}>
-                            <Input
-                                inputMode="decimal"
-                                value={notional}
-                                placeholder="0.00"
-                                onChange={(event) => setNotional(event.target.value)}
-                            />
-                        </Field>
-                        <Field label={t('trading.booking.security')} className="md:col-span-2">
-                            <Select
-                                value={issueId}
-                                onChange={(event) => setIssueId(event.target.value)}
+                                <Input
+                                    inputMode="decimal"
+                                    value={notional}
+                                    placeholder="0.00"
+                                    onChange={(event) => setNotional(event.target.value)}
+                                />
+                            </Field>
+                        </div>
+                    </section>
+                    <section className="space-y-4">
+                        <h2 className="text-sm font-medium text-ink">
+                            {t('trading.booking.identifierSection')}
+                        </h2>
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <Field label={t('trading.booking.identifierType')}>
+                                <Select
+                                    value={identifierType}
+                                    onChange={(event) => setIdentifierType(event.target.value)}
+                                >
+                                    <option value="">{t('trading.booking.choose')}</option>
+                                    {idTypes.map((row) => (
+                                        <option key={row.code} value={row.code}>
+                                            {row.code}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </Field>
+                            <Field
+                                label={t('trading.booking.identifier')}
+                                hint={t('trading.booking.identifierHint')}
                             >
-                                <option value="">{t('trading.booking.choose')}</option>
-                                {issues.map((issue) => (
-                                    <option key={issue.issue_id} value={issue.issue_id}>
-                                        {issue.calendar === null
-                                            ? issue.security_id
-                                            : `${issue.security_id} · ${issue.calendar}`}
-                                    </option>
-                                ))}
-                            </Select>
-                        </Field>
-                        <Field label={t('trading.booking.identifierType')}>
-                            <Select
-                                value={identifierType}
-                                onChange={(event) => setIdentifierType(event.target.value)}
-                            >
-                                <option value="">{t('trading.booking.choose')}</option>
-                                {idTypes.map((row) => (
-                                    <option key={row.code} value={row.code}>
-                                        {row.code}
-                                    </option>
-                                ))}
-                            </Select>
-                        </Field>
-                        <Field
-                            label={t('trading.booking.identifier')}
-                            hint={t('trading.booking.identifierHint')}
-                        >
-                            <Input
-                                value={identifierValue}
-                                onChange={(event) => setIdentifierValue(event.target.value)}
-                            />
-                        </Field>
-                    </div>
+                                <Input
+                                    value={identifierValue}
+                                    onChange={(event) => setIdentifierValue(event.target.value)}
+                                />
+                            </Field>
+                        </div>
+                    </section>
                     <div className="flex items-center gap-3">
                         <Button
                             type="submit"

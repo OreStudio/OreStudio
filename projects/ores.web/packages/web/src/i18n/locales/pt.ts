@@ -416,6 +416,9 @@ const pt: SourceCatalogue = {
             write: 'Guardar',
         },
         request: {
+            about: 'Sobre',
+            atVersion: ' na versão {version}',
+
             title: 'Pede {role}',
             id: 'Pedido {id}',
             you: 'Você',
@@ -3597,6 +3600,12 @@ const pt: SourceCatalogue = {
             versionPair: 'v{version} · ext {external}',
         },
         booking: {
+            tradeSection: 'Transação',
+            instrumentSection: 'Instrumento — {type}',
+            instrumentLead:
+                'O título é o instrumento, e o nocional é a posição detida nele. Só uma obrigação está encaminhada para uma tabela hoje, por isso um bilhete nomeia uma obrigação.',
+            notionalHint: 'O tamanho da posição no título acima.',
+            identifierSection: 'Identificador',
             open: 'Registar uma transação',
             title: 'Registar uma transação',
             lead: 'A transação é registada num livro aberto, em nome da sua entidade, e aguarda Operações.',

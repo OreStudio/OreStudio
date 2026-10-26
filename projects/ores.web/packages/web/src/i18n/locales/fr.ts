@@ -415,6 +415,9 @@ const fr: SourceCatalogue = {
             write: 'Enregistrer',
         },
         request: {
+            about: 'À propos de',
+            atVersion: ' à la version {version}',
+
             title: 'Demande {role}',
             id: 'Demande {id}',
             you: 'Vous',
@@ -3614,6 +3617,12 @@ const fr: SourceCatalogue = {
             versionPair: 'v{version} · ext {external}',
         },
         booking: {
+            tradeSection: 'Transaction',
+            instrumentSection: 'Instrument — {type}',
+            instrumentLead:
+                "Le titre est l'instrument, et le notionnel est la position détenue sur lui. Seule une obligation est routée vers une table aujourd'hui, donc un ticket nomme une obligation.",
+            notionalHint: 'La taille de la position sur le titre ci-dessus.',
+            identifierSection: 'Identifiant',
             open: 'Enregistrer une transaction',
             title: 'Enregistrer une transaction',
             lead: 'Une transaction est enregistrée dans un livre ouvert, au nom de votre entité, et attend les Opérations.',

@@ -109,6 +109,9 @@ credentials are the provisioned Trading persona: =diane.kay@acme_corporation= /
 
 ** State the terms of the trade
 
+- The form is in three parts: *Trade*, *Instrument — Bond* and *Identifier*. The
+  instrument's terms are asked for inside its own part, after the security is
+  named: the notional is the position held in the security above it.
 - Book: =G10 Majors Options=
 - Counterparty: any name in the list (they are LEI names, e.g. one starting
   *МОСКОВСКИЙ*); the choice is not asserted beyond it being accepted.
@@ -121,6 +124,9 @@ credentials are the provisioned Trading persona: =diane.kay@acme_corporation= /
 - Identifier: =QA-<your initials>-1=
 - Passes when *Book trade* becomes enabled only after every field is answered,
   and the button reads *Book trade* rather than the pending text.
+- The Book picker offers the open books of the party you are working as. If it
+  offers a book the booking then refuses as belonging to another party, that is
+  a fault worth reporting, not a mis-click.
 
 *** Result
 
@@ -142,6 +148,15 @@ credentials are the provisioned Trading persona: =diane.kay@acme_corporation= /
 | Field  | Value |
 |--------+-------|
 | Status | PENDING |
+
+** Follow the approval to the trade
+
+- Choose *Requests* in the menu and open the newest =Asks for
+  trading.operational_authorisation= entry, the one your booking just raised.
+- Passes when the page says *About =<your identifier>= at version =<n>=*, the
+  identifier is a link, and following it opens the trade you booked.
+- This is the join the request itself does not carry: the trading component
+  keeps the request and the trade together, and the page reads it from there.
 
 ** Read the terms on the Instrument tab
 

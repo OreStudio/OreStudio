@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
 import { subjects as instrumentSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_instrument_protocol';
 import { subjects as operationsSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_operations_protocol';
+import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
 import { subjects as bondIssueSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_issue_protocol';
 import { invalidRequest, notPermitted } from './errors.js';
 import { HttpFailure } from './errors.js';
@@ -150,6 +151,33 @@ export function registerBookingRoutes(
      */
     server.get('/api/trades/new', async (request) => {
         const session = requireSession(request);
+        const partyId = session.party?.id;
+        /*
+         * Only the acting party's open books.
+         *
+         * A booking is stamped with the party the session acts for, and the
+         * service refuses a book of any other party. A session whose reach is
+         * wider than its party — a tenant administrator's, or one switched to a
+         * sibling entity — sees other parties' books in a plain tree read, so
+         * the filter belongs here, where the acting party is known, and not in
+         * the screen.
+         */
+        const books =
+            partyId === undefined
+                ? []
+                : (
+                      await readAll(session, bookSubjects.list_books_request, 'books', {
+                          filter: null,
+                          as_of: null,
+                      })
+                  )
+                      .filter(
+                          (row) => row['party_id'] === partyId && row['book_status'] === 'Active',
+                      )
+                      .map((row) => ({
+                          id: String(row['id'] ?? ''),
+                          name: String(row['name'] ?? ''),
+                      }));
         const issues = await readAll(
             session,
             bondIssueSubjects.list_bond_issues_request,
@@ -174,7 +202,7 @@ export function registerBookingRoutes(
             .filter((code) => code !== '')
             .sort()
             .map((code) => ({ code }));
-        return { issues, idTypes: schemes };
+        return { books, issues, idTypes: schemes };
     });
 
     server.post('/api/trades', async (request, reply) => {

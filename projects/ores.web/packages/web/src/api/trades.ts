@@ -248,6 +248,7 @@ export const idTypeSchema = z.looseObject({
 
 /** What the booking form offers, read in one call. */
 export const bookingOptionsSchema = z.object({
+    books: z.array(z.looseObject({ id: z.uuid(), name: z.string().default('') })).default([]),
     issues: z.array(bookableIssueSchema).default([]),
     idTypes: z.array(idTypeSchema).default([]),
 });

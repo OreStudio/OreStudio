@@ -37,7 +37,10 @@ import {
     withdrawRequest,
 } from '@ores/wire-protocol';
 import type { RequestViewer } from '@ores/wire-protocol';
+import { subjects as authorisationSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_authorisation_request_protocol';
+import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_identifier_protocol';
 import { invalidRequest, notFound } from './errors.js';
+import { readAll } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /**
@@ -138,6 +141,58 @@ function viewerOf(session: LiveSession): RequestViewer {
     return { accountId: session.accountId, username: session.username };
 }
 
+/**
+ * The trades a request is about.
+ *
+ * An operational authorisation is raised against a trade, and the trading
+ * component keeps the pair: the request names no trade itself, so this is the
+ * only way from one to the other. The identifier is read for each trade because
+ * a uuid is not a name a person recognises, and a trade with no identifier is
+ * still linked.
+ */
+async function subjectsOf(session: LiveSession, requestId: string): Promise<readonly unknown[]> {
+    /*
+     * A refused read costs the link and nothing else: the request page is worth
+     * opening whether or not this reader may see what the request is about.
+     */
+    let joined: readonly Record<string, unknown>[];
+    try {
+        joined = await readAll(
+            session,
+            authorisationSubjects.list_trade_authorisation_requests_request,
+            'trade_authorisation_requests',
+            {
+                filter: { trade_id: null, request_id_one_of: [requestId], trade_id_one_of: null },
+                as_of: null,
+            },
+        );
+    } catch {
+        return [];
+    }
+    const subjects = [];
+    for (const row of joined.slice(0, 10)) {
+        const tradeId = String(row['trade_id'] ?? '');
+        if (tradeId === '') continue;
+        let label = tradeId;
+        try {
+            const identifiers = await readAll(
+                session,
+                identifierSubjects.list_trade_identifiers_request,
+                'identifiers',
+                { filter: { trade_id_one_of: [tradeId] }, as_of: null },
+            );
+            const value = identifiers
+                .map((identifier) => String(identifier['id_value'] ?? ''))
+                .find((candidate) => candidate !== '');
+            if (value !== undefined) label = value;
+        } catch {
+            // The uuid is still a link, so a refused identifier read costs only the label.
+        }
+        subjects.push({ tradeId, tradeVersion: Number(row['trade_version'] ?? 0), label });
+    }
+    return subjects;
+}
+
 export function registerInboxRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
@@ -204,7 +259,9 @@ export function registerInboxRoutes(
      */
     server.get('/api/requests/:id', async (request) => {
         const session = requireSession(request);
-        return await readRequest(session.client, requestIdOf(request), viewerOf(session));
+        const id = requestIdOf(request);
+        const detail = await readRequest(session.client, id, viewerOf(session));
+        return { ...detail, subjects: await subjectsOf(session, id) };
     });
 
     /**

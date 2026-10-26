@@ -439,6 +439,7 @@ describe('inbox routes', () => {
                         comment: 'Desk needs it',
                     },
                     parts: [],
+                    subjects: [],
                 },
             ],
             total: 1,
@@ -475,6 +476,7 @@ describe('inbox routes', () => {
                     roles: [],
                     decision: null,
                     parts: [],
+                    subjects: [],
                 },
             ],
             total: 1,
@@ -654,6 +656,7 @@ describe('inbox routes', () => {
                     roles: [{ roleId: TRADING, name: 'Trading', description: 'Trading role' }],
                     decision: null,
                     parts: [],
+                    subjects: [],
                 },
             ],
             total: 1,
@@ -709,6 +712,7 @@ describe('inbox routes', () => {
                     comment: 'Desk needs it',
                 },
                 parts: [],
+                subjects: [],
             },
         ]);
     });

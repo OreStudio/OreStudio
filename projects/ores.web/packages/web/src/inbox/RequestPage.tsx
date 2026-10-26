@@ -21,9 +21,10 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import type { InboxRequestPartView, InboxRequestView } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
+import { PATHS } from '../shell/paths.js';
 import { formatDateTime } from '../ui/Time.js';
 import { api } from '../api/client.js';
 import { PersonRef } from '../access/PersonRef.js';
@@ -131,6 +132,30 @@ function Request({
             <p className="-mt-4 text-xs text-ink-faint">
                 {t('inbox.request.id', { id: request.id })}
             </p>
+
+            {request.subjects.length > 0 && (
+                <p className="text-sm text-ink-muted">
+                    {t('inbox.request.about')}{' '}
+                    {request.subjects.map((subject, index) => (
+                        <span key={subject.tradeId}>
+                            {index > 0 && ', '}
+                            <Link
+                                className="text-accent hover:text-accent-bright"
+                                to={`${PATHS.trades}/${subject.tradeId}`}
+                            >
+                                {subject.label}
+                            </Link>
+                            {subject.tradeVersion > 0 && (
+                                <span className="text-ink-faint">
+                                    {t('inbox.request.atVersion', {
+                                        version: String(subject.tradeVersion),
+                                    })}
+                                </span>
+                            )}
+                        </span>
+                    ))}
+                </p>
+            )}
 
             {request.stateCode === 'apply_failed' && (
                 <Notice tone="error">{t('inbox.request.applyFailed')}</Notice>

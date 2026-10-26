@@ -417,6 +417,8 @@ export const en: SourceCatalogue = {
         },
         request: {
             title: 'Asks for {role}',
+            about: 'About',
+            atVersion: ' at version {version}',
             id: 'Request {id}',
             you: 'You',
             lead: '{state}, asked {date}.',
@@ -3571,6 +3573,12 @@ export const en: SourceCatalogue = {
             versionPair: 'v{version} · ext {external}',
         },
         booking: {
+            tradeSection: 'Trade',
+            instrumentSection: 'Instrument — {type}',
+            instrumentLead:
+                'The security is the instrument, and the notional is the position held in it. Only a bond is routed to a table today, so a ticket names a bond.',
+            notionalHint: 'The size of the position in the security above.',
+            identifierSection: 'Identifier',
             open: 'Book a trade',
             title: 'Book a trade',
             lead: 'A trade is booked into an open book, as one of your party, and waits for Operations.',

@@ -58,6 +58,7 @@ function bookRequest(overrides: Partial<InboxRequestView> = {}): InboxRequestVie
         expiresAt: null,
         roles: [],
         decision: null,
+        subjects: [],
         parts: [
             {
                 code: 'controller',

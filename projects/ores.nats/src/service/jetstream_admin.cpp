@@ -19,6 +19,7 @@
  */
 #include "ores.nats/service/jetstream_admin.hpp"
 #include "nats_handle.hpp"
+#include "nats_result.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <cstdint>
 #include <nats/nats.h>
@@ -115,16 +116,12 @@ void jetstream_admin::ensure_stream(std::string_view name,
         s = js_UpdateStream(&updated, js, &cfg, &opts, &jerr);
         const stream_info_handle updated_info(updated);
 
-        if (s != NATS_OK)
-            throw std::runtime_error(std::string("ensure_stream '") + name_str +
-                                     "' subject update failed: " + natsStatus_GetText(s) +
-                                     " (js err " + std::to_string(static_cast<int>(jerr)) + ")");
+        ensure_result(s, jerr, "ensure_stream '" + name_str + "' subject update failed");
         return;
     }
 
     if (s != NATS_NOT_FOUND && jerr != JSStreamNotFoundErr)
-        throw std::runtime_error(std::string("ensure_stream '") + name_str +
-                                 "' info check failed: " + natsStatus_GetText(s));
+        throw nats_failure("ensure_stream '" + name_str + "' info check failed", s);
 
     // Stream does not exist — create it.
     std::vector<const char*> subject_ptrs;
@@ -153,9 +150,7 @@ void jetstream_admin::ensure_stream(std::string_view name,
     if (jerr == JSStreamNameExistErr)
         return;
 
-    throw std::runtime_error(std::string("ensure_stream '") + name_str +
-                             "' create failed: " + natsStatus_GetText(s) + " (js err " +
-                             std::to_string(static_cast<int>(jerr)) + ")");
+    throw nats_failure("ensure_stream '" + name_str + "' create failed", s, jerr);
 }
 
 void jetstream_admin::prune_consumers(std::string_view name, std::string_view keep) {
@@ -224,8 +219,8 @@ std::optional<consumer_status> jetstream_admin::consumer_state(std::string_view 
     if (s != NATS_OK || info == nullptr) {
         if (s == NATS_NOT_FOUND || jerr == JSConsumerNotFoundErr)
             return std::nullopt;
-        throw std::runtime_error("Could not read consumer '" + consumer_str + "' on '" +
-                                 stream_str + "': " + natsStatus_GetText(s));
+        throw nats_failure("Could not read consumer '" + consumer_str + "' on '" + stream_str + "'",
+                           s);
     }
 
     consumer_status status;
@@ -254,8 +249,7 @@ void jetstream_admin::delete_stream(std::string_view name) {
     const natsStatus s = js_DeleteStream(js, name_str.c_str(), &opts, &jerr);
     if (s == NATS_OK || s == NATS_NOT_FOUND || jerr == JSStreamNotFoundErr)
         return;
-    throw std::runtime_error("Could not delete stream '" + name_str +
-                             "': " + natsStatus_GetText(s));
+    throw nats_failure("Could not delete stream '" + name_str + "'", s);
 }
 
 }

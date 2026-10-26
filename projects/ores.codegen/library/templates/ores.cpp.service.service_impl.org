@@ -2113,7 +2113,7 @@ ores::utility::domain::result
         // which is the row the session stamped. The part table's own policy
         // reads that column, so it must agree with the central row even when
         // the session has no party of its own.
-        row.party_id = central.party_id;
+        row.{{party_member}} = central.{{central_party_member}};
 {{/copy_party_id}}
         wanted.push_back(std::move(row));
         claims.push_back(change.precondition);

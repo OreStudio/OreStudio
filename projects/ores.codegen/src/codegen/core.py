@@ -1394,7 +1394,23 @@ def _format_description_as_comment(description):
     return '\n'.join(formatted_lines)
 
 
-def _prepare_table_display(cpp_section, uuid_columns=None, optional_columns=None, bool_columns=None):
+def _table_display_members(domain_entity):
+    """Column name to the member prefix that carries it, for a grouped entity.
+
+    The table display names a column, and a grouped entity reaches it through
+    one of its members. A column that no group carries keeps no prefix, which
+    is the flat case every entity without groups is in.
+    """
+    members = {}
+    for field in domain_entity.get('domain_group_fields') or []:
+        member, _, name = field['name'].partition('.')
+        if name:
+            members[name] = member + '.'
+    return members
+
+
+def _prepare_table_display(cpp_section, uuid_columns=None, optional_columns=None,
+                          bool_columns=None, member_of=None):
     """
     Prepare table_display items by adding iterator_var and is_uuid to each item.
 
@@ -1411,6 +1427,10 @@ def _prepare_table_display(cpp_section, uuid_columns=None, optional_columns=None
         uuid_columns (set): Set of column names that are UUID type
         optional_columns (set): Set of column names that are std::optional<T>
         bool_columns (set): Set of column names that are plain bool
+    member_of (dict): Column name to the domain-group member that carries it,
+        for a grouped entity. A table-display row that names the column bare
+        reaches it through that member, so the path the table renders is
+        "legs.pay_index" rather than a member the struct does not have.
     """
     if 'table_display' not in cpp_section:
         return
@@ -1421,8 +1441,11 @@ def _prepare_table_display(cpp_section, uuid_columns=None, optional_columns=None
     iter_var = cpp_section.get('iterator_var', 'e')
     has_uuid = False
     has_optional = False
+    member_of = member_of or {}
     for item in cpp_section['table_display']:
         item['iter_var'] = iter_var
+        if member_of and '.' not in item['column']:
+            item['column'] = member_of.get(item['column'], '') + item['column']
         item['is_uuid'] = item['column'] in uuid_columns
         item['is_optional'] = item['column'] in optional_columns
         item['is_bool'] = item['column'] in bool_columns and item['column'] not in optional_columns
@@ -2910,6 +2933,21 @@ def _family_text_expr(expression: str, column: dict[str, Any]) -> str:
     return expression
 
 
+def _group_prefixes(model):
+    """Column name to the member prefix that carries it, for a grouped model.
+
+    The family view is handed a freshly loaded model, not the enriched one the
+    entity templates see, so it reads the prefixes from the resolved domain
+    group fields rather than from the columns' own flags.
+    """
+    prefixes = {}
+    for field in model.get("domain_group_fields") or []:
+        member, _, name = field["name"].partition(".")
+        if name:
+            prefixes[name] = member + "."
+    return prefixes
+
+
 def _family_entity_view(model, role, owner):
     """The facts the family service reads for one central row or part.
 
@@ -2928,13 +2966,25 @@ def _family_entity_view(model, role, owner):
     )
     entity = model.get("entity_singular", "")
     component = model.get("component", "")
+    # A grouped row reaches a column through the member that carries it, and
+    # the family service names columns on both sides of every assignment. The
+    # columns carry the prefix so that the write record and the key record,
+    # which are built from them, name the same path the domain struct has.
+    prefixes = _group_prefixes(model)
+    for column in model.get("columns") or []:
+        if not column.get("group_prefix"):
+            column["group_prefix"] = prefixes.get(
+                _column_name(column), "")
+    pk_section = model.get("primary_key") or {}
+    for column in ([pk_section] + list(pk_section.get("columns") or [])
+                   + list(model.get("natural_keys") or [])):
+        if not column.get("group_prefix"):
+            column["group_prefix"] = prefixes.get(_column_name(column), "")
     sql = model.get("sql") or {}
     current_state = bool(sql.get("current_state"))
     has_audit = not sql.get("no_audit_columns", False) and not current_state
-    if model.get("domain_groups"):
-        raise ValueError(
-            f"{owner}: the {role} '{entity}' is a grouped entity; the composite "
-            f"family service writes flat domain objects")
+    grouped_members = [
+        group["member"] for group in (model.get("domain_groups") or [])]
     primary_key = model.get("primary_key") or {}
     columns = primary_key.get("columns") or []
     if len(columns) != 1:
@@ -2948,7 +2998,7 @@ def _family_entity_view(model, role, owner):
         "boost::uuids::uuid" if pk.get("type") == "uuid" else "std::string")
     pk_is_uuid = (pk.get("type") == "uuid"
                   or "boost::uuids::uuid" in pk_cpp)
-    pk_member = (pk.get("group_prefix") or "") + pk_column
+    pk_member = (pk.get("group_prefix") or prefixes.get(pk_column, "")) + pk_column
 
     key_fields = key_record_fields(model)
     key_field = key_fields[0] if key_fields else {
@@ -2966,7 +3016,8 @@ def _family_entity_view(model, role, owner):
             {"type": "text", "cpp_type": "std::string"})
         read_method = f"read_latest_by_{declared}"
         read_key_expr = _family_text_expr(f"key.{declared}", declared_column)
-        key_member = (declared_column.get("group_prefix") or "") + declared
+        key_member = ((declared_column.get("group_prefix")
+                       or prefixes.get(declared, "")) + declared)
 
     write_fields = write_record_for(model)
     model["write_fields"] = write_fields
@@ -2995,8 +3046,14 @@ def _family_entity_view(model, role, owner):
         "write_fields": write_fields,
         "has_audit_columns": has_audit,
         "has_party_id": "party_id" in _declared_columns(model),
-        "version_member": "version" if has_audit else pk_column,
-        "commentary_member": "change_commentary" if has_audit else "",
+        "party_member": prefixes.get("party_id", "") + "party_id",
+        "grouped_members": grouped_members,
+        "version_member": prefixes.get(
+            "version" if has_audit else pk_column, "")
+        + ("version" if has_audit else pk_column),
+        "commentary_member": (
+            prefixes.get("change_commentary", "") + "change_commentary"
+            if has_audit else ""),
     }
 
 
@@ -3010,6 +3067,7 @@ def _family_service_view(family, model_path):
     from .org_loader import (  # deferred to avoid a circular import
         _column_name,
         _family_entity_model,
+        _resolve_domain_group_fields,
         operations_by_verb,
         protocol_operations,
         write_record_columns,
@@ -3017,12 +3075,20 @@ def _family_service_view(family, model_path):
     owner = family.get("entity_singular") or Path(model_path).name
     model_dir = Path(model_path).resolve().parent
     central_entity = family.get("central_entity", "")
-    _, central_model = _family_entity_model(model_dir, central_entity, owner)
+    central_path, central_model = _family_entity_model(
+        model_dir, central_entity, owner)
+    # A family's members are loaded through the document path, which parses
+    # the model but does not resolve its domain groups. The view names a
+    # column by the member that carries it, so the groups have to be resolved
+    # before the view is built.
+    _resolve_domain_group_fields({"domain_entity": central_model}, central_path)
     central = _family_entity_view(central_model, "central row", owner)
     family["central"] = central
 
     for part in family.get("parts") or []:
-        _, part_model = _family_entity_model(model_dir, part["entity"], owner)
+        part_path, part_model = _family_entity_model(
+            model_dir, part["entity"], owner)
+        _resolve_domain_group_fields({"domain_entity": part_model}, part_path)
         view = _family_entity_view(
             part_model, f"part '{part['part']}'", owner)
         foreign_key = next(
@@ -3060,7 +3126,9 @@ def _family_service_view(family, model_path):
         view.update({
             "part": part["part"],
             "fk_column": fk_column,
-            "fk_member": (fk_dict.get("group_prefix") or "") + fk_column,
+            "fk_member": ((fk_dict.get("group_prefix")
+                           or _group_prefixes(part_model).get(fk_column, ""))
+                          + fk_column),
             "fk_is_uuid": fk_is_uuid,
             "fk_list_by_uuid": bool(foreign_key.get("list_by_uuid")) and fk_is_uuid,
             "fk_read_expr": fk_read_expr,
@@ -3070,6 +3138,7 @@ def _family_service_view(family, model_path):
             # own column, so the write copies the central row's value when
             # both declare one.
             "copy_party_id": central["has_party_id"] and view["has_party_id"],
+            "central_party_member": central["party_member"],
         })
         part.update(view)
 
@@ -4568,7 +4637,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     optional_columns.add(field['name'])
                 if _field_cpp_type == 'bool':
                     bool_columns.add(field['name'])
-            _prepare_table_display(domain_entity['cpp'], uuid_columns, optional_columns, bool_columns)
+            _prepare_table_display(
+                domain_entity['cpp'], uuid_columns, optional_columns, bool_columns,
+                _table_display_members(domain_entity))
         # Copy repository section fields to top level for template access
         if 'repository' in domain_entity:
             for key, value in domain_entity['repository'].items():

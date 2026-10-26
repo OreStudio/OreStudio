@@ -140,6 +140,10 @@ jobs and belong in different places.
   gets its own tab: the state in force, the multiplier, the auto/calm/active
   switch, who pinned it and why, and the raster of every live feed. The tab sets
   the market and reads the feeds; it edits no feed's clustering.
+- The raster's names are its axis, not a list. Rows follow the tree exactly, so a
+  reader finds a feed by looking down the tree and across to the same row; the
+  names are there because eight unlabelled rows cannot be read, and they are the
+  only names on the tab.
 - No list of feeds on that tab. A table of each feed's mode, ratio, decay and
   sensitivity is a table of configs, and the feed list and the editors already
   are one; the raster says which feeds are busy without repeating their

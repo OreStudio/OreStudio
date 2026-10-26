@@ -195,3 +195,11 @@ Committed on =feature/export-a-pricing-engine-configuration-as-ore-xml= in eight
 - The web package's tests hold no browser: the screens render to static markup there, so the button, its permission and the dialog's sentence are asserted on the rendered page, and the download request is asserted against a stubbed =fetch= in =api/pricingEngines.test.ts=. The click itself was not driven through a browser.
 - After the consolidation the route and the command were run again and their documents are byte identical to the ones above, because this configuration holds a global parameter. The consolidation's own change is the other case: 70 of the 125 corpus documents gained an empty =GlobalParameters=, and the round-trip cases state it.
 - =pricing_engines export <id> --file <path>= wrote the same document, byte for byte, after =account_operations switch-party= to the HK party of the ACME Corporation tenant. The name came from =ores_reporting_file_types_tbl= (row =setup.pricingEnginesFile=, configuration type =pricing_engines=, kind =input_document=, direction =input=, name pattern =pricingengine.xml=).
+
+** The checks
+
+=python3 build/scripts/local_checks.py --exclude-heavy= runs 63 checks and passes 61. The two that fail carry main's inputs, not this branch's: =prototypes= names a market data prototype index main does not list, and =er-diagram= warns about =ores_refdata_convention_kind_terms_tbl=, a table this branch does not touch. The branch changes no =create= or =drop= SQL and no prototype file, which =git diff= against main confirms.
+
+The branch also carries the XML benchmark row the repo asks for when XML code changes (=benchmarks/xml/history.tsv=, 96 rows recorded), and it formats one market data file main already carried unformatted, because the =web= check refuses the whole tree otherwise.
+
+The component model now states the =pugixml= dependency the exporter needs, so the generated build file is no longer hand-edited; =component-drift= and =cmake-sources= both pass.

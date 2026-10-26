@@ -569,6 +569,11 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/assets)
 add_subdirectory(${CMAKE_SOURCE_DIR}/projects)
 add_subdirectory(${CMAKE_SOURCE_DIR}/doc/llm/skills/modeling)
 
+# Development tools: programs a person runs, that no service and no test needs.
+if(EXISTS ${CMAKE_SOURCE_DIR}/tools/CMakeLists.txt)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/tools)
+endif()
+
 # On Windows we disable vcpkg's per-target X_VCPKG_APPLOCAL_DEPS_INSTALL hook
 # (set in CMakePresets.json) because it registers one install(CODE ...) block
 # per installed executable. With ~80 installed targets each pulling the

@@ -93,6 +93,8 @@ export interface AggregateRow {
     readonly change_pct: readonly Money[];
     /** Whether the row is only in the earlier run. */
     readonly is_removed: boolean;
+    /** How deep the row sits under its group, zero at the top. */
+    readonly depth: number;
 }
 
 /** Why a report has no rows to show. */
@@ -102,6 +104,8 @@ interface TradeAnswer {
     readonly level: 'trade';
     readonly rows: readonly RunResultRow[];
     readonly totals: readonly Money[];
+    /** How many trades the run priced, whatever the level draws. */
+    readonly tradeCount: number;
     readonly reason: ResultReason;
     readonly recordsComplete: boolean;
 }
@@ -110,6 +114,8 @@ interface AggregateAnswer {
     readonly level: 'book' | 'counterparty';
     readonly rows: readonly AggregateRow[];
     readonly totals: readonly Money[];
+    /** How many trades the run priced, whatever the level draws. */
+    readonly tradeCount: number;
     readonly reason: ResultReason;
     readonly recordsComplete: boolean;
     /** The run this answer is compared with, empty when it is compared with none. */
@@ -258,6 +264,7 @@ interface TradeRecords {
     readonly bookName: ReadonlyMap<string, string>;
     readonly bookPortfolio: ReadonlyMap<string, string>;
     readonly portfolioName: ReadonlyMap<string, string>;
+    readonly portfolioParent: ReadonlyMap<string, string>;
     readonly complete: boolean;
 }
 
@@ -276,6 +283,7 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
         bookName: new Map<string, string>(),
         bookPortfolio: new Map<string, string>(),
         portfolioName: new Map<string, string>(),
+        portfolioParent: new Map<string, string>(),
         complete: false,
     };
     try {
@@ -332,6 +340,17 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
             portfolioName: new Map(
                 portfolios.map((portfolio) => [text(portfolio['id']), text(portfolio['name'])]),
             ),
+            portfolioParent: new Map(
+                portfolios
+                    .map(
+                        (portfolio) =>
+                            [
+                                text(portfolio['id']),
+                                text(portfolio['parent_portfolio_id']),
+                            ] as const,
+                    )
+                    .filter(([, parent]) => parent !== ''),
+            ),
             complete: portfoliosRead,
         };
     } catch {
@@ -350,6 +369,7 @@ async function withRecords(
     counterpartyName: ReadonlyMap<string, string>;
     bookPortfolio: ReadonlyMap<string, string>;
     portfolioName: ReadonlyMap<string, string>;
+    portfolioParent: ReadonlyMap<string, string>;
 }> {
     const records = await recordsOf(
         session,
@@ -371,6 +391,7 @@ async function withRecords(
         counterpartyName: records.counterpartyName,
         bookPortfolio: records.bookPortfolio,
         portfolioName: records.portfolioName,
+        portfolioParent: records.portfolioParent,
     };
 }
 
@@ -479,6 +500,104 @@ export function comparedWith(
     return rows;
 }
 
+/** The sums of a set of rows, each currency apart, stated at a depth. */
+function nodeOf(
+    key: string,
+    name: string,
+    children: readonly AggregateRow[],
+    depth: number,
+): AggregateRow {
+    return {
+        key,
+        name,
+        trades: children.reduce((sum, child) => sum + child.trades, 0),
+        totals: moneyOf(children, (row) => row.totals),
+        notional: moneyOf(children, (row) => row.notional),
+        group: '',
+        is_group: true,
+        previous: [],
+        change: [],
+        change_pct: [],
+        is_removed: false,
+        depth,
+    };
+}
+
+/**
+ * The books as a tree: each portfolio above the books and portfolios it holds.
+ *
+ * Portfolios nest, so a portfolio's figure is its own books plus the portfolios
+ * under it, and the depth lets the screen indent each row by its place. A book in
+ * no portfolio, or in one whose name was not read, stands at the top rather than
+ * under a guess.
+ */
+export function withPortfolioTree(
+    books: readonly AggregateRow[],
+    bookPortfolio: ReadonlyMap<string, string>,
+    portfolioName: ReadonlyMap<string, string>,
+    portfolioParent: ReadonlyMap<string, string>,
+): readonly AggregateRow[] {
+    const booksUnder = new Map<string, AggregateRow[]>();
+    const standing: AggregateRow[] = [];
+    for (const book of books) {
+        const portfolio = bookPortfolio.get(book.key) ?? '';
+        if (portfolio === '' || (portfolioName.get(portfolio) ?? '') === '') {
+            standing.push(book);
+            continue;
+        }
+        booksUnder.set(portfolio, [...(booksUnder.get(portfolio) ?? []), book]);
+    }
+
+    const nodeIds = new Set(booksUnder.keys());
+    for (const portfolio of [...booksUnder.keys()]) {
+        let parent = portfolioParent.get(portfolio) ?? '';
+        while (parent !== '' && !nodeIds.has(parent)) {
+            nodeIds.add(parent);
+            parent = portfolioParent.get(parent) ?? '';
+        }
+        if (parent !== '') {
+            nodeIds.add(parent);
+        }
+    }
+    const childrenOf = new Map<string, string[]>();
+    for (const id of nodeIds) {
+        const parent = portfolioParent.get(id) ?? '';
+        const key = parent !== '' && nodeIds.has(parent) ? parent : '';
+        childrenOf.set(key, [...(childrenOf.get(key) ?? []), id]);
+    }
+
+    const build = (id: string, depth: number): { node: AggregateRow; rows: AggregateRow[] } => {
+        const own = [...(booksUnder.get(id) ?? [])].sort(
+            (left, right) => figureOf(right) - figureOf(left),
+        );
+        const children = [...(childrenOf.get(id) ?? [])].map((child) => build(child, depth + 1));
+        const node = nodeOf(
+            id,
+            portfolioName.get(id) ?? '',
+            [...own, ...children.map((child) => child.node)],
+            depth,
+        );
+        const rows: AggregateRow[] = [
+            node,
+            ...own.map((book) => ({ ...book, group: node.name, depth: depth + 1 })),
+        ];
+        for (const child of children) {
+            rows.push(...child.rows);
+        }
+        return { node, rows };
+    };
+    const tops = [...(childrenOf.get('') ?? [])]
+        .map((top) => build(top, 0))
+        .sort((left, right) => figureOf(right.node) - figureOf(left.node));
+    const rows: AggregateRow[] = tops.flatMap((top) => top.rows);
+    rows.push(
+        ...[...standing]
+            .sort((left, right) => figureOf(right) - figureOf(left))
+            .map((book) => ({ ...book, depth: 0 })),
+    );
+    return rows;
+}
+
 /** One figure of a set of rows, each currency added apart. */
 function moneyOf(
     rows: readonly AggregateRow[],
@@ -550,6 +669,7 @@ export function withGroups(
                 change: [],
                 change_pct: [],
                 is_removed: false,
+                depth: 0,
             };
             return { group, ordered };
         })
@@ -585,6 +705,7 @@ export function aggregateRows(
             change: [],
             change_pct: [],
             is_removed: false,
+            depth: 0,
             totals: totalsOf(members, (row) => ({
                 amount: row.npv,
                 currency: row.npv_currency,
@@ -617,6 +738,7 @@ async function tradeRowsOfKey(
     counterpartyName: ReadonlyMap<string, string>;
     bookPortfolio: ReadonlyMap<string, string>;
     portfolioName: ReadonlyMap<string, string>;
+    portfolioParent: ReadonlyMap<string, string>;
 }> {
     if (key === '') {
         return {
@@ -627,6 +749,7 @@ async function tradeRowsOfKey(
             counterpartyName: new Map(),
             bookPortfolio: new Map(),
             portfolioName: new Map(),
+            portfolioParent: new Map(),
         };
     }
     const archive = await fetchStored(session, key);
@@ -643,6 +766,7 @@ async function tradeRowsOfKey(
             counterpartyName: new Map(),
             bookPortfolio: new Map(),
             portfolioName: new Map(),
+            portfolioParent: new Map(),
         };
     }
     const rows = rowsOf(resultFile[1].toString('utf8'));
@@ -655,6 +779,7 @@ async function tradeRowsOfKey(
             counterpartyName: new Map(),
             bookPortfolio: new Map(),
             portfolioName: new Map(),
+            portfolioParent: new Map(),
         };
     }
     const resolved = await withRecords(session, rows);
@@ -666,6 +791,7 @@ async function tradeRowsOfKey(
         counterpartyName: resolved.counterpartyName,
         bookPortfolio: resolved.bookPortfolio,
         portfolioName: resolved.portfolioName,
+        portfolioParent: resolved.portfolioParent,
     };
 }
 
@@ -685,6 +811,7 @@ async function resultsOfKey(
             level,
             rows: read.rows,
             totals,
+            tradeCount: read.rows.length,
             reason: read.reason,
             recordsComplete: read.recordsComplete,
         };
@@ -703,11 +830,12 @@ async function resultsOfKey(
     const grouped =
         level === 'counterparty'
             ? withGroups(rows, read.counterpartyParent, read.counterpartyName)
-            : withGroups(rows, read.bookPortfolio, read.portfolioName);
+            : withPortfolioTree(rows, read.bookPortfolio, read.portfolioName, read.portfolioParent);
     return {
         level,
         rows: grouped,
         totals,
+        tradeCount: read.rows.length,
         reason: read.reason,
         recordsComplete: read.recordsComplete,
         baseline: null,
@@ -739,6 +867,7 @@ async function comparedOfKey(
         level,
         rows: comparedWith(current.rows, earlier.rows),
         totals: current.totals,
+        tradeCount: current.tradeCount,
         reason: current.reason,
         recordsComplete: current.recordsComplete,
         baseline: {
@@ -799,6 +928,7 @@ export function registerGridReportResultsRoutes(
                 level: query.data.by,
                 rows: [],
                 totals: [],
+                tradeCount: 0,
                 reason: 'no-run',
                 recordsComplete: true,
                 baseline: null,

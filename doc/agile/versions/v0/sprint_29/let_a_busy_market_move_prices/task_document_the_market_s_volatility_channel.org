@@ -8,7 +8,7 @@
 #+filetags: :let_a_busy_market_move_prices:sprint_29:v0:
 #+owner: marco
 #+branch: feature/document-the-market-s-volatility-channel
-#+pr: 3890
+#+pr: 3892
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
@@ -92,6 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3892][#3892]] | [docs] State the market's volatility channel |
 | [[https://github.com/OreStudio/OreStudio/pull/3890][#3890]] | [agile] Scope the market's volatility channel |
 
 * Review

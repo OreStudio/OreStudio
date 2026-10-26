@@ -36,8 +36,17 @@ booking gets:
   appear in the Book picker; that is Step 3.
 - *Every other book is open*, so a booking has somewhere to land.
 
-The frozen book is returned to =Active= after the run. If the scenario is
-abandoned, thaw it with:
+*Freeze it before each run*, because the state does not survive one: the run
+thaws the book at its end, and the environment is left as it is found. To
+prepare the scenario:
+
+#+begin_example
+update ores_refdata_books_tbl set book_status = 'Frozen'
+ where name = 'USD Vanilla Swaps'
+   and valid_to = ores_utility_infinity_timestamp_fn();
+#+end_example
+
+If the scenario is abandoned, thaw it with:
 
 #+begin_example
 update ores_refdata_books_tbl set book_status = 'Active'

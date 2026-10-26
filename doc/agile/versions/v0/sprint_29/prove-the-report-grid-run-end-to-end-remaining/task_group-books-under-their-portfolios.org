@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 9B64F464-EC3D-4B3F-B2B7-4DF1E7F321EA
+:END:
+#+title: Task: Group books under their portfolios
+#+description: The book level states each portfolio's rolled-up figure above the books it holds.
+#+type: task
+#+level: s1
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr: 3893
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reader sees a portfolio's total above the books that make it up, and can check one against the other.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- A book carries its portfolio's name.
+- A portfolio row states the sum of its books' trades, NPV and notional.
+- Books sit under their portfolio, ordered largest first.
+- A book in no portfolio stands on its own.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3893][#3893]] | [web] Group books under their portfolios |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The book level states each portfolio above the books it holds.
+
+A book that names a portfolio carries the portfolio's name, and a portfolio row
+sits above the books under it, with its trades, NPV and notional summed from
+them. Books sit under their portfolio, ordered largest first; a book in no
+portfolio stands on its own. The grouping is the one the counterparty level
+already uses, now shared: one helper, two parents.
+
+On run =c2a86671= the level draws *Liquidity Buffer Portfolio* at
+=33,709,129.46= HKD over eight trades, above *Liquidity Buffer Bonds* with the
+same eight trades: the two agree, which is the point of stating a group at all.
+
+A portfolio row does not lead anywhere, because no screen reads a portfolio
+record; the book under it does.

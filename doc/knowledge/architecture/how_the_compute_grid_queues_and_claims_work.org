@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :compute:grid:queue:architecture:
 #+created: 2026-10-12
-#+updated: 2026-10-12
+#+updated: 2026-10-26
 
 * Summary
 
@@ -93,7 +93,7 @@ A submit changes a result only when the result is InProgress and the host is the
 
 *** The wake-up
 
-The server publishes a notice on =compute.v1.ops.work_available= when it adds Unsent results. The notice is plain NATS. It holds no state and it is lost if no node listens. A node also asks for work every few seconds, with random jitter, so a lost notice costs seconds. A node that gets "no work" waits for the notice or for its next poll.
+The server publishes a notice on =compute.v1.ops.work_available= when it adds Unsent results. The notice is plain NATS. It holds no state and it is lost if no node listens. A node that gets "no work" waits for the notice, or for a long timeout measured in minutes that covers a lost notice, and sends nothing until one of them comes. A node that finishes a job claims again at once. An idle grid therefore sends no claims and runs no queries. See [[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Work is pushed to the grid and an idle grid costs nothing]].
 
 *** The bound
 

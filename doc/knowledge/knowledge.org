@@ -42,6 +42,7 @@ one, start there rather than here.
 | [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] | How a subject is addressed, what a message must look like, and where a service binds to the bus |
 | [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] | How a service must use the bus: the call each situation requires, its rationale, and the failure without it |
 | [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] | Where the durable data lives, which interface reaches each store, and how to choose one |
+| [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] | How a service reaches the database and how ticks reach the store, at one hundred thousand feeds |
 | [[id:8C011F45-3A10-4EF4-BB73-4BDEF38B743E][Data classification]] | How to tell what a data set is before choosing a shape, and how a set that crosses owners travels |
 | [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] | How a report is scheduled, prepared, run on the compute grid, and recorded |
 | [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] | How a screen looks, what its marks mean, where it lives, and how it behaves for a record and for an entity |
@@ -102,6 +103,7 @@ How the codebase is put together.
 | [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] | The pattern language of service interaction: the established patterns the platform uses, by group, with their sources, failure handling and pitfalls |
 | [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] | Producers, the marketdata authority, feed configs, source-independent consumers |
 | [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] | The system of record, object storage, the durable stream and the caches, and what each one owns |
+| [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] | Connections, the transaction API, bounded handlers, the tick store and its writers, and the numbers each reports |
 | [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] | Schema layout, roles, session settings, bitemporal design |
 | [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS Entity Protocol Specification]] | The subject grammar, verb set, envelopes, write model and security rules every common entity message follows |
 | [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component Architecture Audit]] | The recurring per-component cleanliness check, and the conventions it enforces |

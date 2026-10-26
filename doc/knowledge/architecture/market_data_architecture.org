@@ -7,15 +7,15 @@
 #+level: cross
 #+filetags: :architecture:marketdata:nats:synthetic:adapters:structure_note:
 #+created: 2026-06-28
-#+updated: 2026-10-23
+#+updated: 2026-10-26
 
 * Summary
 
 One service, =ores.marketdata=, stands between the sources of market data and the
 parties that consume it. Sources are adapters. A live Bloomberg adapter, a replay
 adapter and the simulator all meet the service at the same four messages. The
-service maps vendor ids to internal items, checks and stores the quote series
-for each party, delivers the ticks, and records what each party used so the
+service maps vendor ids to internal items, checks them, stores each tick once
+for its source, delivers the ticks to each subscribed party, and records what each party used so the
 platform can share the vendor cost. Nothing past the adapter seam knows whether a
 source is live or simulated, and a person can always find out.
 
@@ -62,7 +62,7 @@ order goes from the provider to the party.
    notation, and the =minted= flag.
 4. [[id:BAE0F052-CCA6-43FB-A139-03518CE2D929][The mapping belongs to the provider and not to the source]]. The link from a vendor instrument to an internal item, on the
    provider.
-5. [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]]. The key (item, provider, party), and the observations under it. The cost of the per-party copy and the decision to store one tick for each source are in [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared tick or one copy for each party]].
+5. [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]]. The key (item, provider, party), and the stream it points at. How the points are stored once for each source and read under the party's entitlement is in [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]].
 6. [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]]. The entitlement of a party to a provider.
 7. [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived rights are modelled on the subscription]]. Display, non-display and derived.
 8. [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]]. One active source for each (party, provider).
@@ -87,8 +87,8 @@ Read this section to follow one tick from the adapter to the party stream.
 6. [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]]. The one path from tick to store to party stream.
 7. [[id:98E49FCD-10E4-4DCE-9099-E728359B6D60][Quality checks run between mapping and storage and ignore the source kind]]. The checks between mapping and storage.
 8. [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]]. The tick that the party receives.
-9. [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]]. A proposal: lanes, a ring and batched writes for high
-   tick rates.
+9. [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]]. The lanes, the ring and the batched writes that carry
+   high tick rates.
 10. [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]]. Why the client makes two calls and merges them itself.
 11. [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]]. What the one read of ticks accepts, returns and refuses.
 
@@ -194,6 +194,7 @@ and at saying which parts of a new asset class are config and which are code.
 
 * See also
 
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — completes: how the ticks this cluster describes reach the store at one hundred thousand feeds.
 - [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — completes: the curve specific view of provenance.
 - [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-Rates Matrix]] — completes: the no-arbitrage spanning tree over driver rates.
 - [[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][Spot rate blending]] — completes: the business case for the composite that blends spot rates.

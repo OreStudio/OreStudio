@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 42930B6A-544A-4F7E-ACF4-9ABC60F2B408
+:END:
+#+title: The environments share the database through a transaction pooler
+#+description: A transaction-mode pooler in front of the shared instance caps server connections across the environments.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:database:connections:environments:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+* Summary
+
+The ten environments on one machine share one PostgreSQL instance. A pooler in
+transaction mode stands in front of it. Services connect to the pooler, and the
+pooler holds a capped number of server connections for each database and for the
+instance. A connection carries nothing between transactions ([[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]]) and
+statements are prepared through the protocol ([[id:E8369409-2A7B-4258-9D3C-6D37A46F4603][A hand-written statement is declared once, typed both ways and prepared once]]), so a server connection
+serves any service of its environment from one transaction to the next.
+
+* Detail
+
+** The caps
+
+| Cap | Set for |
+|-----+---------|
+| Server connections for each environment's database | the environment's peak concurrent transactions |
+| Server connections for the instance | below =max_connections=, with room for direct connections |
+
+A service's pool size ([[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]]) is what the service may have open at once; the
+pooler's cap is what the environment may have running at once.
+
+** What connects directly
+
+Work that needs a session goes around the pooler:
+
+- a listener on =LISTEN=,
+- a lock held across transactions,
+- the tick lanes ([[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]]), whose long COPY batches would hold a pooled server
+  connection for their whole length.
+
+** Prepared statements
+
+The pooler keeps protocol-level prepared statements on its server connections,
+so a statement prepared once stays prepared as transactions move between server
+connections.
+
+* See also
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
+- [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] — the instance behind the pooler.

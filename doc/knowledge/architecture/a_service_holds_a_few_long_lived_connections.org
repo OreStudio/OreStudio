@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 729F746E-36DD-40A2-A592-6972239E31F0
+:END:
+#+title: A service holds a few long-lived connections and never connects per query
+#+description: Each process opens a small pool at start and keeps it; no query opens a connection of its own.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:database:connections:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+* Summary
+
+A service process opens its database connections when it starts and keeps them
+for its whole life. The pool is small, as many connections as the service runs
+queries at once, which is its worker count. No query opens a connection of its
+own: a connection costs a name lookup, a TCP handshake, a SCRAM login and the
+session setup, milliseconds of CPU for a query that runs in a fraction of one.
+
+* Detail
+
+** What the pool holds
+
+Every connection authenticates once, at start or when it replaces a broken
+connection. A connection carries no tenant and no party between transactions
+([[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]]), so any connection serves any request. The pool hands a connection to
+one transaction at a time and takes it back when the transaction ends.
+
+** How large it is
+
+The pool is as large as the service's worker pool ([[id:4DA654B3-7CE6-4637-B4D8-E8E2B4D092B3][Delivery threads enqueue and a bounded pool runs the handlers]]), because a worker is
+what holds a connection, and a connection no worker can use is idle. A service
+with only control-plane work holds two to four. The marketdata service holds
+the same small pool for its reads, and each tick lane holds one connection of
+the writer role ([[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]]).
+
+** When a connection breaks
+
+The pool replaces a broken connection in the background. The transaction that
+was using it ends with a retryable error ([[id:E11DB09A-328A-476A-A71B-8E303A68D07D][A store error says whether a retry can succeed]]), and its caller retries on a
+fresh connection.
+
+** One connection path
+
+The generated repositories and the hand-written statements reach the store
+through the same pool and the same unit of work ([[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]]). There is no second
+way to reach the database.
+
+* See also
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
+- [[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]] — completes: what sits between the pools of ten environments and the one instance.
+- [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] — the store these connections reach.

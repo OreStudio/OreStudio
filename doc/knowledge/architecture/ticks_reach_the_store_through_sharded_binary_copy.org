@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: BCD7D253-8B1E-4887-B476-EDD3EDE01BE6
+:END:
+#+title: Ticks reach the store through sharded binary COPY in bounded batches
+#+description: A few lanes sharded by series each commit binary COPY batches bounded by size or a short wait, idempotent on stream, time and coordinate.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:marketdata:ticks:database:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+* Summary
+
+A few lanes write ticks, sharded by stream, so all ticks of a stream go through
+one lane and keep their order. Each lane holds one connection of the writer role
+and commits a binary COPY batch when it holds a batch of rows or when its oldest
+row has waited the linger, whichever comes first. The key of a point (stream,
+time, coordinate) is unique, and a lane writes so that a key already stored is
+skipped, so a redelivered tick changes nothing. The number of lanes follows the
+tick rate, not the number of tenants.
+
+* Detail
+
+** A batch is bounded both ways
+
+| Bound | Value | Why |
+|-------+-------+-----|
+| Rows | a few thousand | One round trip carries many rows |
+| Linger | tens of milliseconds | A quiet stream's tick is not held |
+
+The queue in front of a lane is bounded and keeps the newest tick of a datum,
+as [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] describes, so a slow store costs old ticks, never memory.
+
+** Binary COPY
+
+A batch is one COPY in the binary format: no SQL text, no per-row statement, no
+text formatting of values. The lane copies into a staging table and moves the
+rows into the store, skipping keys already present, in the same transaction.
+
+** The live path does not wait
+
+The lane stores; it does not deliver. A tick is republished to its subscribers
+on the live path before it is stored, so a store that is slow delays history,
+never the live tick.
+
+** The writer role
+
+A lane writes as the writer role, which may insert points and nothing else. The
+points carry no tenant ([[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]]), so a batch may hold the ticks of any stream.
+
+* Patterns used
+
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] — the unique point key makes a redelivered tick a no-op.
+
+* See also
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
+- [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] — the lane, its ring buffer and its age gate in full.
+- [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded by compression, narrow chunks and retention policies]] — what happens to the rows once they are stored.

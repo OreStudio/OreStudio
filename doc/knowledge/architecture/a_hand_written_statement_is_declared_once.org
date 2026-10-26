@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: E8369409-2A7B-4258-9D3C-6D37A46F4603
+:END:
+#+title: A hand-written statement is declared once, typed both ways and prepared once
+#+description: Hand-written SQL has typed parameters and typed rows, is prepared once per connection and reads the binary format.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:database:api:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+* Summary
+
+Hand-written SQL is a statement declared once, in the repository that owns it,
+with typed parameters and a typed row. Its first use on a connection prepares
+it, and later uses execute the prepared plan. Results come back in the binary
+format and decode into the row type. No hand-written statement builds SQL text
+from values, and no caller walks a grid of optional strings.
+
+* Detail
+
+** The shape
+
+#+begin_src cpp
+struct held_row final {
+    boost::uuids::uuid result_id;
+    std::chrono::system_clock::time_point lease_until;
+};
+
+const statement<held_row, boost::uuids::uuid> held_by{
+    "compute.held_by",
+    "select result_id, lease_until from ores_compute_work_ledger_tbl "
+    "where host_id = $1"};
+#+end_src
+
+A statement names itself, so the session can prepare it once per connection
+and report its numbers by name ([[id:7425094C-C5A0-4AF7-8EF4-B8062979A7BD][Every queue and every session reports its own numbers]]). The row type is a flat struct, the same
+shape [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] asks of data that moves in bulk.
+
+** Many keys, one statement
+
+A read of many keys passes them as one array parameter (=where id = any($1)=),
+so a batch is one statement and one round trip, not one statement for each key.
+
+** Through the pooler
+
+Statements are prepared through the protocol, so a pooler in transaction mode
+can keep them prepared on its server connections ([[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]]).
+
+* See also
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
+- [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]] — the transaction a statement runs in.

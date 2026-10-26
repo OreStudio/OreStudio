@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :pattern:load:
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-26
 #+pattern_group: load
 #+startup: inlineimages
 
@@ -82,6 +82,7 @@ tenant keep one tenant's fault from reaching another.
 
 - [[id:78B82824-0BBB-4442-A9FA-E1F265DF57BD][Run grants and run tokens]] — IAM limits exchanges per service and per tenant.
 - [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — quotas cap the running runs of each tenant and party.
+- [[id:4DA654B3-7CE6-4637-B4D8-E8E2B4D092B3][Delivery threads enqueue and a bounded pool runs the handlers]] — a full queue answers busy or drops by policy, so a burst costs refusals, never memory.
 
 * Related patterns
 

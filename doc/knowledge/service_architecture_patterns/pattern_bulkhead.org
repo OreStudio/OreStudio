@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :pattern:resilience:
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-26
 #+pattern_group: resilience
 #+startup: inlineimages
 
@@ -82,6 +82,7 @@ Availability: one tenant cannot deny service to another by load.
 
 - [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — per-tenant step limits in each replica, and dedicated compute pools.
 - [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — assignments are routed per platform, so one platform's backlog does not hold another's.
+- [[id:4DA654B3-7CE6-4637-B4D8-E8E2B4D092B3][Delivery threads enqueue and a bounded pool runs the handlers]] — requests, events and durable deliveries each have their own bounded queue in front of the worker pool.
 
 * Related patterns
 

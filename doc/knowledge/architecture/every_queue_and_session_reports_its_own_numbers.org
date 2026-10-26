@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 7425094C-C5A0-4AF7-8EF4-B8062979A7BD
+:END:
+#+title: Every queue and every session reports its own numbers
+#+description: Sessions report pool wait, execution time and rows; queues report depth, drops and age; both publish as telemetry samples.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:telemetry:observability:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+* Summary
+
+Every session operation records how long it waited for a connection, how long
+it ran and how many rows it moved. Every queue records its depth, what it
+dropped and why, and the age of its oldest entry. Each service publishes these as
+telemetry samples once a minute, beside the tick funnel's counters, so a slow
+statement, a full pool or a queue that drops shows as a number on the timeline.
+Nothing is measured by reading logs.
+
+* Detail
+
+** What is recorded
+
+| Source | Numbers |
+|--------+---------|
+| A statement ([[id:E8369409-2A7B-4258-9D3C-6D37A46F4603][A hand-written statement is declared once, typed both ways and prepared once]]) | Executions, time, rows, by statement name |
+| The pool ([[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]]) | Wait for a connection, connections in use |
+| A queue ([[id:4DA654B3-7CE6-4637-B4D8-E8E2B4D092B3][Delivery threads enqueue and a bounded pool runs the handlers]]) | Depth, drops by reason, age of the oldest entry |
+| A tick lane ([[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]]) | Batches, rows, batch time, skipped duplicates |
+| The tick funnel | Published, received, dropped by reason, stored, republished |
+
+** Where it goes
+
+The numbers are counters and gauges in memory. A service publishes a sample of
+them once a minute to the telemetry service, which stores the samples as it
+stores the message-bus samples. Rates come from the difference between two
+samples, so a sample costs a few rows a minute however busy the service is.
+
+** What it is for
+
+The tick funnel balances: a tick that is received is dropped, stored or still
+queued. An interval that does not balance names the stage where ticks go
+missing, and the rate a feed configures, set beside the rate the funnel counts,
+shows a feed that runs away.
+
+* See also
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
+- [[id:F9757D88-A92E-474E-9E8E-C703D604A0B2][ores.telemetry]] — the service that stores the samples.

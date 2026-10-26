@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:ticks:reads:architecture:
 #+created: 2026-10-23
-#+updated: 2026-10-23
+#+updated: 2026-10-26
 
 * Summary
 
@@ -110,12 +110,14 @@ off the body, because each is a decision about the data. The codes are =party_re
 refused. A span with no end runs to now, so a start ahead of the clock of the service gives
 an empty reply, because nothing has ticked after now. See [[id:7C23D4E5-F607-4B82-9DA4-B5C6D7E8F901][Report a Failure in the Body]].
 
-A context with no party gets =party_required= and not an empty reply. The party policy
-of the tick table shows such a context no tick, and an empty reply would look complete.
-The as-of reads face the same case. See [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]].
+A context with no party gets =party_required= and not an empty reply. Without a party
+there is no series to check entitlement against, so the read would return no tick, and an
+empty reply would look complete. The as-of reads face the same case. See [[id:4EE26B23-003B-4DF1-AA83-1196CC6810C3][Snapshots and cuts]].
 
-The read uses the tenant-aware pool. The policies of the tick table decide what the
-session sees, and no role skips them.
+The read checks entitlement first, in the party's tenant and under row-level security:
+the party's series must name the stream, and the party must hold a subscription that
+allows the read, or own the derived stream. It then reads the stream's points with the
+service's own role. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]].
 
 ** Two tiers behind one reply
 

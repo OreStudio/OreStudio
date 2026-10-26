@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 3C334C3B-2760-4278-95B8-B71268E8FD18
+:END:
+#+title: A transaction sets its own tenant context, so any connection serves any tenant
+#+description: Tenant and party context is local to a transaction and sent with its first statement, so connections carry no tenant and can be shared.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:database:tenancy:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+* Summary
+
+A connection carries no tenant between transactions. Each transaction begins by
+setting its tenant, its party, its visible parties and its actor with
+=set_config(..., true)=, which holds for the transaction only, and the settings
+travel in the same round trip as its first statement. When the transaction ends
+the settings end with it. Any connection therefore serves any tenant, the pool
+needs no partition by tenant, and a pooler in transaction mode can share
+connections.
+
+* Detail
+
+** What a transaction sets
+
+| Setting | What it holds |
+|---------+---------------|
+| =app.current_tenant_id= | The tenant the transaction acts in |
+| =app.current_party_id= | The party the transaction acts as |
+| =app.visible_party_ids= | The parties whose rows the transaction may see |
+| =app.current_actor= | The account the audit columns name |
+| =app.current_service= | The service acting, for audit and for the policies of service roles |
+
+The time zone is the only setting a connection keeps for its life: every
+connection uses UTC, so it is set once when the connection opens.
+
+** Row-level security reads them
+
+The policies of [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] read these settings. A statement outside a transaction
+that set them sees no tenant and no rows, so a forgotten context fails closed.
+
+** One round trip
+
+The unit of work ([[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]]) sends the settings and the first statement as one
+pipeline, so setting the context costs no round trip of its own.
+
+* See also
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]] — completes: which owner each table's rows have, and so which settings its policy reads.
+- [[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]] — answers: why a connection must carry nothing between transactions.

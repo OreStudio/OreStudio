@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :postgresql:database:architecture:knowledge:
 #+created: 2026-06-03
-#+updated: 2026-08-27
+#+updated: 2026-10-26
 
 ORE Studio uses PostgreSQL as its sole persistent store.  All services
 read and write through a shared database, each with a strictly scoped
@@ -185,51 +185,45 @@ see [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] f
 
 * Session conventions
 
-Every application connection must set the following before executing
-queries.  The [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] =tenant_aware_pool= does this on =acquire()=:
+A connection sets one thing for its life, when it opens:
 
 #+begin_src sql
--- Force UTC — all TIMESTAMPTZ values are returned as "YYYY-MM-DD HH:MM:SS+00"
+-- Force UTC: all TIMESTAMPTZ values are returned as "YYYY-MM-DD HH:MM:SS+00"
 SELECT set_config('TimeZone', 'UTC', false);
-
--- Set the current tenant (required by RLS policies)
-SELECT set_config('app.current_tenant_id', '<uuid>', false);
-
--- Set the current party (required by some service-level policies)
-SELECT set_config('app.current_party_id', '<uuid>', false);
 #+end_src
 
-*Every service must set =TimeZone = UTC= on every connection.*  Without
-it, PostgreSQL uses the server's local timezone and returns
-=TIMESTAMPTZ= values with local offsets rather than =+00=.  All C++
-timestamp parsing assumes UTC.
+*Every connection uses =TimeZone = UTC=.*  Without it, PostgreSQL uses the
+server's local timezone and returns =TIMESTAMPTZ= values with local offsets
+rather than =+00=.  All C++ timestamp parsing assumes UTC.
 
-** Connection acquisition: retry with backoff
+Everything else a statement needs, the tenant, the party, the visible
+parties, the actor and the service, is set for each transaction and ends with
+it:
 
-Every service holds a small per-service connection pool (default 2
-connections, tuned per service via =--db-pool-size= /
-=ORES_<APP>_DB_POOL_SIZE=).  When every connection is in use, an
-acquire waits and retries instead of failing immediately:
+#+begin_src sql
+SELECT set_config('app.current_tenant_id', '<uuid>', true);
+SELECT set_config('app.current_party_id', '<uuid>', true);
+SELECT set_config('app.visible_party_ids', '<uuids>', true);
+SELECT set_config('app.current_actor', '<account>', true);
+SELECT set_config('app.current_service', '<service>', true);
+#+end_src
 
-- =num_attempts= (default 10) bounds the retries.  After the last
-  attempt the acquire fails with "No available connections in the
-  pool."
-- Between attempts the waiter sleeps.  The default strategy is
-  =exponential=: the base =wait_time_in_seconds= (default 1) doubles
-  per attempt, capped at 10 seconds, plus a small deterministic
-  per-thread jitter so waiting threads do not re-probe in lockstep.
-  The =linear= strategy waits the fixed interval per attempt — the
-  historical behavior, available for environments that need it.
-- The strategy is chosen per service: =--db-pool-backoff
-  <exponential|linear>= / =ORES_<APP>_DB_POOL_BACKOFF=, default
-  =exponential=.
+The unit of work sends these settings in the same round trip as the
+transaction's first statement. See [[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]] and [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]].
 
-The wait policy lives in common code (=ores.database=,
-=tenant_aware_pool::acquire()=); the underlying sqlgen pool is
-configured to fail fast, and the project-side loop owns the backoff.
-Writes therefore serialize naturally on the pool under contention:
-waiters queue politely and each eventually acquires, rather than one
-failing while others proceed.
+** Connections
+
+A service holds a small pool of long-lived connections, as many as its worker
+pool, opened when it starts. No query opens a connection of its own. See
+[[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]].
+
+A worker holds a connection only while it runs a transaction, and the pool is
+as large as the worker pool, so a worker does not wait for a connection. A
+wait that does occur is bounded by the deadline of the work, and ends in a
+retryable error ([[id:E11DB09A-328A-476A-A71B-8E303A68D07D][A store error says whether a retry can succeed]]).
+
+The environments that share an instance reach it through a pooler in
+transaction mode, which caps the server connections. See [[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]].
 
 * Bitemporal design
 
@@ -525,6 +519,8 @@ Defined in =ores.sql/create/utility/utility_functions_create.sql=:
 
 * See also
 
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note for this cluster; this page sits alongside its sequence rather than in it.
 - [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the cluster this page anchors, beside object storage and the caches.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the component that owns all DDL, migrations, and seed data.
 - [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] — tenant isolation and service-role separation via RLS.

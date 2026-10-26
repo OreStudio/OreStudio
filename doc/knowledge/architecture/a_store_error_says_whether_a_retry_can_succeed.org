@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: E11DB09A-328A-476A-A71B-8E303A68D07D
+:END:
+#+title: A store error says whether a retry can succeed
+#+description: Every store failure is classed as retryable or refused, and the class decides what the caller does.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:database:errors:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+* Summary
+
+Every store operation returns its value or an error with a class. A
+*retryable* error is one a later attempt can succeed past: a lost connection,
+a serialisation failure, a deadlock, a store that is unavailable, a timeout. A
+*refused* error is one no attempt can succeed past: a constraint, invalid data,
+a tenant that is not live, a missing permission. The caller acts on the class.
+It retries a retryable error with backoff, and it reports a refused write and
+never retries it.
+
+* Detail
+
+** The class follows the SQLSTATE
+
+| SQLSTATE | Meaning | Class |
+|----------+---------+-------|
+| =08xxx= | Connection exception | retryable |
+| =40001=, =40P01= | Serialisation failure, deadlock | retryable |
+| =53xxx= | Insufficient resources | retryable |
+| =57P01= to =57P03= | Administrator shutdown, crash shutdown, cannot connect now | retryable |
+| =23xxx= | Integrity constraint | refused |
+| =22xxx= | Data exception | refused |
+| =42501= | Insufficient privilege | refused |
+| =P0001= | Raised by a validator, such as an unknown actor or a tenant that is not live | refused |
+
+A timeout that the caller set is retryable; the store did not refuse the work.
+
+** What a caller does with it
+
+- A request handler maps a refused error to a refusal reply and a retryable one
+  to a busy reply.
+- A meter that holds counts for the store keeps a retryable count and retries
+  it, and reports and drops a refused count.
+- A tick lane retries a retryable batch; a refused batch is a defect, so the
+  lane reports it and drops it.
+
+* Patterns used
+
+- [[id:93737023-4FB7-45CD-9511-9B27DBACB2FC][Retry]] — the retryable class is what a retry policy may retry; the refused class is what it must not.
+
+* See also
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
+- [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]] — where the error is returned.

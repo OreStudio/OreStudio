@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :pattern:coordination:
 #+created: 2026-10-05
-#+updated: 2026-10-05
+#+updated: 2026-10-26
 #+pattern_group: coordination
 #+startup: inlineimages
 
@@ -85,6 +85,7 @@ No security consequence: the identity decides repetition, not access.
 - [[id:7CEE1DB5-D26F-46C5-9687-E37A13A0DC81][Tenant provisioning]] — every step is idempotent, so a retry is safe.
 - [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]] — the sweep states its rule over the deadline rather than over an interval, so a repeated run and a run after an outage converge.
 - [[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]] — a repeated or late submit for a result that is retired, done or claimed by another host changes nothing.
+- [[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]] — the unique point key makes a redelivered tick a no-op in the store.
 
 * Related patterns
 

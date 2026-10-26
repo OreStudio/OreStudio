@@ -10,7 +10,7 @@
 #+level: cross
 #+filetags: :database:persistence:component:
 #+created: 2026-05-20
-#+updated: 2026-05-20
+#+updated: 2026-10-26
 
 * Diagram
 
@@ -27,6 +27,10 @@ the mapper and exception scaffolding the generated repositories build on. It
 also exposes a =health_monitor= and a =postgres_listener_service= for
 LISTEN/NOTIFY integration. All persistence code in domain services builds on
 this library.
+
+The layer's target shape, pooled long-lived connections, a unit of work that
+hands repositories an open transaction, typed statements and classed errors,
+is set out in [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]].
 
 The component owns no codegen entity models. It is hand-written
 infrastructure, and every type it exposes stays below the audit, history and
@@ -68,7 +72,7 @@ None. The component has no codegen entity models.
 
 * See also
 
--
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the target shape of this layer.
 
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}

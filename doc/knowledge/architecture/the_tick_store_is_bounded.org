@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: A79C25FA-9F70-453B-A52E-780B4402ABAA
+:END:
+#+title: The tick store is bounded by compression, narrow chunks and retention policies
+#+description: Closed chunks are compressed, chunks are sized so the hot index fits in memory, and retention and compression run as TimescaleDB policies.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:marketdata:ticks:timescaledb:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+* Summary
+
+The tick store holds a bounded window, so its size follows from the tick rate and
+the window, not from how long the system has run. Chunks are narrow enough that
+the index of the chunk being written fits in memory: at 29,000 rows a second,
+one hour is about 104 million rows. Closed chunks are compressed, segmented by
+stream and ordered by time. Retention drops chunks past the window, and bars
+that summarise each period are kept longer than the raw ticks.
+
+* Detail
+
+** The parts and their windows
+
+| Part | Window |
+|------+--------|
+| Raw ticks | a short window, such as a week, set by the class policy |
+| Bars of one second and one minute | longer, set by the class policy |
+
+The policy table of [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] states the window of each class.
+
+** Compression
+
+A closed chunk is compressed. The points hold no tenant and carry no row-level
+security ([[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]]), which compression requires. The instance runs TimescaleDB
+under the Timescale licence, the edition that compresses chunks and runs the
+compression and retention jobs.
+
+** Retention and compression as jobs
+
+A retention job drops chunks past the window, and a compression job compresses
+chunks as they close. Both are TimescaleDB policies on the table, so dropping
+old data costs a chunk drop, never a delete of rows.
+
+** Size
+
+The store holds the window's rows, compressed. Its size is the tick rate times
+the window, divided by the compression ratio.
+
+* See also
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
+- [[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]] — how the rows arrive.

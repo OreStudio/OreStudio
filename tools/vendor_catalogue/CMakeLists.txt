@@ -16,9 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# A development tool, not installed: it writes the generated half of
+# A development tool, not installed: it writes the generated halves of
 # projects/ores.sql/populate/marketdata/marketdata_vendor_instruments_populate.sql.
-set(tool_name "ores.marketdata.ir-catalogue")
+set(tool_name "ores.marketdata.vendor-catalogue")
 
 add_executable(${tool_name} main.cpp)
 set_target_properties(${tool_name} PROPERTIES OUTPUT_NAME ${tool_name})

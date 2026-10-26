@@ -19,4 +19,4 @@
 # Development tools. Each one is a small program that writes or checks an
 # artefact a person maintains by hand, so it is built with the tree and
 # installed nowhere.
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ir_catalogue)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vendor_catalogue)

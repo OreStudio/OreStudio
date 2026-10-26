@@ -2,7 +2,7 @@
 :ID: 3D0E46BD-02A4-4A2F-863A-B948B7E44FCD
 :END:
 #+title: The mapping inventory lists the vendor instruments each provider carries
-#+description: Which vendor instruments the catalogue installs for Bloomberg, LSEG and the fictional provider Demo, what each maps to, which rows need a check against the vendor, and how the rate curve pillars come from the feeds themselves.
+#+description: Which vendor instruments the catalogue installs for Bloomberg, LSEG and the fictional provider Demo, what each maps to, which rows need a check against the vendor, and how every row comes from the feeds themselves.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:catalogue:mapping:inventory:
@@ -14,13 +14,16 @@
 The inventory lists the vendor instruments that the system bundle installs and the oresmd item that each
 maps to. It covers two markets.
 
-The 26 FX spot pairs the simulated feeds quote, in the notation of Bloomberg, LSEG and Demo. The three
-providers quote the same item, so a party that changes its provider keeps its series. The rows that name a
-market with a non-deliverable variant are marked for a check against the vendor's own screen.
+The spot quote of every currency pair the synthetic feeds quote, and the pillars of every interest rate
+curve they quote, each in the notation of the provider of the feed's own collection. Where two collections
+quote the same market the providers map to the same item, so a party that changes its provider keeps its
+series. The rows that name a market with a non-deliverable variant are marked for a check against the
+vendor's own screen.
 
-The pillars of every interest rate curve the synthetic feeds quote, in the notation of the provider of the
-curve's own collection. The seed holds no list of them: it reads each curve config's Curve Template and
-writes one row for each entry, so a provider's catalogue is exactly the set of ids its feeds serve.
+The seed holds no list of either market: it reads each FX spot config and each curve config's Curve
+Template, and writes one row for each, so a provider's catalogue is exactly the set of ids its feeds serve.
+The Bloomberg collection quotes 26 pairs and 28 curves, the Demo collection 11 pairs and 20 curves, and the
+LSEG collection 14 crosses and no curve.
 
 ICE and Tradeweb still have no rows: no notation is written for their ids.
 
@@ -28,43 +31,85 @@ ICE and Tradeweb still have no rows: no notation is written for their ids.
 
 ** The FX spot pairs
 
-Each pair is in market quoting order, as the feeds quote it. All three providers map to the item
-=oresmd://fx/<base>?type=quote&instrument=fx_spot&quote=rate&ccy=<quote>=.
+Each pair is in market quoting order, as the feed quotes it, and maps to the item
+=oresmd://fx/<base>?type=quote&instrument=fx_spot&quote=rate&ccy=<quote>=. A collection quotes its own
+pairs, so a provider carries a row only for the pairs its own collection quotes, and the three providers
+map to one item where their collections quote the same market.
 
-| Item | Bloomberg (=bbg_ticker=, =PX_LAST=) | LSEG (=ric=, =BID=) | Demo (=demo_key=, =value=) | Check |
-|------+------------------------------------+---------------------+--------------------------+-------|
-| EUR/USD | =EURUSD Curncy= | ~EUR=~ | =EUR/USD= | standard |
-| GBP/USD | =GBPUSD Curncy= | ~GBP=~ | =GBP/USD= | standard |
-| AUD/USD | =AUDUSD Curncy= | ~AUD=~ | =AUD/USD= | standard |
-| NZD/USD | =NZDUSD Curncy= | ~NZD=~ | =NZD/USD= | standard |
-| USD/CAD | =USDCAD Curncy= | ~CAD=~ | =USD/CAD= | standard |
-| USD/CHF | =USDCHF Curncy= | ~CHF=~ | =USD/CHF= | standard |
-| USD/DKK | =USDDKK Curncy= | ~DKK=~ | =USD/DKK= | standard |
-| USD/INR | =USDINR Curncy= | ~INR=~ | =USD/INR= | to confirm |
-| USD/JPY | =USDJPY Curncy= | ~JPY=~ | =USD/JPY= | standard |
-| USD/MXN | =USDMXN Curncy= | ~MXN=~ | =USD/MXN= | standard |
-| USD/NOK | =USDNOK Curncy= | ~NOK=~ | =USD/NOK= | standard |
-| USD/SEK | =USDSEK Curncy= | ~SEK=~ | =USD/SEK= | standard |
-| USD/ZAR | =USDZAR Curncy= | ~ZAR=~ | =USD/ZAR= | standard |
-| USD/HKD | =USDHKD Curncy= | ~HKD=~ | =USD/HKD= | standard |
-| USD/SGD | =USDSGD Curncy= | ~SGD=~ | =USD/SGD= | standard |
-| USD/CNH | =USDCNH Curncy= | ~CNH=~ | =USD/CNH= | standard |
-| USD/KRW | =USDKRW Curncy= | ~KRW=~ | =USD/KRW= | to confirm |
-| USD/TWD | =USDTWD Curncy= | ~TWD=~ | =USD/TWD= | to confirm |
-| USD/PLN | =USDPLN Curncy= | ~PLN=~ | =USD/PLN= | standard |
-| USD/CZK | =USDCZK Curncy= | ~CZK=~ | =USD/CZK= | standard |
-| USD/HUF | =USDHUF Curncy= | ~HUF=~ | =USD/HUF= | standard |
-| USD/TRY | =USDTRY Curncy= | ~TRY=~ | =USD/TRY= | standard |
-| USD/ILS | =USDILS Curncy= | ~ILS=~ | =USD/ILS= | standard |
-| USD/BRL | =USDBRL Curncy= | ~BRL=~ | =USD/BRL= | to confirm |
-| USD/CLP | =USDCLP Curncy= | ~CLP=~ | =USD/CLP= | to confirm |
-| USD/COP | =USDCOP Curncy= | ~COP=~ | =USD/COP= | to confirm |
+The Bloomberg collection quotes 26 pairs, each a ticker of the pair as six upper case letters and the
+yellow key =Curncy=, with the field =PX_LAST=:
+
+| Item | Bloomberg (=bbg_ticker=, =PX_LAST=) | Check |
+|------+--------------------------+-------|
+| AUD/USD | =AUDUSD Curncy= | standard |
+| EUR/USD | =EURUSD Curncy= | standard |
+| GBP/USD | =GBPUSD Curncy= | standard |
+| NZD/USD | =NZDUSD Curncy= | standard |
+| USD/BRL | =USDBRL Curncy= | to confirm |
+| USD/CAD | =USDCAD Curncy= | standard |
+| USD/CHF | =USDCHF Curncy= | standard |
+| USD/CLP | =USDCLP Curncy= | to confirm |
+| USD/CNH | =USDCNH Curncy= | standard |
+| USD/COP | =USDCOP Curncy= | to confirm |
+| USD/CZK | =USDCZK Curncy= | standard |
+| USD/DKK | =USDDKK Curncy= | standard |
+| USD/HKD | =USDHKD Curncy= | standard |
+| USD/HUF | =USDHUF Curncy= | standard |
+| USD/ILS | =USDILS Curncy= | standard |
+| USD/INR | =USDINR Curncy= | to confirm |
+| USD/JPY | =USDJPY Curncy= | standard |
+| USD/KRW | =USDKRW Curncy= | to confirm |
+| USD/MXN | =USDMXN Curncy= | standard |
+| USD/NOK | =USDNOK Curncy= | standard |
+| USD/PLN | =USDPLN Curncy= | standard |
+| USD/SEK | =USDSEK Curncy= | standard |
+| USD/SGD | =USDSGD Curncy= | standard |
+| USD/TRY | =USDTRY Curncy= | standard |
+| USD/TWD | =USDTWD Curncy= | to confirm |
+| USD/ZAR | =USDZAR Curncy= | standard |
+
+The Demo collection quotes 11 of those pairs, each the pair with a slash and the field =value=:
+
+| Item | Demo (=demo_key=, =value=) | Check |
+|------+--------------------------+-------|
+| AUD/USD | =AUD/USD= | standard |
+| EUR/USD | =EUR/USD= | standard |
+| GBP/USD | =GBP/USD= | standard |
+| NZD/USD | =NZD/USD= | standard |
+| USD/CAD | =USD/CAD= | standard |
+| USD/CHF | =USD/CHF= | standard |
+| USD/INR | =USD/INR= | to confirm |
+| USD/JPY | =USD/JPY= | standard |
+| USD/MXN | =USD/MXN= | standard |
+| USD/SEK | =USD/SEK= | standard |
+| USD/ZAR | =USD/ZAR= | standard |
+
+The LSEG collection quotes 14 crosses, each the two currencies with the RIC's equals sign and the field
+=BID=:
+
+| Item | LSEG (=ric=, =BID=) | Check |
+|------+--------------------------+-------|
+| AUD/JPY | ~AUDJPY=~ | standard |
+| AUD/NZD | ~AUDNZD=~ | standard |
+| CAD/JPY | ~CADJPY=~ | standard |
+| CHF/JPY | ~CHFJPY=~ | standard |
+| EUR/AUD | ~EURAUD=~ | standard |
+| EUR/CAD | ~EURCAD=~ | standard |
+| EUR/CHF | ~EURCHF=~ | standard |
+| EUR/GBP | ~EURGBP=~ | standard |
+| EUR/JPY | ~EURJPY=~ | standard |
+| EUR/NOK | ~EURNOK=~ | standard |
+| EUR/SEK | ~EURSEK=~ | standard |
+| GBP/CHF | ~GBPCHF=~ | standard |
+| GBP/JPY | ~GBPJPY=~ | standard |
+| NZD/JPY | ~NZDJPY=~ | standard |
 
 ** How the ids are written
 
 - Bloomberg: the pair as six letters, a space and the yellow key =Curncy=, with the field =PX_LAST=.
   See [[id:89B7883C-6F06-457B-A9A5-B78257C5C9FC][Bloomberg data format]].
-- LSEG: the currency that is not USD, followed by an equals sign, with the field =BID=. See
+- LSEG: the two currencies of the cross, an equals sign and the field =BID=. A pair against USD is written
+  with the currency that is not USD alone. See
   [[id:A5EC1229-18D7-4F2F-8E9D-2D02768B6E0D][LSEG data format]].
 - Demo: the pair with a slash, =<base>/<quote>=, with the field =value=. The provider is fictional and exists
   for exercises and demonstrations.
@@ -74,8 +119,8 @@ No id is minted. Each follows the vendor's own notation, so no row needs a devia
 ** Rows to confirm
 
 Six currencies trade as deliverable spot and as a non-deliverable forward: INR, KRW, TWD, BRL, CLP and COP.
-For these the plain ticker or RIC may name the onshore market or the offshore one, and a pricing source may
-be needed. The rows are installed as written and marked =to confirm=. A person with access to the vendor's
+For these the plain ticker may name the onshore market or the offshore one, and a pricing source may be
+needed. The rows are installed as written and marked =to confirm=. A person with access to the vendor's
 screen confirms or corrects them before a live adapter relies on them. The simulator publishes them as
 they stand.
 
@@ -101,13 +146,10 @@ quoted inside the system and not through an adapter.
 
 - *ICE and Tradeweb.* The feeds quote index curves these providers carry in the real market, but their
   public documents give no id grammar for the asset classes they serve, so no notation is written for
-  them and the seed has no row for their pillars. See
+  them and the seed has no row for their pillars or their pairs. The =ore= collection's two pairs have no
+  notation either. See
   [[id:72848BB7-9ADE-49CF-8D33-008ED7C1DF29][ICE data format]] and
   [[id:22DDAB03-5CD7-4E14-B1B0-23DB61F2DC95][Tradeweb data format]].
-- *The FX pairs a collection does not quote.* The FX rows are one list for the three providers, so a
-  provider's FX catalogue names the 26 USD pairs whether or not its own collection quotes them. LSEG's
-  collection quotes 14 crosses, and Demo's quotes eleven of the pairs. A demand for the FX item of a pair
-  a collection does not quote is rejected as =unknown_id= until the FX rows are generated the same way.
 - *Other fields.* Only one field of each id is mapped: the last price for Bloomberg, the bid for LSEG.
   A bid and ask series, or a mid, is a further row for each field.
 
@@ -120,11 +162,15 @@ convention, and a person with a login confirms them with the rows marked =to con
 
 ** Where the rows come from
 
-The rows are installed by =marketdata_vendor_instruments_populate.sql=. The FX rows are written in that
-script. The rate curve ids and items are written by =tools/ir_catalogue=, which calls the provider's own
-notation for each id, calls =make_pillar_quote_key= and =pillar_datum_uri= for each item, and reads every
-id it wrote back to prove it names the same pillar; the script's header holds the command that
-regenerates them. So the ids of this page and the ids the runtime writes cannot drift.
+The rows are installed by =marketdata_vendor_instruments_populate.sql=, which holds no list of either
+market: it reads each FX spot config and each IR curve config of every synthetic feeds collection, and
+joins what it reads to two generated lookup tables, one for the pairs and one for the pillars.
+
+Those tables are written by =tools/vendor_catalogue=, which calls the provider's own notation for each id,
+calls the datum codec for a pair and =make_pillar_quote_key= with =pillar_datum_uri= for a pillar, and
+reads every id it wrote back to prove it names the same quote. The script's header holds the command that
+regenerates them, and the script stops, naming the pair or pillar, when a config quotes an instrument the
+tables have no id for. So the ids of this page and the ids the runtime writes cannot drift.
 
 The ids of the vendor instruments come from their identity, so a second run writes the same rows. The
 mapping of each row holds from 2026-01-01.

@@ -23,44 +23,51 @@
  *
  * Installs the instruments that the simulated feeds quote, in the notation of Bloomberg, of LSEG
  * and of the fictional provider Demo, and maps each vendor instrument to its oresmd item. The
- * three providers quote the same item, so a party that changes its provider keeps the series of
- * the item. The inventory page lists the rows and says which are marked for a check against the
- * vendor.
+ * providers quote the same item where their collections quote the same market, so a party that
+ * changes its provider keeps the series of the item. The inventory page lists the rows and says
+ * which are marked for a check against the vendor.
  *
- * The FX spot pairs are the pairs the FX feeds quote. Each is one row for each of the three
- * providers, and the mapping of a pair is the item the pair's own quote names.
+ * No list of instruments is written down here, and neither market is written down twice. The seed
+ * reads the feeds:
  *
- * The interest rate pillars are the pillars of the IR feeds themselves, and no list of them is
- * written down here. The seed reads every IR curve config of every DQ dataset the synthetic seeds
- * write, and for each of its Curve Template entries it emits one vendor instrument and one mapping
- * for the config's provider: the currency, the index family, the instrument and the two tenors of
- * the entry are the quote, and the currency, the index tenor of the curve and those tenors are the
- * item's key. A provider's catalogue is therefore exactly the set of ids its feeds can serve. No
- * row names a pillar no feed quotes, and every pillar a feed quotes has its row.
+ * - A currency pair is one row for each FX spot config of each DQ dataset the synthetic seeds
+ *   write, in the notation of the config's provider. Its item is the datum the pair names: the
+ *   unit currency, and the currency it is quoted in.
+ * - A pillar is one row for each Curve Template entry of each IR curve config of each dataset, in
+ *   the notation of the config's provider. Its item is the datum the pillar's own quote key
+ *   names: the currency, the index tenor the curve holds, and the tenors the pillar starts and
+ *   ends at, which is the item both the feed that publishes the pillar and the bootstrap that
+ *   reads it ask for.
  *
- * A pillar whose provider's notation cannot write it gets no row. The meeting-dated FOMC pillars
- * are spelled with meeting codes such as 1F, which no notation writes, so the FOMC curve's short
- * end is quoted on the internal subjects and not through an adapter. ICE and Tradeweb have no
- * notation at all, so a curve of theirs has no row either; the rows below say so and how many
- * pillars each provider carries.
+ * A provider's catalogue is therefore exactly the set of ids its feeds can serve. No row names an
+ * instrument no feed quotes, and every instrument a feed quotes has its row: the Bloomberg
+ * collection quotes 26 pairs and 28 curves, the Demo collection 11 pairs and 20 curves, and the
+ * LSEG collection 14 pairs and no curve.
+ *
+ * An instrument whose provider's notation cannot write it gets no row. The meeting-dated FOMC
+ * pillars are spelled with meeting codes such as 1F, which no notation writes, so the FOMC curve's
+ * short end is quoted on the internal subjects and not through an adapter. ICE and Tradeweb have
+ * no notation at all, so a quote of theirs has no row either; the rows below say so and how many
+ * instruments each provider carries.
  *
  * No id here is minted: each follows the vendor's own notation. The text of each id, and the
  * field it carries, is what the notation of its provider writes for that quote, so the notation
  * reads every row back as the quote the row stands for.
  *
- * A pillar's oresmd item is the datum the curve's own pillar key names: the currency, the index
- * tenor the curve holds, and the tenors the pillar starts and ends at, which is the item both the
- * feed that publishes the pillar and the bootstrap that reads it ask for.
- *
- * Neither half is written by hand. `tools/ir_catalogue` writes the block between the markers
- * below: it calls the provider's own notation to write each id, calls make_pillar_quote_key and
- * pillar_datum_uri for each item, and reads every id it wrote back to prove it names the same
+ * Neither half is written by hand. `tools/vendor_catalogue` writes the two blocks between the
+ * markers below: it calls the provider's own notation to write each id, calls the datum codec and
+ * the pillar quote key for each item, and reads every id it wrote back to prove it names the same
  * quote. So the ids in this seed and the ids the runtime writes cannot drift. Regenerate the
- * block when an IR curve config or a notation changes, from the repository root, against a seeded
+ * blocks when a feed config or a notation changes, from the repository root, against a seeded
  * database:
  *
- *   ./compass.sh sql -- -t -A -F $'\t' -o tmp/ir-pillars.tsv -c "
- *       select c.provider_code, c.currency_code, c.index_family, e.instrument_code,
+ *   ./compass.sh sql -- -t -A -F $'\t' -o tmp/vendor-catalogue.tsv -c "
+ *       select 'fx', c.provider_code, c.base_currency_code, c.quote_currency_code,
+ *              '', '', '', ''
+ *       from ores_dq_fx_spot_generation_configs_artefact_tbl c
+ *       where c.provider_code is not null
+ *       union all
+ *       select 'ir', c.provider_code, c.currency_code, c.index_family, e.instrument_code,
  *              e.start_tenor_code, e.end_tenor_code, c.tenor
  *       from ores_dq_ir_curve_generation_configs_artefact_tbl c
  *       join ores_dq_ir_curve_template_entries_artefact_tbl e
@@ -68,12 +75,11 @@
  *        and e.currency_code = c.currency_code
  *        and e.index_family = c.index_family
  *        and e.tenor = c.tenor
- *       where c.provider_code is not null
- *       order by 1, 2, 3, 4, 5, 6"
- *   build/publish/bin/ores.marketdata.ir-catalogue --write tmp/ir-pillars.tsv
+ *       where c.provider_code is not null"
+ *   build/publish/bin/ores.marketdata.vendor-catalogue --write tmp/vendor-catalogue.tsv
  *
- * A pillar of a config this seed has no row for stops the seed, and says so, rather than leaving
- * the catalogue quietly short of a feed's ids.
+ * An instrument of a config this seed has no row for stops the seed, and says so, rather than
+ * leaving the catalogue quietly short of a feed's ids.
  *
  * The ids of the vendor instruments are derived from their identity, so a rerun writes the same
  * rows. An instrument that already has a current mapping gets no second one, whatever its date.
@@ -86,92 +92,120 @@
 -- of its own and a table that drops on commit would be gone before the second insert.
 do $$
 declare
-    v_stale text;
+    v_stale_fx text;
+    v_stale_ir text;
 begin
 create temporary table t_vendor_inventory (
     provider_code text, id_scheme text, external_id text, field text, oresmd_uri text
 ) on commit drop;
 
--- The spot quotes of the FX pairs.
-insert into t_vendor_inventory (provider_code, id_scheme, external_id, field, oresmd_uri) values
-    ('bloomberg', 'bbg_ticker', 'EURUSD Curncy', 'PX_LAST', 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
-    ('lseg', 'ric', 'EUR=', 'BID', 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
-    ('demo', 'demo_key', 'EUR/USD', 'value', 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
-    ('bloomberg', 'bbg_ticker', 'GBPUSD Curncy', 'PX_LAST', 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
-    ('lseg', 'ric', 'GBP=', 'BID', 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
-    ('demo', 'demo_key', 'GBP/USD', 'value', 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
-    ('bloomberg', 'bbg_ticker', 'AUDUSD Curncy', 'PX_LAST', 'oresmd://fx/AUD?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
-    ('lseg', 'ric', 'AUD=', 'BID', 'oresmd://fx/AUD?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
-    ('demo', 'demo_key', 'AUD/USD', 'value', 'oresmd://fx/AUD?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
-    ('bloomberg', 'bbg_ticker', 'NZDUSD Curncy', 'PX_LAST', 'oresmd://fx/NZD?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
-    ('lseg', 'ric', 'NZD=', 'BID', 'oresmd://fx/NZD?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
-    ('demo', 'demo_key', 'NZD/USD', 'value', 'oresmd://fx/NZD?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
-    ('bloomberg', 'bbg_ticker', 'USDCAD Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CAD'),
-    ('lseg', 'ric', 'CAD=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CAD'),
-    ('demo', 'demo_key', 'USD/CAD', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CAD'),
-    ('bloomberg', 'bbg_ticker', 'USDCHF Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CHF'),
-    ('lseg', 'ric', 'CHF=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CHF'),
-    ('demo', 'demo_key', 'USD/CHF', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CHF'),
-    ('bloomberg', 'bbg_ticker', 'USDDKK Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=DKK'),
-    ('lseg', 'ric', 'DKK=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=DKK'),
-    ('demo', 'demo_key', 'USD/DKK', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=DKK'),
-    ('bloomberg', 'bbg_ticker', 'USDINR Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=INR'),
-    ('lseg', 'ric', 'INR=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=INR'),
-    ('demo', 'demo_key', 'USD/INR', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=INR'),
-    ('bloomberg', 'bbg_ticker', 'USDJPY Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=JPY'),
-    ('lseg', 'ric', 'JPY=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=JPY'),
-    ('demo', 'demo_key', 'USD/JPY', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=JPY'),
-    ('bloomberg', 'bbg_ticker', 'USDMXN Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=MXN'),
-    ('lseg', 'ric', 'MXN=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=MXN'),
-    ('demo', 'demo_key', 'USD/MXN', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=MXN'),
-    ('bloomberg', 'bbg_ticker', 'USDNOK Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=NOK'),
-    ('lseg', 'ric', 'NOK=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=NOK'),
-    ('demo', 'demo_key', 'USD/NOK', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=NOK'),
-    ('bloomberg', 'bbg_ticker', 'USDSEK Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=SEK'),
-    ('lseg', 'ric', 'SEK=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=SEK'),
-    ('demo', 'demo_key', 'USD/SEK', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=SEK'),
-    ('bloomberg', 'bbg_ticker', 'USDZAR Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=ZAR'),
-    ('lseg', 'ric', 'ZAR=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=ZAR'),
-    ('demo', 'demo_key', 'USD/ZAR', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=ZAR'),
-    ('bloomberg', 'bbg_ticker', 'USDHKD Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=HKD'),
-    ('lseg', 'ric', 'HKD=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=HKD'),
-    ('demo', 'demo_key', 'USD/HKD', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=HKD'),
-    ('bloomberg', 'bbg_ticker', 'USDSGD Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=SGD'),
-    ('lseg', 'ric', 'SGD=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=SGD'),
-    ('demo', 'demo_key', 'USD/SGD', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=SGD'),
-    ('bloomberg', 'bbg_ticker', 'USDCNH Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CNH'),
-    ('lseg', 'ric', 'CNH=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CNH'),
-    ('demo', 'demo_key', 'USD/CNH', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CNH'),
-    ('bloomberg', 'bbg_ticker', 'USDKRW Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=KRW'),
-    ('lseg', 'ric', 'KRW=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=KRW'),
-    ('demo', 'demo_key', 'USD/KRW', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=KRW'),
-    ('bloomberg', 'bbg_ticker', 'USDTWD Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=TWD'),
-    ('lseg', 'ric', 'TWD=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=TWD'),
-    ('demo', 'demo_key', 'USD/TWD', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=TWD'),
-    ('bloomberg', 'bbg_ticker', 'USDPLN Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=PLN'),
-    ('lseg', 'ric', 'PLN=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=PLN'),
-    ('demo', 'demo_key', 'USD/PLN', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=PLN'),
-    ('bloomberg', 'bbg_ticker', 'USDCZK Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CZK'),
-    ('lseg', 'ric', 'CZK=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CZK'),
-    ('demo', 'demo_key', 'USD/CZK', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CZK'),
-    ('bloomberg', 'bbg_ticker', 'USDHUF Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=HUF'),
-    ('lseg', 'ric', 'HUF=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=HUF'),
-    ('demo', 'demo_key', 'USD/HUF', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=HUF'),
-    ('bloomberg', 'bbg_ticker', 'USDTRY Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=TRY'),
-    ('lseg', 'ric', 'TRY=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=TRY'),
-    ('demo', 'demo_key', 'USD/TRY', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=TRY'),
-    ('bloomberg', 'bbg_ticker', 'USDILS Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=ILS'),
-    ('lseg', 'ric', 'ILS=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=ILS'),
-    ('demo', 'demo_key', 'USD/ILS', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=ILS'),
-    ('bloomberg', 'bbg_ticker', 'USDBRL Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=BRL'),
-    ('lseg', 'ric', 'BRL=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=BRL'),
-    ('demo', 'demo_key', 'USD/BRL', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=BRL'),
-    ('bloomberg', 'bbg_ticker', 'USDCLP Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CLP'),
-    ('lseg', 'ric', 'CLP=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CLP'),
-    ('demo', 'demo_key', 'USD/CLP', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CLP'),
-    ('bloomberg', 'bbg_ticker', 'USDCOP Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=COP'),
-    ('lseg', 'ric', 'COP=', 'BID', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=COP'),
-    ('demo', 'demo_key', 'USD/COP', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=COP');
+-- The id and the item of every currency pair the feeds quote, one row for each pair of each
+-- provider.
+create temporary table t_fx_pair_id (
+    provider_code text, base_currency_code text, quote_currency_code text,
+    id_scheme text, external_id text, field text, oresmd_uri text
+) on commit drop;
+
+-- BEGIN GENERATED fx pair ids: tools/vendor_catalogue writes this block, see the header
+    -- bloomberg: 26 with an id, 0 without
+    -- demo: 11 with an id, 0 without
+    -- lseg: 14 with an id, 0 without
+    -- ore: 0 with an id, 2 without
+    insert into t_fx_pair_id (provider_code, base_currency_code,
+        quote_currency_code, id_scheme, external_id, field, oresmd_uri) values
+    ('bloomberg', 'AUD', 'USD', 'bbg_ticker', 'AUDUSD Curncy', 'PX_LAST', 'oresmd://fx/AUD?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
+    ('bloomberg', 'EUR', 'USD', 'bbg_ticker', 'EURUSD Curncy', 'PX_LAST', 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
+    ('bloomberg', 'GBP', 'USD', 'bbg_ticker', 'GBPUSD Curncy', 'PX_LAST', 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
+    ('bloomberg', 'NZD', 'USD', 'bbg_ticker', 'NZDUSD Curncy', 'PX_LAST', 'oresmd://fx/NZD?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
+    ('bloomberg', 'USD', 'BRL', 'bbg_ticker', 'USDBRL Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=BRL'),
+    ('bloomberg', 'USD', 'CAD', 'bbg_ticker', 'USDCAD Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CAD'),
+    ('bloomberg', 'USD', 'CHF', 'bbg_ticker', 'USDCHF Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CHF'),
+    ('bloomberg', 'USD', 'CLP', 'bbg_ticker', 'USDCLP Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CLP'),
+    ('bloomberg', 'USD', 'CNH', 'bbg_ticker', 'USDCNH Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CNH'),
+    ('bloomberg', 'USD', 'COP', 'bbg_ticker', 'USDCOP Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=COP'),
+    ('bloomberg', 'USD', 'CZK', 'bbg_ticker', 'USDCZK Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CZK'),
+    ('bloomberg', 'USD', 'DKK', 'bbg_ticker', 'USDDKK Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=DKK'),
+    ('bloomberg', 'USD', 'HKD', 'bbg_ticker', 'USDHKD Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=HKD'),
+    ('bloomberg', 'USD', 'HUF', 'bbg_ticker', 'USDHUF Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=HUF'),
+    ('bloomberg', 'USD', 'ILS', 'bbg_ticker', 'USDILS Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=ILS'),
+    ('bloomberg', 'USD', 'INR', 'bbg_ticker', 'USDINR Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=INR'),
+    ('bloomberg', 'USD', 'JPY', 'bbg_ticker', 'USDJPY Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=JPY'),
+    ('bloomberg', 'USD', 'KRW', 'bbg_ticker', 'USDKRW Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=KRW'),
+    ('bloomberg', 'USD', 'MXN', 'bbg_ticker', 'USDMXN Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=MXN'),
+    ('bloomberg', 'USD', 'NOK', 'bbg_ticker', 'USDNOK Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=NOK'),
+    ('bloomberg', 'USD', 'PLN', 'bbg_ticker', 'USDPLN Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=PLN'),
+    ('bloomberg', 'USD', 'SEK', 'bbg_ticker', 'USDSEK Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=SEK'),
+    ('bloomberg', 'USD', 'SGD', 'bbg_ticker', 'USDSGD Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=SGD'),
+    ('bloomberg', 'USD', 'TRY', 'bbg_ticker', 'USDTRY Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=TRY'),
+    ('bloomberg', 'USD', 'TWD', 'bbg_ticker', 'USDTWD Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=TWD'),
+    ('bloomberg', 'USD', 'ZAR', 'bbg_ticker', 'USDZAR Curncy', 'PX_LAST', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=ZAR'),
+    ('demo', 'AUD', 'USD', 'demo_key', 'AUD/USD', 'value', 'oresmd://fx/AUD?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
+    ('demo', 'EUR', 'USD', 'demo_key', 'EUR/USD', 'value', 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
+    ('demo', 'GBP', 'USD', 'demo_key', 'GBP/USD', 'value', 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
+    ('demo', 'NZD', 'USD', 'demo_key', 'NZD/USD', 'value', 'oresmd://fx/NZD?type=quote&instrument=fx_spot&quote=rate&ccy=USD'),
+    ('demo', 'USD', 'CAD', 'demo_key', 'USD/CAD', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CAD'),
+    ('demo', 'USD', 'CHF', 'demo_key', 'USD/CHF', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=CHF'),
+    ('demo', 'USD', 'INR', 'demo_key', 'USD/INR', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=INR'),
+    ('demo', 'USD', 'JPY', 'demo_key', 'USD/JPY', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=JPY'),
+    ('demo', 'USD', 'MXN', 'demo_key', 'USD/MXN', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=MXN'),
+    ('demo', 'USD', 'SEK', 'demo_key', 'USD/SEK', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=SEK'),
+    ('demo', 'USD', 'ZAR', 'demo_key', 'USD/ZAR', 'value', 'oresmd://fx/USD?type=quote&instrument=fx_spot&quote=rate&ccy=ZAR'),
+    ('lseg', 'AUD', 'JPY', 'ric', 'AUDJPY=', 'BID', 'oresmd://fx/AUD?type=quote&instrument=fx_spot&quote=rate&ccy=JPY'),
+    ('lseg', 'AUD', 'NZD', 'ric', 'AUDNZD=', 'BID', 'oresmd://fx/AUD?type=quote&instrument=fx_spot&quote=rate&ccy=NZD'),
+    ('lseg', 'CAD', 'JPY', 'ric', 'CADJPY=', 'BID', 'oresmd://fx/CAD?type=quote&instrument=fx_spot&quote=rate&ccy=JPY'),
+    ('lseg', 'CHF', 'JPY', 'ric', 'CHFJPY=', 'BID', 'oresmd://fx/CHF?type=quote&instrument=fx_spot&quote=rate&ccy=JPY'),
+    ('lseg', 'EUR', 'AUD', 'ric', 'EURAUD=', 'BID', 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=AUD'),
+    ('lseg', 'EUR', 'CAD', 'ric', 'EURCAD=', 'BID', 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=CAD'),
+    ('lseg', 'EUR', 'CHF', 'ric', 'EURCHF=', 'BID', 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=CHF'),
+    ('lseg', 'EUR', 'GBP', 'ric', 'EURGBP=', 'BID', 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=GBP'),
+    ('lseg', 'EUR', 'JPY', 'ric', 'EURJPY=', 'BID', 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=JPY'),
+    ('lseg', 'EUR', 'NOK', 'ric', 'EURNOK=', 'BID', 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=NOK'),
+    ('lseg', 'EUR', 'SEK', 'ric', 'EURSEK=', 'BID', 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=SEK'),
+    ('lseg', 'GBP', 'CHF', 'ric', 'GBPCHF=', 'BID', 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=CHF'),
+    ('lseg', 'GBP', 'JPY', 'ric', 'GBPJPY=', 'BID', 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=JPY'),
+    ('lseg', 'NZD', 'JPY', 'ric', 'NZDJPY=', 'BID', 'oresmd://fx/NZD?type=quote&instrument=fx_spot&quote=rate&ccy=JPY'),
+    ('ore', 'EUR', 'USD', null, null, null, null),
+    ('ore', 'GBP', 'USD', null, null, null, null);
+-- END GENERATED fx pair ids
+
+-- The pairs the seeds' FX spot configs quote: one row for each config.
+create temporary table t_fx_feed_pair (
+    provider_code text, base_currency_code text, quote_currency_code text
+) on commit drop;
+
+insert into t_fx_feed_pair
+select distinct c.provider_code, c.base_currency_code, c.quote_currency_code
+from ores_dq_fx_spot_generation_configs_artefact_tbl c
+where c.provider_code is not null
+  and c.enabled;
+
+-- A pair no row above names is one this seed cannot write, and a catalogue short of a feed's ids
+-- is worse than a seed that stops: the ids and the items are generated, so the fix is to
+-- regenerate them.
+select string_agg(distinct f.provider_code || ' ' || f.base_currency_code || '/' ||
+                  f.quote_currency_code, '; ')
+into v_stale_fx
+from t_fx_feed_pair f
+where not exists (
+    select 1 from t_fx_pair_id i
+    where i.provider_code = f.provider_code
+      and i.base_currency_code = f.base_currency_code
+      and i.quote_currency_code = f.quote_currency_code
+);
+
+if v_stale_fx is not null then
+    raise exception 'The FX spot configs quote pairs the vendor instrument seed has no id for: %. Regenerate the seed: see the header of marketdata_vendor_instruments_populate.sql.', v_stale_fx;
+end if;
+
+-- The spot quotes of the pairs, in the notation of the provider of the collection they belong to.
+insert into t_vendor_inventory (provider_code, id_scheme, external_id, field, oresmd_uri)
+select distinct f.provider_code, i.id_scheme, i.external_id, i.field, i.oresmd_uri
+from t_fx_feed_pair f
+join t_fx_pair_id i
+  on i.provider_code = f.provider_code
+ and i.base_currency_code = f.base_currency_code
+ and i.quote_currency_code = f.quote_currency_code
+where i.external_id is not null;
 
 -- The id and the item of every pillar the feeds quote, one row for each (provider, pillar) pair.
 -- The index tenor is the curve's own, which decides the series the pillar lands in; it is the
@@ -183,10 +217,10 @@ create temporary table t_ir_pillar_id (
 ) on commit drop;
 
 -- BEGIN GENERATED ir pillar ids: tools/ir_catalogue writes this block, see the header
-    -- bloomberg: 336 pillar(s) with an id, 9 without
-    -- demo: 60 pillar(s) with an id, 0 without
-    -- ice: 0 pillar(s) with an id, 35 without
-    -- tradeweb: 0 pillar(s) with an id, 35 without
+    -- bloomberg: 336 with an id, 9 without
+    -- demo: 60 with an id, 0 without
+    -- ice: 0 with an id, 35 without
+    -- tradeweb: 0 with an id, 35 without
     insert into t_ir_pillar_id (provider_code, currency_code, index_family,
         instrument_code, start_tenor_code, end_tenor_code, config_tenor,
         id_scheme, external_id, field, oresmd_uri) values
@@ -691,7 +725,7 @@ where c.provider_code is not null
 select string_agg(distinct f.provider_code || ' ' || f.currency_code || ' ' || f.index_family ||
                   ' ' || f.instrument_code || ' ' || f.start_tenor_code || ' to ' ||
                   f.end_tenor_code || ' (tenor ' || f.config_tenor || ')', '; ')
-into v_stale
+into v_stale_ir
 from t_ir_feed_pillar f
 where not exists (
     select 1 from t_ir_pillar_id i
@@ -704,8 +738,8 @@ where not exists (
       and i.config_tenor = f.config_tenor
 );
 
-if v_stale is not null then
-    raise exception 'The IR curve configs quote pillars the vendor instrument seed has no id for: %. Regenerate the seed: see the header of marketdata_vendor_instruments_populate.sql.', v_stale;
+if v_stale_ir is not null then
+    raise exception 'The IR curve configs quote pillars the vendor instrument seed has no id for: %. Regenerate the seed: see the header of marketdata_vendor_instruments_populate.sql.', v_stale_ir;
 end if;
 
 -- The pillars of the curves, in the notation of the provider of the curve they belong to.

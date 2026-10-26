@@ -18,6 +18,8 @@
  *
  */
 #include "ores.nats/service/client.hpp"
+#include "nats_handle.hpp"
+#include "nats_result.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/compression.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -257,16 +259,16 @@ void on_conn_closed(natsConnection* /*nc*/, void* closure) {
  *
  * The handle owns the cnats message, so the message outlives every copy of the
  * C++ view that carries this handle and dies exactly when the last of them
- * does. A delivery without a handle -- every core NATS message -- is destroyed
- * by the callback instead, as it always was.
+ * does. A delivery without a handle -- every core NATS message -- is freed by
+ * the callback's own msg_handle when the callback returns.
  *
  * Not thread-safe by itself; the transport answers each delivery once, on the
  * thread that delivered it.
  */
 class ack_sink final : public ack_handle {
 public:
-    explicit ack_sink(natsMsg* msg) noexcept
-        : msg_(msg, &natsMsg_Destroy) {}
+    explicit ack_sink(msg_handle msg) noexcept
+        : msg_(std::move(msg)) {}
 
     void accept() override {
         answer([this] { natsMsg_Ack(msg_.get(), nullptr); });
@@ -298,7 +300,7 @@ private:
         verb();
     }
 
-    std::unique_ptr<natsMsg, decltype(&natsMsg_Destroy)> msg_;
+    msg_handle msg_;
     bool answered_ = false;
 };
 
@@ -349,8 +351,13 @@ message extract_message(natsMsg* msg, std::shared_ptr<ack_sink> ack = {}) {
 // IMPORTANT: This is a C callback running on a NATS library thread.
 // Exceptions must NOT propagate out — they would cross a C frame boundary
 // and call std::terminate(), killing the service without any shutdown log.
-void on_msg(natsConnection*, natsSubscription*, natsMsg* msg, void* ud) {
+void on_msg(natsConnection*, natsSubscription*, natsMsg* delivered, void* ud) {
     auto* cl = static_cast<sub_closure*>(ud);
+    // The callback owns the delivery from here on, and the handle frees it on
+    // every path. A durable delivery hands it to its ack sink instead, which
+    // frees it when the last copy of the handler's message goes.
+    msg_handle owned(delivered);
+    natsMsg* msg = owned.get();
     // Read the subject directly off msg (cheap, non-throwing) so it's
     // available for the catch blocks below even if extract_message()
     // itself throws -- e.g. decompress_if_flagged() on a message that
@@ -366,19 +373,13 @@ void on_msg(natsConnection*, natsSubscription*, natsMsg* msg, void* ud) {
     // owns the cnats message, so a delivery that carries one is freed when the
     // last copy of the handler's message is. Held outside the try so the catch
     // blocks can answer a delivery whose handler threw.
-    auto ack = cl->durable ? std::make_shared<ack_sink>(msg) : nullptr;
+    auto ack = cl->durable ? std::make_shared<ack_sink>(std::move(owned)) : nullptr;
     try {
         cl->handler(extract_message(msg, ack));
     } catch (const std::exception& e) {
-        if (!ack && msg)
-            natsMsg_Destroy(msg);
-        msg = nullptr;
         BOOST_LOG_SEV(lg(), error) << "Unhandled exception in NATS message handler for subject '"
                                    << subject << "': " << e.what();
     } catch (...) {
-        if (!ack && msg)
-            natsMsg_Destroy(msg);
-        msg = nullptr;
         BOOST_LOG_SEV(lg(), error)
             << "Unknown exception in NATS message handler for subject '" << subject << "'";
     }
@@ -389,27 +390,26 @@ void on_msg(natsConnection*, natsSubscription*, natsMsg* msg, void* ud) {
         ack->retry();
 }
 
-// Build a natsMsg* with data and optional headers.
-// Caller owns the result and must call natsMsg_Destroy.
-natsMsg* make_msg(std::string_view subject,
-                  std::span<const std::byte> data,
-                  std::unordered_map<std::string, std::string> headers,
-                  const char* reply = nullptr) {
+// Build a message with data and optional headers.
+msg_handle make_msg(std::string_view subject,
+                    std::span<const std::byte> data,
+                    std::unordered_map<std::string, std::string> headers,
+                    const char* reply = nullptr) {
 
     const auto payload = ores::nats::compress_if_worthwhile(data, headers);
 
-    natsMsg* msg = nullptr;
-    const natsStatus s = natsMsg_Create(&msg,
+    natsMsg* created = nullptr;
+    const natsStatus s = natsMsg_Create(&created,
                                         std::string(subject).c_str(),
                                         reply,
                                         reinterpret_cast<const char*>(payload.data()),
                                         static_cast<int>(payload.size()));
 
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("natsMsg_Create failed: ") + natsStatus_GetText(s));
+    ensure_result(s, "natsMsg_Create failed");
 
+    msg_handle msg(created);
     for (const auto& [k, v] : headers)
-        natsMsgHeader_Set(msg, k.c_str(), v.c_str());
+        natsMsgHeader_Set(msg.get(), k.c_str(), v.c_str());
 
     return msg;
 }
@@ -568,8 +568,10 @@ void client::connect() {
         impl_->closed_latch.closed = false;
     }
 
-    natsOptions* opts = nullptr;
-    natsOptions_Create(&opts);
+    natsOptions* created = nullptr;
+    natsOptions_Create(&created);
+    const options_handle owned_opts(created);
+    natsOptions* opts = owned_opts.get();
     natsOptions_SetURL(opts, impl_->opts.url.c_str());
     natsOptions_SetErrorHandler(opts, on_conn_error, nullptr);
     natsOptions_SetDisconnectedCB(opts, on_conn_disconnected, nullptr);
@@ -591,7 +593,6 @@ void client::connect() {
         const natsStatus ca_status =
             natsOptions_LoadCATrustedCertificates(opts, impl_->opts.tls_ca_cert.c_str());
         if (ca_status != NATS_OK) {
-            natsOptions_Destroy(opts);
             throw nats_connect_error(nats_error_kind::tls_error,
                                      std::string("Failed to load NATS CA certificate (") +
                                          impl_->opts.tls_ca_cert +
@@ -605,7 +606,6 @@ void client::connect() {
         const natsStatus chain_status = natsOptions_LoadCertificatesChain(
             opts, impl_->opts.tls_client_cert.c_str(), impl_->opts.tls_client_key.c_str());
         if (chain_status != NATS_OK) {
-            natsOptions_Destroy(opts);
             throw nats_connect_error(nats_error_kind::tls_error,
                                      std::string("Failed to load NATS client certificate/key (") +
                                          impl_->opts.tls_client_cert + ", " +
@@ -622,7 +622,6 @@ void client::connect() {
     }
 
     natsStatus s = natsConnection_Connect(&impl_->conn, opts);
-    natsOptions_Destroy(opts);
     if (s != NATS_OK) {
         nats_error_kind kind;
         switch (s) {
@@ -661,8 +660,7 @@ void client::connect() {
         natsConnection_Close(impl_->conn);
         natsConnection_Destroy(impl_->conn);
         impl_->conn = nullptr;
-        throw std::runtime_error(std::string("NATS JetStream init failed: ") +
-                                 natsStatus_GetText(s));
+        throw nats_failure("NATS JetStream init failed", s);
     }
 
     impl_->connected.store(true, std::memory_order_release);
@@ -744,11 +742,9 @@ void client::publish(std::string_view subject,
     const std::string full_subject(make_subject(subject));
     log_publish(*impl_, "NATS publish", full_subject);
 
-    natsMsg* msg = make_msg(full_subject, data, headers);
-    const natsStatus s = natsConnection_PublishMsg(impl_->conn, msg);
-    natsMsg_Destroy(msg);
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("NATS publish failed: ") + natsStatus_GetText(s));
+    const auto msg = make_msg(full_subject, data, headers);
+    const natsStatus s = natsConnection_PublishMsg(impl_->conn, msg.get());
+    ensure_result(s, "NATS publish failed");
 }
 
 message client::request_sync(std::string_view subject,
@@ -759,11 +755,11 @@ message client::request_sync(std::string_view subject,
     const std::string full_subject(make_subject(subject));
     BOOST_LOG_SEV(lg(), debug) << "NATS request: " << full_subject;
 
-    natsMsg* req = make_msg(full_subject, data, headers);
-    natsMsg* reply = nullptr;
-    const natsStatus s =
-        natsConnection_RequestMsg(&reply, impl_->conn, req, static_cast<int64_t>(timeout.count()));
-    natsMsg_Destroy(req);
+    const auto req = make_msg(full_subject, data, headers);
+    natsMsg* received = nullptr;
+    const natsStatus s = natsConnection_RequestMsg(
+        &received, impl_->conn, req.get(), static_cast<int64_t>(timeout.count()));
+    const msg_handle reply(received);
 
     if (s != NATS_OK) {
         if (s == NATS_TIMEOUT)
@@ -772,12 +768,10 @@ message client::request_sync(std::string_view subject,
             throw nats_connect_error(nats_error_kind::services_unavailable,
                                      "NATS request failed: no service is handling subject '" +
                                          std::string(make_subject(subject)) + "'");
-        throw std::runtime_error(std::string("NATS request failed: ") + natsStatus_GetText(s));
+        throw nats_failure("NATS request failed", s);
     }
 
-    message m = extract_message(reply);
-    natsMsg_Destroy(reply);
-    return m;
+    return extract_message(reply.get());
 }
 
 boost::asio::awaitable<message>
@@ -825,9 +819,7 @@ subscription client::subscribe(std::string_view subject, message_handler handler
     const natsStatus s =
         natsConnection_Subscribe(&sub, impl_->conn, full_subject.c_str(), on_msg, cl.get());
 
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("natsConnection_Subscribe failed: ") +
-                                 natsStatus_GetText(s));
+    ensure_result(s, "natsConnection_Subscribe failed");
 
     auto si = std::make_unique<subscription::impl>();
     si->sub = sub;
@@ -870,9 +862,7 @@ subscription client::queue_subscribe(std::string_view subject,
                                                        on_msg,
                                                        cl.get());
 
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("natsConnection_QueueSubscribe failed: ") +
-                                 natsStatus_GetText(s));
+    ensure_result(s, "natsConnection_QueueSubscribe failed");
 
     auto si = std::make_unique<subscription::impl>();
     si->sub = sub;
@@ -887,16 +877,13 @@ void client::js_publish(std::string_view subject,
     const std::string full_subject(make_subject(subject));
     log_publish(*impl_, "NATS js-publish", full_subject);
 
-    natsMsg* msg = make_msg(full_subject, data, headers);
-    jsPubAck* ack = nullptr;
+    const auto msg = make_msg(full_subject, data, headers);
+    jsPubAck* received = nullptr;
     // js_PublishMsg(jsPubAck**, jsCtx*, natsMsg*, jsPubOptions*, jsErrCode*)
-    const natsStatus s = js_PublishMsg(&ack, impl_->js, msg, nullptr, nullptr);
-    natsMsg_Destroy(msg);
-    if (ack)
-        jsPubAck_Destroy(ack);
+    const natsStatus s = js_PublishMsg(&received, impl_->js, msg.get(), nullptr, nullptr);
+    const pub_ack_handle ack(received);
 
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("JetStream publish failed: ") + natsStatus_GetText(s));
+    ensure_result(s, "JetStream publish failed");
 }
 
 namespace {
@@ -995,28 +982,24 @@ void ensure_durable_consumer(jsCtx* js,
     jsOptions opts;
     jsOptions_Init(&opts);
 
-    auto read_consumer = [&]() -> jsConsumerInfo* {
-        jsConsumerInfo* info = nullptr;
+    auto read_consumer = [&]() -> consumer_info_handle {
+        jsConsumerInfo* read = nullptr;
         auto jerr = jsErrCode(0);
         const natsStatus s =
-            js_GetConsumerInfo(&info, js, stream.c_str(), durable.c_str(), &opts, &jerr);
+            js_GetConsumerInfo(&read, js, stream.c_str(), durable.c_str(), &opts, &jerr);
+        consumer_info_handle info(read);
         if (s == NATS_NOT_FOUND)
             return nullptr;
         // Any other failure is not "the consumer is absent": a permission or
         // connection problem read as absent would silently try to create a
         // consumer that already exists, and report the create's refusal.
-        if (s != NATS_OK) {
-            if (info != nullptr)
-                jsConsumerInfo_Destroy(info);
-            throw std::runtime_error("js_GetConsumerInfo failed for '" + durable +
-                                     "': " + natsStatus_GetText(s));
-        }
+        ensure_result(s, "js_GetConsumerInfo failed for '" + durable + "'");
         return info;
     };
 
     // Named `existing`, not `info`: `info` is a severity enumerator in this
     // logging facade, and a local of that name shadows it inside BOOST_LOG_SEV.
-    jsConsumerInfo* existing = read_consumer();
+    consumer_info_handle existing = read_consumer();
 
     if (existing == nullptr) {
         jsConsumerConfig config;
@@ -1037,8 +1020,7 @@ void ensure_durable_consumer(jsCtx* js,
         jsConsumerInfo* created = nullptr;
         auto jerr = jsErrCode(0);
         const natsStatus cs = js_AddConsumer(&created, js, stream.c_str(), &config, &opts, &jerr);
-        if (created != nullptr)
-            jsConsumerInfo_Destroy(created);
+        const consumer_info_handle created_info(created);
         if (cs == NATS_OK) {
             BOOST_LOG_SEV(lg(), info) << "NATS durable '" << durable << "' on '" << stream
                                       << "' created for delivery to '" << deliver_subject << "'";
@@ -1049,19 +1031,17 @@ void ensure_durable_consumer(jsCtx* js,
         // read again and reconcile rather than fail the start on that race.
         existing = read_consumer();
         if (existing == nullptr)
-            throw std::runtime_error("NATS durable '" + durable + "' on '" + stream +
-                                     "' could not be created: " + natsStatus_GetText(cs));
+            throw nats_failure(
+                "NATS durable '" + durable + "' on '" + stream + "' could not be created", cs);
     }
 
     jsConsumerConfig* config = existing->Config;
     if (config == nullptr) {
-        jsConsumerInfo_Destroy(existing);
         throw std::runtime_error("NATS durable '" + durable + "' on '" + stream +
                                  "' has no configuration");
     }
 
-    // All copied before the destroy: these fields are owned by the consumer
-    // info, so the log line below would otherwise read freed memory.
+    // Copied, because these fields are owned by the consumer info.
     std::vector<std::string> stored(stored_filters(*config));
     const jsAckPolicy stored_ack = config->AckPolicy;
     const int64_t stored_bound = config->MaxDeliver;
@@ -1077,15 +1057,13 @@ void ensure_durable_consumer(jsCtx* js,
                        stored_bound != static_cast<int64_t>(max_deliver) ||
                        stored_ack_wait != want_ack_wait || stored_deliver != deliver_subject ||
                        stored_group != deliver_group;
-    if (!stale) {
-        jsConsumerInfo_Destroy(existing);
+    if (!stale)
         return;
-    }
 
     // The update reads these pointers during the call, so they outlive it here.
     // The stored configuration is copied rather than edited: its string fields
-    // are owned by `existing`, and overwriting them would leave the destroy
-    // below freeing pointers this function had put there.
+    // are owned by `existing`, and overwriting them would leave its handle
+    // freeing pointers this function had put there.
     jsConsumerConfig updated_config = *config;
     std::vector<const char*> raw;
     set_filters(updated_config, filters, raw);
@@ -1100,14 +1078,11 @@ void ensure_durable_consumer(jsCtx* js,
     auto jerr = jsErrCode(0);
     const natsStatus us =
         js_UpdateConsumer(&updated, js, stream.c_str(), &updated_config, &opts, &jerr);
-    if (updated != nullptr)
-        jsConsumerInfo_Destroy(updated);
-    jsConsumerInfo_Destroy(existing);
+    const consumer_info_handle updated_info(updated);
 
-    if (us != NATS_OK)
-        throw std::runtime_error("NATS durable '" + durable + "' on '" + stream +
-                                 "' holds a different configuration and could not be updated: " +
-                                 natsStatus_GetText(us));
+    ensure_result(us,
+                  "NATS durable '" + durable + "' on '" + stream +
+                      "' holds a different configuration and could not be updated");
 
     BOOST_LOG_SEV(lg(), info) << "NATS durable '" << durable << "' on '" << stream
                               << "' migrated in place from " << stored.size() << " filter(s), ack "
@@ -1172,8 +1147,7 @@ subscription client::js_queue_subscribe(std::string_view subject,
     const natsStatus s = js_Subscribe(
         &sub, impl_->js, subj_str.c_str(), on_msg, cl.get(), nullptr, &sub_opts, nullptr);
 
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("js_QueueSubscribe failed: ") + natsStatus_GetText(s));
+    ensure_result(s, "js_QueueSubscribe failed");
 
     auto si = std::make_unique<subscription::impl>();
     si->sub = sub;
@@ -1245,8 +1219,7 @@ subscription client::js_queue_subscribe_multi(std::span<const std::string_view> 
                                            &sub_opts,
                                            nullptr);
 
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("js_SubscribeMulti failed: ") + natsStatus_GetText(s));
+    ensure_result(s, "js_SubscribeMulti failed");
 
     auto si = std::make_unique<subscription::impl>();
     si->sub = sub;

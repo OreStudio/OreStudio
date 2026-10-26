@@ -231,17 +231,19 @@ TEST_CASE("tick_clock leaves the rate alone with no market", tags) {
 }
 
 TEST_CASE("tick_clock reads the shared intensity into the rate", tags) {
-    // The intensity adds heat on top of the market: a mean rate of ten a second
-    // and heat of five is a multiplier of 1.5, and a row that follows the market
-    // twice as hard draws at three times its rate.
+    // The intensity adds heat on top of the market: one series enrolled at ten a
+    // second and heat of ten is a multiplier of two, and a row that follows the
+    // market twice as hard draws at four times its rate.
     shared_intensity intensity(0.5, 20.0);
     for (int i = 0; i < 20; ++i)
         intensity.record_event(); // twenty jumps of a half is ten of heat
 
+    const auto enrolled = intensity.enrol(10.0);
+
     scripted_arrival_process arrivals(0.001);
-    tick_clock clock(arrivals,
-                     ores::analytics::quant::domain::market_link{
-                         .intensity = &intensity, .sensitivity = 2.0, .mean_rate = 10.0});
+    tick_clock clock(
+        arrivals,
+        ores::analytics::quant::domain::market_link{.intensity = &intensity, .sensitivity = 2.0});
     int calls = 0;
 
     clock.run(
@@ -255,7 +257,7 @@ TEST_CASE("tick_clock reads the shared intensity into the rate", tags) {
         [](const std::exception&) {});
 
     REQUIRE_FALSE(arrivals.multipliers().empty());
-    // sensitivity * (baseline + heat / mean rate) = 2 * (1 + 10 / 10) = 4, and
+    // sensitivity * (baseline + heat / enrolled rate) = 2 * (1 + 10 / 10) = 4, and
     // the baseline stays because heat adds to it rather than replacing it.
     CHECK(arrivals.multipliers().front() == Catch::Approx(4.0));
 }

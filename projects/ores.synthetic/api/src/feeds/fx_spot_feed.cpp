@@ -177,10 +177,10 @@ fx_spot_feed::fx_spot_feed(
     , arrival_(arrival)
     , link_(link)
     , scheduler_(scheduler)
-    , clock_(*arrivals_,
-             ores::analytics::quant::domain::with_mean_rate(link, arrival.ticks_per_hour))
+    , clock_(*arrivals_, link)
     , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
     , intensity_(link.intensity)
+    , enrolment_(ores::analytics::quant::domain::enrol_hourly(link, arrival.ticks_per_hour))
     , nats_subject_(std::move(nats_subject))
     , display_subject_(ores::marketdata::domain::feed_display_subject_for(source_name_))
     , adapter_(std::move(adapter)) {
@@ -224,10 +224,7 @@ void fx_spot_feed::start() {
     // feed runs its own clock, which keeps a single-feed run and every test that
     // predates the scheduler working unchanged.
     if (scheduler_ != nullptr) {
-        handle_ = scheduler_->add(
-            *arrivals_,
-            ores::analytics::quant::domain::with_mean_rate(link_, arrival_.ticks_per_hour),
-            body);
+        handle_ = scheduler_->add(*arrivals_, link_, body);
         return;
     }
 

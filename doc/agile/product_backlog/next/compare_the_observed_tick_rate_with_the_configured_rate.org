@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: C8718994-0C82-450D-8B5B-C6092342DA5C
+:END:
+#+title: Compare the observed tick rate with the configured rate
+#+description: Show the tick rate each source observes beside the rate its running feeds configure under the regime in force, and flag a ratio far from one.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:telemetry:observability:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Show the tick rate each source observes beside the rate its running feeds
+configure: the sum of =ticks_per_hour= over the running feeds, times the
+multiplier of the market regime in force. Flag a source whose ratio is far from
+one, in the funnel view and as a warning in the log.
+
+* Why
+
+On 2026-10-26 the machine went down overnight. Two defects together caused it: the shared Hawkes heat ran the synthetic feeds at about 300 times their configured rate, and the NATS client kept every message it received. Finding both took ad hoc sampling of systemd and /proc, parsing marketdata's once-a-minute INGEST STATUS log line, NATS monitoring endpoints, Postgres row counts and a core dump. The synthetic service published about 9,500 ticks a second
+against a configured 32. A ratio check would have flagged the runaway in its
+first minute, before the machine ran short of memory.
+
+* References
+
+- =projects/ores.analytics/quant/include/ores.analytics.quant/domain/market_link.hpp=
+- =projects/ores.synthetic/service/src/app/application.cpp=, the regime and the shared heat
+
+* See also
+
+- [[id:2D94BF13-5BB2-4522-AD1B-098C2376D947][Measure the tick flow as a funnel with balance checks]]
+- [[id:9CABDED8-9181-4FFD-BB6A-D7E89B5DA796][Record market changes as events on the telemetry timeline]]

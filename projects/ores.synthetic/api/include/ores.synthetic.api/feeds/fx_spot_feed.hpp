@@ -144,6 +144,8 @@ private:
     /// The heat this feed adds to when it ticks, or null for a run with no
     /// endogenous factor.
     ores::analytics::quant::domain::shared_intensity* intensity_;
+    /// This feed's rate in the population the heat is shared over, while the feed lives.
+    ores::analytics::quant::domain::shared_intensity::enrolment enrolment_;
     std::string nats_subject_;
     /// The subject the screen tails this feed's ticks on, beside the adapter ingress.
     std::string display_subject_;

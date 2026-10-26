@@ -21,7 +21,9 @@
 #include "ores.marketdata.api/domain/delivery_count.hpp"
 #include "ores.marketdata.core/repository/delivery_count_repository.hpp"
 #include "ores.marketdata.core/repository/demand_interval_repository.hpp"
+#include "ores.marketdata.core/repository/live_tenant_repository.hpp"
 #include "ores.marketdata.core/repository/subscription_interval_repository.hpp"
+#include "ores.marketdata.service/app/live_tenants.hpp"
 #include "ores.marketdata.service/app/usage_planner.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <map>
@@ -36,17 +38,6 @@ constexpr auto service_name = "ores.marketdata.service";
 
 /// The number of waiting counts beyond which a store that is down is reported.
 constexpr std::size_t pending_warning_limit = 100000;
-
-template <typename Interval, typename Repo>
-void apply(const ores::database::context& ctx, const interval_plan<Interval>& plan) {
-    // A close is the next version of the row that was open, so it goes first and a failure to
-    // open does not leave the old interval open.
-    for (const auto& i : plan.to_close)
-        Repo{}.write(ctx.with_tenant(i.tenant_id, service_name), i);
-    for (const auto& i : plan.to_open)
-        Repo{}.write(ctx.with_tenant(i.tenant_id, service_name), i);
-}
-
 }
 
 usage_recorder::usage_recorder(ores::database::context ctx, std::shared_ptr<delivery_meter> meter)
@@ -72,30 +63,53 @@ void usage_recorder::sync(const demand_catalogue& catalogue,
                           std::chrono::system_clock::time_point now) {
     std::lock_guard lock(sync_mu_);
     try {
+        const auto live = repository::live_tenant_repository{}.read(ctx_);
         const auto open_subscriptions = [&] {
             auto rows =
                 repository::subscription_interval_repository{}.read_latest_all_tenants(ctx_);
             std::erase_if(rows, [](const auto& r) { return r.interval_to.has_value(); });
+            keep_live_tenants(rows, live);
             return rows;
         }();
-        const auto subscription_plan =
-            plan_subscription_intervals(subscription_states(catalogue), open_subscriptions, now);
-        apply<domain::subscription_interval, repository::subscription_interval_repository>(
-            ctx_, subscription_plan);
+        const auto subscription_plan = plan_subscription_intervals(
+            subscription_states(catalogue), open_subscriptions, now, ctx_.service_account());
+        const auto refused = [](const auto& i, const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to record a usage interval of tenant "
+                                       << i.tenant_id << ": " << e.what();
+        };
+        const auto subscriptions = write_plan(
+            subscription_plan,
+            [this](const domain::subscription_interval& i) {
+                repository::subscription_interval_repository{}.write(
+                    ctx_.with_tenant(i.tenant_id, service_name), i);
+            },
+            refused);
 
         const auto open_demand = [&] {
             auto rows = repository::demand_interval_repository{}.read_latest_all_tenants(ctx_);
             std::erase_if(rows, [](const auto& r) { return r.interval_to.has_value(); });
+            keep_live_tenants(rows, live);
             return rows;
         }();
-        const auto demand_plan = plan_demand_intervals(
-            demand_states(compute_party_demand(catalogue, now)), open_demand, now);
-        apply<domain::demand_interval, repository::demand_interval_repository>(ctx_, demand_plan);
+        const auto demand_plan =
+            plan_demand_intervals(demand_states(compute_party_demand(catalogue, now)),
+                                  open_demand,
+                                  now,
+                                  ctx_.service_account());
+        const auto demand = write_plan(
+            demand_plan,
+            [this](const domain::demand_interval& i) {
+                repository::demand_interval_repository{}.write(
+                    ctx_.with_tenant(i.tenant_id, service_name), i);
+            },
+            refused);
 
-        BOOST_LOG_SEV(lg(), info) << "Usage intervals: " << subscription_plan.to_open.size()
-                                  << " subscription opened, " << subscription_plan.to_close.size()
-                                  << " closed; " << demand_plan.to_open.size() << " demand opened, "
-                                  << demand_plan.to_close.size() << " closed";
+        BOOST_LOG_SEV(lg(), info) << "Usage intervals: " << subscriptions.opened
+                                  << " subscription opened, " << subscriptions.closed << " closed; "
+                                  << demand.opened << " demand opened, " << demand.closed
+                                  << " closed; " << subscriptions.failed + demand.failed
+                                  << " refused, " << subscriptions.held + demand.held
+                                  << " held for the next sync";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to record the usage intervals: " << e.what();
     }
@@ -122,8 +136,8 @@ void usage_recorder::flush(std::chrono::system_clock::time_point now) {
         row.period_start = c.key.period_start;
         row.flushed_at = now;
         row.deliveries = c.deliveries;
-        row.modified_by = service_name;
-        row.performed_by = service_name;
+        row.modified_by = ctx_.service_account();
+        row.performed_by = ctx_.service_account();
         row.change_reason_code = "system.new_record";
         row.change_commentary = "Deliveries counted by the fan-out";
         const auto tenant = c.key.tenant_id.to_string();

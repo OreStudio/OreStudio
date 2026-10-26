@@ -29,16 +29,12 @@ namespace ores::analytics::quant::domain {
  *
  * A series' intensity is
  *
- *   lambda = sensitivity * (mean_rate * S(t) + C(t))
+ *   lambda = sensitivity * mean_rate * (S(t) + C(t) / R(t))
  *
- * which is a rate, while a process is built with a mean rate and re-rated by a
- * multiplier. Rewriting the same expression as
- *
- *   lambda = mean_rate * sensitivity * (S(t) + C(t) / mean_rate)
- *
- * gives the multiplier a process takes, so the four numbers travel together and
- * a call site does not grow a fifth argument. Passive: it holds no state and
- * reads the two published values, each one atomic load.
+ * where R is the summed mean rate of the series enrolled with the heat (see
+ * shared_intensity), so each series takes the share of C its rate is of R. The
+ * bracket is the multiplier a process is re-rated by. Passive: it holds no state
+ * and reads the published values, each one atomic load.
  */
 struct market_link final {
     /// The state every series shares, or null for a run with no market.
@@ -47,8 +43,6 @@ struct market_link final {
     shared_intensity* intensity = nullptr;
     /// How strongly this series follows the market, one being the average.
     double sensitivity = 1.0;
-    /// The mean rate the row configures, in arrivals per second.
-    double mean_rate = 0.0;
 
     /**
      * @brief The multiplier to rate this series' process at, now.
@@ -60,23 +54,22 @@ struct market_link final {
         // The market factor is one when there is no market, and the heat adds to
         // it: a run with heat but no market must not lose its baseline.
         double factor = market != nullptr ? market->multiplier() : 1.0;
-        if (intensity != nullptr && mean_rate > 0.0)
-            factor += intensity->value() / mean_rate;
+        if (intensity != nullptr)
+            factor += intensity->rate_share();
         return sensitivity * factor;
     }
 };
 
 /**
- * @brief The same link, with its mean rate taken from the arrival spec.
- *
- * The spec is the row's own statement of its rate, so a feed reads it from there
- * rather than from a second caller who could disagree.
+ * @brief Enrols a series that runs at @p ticks_per_hour with the heat @p link
+ * feeds, or returns an empty enrolment when the run has no heat.
  */
-[[nodiscard]] inline market_link with_mean_rate(market_link link, double ticks_per_hour) {
-    link.mean_rate = ticks_per_hour / 3600.0;
-    return link;
+[[nodiscard]] inline shared_intensity::enrolment enrol_hourly(const market_link& link,
+                                                              double ticks_per_hour) {
+    if (link.intensity == nullptr)
+        return {};
+    return link.intensity->enrol(ticks_per_hour / 3600.0);
 }
-
 }
 
 #endif

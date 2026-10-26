@@ -95,9 +95,7 @@ TEST_CASE("the scheduler hands each series the gap it waited", "[tick_scheduler]
 TEST_CASE("the scheduler re-rates a series from its link", "[tick_scheduler]") {
     fixed_gap_process process(0.1);
     tick_scheduler scheduler;
-    scheduler.add(process, market_link{.sensitivity = 2.0, .mean_rate = 1.0}, [](double) {
-        return std::string{};
-    });
+    scheduler.add(process, market_link{.sensitivity = 2.0}, [](double) { return std::string{}; });
 
     scheduler.step();
     REQUIRE_FALSE(process.multipliers.empty());

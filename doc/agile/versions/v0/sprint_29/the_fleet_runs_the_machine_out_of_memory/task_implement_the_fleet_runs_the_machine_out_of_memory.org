@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: 22FE983A-2292-4FAB-9C88-292BCEAA3E5E
+:END:
+#+title: Task: Fix the message leak, the tick runaway and the usage writes
+#+description: Initial task for: Hotfix: The fleet runs the machine out of memory
+#+type: task
+#+level: s1
+#+filetags: :the_fleet_runs_the_machine_out_of_memory:sprint_29:v0:
+#+owner: marco
+#+branch: hotfix/the-fleet-runs-the-machine-out-of-memory
+#+pr: 3876
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CDEFF0DE-44BC-49B5-967F-C81C03465572][Hotfix: The fleet runs the machine out of memory]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the two defects that took the machine down, the NATS message leak and the
+shared-heat runaway, and the two marketdata usage defects they hid: usage rows
+stamped with an account that does not exist, and terminated tenants kept in
+demand, routing and usage.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CDEFF0DE-44BC-49B5-967F-C81C03465572][Hotfix: The fleet runs the machine out of memory]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- A test fails on each defect before its fix and passes after.
+- marketdata memory stays flat with the feed running, calm and pinned =active=.
+- The stored tick rate follows the configured rate times the regime multiplier.
+- Usage rows are stored, and no write names a terminated tenant.
+
+* Plan
+
+1. Cap every fleet unit's memory (PR #3873, merged) so a leak kills one service
+   in its own cgroup instead of the machine.
+2. Reproduce on a fresh database with Acme provisioned, sampling marketdata
+   memory and the =INGEST STATUS= counters every 30 seconds.
+3. Find the retained objects with =gcore= and a string count of the heap: about
+   11,300 copies of each Bloomberg ticker beside its ingress subject, which led
+   to =on_msg= in =ores.nats=.
+4. Fix the leak with owning handles, test first, and confirm the live curve.
+5. Fix the heat runaway found by a parallel investigation: enrol each feed's
+   mean rate and share the heat out, test first.
+6. Fix the usage identity and the terminated-tenant reads that the leak's noise
+   had hidden.
+7. Re-measure calm and pinned =active= on the final build, then run the gate.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Anonymous RSS growth over 20,000 incompressible 16 KiB core messages | 323,788 KiB before, 16 KiB after | =ores.nats.tests "a core subscription frees every message it delivers"= | before =abf66f662a=, at =abf66f662a= |
+| Heat with 60 series at 1 tick/s, jump 0.5, decay 20 | 3.13 against a bound of 3.0 before, bounded after | =ores.analytics.quant.tests "the heat stays bounded however many series share it"= | =241c2d3e16=, =391da7add7= |
+| marketdata anon memory at about 2.6 million stored ticks | 827 MiB rising 195 MiB/min before, 65 MiB flat after | systemd =MemoryCurrent= and =/proc/<pid>/status= every 30 s; =INGEST STATUS= log | =45ad1dcd26=, =abf66f662a= |
+| Stored rows a minute, calm regime | about 2,250 | =INGEST STATUS ticks_stored= deltas, 12:00 to 12:06 | =83f535de00= |
+| Stored rows a minute, regime pinned =active= | about 8,900 (x3.95), steady for 10 min, 0 dropped | same, 12:07 to 12:16 | =83f535de00= |
+| Fleet CPU, calm / active | 5.6% / 7.1% of one core | systemd =CPUUsageNSec= per unit over the window | =83f535de00= |
+| marketdata CPU, calm / active | 0.9% / 1.9% of one core | same | =83f535de00= |
+| Usage rows stored | 2,896 delivery counts, 24 subscription intervals; 0 before | =select count(*)= on the usage tables | =e0cad91759= |
+| Local check gate | 27 of 32 pass; the 5 failures also fail without this branch | =compass check= | =177896f854= |
+
+* Notes
+
+- The core dumps of marketdata (43, 12 to 19 October) are crashes, =SIGSEGV= and
+  =SIGABRT=, not the leak. A process the kernel kills for memory gets =SIGKILL=
+  and writes no core.
+- The marketdata suites share the environment's database and NATS subjects, so a
+  test run while the fleet runs fails two ingest tests and leaves test tenants
+  behind. Captured in the inbox.
+- Component audit: =validate_docs.sh= passes for all 39 components. The task
+  added no component, part or facet. =live_tenant_repository= sits in
+  =ores.marketdata.core='s repository folder beside its siblings, and
+  =live_tenants.hpp= and =nats_handle.hpp= / =nats_result.hpp= are a service
+  header and two private =src= headers of the components that use them.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3876][#3876]] | [nats] Fix the message leak and the tick runaway that took the machine down |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =ores_iam_live_tenant_ids_fn= is executable by PUBLIC | =iam_tenant_functions_create.sql= | Decline | Matches its neighbours; ids only, less than =ores_iam_read_all_latest_tenants_fn= already exposes. |
+| 2 | =keep_live_tenants= could take a concept | =live_tenants.hpp= | Decline | Three call sites, all domain rows with =tenant_id=; a misuse already fails to compile clearly. |
+| 3 | Feed enrolments must not outlive the shared heat | =synthetic/service/src/app/application.cpp= | No change | Checked: the heat is declared before the fleets that own the feeds. |
+| 4 | (@claude, PR #3874) The enrolled rate drifts and can divide the heat by almost nothing | =shared_intensity.hpp= | Accept | Reproduced: 1.2e-11 left after 10,000 enrols, =rate_share()= about 4e10. Count and sum under a lock, reset to zero on the last release. =99b288fafb=. |
+| 5 | (@claude) Enrolment follows the feed's lifetime, not whether it runs | =fx_spot_feed.cpp=, =ir_curve_feed.cpp= | No change | The runner builds a feed only to launch it and destroys it when dropped; a feed refused for a name already running is discarded at once. |
+| 6 | (@claude) A failed close no longer stops the open for the same key | =usage_recorder.cpp= | Accept | =write_plan= holds back a tenant's opens when its close fails. Test first. =99b288fafb=. |
+| 7 | (@claude) The usage log reports planned counts as written | =usage_recorder.cpp= | Accept | The log reports what =write_plan= wrote, refused and held. =99b288fafb=. |
+| 8 | (@claude) The free =enrol= takes ticks an hour, the member a rate a second | =market_link.hpp= | Accept | Renamed =enrol_hourly=. =99b288fafb=. |
+| 9 | (@claude, PR #3876) =add_rate= infers enrol or release from the sign of the delta | =shared_intensity.hpp= | Decline | Private, two callers in the class; =enrol= refuses a rate that is not strictly positive, so the sign cannot be wrong. |
+| 10 | (@claude) A terminated tenant's open intervals are never closed | =usage_recorder.cpp= | Capture | Not a regression: the store refuses writes for a terminated tenant. The close belongs to the termination flow. Inbox capture filed. |
+| 11 | (@claude) Callers must handle a throw from the live-tenant read | =adapter_supervisor.cpp=, =feed_ingest_loop.cpp= | No change | The read sits inside the same =refresh()= as the route reads, so a throw takes their path; the periodic refresh catches and logs it. |
+
+* Result
+
+Fixed. Every core NATS message is now freed through =msg_handle=, and the cnats
+objects the client and the JetStream admin create are owned by handles, with
+=ensure_result= for status checks. Each synthetic feed enrols its mean rate and
+takes its share of the shared heat, so the heat is bounded for any feed count.
+marketdata writes usage as its service account and leaves terminated tenants out
+of demand, routing and usage, and one failed interval no longer stops the rest.
+
+On the live fleet, marketdata memory is flat, the tick rate is 38 rows a second
+calm and about 148 pinned =active=, and the whole fleet uses 5.6 to 7.1 percent
+of one core. See =* Measurements=.

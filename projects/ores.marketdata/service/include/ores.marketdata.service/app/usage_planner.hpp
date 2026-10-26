@@ -31,6 +31,9 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <cstddef>
+#include <exception>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -73,6 +76,59 @@ struct interval_plan {
     std::vector<Interval> to_close;
 };
 
+/**
+ * @brief What writing an interval plan did.
+ */
+struct plan_outcome final {
+    /// Closes that were written.
+    std::size_t closed = 0;
+    /// Opens that were written.
+    std::size_t opened = 0;
+    /// Writes the store refused.
+    std::size_t failed = 0;
+    /// Opens held back because a close of the same tenant failed.
+    std::size_t held = 0;
+};
+
+/**
+ * @brief Writes @p plan through @p write, closes first, and reports each refused write to
+ * @p report.
+ *
+ * A close is the next version of the row that was open, so it goes first, and a tenant whose
+ * close fails opens nothing until the next sync: opening first would leave the old interval
+ * open beside the new one. Another tenant's writes go ahead, and the next sync plans what was
+ * not written again from what the store holds.
+ */
+template <typename Interval, typename Write, typename Report>
+plan_outcome write_plan(const interval_plan<Interval>& plan, Write&& write, Report&& report) {
+    plan_outcome out;
+    std::set<boost::uuids::uuid> held;
+    for (const auto& i : plan.to_close) {
+        try {
+            write(i);
+            ++out.closed;
+        } catch (const std::exception& e) {
+            ++out.failed;
+            held.insert(i.tenant_id.to_uuid());
+            report(i, e);
+        }
+    }
+    for (const auto& i : plan.to_open) {
+        if (held.contains(i.tenant_id.to_uuid())) {
+            ++out.held;
+            continue;
+        }
+        try {
+            write(i);
+            ++out.opened;
+        } catch (const std::exception& e) {
+            ++out.failed;
+            report(i, e);
+        }
+    }
+    return out;
+}
+
 /// The routes that hold a subscription with at least one right, with the rights of the
 /// subscription.
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::vector<subscription_state>
@@ -87,19 +143,21 @@ demand_states(const std::vector<party_demand>& demand);
  *
  * A state with no open interval opens one. An open interval whose state is gone, or whose rights
  * or source changed, closes. A change of source or rights therefore closes one interval and opens
- * the next. An interval already open for a state stays as it is.
+ * the next. An interval already open for a state stays as it is. Every interval it plans is
+ * stamped with @p actor, the account the store writes it as.
  */
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT interval_plan<domain::subscription_interval>
 plan_subscription_intervals(const std::vector<subscription_state>& now_state,
                             const std::vector<domain::subscription_interval>& open,
-                            std::chrono::system_clock::time_point now);
+                            std::chrono::system_clock::time_point now,
+                            const std::string& actor);
 
 /// Compares the open demand intervals with the demand now, by the same rule.
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT interval_plan<domain::demand_interval>
 plan_demand_intervals(const std::vector<demand_state>& now_state,
                       const std::vector<domain::demand_interval>& open,
-                      std::chrono::system_clock::time_point now);
-
+                      std::chrono::system_clock::time_point now,
+                      const std::string& actor);
 }
 
 #endif

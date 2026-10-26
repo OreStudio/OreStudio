@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 5CB6367D-0D63-4DCD-8CF0-8331B23B80D4
+:END:
+#+title: Terminating a tenant leaves its usage intervals open
+#+description: A tenant terminated while it holds market data subscriptions keeps its subscription and demand intervals open forever: marketdata can no longer write for it, so nothing closes them, and usage summed over open intervals over-counts the tenant.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:billing:tenancy:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Close a tenant's open subscription and demand intervals when the tenant is
+terminated, as part of the termination, while writes for it are still allowed.
+After termination =ores_iam_validate_tenant_fn= refuses every write that names
+the tenant, so marketdata cannot close them later, and the usage recorder now
+leaves terminated tenants out of its plan altogether.
+
+* Why
+
+An interval stays open in the store with no end. Usage summed over open
+intervals counts the terminated tenant as subscribed for as long as anyone asks,
+which over-bills or misreports it. Before the hotfix for the 2026-10-26 outage
+the recorder tried to close these intervals and the store refused every write,
+which also stopped every other tenant's usage; the hotfix stopped that by
+leaving terminated tenants out, which leaves their open intervals as they were.
+Raised by the review of PR #3876.
+
+* References
+
+- =projects/ores.marketdata/service/src/app/usage_recorder.cpp= (=sync=)
+- =ores_iam_live_tenant_ids_fn= in =projects/ores.sql/create/iam/iam_tenant_functions_create.sql=
+
+* See also
+
+- The termination flow of the "Build the retire or reset tenant journey" story.

@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 9CABDED8-9181-4FFD-BB6A-D7E89B5DA796
+:END:
+#+title: Record market changes as events on the telemetry timeline
+#+description: Store regime pins, feed starts and stops, feed config changes and service restarts as timestamped events beside the tick counters.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:telemetry:observability:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Store the changes that move tick volume as timestamped events beside the tick
+counters: a regime pin and its release, a feed start and stop, a change to a
+feed's arrival configuration, and a service start. A reader then asks what
+changed at a time with one query, instead of searching the journal of several
+services.
+
+* Why
+
+On 2026-10-26 the machine went down overnight. Two defects together caused it: the shared Hawkes heat ran the synthetic feeds at about 300 times their configured rate, and the NATS client kept every message it received. Finding both took ad hoc sampling of systemd and /proc, parsing marketdata's once-a-minute INGEST STATUS log line, NATS monitoring endpoints, Postgres row counts and a core dump. The volume rose when the regime was pinned to =active= the night
+before, which multiplies arrivals by four. The only record of the pin was a chat
+transcript. The journal of the crashed boot was partly lost.
+
+* References
+
+- =synthetic regime pin= in =projects/ores.shell/application/src/app/commands/synthetic_commands.cpp=
+
+* See also
+
+- [[id:2D94BF13-5BB2-4522-AD1B-098C2376D947][Measure the tick flow as a funnel with balance checks]]
+- [[id:C8718994-0C82-450D-8B5B-C6092342DA5C][Compare the observed tick rate with the configured rate]]

@@ -31,9 +31,12 @@ constexpr auto opened_reason = "system.new_record";
 constexpr auto closed_reason = "system.update";
 
 template <typename Interval>
-void stamp(Interval& i, const char* reason, const std::string& commentary) {
-    i.modified_by = "ores.marketdata.service";
-    i.performed_by = "ores.marketdata.service";
+void stamp(Interval& i,
+           const std::string& actor,
+           const char* reason,
+           const std::string& commentary) {
+    i.modified_by = actor;
+    i.performed_by = actor;
     i.change_reason_code = reason;
     i.change_commentary = commentary;
 }
@@ -106,7 +109,8 @@ std::vector<demand_state> demand_states(const std::vector<party_demand>& demand)
 interval_plan<domain::subscription_interval>
 plan_subscription_intervals(const std::vector<subscription_state>& now_state,
                             const std::vector<domain::subscription_interval>& open,
-                            std::chrono::system_clock::time_point now) {
+                            std::chrono::system_clock::time_point now,
+                            const std::string& actor) {
     interval_plan<domain::subscription_interval> plan;
     boost::uuids::random_generator gen;
 
@@ -123,7 +127,7 @@ plan_subscription_intervals(const std::vector<subscription_state>& now_state,
         } else {
             auto closed = i;
             closed.interval_to = now;
-            stamp(closed, closed_reason, "The route or the subscription ended or changed.");
+            stamp(closed, actor, closed_reason, "The route or the subscription ended or changed.");
             plan.to_close.push_back(std::move(closed));
         }
     }
@@ -140,7 +144,10 @@ plan_subscription_intervals(const std::vector<subscription_state>& now_state,
         i.non_display = s.non_display;
         i.derived = s.derived;
         i.interval_from = now;
-        stamp(i, opened_reason, "The party holds a route and a subscription with these rights.");
+        stamp(i,
+              actor,
+              opened_reason,
+              "The party holds a route and a subscription with these rights.");
         plan.to_open.push_back(std::move(i));
         held.insert(key_of(s));
     }
@@ -150,7 +157,8 @@ plan_subscription_intervals(const std::vector<subscription_state>& now_state,
 interval_plan<domain::demand_interval>
 plan_demand_intervals(const std::vector<demand_state>& now_state,
                       const std::vector<domain::demand_interval>& open,
-                      std::chrono::system_clock::time_point now) {
+                      std::chrono::system_clock::time_point now,
+                      const std::string& actor) {
     interval_plan<domain::demand_interval> plan;
     boost::uuids::random_generator gen;
 
@@ -167,7 +175,7 @@ plan_demand_intervals(const std::vector<demand_state>& now_state,
         } else {
             auto closed = i;
             closed.interval_to = now;
-            stamp(closed, closed_reason, "The item left the demand of the party.");
+            stamp(closed, actor, closed_reason, "The item left the demand of the party.");
             plan.to_close.push_back(std::move(closed));
         }
     }
@@ -182,11 +190,10 @@ plan_demand_intervals(const std::vector<demand_state>& now_state,
         i.source_id = s.source_id;
         i.oresmd_uri = s.oresmd_uri;
         i.interval_from = now;
-        stamp(i, opened_reason, "The item entered the demand of the party.");
+        stamp(i, actor, opened_reason, "The item entered the demand of the party.");
         plan.to_open.push_back(std::move(i));
         held.insert(key_of(s));
     }
     return plan;
 }
-
 }

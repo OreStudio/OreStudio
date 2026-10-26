@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 9687A50B-56D6-4EC3-B226-9FAD35760263
+:END:
+#+title: The compute service spends CPU while idle
+#+description: With no work queued, ores.compute.service used 3.7 percent of a core, the most of any service in a fleet that does nothing else.
+#+type: capture
+#+level: cross
+#+filetags: :compute:performance:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Find what =ores.compute.service= does while no work is queued, and stop it from
+spending CPU then.
+
+* Why
+
+In a six-minute sample of the =brave_hopper= fleet on 2026-10-26, after the
+tick runaway was fixed, compute used 3.7 percent of a core with no work queued.
+That was the most of any service, ahead of synthetic at 2.1 percent and
+marketdata at 0.9 percent. Ten environments on one machine multiply it.
+
+* References
+
+- The fleet sample was taken with systemd's =CPUUsageNSec= per unit.
+
+* See also
+
+- [[id:259C03EA-E8D2-44EF-ABE6-BA691312B701][Sample host resources onto the telemetry timeline]]

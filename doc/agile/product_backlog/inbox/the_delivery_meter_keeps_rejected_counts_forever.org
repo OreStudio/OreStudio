@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 558691BE-9236-467E-BB6A-D2E28CB61852
+:END:
+#+title: The delivery meter keeps rejected counts forever
+#+description: A delivery count the store rejects goes back into the meter and is retried every flush, with no limit, so a count that can never be written grows the meter for the life of the service.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:billing:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+When the store rejects a delivery count, =usage_recorder::flush= puts the count
+back into the delivery meter, and the next flush tries it again. A rejection
+that will never succeed, such as a bad =modified_by= or a terminated tenant,
+keeps the count forever, and the meter grows by one entry per party, series and
+hour. Retry a count that failed because the store was down; give up on, and
+report, a count the store refused.
+
+* Why
+
+Every delivery count failed this way until the recorder used the service
+account. The growth is slow, about half a megabyte an hour at the synthetic
+feed's size, but it has no end, and the code already warns that memory grows
+until the store answers.
+
+* References
+
+- =projects/ores.marketdata/service/src/app/usage_recorder.cpp=
+- =projects/ores.marketdata/service/src/app/delivery_meter.cpp=
+
+* See also
+
+- None.

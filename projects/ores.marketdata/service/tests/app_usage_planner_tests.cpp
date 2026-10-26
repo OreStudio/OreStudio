@@ -21,7 +21,9 @@
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -40,6 +42,7 @@ struct fixture {
     boost::uuids::uuid party = gen();
     boost::uuids::uuid sim = gen();
     boost::uuids::uuid live = gen();
+    std::string actor = "ores_test_marketdata_service";
 
     subscription_state state(const boost::uuids::uuid& source, bool derived = false) const {
         subscription_state s;
@@ -93,7 +96,7 @@ struct fixture {
 TEST_CASE("a_new_route_with_a_subscription_opens_an_interval", tags) {
     fixture f;
 
-    const auto plan = plan_subscription_intervals({f.state(f.sim)}, {}, f.now);
+    const auto plan = plan_subscription_intervals({f.state(f.sim)}, {}, f.now, f.actor);
 
     REQUIRE(plan.to_open.size() == 1);
     CHECK(plan.to_close.empty());
@@ -107,7 +110,7 @@ TEST_CASE("an_interval_that_still_holds_is_left_alone", tags) {
     fixture f;
     const auto s = f.state(f.sim);
 
-    const auto plan = plan_subscription_intervals({s}, {f.open_interval(s)}, f.now);
+    const auto plan = plan_subscription_intervals({s}, {f.open_interval(s)}, f.now, f.actor);
 
     CHECK(plan.to_open.empty());
     CHECK(plan.to_close.empty());
@@ -117,7 +120,7 @@ TEST_CASE("a_route_that_ended_closes_its_interval", tags) {
     fixture f;
     const auto open = f.open_interval(f.state(f.sim));
 
-    const auto plan = plan_subscription_intervals({}, {open}, f.now);
+    const auto plan = plan_subscription_intervals({}, {open}, f.now, f.actor);
 
     REQUIRE(plan.to_close.size() == 1);
     CHECK(plan.to_open.empty());
@@ -130,7 +133,7 @@ TEST_CASE("a_change_of_source_closes_one_interval_and_opens_the_next", tags) {
     fixture f;
     const auto open = f.open_interval(f.state(f.sim));
 
-    const auto plan = plan_subscription_intervals({f.state(f.live)}, {open}, f.now);
+    const auto plan = plan_subscription_intervals({f.state(f.live)}, {open}, f.now, f.actor);
 
     REQUIRE(plan.to_close.size() == 1);
     REQUIRE(plan.to_open.size() == 1);
@@ -143,7 +146,7 @@ TEST_CASE("a_change_of_rights_closes_one_interval_and_opens_the_next", tags) {
     fixture f;
     const auto open = f.open_interval(f.state(f.sim));
 
-    const auto plan = plan_subscription_intervals({f.state(f.sim, true)}, {open}, f.now);
+    const auto plan = plan_subscription_intervals({f.state(f.sim, true)}, {open}, f.now, f.actor);
 
     REQUIRE(plan.to_close.size() == 1);
     REQUIRE(plan.to_open.size() == 1);
@@ -156,7 +159,7 @@ TEST_CASE("an_interval_that_is_already_closed_is_not_closed_again", tags) {
     auto closed = f.open_interval(f.state(f.sim));
     closed.interval_to = f.now - 30min;
 
-    const auto plan = plan_subscription_intervals({}, {closed}, f.now);
+    const auto plan = plan_subscription_intervals({}, {closed}, f.now, f.actor);
 
     CHECK(plan.to_close.empty());
     CHECK(plan.to_open.empty());
@@ -166,15 +169,17 @@ TEST_CASE("every_interval_carries_the_actor_and_a_reason", tags) {
     fixture f;
     const auto open = f.open_interval(f.state(f.sim));
 
-    const auto plan = plan_subscription_intervals({f.state(f.live)}, {open}, f.now);
+    const auto plan = plan_subscription_intervals({f.state(f.live)}, {open}, f.now, f.actor);
 
     for (const auto& i : plan.to_open) {
-        CHECK_FALSE(i.modified_by.empty());
+        CHECK(i.modified_by == f.actor);
+        CHECK(i.performed_by == f.actor);
         CHECK_FALSE(i.change_reason_code.empty());
         CHECK_FALSE(i.change_commentary.empty());
     }
     for (const auto& i : plan.to_close) {
-        CHECK_FALSE(i.modified_by.empty());
+        CHECK(i.modified_by == f.actor);
+        CHECK(i.performed_by == f.actor);
         CHECK_FALSE(i.change_reason_code.empty());
     }
 }
@@ -184,7 +189,7 @@ TEST_CASE("an_item_that_enters_the_demand_opens_an_interval_and_one_that_leaves_
     const auto eur = f.item("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
     const auto gbp = f.item("oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
 
-    const auto plan = plan_demand_intervals({eur}, {f.open_demand(gbp)}, f.now);
+    const auto plan = plan_demand_intervals({eur}, {f.open_demand(gbp)}, f.now, f.actor);
 
     REQUIRE(plan.to_open.size() == 1);
     REQUIRE(plan.to_close.size() == 1);
@@ -197,7 +202,7 @@ TEST_CASE("an_item_that_stays_in_the_demand_keeps_its_interval", tags) {
     fixture f;
     const auto eur = f.item("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
 
-    const auto plan = plan_demand_intervals({eur}, {f.open_demand(eur)}, f.now);
+    const auto plan = plan_demand_intervals({eur}, {f.open_demand(eur)}, f.now, f.actor);
 
     CHECK(plan.to_open.empty());
     CHECK(plan.to_close.empty());
@@ -228,4 +233,44 @@ TEST_CASE("the_states_come_from_the_routes_that_hold_a_subscription_with_a_right
     CHECK(states.front().display);
     CHECK(states.front().derived);
     CHECK_FALSE(states.front().non_display);
+}
+
+TEST_CASE("a_tenant_whose_close_fails_opens_nothing_until_the_next_sync", tags) {
+    using ores::marketdata::domain::subscription_interval;
+    using ores::marketdata::service::app::interval_plan;
+    using ores::marketdata::service::app::write_plan;
+    using ores::utility::uuid::tenant_id;
+
+    boost::uuids::random_generator gen;
+    const auto failing = tenant_id::from_uuid(gen()).value();
+    const auto healthy = tenant_id::from_uuid(gen()).value();
+    auto interval_of = [&gen](const tenant_id& tenant) {
+        subscription_interval i;
+        i.id = gen();
+        i.tenant_id = tenant;
+        return i;
+    };
+
+    interval_plan<subscription_interval> plan;
+    plan.to_close = {interval_of(failing)};
+    plan.to_open = {interval_of(failing), interval_of(healthy)};
+
+    std::vector<boost::uuids::uuid> written;
+    std::size_t reported = 0;
+    const auto outcome = write_plan(
+        plan,
+        [&](const subscription_interval& i) {
+            if (i.id == plan.to_close.front().id)
+                throw std::runtime_error("the store refused the close");
+            written.push_back(i.id);
+        },
+        [&](const subscription_interval&, const std::exception&) { ++reported; });
+
+    REQUIRE(written.size() == 1);
+    CHECK(written.front() == plan.to_open.back().id);
+    CHECK(outcome.closed == 0);
+    CHECK(outcome.opened == 1);
+    CHECK(outcome.failed == 1);
+    CHECK(outcome.held == 1);
+    CHECK(reported == 1);
 }

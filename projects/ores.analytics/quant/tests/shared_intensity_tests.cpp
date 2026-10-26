@@ -16,6 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.analytics.quant/domain/market_link.hpp"
 #include "ores.analytics.quant/domain/shared_intensity.hpp"
 #include <algorithm>
 #include <array>
@@ -28,6 +29,7 @@
 #include <thread>
 #include <vector>
 
+using ores::analytics::quant::domain::market_link;
 using ores::analytics::quant::domain::shared_intensity;
 
 TEST_CASE("shared_intensity starts cold", "[shared_intensity]") {
@@ -174,4 +176,64 @@ TEST_CASE("two series on one heat move together and separately without it", "[sh
 
     CHECK(correlation(coupled) > 0.2);
     CHECK(std::abs(correlation(separate)) < 0.1);
+}
+
+TEST_CASE("the heat stays bounded however many series share it", "[shared_intensity]") {
+    // The synthetic service's own heat: half a rate per event, fading at twenty a
+    // second. Sixty series at one tick a second each is more than decay over jump,
+    // the count at which every series taking the whole heat makes it run away.
+    shared_intensity heat(0.5, 20.0);
+    constexpr int series = 60;
+    constexpr double mean_rate = 1.0;
+    std::vector<shared_intensity::enrolment> enrolled;
+    for (int i = 0; i < series; ++i)
+        enrolled.push_back(heat.enrol(mean_rate));
+    const market_link link{.intensity = &heat};
+
+    const double bound = 2.0 * heat.stationary_mean(series * mean_rate);
+    constexpr double step = 0.001;
+    double owed = 0.0;
+    for (int s = 0; s < 10'000 && heat.value() < bound; ++s) {
+        owed += series * mean_rate * link.rate_multiplier() * step;
+        for (; owed >= 1.0; owed -= 1.0)
+            heat.record_event();
+        heat.fade(step);
+    }
+
+    CHECK(heat.value() < bound);
+}
+
+TEST_CASE("the population rate follows the series that are enrolled", "[shared_intensity]") {
+    shared_intensity heat(0.5, 20.0);
+    CHECK(heat.rate_share() == 0.0);
+    {
+        auto one = heat.enrol(2.0);
+        auto two = heat.enrol(3.0);
+        CHECK(heat.population_rate() == Catch::Approx(5.0));
+
+        auto moved = std::move(one);
+        CHECK(heat.population_rate() == Catch::Approx(5.0));
+
+        heat.record_event();
+        CHECK(heat.rate_share() == Catch::Approx(0.5 / 5.0));
+    }
+    CHECK(heat.population_rate() == Catch::Approx(0.0).margin(1e-12));
+    CHECK_THROWS_AS(heat.enrol(0.0), std::invalid_argument);
+}
+
+TEST_CASE("the population rate returns to zero when every series leaves", "[shared_intensity]") {
+    shared_intensity heat(0.5, 20.0);
+    heat.record_event();
+    std::mt19937 rng(11);
+    std::uniform_real_distribution<double> rate(0.0001, 3.0);
+    std::vector<shared_intensity::enrolment> enrolled;
+    for (int round = 0; round < 50; ++round) {
+        for (int i = 0; i < 200; ++i)
+            enrolled.push_back(heat.enrol(rate(rng)));
+        enrolled.erase(enrolled.begin(), enrolled.begin() + 150);
+    }
+    enrolled.clear();
+
+    CHECK(heat.population_rate() == 0.0);
+    CHECK(heat.rate_share() == 0.0);
 }

@@ -417,8 +417,11 @@ header, because a configuration is one document: the server's
 =ore.v1.ops.export_<document>= writes the kind's ORE document from the
 configuration, in the order the rows carry, and the browser saves it.
 
-A configuration never names its own file. The run document names it, through the
-parameter that =configuration_type.run_parameter= records.
+A kind names its file in =ores_reporting_file_types_tbl=, the row whose
+=configuration_type_code= matches it, and =is_default= holds when the kind has
+several. A run may override the name through the parameter that
+=configuration_type.run_parameter= records. A kind with no row has no document,
+and the pair is not drawn for it.
 
 ** What this configuration decides, and the related configurations
 
@@ -489,7 +492,7 @@ to differ.
 | Reach | Meets | Gap: the page says the reach cannot be read |
 | History | Meets | Gap |
 | Numbers-changing lifecycle | Gap | Gap: the model has no status or sign-off |
-| Import | Gap: the run document import drops and warns | Gap |
+| Import | Not drawn: these settings are the =Setup= section of the run's =ore.xml=, and the run document owns that import | Gap |
 | What it decides and related | Partial: the lead says what it is | Partial: the lead says what it is |
 | Screen words | Meets, after the prototype update | Meets in the prototype; the built screen still says *Settings* |
 
@@ -501,8 +504,9 @@ and they belong to the pricing application task:
 
 - The pricing prototype's product and parameter dialogs must show the
   documentation, collapsed, with the schema panel under Simple and Advanced.
-- The importing prototype must follow [[*Import][Import]] in the same words as the
-  engine run settings prototype, including the server parse.
+- The importing prototype must follow [[*Import][Import]] in the same words, including
+  the server parse. The engine run settings cannot set the example: they have no
+  document of their own, only a section of the run's =ore.xml=.
 
 The report page prototype is the third place a person meets both configurations.
 It belongs to the story *See and change everything a report runs — the remaining

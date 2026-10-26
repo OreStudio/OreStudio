@@ -67,3 +67,4 @@ whole method and the rules that hold for every group.
 
 - [[file:../index.org][Prototypes]] — the top page: the groups, and the one way to add a prototype.
 - [[file:../../knowledge/journeys/market_data/market_data.org][Market data journeys]] — the journeys these prototypes answer.
+- [[file:control-how-a-market-ticks.org][Control how a market ticks]] — the arrival regime's three surfaces, three journeys and three shapes.

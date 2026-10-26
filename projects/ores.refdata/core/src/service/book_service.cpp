@@ -77,9 +77,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::book> read_one(repository::book_repository& repo,
-                                   const ores::database::context& ctx,
-                                   const messaging::book_key& key) {
+std::vector<domain::book> book_read_one(repository::book_repository& repo,
+                                        const ores::database::context& ctx,
+                                        const messaging::book_key& key) {
     return repo.read_latest_by_name(ctx, key.name);
 }
 
@@ -89,7 +89,7 @@ std::vector<domain::book> read_one(repository::book_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::book_key key_from(const domain::book& v) {
+messaging::book_key book_key_from(const domain::book& v) {
     messaging::book_key key;
     key.name = v.name;
     return key;
@@ -102,7 +102,7 @@ messaging::book_key key_from(const domain::book& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::book to_domain(const messaging::book_write& write) {
+domain::book book_to_domain(const messaging::book_write& write) {
     domain::book v;
     v.id = write.id;
     v.party_id = write.party_id;
@@ -129,8 +129,8 @@ domain::book to_domain(const messaging::book_write& write) {
  *
  * A write that creates a row changes every column.
  */
-std::vector<std::string> columns_changed(const std::vector<domain::book>& live,
-                                         const domain::book& next) {
+std::vector<std::string> book_columns_changed(const std::vector<domain::book>& live,
+                                              const domain::book& next) {
     const bool created = live.empty();
     std::vector<std::string> names;
     // The key names the row and is not a column a policy decides.
@@ -246,7 +246,7 @@ book_service::list_by_parent_portfolio_id_books(
 
 messaging::get_book_response book_service::get_book(const messaging::get_book_request& request) {
     messaging::get_book_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = book_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "book"});
         return response;
@@ -265,7 +265,7 @@ book_service::get_many_books(const messaging::get_many_books_request& request) {
     for (const auto& k : request.keys) {
         messaging::book_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = book_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.book = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -280,7 +280,7 @@ messaging::put_book_response book_service::put_book(const messaging::put_book_re
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = book_read_one(repo_, ctx_, book_key_from(value));
     if (!written.empty())
         response.book = std::move(written.front());
     return response;
@@ -312,7 +312,7 @@ book_service::put_many_books(const messaging::put_many_books_request& request) {
     repo_.write(ctx_, batch, claims);
     response.books.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = book_read_one(repo_, ctx_, book_key_from(value));
         response.books.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -335,11 +335,12 @@ book_service::delete_book(const messaging::delete_book_request& request) {
         }
         expected = request.removal.precondition.version;
     }
-    if (const auto refused = gate_delete(read_one(repo_, ctx_, request.removal.key), expected)) {
+    if (const auto refused =
+            gate_delete(book_read_one(repo_, ctx_, request.removal.key), expected)) {
         response.result = *refused;
         return response;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = book_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "book"});
         return response;
@@ -355,7 +356,7 @@ book_service::delete_book(const messaging::delete_book_request& request) {
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = book_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "book",
@@ -391,7 +392,8 @@ book_service::delete_many_books(const messaging::delete_many_books_request& requ
     // A batch carries no versions, so an approved line that claims one never
     // matches here. The applier removes one row at a time, with its version.
     for (const auto& removal : request.removals) {
-        if (const auto refused = gate_delete(read_one(repo_, ctx_, removal.key), std::nullopt)) {
+        if (const auto refused =
+                gate_delete(book_read_one(repo_, ctx_, removal.key), std::nullopt)) {
             response.result = *refused;
             return response;
         }
@@ -404,7 +406,7 @@ book_service::delete_many_books(const messaging::delete_many_books_request& requ
     std::vector<domain::book> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = book_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -430,7 +432,7 @@ book_service::list_book_versions(const messaging::list_book_versions_request& re
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = book_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "book"});
         return response;
@@ -453,7 +455,7 @@ book_service::get_book_version(const messaging::get_book_version_request& reques
     messaging::get_book_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.book);
+    const auto named = book_read_one(repo_, ctx_, request.key.book);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "book"});
         return response;
@@ -475,8 +477,8 @@ book_service::prepare_change(const messaging::book_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = book_to_domain(change.write);
+    const auto current = book_read_one(repo_, ctx_, book_key_from(out));
     // The gate comes before the claim is checked, so an unapproved caller
     // learns nothing about the row from a conflict.
     if (const auto refused = gate_put(current, out, change.precondition))
@@ -527,8 +529,8 @@ void book_service::rehearse() {
 }
 
 std::vector<std::string> book_service::changed_columns(const messaging::book_write& proposed) {
-    const auto next = to_domain(proposed);
-    return columns_changed(read_one(repo_, ctx_, key_from(next)), next);
+    const auto next = book_to_domain(proposed);
+    return book_columns_changed(book_read_one(repo_, ctx_, book_key_from(next)), next);
 }
 
 bool book_service::holds_line(const std::string& operation,
@@ -556,7 +558,7 @@ book_service::gate_put(const std::vector<domain::book>& current,
     if (pass_.rehearsal)
         return std::nullopt;
     switch (ores::service::messaging::gate_verdict_of(
-        ctx_, "book", "put", columns_changed(current, next), pass_.request_id)) {
+        ctx_, "book", "put", book_columns_changed(current, next), pass_.request_id)) {
         case gate_verdict::free:
             return std::nullopt;
         case gate_verdict::approved: {
@@ -654,7 +656,7 @@ std::optional<domain::book> book_service::get_book_by_name(const std::string& na
     BOOST_LOG_SEV(lg(), debug) << "Getting book by name: " << name;
     messaging::book_key k;
     k.name = name;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = book_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

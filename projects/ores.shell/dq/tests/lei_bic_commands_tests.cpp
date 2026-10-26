@@ -46,7 +46,7 @@ const std::string tags("[commands]");
 
 const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-void log_in(nats_client& session) {
+void lei_bic_log_in(nats_client& session) {
     nats_client::login_info info;
     info.username = "tester";
     info.jwt = "token";
@@ -56,7 +56,7 @@ void log_in(nats_client& session) {
 
 // One token per positional the command takes. A value the command parses is
 // not a value the guard reaches, so any token does to prove the guard.
-std::vector<std::string> tokens(const std::size_t count) {
+std::vector<std::string> lei_bic_tokens(const std::size_t count) {
     return std::vector<std::string>(count, std::string{"sample"});
 }
 
@@ -90,7 +90,7 @@ TEST_CASE("lei_bic_commands_process_list_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    lei_bic_commands::process_list(out, session, tokens(0));
+    lei_bic_commands::process_list(out, session, lei_bic_tokens(0));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -104,7 +104,7 @@ TEST_CASE("lei_bic_commands_process_get_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    lei_bic_commands::process_get(out, session, tokens(1));
+    lei_bic_commands::process_get(out, session, lei_bic_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -115,7 +115,7 @@ TEST_CASE("lei_bic_commands_process_get_reports_the_expected_count", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    lei_bic_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -138,7 +138,7 @@ TEST_CASE("lei_bic_commands_process_get_many_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    lei_bic_commands::process_get_many(out, session, tokens(1));
+    lei_bic_commands::process_get_many(out, session, lei_bic_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

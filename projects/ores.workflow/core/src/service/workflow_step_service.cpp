@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::workflow_step> read_one(repository::workflow_step_repository& repo,
-                                            const ores::database::context& ctx,
-                                            const messaging::workflow_step_key& key) {
+std::vector<domain::workflow_step>
+workflow_step_read_one(repository::workflow_step_repository& repo,
+                       const ores::database::context& ctx,
+                       const messaging::workflow_step_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::workflow_step> read_one(repository::workflow_step_repository
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::workflow_step_key key_from(const domain::workflow_step& v) {
+messaging::workflow_step_key workflow_step_key_from(const domain::workflow_step& v) {
     messaging::workflow_step_key key;
     key.id = v.id;
     return key;
@@ -98,7 +99,7 @@ messaging::workflow_step_key key_from(const domain::workflow_step& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::workflow_step to_domain(const messaging::workflow_step_write& write) {
+domain::workflow_step workflow_step_to_domain(const messaging::workflow_step_write& write) {
     domain::workflow_step v;
     v.id = write.id;
     v.workflow_id = write.workflow_id;
@@ -192,7 +193,7 @@ workflow_step_service::list_by_workflow_id_workflow_steps(
 messaging::get_workflow_step_response
 workflow_step_service::get_workflow_step(const messaging::get_workflow_step_request& request) {
     messaging::get_workflow_step_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = workflow_step_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "workflow_step"});
         return response;
@@ -211,7 +212,7 @@ messaging::get_many_workflow_steps_response workflow_step_service::get_many_work
     for (const auto& k : request.keys) {
         messaging::workflow_step_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = workflow_step_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.workflow_step = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -227,7 +228,7 @@ workflow_step_service::put_workflow_step(const messaging::put_workflow_step_requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = workflow_step_read_one(repo_, ctx_, workflow_step_key_from(value));
     if (!written.empty())
         response.workflow_step = std::move(written.front());
     return response;
@@ -259,7 +260,7 @@ messaging::put_many_workflow_steps_response workflow_step_service::put_many_work
     repo_.write(ctx_, batch, claims);
     response.steps.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = workflow_step_read_one(repo_, ctx_, workflow_step_key_from(value));
         response.steps.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -292,7 +293,7 @@ messaging::delete_workflow_step_response workflow_step_service::delete_workflow_
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = workflow_step_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "workflow_step",
@@ -377,8 +378,8 @@ workflow_step_service::prepare_change(const messaging::workflow_step_change& cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = workflow_step_to_domain(change.write);
+    const auto current = workflow_step_read_one(repo_, ctx_, workflow_step_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

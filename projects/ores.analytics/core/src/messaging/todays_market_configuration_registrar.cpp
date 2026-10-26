@@ -39,7 +39,8 @@
 namespace ores::analytics::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.analytics.service";
+static constexpr std::string_view todays_market_configuration_queue_group =
+    "ores.analytics.service";
 }
 
 std::vector<ores::nats::service::subscription> register_todays_market_configuration_handlers(
@@ -51,53 +52,53 @@ std::vector<ores::nats::service::subscription> register_todays_market_configurat
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_todays_market_configurations_request::nats_subject,
-        queue_group,
+        todays_market_configuration_queue_group,
         [h](ores::nats::message msg) { h->list_todays_market_configurations(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_todays_market_configuration_request::nats_subject,
-        queue_group,
+        todays_market_configuration_queue_group,
         [h](ores::nats::message msg) { h->get_todays_market_configuration(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(get_many_todays_market_configurations_request::nats_subject,
-                                        queue_group,
+                                        todays_market_configuration_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->get_many_todays_market_configurations(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         put_todays_market_configuration_request::nats_subject,
-        queue_group,
+        todays_market_configuration_queue_group,
         [h](ores::nats::message msg) { h->put_todays_market_configuration(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(put_many_todays_market_configurations_request::nats_subject,
-                                        queue_group,
+                                        todays_market_configuration_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->put_many_todays_market_configurations(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         delete_todays_market_configuration_request::nats_subject,
-        queue_group,
+        todays_market_configuration_queue_group,
         [h](ores::nats::message msg) { h->delete_todays_market_configuration(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(delete_many_todays_market_configurations_request::nats_subject,
-                             queue_group,
+                             todays_market_configuration_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_todays_market_configurations(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_by_todays_market_config_id_todays_market_configurations_request::nats_subject,
-        queue_group,
+        todays_market_configuration_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_todays_market_config_id_todays_market_configurations(std::move(msg));
         }));
     subs.push_back(
         nats.queue_subscribe(list_todays_market_configuration_versions_request::nats_subject,
-                             queue_group,
+                             todays_market_configuration_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_todays_market_configuration_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_todays_market_configuration_version_request::nats_subject,
-                             queue_group,
+                             todays_market_configuration_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_todays_market_configuration_version(std::move(msg));
                              }));

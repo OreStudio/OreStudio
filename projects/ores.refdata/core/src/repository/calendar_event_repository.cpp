@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+calendar_event_list_order(const ores::utility::domain::order& order,
+                          std::initializer_list<std::string> default_columns,
+                          bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!calendar_event_repository::is_sortable(order.field))
@@ -99,7 +100,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::calendar_events_filter>& filter) {
+calendar_event_filter_condition(const std::optional<messaging::calendar_events_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -289,8 +290,8 @@ std::vector<domain::calendar_event> calendar_event_repository::read_latest_by_ca
     return execute_ordered_read_query<calendar_event_entity, domain::calendar_event>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        calendar_event_list_order(order, {"id"}, false),
+        calendar_event_filter_condition(filter),
         [](const auto& entities) { return calendar_event_mapper::map(entities); },
         lg(),
         "Reading latest calendar events by calendar_code.");
@@ -309,8 +310,11 @@ std::uint32_t calendar_event_repository::get_total_calendar_event_count_by_calen
                        where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
                              "valid_to"_c == max.value());
 
-    return execute_count_query<calendar_event_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting calendar events by calendar_code");
+    return execute_count_query<calendar_event_entity>(ctx,
+                                                      query,
+                                                      calendar_event_filter_condition(filter),
+                                                      lg(),
+                                                      "Counting calendar events by calendar_code");
 }
 
 
@@ -359,8 +363,8 @@ std::vector<domain::calendar_event> calendar_event_repository::read_latest_by_di
     return execute_ordered_read_query<calendar_event_entity, domain::calendar_event>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        calendar_event_list_order(order, {"id"}, false),
+        calendar_event_filter_condition(filter),
         [](const auto& entities) { return calendar_event_mapper::map(entities); },
         lg(),
         "Reading latest calendar events by diary_entry_type.");
@@ -380,7 +384,11 @@ std::uint32_t calendar_event_repository::get_total_calendar_event_count_by_diary
                              "valid_to"_c == max.value());
 
     return execute_count_query<calendar_event_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting calendar events by diary_entry_type");
+        ctx,
+        query,
+        calendar_event_filter_condition(filter),
+        lg(),
+        "Counting calendar events by diary_entry_type");
 }
 
 
@@ -459,8 +467,8 @@ std::vector<domain::calendar_event> calendar_event_repository::read_latest(
     return execute_ordered_read_query<calendar_event_entity, domain::calendar_event>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        calendar_event_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), calendar_event_filter_condition(filter)),
         [](const auto& entities) { return calendar_event_mapper::map(entities); },
         lg(),
         "Reading latest calendar events with pagination.");
@@ -479,7 +487,7 @@ std::uint32_t calendar_event_repository::get_total_calendar_event_count(
     return execute_count_query<calendar_event_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), calendar_event_filter_condition(filter)),
         lg(),
         "Counting calendar events");
 }

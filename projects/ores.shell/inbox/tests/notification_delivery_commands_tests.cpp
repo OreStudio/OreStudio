@@ -46,7 +46,7 @@ const std::string tags("[commands]");
 
 const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-void log_in(nats_client& session) {
+void notification_delivery_log_in(nats_client& session) {
     nats_client::login_info info;
     info.username = "tester";
     info.jwt = "token";
@@ -56,7 +56,7 @@ void log_in(nats_client& session) {
 
 // One token per positional the command takes. A value the command parses is
 // not a value the guard reaches, so any token does to prove the guard.
-std::vector<std::string> tokens(const std::size_t count) {
+std::vector<std::string> notification_delivery_tokens(const std::size_t count) {
     return std::vector<std::string>(count, std::string{"sample"});
 }
 
@@ -98,7 +98,7 @@ TEST_CASE("notification_delivery_commands_process_list_requires_a_session", tags
     std::ostringstream out;
 
     command_feedback::reset();
-    notification_delivery_commands::process_list(out, session, tokens(0));
+    notification_delivery_commands::process_list(out, session, notification_delivery_tokens(0));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -112,7 +112,7 @@ TEST_CASE("notification_delivery_commands_process_get_requires_a_session", tags)
     std::ostringstream out;
 
     command_feedback::reset();
-    notification_delivery_commands::process_get(out, session, tokens(1));
+    notification_delivery_commands::process_get(out, session, notification_delivery_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -123,7 +123,7 @@ TEST_CASE("notification_delivery_commands_process_get_reports_the_expected_count
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    notification_delivery_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -146,7 +146,7 @@ TEST_CASE("notification_delivery_commands_process_get_many_requires_a_session", 
     std::ostringstream out;
 
     command_feedback::reset();
-    notification_delivery_commands::process_get_many(out, session, tokens(1));
+    notification_delivery_commands::process_get_many(out, session, notification_delivery_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -160,7 +160,7 @@ TEST_CASE("notification_delivery_commands_process_add_requires_a_session", tags)
     std::ostringstream out;
 
     command_feedback::reset();
-    notification_delivery_commands::process_add(out, session, tokens(7));
+    notification_delivery_commands::process_add(out, session, notification_delivery_tokens(7));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -171,7 +171,7 @@ TEST_CASE("notification_delivery_commands_process_add_reports_the_expected_count
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    notification_delivery_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -194,7 +194,7 @@ TEST_CASE("notification_delivery_commands_process_set_requires_a_session", tags)
     std::ostringstream out;
 
     command_feedback::reset();
-    notification_delivery_commands::process_set(out, session, tokens(7));
+    notification_delivery_commands::process_set(out, session, notification_delivery_tokens(7));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -205,7 +205,7 @@ TEST_CASE("notification_delivery_commands_process_set_reports_the_expected_count
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    notification_delivery_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -228,7 +228,7 @@ TEST_CASE("notification_delivery_commands_process_put_many_requires_a_session", 
     std::ostringstream out;
 
     command_feedback::reset();
-    notification_delivery_commands::process_put_many(out, session, tokens(7));
+    notification_delivery_commands::process_put_many(out, session, notification_delivery_tokens(7));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -242,7 +242,7 @@ TEST_CASE("notification_delivery_commands_process_delete_requires_a_session", ta
     std::ostringstream out;
 
     command_feedback::reset();
-    notification_delivery_commands::process_delete(out, session, tokens(1));
+    notification_delivery_commands::process_delete(out, session, notification_delivery_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -253,7 +253,7 @@ TEST_CASE("notification_delivery_commands_process_delete_reports_the_expected_co
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    notification_delivery_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -276,7 +276,8 @@ TEST_CASE("notification_delivery_commands_process_delete_many_requires_a_session
     std::ostringstream out;
 
     command_feedback::reset();
-    notification_delivery_commands::process_delete_many(out, session, tokens(1));
+    notification_delivery_commands::process_delete_many(
+        out, session, notification_delivery_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -290,7 +291,8 @@ TEST_CASE("notification_delivery_commands_process_by_notification_id_requires_a_
     std::ostringstream out;
 
     command_feedback::reset();
-    notification_delivery_commands::process_by_notification_id(out, session, tokens(1));
+    notification_delivery_commands::process_by_notification_id(
+        out, session, notification_delivery_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -302,7 +304,7 @@ TEST_CASE("notification_delivery_commands_process_by_notification_id_reports_the
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    notification_delivery_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -325,7 +327,7 @@ TEST_CASE("notification_delivery_commands_process_versions_requires_a_session", 
     std::ostringstream out;
 
     command_feedback::reset();
-    notification_delivery_commands::process_versions(out, session, tokens(1));
+    notification_delivery_commands::process_versions(out, session, notification_delivery_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -336,7 +338,7 @@ TEST_CASE("notification_delivery_commands_process_versions_reports_the_expected_
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    notification_delivery_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -359,7 +361,7 @@ TEST_CASE("notification_delivery_commands_process_version_requires_a_session", t
     std::ostringstream out;
 
     command_feedback::reset();
-    notification_delivery_commands::process_version(out, session, tokens(1));
+    notification_delivery_commands::process_version(out, session, notification_delivery_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -370,7 +372,7 @@ TEST_CASE("notification_delivery_commands_process_version_reports_the_expected_c
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    notification_delivery_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();

@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::sandbox_member> read_one(repository::sandbox_member_repository& repo,
-                                             const ores::database::context& ctx,
-                                             const messaging::sandbox_member_key& key) {
+std::vector<domain::sandbox_member>
+sandbox_member_read_one(repository::sandbox_member_repository& repo,
+                        const ores::database::context& ctx,
+                        const messaging::sandbox_member_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::sandbox_member> read_one(repository::sandbox_member_reposito
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::sandbox_member_key key_from(const domain::sandbox_member& v) {
+messaging::sandbox_member_key sandbox_member_key_from(const domain::sandbox_member& v) {
     messaging::sandbox_member_key key;
     key.id = v.id;
     return key;
@@ -98,7 +99,7 @@ messaging::sandbox_member_key key_from(const domain::sandbox_member& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::sandbox_member to_domain(const messaging::sandbox_member_write& write) {
+domain::sandbox_member sandbox_member_to_domain(const messaging::sandbox_member_write& write) {
     domain::sandbox_member v;
     v.id = write.id;
     v.sandbox_id = write.sandbox_id;
@@ -233,7 +234,7 @@ sandbox_member_service::list_by_account_id_sandbox_members(
 messaging::get_sandbox_member_response
 sandbox_member_service::get_sandbox_member(const messaging::get_sandbox_member_request& request) {
     messaging::get_sandbox_member_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = sandbox_member_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "sandbox_member"});
         return response;
@@ -252,7 +253,7 @@ messaging::get_many_sandbox_members_response sandbox_member_service::get_many_sa
     for (const auto& k : request.keys) {
         messaging::sandbox_member_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = sandbox_member_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.sandbox_member = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -268,7 +269,7 @@ sandbox_member_service::put_sandbox_member(const messaging::put_sandbox_member_r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = sandbox_member_read_one(repo_, ctx_, sandbox_member_key_from(value));
     if (!written.empty())
         response.sandbox_member = std::move(written.front());
     return response;
@@ -300,7 +301,7 @@ messaging::put_many_sandbox_members_response sandbox_member_service::put_many_sa
     repo_.write(ctx_, batch, claims);
     response.sandbox_members.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = sandbox_member_read_one(repo_, ctx_, sandbox_member_key_from(value));
         response.sandbox_members.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -333,7 +334,7 @@ messaging::delete_sandbox_member_response sandbox_member_service::delete_sandbox
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = sandbox_member_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "sandbox_member",
@@ -419,8 +420,8 @@ sandbox_member_service::prepare_change(const messaging::sandbox_member_change& c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = sandbox_member_to_domain(change.write);
+    const auto current = sandbox_member_read_one(repo_, ctx_, sandbox_member_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

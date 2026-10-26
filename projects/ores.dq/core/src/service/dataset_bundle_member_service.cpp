@@ -59,8 +59,8 @@ namespace {
  * straight through.
  */
 std::vector<domain::dataset_bundle_member>
-read_one(repository::dataset_bundle_member_repository& repo,
-         const messaging::dataset_bundle_member_key& key) {
+dataset_bundle_member_read_one(repository::dataset_bundle_member_repository& repo,
+                               const messaging::dataset_bundle_member_key& key) {
     return repo.read_latest(key.bundle_code, key.dataset_code);
 }
 
@@ -70,7 +70,8 @@ read_one(repository::dataset_bundle_member_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::dataset_bundle_member_key key_from(const domain::dataset_bundle_member& v) {
+messaging::dataset_bundle_member_key
+dataset_bundle_member_key_from(const domain::dataset_bundle_member& v) {
     messaging::dataset_bundle_member_key key;
     key.bundle_code = v.bundle_code;
     key.dataset_code = v.dataset_code;
@@ -85,7 +86,8 @@ messaging::dataset_bundle_member_key key_from(const domain::dataset_bundle_membe
  * validity window are the service's and the database's to state, and are
  * set after this conversion.
  */
-domain::dataset_bundle_member to_domain(const messaging::dataset_bundle_member_write& write) {
+domain::dataset_bundle_member
+dataset_bundle_member_to_domain(const messaging::dataset_bundle_member_write& write) {
     domain::dataset_bundle_member v;
     v.bundle_code = write.bundle_code;
     v.dataset_code = write.dataset_code;
@@ -146,7 +148,7 @@ messaging::get_dataset_bundle_member_response
 dataset_bundle_member_service::get_dataset_bundle_member(
     const messaging::get_dataset_bundle_member_request& request) {
     messaging::get_dataset_bundle_member_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = dataset_bundle_member_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "dataset_bundle_member"});
         return response;
@@ -166,7 +168,7 @@ dataset_bundle_member_service::get_many_dataset_bundle_members(
     for (const auto& k : request.keys) {
         messaging::dataset_bundle_member_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = dataset_bundle_member_read_one(repo_, k);
         if (!found.empty())
             entry.dataset_bundle_member = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -183,7 +185,7 @@ dataset_bundle_member_service::put_dataset_bundle_member(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written = dataset_bundle_member_read_one(repo_, dataset_bundle_member_key_from(value));
     if (!written.empty())
         response.dataset_bundle_member = std::move(written.front());
     return response;
@@ -216,7 +218,7 @@ dataset_bundle_member_service::put_many_dataset_bundle_members(
     repo_.write(batch, claims);
     response.dataset_bundle_members.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written = dataset_bundle_member_read_one(repo_, dataset_bundle_member_key_from(value));
         response.dataset_bundle_members.push_back(written.empty() ? value :
                                                                     std::move(written.front()));
     }
@@ -252,7 +254,7 @@ dataset_bundle_member_service::delete_dataset_bundle_member(
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = dataset_bundle_member_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "dataset_bundle_member",
@@ -305,8 +307,8 @@ dataset_bundle_member_service::prepare_change(const messaging::dataset_bundle_me
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = dataset_bundle_member_to_domain(change.write);
+    const auto current = dataset_bundle_member_read_one(repo_, dataset_bundle_member_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

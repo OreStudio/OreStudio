@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view activity_category_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription> register_activity_category_handlers(
@@ -49,40 +49,40 @@ std::vector<ores::nats::service::subscription> register_activity_category_handle
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<activity_category_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_activity_categories_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_activity_categories(std::move(msg));
-        }));
+        list_activity_categories_request::nats_subject,
+        activity_category_queue_group,
+        [h](ores::nats::message msg) { h->list_activity_categories(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_activity_category_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_activity_category(std::move(msg));
-        }));
+        get_activity_category_request::nats_subject,
+        activity_category_queue_group,
+        [h](ores::nats::message msg) { h->get_activity_category(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_activity_categories_request::nats_subject,
-        queue_group,
+        activity_category_queue_group,
         [h](ores::nats::message msg) { h->get_many_activity_categories(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_activity_category_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_activity_category(std::move(msg));
-        }));
+        put_activity_category_request::nats_subject,
+        activity_category_queue_group,
+        [h](ores::nats::message msg) { h->put_activity_category(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_activity_categories_request::nats_subject,
-        queue_group,
+        activity_category_queue_group,
         [h](ores::nats::message msg) { h->put_many_activity_categories(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_activity_category_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_activity_category(std::move(msg));
-        }));
+        delete_activity_category_request::nats_subject,
+        activity_category_queue_group,
+        [h](ores::nats::message msg) { h->delete_activity_category(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_activity_categories_request::nats_subject,
-        queue_group,
+        activity_category_queue_group,
         [h](ores::nats::message msg) { h->delete_many_activity_categories(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_activity_category_versions_request::nats_subject,
-        queue_group,
+        activity_category_queue_group,
         [h](ores::nats::message msg) { h->list_activity_category_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_activity_category_version_request::nats_subject,
-        queue_group,
+        activity_category_queue_group,
         [h](ores::nats::message msg) { h->get_activity_category_version(std::move(msg)); }));
     return subs;
 }

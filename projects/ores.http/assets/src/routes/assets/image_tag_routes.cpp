@@ -59,7 +59,7 @@ namespace {
  * rather than the exception's own text.
  */
 template <typename T>
-T read_param(const std::string& raw, const std::string& name) {
+T image_tag_read_param(const std::string& raw, const std::string& name) {
     try {
         if constexpr (std::is_same_v<T, std::string>) {
             return raw;
@@ -81,7 +81,7 @@ T read_param(const std::string& raw, const std::string& name) {
  * it does not know is the caller's to see as unauthorised, which is what the
  * service means by any code it does not spell out here.
  */
-http_response error_response(const std::string& error) {
+http_response image_tag_error_response(const std::string& error) {
     if (error == "forbidden") {
         return http_response::forbidden(error);
     }
@@ -110,7 +110,7 @@ forward(const http_request& req, nats_client& session, const Request& msg) {
                                             ores::nats::service::default_request_timeout);
         if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
             it != reply.headers.end()) {
-            co_return error_response(it->second);
+            co_return image_tag_error_response(it->second);
         }
         const auto decoded =
             ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
@@ -134,12 +134,12 @@ forward(const http_request& req, nats_client& session, const Request& msg) {
  * stated none.
  */
 template <typename Request>
-void apply_page(Request& msg, const http_request& req) {
+void image_tag_apply_page(Request& msg, const http_request& req) {
     if (const auto raw = req.get_query_param("offset"); !raw.empty()) {
-        msg.offset = read_param<std::uint32_t>(raw, "offset");
+        msg.offset = image_tag_read_param<std::uint32_t>(raw, "offset");
     }
     if (const auto raw = req.get_query_param("limit"); !raw.empty()) {
-        msg.limit = read_param<std::uint32_t>(raw, "limit");
+        msg.limit = image_tag_read_param<std::uint32_t>(raw, "limit");
     }
     if (const auto raw = req.get_query_param("order"); !raw.empty()) {
         msg.order.field = raw;
@@ -154,7 +154,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_list(const http_r
     using request_type = messaging::list_image_tags_request;
     try {
         request_type msg;
-        apply_page(msg, req);
+        image_tag_apply_page(msg, req);
         co_return co_await forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
@@ -167,8 +167,9 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_get(const http_re
     try {
         request_type msg;
         msg.key.image_id =
-            read_param<boost::uuids::uuid>(req.get_path_param("image_id"), "image_id");
-        msg.key.tag_id = read_param<boost::uuids::uuid>(req.get_path_param("tag_id"), "tag_id");
+            image_tag_read_param<boost::uuids::uuid>(req.get_path_param("image_id"), "image_id");
+        msg.key.tag_id =
+            image_tag_read_param<boost::uuids::uuid>(req.get_path_param("tag_id"), "tag_id");
         co_return co_await forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
@@ -218,7 +219,8 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_set(const http_re
         if (const auto raw = req.get_query_param("version"); !raw.empty()) {
             parsed->change.precondition.kind =
                 ores::utility::domain::precondition_kind::must_match_version;
-            parsed->change.precondition.version = read_param<std::uint32_t>(raw, "version");
+            parsed->change.precondition.version =
+                image_tag_read_param<std::uint32_t>(raw, "version");
         }
         co_return co_await forward(req, session, *parsed);
     } catch (const std::exception& e) {
@@ -246,9 +248,9 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_delete(const http
     try {
         request_type msg;
         msg.removal.key.image_id =
-            read_param<boost::uuids::uuid>(req.get_path_param("image_id"), "image_id");
+            image_tag_read_param<boost::uuids::uuid>(req.get_path_param("image_id"), "image_id");
         msg.removal.key.tag_id =
-            read_param<boost::uuids::uuid>(req.get_path_param("tag_id"), "tag_id");
+            image_tag_read_param<boost::uuids::uuid>(req.get_path_param("tag_id"), "tag_id");
         // A delete carries no body, so its intent arrives as query parameters.
         msg.intent.reason_code = req.get_query_param("reason");
         msg.intent.commentary = req.get_query_param("commentary");
@@ -261,7 +263,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_delete(const http
         if (const auto raw = req.get_query_param("version"); !raw.empty()) {
             msg.removal.precondition.kind =
                 ores::utility::domain::precondition_kind::must_match_version;
-            msg.removal.precondition.version = read_param<std::uint32_t>(raw, "version");
+            msg.removal.precondition.version = image_tag_read_param<std::uint32_t>(raw, "version");
         }
         co_return co_await forward(req, session, msg);
     } catch (const std::exception& e) {
@@ -288,12 +290,13 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_by_image_id(const
     using request_type = messaging::list_by_image_id_image_tags_request;
     try {
         request_type msg;
-        msg.image_id = read_param<boost::uuids::uuid>(req.get_path_param("image_id"), "image_id");
+        msg.image_id =
+            image_tag_read_param<boost::uuids::uuid>(req.get_path_param("image_id"), "image_id");
         if (const auto raw = req.get_query_param("scope"); !raw.empty()) {
             msg.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
         }
-        apply_page(msg, req);
+        image_tag_apply_page(msg, req);
         co_return co_await forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());

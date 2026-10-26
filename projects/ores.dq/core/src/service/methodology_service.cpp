@@ -73,9 +73,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::methodology> read_one(repository::methodology_repository& repo,
-                                          const ores::database::context& ctx,
-                                          const messaging::methodology_key& key) {
+std::vector<domain::methodology> methodology_read_one(repository::methodology_repository& repo,
+                                                      const ores::database::context& ctx,
+                                                      const messaging::methodology_key& key) {
     return repo.read_latest_by_name(ctx, key.name);
 }
 
@@ -85,7 +85,7 @@ std::vector<domain::methodology> read_one(repository::methodology_repository& re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::methodology_key key_from(const domain::methodology& v) {
+messaging::methodology_key methodology_key_from(const domain::methodology& v) {
     messaging::methodology_key key;
     key.name = v.name;
     return key;
@@ -98,7 +98,7 @@ messaging::methodology_key key_from(const domain::methodology& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::methodology to_domain(const messaging::methodology_write& write) {
+domain::methodology methodology_to_domain(const messaging::methodology_write& write) {
     domain::methodology v;
     v.id = write.id;
     v.name = write.name;
@@ -145,7 +145,7 @@ methodology_service::list_methodologies(const messaging::list_methodologies_requ
 messaging::get_methodology_response
 methodology_service::get_methodology(const messaging::get_methodology_request& request) {
     messaging::get_methodology_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = methodology_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "methodology"});
         return response;
@@ -164,7 +164,7 @@ messaging::get_many_methodologies_response methodology_service::get_many_methodo
     for (const auto& k : request.keys) {
         messaging::methodology_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = methodology_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.methodology = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -180,7 +180,7 @@ methodology_service::put_methodology(const messaging::put_methodology_request& r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = methodology_read_one(repo_, ctx_, methodology_key_from(value));
     if (!written.empty())
         response.methodology = std::move(written.front());
     return response;
@@ -212,7 +212,7 @@ messaging::put_many_methodologies_response methodology_service::put_many_methodo
     repo_.write(ctx_, batch, claims);
     response.methodologies.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = methodology_read_one(repo_, ctx_, methodology_key_from(value));
         response.methodologies.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -235,7 +235,7 @@ methodology_service::delete_methodology(const messaging::delete_methodology_requ
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = methodology_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "methodology"});
         return response;
@@ -251,7 +251,7 @@ methodology_service::delete_methodology(const messaging::delete_methodology_requ
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = methodology_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "methodology",
@@ -292,7 +292,7 @@ messaging::delete_many_methodologies_response methodology_service::delete_many_m
     std::vector<domain::methodology> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = methodology_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -318,7 +318,7 @@ messaging::list_methodology_versions_response methodology_service::list_methodol
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = methodology_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "methodology"});
         return response;
@@ -341,7 +341,7 @@ messaging::get_methodology_version_response methodology_service::get_methodology
     messaging::get_methodology_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.methodology);
+    const auto named = methodology_read_one(repo_, ctx_, request.key.methodology);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "methodology"});
         return response;
@@ -363,8 +363,8 @@ methodology_service::prepare_change(const messaging::methodology_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = methodology_to_domain(change.write);
+    const auto current = methodology_read_one(repo_, ctx_, methodology_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -438,7 +438,7 @@ methodology_service::get_methodology_by_name(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Getting methodology by name: " << name;
     messaging::methodology_key k;
     k.name = name;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = methodology_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+callable_swap_call_date_list_order(const ores::utility::domain::order& order,
+                                   std::initializer_list<std::string> default_columns,
+                                   bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -100,8 +101,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::callable_swap_call_dates_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> callable_swap_call_date_filter_condition(
+    const std::optional<messaging::callable_swap_call_dates_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -303,8 +304,8 @@ callable_swap_call_date_repository::read_latest_by_trade_id(
                                       domain::callable_swap_call_date>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        filter_condition(filter),
+        callable_swap_call_date_list_order(order, {"trade_id", "sequence_number"}, false),
+        callable_swap_call_date_filter_condition(filter),
         [](const auto& entities) { return callable_swap_call_date_mapper::map(entities); },
         lg(),
         "Reading latest callable swap call dates by trade_id.");
@@ -327,7 +328,7 @@ callable_swap_call_date_repository::get_total_callable_swap_call_date_count_by_t
     return execute_count_query<callable_swap_call_date_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        callable_swap_call_date_filter_condition(filter),
         lg(),
         "Counting callable swap call dates by trade_id");
 }
@@ -390,8 +391,8 @@ std::vector<domain::callable_swap_call_date> callable_swap_call_date_repository:
                                       domain::callable_swap_call_date>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        callable_swap_call_date_list_order(order, {"trade_id", "sequence_number"}, false),
+        narrowed(valid_at(as_of), callable_swap_call_date_filter_condition(filter)),
         [](const auto& entities) { return callable_swap_call_date_mapper::map(entities); },
         lg(),
         "Reading latest callable swap call dates with pagination.");
@@ -410,7 +411,7 @@ std::uint32_t callable_swap_call_date_repository::get_total_callable_swap_call_d
     return execute_count_query<callable_swap_call_date_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), callable_swap_call_date_filter_condition(filter)),
         lg(),
         "Counting callable swap call dates");
 }

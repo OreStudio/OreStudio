@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view entity_classification_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_entity_classification_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_entity_classification_ha
         std::make_shared<entity_classification_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_entity_classifications_request::nats_subject,
-        queue_group,
+        entity_classification_queue_group,
         [h](ores::nats::message msg) { h->list_entity_classifications(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_entity_classification_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_entity_classification(std::move(msg));
-        }));
+        get_entity_classification_request::nats_subject,
+        entity_classification_queue_group,
+        [h](ores::nats::message msg) { h->get_entity_classification(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_entity_classifications_request::nats_subject,
-        queue_group,
+        entity_classification_queue_group,
         [h](ores::nats::message msg) { h->get_many_entity_classifications(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_entity_classification_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_entity_classification(std::move(msg));
-        }));
+        put_entity_classification_request::nats_subject,
+        entity_classification_queue_group,
+        [h](ores::nats::message msg) { h->put_entity_classification(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_entity_classifications_request::nats_subject,
-        queue_group,
+        entity_classification_queue_group,
         [h](ores::nats::message msg) { h->put_many_entity_classifications(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_entity_classification_request::nats_subject,
-        queue_group,
+        entity_classification_queue_group,
         [h](ores::nats::message msg) { h->delete_entity_classification(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_entity_classifications_request::nats_subject,
-        queue_group,
+        entity_classification_queue_group,
         [h](ores::nats::message msg) { h->delete_many_entity_classifications(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_entity_classification_versions_request::nats_subject,
-        queue_group,
+        entity_classification_queue_group,
         [h](ores::nats::message msg) { h->list_entity_classification_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_entity_classification_version_request::nats_subject,
-        queue_group,
+        entity_classification_queue_group,
         [h](ores::nats::message msg) { h->get_entity_classification_version(std::move(msg)); }));
     return subs;
 }

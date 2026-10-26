@@ -55,7 +55,7 @@ namespace {
  * carry an empty argument: the tokenizer drops one, and a command whose list
  * field should be empty has no other way to say so.
  */
-std::vector<std::string> split_list_token(const std::string& value) {
+std::vector<std::string> authorization_split_list_token(const std::string& value) {
     if (value == "__none__")
         return {};
     std::vector<std::string> parts;
@@ -929,7 +929,7 @@ void authorization_operations_commands::process_put_role_permissions(
     std::size_t next = 0;
     try {
         req.role_id = parsed->positionals[next++];
-        req.permission_codes = split_list_token(parsed->positionals[next++]);
+        req.permission_codes = authorization_split_list_token(parsed->positionals[next++]);
         req.change_reason_code = parsed->positionals[next++];
         req.change_commentary = parsed->positionals[next++];
     } catch (const std::exception& e) {

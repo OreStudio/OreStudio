@@ -46,7 +46,7 @@ const std::string tags("[commands]");
 
 const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-void log_in(nats_client& session) {
+void yield_curve_process_parameter_definition_log_in(nats_client& session) {
     nats_client::login_info info;
     info.username = "tester";
     info.jwt = "token";
@@ -56,7 +56,7 @@ void log_in(nats_client& session) {
 
 // One token per positional the command takes. A value the command parses is
 // not a value the guard reaches, so any token does to prove the guard.
-std::vector<std::string> tokens(const std::size_t count) {
+std::vector<std::string> yield_curve_process_parameter_definition_tokens(const std::size_t count) {
     return std::vector<std::string>(count, std::string{"sample"});
 }
 
@@ -98,7 +98,8 @@ TEST_CASE("yield_curve_process_parameter_definition_commands_process_list_requir
     std::ostringstream out;
 
     command_feedback::reset();
-    yield_curve_process_parameter_definition_commands::process_list(out, session, tokens(0));
+    yield_curve_process_parameter_definition_commands::process_list(
+        out, session, yield_curve_process_parameter_definition_tokens(0));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -113,7 +114,8 @@ TEST_CASE("yield_curve_process_parameter_definition_commands_process_get_require
     std::ostringstream out;
 
     command_feedback::reset();
-    yield_curve_process_parameter_definition_commands::process_get(out, session, tokens(1));
+    yield_curve_process_parameter_definition_commands::process_get(
+        out, session, yield_curve_process_parameter_definition_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -126,7 +128,7 @@ TEST_CASE(
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    yield_curve_process_parameter_definition_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -150,7 +152,8 @@ TEST_CASE("yield_curve_process_parameter_definition_commands_process_get_many_re
     std::ostringstream out;
 
     command_feedback::reset();
-    yield_curve_process_parameter_definition_commands::process_get_many(out, session, tokens(1));
+    yield_curve_process_parameter_definition_commands::process_get_many(
+        out, session, yield_curve_process_parameter_definition_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -165,7 +168,8 @@ TEST_CASE("yield_curve_process_parameter_definition_commands_process_add_require
     std::ostringstream out;
 
     command_feedback::reset();
-    yield_curve_process_parameter_definition_commands::process_add(out, session, tokens(12));
+    yield_curve_process_parameter_definition_commands::process_add(
+        out, session, yield_curve_process_parameter_definition_tokens(12));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -178,7 +182,7 @@ TEST_CASE(
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    yield_curve_process_parameter_definition_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -202,7 +206,8 @@ TEST_CASE("yield_curve_process_parameter_definition_commands_process_set_require
     std::ostringstream out;
 
     command_feedback::reset();
-    yield_curve_process_parameter_definition_commands::process_set(out, session, tokens(12));
+    yield_curve_process_parameter_definition_commands::process_set(
+        out, session, yield_curve_process_parameter_definition_tokens(12));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -215,7 +220,7 @@ TEST_CASE(
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    yield_curve_process_parameter_definition_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -239,7 +244,8 @@ TEST_CASE("yield_curve_process_parameter_definition_commands_process_put_many_re
     std::ostringstream out;
 
     command_feedback::reset();
-    yield_curve_process_parameter_definition_commands::process_put_many(out, session, tokens(12));
+    yield_curve_process_parameter_definition_commands::process_put_many(
+        out, session, yield_curve_process_parameter_definition_tokens(12));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -254,7 +260,8 @@ TEST_CASE("yield_curve_process_parameter_definition_commands_process_delete_requ
     std::ostringstream out;
 
     command_feedback::reset();
-    yield_curve_process_parameter_definition_commands::process_delete(out, session, tokens(1));
+    yield_curve_process_parameter_definition_commands::process_delete(
+        out, session, yield_curve_process_parameter_definition_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -267,7 +274,7 @@ TEST_CASE(
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    yield_curve_process_parameter_definition_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -292,7 +299,8 @@ TEST_CASE(
     std::ostringstream out;
 
     command_feedback::reset();
-    yield_curve_process_parameter_definition_commands::process_delete_many(out, session, tokens(1));
+    yield_curve_process_parameter_definition_commands::process_delete_many(
+        out, session, yield_curve_process_parameter_definition_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -307,7 +315,8 @@ TEST_CASE("yield_curve_process_parameter_definition_commands_process_versions_re
     std::ostringstream out;
 
     command_feedback::reset();
-    yield_curve_process_parameter_definition_commands::process_versions(out, session, tokens(1));
+    yield_curve_process_parameter_definition_commands::process_versions(
+        out, session, yield_curve_process_parameter_definition_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -320,7 +329,7 @@ TEST_CASE(
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    yield_curve_process_parameter_definition_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -344,7 +353,8 @@ TEST_CASE("yield_curve_process_parameter_definition_commands_process_version_req
     std::ostringstream out;
 
     command_feedback::reset();
-    yield_curve_process_parameter_definition_commands::process_version(out, session, tokens(1));
+    yield_curve_process_parameter_definition_commands::process_version(
+        out, session, yield_curve_process_parameter_definition_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -357,7 +367,7 @@ TEST_CASE(
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    yield_curve_process_parameter_definition_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();

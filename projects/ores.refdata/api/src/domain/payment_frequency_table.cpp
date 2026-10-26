@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string payment_frequency_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,8 +51,8 @@ std::string convert_to_table(const std::vector<payment_frequency>& v) {
 
     for ([[maybe_unused]] const auto& pf : v) {
         table << pf.code << pf.name << pf.description << pf.period_unit
-              << opt_str(pf.period_multiplier) << pf.display_order << pf.modified_by << pf.version
-              << fort::endr;
+              << payment_frequency_opt_str(pf.period_multiplier) << pf.display_order
+              << pf.modified_by << pf.version << fort::endr;
     }
     return table.to_string();
 }

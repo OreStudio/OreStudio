@@ -75,9 +75,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::currency> read_one(repository::currency_repository& repo,
-                                       const ores::database::context& ctx,
-                                       const messaging::currency_key& key) {
+std::vector<domain::currency> currency_read_one(repository::currency_repository& repo,
+                                                const ores::database::context& ctx,
+                                                const messaging::currency_key& key) {
     return repo.read_latest(ctx, key.iso_code);
 }
 
@@ -87,7 +87,7 @@ std::vector<domain::currency> read_one(repository::currency_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::currency_key key_from(const domain::currency& v) {
+messaging::currency_key currency_key_from(const domain::currency& v) {
     messaging::currency_key key;
     key.iso_code = v.iso_code;
     return key;
@@ -100,7 +100,7 @@ messaging::currency_key key_from(const domain::currency& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::currency to_domain(const messaging::currency_write& write) {
+domain::currency currency_to_domain(const messaging::currency_write& write) {
     domain::currency v;
     v.iso_code = write.iso_code;
     v.name = write.name;
@@ -164,7 +164,7 @@ currency_service::list_currencies(const messaging::list_currencies_request& requ
 messaging::get_currency_response
 currency_service::get_currency(const messaging::get_currency_request& request) {
     messaging::get_currency_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = currency_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "currency"});
         return response;
@@ -183,7 +183,7 @@ currency_service::get_many_currencies(const messaging::get_many_currencies_reque
     for (const auto& k : request.keys) {
         messaging::currency_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = currency_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.currency = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -199,7 +199,7 @@ currency_service::put_currency(const messaging::put_currency_request& request) {
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = currency_read_one(repo_, ctx_, currency_key_from(value));
     if (!written.empty())
         response.currency = std::move(written.front());
     return response;
@@ -231,7 +231,7 @@ currency_service::put_many_currencies(const messaging::put_many_currencies_reque
     repo_.write(ctx_, batch, claims);
     response.currencies.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = currency_read_one(repo_, ctx_, currency_key_from(value));
         response.currencies.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -264,7 +264,7 @@ currency_service::delete_currency(const messaging::delete_currency_request& requ
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = currency_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "currency",
@@ -348,8 +348,8 @@ currency_service::prepare_change(const messaging::currency_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = currency_to_domain(change.write);
+    const auto current = currency_read_one(repo_, ctx_, currency_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

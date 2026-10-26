@@ -39,7 +39,7 @@
 namespace ores::iam::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.iam.service";
+static constexpr std::string_view account_contact_information_queue_group = "ores.iam.service";
 }
 
 std::vector<ores::nats::service::subscription> register_account_contact_information_handlers(
@@ -51,53 +51,53 @@ std::vector<ores::nats::service::subscription> register_account_contact_informat
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_account_contact_informations_request::nats_subject,
-        queue_group,
+        account_contact_information_queue_group,
         [h](ores::nats::message msg) { h->list_account_contact_informations(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_account_contact_information_request::nats_subject,
-        queue_group,
+        account_contact_information_queue_group,
         [h](ores::nats::message msg) { h->get_account_contact_information(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(get_many_account_contact_informations_request::nats_subject,
-                                        queue_group,
+                                        account_contact_information_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->get_many_account_contact_informations(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         put_account_contact_information_request::nats_subject,
-        queue_group,
+        account_contact_information_queue_group,
         [h](ores::nats::message msg) { h->put_account_contact_information(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(put_many_account_contact_informations_request::nats_subject,
-                                        queue_group,
+                                        account_contact_information_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->put_many_account_contact_informations(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         delete_account_contact_information_request::nats_subject,
-        queue_group,
+        account_contact_information_queue_group,
         [h](ores::nats::message msg) { h->delete_account_contact_information(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(delete_many_account_contact_informations_request::nats_subject,
-                             queue_group,
+                             account_contact_information_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_account_contact_informations(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_by_account_id_account_contact_informations_request::nats_subject,
-                             queue_group,
+                             account_contact_information_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_by_account_id_account_contact_informations(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_account_contact_information_versions_request::nats_subject,
-                             queue_group,
+                             account_contact_information_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_account_contact_information_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_account_contact_information_version_request::nats_subject,
-                             queue_group,
+                             account_contact_information_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_account_contact_information_version(std::move(msg));
                              }));

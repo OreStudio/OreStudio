@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::netting_agreement> read_one(repository::netting_agreement_repository& repo,
-                                                const ores::database::context& ctx,
-                                                const messaging::netting_agreement_key& key) {
+std::vector<domain::netting_agreement>
+netting_agreement_read_one(repository::netting_agreement_repository& repo,
+                           const ores::database::context& ctx,
+                           const messaging::netting_agreement_key& key) {
     return repo.read_latest_by_agreement_number(ctx, key.agreement_number);
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::netting_agreement> read_one(repository::netting_agreement_re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::netting_agreement_key key_from(const domain::netting_agreement& v) {
+messaging::netting_agreement_key netting_agreement_key_from(const domain::netting_agreement& v) {
     messaging::netting_agreement_key key;
     key.agreement_number = v.agreement_number;
     return key;
@@ -98,7 +99,8 @@ messaging::netting_agreement_key key_from(const domain::netting_agreement& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::netting_agreement to_domain(const messaging::netting_agreement_write& write) {
+domain::netting_agreement
+netting_agreement_to_domain(const messaging::netting_agreement_write& write) {
     domain::netting_agreement v;
     v.id = write.id;
     v.agreement_number = write.agreement_number;
@@ -187,7 +189,7 @@ netting_agreement_service::list_by_counterparty_id_netting_agreements(
 messaging::get_netting_agreement_response netting_agreement_service::get_netting_agreement(
     const messaging::get_netting_agreement_request& request) {
     messaging::get_netting_agreement_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = netting_agreement_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "netting_agreement"});
         return response;
@@ -207,7 +209,7 @@ netting_agreement_service::get_many_netting_agreements(
     for (const auto& k : request.keys) {
         messaging::netting_agreement_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = netting_agreement_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.netting_agreement = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -223,7 +225,7 @@ messaging::put_netting_agreement_response netting_agreement_service::put_netting
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = netting_agreement_read_one(repo_, ctx_, netting_agreement_key_from(value));
     if (!written.empty())
         response.netting_agreement = std::move(written.front());
     return response;
@@ -256,7 +258,7 @@ netting_agreement_service::put_many_netting_agreements(
     repo_.write(ctx_, batch, claims);
     response.netting_agreements.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = netting_agreement_read_one(repo_, ctx_, netting_agreement_key_from(value));
         response.netting_agreements.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -279,7 +281,7 @@ messaging::delete_netting_agreement_response netting_agreement_service::delete_n
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = netting_agreement_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "netting_agreement"});
         return response;
@@ -295,7 +297,7 @@ messaging::delete_netting_agreement_response netting_agreement_service::delete_n
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = netting_agreement_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "netting_agreement",
@@ -337,7 +339,7 @@ netting_agreement_service::delete_many_netting_agreements(
     std::vector<domain::netting_agreement> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = netting_agreement_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -365,7 +367,7 @@ netting_agreement_service::list_netting_agreement_versions(
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = netting_agreement_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "netting_agreement"});
         return response;
@@ -389,7 +391,7 @@ netting_agreement_service::get_netting_agreement_version(
     messaging::get_netting_agreement_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.netting_agreement);
+    const auto named = netting_agreement_read_one(repo_, ctx_, request.key.netting_agreement);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "netting_agreement"});
         return response;
@@ -411,8 +413,8 @@ netting_agreement_service::prepare_change(const messaging::netting_agreement_cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = netting_agreement_to_domain(change.write);
+    const auto current = netting_agreement_read_one(repo_, ctx_, netting_agreement_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -521,7 +523,7 @@ netting_agreement_service::get_netting_agreement_by_agreement_number(
                                << agreement_number;
     messaging::netting_agreement_key k;
     k.agreement_number = agreement_number;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = netting_agreement_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

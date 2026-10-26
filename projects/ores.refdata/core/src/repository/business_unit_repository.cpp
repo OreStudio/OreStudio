@@ -84,9 +84,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+business_unit_list_order(const ores::utility::domain::order& order,
+                         std::initializer_list<std::string> default_columns,
+                         bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!business_unit_repository::is_sortable(order.field))
@@ -100,7 +101,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::business_units_filter>& filter) {
+business_unit_filter_condition(const std::optional<messaging::business_units_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -346,8 +347,8 @@ std::vector<domain::business_unit> business_unit_repository::read_latest_by_part
     return execute_ordered_read_query<business_unit_entity, domain::business_unit>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        business_unit_list_order(order, {"id"}, false),
+        business_unit_filter_condition(filter),
         [](const auto& entities) { return business_unit_mapper::map(entities); },
         lg(),
         "Reading latest business units by party_id.");
@@ -366,8 +367,11 @@ std::uint32_t business_unit_repository::get_total_business_unit_count_by_party_i
         sqlgen::read<std::vector<business_unit_entity>> |
         where("tenant_id"_c == tid && "party_id"_c == party_id && "valid_to"_c == max.value());
 
-    return execute_count_query<business_unit_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting business units by party_id");
+    return execute_count_query<business_unit_entity>(ctx,
+                                                     query,
+                                                     business_unit_filter_condition(filter),
+                                                     lg(),
+                                                     "Counting business units by party_id");
 }
 
 
@@ -420,8 +424,8 @@ business_unit_repository::read_latest(context ctx,
     return execute_ordered_read_query<business_unit_entity, domain::business_unit>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        business_unit_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), business_unit_filter_condition(filter)),
         [](const auto& entities) { return business_unit_mapper::map(entities); },
         lg(),
         "Reading latest business units with pagination.");
@@ -440,7 +444,7 @@ std::uint32_t business_unit_repository::get_total_business_unit_count(
     return execute_count_query<business_unit_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), business_unit_filter_condition(filter)),
         lg(),
         "Counting business units");
 }

@@ -65,9 +65,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::lei_relationship> read_one(repository::lei_relationship_repository& repo,
-                                               const ores::database::context& ctx,
-                                               const messaging::lei_relationship_key& key) {
+std::vector<domain::lei_relationship>
+lei_relationship_read_one(repository::lei_relationship_repository& repo,
+                          const ores::database::context& ctx,
+                          const messaging::lei_relationship_key& key) {
     return repo.read_latest(ctx, key.relationship_start_node_node_id);
 }
 
@@ -98,7 +99,7 @@ messaging::list_lei_relationships_response lei_relationship_service::list_lei_re
 messaging::get_lei_relationship_response lei_relationship_service::get_lei_relationship(
     const messaging::get_lei_relationship_request& request) {
     messaging::get_lei_relationship_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = lei_relationship_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "lei_relationship"});
         return response;
@@ -117,7 +118,7 @@ messaging::get_many_lei_relationships_response lei_relationship_service::get_man
     for (const auto& k : request.keys) {
         messaging::lei_relationship_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = lei_relationship_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.lei_relationship = std::move(found.front());
         response.entries.push_back(std::move(entry));

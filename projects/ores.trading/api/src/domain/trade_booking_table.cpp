@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string trade_booking_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -49,8 +49,8 @@ std::string convert_to_table(const std::vector<trade_booking>& v) {
     table << fort::header << "Trade Id" << "Book" << "Trade Date" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& tb : v) {
-        table << tb.trade_id << boost::uuids::to_string(tb.book_id) << opt_str(tb.trade_date)
-              << tb.version << fort::endr;
+        table << tb.trade_id << boost::uuids::to_string(tb.book_id)
+              << trade_booking_opt_str(tb.trade_date) << tb.version << fort::endr;
     }
     return table.to_string();
 }

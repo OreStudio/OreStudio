@@ -39,7 +39,7 @@
 namespace ores::synthetic::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.synthetic.service";
+static constexpr std::string_view yield_curve_process_type_queue_group = "ores.synthetic.service";
 }
 
 std::vector<ores::nats::service::subscription> register_yield_curve_process_type_handlers(
@@ -51,43 +51,43 @@ std::vector<ores::nats::service::subscription> register_yield_curve_process_type
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_yield_curve_process_types_request::nats_subject,
-        queue_group,
+        yield_curve_process_type_queue_group,
         [h](ores::nats::message msg) { h->list_yield_curve_process_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_yield_curve_process_type_request::nats_subject,
-        queue_group,
+        yield_curve_process_type_queue_group,
         [h](ores::nats::message msg) { h->get_yield_curve_process_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_yield_curve_process_types_request::nats_subject,
-        queue_group,
+        yield_curve_process_type_queue_group,
         [h](ores::nats::message msg) { h->get_many_yield_curve_process_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_yield_curve_process_type_request::nats_subject,
-        queue_group,
+        yield_curve_process_type_queue_group,
         [h](ores::nats::message msg) { h->put_yield_curve_process_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_yield_curve_process_types_request::nats_subject,
-        queue_group,
+        yield_curve_process_type_queue_group,
         [h](ores::nats::message msg) { h->put_many_yield_curve_process_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_yield_curve_process_type_request::nats_subject,
-        queue_group,
+        yield_curve_process_type_queue_group,
         [h](ores::nats::message msg) { h->delete_yield_curve_process_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(delete_many_yield_curve_process_types_request::nats_subject,
-                                        queue_group,
+                                        yield_curve_process_type_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->delete_many_yield_curve_process_types(
                                                 std::move(msg));
                                         }));
     subs.push_back(
         nats.queue_subscribe(list_yield_curve_process_type_versions_request::nats_subject,
-                             queue_group,
+                             yield_curve_process_type_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_yield_curve_process_type_versions(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         get_yield_curve_process_type_version_request::nats_subject,
-        queue_group,
+        yield_curve_process_type_queue_group,
         [h](ores::nats::message msg) { h->get_yield_curve_process_type_version(std::move(msg)); }));
     return subs;
 }

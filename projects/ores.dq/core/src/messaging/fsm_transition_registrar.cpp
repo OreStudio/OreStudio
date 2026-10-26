@@ -39,7 +39,7 @@
 namespace ores::dq::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.dq.service";
+static constexpr std::string_view fsm_transition_queue_group = "ores.dq.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,40 +49,40 @@ register_fsm_transition_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<fsm_transition_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_fsm_transitions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_fsm_transitions(std::move(msg));
-        }));
+        list_fsm_transitions_request::nats_subject,
+        fsm_transition_queue_group,
+        [h](ores::nats::message msg) { h->list_fsm_transitions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_fsm_transition_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_fsm_transition(std::move(msg));
-        }));
+        get_fsm_transition_request::nats_subject,
+        fsm_transition_queue_group,
+        [h](ores::nats::message msg) { h->get_fsm_transition(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_fsm_transitions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_fsm_transitions(std::move(msg));
-        }));
+        get_many_fsm_transitions_request::nats_subject,
+        fsm_transition_queue_group,
+        [h](ores::nats::message msg) { h->get_many_fsm_transitions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_fsm_transition_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_fsm_transition(std::move(msg));
-        }));
+        put_fsm_transition_request::nats_subject,
+        fsm_transition_queue_group,
+        [h](ores::nats::message msg) { h->put_fsm_transition(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_fsm_transitions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_fsm_transitions(std::move(msg));
-        }));
+        put_many_fsm_transitions_request::nats_subject,
+        fsm_transition_queue_group,
+        [h](ores::nats::message msg) { h->put_many_fsm_transitions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_fsm_transition_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_fsm_transition(std::move(msg));
-        }));
+        delete_fsm_transition_request::nats_subject,
+        fsm_transition_queue_group,
+        [h](ores::nats::message msg) { h->delete_fsm_transition(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_fsm_transitions_request::nats_subject,
-        queue_group,
+        fsm_transition_queue_group,
         [h](ores::nats::message msg) { h->delete_many_fsm_transitions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_fsm_transition_versions_request::nats_subject,
-        queue_group,
+        fsm_transition_queue_group,
         [h](ores::nats::message msg) { h->list_fsm_transition_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_fsm_transition_version_request::nats_subject,
-        queue_group,
+        fsm_transition_queue_group,
         [h](ores::nats::message msg) { h->get_fsm_transition_version(std::move(msg)); }));
     return subs;
 }

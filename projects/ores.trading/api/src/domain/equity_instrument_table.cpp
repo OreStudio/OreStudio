@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string equity_instrument_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,9 +50,10 @@ std::string convert_to_table(const std::vector<equity_instrument>& v) {
           << "Version" << "Recorded At" << fort::endr;
 
     for ([[maybe_unused]] const auto& ei : v) {
-        table << ei.identity.trade_id << ei.identity.trade_type_code << opt_str(ei.start_date)
-              << opt_str(ei.maturity_date) << ei.description << ei.identity.version
-              << ei.audit.recorded_at << fort::endr;
+        table << ei.identity.trade_id << ei.identity.trade_type_code
+              << equity_instrument_opt_str(ei.start_date)
+              << equity_instrument_opt_str(ei.maturity_date) << ei.description
+              << ei.identity.version << ei.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

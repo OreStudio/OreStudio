@@ -31,7 +31,7 @@ namespace ores::reporting::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string report_instance_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -52,8 +52,8 @@ std::string convert_to_table(const std::vector<report_instance>& v) {
     for ([[maybe_unused]] const auto& ri : v) {
         table << ri.name << ri.kind << boost::uuids::to_string(ri.definition_id)
               << boost::uuids::to_string(ri.trigger_id) << ri.output_message
-              << opt_str(ri.started_at) << opt_str(ri.completed_at) << ri.modified_by << ri.version
-              << fort::endr;
+              << report_instance_opt_str(ri.started_at) << report_instance_opt_str(ri.completed_at)
+              << ri.modified_by << ri.version << fort::endr;
     }
     return table.to_string();
 }

@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view benchmark_rate_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,40 +49,40 @@ register_benchmark_rate_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<benchmark_rate_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_benchmark_rates_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_benchmark_rates(std::move(msg));
-        }));
+        list_benchmark_rates_request::nats_subject,
+        benchmark_rate_queue_group,
+        [h](ores::nats::message msg) { h->list_benchmark_rates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_benchmark_rate_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_benchmark_rate(std::move(msg));
-        }));
+        get_benchmark_rate_request::nats_subject,
+        benchmark_rate_queue_group,
+        [h](ores::nats::message msg) { h->get_benchmark_rate(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_benchmark_rates_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_benchmark_rates(std::move(msg));
-        }));
+        get_many_benchmark_rates_request::nats_subject,
+        benchmark_rate_queue_group,
+        [h](ores::nats::message msg) { h->get_many_benchmark_rates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_benchmark_rate_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_benchmark_rate(std::move(msg));
-        }));
+        put_benchmark_rate_request::nats_subject,
+        benchmark_rate_queue_group,
+        [h](ores::nats::message msg) { h->put_benchmark_rate(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_benchmark_rates_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_benchmark_rates(std::move(msg));
-        }));
+        put_many_benchmark_rates_request::nats_subject,
+        benchmark_rate_queue_group,
+        [h](ores::nats::message msg) { h->put_many_benchmark_rates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_benchmark_rate_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_benchmark_rate(std::move(msg));
-        }));
+        delete_benchmark_rate_request::nats_subject,
+        benchmark_rate_queue_group,
+        [h](ores::nats::message msg) { h->delete_benchmark_rate(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_benchmark_rates_request::nats_subject,
-        queue_group,
+        benchmark_rate_queue_group,
         [h](ores::nats::message msg) { h->delete_many_benchmark_rates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_benchmark_rate_versions_request::nats_subject,
-        queue_group,
+        benchmark_rate_queue_group,
         [h](ores::nats::message msg) { h->list_benchmark_rate_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_benchmark_rate_version_request::nats_subject,
-        queue_group,
+        benchmark_rate_queue_group,
         [h](ores::nats::message msg) { h->get_benchmark_rate_version(std::move(msg)); }));
     return subs;
 }

@@ -80,9 +80,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+bond_yield_convention_list_order(const ores::utility::domain::order& order,
+                                 std::initializer_list<std::string> default_columns,
+                                 bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!bond_yield_convention_repository::is_sortable(order.field))
@@ -95,8 +96,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::bond_yield_conventions_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> bond_yield_convention_filter_condition(
+    const std::optional<messaging::bond_yield_conventions_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -308,8 +309,8 @@ std::vector<domain::bond_yield_convention> bond_yield_convention_repository::rea
     return execute_ordered_read_query<bond_yield_convention_entity, domain::bond_yield_convention>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        bond_yield_convention_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), bond_yield_convention_filter_condition(filter)),
         [](const auto& entities) { return bond_yield_convention_mapper::map(entities); },
         lg(),
         "Reading latest bond yield conventions with pagination.");
@@ -328,7 +329,7 @@ std::uint32_t bond_yield_convention_repository::get_total_bond_yield_convention_
     return execute_count_query<bond_yield_convention_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), bond_yield_convention_filter_condition(filter)),
         lg(),
         "Counting bond yield conventions");
 }

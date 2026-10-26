@@ -70,9 +70,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::intraday_power_load_convention>
-read_one(repository::intraday_power_load_convention_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::intraday_power_load_convention_key& key) {
+intraday_power_load_convention_read_one(repository::intraday_power_load_convention_repository& repo,
+                                        const ores::database::context& ctx,
+                                        const messaging::intraday_power_load_convention_key& key) {
     return repo.read_latest(ctx, key.id);
 }
 
@@ -83,7 +83,7 @@ read_one(repository::intraday_power_load_convention_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::intraday_power_load_convention_key
-key_from(const domain::intraday_power_load_convention& v) {
+intraday_power_load_convention_key_from(const domain::intraday_power_load_convention& v) {
     messaging::intraday_power_load_convention_key key;
     key.id = v.id;
     return key;
@@ -96,8 +96,8 @@ key_from(const domain::intraday_power_load_convention& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::intraday_power_load_convention
-to_domain(const messaging::intraday_power_load_convention_write& write) {
+domain::intraday_power_load_convention intraday_power_load_convention_to_domain(
+    const messaging::intraday_power_load_convention_write& write) {
     domain::intraday_power_load_convention v;
     v.id = write.id;
     v.explicit_load_profile = write.explicit_load_profile;
@@ -147,7 +147,7 @@ messaging::get_intraday_power_load_convention_response
 intraday_power_load_convention_service::get_intraday_power_load_convention(
     const messaging::get_intraday_power_load_convention_request& request) {
     messaging::get_intraday_power_load_convention_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = intraday_power_load_convention_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "intraday_power_load_convention"});
@@ -168,7 +168,7 @@ intraday_power_load_convention_service::get_many_intraday_power_load_conventions
     for (const auto& k : request.keys) {
         messaging::intraday_power_load_convention_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = intraday_power_load_convention_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.intraday_power_load_convention = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -185,7 +185,8 @@ intraday_power_load_convention_service::put_intraday_power_load_convention(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = intraday_power_load_convention_read_one(
+        repo_, ctx_, intraday_power_load_convention_key_from(value));
     if (!written.empty())
         response.intraday_power_load_convention = std::move(written.front());
     return response;
@@ -218,7 +219,8 @@ intraday_power_load_convention_service::put_many_intraday_power_load_conventions
     repo_.write(ctx_, batch, claims);
     response.intraday_power_load_conventions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = intraday_power_load_convention_read_one(
+            repo_, ctx_, intraday_power_load_convention_key_from(value));
         response.intraday_power_load_conventions.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -254,7 +256,8 @@ intraday_power_load_convention_service::delete_intraday_power_load_convention(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                intraday_power_load_convention_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "intraday_power_load_convention",
@@ -345,8 +348,9 @@ ores::utility::domain::result intraday_power_load_convention_service::prepare_ch
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = intraday_power_load_convention_to_domain(change.write);
+    const auto current = intraday_power_load_convention_read_one(
+        repo_, ctx_, intraday_power_load_convention_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -80,9 +80,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+cross_currency_fix_float_convention_list_order(const ores::utility::domain::order& order,
+                                               std::initializer_list<std::string> default_columns,
+                                               bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!cross_currency_fix_float_convention_repository::is_sortable(order.field))
@@ -96,7 +97,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition> filter_condition(
+std::optional<sqlgen::dynamic::Condition> cross_currency_fix_float_convention_filter_condition(
     const std::optional<messaging::cross_currency_fix_float_conventions_filter>& filter) {
     if (!filter)
         return std::nullopt;
@@ -333,8 +334,8 @@ cross_currency_fix_float_convention_repository::read_latest(
                                       domain::cross_currency_fix_float_convention>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        cross_currency_fix_float_convention_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), cross_currency_fix_float_convention_filter_condition(filter)),
         [](const auto& entities) {
             return cross_currency_fix_float_convention_mapper::map(entities);
         },
@@ -357,7 +358,7 @@ cross_currency_fix_float_convention_repository::get_total_cross_currency_fix_flo
     return execute_count_query<cross_currency_fix_float_convention_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), cross_currency_fix_float_convention_filter_condition(filter)),
         lg(),
         "Counting cross-currency fix-float conventions");
 }

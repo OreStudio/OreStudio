@@ -39,7 +39,7 @@
 namespace ores::dq::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.dq.service";
+static constexpr std::string_view change_reason_category_queue_group = "ores.dq.service";
 }
 
 std::vector<ores::nats::service::subscription> register_change_reason_category_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_change_reason_category_h
         std::make_shared<change_reason_category_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_change_reason_categories_request::nats_subject,
-        queue_group,
+        change_reason_category_queue_group,
         [h](ores::nats::message msg) { h->list_change_reason_categories(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_change_reason_category_request::nats_subject,
-        queue_group,
+        change_reason_category_queue_group,
         [h](ores::nats::message msg) { h->get_change_reason_category(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_change_reason_categories_request::nats_subject,
-        queue_group,
+        change_reason_category_queue_group,
         [h](ores::nats::message msg) { h->get_many_change_reason_categories(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_change_reason_category_request::nats_subject,
-        queue_group,
+        change_reason_category_queue_group,
         [h](ores::nats::message msg) { h->put_change_reason_category(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_change_reason_categories_request::nats_subject,
-        queue_group,
+        change_reason_category_queue_group,
         [h](ores::nats::message msg) { h->put_many_change_reason_categories(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_change_reason_category_request::nats_subject,
-        queue_group,
+        change_reason_category_queue_group,
         [h](ores::nats::message msg) { h->delete_change_reason_category(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_change_reason_categories_request::nats_subject,
-        queue_group,
+        change_reason_category_queue_group,
         [h](ores::nats::message msg) { h->delete_many_change_reason_categories(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_change_reason_category_versions_request::nats_subject,
-        queue_group,
+        change_reason_category_queue_group,
         [h](ores::nats::message msg) { h->list_change_reason_category_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_change_reason_category_version_request::nats_subject,
-        queue_group,
+        change_reason_category_queue_group,
         [h](ores::nats::message msg) { h->get_change_reason_category_version(std::move(msg)); }));
     return subs;
 }

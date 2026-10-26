@@ -59,7 +59,7 @@ namespace {
  * rather than the exception's own text.
  */
 template <typename T>
-T read_param(const std::string& raw, const std::string& name) {
+T account_read_param(const std::string& raw, const std::string& name) {
     try {
         if constexpr (std::is_same_v<T, std::string>) {
             return raw;
@@ -81,7 +81,7 @@ T read_param(const std::string& raw, const std::string& name) {
  * it does not know is the caller's to see as unauthorised, which is what the
  * service means by any code it does not spell out here.
  */
-http_response error_response(const std::string& error) {
+http_response account_error_response(const std::string& error) {
     if (error == "forbidden") {
         return http_response::forbidden(error);
     }
@@ -110,7 +110,7 @@ forward(const http_request& req, nats_client& session, const Request& msg) {
                                             ores::nats::service::default_request_timeout);
         if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
             it != reply.headers.end()) {
-            co_return error_response(it->second);
+            co_return account_error_response(it->second);
         }
         const auto decoded =
             ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
@@ -134,12 +134,12 @@ forward(const http_request& req, nats_client& session, const Request& msg) {
  * stated none.
  */
 template <typename Request>
-void apply_page(Request& msg, const http_request& req) {
+void account_apply_page(Request& msg, const http_request& req) {
     if (const auto raw = req.get_query_param("offset"); !raw.empty()) {
-        msg.offset = read_param<std::uint32_t>(raw, "offset");
+        msg.offset = account_read_param<std::uint32_t>(raw, "offset");
     }
     if (const auto raw = req.get_query_param("limit"); !raw.empty()) {
-        msg.limit = read_param<std::uint32_t>(raw, "limit");
+        msg.limit = account_read_param<std::uint32_t>(raw, "limit");
     }
     if (const auto raw = req.get_query_param("order"); !raw.empty()) {
         msg.order.field = raw;
@@ -154,7 +154,7 @@ boost::asio::awaitable<http_response> account_routes::handle_list(const http_req
     using request_type = messaging::list_accounts_request;
     try {
         request_type msg;
-        apply_page(msg, req);
+        account_apply_page(msg, req);
         co_return co_await forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
@@ -166,7 +166,8 @@ boost::asio::awaitable<http_response> account_routes::handle_get(const http_requ
     using request_type = messaging::get_account_request;
     try {
         request_type msg;
-        msg.key.username = read_param<std::string>(req.get_path_param("username"), "username");
+        msg.key.username =
+            account_read_param<std::string>(req.get_path_param("username"), "username");
         co_return co_await forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
@@ -192,8 +193,9 @@ boost::asio::awaitable<http_response> account_routes::handle_versions(const http
     using request_type = messaging::list_account_versions_request;
     try {
         request_type msg;
-        msg.key.username = read_param<std::string>(req.get_path_param("username"), "username");
-        apply_page(msg, req);
+        msg.key.username =
+            account_read_param<std::string>(req.get_path_param("username"), "username");
+        account_apply_page(msg, req);
         co_return co_await forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
@@ -206,8 +208,9 @@ boost::asio::awaitable<http_response> account_routes::handle_version(const http_
     try {
         request_type msg;
         msg.key.account.username =
-            read_param<std::string>(req.get_path_param("username"), "username");
-        msg.key.version = read_param<std::uint32_t>(req.get_path_param("version"), "version");
+            account_read_param<std::string>(req.get_path_param("username"), "username");
+        msg.key.version =
+            account_read_param<std::uint32_t>(req.get_path_param("version"), "version");
         co_return co_await forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());

@@ -63,7 +63,9 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void equity_position_option_underlying_read_token(T& target,
+                                                  const std::string& raw,
+                                                  const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +99,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void equity_position_option_underlying_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -230,7 +232,7 @@ void equity_position_option_underlying_commands::process_list(
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        equity_position_option_underlying_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -278,8 +280,10 @@ void equity_position_option_underlying_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.key.sequence_number, parsed->positionals[next++], "sequence_number");
+        equity_position_option_underlying_read_token(
+            req.key.trade_id, parsed->positionals[next++], "trade_id");
+        equity_position_option_underlying_read_token(
+            req.key.sequence_number, parsed->positionals[next++], "sequence_number");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -323,8 +327,10 @@ void equity_position_option_underlying_commands::process_get_many(
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 2) {
             messaging::equity_position_option_underlying_key key;
-            read_token(key.trade_id, parsed->positionals[i + 0], "trade_id");
-            read_token(key.sequence_number, parsed->positionals[i + 1], "sequence_number");
+            equity_position_option_underlying_read_token(
+                key.trade_id, parsed->positionals[i + 0], "trade_id");
+            equity_position_option_underlying_read_token(
+                key.sequence_number, parsed->positionals[i + 1], "sequence_number");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -369,19 +375,25 @@ void equity_position_option_underlying_commands::process_add(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(
+        equity_position_option_underlying_read_token(
+            req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        equity_position_option_underlying_read_token(
             req.change.write.sequence_number, parsed->positionals[next++], "sequence_number");
-        read_token(
+        equity_position_option_underlying_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(
+        equity_position_option_underlying_read_token(
             req.change.write.underlying_name, parsed->positionals[next++], "underlying_name");
-        read_token(req.change.write.strike, parsed->positionals[next++], "strike");
-        read_token(req.change.write.weight, parsed->positionals[next++], "weight");
-        read_token(req.change.write.long_short, parsed->positionals[next++], "long_short");
-        read_token(req.change.write.option_type, parsed->positionals[next++], "option_type");
-        read_token(req.change.write.exercise_type, parsed->positionals[next++], "exercise_type");
-        read_token(
+        equity_position_option_underlying_read_token(
+            req.change.write.strike, parsed->positionals[next++], "strike");
+        equity_position_option_underlying_read_token(
+            req.change.write.weight, parsed->positionals[next++], "weight");
+        equity_position_option_underlying_read_token(
+            req.change.write.long_short, parsed->positionals[next++], "long_short");
+        equity_position_option_underlying_read_token(
+            req.change.write.option_type, parsed->positionals[next++], "option_type");
+        equity_position_option_underlying_read_token(
+            req.change.write.exercise_type, parsed->positionals[next++], "exercise_type");
+        equity_position_option_underlying_read_token(
             req.change.write.settlement_type, parsed->positionals[next++], "settlement_type");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -430,19 +442,25 @@ void equity_position_option_underlying_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(
+        equity_position_option_underlying_read_token(
+            req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        equity_position_option_underlying_read_token(
             req.change.write.sequence_number, parsed->positionals[next++], "sequence_number");
-        read_token(
+        equity_position_option_underlying_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(
+        equity_position_option_underlying_read_token(
             req.change.write.underlying_name, parsed->positionals[next++], "underlying_name");
-        read_token(req.change.write.strike, parsed->positionals[next++], "strike");
-        read_token(req.change.write.weight, parsed->positionals[next++], "weight");
-        read_token(req.change.write.long_short, parsed->positionals[next++], "long_short");
-        read_token(req.change.write.option_type, parsed->positionals[next++], "option_type");
-        read_token(req.change.write.exercise_type, parsed->positionals[next++], "exercise_type");
-        read_token(
+        equity_position_option_underlying_read_token(
+            req.change.write.strike, parsed->positionals[next++], "strike");
+        equity_position_option_underlying_read_token(
+            req.change.write.weight, parsed->positionals[next++], "weight");
+        equity_position_option_underlying_read_token(
+            req.change.write.long_short, parsed->positionals[next++], "long_short");
+        equity_position_option_underlying_read_token(
+            req.change.write.option_type, parsed->positionals[next++], "option_type");
+        equity_position_option_underlying_read_token(
+            req.change.write.exercise_type, parsed->positionals[next++], "exercise_type");
+        equity_position_option_underlying_read_token(
             req.change.write.settlement_type, parsed->positionals[next++], "settlement_type");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -504,19 +522,25 @@ void equity_position_option_underlying_commands::process_put_many(
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::equity_position_option_underlying_change change;
-            read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
-            read_token(
+            equity_position_option_underlying_read_token(
+                change.write.trade_id, parsed->positionals[next++], "trade_id");
+            equity_position_option_underlying_read_token(
                 change.write.sequence_number, parsed->positionals[next++], "sequence_number");
-            read_token(
+            equity_position_option_underlying_read_token(
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-            read_token(
+            equity_position_option_underlying_read_token(
                 change.write.underlying_name, parsed->positionals[next++], "underlying_name");
-            read_token(change.write.strike, parsed->positionals[next++], "strike");
-            read_token(change.write.weight, parsed->positionals[next++], "weight");
-            read_token(change.write.long_short, parsed->positionals[next++], "long_short");
-            read_token(change.write.option_type, parsed->positionals[next++], "option_type");
-            read_token(change.write.exercise_type, parsed->positionals[next++], "exercise_type");
-            read_token(
+            equity_position_option_underlying_read_token(
+                change.write.strike, parsed->positionals[next++], "strike");
+            equity_position_option_underlying_read_token(
+                change.write.weight, parsed->positionals[next++], "weight");
+            equity_position_option_underlying_read_token(
+                change.write.long_short, parsed->positionals[next++], "long_short");
+            equity_position_option_underlying_read_token(
+                change.write.option_type, parsed->positionals[next++], "option_type");
+            equity_position_option_underlying_read_token(
+                change.write.exercise_type, parsed->positionals[next++], "exercise_type");
+            equity_position_option_underlying_read_token(
                 change.write.settlement_type, parsed->positionals[next++], "settlement_type");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
@@ -566,8 +590,10 @@ void equity_position_option_underlying_commands::process_delete(
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.removal.key.sequence_number, parsed->positionals[next++], "sequence_number");
+        equity_position_option_underlying_read_token(
+            req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
+        equity_position_option_underlying_read_token(
+            req.removal.key.sequence_number, parsed->positionals[next++], "sequence_number");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -620,8 +646,10 @@ void equity_position_option_underlying_commands::process_delete_many(
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 2;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::equity_position_option_underlying_key key;
-            read_token(key.trade_id, parsed->positionals[i * 2 + 0], "trade_id");
-            read_token(key.sequence_number, parsed->positionals[i * 2 + 1], "sequence_number");
+            equity_position_option_underlying_read_token(
+                key.trade_id, parsed->positionals[i * 2 + 0], "trade_id");
+            equity_position_option_underlying_read_token(
+                key.sequence_number, parsed->positionals[i * 2 + 1], "sequence_number");
             req.removals.push_back(
                 messaging::equity_position_option_underlying_removal{.key = std::move(key)});
         }
@@ -681,7 +709,7 @@ void equity_position_option_underlying_commands::process_by_trade_id(
             req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
                                            ores::utility::domain::scope::direct;
         }
-        apply_page(req, *parsed);
+        equity_position_option_underlying_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -729,9 +757,11 @@ void equity_position_option_underlying_commands::process_versions(
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(req.key.sequence_number, parsed->positionals[next++], "sequence_number");
-        apply_page(req, *parsed);
+        equity_position_option_underlying_read_token(
+            req.key.trade_id, parsed->positionals[next++], "trade_id");
+        equity_position_option_underlying_read_token(
+            req.key.sequence_number, parsed->positionals[next++], "sequence_number");
+        equity_position_option_underlying_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -776,12 +806,14 @@ void equity_position_option_underlying_commands::process_version(
                       << std::endl;
             return;
         }
-        read_token(req.key.equity_position_option_underlying.trade_id,
-                   parsed->positionals[next++],
-                   "trade_id");
-        read_token(req.key.equity_position_option_underlying.sequence_number,
-                   parsed->positionals[next++],
-                   "sequence_number");
+        equity_position_option_underlying_read_token(
+            req.key.equity_position_option_underlying.trade_id,
+            parsed->positionals[next++],
+            "trade_id");
+        equity_position_option_underlying_read_token(
+            req.key.equity_position_option_underlying.sequence_number,
+            parsed->positionals[next++],
+            "sequence_number");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

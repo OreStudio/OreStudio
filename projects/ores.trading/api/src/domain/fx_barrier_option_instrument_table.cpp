@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string fx_barrier_option_instrument_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -52,9 +52,10 @@ std::string convert_to_table(const std::vector<fx_barrier_option_instrument>& v)
 
     for ([[maybe_unused]] const auto& fboi : v) {
         table << fboi.identity.trade_id << fboi.identity.trade_type_code << fboi.option_type
-              << fboi.expiry_date << fboi.barrier_type << opt_str(fboi.lower_barrier)
-              << opt_str(fboi.upper_barrier) << fboi.bought_currency << fboi.bought_amount
-              << fboi.audit.recorded_at << fort::endr;
+              << fboi.expiry_date << fboi.barrier_type
+              << fx_barrier_option_instrument_opt_str(fboi.lower_barrier)
+              << fx_barrier_option_instrument_opt_str(fboi.upper_barrier) << fboi.bought_currency
+              << fboi.bought_amount << fboi.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

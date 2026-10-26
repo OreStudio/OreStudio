@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view bundle_import_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_bundle_import_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<bundle_import_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_bundle_imports_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_bundle_imports(std::move(msg));
-        }));
+        list_bundle_imports_request::nats_subject,
+        bundle_import_queue_group,
+        [h](ores::nats::message msg) { h->list_bundle_imports(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_bundle_import_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_bundle_import(std::move(msg));
-        }));
+        get_bundle_import_request::nats_subject,
+        bundle_import_queue_group,
+        [h](ores::nats::message msg) { h->get_bundle_import(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_bundle_imports_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_bundle_imports(std::move(msg));
-        }));
+        get_many_bundle_imports_request::nats_subject,
+        bundle_import_queue_group,
+        [h](ores::nats::message msg) { h->get_many_bundle_imports(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_bundle_import_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_bundle_import(std::move(msg));
-        }));
+        put_bundle_import_request::nats_subject,
+        bundle_import_queue_group,
+        [h](ores::nats::message msg) { h->put_bundle_import(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_bundle_imports_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_bundle_imports(std::move(msg));
-        }));
+        put_many_bundle_imports_request::nats_subject,
+        bundle_import_queue_group,
+        [h](ores::nats::message msg) { h->put_many_bundle_imports(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_bundle_import_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_bundle_import(std::move(msg));
-        }));
+        delete_bundle_import_request::nats_subject,
+        bundle_import_queue_group,
+        [h](ores::nats::message msg) { h->delete_bundle_import(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_bundle_imports_request::nats_subject,
-        queue_group,
+        bundle_import_queue_group,
         [h](ores::nats::message msg) { h->delete_many_bundle_imports(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_bundle_import_versions_request::nats_subject,
-        queue_group,
+        bundle_import_queue_group,
         [h](ores::nats::message msg) { h->list_bundle_import_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_bundle_import_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_bundle_import_version(std::move(msg));
-        }));
+        get_bundle_import_version_request::nats_subject,
+        bundle_import_queue_group,
+        [h](ores::nats::message msg) { h->get_bundle_import_version(std::move(msg)); }));
     return subs;
 }
 

@@ -46,7 +46,7 @@ const std::string tags("[commands]");
 
 const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-void log_in(nats_client& session) {
+void index_credit_default_swap_option_instrument_log_in(nats_client& session) {
     nats_client::login_info info;
     info.username = "tester";
     info.jwt = "token";
@@ -56,7 +56,8 @@ void log_in(nats_client& session) {
 
 // One token per positional the command takes. A value the command parses is
 // not a value the guard reaches, so any token does to prove the guard.
-std::vector<std::string> tokens(const std::size_t count) {
+std::vector<std::string>
+index_credit_default_swap_option_instrument_tokens(const std::size_t count) {
     return std::vector<std::string>(count, std::string{"sample"});
 }
 
@@ -100,7 +101,8 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_list_req
     std::ostringstream out;
 
     command_feedback::reset();
-    index_credit_default_swap_option_instrument_commands::process_list(out, session, tokens(0));
+    index_credit_default_swap_option_instrument_commands::process_list(
+        out, session, index_credit_default_swap_option_instrument_tokens(0));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -115,7 +117,8 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_get_requ
     std::ostringstream out;
 
     command_feedback::reset();
-    index_credit_default_swap_option_instrument_commands::process_get(out, session, tokens(1));
+    index_credit_default_swap_option_instrument_commands::process_get(
+        out, session, index_credit_default_swap_option_instrument_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -128,7 +131,7 @@ TEST_CASE(
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    index_credit_default_swap_option_instrument_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -153,7 +156,8 @@ TEST_CASE(
     std::ostringstream out;
 
     command_feedback::reset();
-    index_credit_default_swap_option_instrument_commands::process_get_many(out, session, tokens(1));
+    index_credit_default_swap_option_instrument_commands::process_get_many(
+        out, session, index_credit_default_swap_option_instrument_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -168,7 +172,8 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_add_requ
     std::ostringstream out;
 
     command_feedback::reset();
-    index_credit_default_swap_option_instrument_commands::process_add(out, session, tokens(7));
+    index_credit_default_swap_option_instrument_commands::process_add(
+        out, session, index_credit_default_swap_option_instrument_tokens(7));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -181,7 +186,7 @@ TEST_CASE(
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    index_credit_default_swap_option_instrument_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -205,7 +210,8 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_set_requ
     std::ostringstream out;
 
     command_feedback::reset();
-    index_credit_default_swap_option_instrument_commands::process_set(out, session, tokens(7));
+    index_credit_default_swap_option_instrument_commands::process_set(
+        out, session, index_credit_default_swap_option_instrument_tokens(7));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -218,7 +224,7 @@ TEST_CASE(
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    index_credit_default_swap_option_instrument_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -243,7 +249,8 @@ TEST_CASE(
     std::ostringstream out;
 
     command_feedback::reset();
-    index_credit_default_swap_option_instrument_commands::process_put_many(out, session, tokens(7));
+    index_credit_default_swap_option_instrument_commands::process_put_many(
+        out, session, index_credit_default_swap_option_instrument_tokens(7));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -258,7 +265,8 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_delete_r
     std::ostringstream out;
 
     command_feedback::reset();
-    index_credit_default_swap_option_instrument_commands::process_delete(out, session, tokens(1));
+    index_credit_default_swap_option_instrument_commands::process_delete(
+        out, session, index_credit_default_swap_option_instrument_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -271,7 +279,7 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_delete_r
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    index_credit_default_swap_option_instrument_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -297,7 +305,7 @@ TEST_CASE(
 
     command_feedback::reset();
     index_credit_default_swap_option_instrument_commands::process_delete_many(
-        out, session, tokens(1));
+        out, session, index_credit_default_swap_option_instrument_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -313,7 +321,8 @@ TEST_CASE(
     std::ostringstream out;
 
     command_feedback::reset();
-    index_credit_default_swap_option_instrument_commands::process_versions(out, session, tokens(1));
+    index_credit_default_swap_option_instrument_commands::process_versions(
+        out, session, index_credit_default_swap_option_instrument_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -326,7 +335,7 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_versions
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    index_credit_default_swap_option_instrument_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -350,7 +359,8 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_version_
     std::ostringstream out;
 
     command_feedback::reset();
-    index_credit_default_swap_option_instrument_commands::process_version(out, session, tokens(1));
+    index_credit_default_swap_option_instrument_commands::process_version(
+        out, session, index_credit_default_swap_option_instrument_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -363,7 +373,7 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_process_version_
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    index_credit_default_swap_option_instrument_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();

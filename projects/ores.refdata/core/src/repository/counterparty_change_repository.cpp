@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+counterparty_change_list_order(const ores::utility::domain::order& order,
+                               std::initializer_list<std::string> default_columns,
+                               bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!counterparty_change_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::counterparty_changes_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> counterparty_change_filter_condition(
+    const std::optional<messaging::counterparty_changes_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -283,8 +284,8 @@ std::vector<domain::counterparty_change> counterparty_change_repository::read_la
     return execute_ordered_read_query<counterparty_change_entity, domain::counterparty_change>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        counterparty_change_list_order(order, {"id"}, false),
+        counterparty_change_filter_condition(filter),
         [](const auto& entities) { return counterparty_change_mapper::map(entities); },
         lg(),
         "Reading latest counterparty changes by request_id.");
@@ -304,7 +305,11 @@ std::uint32_t counterparty_change_repository::get_total_counterparty_change_coun
         where("tenant_id"_c == tid && "request_id"_c == request_id && "valid_to"_c == max.value());
 
     return execute_count_query<counterparty_change_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting counterparty changes by request_id");
+        ctx,
+        query,
+        counterparty_change_filter_condition(filter),
+        lg(),
+        "Counting counterparty changes by request_id");
 }
 
 
@@ -357,8 +362,8 @@ std::vector<domain::counterparty_change> counterparty_change_repository::read_la
     return execute_ordered_read_query<counterparty_change_entity, domain::counterparty_change>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        counterparty_change_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), counterparty_change_filter_condition(filter)),
         [](const auto& entities) { return counterparty_change_mapper::map(entities); },
         lg(),
         "Reading latest counterparty changes with pagination.");
@@ -377,7 +382,7 @@ std::uint32_t counterparty_change_repository::get_total_counterparty_change_coun
     return execute_count_query<counterparty_change_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), counterparty_change_filter_condition(filter)),
         lg(),
         "Counting counterparty changes");
 }

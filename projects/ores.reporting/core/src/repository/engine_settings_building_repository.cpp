@@ -83,7 +83,8 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+sqlgen::dynamic::OrderBy
+engine_settings_building_list_order(const ores::utility::domain::order& order,
                                     std::initializer_list<std::string> default_columns,
                                     bool default_descending) {
     if (order.field.empty())
@@ -98,8 +99,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::engine_settings_building_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> engine_settings_building_filter_condition(
+    const std::optional<messaging::engine_settings_building_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -295,8 +296,8 @@ engine_settings_building_repository::read_latest_by_engine_settings_id(
                                       domain::engine_settings_building>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        engine_settings_building_list_order(order, {"id"}, false),
+        engine_settings_building_filter_condition(filter),
         [](const auto& entities) { return engine_settings_building_mapper::map(entities); },
         lg(),
         "Reading latest engine settings building by engine_settings_id.");
@@ -320,7 +321,7 @@ engine_settings_building_repository::get_total_engine_settings_building_count_by
     return execute_count_query<engine_settings_building_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        engine_settings_building_filter_condition(filter),
         lg(),
         "Counting engine settings building by engine_settings_id");
 }
@@ -404,8 +405,8 @@ std::vector<domain::engine_settings_building> engine_settings_building_repositor
                                       domain::engine_settings_building>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        engine_settings_building_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), engine_settings_building_filter_condition(filter)),
         [](const auto& entities) { return engine_settings_building_mapper::map(entities); },
         lg(),
         "Reading latest engine settings building with pagination.");
@@ -424,7 +425,7 @@ std::uint32_t engine_settings_building_repository::get_total_engine_settings_bui
     return execute_count_query<engine_settings_building_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), engine_settings_building_filter_condition(filter)),
         lg(),
         "Counting engine settings building");
 }

@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void account_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void account_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -182,7 +182,7 @@ void account_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        account_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -230,7 +230,7 @@ void account_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.username, parsed->positionals[next++], "username");
+        account_read_token(req.key.username, parsed->positionals[next++], "username");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -275,7 +275,7 @@ void account_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::account_key key;
-            read_token(key.username, parsed->positionals[i + 0], "username");
+            account_read_token(key.username, parsed->positionals[i + 0], "username");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -325,8 +325,8 @@ void account_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.username, parsed->positionals[next++], "username");
-        apply_page(req, *parsed);
+        account_read_token(req.key.username, parsed->positionals[next++], "username");
+        account_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -371,7 +371,7 @@ void account_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.account.username, parsed->positionals[next++], "username");
+        account_read_token(req.key.account.username, parsed->positionals[next++], "username");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

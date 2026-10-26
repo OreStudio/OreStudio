@@ -70,9 +70,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::market_data_provider>
-read_one(repository::market_data_provider_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::market_data_provider_key& key) {
+market_data_provider_read_one(repository::market_data_provider_repository& repo,
+                              const ores::database::context& ctx,
+                              const messaging::market_data_provider_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -82,7 +82,8 @@ read_one(repository::market_data_provider_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::market_data_provider_key key_from(const domain::market_data_provider& v) {
+messaging::market_data_provider_key
+market_data_provider_key_from(const domain::market_data_provider& v) {
     messaging::market_data_provider_key key;
     key.code = v.code;
     return key;
@@ -95,7 +96,8 @@ messaging::market_data_provider_key key_from(const domain::market_data_provider&
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::market_data_provider to_domain(const messaging::market_data_provider_write& write) {
+domain::market_data_provider
+market_data_provider_to_domain(const messaging::market_data_provider_write& write) {
     domain::market_data_provider v;
     v.code = write.code;
     v.name = write.name;
@@ -144,7 +146,7 @@ market_data_provider_service::list_market_data_providers(
 messaging::get_market_data_provider_response market_data_provider_service::get_market_data_provider(
     const messaging::get_market_data_provider_request& request) {
     messaging::get_market_data_provider_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = market_data_provider_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "market_data_provider"});
         return response;
@@ -164,7 +166,7 @@ market_data_provider_service::get_many_market_data_providers(
     for (const auto& k : request.keys) {
         messaging::market_data_provider_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = market_data_provider_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.market_data_provider = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -180,7 +182,7 @@ messaging::put_market_data_provider_response market_data_provider_service::put_m
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = market_data_provider_read_one(repo_, ctx_, market_data_provider_key_from(value));
     if (!written.empty())
         response.market_data_provider = std::move(written.front());
     return response;
@@ -213,7 +215,8 @@ market_data_provider_service::put_many_market_data_providers(
     repo_.write(ctx_, batch, claims);
     response.providers.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            market_data_provider_read_one(repo_, ctx_, market_data_provider_key_from(value));
         response.providers.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -247,7 +250,7 @@ market_data_provider_service::delete_market_data_provider(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = market_data_provider_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "market_data_provider",
@@ -336,8 +339,9 @@ market_data_provider_service::prepare_change(const messaging::market_data_provid
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = market_data_provider_to_domain(change.write);
+    const auto current =
+        market_data_provider_read_one(repo_, ctx_, market_data_provider_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

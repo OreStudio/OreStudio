@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view asset_measure_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_asset_measure_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<asset_measure_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_asset_measures_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_asset_measures(std::move(msg));
-        }));
+        list_asset_measures_request::nats_subject,
+        asset_measure_queue_group,
+        [h](ores::nats::message msg) { h->list_asset_measures(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_asset_measure_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_asset_measure(std::move(msg));
-        }));
+        get_asset_measure_request::nats_subject,
+        asset_measure_queue_group,
+        [h](ores::nats::message msg) { h->get_asset_measure(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_asset_measures_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_asset_measures(std::move(msg));
-        }));
+        get_many_asset_measures_request::nats_subject,
+        asset_measure_queue_group,
+        [h](ores::nats::message msg) { h->get_many_asset_measures(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_asset_measure_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_asset_measure(std::move(msg));
-        }));
+        put_asset_measure_request::nats_subject,
+        asset_measure_queue_group,
+        [h](ores::nats::message msg) { h->put_asset_measure(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_asset_measures_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_asset_measures(std::move(msg));
-        }));
+        put_many_asset_measures_request::nats_subject,
+        asset_measure_queue_group,
+        [h](ores::nats::message msg) { h->put_many_asset_measures(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_asset_measure_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_asset_measure(std::move(msg));
-        }));
+        delete_asset_measure_request::nats_subject,
+        asset_measure_queue_group,
+        [h](ores::nats::message msg) { h->delete_asset_measure(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_asset_measures_request::nats_subject,
-        queue_group,
+        asset_measure_queue_group,
         [h](ores::nats::message msg) { h->delete_many_asset_measures(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_asset_measure_versions_request::nats_subject,
-        queue_group,
+        asset_measure_queue_group,
         [h](ores::nats::message msg) { h->list_asset_measure_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_asset_measure_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_asset_measure_version(std::move(msg));
-        }));
+        get_asset_measure_version_request::nats_subject,
+        asset_measure_queue_group,
+        [h](ores::nats::message msg) { h->get_asset_measure_version(std::move(msg)); }));
     return subs;
 }
 

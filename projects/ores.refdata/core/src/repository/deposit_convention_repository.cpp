@@ -80,9 +80,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+deposit_convention_list_order(const ores::utility::domain::order& order,
+                              std::initializer_list<std::string> default_columns,
+                              bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!deposit_convention_repository::is_sortable(order.field))
@@ -95,8 +96,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::deposit_conventions_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> deposit_convention_filter_condition(
+    const std::optional<messaging::deposit_conventions_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -303,8 +304,8 @@ std::vector<domain::deposit_convention> deposit_convention_repository::read_late
     return execute_ordered_read_query<deposit_convention_entity, domain::deposit_convention>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        deposit_convention_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), deposit_convention_filter_condition(filter)),
         [](const auto& entities) { return deposit_convention_mapper::map(entities); },
         lg(),
         "Reading latest deposit conventions with pagination.");
@@ -323,7 +324,7 @@ std::uint32_t deposit_convention_repository::get_total_deposit_convention_count(
     return execute_count_query<deposit_convention_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), deposit_convention_filter_condition(filter)),
         lg(),
         "Counting deposit conventions");
 }

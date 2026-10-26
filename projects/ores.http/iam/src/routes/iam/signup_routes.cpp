@@ -53,7 +53,7 @@ namespace {
  * it does not know is the caller's to see as unauthorised, which is what the
  * service means by any code it does not spell out here.
  */
-http_response error_response(const std::string& error) {
+http_response signup_error_response(const std::string& error) {
     if (error == "forbidden") {
         return http_response::forbidden(error);
     }
@@ -82,7 +82,7 @@ forward(const http_request& req, nats_client& session, const Request& msg) {
                                             ores::nats::service::default_request_timeout);
         if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
             it != reply.headers.end()) {
-            co_return error_response(it->second);
+            co_return signup_error_response(it->second);
         }
         const auto decoded =
             ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);

@@ -69,9 +69,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::account_type> read_one(repository::account_type_repository& repo,
-                                           const ores::database::context& ctx,
-                                           const messaging::account_type_key& key) {
+std::vector<domain::account_type> account_type_read_one(repository::account_type_repository& repo,
+                                                        const ores::database::context& ctx,
+                                                        const messaging::account_type_key& key) {
     return repo.read_latest(ctx, key.type);
 }
 
@@ -81,7 +81,7 @@ std::vector<domain::account_type> read_one(repository::account_type_repository& 
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::account_type_key key_from(const domain::account_type& v) {
+messaging::account_type_key account_type_key_from(const domain::account_type& v) {
     messaging::account_type_key key;
     key.type = v.type;
     return key;
@@ -94,7 +94,7 @@ messaging::account_type_key key_from(const domain::account_type& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::account_type to_domain(const messaging::account_type_write& write) {
+domain::account_type account_type_to_domain(const messaging::account_type_write& write) {
     domain::account_type v;
     v.type = write.type;
     v.name = write.name;
@@ -141,7 +141,7 @@ account_type_service::list_account_types(const messaging::list_account_types_req
 messaging::get_account_type_response
 account_type_service::get_account_type(const messaging::get_account_type_request& request) {
     messaging::get_account_type_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = account_type_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "account_type"});
         return response;
@@ -160,7 +160,7 @@ messaging::get_many_account_types_response account_type_service::get_many_accoun
     for (const auto& k : request.keys) {
         messaging::account_type_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = account_type_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.account_type = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -176,7 +176,7 @@ account_type_service::put_account_type(const messaging::put_account_type_request
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = account_type_read_one(repo_, ctx_, account_type_key_from(value));
     if (!written.empty())
         response.account_type = std::move(written.front());
     return response;
@@ -208,7 +208,7 @@ messaging::put_many_account_types_response account_type_service::put_many_accoun
     repo_.write(ctx_, batch, claims);
     response.types.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = account_type_read_one(repo_, ctx_, account_type_key_from(value));
         response.types.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -241,7 +241,7 @@ account_type_service::delete_account_type(const messaging::delete_account_type_r
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = account_type_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "account_type",
@@ -325,8 +325,8 @@ account_type_service::prepare_change(const messaging::account_type_change& chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = account_type_to_domain(change.write);
+    const auto current = account_type_read_one(repo_, ctx_, account_type_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

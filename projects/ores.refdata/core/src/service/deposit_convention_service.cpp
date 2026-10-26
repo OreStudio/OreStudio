@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::deposit_convention> read_one(repository::deposit_convention_repository& repo,
-                                                 const ores::database::context& ctx,
-                                                 const messaging::deposit_convention_key& key) {
+std::vector<domain::deposit_convention>
+deposit_convention_read_one(repository::deposit_convention_repository& repo,
+                            const ores::database::context& ctx,
+                            const messaging::deposit_convention_key& key) {
     return repo.read_latest(ctx, key.id);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::deposit_convention> read_one(repository::deposit_convention_
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::deposit_convention_key key_from(const domain::deposit_convention& v) {
+messaging::deposit_convention_key deposit_convention_key_from(const domain::deposit_convention& v) {
     messaging::deposit_convention_key key;
     key.id = v.id;
     return key;
@@ -94,7 +95,8 @@ messaging::deposit_convention_key key_from(const domain::deposit_convention& v) 
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::deposit_convention to_domain(const messaging::deposit_convention_write& write) {
+domain::deposit_convention
+deposit_convention_to_domain(const messaging::deposit_convention_write& write) {
     domain::deposit_convention v;
     v.id = write.id;
     v.index_based = write.index_based;
@@ -145,7 +147,7 @@ messaging::list_deposit_conventions_response deposit_convention_service::list_de
 messaging::get_deposit_convention_response deposit_convention_service::get_deposit_convention(
     const messaging::get_deposit_convention_request& request) {
     messaging::get_deposit_convention_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = deposit_convention_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "deposit_convention"});
         return response;
@@ -165,7 +167,7 @@ deposit_convention_service::get_many_deposit_conventions(
     for (const auto& k : request.keys) {
         messaging::deposit_convention_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = deposit_convention_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.deposit_convention = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -181,7 +183,7 @@ messaging::put_deposit_convention_response deposit_convention_service::put_depos
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = deposit_convention_read_one(repo_, ctx_, deposit_convention_key_from(value));
     if (!written.empty())
         response.deposit_convention = std::move(written.front());
     return response;
@@ -214,7 +216,7 @@ deposit_convention_service::put_many_deposit_conventions(
     repo_.write(ctx_, batch, claims);
     response.deposit_conventions.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = deposit_convention_read_one(repo_, ctx_, deposit_convention_key_from(value));
         response.deposit_conventions.push_back(written.empty() ? value :
                                                                  std::move(written.front()));
     }
@@ -248,7 +250,7 @@ messaging::delete_deposit_convention_response deposit_convention_service::delete
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = deposit_convention_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "deposit_convention",
@@ -337,8 +339,8 @@ deposit_convention_service::prepare_change(const messaging::deposit_convention_c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = deposit_convention_to_domain(change.write);
+    const auto current = deposit_convention_read_one(repo_, ctx_, deposit_convention_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

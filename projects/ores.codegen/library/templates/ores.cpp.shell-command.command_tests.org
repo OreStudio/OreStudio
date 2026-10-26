@@ -89,7 +89,7 @@ const std::string tags("[commands]");
 
 const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-void log_in(nats_client& session) {
+void {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_log_in(nats_client& session) {
     nats_client::login_info info;
     info.username = "tester";
     info.jwt = "token";
@@ -99,7 +99,7 @@ void log_in(nats_client& session) {
 
 // One token per positional the command takes. A value the command parses is
 // not a value the guard reaches, so any token does to prove the guard.
-std::vector<std::string> tokens(const std::size_t count) {
+std::vector<std::string> {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_tokens(const std::size_t count) {
     return std::vector<std::string>(count, std::string{"sample"});
 }
 
@@ -136,7 +136,7 @@ TEST_CASE("{{entity_singular}}_commands_process_{{identifier}}_requires_a_sessio
 
     command_feedback::reset();
     {{entity_singular}}_commands::process_{{identifier}}(out, session,
-                                                        tokens({{positional_count}}));
+                                                        {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_tokens({{positional_count}}));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -150,7 +150,7 @@ TEST_CASE("{{entity_singular}}_commands_process_{{identifier}}_reports_the_expec
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();

@@ -69,9 +69,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::person_role> read_one(repository::person_role_repository& repo,
-                                          const ores::database::context& ctx,
-                                          const messaging::person_role_key& key) {
+std::vector<domain::person_role> person_role_read_one(repository::person_role_repository& repo,
+                                                      const ores::database::context& ctx,
+                                                      const messaging::person_role_key& key) {
     return repo.read_latest(ctx, key.code, key.coding_scheme_code);
 }
 
@@ -81,7 +81,7 @@ std::vector<domain::person_role> read_one(repository::person_role_repository& re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::person_role_key key_from(const domain::person_role& v) {
+messaging::person_role_key person_role_key_from(const domain::person_role& v) {
     messaging::person_role_key key;
     key.code = v.code;
     key.coding_scheme_code = v.coding_scheme_code;
@@ -95,7 +95,7 @@ messaging::person_role_key key_from(const domain::person_role& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::person_role to_domain(const messaging::person_role_write& write) {
+domain::person_role person_role_to_domain(const messaging::person_role_write& write) {
     domain::person_role v;
     v.code = write.code;
     v.coding_scheme_code = write.coding_scheme_code;
@@ -135,7 +135,7 @@ person_role_service::list_person_roles(const messaging::list_person_roles_reques
 messaging::get_person_role_response
 person_role_service::get_person_role(const messaging::get_person_role_request& request) {
     messaging::get_person_role_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = person_role_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "person_role"});
         return response;
@@ -154,7 +154,7 @@ messaging::get_many_person_roles_response person_role_service::get_many_person_r
     for (const auto& k : request.keys) {
         messaging::person_role_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = person_role_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.person_role = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -170,7 +170,7 @@ person_role_service::put_person_role(const messaging::put_person_role_request& r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = person_role_read_one(repo_, ctx_, person_role_key_from(value));
     if (!written.empty())
         response.person_role = std::move(written.front());
     return response;
@@ -202,7 +202,7 @@ messaging::put_many_person_roles_response person_role_service::put_many_person_r
     repo_.write(ctx_, batch, claims);
     response.roles.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = person_role_read_one(repo_, ctx_, person_role_key_from(value));
         response.roles.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -236,7 +236,7 @@ person_role_service::delete_person_role(const messaging::delete_person_role_requ
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = person_role_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "person_role",
@@ -327,8 +327,8 @@ person_role_service::prepare_change(const messaging::person_role_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = person_role_to_domain(change.write);
+    const auto current = person_role_read_one(repo_, ctx_, person_role_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

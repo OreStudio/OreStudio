@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view fx_option_convention_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_fx_option_convention_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_fx_option_convention_han
         std::make_shared<fx_option_convention_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_fx_option_conventions_request::nats_subject,
-        queue_group,
+        fx_option_convention_queue_group,
         [h](ores::nats::message msg) { h->list_fx_option_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_fx_option_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_fx_option_convention(std::move(msg));
-        }));
+        get_fx_option_convention_request::nats_subject,
+        fx_option_convention_queue_group,
+        [h](ores::nats::message msg) { h->get_fx_option_convention(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_fx_option_conventions_request::nats_subject,
-        queue_group,
+        fx_option_convention_queue_group,
         [h](ores::nats::message msg) { h->get_many_fx_option_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_fx_option_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_fx_option_convention(std::move(msg));
-        }));
+        put_fx_option_convention_request::nats_subject,
+        fx_option_convention_queue_group,
+        [h](ores::nats::message msg) { h->put_fx_option_convention(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_fx_option_conventions_request::nats_subject,
-        queue_group,
+        fx_option_convention_queue_group,
         [h](ores::nats::message msg) { h->put_many_fx_option_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_fx_option_convention_request::nats_subject,
-        queue_group,
+        fx_option_convention_queue_group,
         [h](ores::nats::message msg) { h->delete_fx_option_convention(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_fx_option_conventions_request::nats_subject,
-        queue_group,
+        fx_option_convention_queue_group,
         [h](ores::nats::message msg) { h->delete_many_fx_option_conventions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_fx_option_convention_versions_request::nats_subject,
-        queue_group,
+        fx_option_convention_queue_group,
         [h](ores::nats::message msg) { h->list_fx_option_convention_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_fx_option_convention_version_request::nats_subject,
-        queue_group,
+        fx_option_convention_queue_group,
         [h](ores::nats::message msg) { h->get_fx_option_convention_version(std::move(msg)); }));
     return subs;
 }

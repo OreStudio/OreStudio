@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::curve_report_configuration>
-read_one(repository::curve_report_configuration_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::curve_report_configuration_key& key) {
+curve_report_configuration_read_one(repository::curve_report_configuration_repository& repo,
+                                    const ores::database::context& ctx,
+                                    const messaging::curve_report_configuration_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -86,7 +86,8 @@ read_one(repository::curve_report_configuration_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::curve_report_configuration_key key_from(const domain::curve_report_configuration& v) {
+messaging::curve_report_configuration_key
+curve_report_configuration_key_from(const domain::curve_report_configuration& v) {
     messaging::curve_report_configuration_key key;
     key.id = v.id;
     return key;
@@ -100,7 +101,7 @@ messaging::curve_report_configuration_key key_from(const domain::curve_report_co
  * database's to state, and are set after this conversion.
  */
 domain::curve_report_configuration
-to_domain(const messaging::curve_report_configuration_write& write) {
+curve_report_configuration_to_domain(const messaging::curve_report_configuration_write& write) {
     domain::curve_report_configuration v;
     v.id = write.id;
     v.curve_definition_id = write.curve_definition_id;
@@ -159,7 +160,7 @@ messaging::get_curve_report_configuration_response
 curve_report_configuration_service::get_curve_report_configuration(
     const messaging::get_curve_report_configuration_request& request) {
     messaging::get_curve_report_configuration_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = curve_report_configuration_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "curve_report_configuration"});
         return response;
@@ -179,7 +180,7 @@ curve_report_configuration_service::get_many_curve_report_configurations(
     for (const auto& k : request.keys) {
         messaging::curve_report_configuration_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = curve_report_configuration_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.curve_report_configuration = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -196,7 +197,8 @@ curve_report_configuration_service::put_curve_report_configuration(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = curve_report_configuration_read_one(
+        repo_, ctx_, curve_report_configuration_key_from(value));
     if (!written.empty())
         response.curve_report_configuration = std::move(written.front());
     return response;
@@ -229,7 +231,8 @@ curve_report_configuration_service::put_many_curve_report_configurations(
     repo_.write(ctx_, batch, claims);
     response.report_configurations.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = curve_report_configuration_read_one(
+            repo_, ctx_, curve_report_configuration_key_from(value));
         response.report_configurations.push_back(written.empty() ? value :
                                                                    std::move(written.front()));
     }
@@ -265,7 +268,7 @@ curve_report_configuration_service::delete_curve_report_configuration(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = curve_report_configuration_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "curve_report_configuration",
@@ -357,8 +360,9 @@ ores::utility::domain::result curve_report_configuration_service::prepare_change
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = curve_report_configuration_to_domain(change.write);
+    const auto current =
+        curve_report_configuration_read_one(repo_, ctx_, curve_report_configuration_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

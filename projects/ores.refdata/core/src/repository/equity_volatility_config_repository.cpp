@@ -81,7 +81,8 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+sqlgen::dynamic::OrderBy
+equity_volatility_config_list_order(const ores::utility::domain::order& order,
                                     std::initializer_list<std::string> default_columns,
                                     bool default_descending) {
     if (order.field.empty())
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::equity_volatility_configs_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> equity_volatility_config_filter_condition(
+    const std::optional<messaging::equity_volatility_configs_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -314,8 +315,8 @@ std::vector<domain::equity_volatility_config> equity_volatility_config_repositor
                                       domain::equity_volatility_config>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        equity_volatility_config_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), equity_volatility_config_filter_condition(filter)),
         [](const auto& entities) { return equity_volatility_config_mapper::map(entities); },
         lg(),
         "Reading latest equity volatility configs with pagination.");
@@ -334,7 +335,7 @@ std::uint32_t equity_volatility_config_repository::get_total_equity_volatility_c
     return execute_count_query<equity_volatility_config_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), equity_volatility_config_filter_condition(filter)),
         lg(),
         "Counting equity volatility configs");
 }

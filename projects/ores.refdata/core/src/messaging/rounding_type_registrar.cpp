@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view rounding_type_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_rounding_type_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<rounding_type_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_rounding_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_rounding_types(std::move(msg));
-        }));
+        list_rounding_types_request::nats_subject,
+        rounding_type_queue_group,
+        [h](ores::nats::message msg) { h->list_rounding_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_rounding_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_rounding_type(std::move(msg));
-        }));
+        get_rounding_type_request::nats_subject,
+        rounding_type_queue_group,
+        [h](ores::nats::message msg) { h->get_rounding_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_rounding_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_rounding_types(std::move(msg));
-        }));
+        get_many_rounding_types_request::nats_subject,
+        rounding_type_queue_group,
+        [h](ores::nats::message msg) { h->get_many_rounding_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_rounding_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_rounding_type(std::move(msg));
-        }));
+        put_rounding_type_request::nats_subject,
+        rounding_type_queue_group,
+        [h](ores::nats::message msg) { h->put_rounding_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_rounding_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_rounding_types(std::move(msg));
-        }));
+        put_many_rounding_types_request::nats_subject,
+        rounding_type_queue_group,
+        [h](ores::nats::message msg) { h->put_many_rounding_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_rounding_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_rounding_type(std::move(msg));
-        }));
+        delete_rounding_type_request::nats_subject,
+        rounding_type_queue_group,
+        [h](ores::nats::message msg) { h->delete_rounding_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_rounding_types_request::nats_subject,
-        queue_group,
+        rounding_type_queue_group,
         [h](ores::nats::message msg) { h->delete_many_rounding_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_rounding_type_versions_request::nats_subject,
-        queue_group,
+        rounding_type_queue_group,
         [h](ores::nats::message msg) { h->list_rounding_type_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_rounding_type_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_rounding_type_version(std::move(msg));
-        }));
+        get_rounding_type_version_request::nats_subject,
+        rounding_type_queue_group,
+        [h](ores::nats::message msg) { h->get_rounding_type_version(std::move(msg)); }));
     return subs;
 }
 

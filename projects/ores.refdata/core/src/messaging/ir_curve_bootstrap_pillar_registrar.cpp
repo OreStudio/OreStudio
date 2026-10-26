@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view ir_curve_bootstrap_pillar_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_ir_curve_bootstrap_pillar_handlers(
@@ -51,42 +51,42 @@ std::vector<ores::nats::service::subscription> register_ir_curve_bootstrap_pilla
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_ir_curve_bootstrap_pillars_request::nats_subject,
-        queue_group,
+        ir_curve_bootstrap_pillar_queue_group,
         [h](ores::nats::message msg) { h->list_ir_curve_bootstrap_pillars(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_ir_curve_bootstrap_pillar_request::nats_subject,
-        queue_group,
+        ir_curve_bootstrap_pillar_queue_group,
         [h](ores::nats::message msg) { h->get_ir_curve_bootstrap_pillar(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_ir_curve_bootstrap_pillars_request::nats_subject,
-        queue_group,
+        ir_curve_bootstrap_pillar_queue_group,
         [h](ores::nats::message msg) { h->get_many_ir_curve_bootstrap_pillars(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_ir_curve_bootstrap_pillar_request::nats_subject,
-        queue_group,
+        ir_curve_bootstrap_pillar_queue_group,
         [h](ores::nats::message msg) { h->put_ir_curve_bootstrap_pillar(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_ir_curve_bootstrap_pillars_request::nats_subject,
-        queue_group,
+        ir_curve_bootstrap_pillar_queue_group,
         [h](ores::nats::message msg) { h->put_many_ir_curve_bootstrap_pillars(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_ir_curve_bootstrap_pillar_request::nats_subject,
-        queue_group,
+        ir_curve_bootstrap_pillar_queue_group,
         [h](ores::nats::message msg) { h->delete_ir_curve_bootstrap_pillar(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(delete_many_ir_curve_bootstrap_pillars_request::nats_subject,
-                             queue_group,
+                             ir_curve_bootstrap_pillar_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_ir_curve_bootstrap_pillars(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_ir_curve_bootstrap_pillar_versions_request::nats_subject,
-                             queue_group,
+                             ir_curve_bootstrap_pillar_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_ir_curve_bootstrap_pillar_versions(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(get_ir_curve_bootstrap_pillar_version_request::nats_subject,
-                                        queue_group,
+                                        ir_curve_bootstrap_pillar_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->get_ir_curve_bootstrap_pillar_version(
                                                 std::move(msg));

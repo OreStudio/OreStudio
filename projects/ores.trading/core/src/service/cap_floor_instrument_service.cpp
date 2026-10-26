@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::cap_floor_instrument>
-read_one(repository::cap_floor_instrument_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::cap_floor_instrument_key& key) {
+cap_floor_instrument_read_one(repository::cap_floor_instrument_repository& repo,
+                              const ores::database::context& ctx,
+                              const messaging::cap_floor_instrument_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
 }
 
@@ -86,7 +86,8 @@ read_one(repository::cap_floor_instrument_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::cap_floor_instrument_key key_from(const domain::cap_floor_instrument& v) {
+messaging::cap_floor_instrument_key
+cap_floor_instrument_key_from(const domain::cap_floor_instrument& v) {
     messaging::cap_floor_instrument_key key;
     key.trade_id = v.trade_id;
     return key;
@@ -99,7 +100,8 @@ messaging::cap_floor_instrument_key key_from(const domain::cap_floor_instrument&
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::cap_floor_instrument to_domain(const messaging::cap_floor_instrument_write& write) {
+domain::cap_floor_instrument
+cap_floor_instrument_to_domain(const messaging::cap_floor_instrument_write& write) {
     domain::cap_floor_instrument v;
     v.trade_id = write.trade_id;
     v.trade_activity_id = write.trade_activity_id;
@@ -145,7 +147,7 @@ cap_floor_instrument_service::list_cap_floor_instruments(
 messaging::get_cap_floor_instrument_response cap_floor_instrument_service::get_cap_floor_instrument(
     const messaging::get_cap_floor_instrument_request& request) {
     messaging::get_cap_floor_instrument_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = cap_floor_instrument_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "cap_floor_instrument"});
         return response;
@@ -165,7 +167,7 @@ cap_floor_instrument_service::get_many_cap_floor_instruments(
     for (const auto& k : request.keys) {
         messaging::cap_floor_instrument_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = cap_floor_instrument_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.cap_floor_instrument = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -181,7 +183,7 @@ messaging::put_cap_floor_instrument_response cap_floor_instrument_service::put_c
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = cap_floor_instrument_read_one(repo_, ctx_, cap_floor_instrument_key_from(value));
     if (!written.empty())
         response.cap_floor_instrument = std::move(written.front());
     return response;
@@ -214,7 +216,8 @@ cap_floor_instrument_service::put_many_cap_floor_instruments(
     repo_.write(ctx_, batch, claims);
     response.cap_floor_instruments.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            cap_floor_instrument_read_one(repo_, ctx_, cap_floor_instrument_key_from(value));
         response.cap_floor_instruments.push_back(written.empty() ? value :
                                                                    std::move(written.front()));
     }
@@ -249,7 +252,7 @@ cap_floor_instrument_service::delete_cap_floor_instrument(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = cap_floor_instrument_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "cap_floor_instrument",
@@ -340,8 +343,9 @@ cap_floor_instrument_service::prepare_change(const messaging::cap_floor_instrume
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = cap_floor_instrument_to_domain(change.write);
+    const auto current =
+        cap_floor_instrument_read_one(repo_, ctx_, cap_floor_instrument_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

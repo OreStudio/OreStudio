@@ -69,9 +69,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::publication> read_one(repository::publication_repository& repo,
-                                          const ores::database::context& ctx,
-                                          const messaging::publication_key& key) {
+std::vector<domain::publication> publication_read_one(repository::publication_repository& repo,
+                                                      const ores::database::context& ctx,
+                                                      const messaging::publication_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -81,7 +81,7 @@ std::vector<domain::publication> read_one(repository::publication_repository& re
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::publication_key key_from(const domain::publication& v) {
+messaging::publication_key publication_key_from(const domain::publication& v) {
     messaging::publication_key key;
     key.id = v.id;
     return key;
@@ -94,7 +94,7 @@ messaging::publication_key key_from(const domain::publication& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::publication to_domain(const messaging::publication_write& write) {
+domain::publication publication_to_domain(const messaging::publication_write& write) {
     domain::publication v;
     v.id = write.id;
     v.dataset_id = write.dataset_id;
@@ -136,7 +136,7 @@ publication_service::list_publications(const messaging::list_publications_reques
 messaging::get_publication_response
 publication_service::get_publication(const messaging::get_publication_request& request) {
     messaging::get_publication_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = publication_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "publication"});
         return response;
@@ -155,7 +155,7 @@ messaging::get_many_publications_response publication_service::get_many_publicat
     for (const auto& k : request.keys) {
         messaging::publication_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = publication_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.publication = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -171,7 +171,7 @@ publication_service::put_publication(const messaging::put_publication_request& r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = publication_read_one(repo_, ctx_, publication_key_from(value));
     if (!written.empty())
         response.publication = std::move(written.front());
     return response;
@@ -203,7 +203,7 @@ messaging::put_many_publications_response publication_service::put_many_publicat
     repo_.write(ctx_, batch, claims);
     response.publications.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = publication_read_one(repo_, ctx_, publication_key_from(value));
         response.publications.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -281,8 +281,8 @@ publication_service::prepare_change(const messaging::publication_change& change,
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = publication_to_domain(change.write);
+    const auto current = publication_read_one(repo_, ctx_, publication_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

@@ -39,7 +39,7 @@
 namespace ores::analytics::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.analytics.service";
+static constexpr std::string_view todays_market_entry_queue_group = "ores.analytics.service";
 }
 
 std::vector<ores::nats::service::subscription> register_todays_market_entry_handlers(
@@ -51,51 +51,51 @@ std::vector<ores::nats::service::subscription> register_todays_market_entry_hand
         std::make_shared<todays_market_entry_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_todays_market_entries_request::nats_subject,
-        queue_group,
+        todays_market_entry_queue_group,
         [h](ores::nats::message msg) { h->list_todays_market_entries(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_todays_market_entry_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_todays_market_entry(std::move(msg));
-        }));
+        get_todays_market_entry_request::nats_subject,
+        todays_market_entry_queue_group,
+        [h](ores::nats::message msg) { h->get_todays_market_entry(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_todays_market_entries_request::nats_subject,
-        queue_group,
+        todays_market_entry_queue_group,
         [h](ores::nats::message msg) { h->get_many_todays_market_entries(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_todays_market_entry_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_todays_market_entry(std::move(msg));
-        }));
+        put_todays_market_entry_request::nats_subject,
+        todays_market_entry_queue_group,
+        [h](ores::nats::message msg) { h->put_todays_market_entry(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_todays_market_entries_request::nats_subject,
-        queue_group,
+        todays_market_entry_queue_group,
         [h](ores::nats::message msg) { h->put_many_todays_market_entries(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_todays_market_entry_request::nats_subject,
-        queue_group,
+        todays_market_entry_queue_group,
         [h](ores::nats::message msg) { h->delete_todays_market_entry(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_todays_market_entries_request::nats_subject,
-        queue_group,
+        todays_market_entry_queue_group,
         [h](ores::nats::message msg) { h->delete_many_todays_market_entries(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_by_todays_market_config_id_todays_market_entries_request::nats_subject,
-        queue_group,
+        todays_market_entry_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_todays_market_config_id_todays_market_entries(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         list_by_todays_market_collection_id_todays_market_entries_request::nats_subject,
-        queue_group,
+        todays_market_entry_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_todays_market_collection_id_todays_market_entries(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
         list_todays_market_entry_versions_request::nats_subject,
-        queue_group,
+        todays_market_entry_queue_group,
         [h](ores::nats::message msg) { h->list_todays_market_entry_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_todays_market_entry_version_request::nats_subject,
-        queue_group,
+        todays_market_entry_queue_group,
         [h](ores::nats::message msg) { h->get_todays_market_entry_version(std::move(msg)); }));
     return subs;
 }

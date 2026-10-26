@@ -39,7 +39,7 @@
 namespace ores::marketdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.marketdata.service";
+static constexpr std::string_view market_fixing_queue_group = "ores.marketdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,32 +49,32 @@ register_market_fixing_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<market_fixing_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_market_fixings_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_market_fixings(std::move(msg));
-        }));
+        list_market_fixings_request::nats_subject,
+        market_fixing_queue_group,
+        [h](ores::nats::message msg) { h->list_market_fixings(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_market_fixing_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_market_fixing(std::move(msg));
-        }));
+        get_market_fixing_request::nats_subject,
+        market_fixing_queue_group,
+        [h](ores::nats::message msg) { h->get_market_fixing(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_market_fixings_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_market_fixings(std::move(msg));
-        }));
+        get_many_market_fixings_request::nats_subject,
+        market_fixing_queue_group,
+        [h](ores::nats::message msg) { h->get_many_market_fixings(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_market_fixing_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_market_fixing(std::move(msg));
-        }));
+        put_market_fixing_request::nats_subject,
+        market_fixing_queue_group,
+        [h](ores::nats::message msg) { h->put_market_fixing(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_market_fixings_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_market_fixings(std::move(msg));
-        }));
+        put_many_market_fixings_request::nats_subject,
+        market_fixing_queue_group,
+        [h](ores::nats::message msg) { h->put_many_market_fixings(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_market_fixing_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_market_fixing(std::move(msg));
-        }));
+        delete_market_fixing_request::nats_subject,
+        market_fixing_queue_group,
+        [h](ores::nats::message msg) { h->delete_market_fixing(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_market_fixings_request::nats_subject,
-        queue_group,
+        market_fixing_queue_group,
         [h](ores::nats::message msg) { h->delete_many_market_fixings(std::move(msg)); }));
     return subs;
 }

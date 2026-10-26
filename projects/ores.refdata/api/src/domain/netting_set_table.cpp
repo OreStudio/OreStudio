@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string netting_set_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,8 +50,9 @@ std::string convert_to_table(const std::vector<netting_set>& v) {
           << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& ns : v) {
-        table << ns.code << opt_str(ns.call_type) << opt_str(ns.initial_margin_type)
-              << opt_str(ns.risk_weight) << ns.modified_by << ns.version << fort::endr;
+        table << ns.code << netting_set_opt_str(ns.call_type)
+              << netting_set_opt_str(ns.initial_margin_type) << netting_set_opt_str(ns.risk_weight)
+              << ns.modified_by << ns.version << fort::endr;
     }
     return table.to_string();
 }

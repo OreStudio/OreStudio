@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void party_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void party_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -223,7 +223,7 @@ void party_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        party_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -271,7 +271,7 @@ void party_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.short_code, parsed->positionals[next++], "short_code");
+        party_read_token(req.key.short_code, parsed->positionals[next++], "short_code");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -316,7 +316,7 @@ void party_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::party_key key;
-            read_token(key.short_code, parsed->positionals[i + 0], "short_code");
+            party_read_token(key.short_code, parsed->positionals[i + 0], "short_code");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -362,24 +362,25 @@ void party_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        read_token(req.change.write.short_code, parsed->positionals[next++], "short_code");
-        read_token(req.change.write.full_name, parsed->positionals[next++], "full_name");
-        read_token(req.change.write.codename, parsed->positionals[next++], "codename");
-        read_token(req.change.write.transliterated_name,
-                   parsed->positionals[next++],
-                   "transliterated_name");
-        read_token(req.change.write.party_category, parsed->positionals[next++], "party_category");
-        read_token(req.change.write.party_type, parsed->positionals[next++], "party_type");
-        read_token(
+        party_read_token(req.change.write.short_code, parsed->positionals[next++], "short_code");
+        party_read_token(req.change.write.full_name, parsed->positionals[next++], "full_name");
+        party_read_token(req.change.write.codename, parsed->positionals[next++], "codename");
+        party_read_token(req.change.write.transliterated_name,
+                         parsed->positionals[next++],
+                         "transliterated_name");
+        party_read_token(
+            req.change.write.party_category, parsed->positionals[next++], "party_category");
+        party_read_token(req.change.write.party_type, parsed->positionals[next++], "party_type");
+        party_read_token(
             req.change.write.parent_party_id, parsed->positionals[next++], "parent_party_id");
-        read_token(req.change.write.business_center_code,
-                   parsed->positionals[next++],
-                   "business_center_code");
-        read_token(req.change.write.status, parsed->positionals[next++], "status");
-        read_token(req.change.write.image_id, parsed->positionals[next++], "image_id");
-        read_token(req.change.write.is_registration_default,
-                   parsed->positionals[next++],
-                   "is_registration_default");
+        party_read_token(req.change.write.business_center_code,
+                         parsed->positionals[next++],
+                         "business_center_code");
+        party_read_token(req.change.write.status, parsed->positionals[next++], "status");
+        party_read_token(req.change.write.image_id, parsed->positionals[next++], "image_id");
+        party_read_token(req.change.write.is_registration_default,
+                         parsed->positionals[next++],
+                         "is_registration_default");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -427,25 +428,26 @@ void party_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.id, parsed->positionals[next++], "id");
-        read_token(req.change.write.short_code, parsed->positionals[next++], "short_code");
-        read_token(req.change.write.full_name, parsed->positionals[next++], "full_name");
-        read_token(req.change.write.codename, parsed->positionals[next++], "codename");
-        read_token(req.change.write.transliterated_name,
-                   parsed->positionals[next++],
-                   "transliterated_name");
-        read_token(req.change.write.party_category, parsed->positionals[next++], "party_category");
-        read_token(req.change.write.party_type, parsed->positionals[next++], "party_type");
-        read_token(
+        party_read_token(req.change.write.id, parsed->positionals[next++], "id");
+        party_read_token(req.change.write.short_code, parsed->positionals[next++], "short_code");
+        party_read_token(req.change.write.full_name, parsed->positionals[next++], "full_name");
+        party_read_token(req.change.write.codename, parsed->positionals[next++], "codename");
+        party_read_token(req.change.write.transliterated_name,
+                         parsed->positionals[next++],
+                         "transliterated_name");
+        party_read_token(
+            req.change.write.party_category, parsed->positionals[next++], "party_category");
+        party_read_token(req.change.write.party_type, parsed->positionals[next++], "party_type");
+        party_read_token(
             req.change.write.parent_party_id, parsed->positionals[next++], "parent_party_id");
-        read_token(req.change.write.business_center_code,
-                   parsed->positionals[next++],
-                   "business_center_code");
-        read_token(req.change.write.status, parsed->positionals[next++], "status");
-        read_token(req.change.write.image_id, parsed->positionals[next++], "image_id");
-        read_token(req.change.write.is_registration_default,
-                   parsed->positionals[next++],
-                   "is_registration_default");
+        party_read_token(req.change.write.business_center_code,
+                         parsed->positionals[next++],
+                         "business_center_code");
+        party_read_token(req.change.write.status, parsed->positionals[next++], "status");
+        party_read_token(req.change.write.image_id, parsed->positionals[next++], "image_id");
+        party_read_token(req.change.write.is_registration_default,
+                         parsed->positionals[next++],
+                         "is_registration_default");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -507,25 +509,26 @@ void party_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::party_change change;
-            read_token(change.write.id, parsed->positionals[next++], "id");
-            read_token(change.write.short_code, parsed->positionals[next++], "short_code");
-            read_token(change.write.full_name, parsed->positionals[next++], "full_name");
-            read_token(change.write.codename, parsed->positionals[next++], "codename");
-            read_token(change.write.transliterated_name,
-                       parsed->positionals[next++],
-                       "transliterated_name");
-            read_token(change.write.party_category, parsed->positionals[next++], "party_category");
-            read_token(change.write.party_type, parsed->positionals[next++], "party_type");
-            read_token(
+            party_read_token(change.write.id, parsed->positionals[next++], "id");
+            party_read_token(change.write.short_code, parsed->positionals[next++], "short_code");
+            party_read_token(change.write.full_name, parsed->positionals[next++], "full_name");
+            party_read_token(change.write.codename, parsed->positionals[next++], "codename");
+            party_read_token(change.write.transliterated_name,
+                             parsed->positionals[next++],
+                             "transliterated_name");
+            party_read_token(
+                change.write.party_category, parsed->positionals[next++], "party_category");
+            party_read_token(change.write.party_type, parsed->positionals[next++], "party_type");
+            party_read_token(
                 change.write.parent_party_id, parsed->positionals[next++], "parent_party_id");
-            read_token(change.write.business_center_code,
-                       parsed->positionals[next++],
-                       "business_center_code");
-            read_token(change.write.status, parsed->positionals[next++], "status");
-            read_token(change.write.image_id, parsed->positionals[next++], "image_id");
-            read_token(change.write.is_registration_default,
-                       parsed->positionals[next++],
-                       "is_registration_default");
+            party_read_token(change.write.business_center_code,
+                             parsed->positionals[next++],
+                             "business_center_code");
+            party_read_token(change.write.status, parsed->positionals[next++], "status");
+            party_read_token(change.write.image_id, parsed->positionals[next++], "image_id");
+            party_read_token(change.write.is_registration_default,
+                             parsed->positionals[next++],
+                             "is_registration_default");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -575,7 +578,7 @@ void party_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.short_code, parsed->positionals[next++], "short_code");
+        party_read_token(req.removal.key.short_code, parsed->positionals[next++], "short_code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -629,7 +632,7 @@ void party_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::party_key key;
-            read_token(key.short_code, parsed->positionals[i * 1 + 0], "short_code");
+            party_read_token(key.short_code, parsed->positionals[i * 1 + 0], "short_code");
             req.removals.push_back(messaging::party_removal{.key = std::move(key)});
         }
         req.intent.reason_code = parsed->positionals[parsed->positionals.size() - 2];
@@ -681,8 +684,8 @@ void party_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.short_code, parsed->positionals[next++], "short_code");
-        apply_page(req, *parsed);
+        party_read_token(req.key.short_code, parsed->positionals[next++], "short_code");
+        party_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -727,7 +730,7 @@ void party_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.party.short_code, parsed->positionals[next++], "short_code");
+        party_read_token(req.key.party.short_code, parsed->positionals[next++], "short_code");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

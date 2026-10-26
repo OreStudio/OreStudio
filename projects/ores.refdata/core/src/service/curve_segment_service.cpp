@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::curve_segment> read_one(repository::curve_segment_repository& repo,
-                                            const ores::database::context& ctx,
-                                            const messaging::curve_segment_key& key) {
+std::vector<domain::curve_segment>
+curve_segment_read_one(repository::curve_segment_repository& repo,
+                       const ores::database::context& ctx,
+                       const messaging::curve_segment_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::curve_segment> read_one(repository::curve_segment_repository
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::curve_segment_key key_from(const domain::curve_segment& v) {
+messaging::curve_segment_key curve_segment_key_from(const domain::curve_segment& v) {
     messaging::curve_segment_key key;
     key.id = v.id;
     return key;
@@ -98,7 +99,7 @@ messaging::curve_segment_key key_from(const domain::curve_segment& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::curve_segment to_domain(const messaging::curve_segment_write& write) {
+domain::curve_segment curve_segment_to_domain(const messaging::curve_segment_write& write) {
     domain::curve_segment v;
     v.id = write.id;
     v.curve_definition_id = write.curve_definition_id;
@@ -172,7 +173,7 @@ curve_segment_service::list_curve_segments(const messaging::list_curve_segments_
 messaging::get_curve_segment_response
 curve_segment_service::get_curve_segment(const messaging::get_curve_segment_request& request) {
     messaging::get_curve_segment_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = curve_segment_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "curve_segment"});
         return response;
@@ -191,7 +192,7 @@ messaging::get_many_curve_segments_response curve_segment_service::get_many_curv
     for (const auto& k : request.keys) {
         messaging::curve_segment_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = curve_segment_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.curve_segment = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -207,7 +208,7 @@ curve_segment_service::put_curve_segment(const messaging::put_curve_segment_requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = curve_segment_read_one(repo_, ctx_, curve_segment_key_from(value));
     if (!written.empty())
         response.curve_segment = std::move(written.front());
     return response;
@@ -239,7 +240,7 @@ messaging::put_many_curve_segments_response curve_segment_service::put_many_curv
     repo_.write(ctx_, batch, claims);
     response.segments.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = curve_segment_read_one(repo_, ctx_, curve_segment_key_from(value));
         response.segments.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -272,7 +273,7 @@ messaging::delete_curve_segment_response curve_segment_service::delete_curve_seg
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = curve_segment_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "curve_segment",
@@ -357,8 +358,8 @@ curve_segment_service::prepare_change(const messaging::curve_segment_change& cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = curve_segment_to_domain(change.write);
+    const auto current = curve_segment_read_one(repo_, ctx_, curve_segment_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

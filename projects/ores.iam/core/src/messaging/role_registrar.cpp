@@ -39,7 +39,7 @@
 namespace ores::iam::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.iam.service";
+static constexpr std::string_view role_queue_group = "ores.iam.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,39 +49,39 @@ register_role_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<role_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_roles_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_roles_request::nats_subject, role_queue_group, [h](ores::nats::message msg) {
             h->list_roles(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_role_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_role_request::nats_subject, role_queue_group, [h](ores::nats::message msg) {
             h->get_role(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_roles_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_many_roles_request::nats_subject, role_queue_group, [h](ores::nats::message msg) {
             h->get_many_roles(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_role_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_role_request::nats_subject, role_queue_group, [h](ores::nats::message msg) {
             h->put_role(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_roles_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_many_roles_request::nats_subject, role_queue_group, [h](ores::nats::message msg) {
             h->put_many_roles(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_role_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        delete_role_request::nats_subject, role_queue_group, [h](ores::nats::message msg) {
             h->delete_role(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_roles_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        delete_many_roles_request::nats_subject, role_queue_group, [h](ores::nats::message msg) {
             h->delete_many_roles(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        list_role_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_role_versions_request::nats_subject, role_queue_group, [h](ores::nats::message msg) {
             h->list_role_versions(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_role_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_role_version_request::nats_subject, role_queue_group, [h](ores::nats::message msg) {
             h->get_role_version(std::move(msg));
         }));
     return subs;

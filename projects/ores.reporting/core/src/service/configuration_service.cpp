@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::configuration> read_one(repository::configuration_repository& repo,
-                                            const ores::database::context& ctx,
-                                            const messaging::configuration_key& key) {
+std::vector<domain::configuration>
+configuration_read_one(repository::configuration_repository& repo,
+                       const ores::database::context& ctx,
+                       const messaging::configuration_key& key) {
     return repo.read_latest_by_name(ctx, key.name);
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::configuration> read_one(repository::configuration_repository
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::configuration_key key_from(const domain::configuration& v) {
+messaging::configuration_key configuration_key_from(const domain::configuration& v) {
     messaging::configuration_key key;
     key.name = v.name;
     return key;
@@ -98,7 +99,7 @@ messaging::configuration_key key_from(const domain::configuration& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::configuration to_domain(const messaging::configuration_write& write) {
+domain::configuration configuration_to_domain(const messaging::configuration_write& write) {
     domain::configuration v;
     v.id = write.id;
     v.name = write.name;
@@ -183,7 +184,7 @@ configuration_service::list_by_configuration_type_code_configurations(
 messaging::get_configuration_response
 configuration_service::get_configuration(const messaging::get_configuration_request& request) {
     messaging::get_configuration_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = configuration_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "configuration"});
         return response;
@@ -202,7 +203,7 @@ messaging::get_many_configurations_response configuration_service::get_many_conf
     for (const auto& k : request.keys) {
         messaging::configuration_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = configuration_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.configuration = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -218,7 +219,7 @@ configuration_service::put_configuration(const messaging::put_configuration_requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = configuration_read_one(repo_, ctx_, configuration_key_from(value));
     if (!written.empty())
         response.configuration = std::move(written.front());
     return response;
@@ -250,7 +251,7 @@ messaging::put_many_configurations_response configuration_service::put_many_conf
     repo_.write(ctx_, batch, claims);
     response.configurations.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = configuration_read_one(repo_, ctx_, configuration_key_from(value));
         response.configurations.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -273,7 +274,7 @@ messaging::delete_configuration_response configuration_service::delete_configura
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = configuration_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "configuration"});
         return response;
@@ -289,7 +290,7 @@ messaging::delete_configuration_response configuration_service::delete_configura
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = configuration_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "configuration",
@@ -330,7 +331,7 @@ messaging::delete_many_configurations_response configuration_service::delete_man
     std::vector<domain::configuration> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = configuration_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -356,7 +357,7 @@ messaging::list_configuration_versions_response configuration_service::list_conf
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = configuration_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "configuration"});
         return response;
@@ -379,7 +380,7 @@ messaging::get_configuration_version_response configuration_service::get_configu
     messaging::get_configuration_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.configuration);
+    const auto named = configuration_read_one(repo_, ctx_, request.key.configuration);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "configuration"});
         return response;
@@ -401,8 +402,8 @@ configuration_service::prepare_change(const messaging::configuration_change& cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = configuration_to_domain(change.write);
+    const auto current = configuration_read_one(repo_, ctx_, configuration_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -494,7 +495,7 @@ configuration_service::get_configuration_by_name(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Getting configuration by name: " << name;
     messaging::configuration_key k;
     k.name = name;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = configuration_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

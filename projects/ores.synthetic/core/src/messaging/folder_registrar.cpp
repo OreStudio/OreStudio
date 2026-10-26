@@ -39,7 +39,7 @@
 namespace ores::synthetic::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.synthetic.service";
+static constexpr std::string_view folder_queue_group = "ores.synthetic.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,39 +49,39 @@ register_folder_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<folder_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_folders_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_folders_request::nats_subject, folder_queue_group, [h](ores::nats::message msg) {
             h->list_folders(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_folder_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_folder_request::nats_subject, folder_queue_group, [h](ores::nats::message msg) {
             h->get_folder(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_folders_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_many_folders_request::nats_subject, folder_queue_group, [h](ores::nats::message msg) {
             h->get_many_folders(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_folder_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_folder_request::nats_subject, folder_queue_group, [h](ores::nats::message msg) {
             h->put_folder(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_folders_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_many_folders_request::nats_subject, folder_queue_group, [h](ores::nats::message msg) {
             h->put_many_folders(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_folder_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        delete_folder_request::nats_subject, folder_queue_group, [h](ores::nats::message msg) {
             h->delete_folder(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_folders_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_folders(std::move(msg));
-        }));
+        delete_many_folders_request::nats_subject,
+        folder_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_folders(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        list_folder_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_folder_versions(std::move(msg));
-        }));
+        list_folder_versions_request::nats_subject,
+        folder_queue_group,
+        [h](ores::nats::message msg) { h->list_folder_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_folder_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_folder_version_request::nats_subject, folder_queue_group, [h](ores::nats::message msg) {
             h->get_folder_version(std::move(msg));
         }));
     return subs;

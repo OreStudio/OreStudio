@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+portfolio_right_list_order(const ores::utility::domain::order& order,
+                           std::initializer_list<std::string> default_columns,
+                           bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!portfolio_right_repository::is_sortable(order.field))
@@ -97,7 +98,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::portfolio_rights_filter>& filter) {
+portfolio_right_filter_condition(const std::optional<messaging::portfolio_rights_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -320,8 +321,8 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_latest_by_
     return execute_ordered_read_query<portfolio_right_entity, domain::portfolio_right>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        portfolio_right_list_order(order, {"id"}, false),
+        portfolio_right_filter_condition(filter),
         [](const auto& entities) { return portfolio_right_mapper::map(entities); },
         lg(),
         "Reading latest portfolio rights by account_id.");
@@ -340,8 +341,11 @@ std::uint32_t portfolio_right_repository::get_total_portfolio_right_count_by_acc
         sqlgen::read<std::vector<portfolio_right_entity>> |
         where("tenant_id"_c == tid && "account_id"_c == account_id && "valid_to"_c == max.value());
 
-    return execute_count_query<portfolio_right_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting portfolio rights by account_id");
+    return execute_count_query<portfolio_right_entity>(ctx,
+                                                       query,
+                                                       portfolio_right_filter_condition(filter),
+                                                       lg(),
+                                                       "Counting portfolio rights by account_id");
 }
 
 
@@ -364,8 +368,8 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_latest_by_
     return execute_ordered_read_query<portfolio_right_entity, domain::portfolio_right>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        portfolio_right_list_order(order, {"id"}, false),
+        portfolio_right_filter_condition(filter),
         [](const auto& entities) { return portfolio_right_mapper::map(entities); },
         lg(),
         "Reading latest portfolio rights by portfolio_id.");
@@ -384,8 +388,11 @@ std::uint32_t portfolio_right_repository::get_total_portfolio_right_count_by_por
                        where("tenant_id"_c == tid && "portfolio_id"_c == portfolio_id &&
                              "valid_to"_c == max.value());
 
-    return execute_count_query<portfolio_right_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting portfolio rights by portfolio_id");
+    return execute_count_query<portfolio_right_entity>(ctx,
+                                                       query,
+                                                       portfolio_right_filter_condition(filter),
+                                                       lg(),
+                                                       "Counting portfolio rights by portfolio_id");
 }
 
 
@@ -438,8 +445,8 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_latest(
     return execute_ordered_read_query<portfolio_right_entity, domain::portfolio_right>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        portfolio_right_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), portfolio_right_filter_condition(filter)),
         [](const auto& entities) { return portfolio_right_mapper::map(entities); },
         lg(),
         "Reading latest portfolio rights with pagination.");
@@ -458,7 +465,7 @@ std::uint32_t portfolio_right_repository::get_total_portfolio_right_count(
     return execute_count_query<portfolio_right_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), portfolio_right_filter_condition(filter)),
         lg(),
         "Counting portfolio rights");
 }

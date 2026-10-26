@@ -31,7 +31,7 @@ namespace ores::marketdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string series_classification_rule_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,8 +51,9 @@ std::string convert_to_table(const std::vector<series_classification_rule>& v) {
 
     for ([[maybe_unused]] const auto& scr : v) {
         table << scr.series_type << scr.metric << scr.asset_class_source
-              << opt_str(scr.asset_class_code) << scr.series_subclass_code << scr.description
-              << scr.modified_by << scr.version << fort::endr;
+              << series_classification_rule_opt_str(scr.asset_class_code)
+              << scr.series_subclass_code << scr.description << scr.modified_by << scr.version
+              << fort::endr;
     }
     return table.to_string();
 }

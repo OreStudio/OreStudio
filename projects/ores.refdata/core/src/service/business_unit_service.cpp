@@ -74,9 +74,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::business_unit> read_one(repository::business_unit_repository& repo,
-                                            const ores::database::context& ctx,
-                                            const messaging::business_unit_key& key) {
+std::vector<domain::business_unit>
+business_unit_read_one(repository::business_unit_repository& repo,
+                       const ores::database::context& ctx,
+                       const messaging::business_unit_key& key) {
     return repo.read_latest_by_unit_code(ctx, key.unit_code);
 }
 
@@ -86,7 +87,7 @@ std::vector<domain::business_unit> read_one(repository::business_unit_repository
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::business_unit_key key_from(const domain::business_unit& v) {
+messaging::business_unit_key business_unit_key_from(const domain::business_unit& v) {
     messaging::business_unit_key key;
     key.unit_code = v.unit_code;
     return key;
@@ -99,7 +100,7 @@ messaging::business_unit_key key_from(const domain::business_unit& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::business_unit to_domain(const messaging::business_unit_write& write) {
+domain::business_unit business_unit_to_domain(const messaging::business_unit_write& write) {
     domain::business_unit v;
     v.id = write.id;
     v.party_id = write.party_id;
@@ -188,7 +189,7 @@ business_unit_service::list_by_party_id_business_units(
 messaging::get_business_unit_response
 business_unit_service::get_business_unit(const messaging::get_business_unit_request& request) {
     messaging::get_business_unit_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = business_unit_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "business_unit"});
         return response;
@@ -207,7 +208,7 @@ messaging::get_many_business_units_response business_unit_service::get_many_busi
     for (const auto& k : request.keys) {
         messaging::business_unit_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = business_unit_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.business_unit = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -223,7 +224,7 @@ business_unit_service::put_business_unit(const messaging::put_business_unit_requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = business_unit_read_one(repo_, ctx_, business_unit_key_from(value));
     if (!written.empty())
         response.business_unit = std::move(written.front());
     return response;
@@ -255,7 +256,7 @@ messaging::put_many_business_units_response business_unit_service::put_many_busi
     repo_.write(ctx_, batch, claims);
     response.business_units.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = business_unit_read_one(repo_, ctx_, business_unit_key_from(value));
         response.business_units.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -278,7 +279,7 @@ messaging::delete_business_unit_response business_unit_service::delete_business_
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = business_unit_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "business_unit"});
         return response;
@@ -294,7 +295,7 @@ messaging::delete_business_unit_response business_unit_service::delete_business_
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = business_unit_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "business_unit",
@@ -335,7 +336,7 @@ messaging::delete_many_business_units_response business_unit_service::delete_man
     std::vector<domain::business_unit> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = business_unit_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -361,7 +362,7 @@ messaging::list_business_unit_versions_response business_unit_service::list_busi
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = business_unit_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "business_unit"});
         return response;
@@ -384,7 +385,7 @@ messaging::get_business_unit_version_response business_unit_service::get_busines
     messaging::get_business_unit_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.business_unit);
+    const auto named = business_unit_read_one(repo_, ctx_, request.key.business_unit);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "business_unit"});
         return response;
@@ -406,8 +407,8 @@ business_unit_service::prepare_change(const messaging::business_unit_change& cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = business_unit_to_domain(change.write);
+    const auto current = business_unit_read_one(repo_, ctx_, business_unit_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -505,7 +506,7 @@ business_unit_service::get_business_unit_by_unit_code(const std::string& unit_co
     BOOST_LOG_SEV(lg(), debug) << "Getting business unit by unit_code: " << unit_code;
     messaging::business_unit_key k;
     k.unit_code = unit_code;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = business_unit_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

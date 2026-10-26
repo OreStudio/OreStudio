@@ -31,7 +31,7 @@ namespace ores::iam::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string role_grant_request_role_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,7 +50,7 @@ std::string convert_to_table(const std::vector<role_grant_request_role>& v) {
 
     for ([[maybe_unused]] const auto& rgrr : v) {
         table << boost::uuids::to_string(rgrr.request_id) << boost::uuids::to_string(rgrr.role_id)
-              << opt_str(rgrr.applied_at) << rgrr.version << fort::endr;
+              << role_grant_request_role_opt_str(rgrr.applied_at) << rgrr.version << fort::endr;
     }
     return table.to_string();
 }

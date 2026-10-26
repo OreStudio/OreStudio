@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view local_jurisdiction_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_local_jurisdiction_handlers(
@@ -50,40 +50,40 @@ std::vector<ores::nats::service::subscription> register_local_jurisdiction_handl
     auto h =
         std::make_shared<local_jurisdiction_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_local_jurisdictions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_local_jurisdictions(std::move(msg));
-        }));
+        list_local_jurisdictions_request::nats_subject,
+        local_jurisdiction_queue_group,
+        [h](ores::nats::message msg) { h->list_local_jurisdictions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_local_jurisdiction_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_local_jurisdiction(std::move(msg));
-        }));
+        get_local_jurisdiction_request::nats_subject,
+        local_jurisdiction_queue_group,
+        [h](ores::nats::message msg) { h->get_local_jurisdiction(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_local_jurisdictions_request::nats_subject,
-        queue_group,
+        local_jurisdiction_queue_group,
         [h](ores::nats::message msg) { h->get_many_local_jurisdictions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_local_jurisdiction_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_local_jurisdiction(std::move(msg));
-        }));
+        put_local_jurisdiction_request::nats_subject,
+        local_jurisdiction_queue_group,
+        [h](ores::nats::message msg) { h->put_local_jurisdiction(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_local_jurisdictions_request::nats_subject,
-        queue_group,
+        local_jurisdiction_queue_group,
         [h](ores::nats::message msg) { h->put_many_local_jurisdictions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_local_jurisdiction_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_local_jurisdiction(std::move(msg));
-        }));
+        delete_local_jurisdiction_request::nats_subject,
+        local_jurisdiction_queue_group,
+        [h](ores::nats::message msg) { h->delete_local_jurisdiction(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_local_jurisdictions_request::nats_subject,
-        queue_group,
+        local_jurisdiction_queue_group,
         [h](ores::nats::message msg) { h->delete_many_local_jurisdictions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_local_jurisdiction_versions_request::nats_subject,
-        queue_group,
+        local_jurisdiction_queue_group,
         [h](ores::nats::message msg) { h->list_local_jurisdiction_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_local_jurisdiction_version_request::nats_subject,
-        queue_group,
+        local_jurisdiction_queue_group,
         [h](ores::nats::message msg) { h->get_local_jurisdiction_version(std::move(msg)); }));
     return subs;
 }

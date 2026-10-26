@@ -62,8 +62,8 @@ namespace {
  * straight through.
  */
 std::vector<domain::notification_argument>
-read_one(repository::notification_argument_repository& repo,
-         const messaging::notification_argument_key& key) {
+notification_argument_read_one(repository::notification_argument_repository& repo,
+                               const messaging::notification_argument_key& key) {
     return repo.read_latest(key.notification_id, key.name);
 }
 
@@ -73,7 +73,8 @@ read_one(repository::notification_argument_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::notification_argument_key key_from(const domain::notification_argument& v) {
+messaging::notification_argument_key
+notification_argument_key_from(const domain::notification_argument& v) {
     messaging::notification_argument_key key;
     key.notification_id = v.notification_id;
     key.name = v.name;
@@ -88,7 +89,8 @@ messaging::notification_argument_key key_from(const domain::notification_argumen
  * validity window are the service's and the database's to state, and are
  * set after this conversion.
  */
-domain::notification_argument to_domain(const messaging::notification_argument_write& write) {
+domain::notification_argument
+notification_argument_to_domain(const messaging::notification_argument_write& write) {
     domain::notification_argument v;
     v.notification_id = write.notification_id;
     v.name = write.name;
@@ -148,7 +150,7 @@ messaging::get_notification_argument_response
 notification_argument_service::get_notification_argument(
     const messaging::get_notification_argument_request& request) {
     messaging::get_notification_argument_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = notification_argument_read_one(repo_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "notification_argument"});
         return response;
@@ -168,7 +170,7 @@ notification_argument_service::get_many_notification_arguments(
     for (const auto& k : request.keys) {
         messaging::notification_argument_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = notification_argument_read_one(repo_, k);
         if (!found.empty())
             entry.notification_argument = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -185,7 +187,7 @@ notification_argument_service::put_notification_argument(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written = notification_argument_read_one(repo_, notification_argument_key_from(value));
     if (!written.empty())
         response.notification_argument = std::move(written.front());
     return response;
@@ -218,7 +220,7 @@ notification_argument_service::put_many_notification_arguments(
     repo_.write(batch, claims);
     response.notification_arguments.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written = notification_argument_read_one(repo_, notification_argument_key_from(value));
         response.notification_arguments.push_back(written.empty() ? value :
                                                                     std::move(written.front()));
     }
@@ -253,7 +255,7 @@ notification_argument_service::delete_notification_argument(
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = notification_argument_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "notification_argument",
@@ -306,8 +308,8 @@ notification_argument_service::prepare_change(const messaging::notification_argu
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = notification_argument_to_domain(change.write);
+    const auto current = notification_argument_read_one(repo_, notification_argument_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

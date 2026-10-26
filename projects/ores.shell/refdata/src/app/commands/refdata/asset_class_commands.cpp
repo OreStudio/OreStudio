@@ -63,7 +63,7 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void asset_class_read_token(T& target, const std::string& raw, const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +97,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void asset_class_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -220,7 +220,7 @@ void asset_class_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        asset_class_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -268,8 +268,9 @@ void asset_class_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.code, parsed->positionals[next++], "code");
-        read_token(req.key.coding_scheme_code, parsed->positionals[next++], "coding_scheme_code");
+        asset_class_read_token(req.key.code, parsed->positionals[next++], "code");
+        asset_class_read_token(
+            req.key.coding_scheme_code, parsed->positionals[next++], "coding_scheme_code");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -314,8 +315,9 @@ void asset_class_commands::process_get_many(std::ostream& out,
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 2) {
             messaging::asset_class_key key;
-            read_token(key.code, parsed->positionals[i + 0], "code");
-            read_token(key.coding_scheme_code, parsed->positionals[i + 1], "coding_scheme_code");
+            asset_class_read_token(key.code, parsed->positionals[i + 0], "code");
+            asset_class_read_token(
+                key.coding_scheme_code, parsed->positionals[i + 1], "coding_scheme_code");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -360,11 +362,12 @@ void asset_class_commands::process_add(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.code, parsed->positionals[next++], "code");
-        read_token(
+        asset_class_read_token(req.change.write.code, parsed->positionals[next++], "code");
+        asset_class_read_token(
             req.change.write.coding_scheme_code, parsed->positionals[next++], "coding_scheme_code");
-        read_token(req.change.write.source, parsed->positionals[next++], "source");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
+        asset_class_read_token(req.change.write.source, parsed->positionals[next++], "source");
+        asset_class_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -412,11 +415,12 @@ void asset_class_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.code, parsed->positionals[next++], "code");
-        read_token(
+        asset_class_read_token(req.change.write.code, parsed->positionals[next++], "code");
+        asset_class_read_token(
             req.change.write.coding_scheme_code, parsed->positionals[next++], "coding_scheme_code");
-        read_token(req.change.write.source, parsed->positionals[next++], "source");
-        read_token(req.change.write.description, parsed->positionals[next++], "description");
+        asset_class_read_token(req.change.write.source, parsed->positionals[next++], "source");
+        asset_class_read_token(
+            req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -478,11 +482,12 @@ void asset_class_commands::process_put_many(std::ostream& out,
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::asset_class_change change;
-            read_token(change.write.code, parsed->positionals[next++], "code");
-            read_token(
+            asset_class_read_token(change.write.code, parsed->positionals[next++], "code");
+            asset_class_read_token(
                 change.write.coding_scheme_code, parsed->positionals[next++], "coding_scheme_code");
-            read_token(change.write.source, parsed->positionals[next++], "source");
-            read_token(change.write.description, parsed->positionals[next++], "description");
+            asset_class_read_token(change.write.source, parsed->positionals[next++], "source");
+            asset_class_read_token(
+                change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -532,8 +537,8 @@ void asset_class_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.code, parsed->positionals[next++], "code");
-        read_token(
+        asset_class_read_token(req.removal.key.code, parsed->positionals[next++], "code");
+        asset_class_read_token(
             req.removal.key.coding_scheme_code, parsed->positionals[next++], "coding_scheme_code");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -588,8 +593,8 @@ void asset_class_commands::process_delete_many(std::ostream& out,
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 2;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::asset_class_key key;
-            read_token(key.code, parsed->positionals[i * 2 + 0], "code");
-            read_token(
+            asset_class_read_token(key.code, parsed->positionals[i * 2 + 0], "code");
+            asset_class_read_token(
                 key.coding_scheme_code, parsed->positionals[i * 2 + 1], "coding_scheme_code");
             req.removals.push_back(messaging::asset_class_removal{.key = std::move(key)});
         }
@@ -642,9 +647,10 @@ void asset_class_commands::process_versions(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.code, parsed->positionals[next++], "code");
-        read_token(req.key.coding_scheme_code, parsed->positionals[next++], "coding_scheme_code");
-        apply_page(req, *parsed);
+        asset_class_read_token(req.key.code, parsed->positionals[next++], "code");
+        asset_class_read_token(
+            req.key.coding_scheme_code, parsed->positionals[next++], "coding_scheme_code");
+        asset_class_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -689,10 +695,10 @@ void asset_class_commands::process_version(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.asset_class.code, parsed->positionals[next++], "code");
-        read_token(req.key.asset_class.coding_scheme_code,
-                   parsed->positionals[next++],
-                   "coding_scheme_code");
+        asset_class_read_token(req.key.asset_class.code, parsed->positionals[next++], "code");
+        asset_class_read_token(req.key.asset_class.coding_scheme_code,
+                               parsed->positionals[next++],
+                               "coding_scheme_code");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

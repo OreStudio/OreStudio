@@ -46,7 +46,7 @@ const std::string tags("[commands]");
 
 const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-void log_in(nats_client& session) {
+void risk_participation_agreement_instrument_log_in(nats_client& session) {
     nats_client::login_info info;
     info.username = "tester";
     info.jwt = "token";
@@ -56,7 +56,7 @@ void log_in(nats_client& session) {
 
 // One token per positional the command takes. A value the command parses is
 // not a value the guard reaches, so any token does to prove the guard.
-std::vector<std::string> tokens(const std::size_t count) {
+std::vector<std::string> risk_participation_agreement_instrument_tokens(const std::size_t count) {
     return std::vector<std::string>(count, std::string{"sample"});
 }
 
@@ -98,7 +98,8 @@ TEST_CASE("risk_participation_agreement_instrument_commands_process_list_require
     std::ostringstream out;
 
     command_feedback::reset();
-    risk_participation_agreement_instrument_commands::process_list(out, session, tokens(0));
+    risk_participation_agreement_instrument_commands::process_list(
+        out, session, risk_participation_agreement_instrument_tokens(0));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -112,7 +113,8 @@ TEST_CASE("risk_participation_agreement_instrument_commands_process_get_requires
     std::ostringstream out;
 
     command_feedback::reset();
-    risk_participation_agreement_instrument_commands::process_get(out, session, tokens(1));
+    risk_participation_agreement_instrument_commands::process_get(
+        out, session, risk_participation_agreement_instrument_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -124,7 +126,7 @@ TEST_CASE("risk_participation_agreement_instrument_commands_process_get_reports_
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    risk_participation_agreement_instrument_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -148,7 +150,8 @@ TEST_CASE("risk_participation_agreement_instrument_commands_process_get_many_req
     std::ostringstream out;
 
     command_feedback::reset();
-    risk_participation_agreement_instrument_commands::process_get_many(out, session, tokens(1));
+    risk_participation_agreement_instrument_commands::process_get_many(
+        out, session, risk_participation_agreement_instrument_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -162,7 +165,8 @@ TEST_CASE("risk_participation_agreement_instrument_commands_process_add_requires
     std::ostringstream out;
 
     command_feedback::reset();
-    risk_participation_agreement_instrument_commands::process_add(out, session, tokens(8));
+    risk_participation_agreement_instrument_commands::process_add(
+        out, session, risk_participation_agreement_instrument_tokens(8));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -174,7 +178,7 @@ TEST_CASE("risk_participation_agreement_instrument_commands_process_add_reports_
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    risk_participation_agreement_instrument_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -197,7 +201,8 @@ TEST_CASE("risk_participation_agreement_instrument_commands_process_set_requires
     std::ostringstream out;
 
     command_feedback::reset();
-    risk_participation_agreement_instrument_commands::process_set(out, session, tokens(8));
+    risk_participation_agreement_instrument_commands::process_set(
+        out, session, risk_participation_agreement_instrument_tokens(8));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -209,7 +214,7 @@ TEST_CASE("risk_participation_agreement_instrument_commands_process_set_reports_
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    risk_participation_agreement_instrument_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -233,7 +238,8 @@ TEST_CASE("risk_participation_agreement_instrument_commands_process_put_many_req
     std::ostringstream out;
 
     command_feedback::reset();
-    risk_participation_agreement_instrument_commands::process_put_many(out, session, tokens(8));
+    risk_participation_agreement_instrument_commands::process_put_many(
+        out, session, risk_participation_agreement_instrument_tokens(8));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -248,7 +254,8 @@ TEST_CASE("risk_participation_agreement_instrument_commands_process_delete_requi
     std::ostringstream out;
 
     command_feedback::reset();
-    risk_participation_agreement_instrument_commands::process_delete(out, session, tokens(1));
+    risk_participation_agreement_instrument_commands::process_delete(
+        out, session, risk_participation_agreement_instrument_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -261,7 +268,7 @@ TEST_CASE(
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    risk_participation_agreement_instrument_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -285,7 +292,8 @@ TEST_CASE("risk_participation_agreement_instrument_commands_process_delete_many_
     std::ostringstream out;
 
     command_feedback::reset();
-    risk_participation_agreement_instrument_commands::process_delete_many(out, session, tokens(1));
+    risk_participation_agreement_instrument_commands::process_delete_many(
+        out, session, risk_participation_agreement_instrument_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -300,7 +308,8 @@ TEST_CASE("risk_participation_agreement_instrument_commands_process_versions_req
     std::ostringstream out;
 
     command_feedback::reset();
-    risk_participation_agreement_instrument_commands::process_versions(out, session, tokens(1));
+    risk_participation_agreement_instrument_commands::process_versions(
+        out, session, risk_participation_agreement_instrument_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -313,7 +322,7 @@ TEST_CASE(
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    risk_participation_agreement_instrument_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -337,7 +346,8 @@ TEST_CASE("risk_participation_agreement_instrument_commands_process_version_requ
     std::ostringstream out;
 
     command_feedback::reset();
-    risk_participation_agreement_instrument_commands::process_version(out, session, tokens(1));
+    risk_participation_agreement_instrument_commands::process_version(
+        out, session, risk_participation_agreement_instrument_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -350,7 +360,7 @@ TEST_CASE(
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    risk_participation_agreement_instrument_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();

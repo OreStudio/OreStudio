@@ -46,7 +46,7 @@ const std::string tags("[commands]");
 
 const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-void log_in(nats_client& session) {
+void ir_curve_generation_config_process_parameter_value_log_in(nats_client& session) {
     nats_client::login_info info;
     info.username = "tester";
     info.jwt = "token";
@@ -56,7 +56,8 @@ void log_in(nats_client& session) {
 
 // One token per positional the command takes. A value the command parses is
 // not a value the guard reaches, so any token does to prove the guard.
-std::vector<std::string> tokens(const std::size_t count) {
+std::vector<std::string>
+ir_curve_generation_config_process_parameter_value_tokens(const std::size_t count) {
     return std::vector<std::string>(count, std::string{"sample"});
 }
 
@@ -104,7 +105,7 @@ TEST_CASE(
 
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_list(
-        out, session, tokens(0));
+        out, session, ir_curve_generation_config_process_parameter_value_tokens(0));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -121,7 +122,7 @@ TEST_CASE(
 
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_get(
-        out, session, tokens(1));
+        out, session, ir_curve_generation_config_process_parameter_value_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -134,7 +135,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_g
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    ir_curve_generation_config_process_parameter_value_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -160,7 +161,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_g
 
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_get_many(
-        out, session, tokens(1));
+        out, session, ir_curve_generation_config_process_parameter_value_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -177,7 +178,7 @@ TEST_CASE(
 
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_add(
-        out, session, tokens(4));
+        out, session, ir_curve_generation_config_process_parameter_value_tokens(4));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -190,7 +191,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_a
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    ir_curve_generation_config_process_parameter_value_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -216,7 +217,7 @@ TEST_CASE(
 
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_set(
-        out, session, tokens(4));
+        out, session, ir_curve_generation_config_process_parameter_value_tokens(4));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -229,7 +230,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_s
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    ir_curve_generation_config_process_parameter_value_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -255,7 +256,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_p
 
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_put_many(
-        out, session, tokens(4));
+        out, session, ir_curve_generation_config_process_parameter_value_tokens(4));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -272,7 +273,7 @@ TEST_CASE(
 
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_delete(
-        out, session, tokens(1));
+        out, session, ir_curve_generation_config_process_parameter_value_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -285,7 +286,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_d
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    ir_curve_generation_config_process_parameter_value_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -311,7 +312,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_d
 
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_delete_many(
-        out, session, tokens(1));
+        out, session, ir_curve_generation_config_process_parameter_value_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -328,7 +329,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_v
 
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_versions(
-        out, session, tokens(1));
+        out, session, ir_curve_generation_config_process_parameter_value_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -341,7 +342,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_v
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    ir_curve_generation_config_process_parameter_value_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -367,7 +368,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_v
 
     command_feedback::reset();
     ir_curve_generation_config_process_parameter_value_commands::process_version(
-        out, session, tokens(1));
+        out, session, ir_curve_generation_config_process_parameter_value_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -380,7 +381,7 @@ TEST_CASE("ir_curve_generation_config_process_parameter_value_commands_process_v
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    ir_curve_generation_config_process_parameter_value_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();

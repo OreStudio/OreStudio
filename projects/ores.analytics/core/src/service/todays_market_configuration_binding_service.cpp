@@ -75,9 +75,10 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::todays_market_configuration_binding>
-read_one(repository::todays_market_configuration_binding_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::todays_market_configuration_binding_key& key) {
+todays_market_configuration_binding_read_one(
+    repository::todays_market_configuration_binding_repository& repo,
+    const ores::database::context& ctx,
+    const messaging::todays_market_configuration_binding_key& key) {
     return repo.read_latest_by_reference(ctx, key.reference);
 }
 
@@ -88,7 +89,7 @@ read_one(repository::todays_market_configuration_binding_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::todays_market_configuration_binding_key
-key_from(const domain::todays_market_configuration_binding& v) {
+todays_market_configuration_binding_key_from(const domain::todays_market_configuration_binding& v) {
     messaging::todays_market_configuration_binding_key key;
     key.reference = v.reference;
     return key;
@@ -101,8 +102,8 @@ key_from(const domain::todays_market_configuration_binding& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::todays_market_configuration_binding
-to_domain(const messaging::todays_market_configuration_binding_write& write) {
+domain::todays_market_configuration_binding todays_market_configuration_binding_to_domain(
+    const messaging::todays_market_configuration_binding_write& write) {
     domain::todays_market_configuration_binding v;
     v.id = write.id;
     v.todays_market_configuration_id = write.todays_market_configuration_id;
@@ -201,7 +202,7 @@ messaging::get_todays_market_configuration_binding_response
 todays_market_configuration_binding_service::get_todays_market_configuration_binding(
     const messaging::get_todays_market_configuration_binding_request& request) {
     messaging::get_todays_market_configuration_binding_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = todays_market_configuration_binding_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "todays_market_configuration_binding"});
@@ -222,7 +223,7 @@ todays_market_configuration_binding_service::get_many_todays_market_configuratio
     for (const auto& k : request.keys) {
         messaging::todays_market_configuration_binding_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = todays_market_configuration_binding_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.todays_market_configuration_binding = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -239,7 +240,8 @@ todays_market_configuration_binding_service::put_todays_market_configuration_bin
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = todays_market_configuration_binding_read_one(
+        repo_, ctx_, todays_market_configuration_binding_key_from(value));
     if (!written.empty())
         response.todays_market_configuration_binding = std::move(written.front());
     return response;
@@ -272,7 +274,8 @@ todays_market_configuration_binding_service::put_many_todays_market_configuratio
     repo_.write(ctx_, batch, claims);
     response.bindings.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = todays_market_configuration_binding_read_one(
+            repo_, ctx_, todays_market_configuration_binding_key_from(value));
         response.bindings.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -296,7 +299,8 @@ todays_market_configuration_binding_service::delete_todays_market_configuration_
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named =
+        todays_market_configuration_binding_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "todays_market_configuration_binding"});
@@ -315,7 +319,8 @@ todays_market_configuration_binding_service::delete_todays_market_configuration_
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                todays_market_configuration_binding_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "todays_market_configuration_binding",
@@ -357,7 +362,7 @@ todays_market_configuration_binding_service::delete_many_todays_market_configura
     std::vector<domain::todays_market_configuration_binding> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = todays_market_configuration_binding_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -386,7 +391,7 @@ todays_market_configuration_binding_service::list_todays_market_configuration_bi
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = todays_market_configuration_binding_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "todays_market_configuration_binding"});
@@ -411,7 +416,8 @@ todays_market_configuration_binding_service::get_todays_market_configuration_bin
     messaging::get_todays_market_configuration_binding_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.todays_market_configuration_binding);
+    const auto named = todays_market_configuration_binding_read_one(
+        repo_, ctx_, request.key.todays_market_configuration_binding);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "todays_market_configuration_binding"});
@@ -435,8 +441,9 @@ ores::utility::domain::result todays_market_configuration_binding_service::prepa
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = todays_market_configuration_binding_to_domain(change.write);
+    const auto current = todays_market_configuration_binding_read_one(
+        repo_, ctx_, todays_market_configuration_binding_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -535,7 +542,7 @@ todays_market_configuration_binding_service::get_binding_by_reference(
                                << reference;
     messaging::todays_market_configuration_binding_key k;
     k.reference = reference;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = todays_market_configuration_binding_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

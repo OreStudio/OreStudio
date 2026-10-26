@@ -56,7 +56,7 @@ struct expected_route {
 ///
 /// Registration touches no transport: the client is only what each route
 /// forwards on, so an unconnected one is enough to read the route table.
-std::shared_ptr<router> registered_routes(nats_client& session) {
+std::shared_ptr<router> account_registered_routes(nats_client& session) {
     auto table = std::make_shared<router>();
     auto registry = std::make_shared<endpoint_registry>();
     account_routes::register_routes(table, registry, session);
@@ -69,7 +69,7 @@ TEST_CASE("account_routes_registers_every_derived_route", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    const auto table = registered_routes(session);
+    const auto table = account_registered_routes(session);
     const auto& routes = table->routes();
 
     REQUIRE(routes.size() == 5);
@@ -99,7 +99,7 @@ TEST_CASE("account_routes_requires_a_session_where_the_operation_does", tags) {
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    const auto table = registered_routes(session);
+    const auto table = account_registered_routes(session);
     const auto& routes = table->routes();
 
     // The flag is the operation's own stated requirement. A route that needs

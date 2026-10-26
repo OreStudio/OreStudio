@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::report_error_scope> read_one(repository::report_error_scope_repository& repo,
-                                                 const ores::database::context& ctx,
-                                                 const messaging::report_error_scope_key& key) {
+std::vector<domain::report_error_scope>
+report_error_scope_read_one(repository::report_error_scope_repository& repo,
+                            const ores::database::context& ctx,
+                            const messaging::report_error_scope_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::report_error_scope> read_one(repository::report_error_scope_
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::report_error_scope_key key_from(const domain::report_error_scope& v) {
+messaging::report_error_scope_key report_error_scope_key_from(const domain::report_error_scope& v) {
     messaging::report_error_scope_key key;
     key.code = v.code;
     return key;
@@ -94,7 +95,8 @@ messaging::report_error_scope_key key_from(const domain::report_error_scope& v) 
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::report_error_scope to_domain(const messaging::report_error_scope_write& write) {
+domain::report_error_scope
+report_error_scope_to_domain(const messaging::report_error_scope_write& write) {
     domain::report_error_scope v;
     v.code = write.code;
     v.name = write.name;
@@ -141,7 +143,7 @@ messaging::list_report_error_scopes_response report_error_scope_service::list_re
 messaging::get_report_error_scope_response report_error_scope_service::get_report_error_scope(
     const messaging::get_report_error_scope_request& request) {
     messaging::get_report_error_scope_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = report_error_scope_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "report_error_scope"});
         return response;
@@ -161,7 +163,7 @@ report_error_scope_service::get_many_report_error_scopes(
     for (const auto& k : request.keys) {
         messaging::report_error_scope_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = report_error_scope_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.report_error_scope = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -177,7 +179,7 @@ messaging::put_report_error_scope_response report_error_scope_service::put_repor
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = report_error_scope_read_one(repo_, ctx_, report_error_scope_key_from(value));
     if (!written.empty())
         response.report_error_scope = std::move(written.front());
     return response;
@@ -210,7 +212,7 @@ report_error_scope_service::put_many_report_error_scopes(
     repo_.write(ctx_, batch, claims);
     response.scopes.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = report_error_scope_read_one(repo_, ctx_, report_error_scope_key_from(value));
         response.scopes.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -243,7 +245,7 @@ messaging::delete_report_error_scope_response report_error_scope_service::delete
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = report_error_scope_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "report_error_scope",
@@ -332,8 +334,8 @@ report_error_scope_service::prepare_change(const messaging::report_error_scope_c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = report_error_scope_to_domain(change.write);
+    const auto current = report_error_scope_read_one(repo_, ctx_, report_error_scope_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

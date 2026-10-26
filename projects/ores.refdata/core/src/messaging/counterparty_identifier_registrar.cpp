@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view counterparty_identifier_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_counterparty_identifier_handlers(
@@ -51,47 +51,47 @@ std::vector<ores::nats::service::subscription> register_counterparty_identifier_
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_counterparty_identifiers_request::nats_subject,
-        queue_group,
+        counterparty_identifier_queue_group,
         [h](ores::nats::message msg) { h->list_counterparty_identifiers(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_counterparty_identifier_request::nats_subject,
-        queue_group,
+        counterparty_identifier_queue_group,
         [h](ores::nats::message msg) { h->get_counterparty_identifier(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_counterparty_identifiers_request::nats_subject,
-        queue_group,
+        counterparty_identifier_queue_group,
         [h](ores::nats::message msg) { h->get_many_counterparty_identifiers(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_counterparty_identifier_request::nats_subject,
-        queue_group,
+        counterparty_identifier_queue_group,
         [h](ores::nats::message msg) { h->put_counterparty_identifier(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_counterparty_identifiers_request::nats_subject,
-        queue_group,
+        counterparty_identifier_queue_group,
         [h](ores::nats::message msg) { h->put_many_counterparty_identifiers(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_counterparty_identifier_request::nats_subject,
-        queue_group,
+        counterparty_identifier_queue_group,
         [h](ores::nats::message msg) { h->delete_counterparty_identifier(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_counterparty_identifiers_request::nats_subject,
-        queue_group,
+        counterparty_identifier_queue_group,
         [h](ores::nats::message msg) { h->delete_many_counterparty_identifiers(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_by_counterparty_id_counterparty_identifiers_request::nats_subject,
-        queue_group,
+        counterparty_identifier_queue_group,
         [h](ores::nats::message msg) {
             h->list_by_counterparty_id_counterparty_identifiers(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(list_counterparty_identifier_versions_request::nats_subject,
-                                        queue_group,
+                                        counterparty_identifier_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->list_counterparty_identifier_versions(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         get_counterparty_identifier_version_request::nats_subject,
-        queue_group,
+        counterparty_identifier_queue_group,
         [h](ores::nats::message msg) { h->get_counterparty_identifier_version(std::move(msg)); }));
     return subs;
 }

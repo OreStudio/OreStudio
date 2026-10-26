@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view range_bound_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,45 +49,45 @@ register_range_bound_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<range_bound_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_range_bounds_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_range_bounds(std::move(msg));
-        }));
+        list_range_bounds_request::nats_subject,
+        range_bound_queue_group,
+        [h](ores::nats::message msg) { h->list_range_bounds(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_range_bound_request::nats_subject,
+                             range_bound_queue_group,
+                             [h](ores::nats::message msg) { h->get_range_bound(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_range_bound_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_range_bound(std::move(msg));
-        }));
+        get_many_range_bounds_request::nats_subject,
+        range_bound_queue_group,
+        [h](ores::nats::message msg) { h->get_many_range_bounds(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(put_range_bound_request::nats_subject,
+                             range_bound_queue_group,
+                             [h](ores::nats::message msg) { h->put_range_bound(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_range_bounds_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_range_bounds(std::move(msg));
-        }));
+        put_many_range_bounds_request::nats_subject,
+        range_bound_queue_group,
+        [h](ores::nats::message msg) { h->put_many_range_bounds(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_range_bound_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_range_bound(std::move(msg));
-        }));
+        delete_range_bound_request::nats_subject,
+        range_bound_queue_group,
+        [h](ores::nats::message msg) { h->delete_range_bound(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_range_bounds_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_range_bounds(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_range_bound_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_range_bound(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_many_range_bounds_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_range_bounds(std::move(msg));
-        }));
+        delete_many_range_bounds_request::nats_subject,
+        range_bound_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_range_bounds(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_by_trade_id_range_bounds_request::nats_subject,
-        queue_group,
+        range_bound_queue_group,
         [h](ores::nats::message msg) { h->list_by_trade_id_range_bounds(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        list_range_bound_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_range_bound_versions(std::move(msg));
-        }));
+        list_range_bound_versions_request::nats_subject,
+        range_bound_queue_group,
+        [h](ores::nats::message msg) { h->list_range_bound_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_range_bound_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_range_bound_version(std::move(msg));
-        }));
+        get_range_bound_version_request::nats_subject,
+        range_bound_queue_group,
+        [h](ores::nats::message msg) { h->get_range_bound_version(std::move(msg)); }));
     return subs;
 }
 

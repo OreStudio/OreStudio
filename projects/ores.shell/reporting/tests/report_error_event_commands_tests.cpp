@@ -46,7 +46,7 @@ const std::string tags("[commands]");
 
 const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-void log_in(nats_client& session) {
+void report_error_event_log_in(nats_client& session) {
     nats_client::login_info info;
     info.username = "tester";
     info.jwt = "token";
@@ -56,7 +56,7 @@ void log_in(nats_client& session) {
 
 // One token per positional the command takes. A value the command parses is
 // not a value the guard reaches, so any token does to prove the guard.
-std::vector<std::string> tokens(const std::size_t count) {
+std::vector<std::string> report_error_event_tokens(const std::size_t count) {
     return std::vector<std::string>(count, std::string{"sample"});
 }
 
@@ -91,7 +91,7 @@ TEST_CASE("report_error_event_commands_process_list_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    report_error_event_commands::process_list(out, session, tokens(0));
+    report_error_event_commands::process_list(out, session, report_error_event_tokens(0));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -105,7 +105,7 @@ TEST_CASE("report_error_event_commands_process_get_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    report_error_event_commands::process_get(out, session, tokens(1));
+    report_error_event_commands::process_get(out, session, report_error_event_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -116,7 +116,7 @@ TEST_CASE("report_error_event_commands_process_get_reports_the_expected_count", 
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    report_error_event_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -139,7 +139,7 @@ TEST_CASE("report_error_event_commands_process_get_many_requires_a_session", tag
     std::ostringstream out;
 
     command_feedback::reset();
-    report_error_event_commands::process_get_many(out, session, tokens(1));
+    report_error_event_commands::process_get_many(out, session, report_error_event_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -153,7 +153,8 @@ TEST_CASE("report_error_event_commands_process_by_report_instance_id_requires_a_
     std::ostringstream out;
 
     command_feedback::reset();
-    report_error_event_commands::process_by_report_instance_id(out, session, tokens(1));
+    report_error_event_commands::process_by_report_instance_id(
+        out, session, report_error_event_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -165,7 +166,7 @@ TEST_CASE("report_error_event_commands_process_by_report_instance_id_reports_the
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    report_error_event_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();

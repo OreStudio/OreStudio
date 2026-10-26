@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::account_status> read_one(repository::account_status_repository& repo,
-                                             const ores::database::context& ctx,
-                                             const messaging::account_status_key& key) {
+std::vector<domain::account_status>
+account_status_read_one(repository::account_status_repository& repo,
+                        const ores::database::context& ctx,
+                        const messaging::account_status_key& key) {
     return repo.read_latest(ctx, key.status);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::account_status> read_one(repository::account_status_reposito
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::account_status_key key_from(const domain::account_status& v) {
+messaging::account_status_key account_status_key_from(const domain::account_status& v) {
     messaging::account_status_key key;
     key.status = v.status;
     return key;
@@ -94,7 +95,7 @@ messaging::account_status_key key_from(const domain::account_status& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::account_status to_domain(const messaging::account_status_write& write) {
+domain::account_status account_status_to_domain(const messaging::account_status_write& write) {
     domain::account_status v;
     v.status = write.status;
     v.name = write.name;
@@ -141,7 +142,7 @@ messaging::list_account_statuses_response account_status_service::list_account_s
 messaging::get_account_status_response
 account_status_service::get_account_status(const messaging::get_account_status_request& request) {
     messaging::get_account_status_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = account_status_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "account_status"});
         return response;
@@ -160,7 +161,7 @@ messaging::get_many_account_statuses_response account_status_service::get_many_a
     for (const auto& k : request.keys) {
         messaging::account_status_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = account_status_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.account_status = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -176,7 +177,7 @@ account_status_service::put_account_status(const messaging::put_account_status_r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = account_status_read_one(repo_, ctx_, account_status_key_from(value));
     if (!written.empty())
         response.account_status = std::move(written.front());
     return response;
@@ -208,7 +209,7 @@ messaging::put_many_account_statuses_response account_status_service::put_many_a
     repo_.write(ctx_, batch, claims);
     response.statuses.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = account_status_read_one(repo_, ctx_, account_status_key_from(value));
         response.statuses.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -241,7 +242,7 @@ messaging::delete_account_status_response account_status_service::delete_account
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = account_status_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "account_status",
@@ -329,8 +330,8 @@ account_status_service::prepare_change(const messaging::account_status_change& c
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = account_status_to_domain(change.write);
+    const auto current = account_status_read_one(repo_, ctx_, account_status_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

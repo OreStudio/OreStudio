@@ -81,9 +81,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy role_list_order(const ores::utility::domain::order& order,
+                                         std::initializer_list<std::string> default_columns,
+                                         bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!role_repository::is_sortable(order.field))
@@ -96,7 +96,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::roles_filter>& filter) {
+role_filter_condition(const std::optional<messaging::roles_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -310,8 +310,8 @@ role_repository::read_latest(context ctx,
     return execute_ordered_read_query<role_entity, domain::role>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        role_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), role_filter_condition(filter)),
         [](const auto& entities) { return role_mapper::map(entities); },
         lg(),
         "Reading latest roles with pagination.");
@@ -327,7 +327,11 @@ role_repository::get_total_role_count(context ctx,
     const auto query = sqlgen::read<std::vector<role_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<role_entity>(
-        ctx, query, narrowed(valid_at(as_of), filter_condition(filter)), lg(), "Counting roles");
+        ctx,
+        query,
+        narrowed(valid_at(as_of), role_filter_condition(filter)),
+        lg(),
+        "Counting roles");
 }
 
 std::vector<domain::role> role_repository::read_latest(context ctx,

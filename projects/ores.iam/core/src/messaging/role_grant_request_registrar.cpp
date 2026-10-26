@@ -39,7 +39,7 @@
 namespace ores::iam::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.iam.service";
+static constexpr std::string_view role_grant_request_queue_group = "ores.iam.service";
 }
 
 std::vector<ores::nats::service::subscription> register_role_grant_request_handlers(
@@ -50,46 +50,46 @@ std::vector<ores::nats::service::subscription> register_role_grant_request_handl
     auto h =
         std::make_shared<role_grant_request_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_role_grant_requests_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_role_grant_requests(std::move(msg));
-        }));
+        list_role_grant_requests_request::nats_subject,
+        role_grant_request_queue_group,
+        [h](ores::nats::message msg) { h->list_role_grant_requests(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_role_grant_request_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_role_grant_request(std::move(msg));
-        }));
+        get_role_grant_request_request::nats_subject,
+        role_grant_request_queue_group,
+        [h](ores::nats::message msg) { h->get_role_grant_request(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_role_grant_requests_request::nats_subject,
-        queue_group,
+        role_grant_request_queue_group,
         [h](ores::nats::message msg) { h->get_many_role_grant_requests(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_role_grant_request_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_role_grant_request(std::move(msg));
-        }));
+        put_role_grant_request_request::nats_subject,
+        role_grant_request_queue_group,
+        [h](ores::nats::message msg) { h->put_role_grant_request(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_role_grant_requests_request::nats_subject,
-        queue_group,
+        role_grant_request_queue_group,
         [h](ores::nats::message msg) { h->put_many_role_grant_requests(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_role_grant_request_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_role_grant_request(std::move(msg));
-        }));
+        delete_role_grant_request_request::nats_subject,
+        role_grant_request_queue_group,
+        [h](ores::nats::message msg) { h->delete_role_grant_request(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_role_grant_requests_request::nats_subject,
-        queue_group,
+        role_grant_request_queue_group,
         [h](ores::nats::message msg) { h->delete_many_role_grant_requests(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(list_by_account_id_role_grant_requests_request::nats_subject,
-                             queue_group,
+                             role_grant_request_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_by_account_id_role_grant_requests(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_role_grant_request_versions_request::nats_subject,
-        queue_group,
+        role_grant_request_queue_group,
         [h](ores::nats::message msg) { h->list_role_grant_request_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_role_grant_request_version_request::nats_subject,
-        queue_group,
+        role_grant_request_queue_group,
         [h](ores::nats::message msg) { h->get_role_grant_request_version(std::move(msg)); }));
     return subs;
 }

@@ -39,7 +39,7 @@
 namespace ores::reporting::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.reporting.service";
+static constexpr std::string_view report_error_event_queue_group = "ores.reporting.service";
 }
 
 std::vector<ores::nats::service::subscription> register_report_error_event_handlers(
@@ -50,20 +50,20 @@ std::vector<ores::nats::service::subscription> register_report_error_event_handl
     auto h =
         std::make_shared<report_error_event_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_report_error_events_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_report_error_events(std::move(msg));
-        }));
+        list_report_error_events_request::nats_subject,
+        report_error_event_queue_group,
+        [h](ores::nats::message msg) { h->list_report_error_events(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_report_error_event_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_report_error_event(std::move(msg));
-        }));
+        get_report_error_event_request::nats_subject,
+        report_error_event_queue_group,
+        [h](ores::nats::message msg) { h->get_report_error_event(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_report_error_events_request::nats_subject,
-        queue_group,
+        report_error_event_queue_group,
         [h](ores::nats::message msg) { h->get_many_report_error_events(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(list_by_report_instance_id_report_error_events_request::nats_subject,
-                             queue_group,
+                             report_error_event_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_by_report_instance_id_report_error_events(std::move(msg));
                              }));

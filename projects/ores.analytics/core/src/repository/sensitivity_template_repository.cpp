@@ -80,9 +80,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+sensitivity_template_list_order(const ores::utility::domain::order& order,
+                                std::initializer_list<std::string> default_columns,
+                                bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!sensitivity_template_repository::is_sortable(order.field))
@@ -95,8 +96,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::sensitivity_templates_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> sensitivity_template_filter_condition(
+    const std::optional<messaging::sensitivity_templates_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -308,8 +309,8 @@ std::vector<domain::sensitivity_template> sensitivity_template_repository::read_
     return execute_ordered_read_query<sensitivity_template_entity, domain::sensitivity_template>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        sensitivity_template_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), sensitivity_template_filter_condition(filter)),
         [](const auto& entities) { return sensitivity_template_mapper::map(entities); },
         lg(),
         "Reading latest sensitivity templates with pagination.");
@@ -328,7 +329,7 @@ std::uint32_t sensitivity_template_repository::get_total_sensi_template_count(
     return execute_count_query<sensitivity_template_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), sensitivity_template_filter_condition(filter)),
         lg(),
         "Counting sensitivity templates");
 }

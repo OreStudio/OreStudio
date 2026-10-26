@@ -39,7 +39,7 @@
 namespace ores::reporting::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.reporting.service";
+static constexpr std::string_view engine_settings_group_queue_group = "ores.reporting.service";
 }
 
 std::vector<ores::nats::service::subscription> register_engine_settings_group_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_engine_settings_group_ha
         std::make_shared<engine_settings_group_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_engine_settings_groups_request::nats_subject,
-        queue_group,
+        engine_settings_group_queue_group,
         [h](ores::nats::message msg) { h->list_engine_settings_groups(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_engine_settings_group_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_engine_settings_group(std::move(msg));
-        }));
+        get_engine_settings_group_request::nats_subject,
+        engine_settings_group_queue_group,
+        [h](ores::nats::message msg) { h->get_engine_settings_group(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_engine_settings_groups_request::nats_subject,
-        queue_group,
+        engine_settings_group_queue_group,
         [h](ores::nats::message msg) { h->get_many_engine_settings_groups(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_engine_settings_group_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_engine_settings_group(std::move(msg));
-        }));
+        put_engine_settings_group_request::nats_subject,
+        engine_settings_group_queue_group,
+        [h](ores::nats::message msg) { h->put_engine_settings_group(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_engine_settings_groups_request::nats_subject,
-        queue_group,
+        engine_settings_group_queue_group,
         [h](ores::nats::message msg) { h->put_many_engine_settings_groups(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_engine_settings_group_request::nats_subject,
-        queue_group,
+        engine_settings_group_queue_group,
         [h](ores::nats::message msg) { h->delete_engine_settings_group(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_engine_settings_groups_request::nats_subject,
-        queue_group,
+        engine_settings_group_queue_group,
         [h](ores::nats::message msg) { h->delete_many_engine_settings_groups(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_engine_settings_group_versions_request::nats_subject,
-        queue_group,
+        engine_settings_group_queue_group,
         [h](ores::nats::message msg) { h->list_engine_settings_group_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_engine_settings_group_version_request::nats_subject,
-        queue_group,
+        engine_settings_group_queue_group,
         [h](ores::nats::message msg) { h->get_engine_settings_group_version(std::move(msg)); }));
     return subs;
 }

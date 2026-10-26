@@ -80,9 +80,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+payment_frequency_list_order(const ores::utility::domain::order& order,
+                             std::initializer_list<std::string> default_columns,
+                             bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!payment_frequency_repository::is_sortable(order.field))
@@ -95,8 +96,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::payment_frequencies_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> payment_frequency_filter_condition(
+    const std::optional<messaging::payment_frequencies_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -304,8 +305,8 @@ std::vector<domain::payment_frequency> payment_frequency_repository::read_latest
     return execute_ordered_read_query<payment_frequency_entity, domain::payment_frequency>(
         ctx,
         query,
-        list_order(order, {"code"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        payment_frequency_list_order(order, {"code"}, false),
+        narrowed(valid_at(as_of), payment_frequency_filter_condition(filter)),
         [](const auto& entities) { return payment_frequency_mapper::map(entities); },
         lg(),
         "Reading latest payment frequencies with pagination.");
@@ -324,7 +325,7 @@ std::uint32_t payment_frequency_repository::get_total_payment_frequency_count(
     return execute_count_query<payment_frequency_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), payment_frequency_filter_condition(filter)),
         lg(),
         "Counting payment frequencies");
 }

@@ -82,9 +82,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy series_axis_list_order(const ores::utility::domain::order& order,
+                                                std::initializer_list<std::string> default_columns,
+                                                bool default_descending) {
     if (order.field.empty())
         return make_order(
             default_columns, default_descending != order.descending, {"series_id", "axis_field"});
@@ -253,7 +253,7 @@ series_axis_repository::read_latest(context ctx,
     return execute_ordered_read_query<series_axis_entity, domain::series_axis>(
         ctx,
         query,
-        list_order(order, {"series_id", "axis_field"}, false),
+        series_axis_list_order(order, {"series_id", "axis_field"}, false),
         std::nullopt,
         [](const auto& entities) { return series_axis_mapper::map(entities); },
         lg(),

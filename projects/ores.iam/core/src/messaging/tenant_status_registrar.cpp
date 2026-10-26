@@ -39,7 +39,7 @@
 namespace ores::iam::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.iam.service";
+static constexpr std::string_view tenant_status_queue_group = "ores.iam.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_tenant_status_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<tenant_status_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_tenant_statuses_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_tenant_statuses(std::move(msg));
-        }));
+        list_tenant_statuses_request::nats_subject,
+        tenant_status_queue_group,
+        [h](ores::nats::message msg) { h->list_tenant_statuses(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_tenant_status_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_tenant_status(std::move(msg));
-        }));
+        get_tenant_status_request::nats_subject,
+        tenant_status_queue_group,
+        [h](ores::nats::message msg) { h->get_tenant_status(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_tenant_statuses_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_tenant_statuses(std::move(msg));
-        }));
+        get_many_tenant_statuses_request::nats_subject,
+        tenant_status_queue_group,
+        [h](ores::nats::message msg) { h->get_many_tenant_statuses(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_tenant_status_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_tenant_status(std::move(msg));
-        }));
+        put_tenant_status_request::nats_subject,
+        tenant_status_queue_group,
+        [h](ores::nats::message msg) { h->put_tenant_status(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_tenant_statuses_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_tenant_statuses(std::move(msg));
-        }));
+        put_many_tenant_statuses_request::nats_subject,
+        tenant_status_queue_group,
+        [h](ores::nats::message msg) { h->put_many_tenant_statuses(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_tenant_status_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_tenant_status(std::move(msg));
-        }));
+        delete_tenant_status_request::nats_subject,
+        tenant_status_queue_group,
+        [h](ores::nats::message msg) { h->delete_tenant_status(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_tenant_statuses_request::nats_subject,
-        queue_group,
+        tenant_status_queue_group,
         [h](ores::nats::message msg) { h->delete_many_tenant_statuses(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_tenant_status_versions_request::nats_subject,
-        queue_group,
+        tenant_status_queue_group,
         [h](ores::nats::message msg) { h->list_tenant_status_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_tenant_status_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_tenant_status_version(std::move(msg));
-        }));
+        get_tenant_status_version_request::nats_subject,
+        tenant_status_queue_group,
+        [h](ores::nats::message msg) { h->get_tenant_status_version(std::move(msg)); }));
     return subs;
 }
 

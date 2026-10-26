@@ -31,7 +31,7 @@ namespace ores::iam::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string login_info_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,7 +50,7 @@ std::string convert_to_table(const std::vector<login_info>& v) {
           << "Password Reset Req." << "Last IP" << "Last Attempt IP" << fort::endr;
 
     for ([[maybe_unused]] const auto& li : v) {
-        table << li.account_id << opt_str(li.last_login) << li.failed_logins
+        table << li.account_id << login_info_opt_str(li.last_login) << li.failed_logins
               << (li.locked ? "true" : "false") << (li.online ? "true" : "false")
               << (li.password_reset_required ? "true" : "false") << li.last_ip << li.last_attempt_ip
               << fort::endr;

@@ -39,7 +39,7 @@
 namespace ores::iam::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.iam.service";
+static constexpr std::string_view account_queue_group = "ores.iam.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,25 +49,25 @@ register_account_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<account_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_accounts_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_accounts_request::nats_subject, account_queue_group, [h](ores::nats::message msg) {
             h->list_accounts(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_account_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_account_request::nats_subject, account_queue_group, [h](ores::nats::message msg) {
             h->get_account(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_accounts_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_many_accounts_request::nats_subject, account_queue_group, [h](ores::nats::message msg) {
             h->get_many_accounts(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        list_account_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_account_versions(std::move(msg));
-        }));
+        list_account_versions_request::nats_subject,
+        account_queue_group,
+        [h](ores::nats::message msg) { h->list_account_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_account_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_account_version(std::move(msg));
-        }));
+        get_account_version_request::nats_subject,
+        account_queue_group,
+        [h](ores::nats::message msg) { h->get_account_version(std::move(msg)); }));
     return subs;
 }
 

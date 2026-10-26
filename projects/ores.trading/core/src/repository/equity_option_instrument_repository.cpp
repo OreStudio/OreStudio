@@ -81,7 +81,8 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
+sqlgen::dynamic::OrderBy
+equity_option_instrument_list_order(const ores::utility::domain::order& order,
                                     std::initializer_list<std::string> default_columns,
                                     bool default_descending) {
     if (order.field.empty())
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::equity_option_instruments_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> equity_option_instrument_filter_condition(
+    const std::optional<messaging::equity_option_instruments_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -319,8 +320,8 @@ std::vector<domain::equity_option_instrument> equity_option_instrument_repositor
                                       domain::equity_option_instrument>(
         ctx,
         query,
-        list_order(order, {"trade_id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        equity_option_instrument_list_order(order, {"trade_id"}, false),
+        narrowed(valid_at(as_of), equity_option_instrument_filter_condition(filter)),
         [](const auto& entities) { return equity_option_instrument_mapper::map(entities); },
         lg(),
         "Reading latest Equity Option instruments with pagination.");
@@ -339,7 +340,7 @@ std::uint32_t equity_option_instrument_repository::get_total_equity_option_instr
     return execute_count_query<equity_option_instrument_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), equity_option_instrument_filter_condition(filter)),
         lg(),
         "Counting Equity Option instruments");
 }

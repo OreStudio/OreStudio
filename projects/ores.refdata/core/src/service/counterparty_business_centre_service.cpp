@@ -62,8 +62,8 @@ namespace {
  * straight through.
  */
 std::vector<domain::counterparty_business_centre>
-read_one(repository::counterparty_business_centre_repository& repo,
-         const messaging::counterparty_business_centre_key& key) {
+counterparty_business_centre_read_one(repository::counterparty_business_centre_repository& repo,
+                                      const messaging::counterparty_business_centre_key& key) {
     return repo.read_latest(key.counterparty_id, key.business_centre_code);
 }
 
@@ -74,7 +74,7 @@ read_one(repository::counterparty_business_centre_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::counterparty_business_centre_key
-key_from(const domain::counterparty_business_centre& v) {
+counterparty_business_centre_key_from(const domain::counterparty_business_centre& v) {
     messaging::counterparty_business_centre_key key;
     key.counterparty_id = v.counterparty_id;
     key.business_centre_code = v.business_centre_code;
@@ -90,7 +90,7 @@ key_from(const domain::counterparty_business_centre& v) {
  * set after this conversion.
  */
 domain::counterparty_business_centre
-to_domain(const messaging::counterparty_business_centre_write& write) {
+counterparty_business_centre_to_domain(const messaging::counterparty_business_centre_write& write) {
     domain::counterparty_business_centre v;
     v.counterparty_id = write.counterparty_id;
     v.business_centre_code = write.business_centre_code;
@@ -150,7 +150,7 @@ messaging::get_counterparty_business_centre_response
 counterparty_business_centre_service::get_counterparty_business_centre(
     const messaging::get_counterparty_business_centre_request& request) {
     messaging::get_counterparty_business_centre_response response;
-    auto found = read_one(repo_, request.key);
+    auto found = counterparty_business_centre_read_one(repo_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "counterparty_business_centre"});
@@ -171,7 +171,7 @@ counterparty_business_centre_service::get_many_counterparty_business_centres(
     for (const auto& k : request.keys) {
         messaging::counterparty_business_centre_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, k);
+        auto found = counterparty_business_centre_read_one(repo_, k);
         if (!found.empty())
             entry.counterparty_business_centre = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -188,7 +188,8 @@ counterparty_business_centre_service::put_counterparty_business_centre(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(value, request.change.precondition);
-    auto written = read_one(repo_, key_from(value));
+    auto written =
+        counterparty_business_centre_read_one(repo_, counterparty_business_centre_key_from(value));
     if (!written.empty())
         response.counterparty_business_centre = std::move(written.front());
     return response;
@@ -221,7 +222,8 @@ counterparty_business_centre_service::put_many_counterparty_business_centres(
     repo_.write(batch, claims);
     response.counterparty_business_centres.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, key_from(value));
+        auto written = counterparty_business_centre_read_one(
+            repo_, counterparty_business_centre_key_from(value));
         response.counterparty_business_centres.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -258,7 +260,7 @@ counterparty_business_centre_service::delete_counterparty_business_centre(
             // The junction's removal states neither version, so the row is read for
             // the one it now holds. The sentence carries what the caller stated and
             // what the store holds.
-            const auto live = read_one(repo_, request.removal.key);
+            const auto live = counterparty_business_centre_read_one(repo_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "counterparty_business_centre",
@@ -311,8 +313,9 @@ ores::utility::domain::result counterparty_business_centre_service::prepare_chan
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, key_from(out));
+    out = counterparty_business_centre_to_domain(change.write);
+    const auto current =
+        counterparty_business_centre_read_one(repo_, counterparty_business_centre_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

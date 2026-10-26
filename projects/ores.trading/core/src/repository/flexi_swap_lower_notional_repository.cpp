@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+flexi_swap_lower_notional_list_order(const ores::utility::domain::order& order,
+                                     std::initializer_list<std::string> default_columns,
+                                     bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -100,8 +101,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::flexi_swap_lower_notionals_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> flexi_swap_lower_notional_filter_condition(
+    const std::optional<messaging::flexi_swap_lower_notionals_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -304,8 +305,8 @@ flexi_swap_lower_notional_repository::read_latest_by_trade_id(
                                       domain::flexi_swap_lower_notional>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        filter_condition(filter),
+        flexi_swap_lower_notional_list_order(order, {"trade_id", "sequence_number"}, false),
+        flexi_swap_lower_notional_filter_condition(filter),
         [](const auto& entities) { return flexi_swap_lower_notional_mapper::map(entities); },
         lg(),
         "Reading latest flexi swap lower notionals by trade_id.");
@@ -328,7 +329,7 @@ flexi_swap_lower_notional_repository::get_total_flexi_swap_lower_notional_count_
     return execute_count_query<flexi_swap_lower_notional_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        flexi_swap_lower_notional_filter_condition(filter),
         lg(),
         "Counting flexi swap lower notionals by trade_id");
 }
@@ -391,8 +392,8 @@ std::vector<domain::flexi_swap_lower_notional> flexi_swap_lower_notional_reposit
                                       domain::flexi_swap_lower_notional>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        flexi_swap_lower_notional_list_order(order, {"trade_id", "sequence_number"}, false),
+        narrowed(valid_at(as_of), flexi_swap_lower_notional_filter_condition(filter)),
         [](const auto& entities) { return flexi_swap_lower_notional_mapper::map(entities); },
         lg(),
         "Reading latest flexi swap lower notionals with pagination.");
@@ -411,7 +412,7 @@ std::uint32_t flexi_swap_lower_notional_repository::get_total_flexi_swap_lower_n
     return execute_count_query<flexi_swap_lower_notional_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), flexi_swap_lower_notional_filter_condition(filter)),
         lg(),
         "Counting flexi swap lower notionals");
 }

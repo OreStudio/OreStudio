@@ -79,9 +79,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+bond_issue_leg_amortization_list_order(const ores::utility::domain::order& order,
+                                       std::initializer_list<std::string> default_columns,
+                                       bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -338,7 +339,8 @@ bond_issue_leg_amortization_repository::read_latest(context ctx,
                                       domain::bond_issue_leg_amortization>(
         ctx,
         query,
-        list_order(order, {"issue_id", "leg_number", "sequence_number"}, false),
+        bond_issue_leg_amortization_list_order(
+            order, {"issue_id", "leg_number", "sequence_number"}, false),
         narrowed(valid_at(as_of), std::nullopt),
         [](const auto& entities) { return bond_issue_leg_amortization_mapper::map(entities); },
         lg(),

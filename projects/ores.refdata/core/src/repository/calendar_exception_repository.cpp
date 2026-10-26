@@ -83,9 +83,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+calendar_exception_list_order(const ores::utility::domain::order& order,
+                              std::initializer_list<std::string> default_columns,
+                              bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!calendar_exception_repository::is_sortable(order.field))
@@ -98,8 +99,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::calendar_exceptions_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> calendar_exception_filter_condition(
+    const std::optional<messaging::calendar_exceptions_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -284,8 +285,8 @@ std::vector<domain::calendar_exception> calendar_exception_repository::read_late
     return execute_ordered_read_query<calendar_exception_entity, domain::calendar_exception>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        calendar_exception_list_order(order, {"id"}, false),
+        calendar_exception_filter_condition(filter),
         [](const auto& entities) { return calendar_exception_mapper::map(entities); },
         lg(),
         "Reading latest calendar exceptions by calendar_code.");
@@ -307,7 +308,7 @@ std::uint32_t calendar_exception_repository::get_total_calendar_exception_count_
     return execute_count_query<calendar_exception_entity>(
         ctx,
         query,
-        filter_condition(filter),
+        calendar_exception_filter_condition(filter),
         lg(),
         "Counting calendar exceptions by calendar_code");
 }
@@ -388,8 +389,8 @@ std::vector<domain::calendar_exception> calendar_exception_repository::read_late
     return execute_ordered_read_query<calendar_exception_entity, domain::calendar_exception>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        calendar_exception_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), calendar_exception_filter_condition(filter)),
         [](const auto& entities) { return calendar_exception_mapper::map(entities); },
         lg(),
         "Reading latest calendar exceptions with pagination.");
@@ -408,7 +409,7 @@ std::uint32_t calendar_exception_repository::get_total_calendar_exception_count(
     return execute_count_query<calendar_exception_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), calendar_exception_filter_condition(filter)),
         lg(),
         "Counting calendar exceptions");
 }

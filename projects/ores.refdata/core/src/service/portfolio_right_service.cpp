@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::portfolio_right> read_one(repository::portfolio_right_repository& repo,
-                                              const ores::database::context& ctx,
-                                              const messaging::portfolio_right_key& key) {
+std::vector<domain::portfolio_right>
+portfolio_right_read_one(repository::portfolio_right_repository& repo,
+                         const ores::database::context& ctx,
+                         const messaging::portfolio_right_key& key) {
     return repo.read_latest_by_right_code(ctx, key.right_code);
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::portfolio_right> read_one(repository::portfolio_right_reposi
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::portfolio_right_key key_from(const domain::portfolio_right& v) {
+messaging::portfolio_right_key portfolio_right_key_from(const domain::portfolio_right& v) {
     messaging::portfolio_right_key key;
     key.right_code = v.right_code;
     return key;
@@ -98,7 +99,7 @@ messaging::portfolio_right_key key_from(const domain::portfolio_right& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::portfolio_right to_domain(const messaging::portfolio_right_write& write) {
+domain::portfolio_right portfolio_right_to_domain(const messaging::portfolio_right_write& write) {
     domain::portfolio_right v;
     v.id = write.id;
     v.account_id = write.account_id;
@@ -234,7 +235,7 @@ portfolio_right_service::list_by_portfolio_id_portfolio_rights(
 messaging::get_portfolio_right_response portfolio_right_service::get_portfolio_right(
     const messaging::get_portfolio_right_request& request) {
     messaging::get_portfolio_right_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = portfolio_right_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "portfolio_right"});
         return response;
@@ -253,7 +254,7 @@ messaging::get_many_portfolio_rights_response portfolio_right_service::get_many_
     for (const auto& k : request.keys) {
         messaging::portfolio_right_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = portfolio_right_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.portfolio_right = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -269,7 +270,7 @@ messaging::put_portfolio_right_response portfolio_right_service::put_portfolio_r
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = portfolio_right_read_one(repo_, ctx_, portfolio_right_key_from(value));
     if (!written.empty())
         response.portfolio_right = std::move(written.front());
     return response;
@@ -301,7 +302,7 @@ messaging::put_many_portfolio_rights_response portfolio_right_service::put_many_
     repo_.write(ctx_, batch, claims);
     response.portfolio_rights.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = portfolio_right_read_one(repo_, ctx_, portfolio_right_key_from(value));
         response.portfolio_rights.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -324,7 +325,7 @@ messaging::delete_portfolio_right_response portfolio_right_service::delete_portf
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = portfolio_right_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "portfolio_right"});
         return response;
@@ -340,7 +341,7 @@ messaging::delete_portfolio_right_response portfolio_right_service::delete_portf
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = portfolio_right_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "portfolio_right",
@@ -382,7 +383,7 @@ portfolio_right_service::delete_many_portfolio_rights(
     std::vector<domain::portfolio_right> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = portfolio_right_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -410,7 +411,7 @@ portfolio_right_service::list_portfolio_right_versions(
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = portfolio_right_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "portfolio_right"});
         return response;
@@ -434,7 +435,7 @@ portfolio_right_service::get_portfolio_right_version(
     messaging::get_portfolio_right_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.portfolio_right);
+    const auto named = portfolio_right_read_one(repo_, ctx_, request.key.portfolio_right);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "portfolio_right"});
         return response;
@@ -456,8 +457,8 @@ portfolio_right_service::prepare_change(const messaging::portfolio_right_change&
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = portfolio_right_to_domain(change.write);
+    const auto current = portfolio_right_read_one(repo_, ctx_, portfolio_right_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -589,7 +590,7 @@ portfolio_right_service::get_portfolio_right_by_right_code(const std::string& ri
     BOOST_LOG_SEV(lg(), debug) << "Getting portfolio right by right_code: " << right_code;
     messaging::portfolio_right_key k;
     k.right_code = right_code;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = portfolio_right_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

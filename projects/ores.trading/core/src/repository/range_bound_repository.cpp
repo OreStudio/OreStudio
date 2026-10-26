@@ -83,9 +83,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy range_bound_list_order(const ores::utility::domain::order& order,
+                                                std::initializer_list<std::string> default_columns,
+                                                bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -101,7 +101,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::range_bounds_filter>& filter) {
+range_bound_filter_condition(const std::optional<messaging::range_bounds_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -285,8 +285,8 @@ std::vector<domain::range_bound> range_bound_repository::read_latest_by_trade_id
     return execute_ordered_read_query<range_bound_entity, domain::range_bound>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        filter_condition(filter),
+        range_bound_list_order(order, {"trade_id", "sequence_number"}, false),
+        range_bound_filter_condition(filter),
         [](const auto& entities) { return range_bound_mapper::map(entities); },
         lg(),
         "Reading latest range bounds by trade_id.");
@@ -305,8 +305,11 @@ std::uint32_t range_bound_repository::get_total_range_bound_count_by_trade_id(
         sqlgen::read<std::vector<range_bound_entity>> |
         where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value());
 
-    return execute_count_query<range_bound_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting range bounds by trade_id");
+    return execute_count_query<range_bound_entity>(ctx,
+                                                   query,
+                                                   range_bound_filter_condition(filter),
+                                                   lg(),
+                                                   "Counting range bounds by trade_id");
 }
 
 
@@ -366,8 +369,8 @@ range_bound_repository::read_latest(context ctx,
     return execute_ordered_read_query<range_bound_entity, domain::range_bound>(
         ctx,
         query,
-        list_order(order, {"trade_id", "sequence_number"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        range_bound_list_order(order, {"trade_id", "sequence_number"}, false),
+        narrowed(valid_at(as_of), range_bound_filter_condition(filter)),
         [](const auto& entities) { return range_bound_mapper::map(entities); },
         lg(),
         "Reading latest range bounds with pagination.");
@@ -385,7 +388,7 @@ std::uint32_t range_bound_repository::get_total_range_bound_count(
     return execute_count_query<range_bound_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), range_bound_filter_condition(filter)),
         lg(),
         "Counting range bounds");
 }

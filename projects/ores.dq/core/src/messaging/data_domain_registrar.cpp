@@ -39,7 +39,7 @@
 namespace ores::dq::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.dq.service";
+static constexpr std::string_view data_domain_queue_group = "ores.dq.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_data_domain_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<data_domain_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_data_domains_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_data_domains(std::move(msg));
-        }));
+        list_data_domains_request::nats_subject,
+        data_domain_queue_group,
+        [h](ores::nats::message msg) { h->list_data_domains(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_data_domain_request::nats_subject,
+                             data_domain_queue_group,
+                             [h](ores::nats::message msg) { h->get_data_domain(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_data_domain_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_data_domain(std::move(msg));
-        }));
+        get_many_data_domains_request::nats_subject,
+        data_domain_queue_group,
+        [h](ores::nats::message msg) { h->get_many_data_domains(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(put_data_domain_request::nats_subject,
+                             data_domain_queue_group,
+                             [h](ores::nats::message msg) { h->put_data_domain(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_data_domains_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_data_domains(std::move(msg));
-        }));
+        put_many_data_domains_request::nats_subject,
+        data_domain_queue_group,
+        [h](ores::nats::message msg) { h->put_many_data_domains(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_data_domain_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_data_domain(std::move(msg));
-        }));
+        delete_data_domain_request::nats_subject,
+        data_domain_queue_group,
+        [h](ores::nats::message msg) { h->delete_data_domain(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_data_domains_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_data_domains(std::move(msg));
-        }));
+        delete_many_data_domains_request::nats_subject,
+        data_domain_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_data_domains(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_data_domain_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_data_domain(std::move(msg));
-        }));
+        list_data_domain_versions_request::nats_subject,
+        data_domain_queue_group,
+        [h](ores::nats::message msg) { h->list_data_domain_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_data_domains_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_data_domains(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        list_data_domain_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_data_domain_versions(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        get_data_domain_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_data_domain_version(std::move(msg));
-        }));
+        get_data_domain_version_request::nats_subject,
+        data_domain_queue_group,
+        [h](ores::nats::message msg) { h->get_data_domain_version(std::move(msg)); }));
     return subs;
 }
 

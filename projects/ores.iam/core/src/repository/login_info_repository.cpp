@@ -84,9 +84,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy login_info_list_order(const ores::utility::domain::order& order,
+                                               std::initializer_list<std::string> default_columns,
+                                               bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"account_id"});
     if (!login_info_repository::is_sortable(order.field))
@@ -100,7 +100,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::login_info_filter>& filter) {
+login_info_filter_condition(const std::optional<messaging::login_info_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -261,8 +261,8 @@ login_info_repository::read_latest(context ctx,
     return execute_ordered_read_query<login_info_entity, domain::login_info>(
         ctx,
         query,
-        list_order(order, {"account_id"}, false),
-        filter_condition(filter),
+        login_info_list_order(order, {"account_id"}, false),
+        login_info_filter_condition(filter),
         [](const auto& entities) { return login_info_mapper::map(entities); },
         lg(),
         "Reading latest login info with pagination.");
@@ -276,7 +276,7 @@ std::uint32_t login_info_repository::get_total_login_info_count(
     const auto query = sqlgen::read<std::vector<login_info_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<login_info_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting login info");
+        ctx, query, login_info_filter_condition(filter), lg(), "Counting login info");
 }
 
 std::vector<domain::login_info>

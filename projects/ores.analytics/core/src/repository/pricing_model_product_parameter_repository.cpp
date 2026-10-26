@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+pricing_model_product_parameter_list_order(const ores::utility::domain::order& order,
+                                           std::initializer_list<std::string> default_columns,
+                                           bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!pricing_model_product_parameter_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::pricing_model_product_parameters_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> pricing_model_product_parameter_filter_condition(
+    const std::optional<messaging::pricing_model_product_parameters_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -377,8 +378,8 @@ pricing_model_product_parameter_repository::read_latest(
                                       domain::pricing_model_product_parameter>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        pricing_model_product_parameter_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), pricing_model_product_parameter_filter_condition(filter)),
         [](const auto& entities) { return pricing_model_product_parameter_mapper::map(entities); },
         lg(),
         "Reading latest pricing model product parameters with pagination.");
@@ -397,7 +398,7 @@ std::uint32_t pricing_model_product_parameter_repository::get_total_parameter_co
     return execute_count_query<pricing_model_product_parameter_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), pricing_model_product_parameter_filter_condition(filter)),
         lg(),
         "Counting pricing model product parameters");
 }

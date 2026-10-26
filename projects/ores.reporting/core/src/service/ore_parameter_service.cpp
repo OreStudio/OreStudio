@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::ore_parameter> read_one(repository::ore_parameter_repository& repo,
-                                            const ores::database::context& ctx,
-                                            const messaging::ore_parameter_key& key) {
+std::vector<domain::ore_parameter>
+ore_parameter_read_one(repository::ore_parameter_repository& repo,
+                       const ores::database::context& ctx,
+                       const messaging::ore_parameter_key& key) {
     return repo.read_latest_by_name(ctx, key.name);
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::ore_parameter> read_one(repository::ore_parameter_repository
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::ore_parameter_key key_from(const domain::ore_parameter& v) {
+messaging::ore_parameter_key ore_parameter_key_from(const domain::ore_parameter& v) {
     messaging::ore_parameter_key key;
     key.name = v.name;
     return key;
@@ -98,7 +99,7 @@ messaging::ore_parameter_key key_from(const domain::ore_parameter& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::ore_parameter to_domain(const messaging::ore_parameter_write& write) {
+domain::ore_parameter ore_parameter_to_domain(const messaging::ore_parameter_write& write) {
     domain::ore_parameter v;
     v.id = write.id;
     v.scope = write.scope;
@@ -197,7 +198,7 @@ ore_parameter_service::list_by_ore_parameter_value_domain_code_ore_parameters(
 messaging::get_ore_parameter_response
 ore_parameter_service::get_ore_parameter(const messaging::get_ore_parameter_request& request) {
     messaging::get_ore_parameter_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = ore_parameter_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "ore_parameter"});
         return response;
@@ -216,7 +217,7 @@ messaging::get_many_ore_parameters_response ore_parameter_service::get_many_ore_
     for (const auto& k : request.keys) {
         messaging::ore_parameter_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = ore_parameter_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.ore_parameter = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -232,7 +233,7 @@ ore_parameter_service::put_ore_parameter(const messaging::put_ore_parameter_requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = ore_parameter_read_one(repo_, ctx_, ore_parameter_key_from(value));
     if (!written.empty())
         response.ore_parameter = std::move(written.front());
     return response;
@@ -264,7 +265,7 @@ messaging::put_many_ore_parameters_response ore_parameter_service::put_many_ore_
     repo_.write(ctx_, batch, claims);
     response.parameters.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = ore_parameter_read_one(repo_, ctx_, ore_parameter_key_from(value));
         response.parameters.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -287,7 +288,7 @@ messaging::delete_ore_parameter_response ore_parameter_service::delete_ore_param
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = ore_parameter_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "ore_parameter"});
         return response;
@@ -303,7 +304,7 @@ messaging::delete_ore_parameter_response ore_parameter_service::delete_ore_param
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = ore_parameter_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "ore_parameter",
@@ -344,7 +345,7 @@ messaging::delete_many_ore_parameters_response ore_parameter_service::delete_man
     std::vector<domain::ore_parameter> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = ore_parameter_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -370,7 +371,7 @@ messaging::list_ore_parameter_versions_response ore_parameter_service::list_ore_
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = ore_parameter_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "ore_parameter"});
         return response;
@@ -393,7 +394,7 @@ messaging::get_ore_parameter_version_response ore_parameter_service::get_ore_par
     messaging::get_ore_parameter_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.ore_parameter);
+    const auto named = ore_parameter_read_one(repo_, ctx_, request.key.ore_parameter);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "ore_parameter"});
         return response;
@@ -415,8 +416,8 @@ ore_parameter_service::prepare_change(const messaging::ore_parameter_change& cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = ore_parameter_to_domain(change.write);
+    const auto current = ore_parameter_read_one(repo_, ctx_, ore_parameter_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -509,7 +510,7 @@ ore_parameter_service::get_parameter_by_name(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Getting ore parameter by name: " << name;
     messaging::ore_parameter_key k;
     k.name = name;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = ore_parameter_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

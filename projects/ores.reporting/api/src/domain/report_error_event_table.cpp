@@ -31,7 +31,7 @@ namespace ores::reporting::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string report_error_event_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,7 +51,8 @@ std::string convert_to_table(const std::vector<report_error_event>& v) {
 
     for ([[maybe_unused]] const auto& ree : v) {
         table << boost::uuids::to_string(ree.report_instance_id) << ree.scope_code << ree.severity
-              << opt_str(ree.subject) << opt_str(ree.subject_id) << ree.message << ree.event_time
+              << report_error_event_opt_str(ree.subject)
+              << report_error_event_opt_str(ree.subject_id) << ree.message << ree.event_time
               << fort::endr;
     }
     return table.to_string();

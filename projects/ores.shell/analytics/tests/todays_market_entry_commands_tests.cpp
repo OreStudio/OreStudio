@@ -46,7 +46,7 @@ const std::string tags("[commands]");
 
 const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-void log_in(nats_client& session) {
+void todays_market_entry_log_in(nats_client& session) {
     nats_client::login_info info;
     info.username = "tester";
     info.jwt = "token";
@@ -56,7 +56,7 @@ void log_in(nats_client& session) {
 
 // One token per positional the command takes. A value the command parses is
 // not a value the guard reaches, so any token does to prove the guard.
-std::vector<std::string> tokens(const std::size_t count) {
+std::vector<std::string> todays_market_entry_tokens(const std::size_t count) {
     return std::vector<std::string>(count, std::string{"sample"});
 }
 
@@ -99,7 +99,7 @@ TEST_CASE("todays_market_entry_commands_process_list_requires_a_session", tags) 
     std::ostringstream out;
 
     command_feedback::reset();
-    todays_market_entry_commands::process_list(out, session, tokens(0));
+    todays_market_entry_commands::process_list(out, session, todays_market_entry_tokens(0));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -113,7 +113,7 @@ TEST_CASE("todays_market_entry_commands_process_get_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    todays_market_entry_commands::process_get(out, session, tokens(1));
+    todays_market_entry_commands::process_get(out, session, todays_market_entry_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -124,7 +124,7 @@ TEST_CASE("todays_market_entry_commands_process_get_reports_the_expected_count",
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    todays_market_entry_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -147,7 +147,7 @@ TEST_CASE("todays_market_entry_commands_process_get_many_requires_a_session", ta
     std::ostringstream out;
 
     command_feedback::reset();
-    todays_market_entry_commands::process_get_many(out, session, tokens(1));
+    todays_market_entry_commands::process_get_many(out, session, todays_market_entry_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -161,7 +161,7 @@ TEST_CASE("todays_market_entry_commands_process_add_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    todays_market_entry_commands::process_add(out, session, tokens(8));
+    todays_market_entry_commands::process_add(out, session, todays_market_entry_tokens(8));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -172,7 +172,7 @@ TEST_CASE("todays_market_entry_commands_process_add_reports_the_expected_count",
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    todays_market_entry_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -195,7 +195,7 @@ TEST_CASE("todays_market_entry_commands_process_set_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    todays_market_entry_commands::process_set(out, session, tokens(8));
+    todays_market_entry_commands::process_set(out, session, todays_market_entry_tokens(8));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -206,7 +206,7 @@ TEST_CASE("todays_market_entry_commands_process_set_reports_the_expected_count",
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    todays_market_entry_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -229,7 +229,7 @@ TEST_CASE("todays_market_entry_commands_process_put_many_requires_a_session", ta
     std::ostringstream out;
 
     command_feedback::reset();
-    todays_market_entry_commands::process_put_many(out, session, tokens(8));
+    todays_market_entry_commands::process_put_many(out, session, todays_market_entry_tokens(8));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -243,7 +243,7 @@ TEST_CASE("todays_market_entry_commands_process_delete_requires_a_session", tags
     std::ostringstream out;
 
     command_feedback::reset();
-    todays_market_entry_commands::process_delete(out, session, tokens(1));
+    todays_market_entry_commands::process_delete(out, session, todays_market_entry_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -254,7 +254,7 @@ TEST_CASE("todays_market_entry_commands_process_delete_reports_the_expected_coun
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    todays_market_entry_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -277,7 +277,7 @@ TEST_CASE("todays_market_entry_commands_process_delete_many_requires_a_session",
     std::ostringstream out;
 
     command_feedback::reset();
-    todays_market_entry_commands::process_delete_many(out, session, tokens(1));
+    todays_market_entry_commands::process_delete_many(out, session, todays_market_entry_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -292,7 +292,8 @@ TEST_CASE("todays_market_entry_commands_process_by_todays_market_config_id_requi
     std::ostringstream out;
 
     command_feedback::reset();
-    todays_market_entry_commands::process_by_todays_market_config_id(out, session, tokens(1));
+    todays_market_entry_commands::process_by_todays_market_config_id(
+        out, session, todays_market_entry_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -305,7 +306,7 @@ TEST_CASE(
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    todays_market_entry_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -329,7 +330,8 @@ TEST_CASE("todays_market_entry_commands_process_by_todays_market_collection_id_r
     std::ostringstream out;
 
     command_feedback::reset();
-    todays_market_entry_commands::process_by_todays_market_collection_id(out, session, tokens(1));
+    todays_market_entry_commands::process_by_todays_market_collection_id(
+        out, session, todays_market_entry_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -342,7 +344,7 @@ TEST_CASE("todays_market_entry_commands_process_by_todays_market_collection_id_r
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    todays_market_entry_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -365,7 +367,7 @@ TEST_CASE("todays_market_entry_commands_process_versions_requires_a_session", ta
     std::ostringstream out;
 
     command_feedback::reset();
-    todays_market_entry_commands::process_versions(out, session, tokens(1));
+    todays_market_entry_commands::process_versions(out, session, todays_market_entry_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -376,7 +378,7 @@ TEST_CASE("todays_market_entry_commands_process_versions_reports_the_expected_co
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    todays_market_entry_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -399,7 +401,7 @@ TEST_CASE("todays_market_entry_commands_process_version_requires_a_session", tag
     std::ostringstream out;
 
     command_feedback::reset();
-    todays_market_entry_commands::process_version(out, session, tokens(1));
+    todays_market_entry_commands::process_version(out, session, todays_market_entry_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -410,7 +412,7 @@ TEST_CASE("todays_market_entry_commands_process_version_reports_the_expected_cou
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    todays_market_entry_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();

@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view amortization_type_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription> register_amortization_type_handlers(
@@ -49,40 +49,40 @@ std::vector<ores::nats::service::subscription> register_amortization_type_handle
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<amortization_type_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_amortization_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_amortization_types(std::move(msg));
-        }));
+        list_amortization_types_request::nats_subject,
+        amortization_type_queue_group,
+        [h](ores::nats::message msg) { h->list_amortization_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_amortization_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_amortization_type(std::move(msg));
-        }));
+        get_amortization_type_request::nats_subject,
+        amortization_type_queue_group,
+        [h](ores::nats::message msg) { h->get_amortization_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_amortization_types_request::nats_subject,
-        queue_group,
+        amortization_type_queue_group,
         [h](ores::nats::message msg) { h->get_many_amortization_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_amortization_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_amortization_type(std::move(msg));
-        }));
+        put_amortization_type_request::nats_subject,
+        amortization_type_queue_group,
+        [h](ores::nats::message msg) { h->put_amortization_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_amortization_types_request::nats_subject,
-        queue_group,
+        amortization_type_queue_group,
         [h](ores::nats::message msg) { h->put_many_amortization_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_amortization_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_amortization_type(std::move(msg));
-        }));
+        delete_amortization_type_request::nats_subject,
+        amortization_type_queue_group,
+        [h](ores::nats::message msg) { h->delete_amortization_type(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_amortization_types_request::nats_subject,
-        queue_group,
+        amortization_type_queue_group,
         [h](ores::nats::message msg) { h->delete_many_amortization_types(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_amortization_type_versions_request::nats_subject,
-        queue_group,
+        amortization_type_queue_group,
         [h](ores::nats::message msg) { h->list_amortization_type_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_amortization_type_version_request::nats_subject,
-        queue_group,
+        amortization_type_queue_group,
         [h](ores::nats::message msg) { h->get_amortization_type_version(std::move(msg)); }));
     return subs;
 }

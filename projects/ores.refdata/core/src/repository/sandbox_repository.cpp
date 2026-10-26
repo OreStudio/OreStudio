@@ -81,9 +81,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy sandbox_list_order(const ores::utility::domain::order& order,
+                                            std::initializer_list<std::string> default_columns,
+                                            bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!sandbox_repository::is_sortable(order.field))
@@ -97,7 +97,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::sandboxes_filter>& filter) {
+sandbox_filter_condition(const std::optional<messaging::sandboxes_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -308,8 +308,8 @@ std::vector<domain::sandbox> sandbox_repository::read_latest_by_anchor_portfolio
     return execute_ordered_read_query<sandbox_entity, domain::sandbox>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        filter_condition(filter),
+        sandbox_list_order(order, {"id"}, false),
+        sandbox_filter_condition(filter),
         [](const auto& entities) { return sandbox_mapper::map(entities); },
         lg(),
         "Reading latest sandboxes by anchor_portfolio_id.");
@@ -329,8 +329,11 @@ std::uint32_t sandbox_repository::get_total_sandbox_count_by_anchor_portfolio_id
         where("tenant_id"_c == tid && "anchor_portfolio_id"_c == anchor_portfolio_id &&
               "valid_to"_c == max.value());
 
-    return execute_count_query<sandbox_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting sandboxes by anchor_portfolio_id");
+    return execute_count_query<sandbox_entity>(ctx,
+                                               query,
+                                               sandbox_filter_condition(filter),
+                                               lg(),
+                                               "Counting sandboxes by anchor_portfolio_id");
 }
 
 
@@ -384,8 +387,8 @@ sandbox_repository::read_latest(context ctx,
     return execute_ordered_read_query<sandbox_entity, domain::sandbox>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        sandbox_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), sandbox_filter_condition(filter)),
         [](const auto& entities) { return sandbox_mapper::map(entities); },
         lg(),
         "Reading latest sandboxes with pagination.");
@@ -400,11 +403,12 @@ std::uint32_t sandbox_repository::get_total_sandbox_count(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<sandbox_entity>> | where("tenant_id"_c == tid);
 
-    return execute_count_query<sandbox_entity>(ctx,
-                                               query,
-                                               narrowed(valid_at(as_of), filter_condition(filter)),
-                                               lg(),
-                                               "Counting sandboxes");
+    return execute_count_query<sandbox_entity>(
+        ctx,
+        query,
+        narrowed(valid_at(as_of), sandbox_filter_condition(filter)),
+        lg(),
+        "Counting sandboxes");
 }
 
 std::vector<domain::sandbox> sandbox_repository::read_latest(context ctx,

@@ -30,7 +30,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string tenor_convention_resolution_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -49,9 +49,12 @@ std::string convert_to_table(const std::vector<tenor_convention_resolution>& v) 
           << "Offset Multiplier" << "Schedule" << "Schedule Step Count" << fort::endr;
 
     for ([[maybe_unused]] const auto& r : v) {
-        table << r.convention_code << r.tenor_code << opt_str(r.anchor_override)
-              << opt_str(r.offset_unit) << opt_str(r.offset_multiplier) << opt_str(r.schedule_code)
-              << opt_str(r.schedule_step_count) << fort::endr;
+        table << r.convention_code << r.tenor_code
+              << tenor_convention_resolution_opt_str(r.anchor_override)
+              << tenor_convention_resolution_opt_str(r.offset_unit)
+              << tenor_convention_resolution_opt_str(r.offset_multiplier)
+              << tenor_convention_resolution_opt_str(r.schedule_code)
+              << tenor_convention_resolution_opt_str(r.schedule_step_count) << fort::endr;
     }
     return table.to_string();
 }

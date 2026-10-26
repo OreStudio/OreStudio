@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string inflation_swap_instrument_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,7 +50,8 @@ std::string convert_to_table(const std::vector<inflation_swap_instrument>& v) {
           << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& is : v) {
-        table << is.trade_id << is.inflation_index_code << opt_str(is.base_cpi) << is.lag_convention
+        table << is.trade_id << is.inflation_index_code
+              << inflation_swap_instrument_opt_str(is.base_cpi) << is.lag_convention
               << is.modified_by << is.version << fort::endr;
     }
     return table.to_string();

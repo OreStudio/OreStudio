@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::convention_kind> read_one(repository::convention_kind_repository& repo,
-                                              const ores::database::context& ctx,
-                                              const messaging::convention_kind_key& key) {
+std::vector<domain::convention_kind>
+convention_kind_read_one(repository::convention_kind_repository& repo,
+                         const ores::database::context& ctx,
+                         const messaging::convention_kind_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::convention_kind> read_one(repository::convention_kind_reposi
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::convention_kind_key key_from(const domain::convention_kind& v) {
+messaging::convention_kind_key convention_kind_key_from(const domain::convention_kind& v) {
     messaging::convention_kind_key key;
     key.code = v.code;
     return key;
@@ -94,7 +95,7 @@ messaging::convention_kind_key key_from(const domain::convention_kind& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::convention_kind to_domain(const messaging::convention_kind_write& write) {
+domain::convention_kind convention_kind_to_domain(const messaging::convention_kind_write& write) {
     domain::convention_kind v;
     v.code = write.code;
     v.name = write.name;
@@ -143,7 +144,7 @@ messaging::list_convention_kinds_response convention_kind_service::list_conventi
 messaging::get_convention_kind_response convention_kind_service::get_convention_kind(
     const messaging::get_convention_kind_request& request) {
     messaging::get_convention_kind_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = convention_kind_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "convention_kind"});
         return response;
@@ -162,7 +163,7 @@ messaging::get_many_convention_kinds_response convention_kind_service::get_many_
     for (const auto& k : request.keys) {
         messaging::convention_kind_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = convention_kind_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.convention_kind = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -178,7 +179,7 @@ messaging::put_convention_kind_response convention_kind_service::put_convention_
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = convention_kind_read_one(repo_, ctx_, convention_kind_key_from(value));
     if (!written.empty())
         response.convention_kind = std::move(written.front());
     return response;
@@ -210,7 +211,7 @@ messaging::put_many_convention_kinds_response convention_kind_service::put_many_
     repo_.write(ctx_, batch, claims);
     response.kinds.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = convention_kind_read_one(repo_, ctx_, convention_kind_key_from(value));
         response.kinds.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -243,7 +244,7 @@ messaging::delete_convention_kind_response convention_kind_service::delete_conve
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = convention_kind_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "convention_kind",
@@ -331,8 +332,8 @@ convention_kind_service::prepare_change(const messaging::convention_kind_change&
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = convention_kind_to_domain(change.write);
+    const auto current = convention_kind_read_one(repo_, ctx_, convention_kind_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

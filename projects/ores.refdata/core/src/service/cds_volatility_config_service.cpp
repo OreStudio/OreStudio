@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::cds_volatility_config>
-read_one(repository::cds_volatility_config_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::cds_volatility_config_key& key) {
+cds_volatility_config_read_one(repository::cds_volatility_config_repository& repo,
+                               const ores::database::context& ctx,
+                               const messaging::cds_volatility_config_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -86,7 +86,8 @@ read_one(repository::cds_volatility_config_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::cds_volatility_config_key key_from(const domain::cds_volatility_config& v) {
+messaging::cds_volatility_config_key
+cds_volatility_config_key_from(const domain::cds_volatility_config& v) {
     messaging::cds_volatility_config_key key;
     key.id = v.id;
     return key;
@@ -99,7 +100,8 @@ messaging::cds_volatility_config_key key_from(const domain::cds_volatility_confi
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::cds_volatility_config to_domain(const messaging::cds_volatility_config_write& write) {
+domain::cds_volatility_config
+cds_volatility_config_to_domain(const messaging::cds_volatility_config_write& write) {
     domain::cds_volatility_config v;
     v.id = write.id;
     v.curve_definition_id = write.curve_definition_id;
@@ -152,7 +154,7 @@ messaging::get_cds_volatility_config_response
 cds_volatility_config_service::get_cds_volatility_config(
     const messaging::get_cds_volatility_config_request& request) {
     messaging::get_cds_volatility_config_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = cds_volatility_config_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "cds_volatility_config"});
         return response;
@@ -172,7 +174,7 @@ cds_volatility_config_service::get_many_cds_volatility_configs(
     for (const auto& k : request.keys) {
         messaging::cds_volatility_config_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = cds_volatility_config_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.cds_volatility_config = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -189,7 +191,8 @@ cds_volatility_config_service::put_cds_volatility_config(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        cds_volatility_config_read_one(repo_, ctx_, cds_volatility_config_key_from(value));
     if (!written.empty())
         response.cds_volatility_config = std::move(written.front());
     return response;
@@ -222,7 +225,8 @@ cds_volatility_config_service::put_many_cds_volatility_configs(
     repo_.write(ctx_, batch, claims);
     response.cds_volatility_configs.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            cds_volatility_config_read_one(repo_, ctx_, cds_volatility_config_key_from(value));
         response.cds_volatility_configs.push_back(written.empty() ? value :
                                                                     std::move(written.front()));
     }
@@ -257,7 +261,7 @@ cds_volatility_config_service::delete_cds_volatility_config(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = cds_volatility_config_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "cds_volatility_config",
@@ -347,8 +351,9 @@ cds_volatility_config_service::prepare_change(const messaging::cds_volatility_co
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = cds_volatility_config_to_domain(change.write);
+    const auto current =
+        cds_volatility_config_read_one(repo_, ctx_, cds_volatility_config_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

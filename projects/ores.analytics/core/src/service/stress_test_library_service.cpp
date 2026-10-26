@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::stress_test_library> read_one(repository::stress_test_library_repository& repo,
-                                                  const ores::database::context& ctx,
-                                                  const messaging::stress_test_library_key& key) {
+std::vector<domain::stress_test_library>
+stress_test_library_read_one(repository::stress_test_library_repository& repo,
+                             const ores::database::context& ctx,
+                             const messaging::stress_test_library_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -85,7 +86,8 @@ std::vector<domain::stress_test_library> read_one(repository::stress_test_librar
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::stress_test_library_key key_from(const domain::stress_test_library& v) {
+messaging::stress_test_library_key
+stress_test_library_key_from(const domain::stress_test_library& v) {
     messaging::stress_test_library_key key;
     key.id = v.id;
     return key;
@@ -98,7 +100,8 @@ messaging::stress_test_library_key key_from(const domain::stress_test_library& v
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::stress_test_library to_domain(const messaging::stress_test_library_write& write) {
+domain::stress_test_library
+stress_test_library_to_domain(const messaging::stress_test_library_write& write) {
     domain::stress_test_library v;
     v.id = write.id;
     v.name = write.name;
@@ -145,7 +148,7 @@ stress_test_library_service::list_stress_test_libraries(
 messaging::get_stress_test_library_response stress_test_library_service::get_stress_test_library(
     const messaging::get_stress_test_library_request& request) {
     messaging::get_stress_test_library_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = stress_test_library_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "stress_test_library"});
         return response;
@@ -165,7 +168,7 @@ stress_test_library_service::get_many_stress_test_libraries(
     for (const auto& k : request.keys) {
         messaging::stress_test_library_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = stress_test_library_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.stress_test_library = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -181,7 +184,7 @@ messaging::put_stress_test_library_response stress_test_library_service::put_str
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = stress_test_library_read_one(repo_, ctx_, stress_test_library_key_from(value));
     if (!written.empty())
         response.stress_test_library = std::move(written.front());
     return response;
@@ -214,7 +217,8 @@ stress_test_library_service::put_many_stress_test_libraries(
     repo_.write(ctx_, batch, claims);
     response.stress_test_libraries.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            stress_test_library_read_one(repo_, ctx_, stress_test_library_key_from(value));
         response.stress_test_libraries.push_back(written.empty() ? value :
                                                                    std::move(written.front()));
     }
@@ -249,7 +253,7 @@ stress_test_library_service::delete_stress_test_library(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = stress_test_library_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "stress_test_library",
@@ -338,8 +342,9 @@ stress_test_library_service::prepare_change(const messaging::stress_test_library
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = stress_test_library_to_domain(change.write);
+    const auto current =
+        stress_test_library_read_one(repo_, ctx_, stress_test_library_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

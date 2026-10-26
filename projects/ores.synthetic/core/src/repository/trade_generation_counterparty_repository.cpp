@@ -81,9 +81,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+trade_generation_counterparty_list_order(const ores::utility::domain::order& order,
+                                         std::initializer_list<std::string> default_columns,
+                                         bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!trade_generation_counterparty_repository::is_sortable(order.field))
@@ -96,8 +97,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::trade_generation_counterparties_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> trade_generation_counterparty_filter_condition(
+    const std::optional<messaging::trade_generation_counterparties_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -329,8 +330,8 @@ trade_generation_counterparty_repository::read_latest(
                                       domain::trade_generation_counterparty>(
         ctx,
         query,
-        list_order(order, {"id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        trade_generation_counterparty_list_order(order, {"id"}, false),
+        narrowed(valid_at(as_of), trade_generation_counterparty_filter_condition(filter)),
         [](const auto& entities) { return trade_generation_counterparty_mapper::map(entities); },
         lg(),
         "Reading latest trade generation counterparties with pagination.");
@@ -350,7 +351,7 @@ trade_generation_counterparty_repository::get_total_trade_generation_counterpart
     return execute_count_query<trade_generation_counterparty_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), trade_generation_counterparty_filter_condition(filter)),
         lg(),
         "Counting trade generation counterparties");
 }

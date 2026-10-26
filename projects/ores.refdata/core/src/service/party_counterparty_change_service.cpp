@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::party_counterparty_change>
-read_one(repository::party_counterparty_change_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::party_counterparty_change_key& key) {
+party_counterparty_change_read_one(repository::party_counterparty_change_repository& repo,
+                                   const ores::database::context& ctx,
+                                   const messaging::party_counterparty_change_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -160,7 +160,7 @@ messaging::get_party_counterparty_change_response
 party_counterparty_change_service::get_party_counterparty_change(
     const messaging::get_party_counterparty_change_request& request) {
     messaging::get_party_counterparty_change_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = party_counterparty_change_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "party_counterparty_change"});
         return response;
@@ -180,7 +180,7 @@ party_counterparty_change_service::get_many_party_counterparty_changes(
     for (const auto& k : request.keys) {
         messaging::party_counterparty_change_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = party_counterparty_change_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.party_counterparty_change = std::move(found.front());
         response.entries.push_back(std::move(entry));

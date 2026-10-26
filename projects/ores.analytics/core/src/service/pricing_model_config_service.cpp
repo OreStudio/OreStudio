@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::pricing_model_config>
-read_one(repository::pricing_model_config_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::pricing_model_config_key& key) {
+pricing_model_config_read_one(repository::pricing_model_config_repository& repo,
+                              const ores::database::context& ctx,
+                              const messaging::pricing_model_config_key& key) {
     return repo.read_latest_by_name(ctx, key.name);
 }
 
@@ -86,7 +86,8 @@ read_one(repository::pricing_model_config_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::pricing_model_config_key key_from(const domain::pricing_model_config& v) {
+messaging::pricing_model_config_key
+pricing_model_config_key_from(const domain::pricing_model_config& v) {
     messaging::pricing_model_config_key key;
     key.name = v.name;
     return key;
@@ -99,7 +100,8 @@ messaging::pricing_model_config_key key_from(const domain::pricing_model_config&
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::pricing_model_config to_domain(const messaging::pricing_model_config_write& write) {
+domain::pricing_model_config
+pricing_model_config_to_domain(const messaging::pricing_model_config_write& write) {
     domain::pricing_model_config v;
     v.id = write.id;
     v.party_id = write.party_id;
@@ -190,7 +192,7 @@ pricing_model_config_service::list_by_configuration_id_pricing_model_configs(
 messaging::get_pricing_model_config_response pricing_model_config_service::get_pricing_model_config(
     const messaging::get_pricing_model_config_request& request) {
     messaging::get_pricing_model_config_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = pricing_model_config_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "pricing_model_config"});
         return response;
@@ -210,7 +212,7 @@ pricing_model_config_service::get_many_pricing_model_configs(
     for (const auto& k : request.keys) {
         messaging::pricing_model_config_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = pricing_model_config_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.pricing_model_config = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -226,7 +228,7 @@ messaging::put_pricing_model_config_response pricing_model_config_service::put_p
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = pricing_model_config_read_one(repo_, ctx_, pricing_model_config_key_from(value));
     if (!written.empty())
         response.pricing_model_config = std::move(written.front());
     return response;
@@ -259,7 +261,8 @@ pricing_model_config_service::put_many_pricing_model_configs(
     repo_.write(ctx_, batch, claims);
     response.configs.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            pricing_model_config_read_one(repo_, ctx_, pricing_model_config_key_from(value));
         response.configs.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -283,7 +286,7 @@ pricing_model_config_service::delete_pricing_model_config(
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = pricing_model_config_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "pricing_model_config"});
         return response;
@@ -299,7 +302,7 @@ pricing_model_config_service::delete_pricing_model_config(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = pricing_model_config_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "pricing_model_config",
@@ -341,7 +344,7 @@ pricing_model_config_service::delete_many_pricing_model_configs(
     std::vector<domain::pricing_model_config> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = pricing_model_config_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -370,7 +373,7 @@ pricing_model_config_service::list_pricing_model_config_versions(
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = pricing_model_config_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "pricing_model_config"});
         return response;
@@ -394,7 +397,7 @@ pricing_model_config_service::get_pricing_model_config_version(
     messaging::get_pricing_model_config_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.pricing_model_config);
+    const auto named = pricing_model_config_read_one(repo_, ctx_, request.key.pricing_model_config);
     if (named.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "pricing_model_config"});
         return response;
@@ -416,8 +419,9 @@ pricing_model_config_service::prepare_change(const messaging::pricing_model_conf
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = pricing_model_config_to_domain(change.write);
+    const auto current =
+        pricing_model_config_read_one(repo_, ctx_, pricing_model_config_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -509,7 +513,7 @@ pricing_model_config_service::get_config_by_name(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Getting pricing model configuration by name: " << name;
     messaging::pricing_model_config_key k;
     k.name = name;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = pricing_model_config_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

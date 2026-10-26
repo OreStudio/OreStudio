@@ -80,9 +80,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy data_domain_list_order(const ores::utility::domain::order& order,
+                                                std::initializer_list<std::string> default_columns,
+                                                bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"name"});
     if (!data_domain_repository::is_sortable(order.field))
@@ -96,7 +96,7 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * members a request sets must all hold.
  */
 std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::data_domains_filter>& filter) {
+data_domain_filter_condition(const std::optional<messaging::data_domains_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -289,8 +289,8 @@ data_domain_repository::read_latest(context ctx,
     return execute_ordered_read_query<data_domain_entity, domain::data_domain>(
         ctx,
         query,
-        list_order(order, {"name"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        data_domain_list_order(order, {"name"}, false),
+        narrowed(valid_at(as_of), data_domain_filter_condition(filter)),
         [](const auto& entities) { return data_domain_mapper::map(entities); },
         lg(),
         "Reading latest data domains with pagination.");
@@ -307,7 +307,7 @@ std::uint32_t data_domain_repository::get_total_domain_count(
     return execute_count_query<data_domain_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), data_domain_filter_condition(filter)),
         lg(),
         "Counting data domains");
 }

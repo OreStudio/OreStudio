@@ -39,7 +39,7 @@
 namespace ores::analytics::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.analytics.service";
+static constexpr std::string_view stress_test_shift_queue_group = "ores.analytics.service";
 }
 
 std::vector<ores::nats::service::subscription> register_stress_test_shift_handlers(
@@ -49,40 +49,40 @@ std::vector<ores::nats::service::subscription> register_stress_test_shift_handle
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<stress_test_shift_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_stress_test_shifts_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_stress_test_shifts(std::move(msg));
-        }));
+        list_stress_test_shifts_request::nats_subject,
+        stress_test_shift_queue_group,
+        [h](ores::nats::message msg) { h->list_stress_test_shifts(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_stress_test_shift_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_stress_test_shift(std::move(msg));
-        }));
+        get_stress_test_shift_request::nats_subject,
+        stress_test_shift_queue_group,
+        [h](ores::nats::message msg) { h->get_stress_test_shift(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_stress_test_shifts_request::nats_subject,
-        queue_group,
+        stress_test_shift_queue_group,
         [h](ores::nats::message msg) { h->get_many_stress_test_shifts(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_stress_test_shift_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_stress_test_shift(std::move(msg));
-        }));
+        put_stress_test_shift_request::nats_subject,
+        stress_test_shift_queue_group,
+        [h](ores::nats::message msg) { h->put_stress_test_shift(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_stress_test_shifts_request::nats_subject,
-        queue_group,
+        stress_test_shift_queue_group,
         [h](ores::nats::message msg) { h->put_many_stress_test_shifts(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_stress_test_shift_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_stress_test_shift(std::move(msg));
-        }));
+        delete_stress_test_shift_request::nats_subject,
+        stress_test_shift_queue_group,
+        [h](ores::nats::message msg) { h->delete_stress_test_shift(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_stress_test_shifts_request::nats_subject,
-        queue_group,
+        stress_test_shift_queue_group,
         [h](ores::nats::message msg) { h->delete_many_stress_test_shifts(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_stress_test_shift_versions_request::nats_subject,
-        queue_group,
+        stress_test_shift_queue_group,
         [h](ores::nats::message msg) { h->list_stress_test_shift_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_stress_test_shift_version_request::nats_subject,
-        queue_group,
+        stress_test_shift_queue_group,
         [h](ores::nats::message msg) { h->get_stress_test_shift_version(std::move(msg)); }));
     return subs;
 }

@@ -39,7 +39,7 @@
 namespace ores::analytics::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.analytics.service";
+static constexpr std::string_view sensitivity_template_queue_group = "ores.analytics.service";
 }
 
 std::vector<ores::nats::service::subscription> register_sensitivity_template_handlers(
@@ -51,39 +51,39 @@ std::vector<ores::nats::service::subscription> register_sensitivity_template_han
         std::make_shared<sensitivity_template_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_sensitivity_templates_request::nats_subject,
-        queue_group,
+        sensitivity_template_queue_group,
         [h](ores::nats::message msg) { h->list_sensitivity_templates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_sensitivity_template_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_sensitivity_template(std::move(msg));
-        }));
+        get_sensitivity_template_request::nats_subject,
+        sensitivity_template_queue_group,
+        [h](ores::nats::message msg) { h->get_sensitivity_template(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_sensitivity_templates_request::nats_subject,
-        queue_group,
+        sensitivity_template_queue_group,
         [h](ores::nats::message msg) { h->get_many_sensitivity_templates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_sensitivity_template_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_sensitivity_template(std::move(msg));
-        }));
+        put_sensitivity_template_request::nats_subject,
+        sensitivity_template_queue_group,
+        [h](ores::nats::message msg) { h->put_sensitivity_template(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_sensitivity_templates_request::nats_subject,
-        queue_group,
+        sensitivity_template_queue_group,
         [h](ores::nats::message msg) { h->put_many_sensitivity_templates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_sensitivity_template_request::nats_subject,
-        queue_group,
+        sensitivity_template_queue_group,
         [h](ores::nats::message msg) { h->delete_sensitivity_template(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_sensitivity_templates_request::nats_subject,
-        queue_group,
+        sensitivity_template_queue_group,
         [h](ores::nats::message msg) { h->delete_many_sensitivity_templates(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_sensitivity_template_versions_request::nats_subject,
-        queue_group,
+        sensitivity_template_queue_group,
         [h](ores::nats::message msg) { h->list_sensitivity_template_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_sensitivity_template_version_request::nats_subject,
-        queue_group,
+        sensitivity_template_queue_group,
         [h](ores::nats::message msg) { h->get_sensitivity_template_version(std::move(msg)); }));
     return subs;
 }

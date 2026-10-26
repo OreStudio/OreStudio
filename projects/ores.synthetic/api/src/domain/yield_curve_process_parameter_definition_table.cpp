@@ -31,7 +31,7 @@ namespace ores::synthetic::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string yield_curve_process_parameter_definition_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -51,9 +51,11 @@ std::string convert_to_table(const std::vector<yield_curve_process_parameter_def
           << "Display Order" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& pd : v) {
-        table << pd.process_type_code << pd.parameter_name << pd.display_name << opt_str(pd.symbol)
-              << pd.short_label << pd.description << pd.data_type << pd.default_value
-              << opt_str(pd.min_value) << opt_str(pd.max_value) << pd.display_order
+        table << pd.process_type_code << pd.parameter_name << pd.display_name
+              << yield_curve_process_parameter_definition_opt_str(pd.symbol) << pd.short_label
+              << pd.description << pd.data_type << pd.default_value
+              << yield_curve_process_parameter_definition_opt_str(pd.min_value)
+              << yield_curve_process_parameter_definition_opt_str(pd.max_value) << pd.display_order
               << pd.modified_by << pd.version << fort::endr;
     }
     return table.to_string();

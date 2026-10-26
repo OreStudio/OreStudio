@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view counterparty_change_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_counterparty_change_handlers(
@@ -50,30 +50,30 @@ std::vector<ores::nats::service::subscription> register_counterparty_change_hand
     auto h =
         std::make_shared<counterparty_change_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_counterparty_changes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_counterparty_changes(std::move(msg));
-        }));
+        list_counterparty_changes_request::nats_subject,
+        counterparty_change_queue_group,
+        [h](ores::nats::message msg) { h->list_counterparty_changes(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_counterparty_change_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_counterparty_change(std::move(msg));
-        }));
+        get_counterparty_change_request::nats_subject,
+        counterparty_change_queue_group,
+        [h](ores::nats::message msg) { h->get_counterparty_change(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_counterparty_changes_request::nats_subject,
-        queue_group,
+        counterparty_change_queue_group,
         [h](ores::nats::message msg) { h->get_many_counterparty_changes(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(list_by_request_id_counterparty_changes_request::nats_subject,
-                             queue_group,
+                             counterparty_change_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_by_request_id_counterparty_changes(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         list_counterparty_change_versions_request::nats_subject,
-        queue_group,
+        counterparty_change_queue_group,
         [h](ores::nats::message msg) { h->list_counterparty_change_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_counterparty_change_version_request::nats_subject,
-        queue_group,
+        counterparty_change_queue_group,
         [h](ores::nats::message msg) { h->get_counterparty_change_version(std::move(msg)); }));
     return subs;
 }

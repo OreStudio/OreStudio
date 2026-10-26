@@ -74,10 +74,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::counterparty_contact_information>
-read_one(repository::counterparty_contact_information_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::counterparty_contact_information_key& key) {
+std::vector<domain::counterparty_contact_information> counterparty_contact_information_read_one(
+    repository::counterparty_contact_information_repository& repo,
+    const ores::database::context& ctx,
+    const messaging::counterparty_contact_information_key& key) {
     return repo.read_latest_by_contact_type(ctx, key.contact_type);
 }
 
@@ -88,7 +88,7 @@ read_one(repository::counterparty_contact_information_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::counterparty_contact_information_key
-key_from(const domain::counterparty_contact_information& v) {
+counterparty_contact_information_key_from(const domain::counterparty_contact_information& v) {
     messaging::counterparty_contact_information_key key;
     key.contact_type = v.contact_type;
     return key;
@@ -101,8 +101,8 @@ key_from(const domain::counterparty_contact_information& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::counterparty_contact_information
-to_domain(const messaging::counterparty_contact_information_write& write) {
+domain::counterparty_contact_information counterparty_contact_information_to_domain(
+    const messaging::counterparty_contact_information_write& write) {
     domain::counterparty_contact_information v;
     v.id = write.id;
     v.counterparty_id = write.counterparty_id;
@@ -203,7 +203,7 @@ messaging::get_counterparty_contact_information_response
 counterparty_contact_information_service::get_counterparty_contact_information(
     const messaging::get_counterparty_contact_information_request& request) {
     messaging::get_counterparty_contact_information_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = counterparty_contact_information_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "counterparty_contact_information"});
@@ -224,7 +224,7 @@ counterparty_contact_information_service::get_many_counterparty_contact_informat
     for (const auto& k : request.keys) {
         messaging::counterparty_contact_information_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = counterparty_contact_information_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.counterparty_contact_information = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -241,7 +241,8 @@ counterparty_contact_information_service::put_counterparty_contact_information(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = counterparty_contact_information_read_one(
+        repo_, ctx_, counterparty_contact_information_key_from(value));
     if (!written.empty())
         response.counterparty_contact_information = std::move(written.front());
     return response;
@@ -274,7 +275,8 @@ counterparty_contact_information_service::put_many_counterparty_contact_informat
     repo_.write(ctx_, batch, claims);
     response.counterparty_contact_informations.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = counterparty_contact_information_read_one(
+            repo_, ctx_, counterparty_contact_information_key_from(value));
         response.counterparty_contact_informations.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -299,7 +301,7 @@ counterparty_contact_information_service::delete_counterparty_contact_informatio
         }
         expected = request.removal.precondition.version;
     }
-    const auto named = read_one(repo_, ctx_, request.removal.key);
+    const auto named = counterparty_contact_information_read_one(repo_, ctx_, request.removal.key);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "counterparty_contact_information"});
@@ -317,7 +319,8 @@ counterparty_contact_information_service::delete_counterparty_contact_informatio
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                counterparty_contact_information_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "counterparty_contact_information",
@@ -359,7 +362,7 @@ counterparty_contact_information_service::delete_many_counterparty_contact_infor
     std::vector<domain::counterparty_contact_information> resolved;
     resolved.reserve(request.removals.size());
     for (const auto& removal : request.removals) {
-        auto named = read_one(repo_, ctx_, removal.key);
+        auto named = counterparty_contact_information_read_one(repo_, ctx_, removal.key);
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -388,7 +391,7 @@ counterparty_contact_information_service::list_counterparty_contact_information_
     }
     // The versions of the row the caller's key names. The repository reads by
     // the storage key, so the declared key is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key);
+    const auto named = counterparty_contact_information_read_one(repo_, ctx_, request.key);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "counterparty_contact_information"});
@@ -413,7 +416,8 @@ counterparty_contact_information_service::get_counterparty_contact_information_v
     messaging::get_counterparty_contact_information_version_response response;
     // The version key nests the entity's own key, which is the declared one.
     // The repository reads by the storage key, so it is resolved once here.
-    const auto named = read_one(repo_, ctx_, request.key.counterparty_contact_information);
+    const auto named = counterparty_contact_information_read_one(
+        repo_, ctx_, request.key.counterparty_contact_information);
     if (named.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "counterparty_contact_information"});
@@ -437,8 +441,9 @@ ores::utility::domain::result counterparty_contact_information_service::prepare_
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = counterparty_contact_information_to_domain(change.write);
+    const auto current = counterparty_contact_information_read_one(
+        repo_, ctx_, counterparty_contact_information_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
@@ -566,7 +571,7 @@ counterparty_contact_information_service::get_counterparty_contact_information_b
                                << contact_type;
     messaging::counterparty_contact_information_key k;
     k.contact_type = contact_type;
-    auto found = read_one(repo_, ctx_, k);
+    auto found = counterparty_contact_information_read_one(repo_, ctx_, k);
     if (found.empty())
         return std::nullopt;
     return found.front();

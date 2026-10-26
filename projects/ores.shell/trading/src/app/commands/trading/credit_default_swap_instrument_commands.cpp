@@ -63,7 +63,9 @@ namespace {
  * everything from_token already converts.
  */
 template <typename T>
-void read_token(T& target, const std::string& raw, const std::string& name) {
+void credit_default_swap_instrument_read_token(T& target,
+                                               const std::string& raw,
+                                               const std::string& name) {
     if constexpr (std::is_same_v<T, std::string>) {
         target = raw;
     } else if constexpr (std::is_same_v<T, bool>) {
@@ -97,7 +99,7 @@ void read_token(T& target, const std::string& raw, const std::string& name) {
 
 /// Apply the page and the order a caller stated, leaving the defaults alone.
 template <typename Request>
-void apply_page(Request& req, const parsed_args& parsed) {
+void credit_default_swap_instrument_apply_page(Request& req, const parsed_args& parsed) {
     if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
         req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
     }
@@ -227,7 +229,7 @@ void credit_default_swap_instrument_commands::process_list(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        apply_page(req, *parsed);
+        credit_default_swap_instrument_apply_page(req, *parsed);
         if (!parsed->positionals.empty()) {
             fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
                       << std::endl;
@@ -275,7 +277,8 @@ void credit_default_swap_instrument_commands::process_get(std::ostream& out,
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
+        credit_default_swap_instrument_read_token(
+            req.key.trade_id, parsed->positionals[next++], "trade_id");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -319,7 +322,8 @@ void credit_default_swap_instrument_commands::process_get_many(
         }
         for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
             messaging::credit_default_swap_instrument_key key;
-            read_token(key.trade_id, parsed->positionals[i + 0], "trade_id");
+            credit_default_swap_instrument_read_token(
+                key.trade_id, parsed->positionals[i + 0], "trade_id");
             req.keys.push_back(std::move(key));
         }
     } catch (const std::exception& e) {
@@ -364,35 +368,41 @@ void credit_default_swap_instrument_commands::process_add(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(
+        credit_default_swap_instrument_read_token(
+            req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        credit_default_swap_instrument_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(
+        credit_default_swap_instrument_read_token(
             req.change.write.credit_curve_id, parsed->positionals[next++], "credit_curve_id");
-        read_token(req.change.write.issuer_id, parsed->positionals[next++], "issuer_id");
-        read_token(req.change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
-        read_token(req.change.write.reference_obligation,
-                   parsed->positionals[next++],
-                   "reference_obligation");
-        read_token(
+        credit_default_swap_instrument_read_token(
+            req.change.write.issuer_id, parsed->positionals[next++], "issuer_id");
+        credit_default_swap_instrument_read_token(
+            req.change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
+        credit_default_swap_instrument_read_token(req.change.write.reference_obligation,
+                                                  parsed->positionals[next++],
+                                                  "reference_obligation");
+        credit_default_swap_instrument_read_token(
             req.change.write.settles_accrual, parsed->positionals[next++], "settles_accrual");
-        read_token(
+        credit_default_swap_instrument_read_token(
             req.change.write.rebates_accrual, parsed->positionals[next++], "rebates_accrual");
-        read_token(req.change.write.pays_at_default_time,
-                   parsed->positionals[next++],
-                   "pays_at_default_time");
-        read_token(req.change.write.protection_payment_time,
-                   parsed->positionals[next++],
-                   "protection_payment_time");
-        read_token(req.change.write.protection_start_date,
-                   parsed->positionals[next++],
-                   "protection_start_date");
-        read_token(req.change.write.upfront_date, parsed->positionals[next++], "upfront_date");
-        read_token(req.change.write.upfront_fee, parsed->positionals[next++], "upfront_fee");
-        read_token(req.change.write.trade_date, parsed->positionals[next++], "trade_date");
-        read_token(req.change.write.cash_settlement_days,
-                   parsed->positionals[next++],
-                   "cash_settlement_days");
+        credit_default_swap_instrument_read_token(req.change.write.pays_at_default_time,
+                                                  parsed->positionals[next++],
+                                                  "pays_at_default_time");
+        credit_default_swap_instrument_read_token(req.change.write.protection_payment_time,
+                                                  parsed->positionals[next++],
+                                                  "protection_payment_time");
+        credit_default_swap_instrument_read_token(req.change.write.protection_start_date,
+                                                  parsed->positionals[next++],
+                                                  "protection_start_date");
+        credit_default_swap_instrument_read_token(
+            req.change.write.upfront_date, parsed->positionals[next++], "upfront_date");
+        credit_default_swap_instrument_read_token(
+            req.change.write.upfront_fee, parsed->positionals[next++], "upfront_fee");
+        credit_default_swap_instrument_read_token(
+            req.change.write.trade_date, parsed->positionals[next++], "trade_date");
+        credit_default_swap_instrument_read_token(req.change.write.cash_settlement_days,
+                                                  parsed->positionals[next++],
+                                                  "cash_settlement_days");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -440,35 +450,41 @@ void credit_default_swap_instrument_commands::process_set(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.change.write.trade_id, parsed->positionals[next++], "trade_id");
-        read_token(
+        credit_default_swap_instrument_read_token(
+            req.change.write.trade_id, parsed->positionals[next++], "trade_id");
+        credit_default_swap_instrument_read_token(
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-        read_token(
+        credit_default_swap_instrument_read_token(
             req.change.write.credit_curve_id, parsed->positionals[next++], "credit_curve_id");
-        read_token(req.change.write.issuer_id, parsed->positionals[next++], "issuer_id");
-        read_token(req.change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
-        read_token(req.change.write.reference_obligation,
-                   parsed->positionals[next++],
-                   "reference_obligation");
-        read_token(
+        credit_default_swap_instrument_read_token(
+            req.change.write.issuer_id, parsed->positionals[next++], "issuer_id");
+        credit_default_swap_instrument_read_token(
+            req.change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
+        credit_default_swap_instrument_read_token(req.change.write.reference_obligation,
+                                                  parsed->positionals[next++],
+                                                  "reference_obligation");
+        credit_default_swap_instrument_read_token(
             req.change.write.settles_accrual, parsed->positionals[next++], "settles_accrual");
-        read_token(
+        credit_default_swap_instrument_read_token(
             req.change.write.rebates_accrual, parsed->positionals[next++], "rebates_accrual");
-        read_token(req.change.write.pays_at_default_time,
-                   parsed->positionals[next++],
-                   "pays_at_default_time");
-        read_token(req.change.write.protection_payment_time,
-                   parsed->positionals[next++],
-                   "protection_payment_time");
-        read_token(req.change.write.protection_start_date,
-                   parsed->positionals[next++],
-                   "protection_start_date");
-        read_token(req.change.write.upfront_date, parsed->positionals[next++], "upfront_date");
-        read_token(req.change.write.upfront_fee, parsed->positionals[next++], "upfront_fee");
-        read_token(req.change.write.trade_date, parsed->positionals[next++], "trade_date");
-        read_token(req.change.write.cash_settlement_days,
-                   parsed->positionals[next++],
-                   "cash_settlement_days");
+        credit_default_swap_instrument_read_token(req.change.write.pays_at_default_time,
+                                                  parsed->positionals[next++],
+                                                  "pays_at_default_time");
+        credit_default_swap_instrument_read_token(req.change.write.protection_payment_time,
+                                                  parsed->positionals[next++],
+                                                  "protection_payment_time");
+        credit_default_swap_instrument_read_token(req.change.write.protection_start_date,
+                                                  parsed->positionals[next++],
+                                                  "protection_start_date");
+        credit_default_swap_instrument_read_token(
+            req.change.write.upfront_date, parsed->positionals[next++], "upfront_date");
+        credit_default_swap_instrument_read_token(
+            req.change.write.upfront_fee, parsed->positionals[next++], "upfront_fee");
+        credit_default_swap_instrument_read_token(
+            req.change.write.trade_date, parsed->positionals[next++], "trade_date");
+        credit_default_swap_instrument_read_token(req.change.write.cash_settlement_days,
+                                                  parsed->positionals[next++],
+                                                  "cash_settlement_days");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -529,35 +545,41 @@ void credit_default_swap_instrument_commands::process_put_many(
         }
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::credit_default_swap_instrument_change change;
-            read_token(change.write.trade_id, parsed->positionals[next++], "trade_id");
-            read_token(
+            credit_default_swap_instrument_read_token(
+                change.write.trade_id, parsed->positionals[next++], "trade_id");
+            credit_default_swap_instrument_read_token(
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
-            read_token(
+            credit_default_swap_instrument_read_token(
                 change.write.credit_curve_id, parsed->positionals[next++], "credit_curve_id");
-            read_token(change.write.issuer_id, parsed->positionals[next++], "issuer_id");
-            read_token(change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
-            read_token(change.write.reference_obligation,
-                       parsed->positionals[next++],
-                       "reference_obligation");
-            read_token(
+            credit_default_swap_instrument_read_token(
+                change.write.issuer_id, parsed->positionals[next++], "issuer_id");
+            credit_default_swap_instrument_read_token(
+                change.write.recovery_rate, parsed->positionals[next++], "recovery_rate");
+            credit_default_swap_instrument_read_token(change.write.reference_obligation,
+                                                      parsed->positionals[next++],
+                                                      "reference_obligation");
+            credit_default_swap_instrument_read_token(
                 change.write.settles_accrual, parsed->positionals[next++], "settles_accrual");
-            read_token(
+            credit_default_swap_instrument_read_token(
                 change.write.rebates_accrual, parsed->positionals[next++], "rebates_accrual");
-            read_token(change.write.pays_at_default_time,
-                       parsed->positionals[next++],
-                       "pays_at_default_time");
-            read_token(change.write.protection_payment_time,
-                       parsed->positionals[next++],
-                       "protection_payment_time");
-            read_token(change.write.protection_start_date,
-                       parsed->positionals[next++],
-                       "protection_start_date");
-            read_token(change.write.upfront_date, parsed->positionals[next++], "upfront_date");
-            read_token(change.write.upfront_fee, parsed->positionals[next++], "upfront_fee");
-            read_token(change.write.trade_date, parsed->positionals[next++], "trade_date");
-            read_token(change.write.cash_settlement_days,
-                       parsed->positionals[next++],
-                       "cash_settlement_days");
+            credit_default_swap_instrument_read_token(change.write.pays_at_default_time,
+                                                      parsed->positionals[next++],
+                                                      "pays_at_default_time");
+            credit_default_swap_instrument_read_token(change.write.protection_payment_time,
+                                                      parsed->positionals[next++],
+                                                      "protection_payment_time");
+            credit_default_swap_instrument_read_token(change.write.protection_start_date,
+                                                      parsed->positionals[next++],
+                                                      "protection_start_date");
+            credit_default_swap_instrument_read_token(
+                change.write.upfront_date, parsed->positionals[next++], "upfront_date");
+            credit_default_swap_instrument_read_token(
+                change.write.upfront_fee, parsed->positionals[next++], "upfront_fee");
+            credit_default_swap_instrument_read_token(
+                change.write.trade_date, parsed->positionals[next++], "trade_date");
+            credit_default_swap_instrument_read_token(change.write.cash_settlement_days,
+                                                      parsed->positionals[next++],
+                                                      "cash_settlement_days");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }
@@ -607,7 +629,8 @@ void credit_default_swap_instrument_commands::process_delete(std::ostream& out,
                       << "." << std::endl;
             return;
         }
-        read_token(req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
+        credit_default_swap_instrument_read_token(
+            req.removal.key.trade_id, parsed->positionals[next++], "trade_id");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         if (const auto& raw = parsed->flag("version"); !raw.empty()) {
@@ -660,7 +683,8 @@ void credit_default_swap_instrument_commands::process_delete_many(
         const std::size_t key_groups = (parsed->positionals.size() - 2) / 1;
         for (std::size_t i = 0; i < key_groups; ++i) {
             messaging::credit_default_swap_instrument_key key;
-            read_token(key.trade_id, parsed->positionals[i * 1 + 0], "trade_id");
+            credit_default_swap_instrument_read_token(
+                key.trade_id, parsed->positionals[i * 1 + 0], "trade_id");
             req.removals.push_back(
                 messaging::credit_default_swap_instrument_removal{.key = std::move(key)});
         }
@@ -712,8 +736,9 @@ void credit_default_swap_instrument_commands::process_versions(
                       << std::endl;
             return;
         }
-        read_token(req.key.trade_id, parsed->positionals[next++], "trade_id");
-        apply_page(req, *parsed);
+        credit_default_swap_instrument_read_token(
+            req.key.trade_id, parsed->positionals[next++], "trade_id");
+        credit_default_swap_instrument_apply_page(req, *parsed);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -757,9 +782,9 @@ void credit_default_swap_instrument_commands::process_version(
                       << std::endl;
             return;
         }
-        read_token(req.key.credit_default_swap_instrument.trade_id,
-                   parsed->positionals[next++],
-                   "trade_id");
+        credit_default_swap_instrument_read_token(req.key.credit_default_swap_instrument.trade_id,
+                                                  parsed->positionals[next++],
+                                                  "trade_id");
         req.key.version =
             ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
     } catch (const std::exception& e) {

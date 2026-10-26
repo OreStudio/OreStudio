@@ -85,9 +85,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
-                                    std::initializer_list<std::string> default_columns,
-                                    bool default_descending) {
+sqlgen::dynamic::OrderBy
+bond_leg_amortization_list_order(const ores::utility::domain::order& order,
+                                 std::initializer_list<std::string> default_columns,
+                                 bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns,
                           default_descending != order.descending,
@@ -103,8 +104,8 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::bond_leg_amortizations_filter>& filter) {
+std::optional<sqlgen::dynamic::Condition> bond_leg_amortization_filter_condition(
+    const std::optional<messaging::bond_leg_amortizations_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
@@ -327,8 +328,9 @@ bond_leg_amortization_repository::read_latest_by_trade_id(
     return execute_ordered_read_query<bond_leg_amortization_entity, domain::bond_leg_amortization>(
         ctx,
         query,
-        list_order(order, {"trade_id", "leg_role", "leg_number", "sequence_number"}, false),
-        filter_condition(filter),
+        bond_leg_amortization_list_order(
+            order, {"trade_id", "leg_role", "leg_number", "sequence_number"}, false),
+        bond_leg_amortization_filter_condition(filter),
         [](const auto& entities) { return bond_leg_amortization_mapper::map(entities); },
         lg(),
         "Reading latest bond leg amortizations by trade_id.");
@@ -348,7 +350,11 @@ std::uint32_t bond_leg_amortization_repository::get_total_bond_leg_amortization_
         where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value());
 
     return execute_count_query<bond_leg_amortization_entity>(
-        ctx, query, filter_condition(filter), lg(), "Counting bond leg amortizations by trade_id");
+        ctx,
+        query,
+        bond_leg_amortization_filter_condition(filter),
+        lg(),
+        "Counting bond leg amortizations by trade_id");
 }
 
 
@@ -441,8 +447,9 @@ std::vector<domain::bond_leg_amortization> bond_leg_amortization_repository::rea
     return execute_ordered_read_query<bond_leg_amortization_entity, domain::bond_leg_amortization>(
         ctx,
         query,
-        list_order(order, {"trade_id", "leg_role", "leg_number", "sequence_number"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        bond_leg_amortization_list_order(
+            order, {"trade_id", "leg_role", "leg_number", "sequence_number"}, false),
+        narrowed(valid_at(as_of), bond_leg_amortization_filter_condition(filter)),
         [](const auto& entities) { return bond_leg_amortization_mapper::map(entities); },
         lg(),
         "Reading latest bond leg amortizations with pagination.");
@@ -461,7 +468,7 @@ std::uint32_t bond_leg_amortization_repository::get_total_bond_leg_amortization_
     return execute_count_query<bond_leg_amortization_entity>(
         ctx,
         query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        narrowed(valid_at(as_of), bond_leg_amortization_filter_condition(filter)),
         lg(),
         "Counting bond leg amortizations");
 }

@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string commodity_forward_convention_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -49,8 +49,8 @@ std::string convert_to_table(const std::vector<commodity_forward_convention>& v)
     table << fort::header << "Id" << "Advance Calendar" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& cmfw : v) {
-        table << cmfw.id << opt_str(cmfw.advance_calendar) << cmfw.modified_by << cmfw.version
-              << fort::endr;
+        table << cmfw.id << commodity_forward_convention_opt_str(cmfw.advance_calendar)
+              << cmfw.modified_by << cmfw.version << fort::endr;
     }
     return table.to_string();
 }

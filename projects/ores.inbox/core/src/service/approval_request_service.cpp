@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::approval_request> read_one(repository::approval_request_repository& repo,
-                                               const ores::database::context& ctx,
-                                               const messaging::approval_request_key& key) {
+std::vector<domain::approval_request>
+approval_request_read_one(repository::approval_request_repository& repo,
+                          const ores::database::context& ctx,
+                          const messaging::approval_request_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::approval_request> read_one(repository::approval_request_repo
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::approval_request_key key_from(const domain::approval_request& v) {
+messaging::approval_request_key approval_request_key_from(const domain::approval_request& v) {
     messaging::approval_request_key key;
     key.id = v.id;
     return key;
@@ -98,7 +99,8 @@ messaging::approval_request_key key_from(const domain::approval_request& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::approval_request to_domain(const messaging::approval_request_write& write) {
+domain::approval_request
+approval_request_to_domain(const messaging::approval_request_write& write) {
     domain::approval_request v;
     v.id = write.id;
     v.kind_code = write.kind_code;
@@ -210,7 +212,7 @@ approval_request_service::list_by_kind_code_approval_requests(
 messaging::get_approval_request_response approval_request_service::get_approval_request(
     const messaging::get_approval_request_request& request) {
     messaging::get_approval_request_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = approval_request_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "approval_request"});
         return response;
@@ -229,7 +231,7 @@ messaging::get_many_approval_requests_response approval_request_service::get_man
     for (const auto& k : request.keys) {
         messaging::approval_request_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = approval_request_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.approval_request = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -245,7 +247,7 @@ messaging::put_approval_request_response approval_request_service::put_approval_
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = approval_request_read_one(repo_, ctx_, approval_request_key_from(value));
     if (!written.empty())
         response.approval_request = std::move(written.front());
     return response;
@@ -277,7 +279,7 @@ messaging::put_many_approval_requests_response approval_request_service::put_man
     repo_.write(ctx_, batch, claims);
     response.requests.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = approval_request_read_one(repo_, ctx_, approval_request_key_from(value));
         response.requests.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -310,7 +312,7 @@ messaging::delete_approval_request_response approval_request_service::delete_app
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = approval_request_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "approval_request",
@@ -399,8 +401,8 @@ approval_request_service::prepare_change(const messaging::approval_request_chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = approval_request_to_domain(change.write);
+    const auto current = approval_request_read_one(repo_, ctx_, approval_request_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

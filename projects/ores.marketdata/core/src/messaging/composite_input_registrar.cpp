@@ -39,7 +39,7 @@
 namespace ores::marketdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.marketdata.service";
+static constexpr std::string_view composite_input_queue_group = "ores.marketdata.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,40 +49,40 @@ register_composite_input_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<composite_input_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_composite_inputs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_composite_inputs(std::move(msg));
-        }));
+        list_composite_inputs_request::nats_subject,
+        composite_input_queue_group,
+        [h](ores::nats::message msg) { h->list_composite_inputs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_composite_input_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_composite_input(std::move(msg));
-        }));
+        get_composite_input_request::nats_subject,
+        composite_input_queue_group,
+        [h](ores::nats::message msg) { h->get_composite_input(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_composite_inputs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_composite_inputs(std::move(msg));
-        }));
+        get_many_composite_inputs_request::nats_subject,
+        composite_input_queue_group,
+        [h](ores::nats::message msg) { h->get_many_composite_inputs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_composite_input_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_composite_input(std::move(msg));
-        }));
+        put_composite_input_request::nats_subject,
+        composite_input_queue_group,
+        [h](ores::nats::message msg) { h->put_composite_input(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_composite_inputs_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_composite_inputs(std::move(msg));
-        }));
+        put_many_composite_inputs_request::nats_subject,
+        composite_input_queue_group,
+        [h](ores::nats::message msg) { h->put_many_composite_inputs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_composite_input_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_composite_input(std::move(msg));
-        }));
+        delete_composite_input_request::nats_subject,
+        composite_input_queue_group,
+        [h](ores::nats::message msg) { h->delete_composite_input(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_composite_inputs_request::nats_subject,
-        queue_group,
+        composite_input_queue_group,
         [h](ores::nats::message msg) { h->delete_many_composite_inputs(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_composite_input_versions_request::nats_subject,
-        queue_group,
+        composite_input_queue_group,
         [h](ores::nats::message msg) { h->list_composite_input_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_composite_input_version_request::nats_subject,
-        queue_group,
+        composite_input_queue_group,
         [h](ores::nats::message msg) { h->get_composite_input_version(std::move(msg)); }));
     return subs;
 }

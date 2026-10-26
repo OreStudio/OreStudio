@@ -65,9 +65,9 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::lei_bic> read_one(repository::lei_bic_repository& repo,
-                                      const ores::database::context& ctx,
-                                      const messaging::lei_bic_key& key) {
+std::vector<domain::lei_bic> lei_bic_read_one(repository::lei_bic_repository& repo,
+                                              const ores::database::context& ctx,
+                                              const messaging::lei_bic_key& key) {
     return repo.read_latest(ctx, key.lei);
 }
 
@@ -96,7 +96,7 @@ lei_bic_service::list_lei_bic(const messaging::list_lei_bic_request& request) {
 messaging::get_lei_bic_response
 lei_bic_service::get_lei_bic(const messaging::get_lei_bic_request& request) {
     messaging::get_lei_bic_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = lei_bic_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "lei_bic"});
         return response;
@@ -115,7 +115,7 @@ lei_bic_service::get_many_lei_bic(const messaging::get_many_lei_bic_request& req
     for (const auto& k : request.keys) {
         messaging::lei_bic_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = lei_bic_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.lei_bic = std::move(found.front());
         response.entries.push_back(std::move(entry));

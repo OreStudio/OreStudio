@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view bond_forward_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,41 +49,41 @@ register_bond_forward_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<bond_forward_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_bond_forwards_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_bond_forwards(std::move(msg));
-        }));
+        list_bond_forwards_request::nats_subject,
+        bond_forward_queue_group,
+        [h](ores::nats::message msg) { h->list_bond_forwards(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_bond_forward_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_bond_forward(std::move(msg));
-        }));
+        get_bond_forward_request::nats_subject,
+        bond_forward_queue_group,
+        [h](ores::nats::message msg) { h->get_bond_forward(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_many_bond_forwards_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_many_bond_forwards(std::move(msg));
-        }));
+        get_many_bond_forwards_request::nats_subject,
+        bond_forward_queue_group,
+        [h](ores::nats::message msg) { h->get_many_bond_forwards(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_bond_forward_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_bond_forward(std::move(msg));
-        }));
+        put_bond_forward_request::nats_subject,
+        bond_forward_queue_group,
+        [h](ores::nats::message msg) { h->put_bond_forward(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_many_bond_forwards_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_many_bond_forwards(std::move(msg));
-        }));
+        put_many_bond_forwards_request::nats_subject,
+        bond_forward_queue_group,
+        [h](ores::nats::message msg) { h->put_many_bond_forwards(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_bond_forward_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_bond_forward(std::move(msg));
-        }));
+        delete_bond_forward_request::nats_subject,
+        bond_forward_queue_group,
+        [h](ores::nats::message msg) { h->delete_bond_forward(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_bond_forwards_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_bond_forwards(std::move(msg));
-        }));
+        delete_many_bond_forwards_request::nats_subject,
+        bond_forward_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_bond_forwards(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_bond_forward_versions_request::nats_subject,
-        queue_group,
+        bond_forward_queue_group,
         [h](ores::nats::message msg) { h->list_bond_forward_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_bond_forward_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_bond_forward_version(std::move(msg));
-        }));
+        get_bond_forward_version_request::nats_subject,
+        bond_forward_queue_group,
+        [h](ores::nats::message msg) { h->get_bond_forward_version(std::move(msg)); }));
     return subs;
 }
 

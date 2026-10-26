@@ -39,7 +39,7 @@
 namespace ores::iam::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.iam.service";
+static constexpr std::string_view tenant_queue_group = "ores.iam.service";
 }
 
 std::vector<ores::nats::service::subscription>
@@ -49,39 +49,39 @@ register_tenant_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<tenant_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_tenants_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        list_tenants_request::nats_subject, tenant_queue_group, [h](ores::nats::message msg) {
             h->list_tenants(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_tenant_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_tenant_request::nats_subject, tenant_queue_group, [h](ores::nats::message msg) {
             h->get_tenant(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        get_many_tenants_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_many_tenants_request::nats_subject, tenant_queue_group, [h](ores::nats::message msg) {
             h->get_many_tenants(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_tenant_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_tenant_request::nats_subject, tenant_queue_group, [h](ores::nats::message msg) {
             h->put_tenant(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        put_many_tenants_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_many_tenants_request::nats_subject, tenant_queue_group, [h](ores::nats::message msg) {
             h->put_many_tenants(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_tenant_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        delete_tenant_request::nats_subject, tenant_queue_group, [h](ores::nats::message msg) {
             h->delete_tenant(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        delete_many_tenants_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_many_tenants(std::move(msg));
-        }));
+        delete_many_tenants_request::nats_subject,
+        tenant_queue_group,
+        [h](ores::nats::message msg) { h->delete_many_tenants(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        list_tenant_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_tenant_versions(std::move(msg));
-        }));
+        list_tenant_versions_request::nats_subject,
+        tenant_queue_group,
+        [h](ores::nats::message msg) { h->list_tenant_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_tenant_version_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        get_tenant_version_request::nats_subject, tenant_queue_group, [h](ores::nats::message msg) {
             h->get_tenant_version(std::move(msg));
         }));
     return subs;

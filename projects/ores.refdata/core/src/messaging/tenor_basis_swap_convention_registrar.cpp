@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view tenor_basis_swap_convention_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_tenor_basis_swap_convention_handlers(
@@ -51,20 +51,20 @@ std::vector<ores::nats::service::subscription> register_tenor_basis_swap_convent
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         get_tenor_basis_swap_convention_request::nats_subject,
-        queue_group,
+        tenor_basis_swap_convention_queue_group,
         [h](ores::nats::message msg) { h->get_tenor_basis_swap_convention(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(get_many_tenor_basis_swap_conventions_request::nats_subject,
-                                        queue_group,
+                                        tenor_basis_swap_convention_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->get_many_tenor_basis_swap_conventions(
                                                 std::move(msg));
                                         }));
     subs.push_back(nats.queue_subscribe(
         put_tenor_basis_swap_convention_request::nats_subject,
-        queue_group,
+        tenor_basis_swap_convention_queue_group,
         [h](ores::nats::message msg) { h->put_tenor_basis_swap_convention(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(put_many_tenor_basis_swap_conventions_request::nats_subject,
-                                        queue_group,
+                                        tenor_basis_swap_convention_queue_group,
                                         [h](ores::nats::message msg) {
                                             h->put_many_tenor_basis_swap_conventions(
                                                 std::move(msg));

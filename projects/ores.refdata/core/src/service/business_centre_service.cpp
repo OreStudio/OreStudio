@@ -69,9 +69,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::business_centre> read_one(repository::business_centre_repository& repo,
-                                              const ores::database::context& ctx,
-                                              const messaging::business_centre_key& key) {
+std::vector<domain::business_centre>
+business_centre_read_one(repository::business_centre_repository& repo,
+                         const ores::database::context& ctx,
+                         const messaging::business_centre_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -81,7 +82,7 @@ std::vector<domain::business_centre> read_one(repository::business_centre_reposi
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::business_centre_key key_from(const domain::business_centre& v) {
+messaging::business_centre_key business_centre_key_from(const domain::business_centre& v) {
     messaging::business_centre_key key;
     key.code = v.code;
     return key;
@@ -94,7 +95,7 @@ messaging::business_centre_key key_from(const domain::business_centre& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::business_centre to_domain(const messaging::business_centre_write& write) {
+domain::business_centre business_centre_to_domain(const messaging::business_centre_write& write) {
     domain::business_centre v;
     v.code = write.code;
     v.source = write.source;
@@ -143,7 +144,7 @@ messaging::list_business_centres_response business_centre_service::list_business
 messaging::get_business_centre_response business_centre_service::get_business_centre(
     const messaging::get_business_centre_request& request) {
     messaging::get_business_centre_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = business_centre_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "business_centre"});
         return response;
@@ -162,7 +163,7 @@ messaging::get_many_business_centres_response business_centre_service::get_many_
     for (const auto& k : request.keys) {
         messaging::business_centre_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = business_centre_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.business_centre = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -178,7 +179,7 @@ messaging::put_business_centre_response business_centre_service::put_business_ce
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = business_centre_read_one(repo_, ctx_, business_centre_key_from(value));
     if (!written.empty())
         response.business_centre = std::move(written.front());
     return response;
@@ -210,7 +211,7 @@ messaging::put_many_business_centres_response business_centre_service::put_many_
     repo_.write(ctx_, batch, claims);
     response.centres.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = business_centre_read_one(repo_, ctx_, business_centre_key_from(value));
         response.centres.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -243,7 +244,7 @@ messaging::delete_business_centre_response business_centre_service::delete_busin
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = business_centre_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "business_centre",
@@ -331,8 +332,8 @@ business_centre_service::prepare_change(const messaging::business_centre_change&
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = business_centre_to_domain(change.write);
+    const auto current = business_centre_read_one(repo_, ctx_, business_centre_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

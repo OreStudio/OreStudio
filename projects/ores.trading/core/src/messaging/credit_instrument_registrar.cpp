@@ -39,7 +39,7 @@
 namespace ores::trading::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.trading.service";
+static constexpr std::string_view credit_instrument_queue_group = "ores.trading.service";
 }
 
 std::vector<ores::nats::service::subscription> register_credit_instrument_handlers(
@@ -49,40 +49,40 @@ std::vector<ores::nats::service::subscription> register_credit_instrument_handle
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<credit_instrument_handler>(nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_credit_instruments_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->list_credit_instruments(std::move(msg));
-        }));
+        list_credit_instruments_request::nats_subject,
+        credit_instrument_queue_group,
+        [h](ores::nats::message msg) { h->list_credit_instruments(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_credit_instrument_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_credit_instrument(std::move(msg));
-        }));
+        get_credit_instrument_request::nats_subject,
+        credit_instrument_queue_group,
+        [h](ores::nats::message msg) { h->get_credit_instrument(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_many_credit_instruments_request::nats_subject,
-        queue_group,
+        credit_instrument_queue_group,
         [h](ores::nats::message msg) { h->get_many_credit_instruments(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        put_credit_instrument_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->put_credit_instrument(std::move(msg));
-        }));
+        put_credit_instrument_request::nats_subject,
+        credit_instrument_queue_group,
+        [h](ores::nats::message msg) { h->put_credit_instrument(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         put_many_credit_instruments_request::nats_subject,
-        queue_group,
+        credit_instrument_queue_group,
         [h](ores::nats::message msg) { h->put_many_credit_instruments(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        delete_credit_instrument_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->delete_credit_instrument(std::move(msg));
-        }));
+        delete_credit_instrument_request::nats_subject,
+        credit_instrument_queue_group,
+        [h](ores::nats::message msg) { h->delete_credit_instrument(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         delete_many_credit_instruments_request::nats_subject,
-        queue_group,
+        credit_instrument_queue_group,
         [h](ores::nats::message msg) { h->delete_many_credit_instruments(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         list_credit_instrument_versions_request::nats_subject,
-        queue_group,
+        credit_instrument_queue_group,
         [h](ores::nats::message msg) { h->list_credit_instrument_versions(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_credit_instrument_version_request::nats_subject,
-        queue_group,
+        credit_instrument_queue_group,
         [h](ores::nats::message msg) { h->get_credit_instrument_version(std::move(msg)); }));
     return subs;
 }

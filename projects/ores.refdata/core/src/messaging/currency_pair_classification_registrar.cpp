@@ -39,7 +39,7 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view queue_group = "ores.refdata.service";
+static constexpr std::string_view currency_pair_classification_queue_group = "ores.refdata.service";
 }
 
 std::vector<ores::nats::service::subscription> register_currency_pair_classification_handlers(
@@ -51,47 +51,47 @@ std::vector<ores::nats::service::subscription> register_currency_pair_classifica
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_currency_pair_classifications_request::nats_subject,
-        queue_group,
+        currency_pair_classification_queue_group,
         [h](ores::nats::message msg) { h->list_currency_pair_classifications(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
         get_currency_pair_classification_request::nats_subject,
-        queue_group,
+        currency_pair_classification_queue_group,
         [h](ores::nats::message msg) { h->get_currency_pair_classification(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(get_many_currency_pair_classifications_request::nats_subject,
-                             queue_group,
+                             currency_pair_classification_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_many_currency_pair_classifications(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         put_currency_pair_classification_request::nats_subject,
-        queue_group,
+        currency_pair_classification_queue_group,
         [h](ores::nats::message msg) { h->put_currency_pair_classification(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(put_many_currency_pair_classifications_request::nats_subject,
-                             queue_group,
+                             currency_pair_classification_queue_group,
                              [h](ores::nats::message msg) {
                                  h->put_many_currency_pair_classifications(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
         delete_currency_pair_classification_request::nats_subject,
-        queue_group,
+        currency_pair_classification_queue_group,
         [h](ores::nats::message msg) { h->delete_currency_pair_classification(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(delete_many_currency_pair_classifications_request::nats_subject,
-                             queue_group,
+                             currency_pair_classification_queue_group,
                              [h](ores::nats::message msg) {
                                  h->delete_many_currency_pair_classifications(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(list_currency_pair_classification_versions_request::nats_subject,
-                             queue_group,
+                             currency_pair_classification_queue_group,
                              [h](ores::nats::message msg) {
                                  h->list_currency_pair_classification_versions(std::move(msg));
                              }));
     subs.push_back(
         nats.queue_subscribe(get_currency_pair_classification_version_request::nats_subject,
-                             queue_group,
+                             currency_pair_classification_queue_group,
                              [h](ores::nats::message msg) {
                                  h->get_currency_pair_classification_version(std::move(msg));
                              }));

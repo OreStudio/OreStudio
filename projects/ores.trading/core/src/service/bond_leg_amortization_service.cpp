@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::bond_leg_amortization>
-read_one(repository::bond_leg_amortization_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::bond_leg_amortization_key& key) {
+bond_leg_amortization_read_one(repository::bond_leg_amortization_repository& repo,
+                               const ores::database::context& ctx,
+                               const messaging::bond_leg_amortization_key& key) {
     return repo.read_latest(ctx,
                             boost::uuids::to_string(key.trade_id),
                             key.leg_role,
@@ -90,7 +90,8 @@ read_one(repository::bond_leg_amortization_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::bond_leg_amortization_key key_from(const domain::bond_leg_amortization& v) {
+messaging::bond_leg_amortization_key
+bond_leg_amortization_key_from(const domain::bond_leg_amortization& v) {
     messaging::bond_leg_amortization_key key;
     key.trade_id = v.trade_id;
     key.leg_role = v.leg_role;
@@ -106,7 +107,8 @@ messaging::bond_leg_amortization_key key_from(const domain::bond_leg_amortizatio
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::bond_leg_amortization to_domain(const messaging::bond_leg_amortization_write& write) {
+domain::bond_leg_amortization
+bond_leg_amortization_to_domain(const messaging::bond_leg_amortization_write& write) {
     domain::bond_leg_amortization v;
     v.trade_id = write.trade_id;
     v.leg_role = write.leg_role;
@@ -193,7 +195,7 @@ messaging::get_bond_leg_amortization_response
 bond_leg_amortization_service::get_bond_leg_amortization(
     const messaging::get_bond_leg_amortization_request& request) {
     messaging::get_bond_leg_amortization_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = bond_leg_amortization_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "bond_leg_amortization"});
         return response;
@@ -213,7 +215,7 @@ bond_leg_amortization_service::get_many_bond_leg_amortizations(
     for (const auto& k : request.keys) {
         messaging::bond_leg_amortization_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = bond_leg_amortization_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.bond_leg_amortization = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -230,7 +232,8 @@ bond_leg_amortization_service::put_bond_leg_amortization(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written =
+        bond_leg_amortization_read_one(repo_, ctx_, bond_leg_amortization_key_from(value));
     if (!written.empty())
         response.bond_leg_amortization = std::move(written.front());
     return response;
@@ -263,7 +266,8 @@ bond_leg_amortization_service::put_many_bond_leg_amortizations(
     repo_.write(ctx_, batch, claims);
     response.bond_leg_amortizations.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written =
+            bond_leg_amortization_read_one(repo_, ctx_, bond_leg_amortization_key_from(value));
         response.bond_leg_amortizations.push_back(written.empty() ? value :
                                                                     std::move(written.front()));
     }
@@ -303,7 +307,7 @@ bond_leg_amortization_service::delete_bond_leg_amortization(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = bond_leg_amortization_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "bond_leg_amortization",
@@ -414,8 +418,9 @@ bond_leg_amortization_service::prepare_change(const messaging::bond_leg_amortiza
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = bond_leg_amortization_to_domain(change.write);
+    const auto current =
+        bond_leg_amortization_read_one(repo_, ctx_, bond_leg_amortization_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

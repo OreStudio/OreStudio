@@ -31,7 +31,7 @@ namespace ores::trading::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string fx_asian_forward_instrument_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -52,9 +52,12 @@ std::string convert_to_table(const std::vector<fx_asian_forward_instrument>& v) 
 
     for ([[maybe_unused]] const auto& fafi : v) {
         table << fafi.identity.trade_id << fafi.identity.trade_type_code << fafi.fx_index
-              << fafi.reference_currency << opt_str(fafi.reference_notional)
-              << fafi.settlement_currency << opt_str(fafi.settlement_notional)
-              << opt_str(fafi.payment_date) << fafi.audit.recorded_at << fort::endr;
+              << fafi.reference_currency
+              << fx_asian_forward_instrument_opt_str(fafi.reference_notional)
+              << fafi.settlement_currency
+              << fx_asian_forward_instrument_opt_str(fafi.settlement_notional)
+              << fx_asian_forward_instrument_opt_str(fafi.payment_date) << fafi.audit.recorded_at
+              << fort::endr;
     }
     return table.to_string();
 }

@@ -66,9 +66,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::delivery_outcome_type>
-read_one(repository::delivery_outcome_type_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::delivery_outcome_type_key& key) {
+delivery_outcome_type_read_one(repository::delivery_outcome_type_repository& repo,
+                               const ores::database::context& ctx,
+                               const messaging::delivery_outcome_type_key& key) {
     return repo.read_latest(ctx, key.code);
 }
 
@@ -101,7 +101,7 @@ messaging::get_delivery_outcome_type_response
 delivery_outcome_type_service::get_delivery_outcome_type(
     const messaging::get_delivery_outcome_type_request& request) {
     messaging::get_delivery_outcome_type_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = delivery_outcome_type_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "delivery_outcome_type"});
         return response;
@@ -121,7 +121,7 @@ delivery_outcome_type_service::get_many_delivery_outcome_types(
     for (const auto& k : request.keys) {
         messaging::delivery_outcome_type_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = delivery_outcome_type_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.delivery_outcome_type = std::move(found.front());
         response.entries.push_back(std::move(entry));

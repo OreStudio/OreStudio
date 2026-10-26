@@ -73,9 +73,10 @@ namespace {
  * holds. When that is not the storage key the row is found by it and the
  * repository's storage-key read is not used at all.
  */
-std::vector<domain::market_series> read_one(repository::market_series_repository& repo,
-                                            const ores::database::context& ctx,
-                                            const messaging::market_series_key& key) {
+std::vector<domain::market_series>
+market_series_read_one(repository::market_series_repository& repo,
+                       const ores::database::context& ctx,
+                       const messaging::market_series_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -85,7 +86,7 @@ std::vector<domain::market_series> read_one(repository::market_series_repository
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::market_series_key key_from(const domain::market_series& v) {
+messaging::market_series_key market_series_key_from(const domain::market_series& v) {
     messaging::market_series_key key;
     key.id = v.id;
     return key;
@@ -98,7 +99,7 @@ messaging::market_series_key key_from(const domain::market_series& v) {
  * provenance, the version and the validity window are the service's and the
  * database's to state, and are set after this conversion.
  */
-domain::market_series to_domain(const messaging::market_series_write& write) {
+domain::market_series market_series_to_domain(const messaging::market_series_write& write) {
     domain::market_series v;
     v.id = write.id;
     v.party_id = write.party_id;
@@ -154,7 +155,7 @@ market_series_service::list_market_series(const messaging::list_market_series_re
 messaging::get_market_series_response
 market_series_service::get_market_series(const messaging::get_market_series_request& request) {
     messaging::get_market_series_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = market_series_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result = refuse(outcome_code::not_found, {.entity = "market_series"});
         return response;
@@ -173,7 +174,7 @@ messaging::get_many_market_series_response market_series_service::get_many_marke
     for (const auto& k : request.keys) {
         messaging::market_series_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = market_series_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.market_series = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -189,7 +190,7 @@ market_series_service::put_market_series(const messaging::put_market_series_requ
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = market_series_read_one(repo_, ctx_, market_series_key_from(value));
     if (!written.empty())
         response.market_series = std::move(written.front());
     return response;
@@ -221,7 +222,7 @@ messaging::put_many_market_series_response market_series_service::put_many_marke
     repo_.write(ctx_, batch, claims);
     response.market_series.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = market_series_read_one(repo_, ctx_, market_series_key_from(value));
         response.market_series.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -254,7 +255,7 @@ messaging::delete_market_series_response market_series_service::delete_market_se
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live = market_series_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "market_series",
@@ -339,8 +340,8 @@ market_series_service::prepare_change(const messaging::market_series_change& cha
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = market_series_to_domain(change.write);
+    const auto current = market_series_read_one(repo_, ctx_, market_series_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

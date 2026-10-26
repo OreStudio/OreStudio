@@ -74,9 +74,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::default_curve_configuration>
-read_one(repository::default_curve_configuration_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::default_curve_configuration_key& key) {
+default_curve_configuration_read_one(repository::default_curve_configuration_repository& repo,
+                                     const ores::database::context& ctx,
+                                     const messaging::default_curve_configuration_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -86,7 +86,8 @@ read_one(repository::default_curve_configuration_repository& repo,
  * A create states its own key in the write record, so the key of the row a
  * write produced is the one the object carries.
  */
-messaging::default_curve_configuration_key key_from(const domain::default_curve_configuration& v) {
+messaging::default_curve_configuration_key
+default_curve_configuration_key_from(const domain::default_curve_configuration& v) {
     messaging::default_curve_configuration_key key;
     key.id = v.id;
     return key;
@@ -100,7 +101,7 @@ messaging::default_curve_configuration_key key_from(const domain::default_curve_
  * database's to state, and are set after this conversion.
  */
 domain::default_curve_configuration
-to_domain(const messaging::default_curve_configuration_write& write) {
+default_curve_configuration_to_domain(const messaging::default_curve_configuration_write& write) {
     domain::default_curve_configuration v;
     v.id = write.id;
     v.curve_definition_id = write.curve_definition_id;
@@ -171,7 +172,7 @@ messaging::get_default_curve_configuration_response
 default_curve_configuration_service::get_default_curve_configuration(
     const messaging::get_default_curve_configuration_request& request) {
     messaging::get_default_curve_configuration_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = default_curve_configuration_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "default_curve_configuration"});
@@ -192,7 +193,7 @@ default_curve_configuration_service::get_many_default_curve_configurations(
     for (const auto& k : request.keys) {
         messaging::default_curve_configuration_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = default_curve_configuration_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.default_curve_configuration = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -209,7 +210,8 @@ default_curve_configuration_service::put_default_curve_configuration(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = default_curve_configuration_read_one(
+        repo_, ctx_, default_curve_configuration_key_from(value));
     if (!written.empty())
         response.default_curve_configuration = std::move(written.front());
     return response;
@@ -242,7 +244,8 @@ default_curve_configuration_service::put_many_default_curve_configurations(
     repo_.write(ctx_, batch, claims);
     response.configurations.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = default_curve_configuration_read_one(
+            repo_, ctx_, default_curve_configuration_key_from(value));
         response.configurations.push_back(written.empty() ? value : std::move(written.front()));
     }
     return response;
@@ -277,7 +280,8 @@ default_curve_configuration_service::delete_default_curve_configuration(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                default_curve_configuration_read_one(repo_, ctx_, request.removal.key);
             response.result = refuse(
                 outcome_code::version_conflict,
                 {.entity = "default_curve_configuration",
@@ -370,8 +374,9 @@ ores::utility::domain::result default_curve_configuration_service::prepare_chang
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = default_curve_configuration_to_domain(change.write);
+    const auto current = default_curve_configuration_read_one(
+        repo_, ctx_, default_curve_configuration_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

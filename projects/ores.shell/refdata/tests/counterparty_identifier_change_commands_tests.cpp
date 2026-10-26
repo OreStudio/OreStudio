@@ -46,7 +46,7 @@ const std::string tags("[commands]");
 
 const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-void log_in(nats_client& session) {
+void counterparty_identifier_change_log_in(nats_client& session) {
     nats_client::login_info info;
     info.username = "tester";
     info.jwt = "token";
@@ -56,7 +56,7 @@ void log_in(nats_client& session) {
 
 // One token per positional the command takes. A value the command parses is
 // not a value the guard reaches, so any token does to prove the guard.
-std::vector<std::string> tokens(const std::size_t count) {
+std::vector<std::string> counterparty_identifier_change_tokens(const std::size_t count) {
     return std::vector<std::string>(count, std::string{"sample"});
 }
 
@@ -93,7 +93,8 @@ TEST_CASE("counterparty_identifier_change_commands_process_list_requires_a_sessi
     std::ostringstream out;
 
     command_feedback::reset();
-    counterparty_identifier_change_commands::process_list(out, session, tokens(0));
+    counterparty_identifier_change_commands::process_list(
+        out, session, counterparty_identifier_change_tokens(0));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -107,7 +108,8 @@ TEST_CASE("counterparty_identifier_change_commands_process_get_requires_a_sessio
     std::ostringstream out;
 
     command_feedback::reset();
-    counterparty_identifier_change_commands::process_get(out, session, tokens(1));
+    counterparty_identifier_change_commands::process_get(
+        out, session, counterparty_identifier_change_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -118,7 +120,7 @@ TEST_CASE("counterparty_identifier_change_commands_process_get_reports_the_expec
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    counterparty_identifier_change_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -141,7 +143,8 @@ TEST_CASE("counterparty_identifier_change_commands_process_get_many_requires_a_s
     std::ostringstream out;
 
     command_feedback::reset();
-    counterparty_identifier_change_commands::process_get_many(out, session, tokens(1));
+    counterparty_identifier_change_commands::process_get_many(
+        out, session, counterparty_identifier_change_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -156,7 +159,8 @@ TEST_CASE("counterparty_identifier_change_commands_process_by_request_id_require
     std::ostringstream out;
 
     command_feedback::reset();
-    counterparty_identifier_change_commands::process_by_request_id(out, session, tokens(1));
+    counterparty_identifier_change_commands::process_by_request_id(
+        out, session, counterparty_identifier_change_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -169,7 +173,7 @@ TEST_CASE(
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    counterparty_identifier_change_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -192,7 +196,8 @@ TEST_CASE("counterparty_identifier_change_commands_process_versions_requires_a_s
     std::ostringstream out;
 
     command_feedback::reset();
-    counterparty_identifier_change_commands::process_versions(out, session, tokens(1));
+    counterparty_identifier_change_commands::process_versions(
+        out, session, counterparty_identifier_change_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -204,7 +209,7 @@ TEST_CASE("counterparty_identifier_change_commands_process_versions_reports_the_
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    counterparty_identifier_change_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();
@@ -227,7 +232,8 @@ TEST_CASE("counterparty_identifier_change_commands_process_version_requires_a_se
     std::ostringstream out;
 
     command_feedback::reset();
-    counterparty_identifier_change_commands::process_version(out, session, tokens(1));
+    counterparty_identifier_change_commands::process_version(
+        out, session, counterparty_identifier_change_tokens(1));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -239,7 +245,7 @@ TEST_CASE("counterparty_identifier_change_commands_process_version_reports_the_e
     auto lg(make_logger(test_suite));
 
     nats_client session;
-    log_in(session);
+    counterparty_identifier_change_log_in(session);
     std::ostringstream out;
 
     command_feedback::reset();

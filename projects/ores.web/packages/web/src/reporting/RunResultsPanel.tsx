@@ -329,6 +329,42 @@ export function RunResultsPanel({
                                         </dd>
                                     </div>
                                 ))}
+                                {results.data?.baseline?.totals.map((money, index) => (
+                                    <div key={`baseline-${money.currency}`}>
+                                        <dt className="text-xs text-ink-faint">
+                                            {t(`${field}.was`)}
+                                        </dt>
+                                        <dd className="font-mono text-sm">
+                                            {asFigure(money.total)}
+                                        </dd>
+                                        <dd
+                                            className={`font-mono text-xs ${
+                                                (
+                                                    results.data?.baseline?.change[index]?.total ??
+                                                    ''
+                                                ).startsWith('-')
+                                                    ? 'text-down'
+                                                    : 'text-ink-muted'
+                                            }`}
+                                        >
+                                            {results.data?.baseline?.change[index] === undefined
+                                                ? ''
+                                                : asFigure(
+                                                      results.data.baseline.change[index]?.total ??
+                                                          '',
+                                                  )}
+                                            {' · '}
+                                            {results.data?.baseline?.change_pct[index]?.total ===
+                                                undefined ||
+                                            results.data?.baseline?.change_pct[index]?.total === ''
+                                                ? '—'
+                                                : `${asFigure(
+                                                      results.data.baseline.change_pct[index]
+                                                          ?.total ?? '',
+                                                  )}%`}
+                                        </dd>
+                                    </div>
+                                ))}
                             </dl>
                             {filtering && level === 'trade' && (
                                 <p className="flex items-center gap-2 text-sm">
@@ -533,6 +569,11 @@ function AggregateTable({
                             }`}
                         >
                             <td className={`px-2 py-1 uppercase ${row.group === '' ? '' : 'pl-8'}`}>
+                                {row.is_removed && (
+                                    <span className="mr-2 rounded border border-line px-1 text-xs text-ink-muted">
+                                        {t(`${field}.gone`)}
+                                    </span>
+                                )}
                                 {row.key === '' ? (
                                     level === 'book' ? (
                                         t(`${field}.unbooked`)

@@ -376,6 +376,8 @@ function changeBetween(
             ...previous.map((money) => money.currency),
         ]),
     ];
+    // A total that cannot be read counts as no figure, so a malformed row does
+    // not look like a figure that moved.
     const figureIn = (money: readonly Money[], currency: string): number => {
         const found = money.find((entry) => entry.currency === currency);
         const figure = found === undefined ? Number.NaN : Number.parseFloat(found.total);
@@ -419,7 +421,20 @@ export function comparedWith(
             continue;
         }
         const { change, pct } = changeBetween([], row.totals);
-        rows.push({ ...row, previous: row.totals, change, change_pct: pct, is_removed: true });
+        const removed = { ...row, previous: row.totals, change, change_pct: pct, is_removed: true };
+        // A removed row stays with its group rather than trailing the table, so a
+        // group and the names under it keep reading together.
+        const anchor =
+            removed.group !== ''
+                ? rows.findLastIndex((entry) => entry.group === removed.group)
+                : removed.is_group
+                  ? rows.findLastIndex((entry) => entry.key === removed.key)
+                  : -1;
+        if (anchor === -1) {
+            rows.push(removed);
+        } else {
+            rows.splice(anchor + 1, 0, removed);
+        }
     }
     return rows;
 }
@@ -735,12 +750,19 @@ export function registerGridReportResultsRoutes(
             };
         }
         if (query.data.baseline !== undefined && query.data.by !== 'trade') {
+            if (query.data.baseline === parsed.data.id) {
+                throw invalidRequest('A run is not compared with itself.');
+            }
             const earlierRun = await readRun(session, query.data.baseline);
             if (earlierRun === null) {
                 throw invalidRequest('The run compared with does not exist.');
             }
             if (text(earlierRun['definition_id']) !== text(run['definition_id'])) {
                 throw invalidRequest('The run compared with is a run of another report.');
+            }
+            const earlierStates = await readStates(session, [query.data.baseline]);
+            if (earlierStates.get(query.data.baseline) !== 'completed') {
+                throw invalidRequest('The run compared with has not completed.');
             }
             const compared = await comparedOfKey(
                 session,

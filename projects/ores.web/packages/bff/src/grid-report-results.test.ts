@@ -426,3 +426,43 @@ describe('comparedWith', () => {
         expect(gone?.change).toEqual([{ currency: 'GBP', total: '-40.00' }]);
     });
 });
+
+describe('comparedWith, the rows only the earlier run had', () => {
+    const aggregate = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'c1',
+        name: 'First',
+        trades: 1,
+        totals: [{ currency: 'GBP', total: '100.00' }],
+        notional: [{ currency: 'GBP', total: '1000.00' }],
+        group: '',
+        is_group: false,
+        previous: [],
+        change: [],
+        change_pct: [],
+        is_removed: false,
+        ...over,
+    });
+
+    it('keeps a removed member beside its group rather than at the end', () => {
+        const rows = comparedWith(
+            [
+                aggregate({ key: 'p1', name: 'The Group', is_group: true }),
+                aggregate({ key: 'c1', name: 'First', group: 'The Group' }),
+                aggregate({ key: 'p2', name: 'Other Group', is_group: true }),
+                aggregate({ key: 'c2', name: 'Second', group: 'Other Group' }),
+            ],
+            [
+                aggregate({ key: 'p1', name: 'The Group', is_group: true }),
+                aggregate({ key: 'c1', name: 'First', group: 'The Group' }),
+                aggregate({ key: 'c3', name: 'Gone Member', group: 'The Group' }),
+                aggregate({ key: 'p2', name: 'Other Group', is_group: true }),
+                aggregate({ key: 'c2', name: 'Second', group: 'Other Group' }),
+            ],
+        );
+
+        const index = rows.findIndex((row) => row.key === 'c3');
+        expect(rows[index]?.is_removed).toBe(true);
+        expect(rows[index - 1]?.key).toBe('c1');
+        expect(rows[index + 1]?.key).toBe('p2');
+    });
+});

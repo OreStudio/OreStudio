@@ -5523,6 +5523,7 @@ const fr: SourceCatalogue = {
             errors: 'Lire les erreurs de cette exécution',
         },
         results: {
+            was: 'Exécution précédente',
             compareTo: 'Comparer à',
             noComparison: 'Aucune comparaison',
             change: 'Écart',

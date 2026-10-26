@@ -5485,6 +5485,7 @@ const pt: SourceCatalogue = {
             errors: 'Ler os erros desta execução',
         },
         results: {
+            was: 'Execução anterior',
             compareTo: 'Comparar com',
             noComparison: 'Sem comparação',
             change: 'Variação',

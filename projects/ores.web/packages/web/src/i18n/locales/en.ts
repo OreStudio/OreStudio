@@ -5444,6 +5444,7 @@ export const en: SourceCatalogue = {
             errors: "Read this run's errors",
         },
         results: {
+            was: 'Earlier run',
             compareTo: 'Compare to',
             noComparison: 'No comparison',
             change: 'Change',

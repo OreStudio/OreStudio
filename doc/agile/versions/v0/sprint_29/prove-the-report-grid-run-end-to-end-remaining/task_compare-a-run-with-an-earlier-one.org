@@ -99,8 +99,14 @@ the change as a share of the earlier figure, the totals line states the change
 against the run, and a row only the earlier run had is kept and marked as gone
 rather than dropped.
 
-The comparison is refused when the run named is a run of another report, and it
-is offered only at the aggregate levels: a trade is read on its own.
+The comparison is refused when the run named is a run of another report, when it
+is the run itself, and when it has not completed; it is offered only at the
+aggregate levels, because a trade is read on its own. A row only the earlier run
+had stays beside its group rather than trailing the table, and carries a gone tag.
+The totals line states the earlier run's figure, the change and the share.
+
+The review asked for the last two: the page had the data but drew neither, so a
+gone row looked like a row that fell to zero.
 
 The two runs on record are =c2a86671= against =71d08bde=, on the NPV definition
 of ACME Corporation HK Ltd. Both priced the same data, so the book states

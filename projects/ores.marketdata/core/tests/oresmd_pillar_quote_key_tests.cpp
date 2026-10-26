@@ -154,3 +154,36 @@ TEST_CASE("a_named_tenor_and_the_days_to_the_same_end_are_two_quotes_one_series"
     CHECK(pillar_datum_uri(named) != pillar_datum_uri(counted));
     CHECK(pillar_series_uri(named) == pillar_series_uri(counted));
 }
+
+TEST_CASE("a_pillar_that_starts_at_a_period_is_keyed_by_both_of_its_tenors", "[oresmd][pillar]") {
+    // A template that names both ends of a 3M to 6M pillar names a 3M start and a 6M end,
+    // so the quote is the one a curve configuration writes down and it does not move with
+    // the day the run resolves the start to.
+    const auto key = make_pillar_quote_key("USD", "1D", "3M", spot_start, first_end, "6M");
+
+    CHECK(key.qualifier == "USD/3M/1D");
+    CHECK(key.point == "6M");
+    CHECK(pillar_series_uri(key) ==
+          "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=3M&tenor=1D");
+    CHECK(pillar_datum_uri(key) ==
+          "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=3M&tenor=1D"
+          "&term=6M");
+}
+
+TEST_CASE("the_same_period_pillar_on_two_days_is_one_series", "[oresmd][pillar]") {
+    constexpr auto later_start = std::chrono::year{2026} / 1 / 29;
+    constexpr auto later_end = std::chrono::year{2026} / 3 / 20;
+    const auto today = make_pillar_quote_key("USD", "1D", "3M", spot_start, first_end, "6M");
+    const auto later = make_pillar_quote_key("USD", "1D", "3M", later_start, later_end, "6M");
+
+    CHECK(pillar_series_uri(today) == pillar_series_uri(later));
+}
+
+TEST_CASE("a_period_start_whose_template_names_no_end_is_keyed_by_its_dates", "[oresmd][pillar]") {
+    // Without a named end there is no second period, and ORE refuses one period and one
+    // date, so the start is written as the date the run resolved it to.
+    const auto key = make_pillar_quote_key("USD", "1D", "3M", spot_start, first_end);
+
+    CHECK(key.qualifier == "USD/20260128/1D");
+    CHECK(key.point == "20260319");
+}

@@ -24,6 +24,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.core/vendor/quote_description.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -90,6 +91,13 @@ struct feed_kind_candidate final {
     std::optional<boost::uuids::uuid> folder_id;
     /** The currency pair of an FX feed, base then quote. Other kinds leave it empty. */
     std::optional<std::pair<std::string, std::string>> fx_pair;
+    /**
+     * @brief The pillars of a curve feed, in the notation's own words.
+     *
+     * A feed that quotes one instrument leaves the list empty. A curve quotes one id for each of
+     * its pillars, so the versions of the list are what an adapter is offered.
+     */
+    std::vector<ores::marketdata::vendor::ir_curve_pillar> pillars;
 
     /** Built lazily: only the vintage verb reads it. */
     std::function<feed_vintage_anchor()> vintage_anchor;

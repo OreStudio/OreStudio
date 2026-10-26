@@ -90,7 +90,7 @@ A tenant reads the installation's system rows through the synthetic service. The
 The provider table's policy was tenant isolation only, so no tenant saw a system-tenant provider even in SQL. It admits the system tenant's rows now. The earlier finding that row-level security already admitted the providers was wrong; the collection and its feeds were admitted.
 
 A read only Providers screen was built and withdrawn in the same PR. The prototype
-[[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree]] shows a provider as a folder
+[[id:4F8C2A1D-6B3E-49F7-8A52-1C9E7D0B3A64][Browse the feed tree]] shows a provider as a folder
 of the feed tree and a column of the feed overview, with its feeds and their run state, and
 no list of providers of its own. A provider has meaning through its feeds.
 

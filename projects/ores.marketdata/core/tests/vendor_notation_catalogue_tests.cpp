@@ -67,9 +67,10 @@ TEST_CASE("every_installed_vendor_instrument_roundtrips_through_its_providers_no
         ++checked[row.provider_code];
     }
 
-    // The catalogue holds the 26 FX pairs for each of the three providers. Other suites share the
-    // database and may add rows of their own, so the count is a floor.
-    CHECK(checked["bloomberg"] >= 26);
-    CHECK(checked["lseg"] >= 26);
-    CHECK(checked["demo"] >= 26);
+    // The catalogue holds the 26 FX pairs and the 60 interest rate pillars of the uniform demo
+    // curves for each of the three providers. Other suites share the database and may add rows of
+    // their own, so the count is a floor.
+    CHECK(checked["bloomberg"] >= 86);
+    CHECK(checked["lseg"] >= 86);
+    CHECK(checked["demo"] >= 86);
 }

@@ -190,3 +190,53 @@ TEST_CASE("the scheduler waits for its first series and stops when asked", "[tic
 
     CHECK(ticks.load() > 0);
 }
+
+TEST_CASE("a slow series reaches its turn while a faster one drives the clock",
+          "[tick_scheduler]") {
+    // The refresh re-rates every series. A refresh that redrew the whole gap would restart the
+    // slow series' minute every time the fast one fired, and the slow one would never run.
+    fixed_gap_process slow(0.2);
+    fixed_gap_process fast(0.01);
+    tick_scheduler scheduler;
+    std::atomic<int> slow_ticks{0};
+    std::atomic<int> fast_ticks{0};
+
+    scheduler.add(slow, {}, [&](double) {
+        ++slow_ticks;
+        return std::string{};
+    });
+    scheduler.add(fast, {}, [&](double) {
+        ++fast_ticks;
+        return std::string{};
+    });
+
+    std::thread runner([&] { scheduler.run(std::chrono::milliseconds(10)); });
+    std::this_thread::sleep_for(std::chrono::milliseconds(700));
+    scheduler.stop();
+    runner.join();
+
+    CHECK(fast_ticks > 10);
+    CHECK(slow_ticks >= 2);
+}
+
+TEST_CASE("a refresh keeps the part of its wait a series has already served", "[tick_scheduler]") {
+    // The series is half way through a gap of a fifth of a second. A re-rate at the same rate
+    // leaves it half way through, so its turn comes after about a tenth of a second more.
+    fixed_gap_process process(0.2);
+    tick_scheduler scheduler;
+    std::atomic<int> ticks{0};
+    scheduler.add(process, {}, [&](double) {
+        ++ticks;
+        return std::string{};
+    });
+
+    std::thread runner([&] { scheduler.run(std::chrono::milliseconds(5)); });
+    std::this_thread::sleep_for(std::chrono::milliseconds(600));
+    scheduler.stop();
+    runner.join();
+
+    // At a fifth of a second a gap, six hundred milliseconds is three turns, and the refreshes
+    // neither cut them short nor add to them.
+    CHECK(ticks >= 2);
+    CHECK(ticks <= 4);
+}

@@ -22,6 +22,7 @@
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote_key.hpp"
@@ -62,7 +63,8 @@ ir_curve_feed::ir_curve_feed(
     const ores::analytics::quant::domain::arrival_spec& arrival,
     std::vector<ir_curve_resolved_entry> entries,
     ores::analytics::quant::domain::market_link link,
-    ores::analytics::quant::service::tick_scheduler* scheduler)
+    ores::analytics::quant::service::tick_scheduler* scheduler,
+    std::vector<ir_pillar_quote_target> adapter_targets)
     : nats_(nats)
     , source_name_(std::move(source_name))
     , nats_subject_(std::move(nats_subject))
@@ -88,6 +90,24 @@ ir_curve_feed::ir_curve_feed(
         throw std::invalid_argument("ir_curve_feed: ticks_per_hour must be positive");
     if (entries_.empty())
         throw std::invalid_argument("ir_curve_feed: entries must not be empty");
+
+    display_subject_ = ores::marketdata::domain::feed_display_subject_for(source_name_);
+
+    // One curve quotes every pillar, so the targets are matched to the entries here and an entry
+    // with no id fails the build: a pillar the adapter cannot name has nowhere to publish.
+    for (const auto& e : entries_) {
+        const auto found = std::ranges::find_if(adapter_targets, [&e](const auto& t) {
+            return t.start_tenor_code == e.start_tenor_code && t.end_tenor_code == e.point_id;
+        });
+        if (found == adapter_targets.end()) {
+            if (!adapter_targets.empty())
+                throw std::invalid_argument("ir_curve_feed: the pillar " + e.start_tenor_code +
+                                            " to " + e.point_id + " has no adapter id");
+            adapter_targets_.emplace_back(std::nullopt);
+            continue;
+        }
+        adapter_targets_.emplace_back(*found);
+    }
 
     // Each pillar is a quote of one series. The keys are built once, here, so a pillar the
     // codec refuses fails when the feed is built and not on the first tick.
@@ -135,25 +155,56 @@ void ir_curve_feed::start() {
 std::string ir_curve_feed::tick(double elapsed_seconds) {
     published_.fetch_add(1, std::memory_order_relaxed);
 
-    const auto elapsed_ticks = elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0;
-    process_->next(elapsed_ticks);
+    // The clock decides when a curve publishes, and the model steps one tick of its own time,
+    // which the template resolver defines as one calendar day. A process whose law is written for
+    // an arbitrary step takes the gap instead, so a curve that ticks less often than its rate
+    // still advances the time it skipped.
+    if (process_->supports_variable_step())
+        process_->next(elapsed_seconds > 0.0 ? elapsed_seconds * ticks_per_second_ : 1.0);
+    else
+        process_->next();
     if (intensity_ != nullptr)
         intensity_->record_event();
     const auto now = std::chrono::system_clock::now();
 
     for (std::size_t i = 0; i < entries_.size(); ++i) {
         const auto& e = entries_[i];
-        // Each tick names one pillar: the datum built at construction from the
-        // entry's own dates and the index tenor, so the series it lands in
-        // carries the instrument's identity rather than the pipeline's
-        // vocabulary.
+        const auto value = std::format("{}", price_ir_curve_entry(*process_, e));
+
+        // A pillar that serves an adapter publishes the adapter's own tick under the pillar's
+        // vendor id, as an adapter of a live provider does. The service maps the id to its datum
+        // and finds the parties, so the tick names neither.
+        if (const auto& target = adapter_targets_[i]) {
+            ores::marketdata::messaging::adapter_tick tick;
+            tick.id_scheme = target->target.id.id_scheme;
+            tick.external_id = target->target.id.external_id;
+            tick.field = target->target.id.field;
+            tick.value = value;
+            tick.vendor_time = now;
+            tick.sequence = published_.load(std::memory_order_relaxed);
+            const auto plan = target->target.faults ? target->target.faults->get() : fault_plan{};
+            std::optional<ores::marketdata::messaging::adapter_tick> previous;
+            if (const auto found = previous_ticks_.find(tick.external_id);
+                found != previous_ticks_.end())
+                previous = found->second;
+            for (const auto& out : faulted_ticks(plan, tick, previous))
+                nats_.publish(target->target.subject, ores::nats::default_wire_codec().encode(out));
+            previous_ticks_.insert_or_assign(tick.external_id, tick);
+            continue;
+        }
+
+        // Each market tick names one pillar: the datum built at construction from the entry's own
+        // dates and the index tenor, so the series it lands in carries the instrument's identity
+        // rather than the pipeline's vocabulary.
         ores::marketdata::messaging::market_tick tick;
         tick.oresmd_uri = datum_uris_[i];
-        tick.value = std::format("{}", price_ir_curve_entry(*process_, e));
+        tick.value = value;
         tick.observation_time = now;
         tick.source = source_name_;
 
-        nats_.publish(nats_subject_, ores::nats::default_wire_codec().encode(tick));
+        const auto encoded = ores::nats::default_wire_codec().encode(tick);
+        nats_.publish(nats_subject_, encoded);
+        nats_.publish(display_subject_, encoded);
     }
     return std::to_string(entries_.size());
 }
@@ -253,7 +304,8 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     const ir_curve_refdata_context& refctx,
     const ores::marketdata::domain::market_clock* clock,
     ores::analytics::quant::domain::market_link link,
-    ores::analytics::quant::service::tick_scheduler* scheduler) {
+    ores::analytics::quant::service::tick_scheduler* scheduler,
+    std::vector<ir_pillar_quote_target> adapter_targets) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
 
     // "vintage" resolves the initial_rate parameter from a real market_observation, overriding
@@ -304,7 +356,8 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                            arrival,
                                            std::move(resolved),
                                            link,
-                                           scheduler);
+                                           scheduler,
+                                           std::move(adapter_targets));
 }
 
 }

@@ -21,6 +21,7 @@
 
 #include "ores.analytics.quant/domain/i_arrival_process.hpp"
 #include "ores.analytics.quant/domain/market_link.hpp"
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -70,7 +71,7 @@ public:
                     stream_body body) {
         const auto guard = std::lock_guard(mutex_);
         const auto id = next_id_++;
-        streams_.emplace(id, stream{&arrivals, link, std::move(body), 0.0, false});
+        streams_.emplace(id, stream{&arrivals, link, std::move(body), 0.0, 0.0, false});
         waiting_.notify_one();
         return id;
     }
@@ -97,13 +98,13 @@ public:
     }
 
     /**
-     * @brief Re-arm every series from its current rate, so a change in the
+     * @brief Re-rate every series from its current rate, so a change in the
      * shared factors reaches a gap that was already in flight.
      */
     void refresh() {
         const auto guard = std::lock_guard(mutex_);
         for (auto& [id, s] : streams_)
-            arm(s);
+            re_rate(s);
     }
 
     /**
@@ -212,7 +213,7 @@ private:
                 since_refresh_ += earliest;
                 if (since_refresh_ >= period) {
                     for (auto& [id, s] : streams_)
-                        arm(s);
+                        re_rate(s);
                     since_refresh_ = 0.0;
                 }
             }
@@ -226,6 +227,9 @@ private:
         ores::analytics::quant::domain::market_link link;
         stream_body body;
         double pending;
+        /// The gap the pending time was drawn from, so a re-rate can keep the share of it that
+        /// this series has still to wait.
+        double gap;
         bool armed;
     };
 
@@ -240,7 +244,29 @@ private:
             defer_error(ex);
             s.pending = 1.0;
         }
+        s.gap = s.pending;
         s.armed = true;
+    }
+
+    /**
+     * @brief Draw this series' next gap at its current rate, keeping the part of the wait the
+     * series has already served.
+     *
+     * A refresh that redrew the whole gap would put a series back at the start of its interval,
+     * and a series slower than the refresh would never reach its turn: a minute-long gap redrawn
+     * every tenth of a second is a minute that never passes. So the time still to wait keeps its
+     * share of the interval, and the rate the process now carries is what that share scales to.
+     */
+    void re_rate(stream& s) {
+        if (!s.armed) {
+            arm(s);
+            return;
+        }
+        const double before = s.gap;
+        const double waited_share = before > 0.0 ? std::clamp(s.pending / before, 0.0, 1.0) : 1.0;
+        arm(s);
+        if (before > 0.0 && s.gap > 0.0)
+            s.pending = s.gap * waited_share;
     }
 
     void defer_error(const std::exception& ex) {

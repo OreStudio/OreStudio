@@ -44,7 +44,7 @@ export interface FeedPartKind {
 /** What a tab of a feed's page is given to draw itself. */
 export interface FeedTabContext {
     readonly feed: RecordRow;
-    /** Whether the feed runs: undefined until the server says. */
+    /** Whether the feed runs: undefined until the service says what the provider's source serves. */
     readonly running: boolean | undefined;
     /** Whether the person may write the feed. */
     readonly mayWrite: boolean;

@@ -182,6 +182,17 @@ feed_kind make_ir_curve_kind() {
         repo::ir_curve_generation_config_repository config_repo;
         const auto rows =
             id.empty() ? config_repo.read_latest(ctx) : config_repo.read_latest(ctx, id);
+
+        // A curve quotes one id for each of its template entries, so the candidates carry the
+        // entries in the notation's own words and an offer writes an id from them. The entry
+        // table is read once for every row of the request, since its repository reads it whole.
+        namespace vendor = ores::marketdata::vendor;
+        repo::ir_curve_template_entry_repository entry_repo;
+        auto all_entries = entry_repo.read_latest(ctx);
+        std::ranges::sort(all_entries, [](const auto& a, const auto& b) {
+            return a.sequence_index < b.sequence_index;
+        });
+
         std::vector<feed_kind_candidate> out;
         out.reserve(rows.size());
         for (const auto& cfg : rows) {
@@ -194,6 +205,13 @@ feed_kind make_ir_curve_kind() {
             c.auto_start = cfg.auto_start;
             c.vintage_priced = cfg.price_source == "vintage";
             c.folder_id = cfg.folder_id;
+            for (const auto& e : all_entries)
+                if (e.ir_curve_config_id == cfg.id)
+                    c.pillars.push_back(vendor::ir_curve_pillar{cfg.currency_code,
+                                                                cfg.index_family,
+                                                                e.instrument_code,
+                                                                e.start_tenor_code,
+                                                                e.end_tenor_code});
             c.vintage_anchor = [ctx, cfg] {
                 feed_vintage_anchor a;
                 a.applicable = cfg.price_source == "vintage";

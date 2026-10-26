@@ -51,6 +51,14 @@ inline std::string synthetic_tick_subject_for(std::string_view source_name) {
     return std::string(synthetic_tick_subject).append(".").append(source_name);
 }
 
+/// The subject a feed publishes its ticks on for a screen to tail.
+inline constexpr std::string_view feed_display_subject = "synthetic.v1.ops.feed_tick";
+
+/// The subject @p source_name's ticks travel on for a screen to tail.
+inline std::string feed_display_subject_for(std::string_view source_name) {
+    return std::string(feed_display_subject).append(".").append(source_name);
+}
+
 /**
  * @brief Text as one NATS subject token.
  *

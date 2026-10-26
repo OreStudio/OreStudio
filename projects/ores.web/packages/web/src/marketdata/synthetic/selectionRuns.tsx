@@ -27,7 +27,7 @@ import { api, type FeedSelection } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { Button, Dialog } from '../../ui/Primitives.js';
 import { toast } from '../../ui/Toasts.js';
-import { RUNNING_KEY } from './feedRuns.js';
+import { ADAPTERS_KEY } from './adapterStatus.js';
 import { FOLDERS_KEY } from './useCollections.js';
 
 /** The key of every read of a page of feeds, so one refresh renews them all. */
@@ -96,7 +96,7 @@ export function useSelectionRuns(onDone?: () => void): {
             setAsking(null);
             await queries.invalidateQueries({ queryKey: FOLDERS_KEY });
             await queries.invalidateQueries({ queryKey: FEEDS_KEY });
-            await queries.invalidateQueries({ queryKey: RUNNING_KEY });
+            await queries.invalidateQueries({ queryKey: ADAPTERS_KEY });
         }
     };
 

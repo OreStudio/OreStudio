@@ -20,13 +20,11 @@
  */
 
 import type { FeedFolder } from '../../api/client.js';
-import { totalsOf, type Totals } from './totals.js';
 
 /** One provider and the collections that stand for it. */
 export interface ProviderEntry {
     readonly code: string;
     readonly collections: readonly FeedFolder[];
-    readonly totals: Totals;
 }
 
 /** The providers of the given collections, in the order of their codes. */
@@ -40,11 +38,7 @@ export function providersOf(collections: readonly FeedFolder[]): readonly Provid
     }
     return [...byCode.entries()]
         .sort(([a], [b]) => a.localeCompare(b))
-        .map(([code, held]) => ({
-            code,
-            collections: held,
-            totals: totalsOf(held),
-        }));
+        .map(([code, held]) => ({ code, collections: held }));
 }
 
 /** What the catalogue says about a provider. */

@@ -13,7 +13,7 @@
 
 Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time.
 
-22 prototypes answer to this group. Each one is a static page under
+21 prototypes answer to this group. Each one is a static page under
 =doc/prototypes/=, opens with no build and no session, and reads mock data
 only. The table below opens each one and says what it argues. Where a
 prototype carries a Gemini review, the last column opens it: a review is a
@@ -26,6 +26,7 @@ generated alternative kept beside the agreed design, never instead of it.
 #+ATTR_HTML: :class hug-leading
 | Prototype                                 | What it argues | Open it | Review |
 |-------------------------------------------+----------------+---------+--------|
+| [[file:synthetic-feeds.org][Synthetic feeds]] | The dashboard totals and the providers, a Provider tab with a combo and its own tree, the feed page and its process tab, the sources board and subscriptions. One rule counts every number, and no feed has a start. | [[file:synthetic-feeds/][prototype]] | none |
 | [[file:manage-a-curves-blueprint.org][Manage a curve's blueprint]] | A curve's blueprint is its pillars and the method that joins them; the pillar editor is where the design question sits. | [[file:manage-a-curves-blueprint/][prototype]] | none |
 | [[file:author-a-surfaces-framework.org][Author a surface's framework]] | A surface is axes before it is numbers: the quoting convention and the two label ladders decide what the grid can hold. | [[file:author-a-surfaces-framework/][prototype]] | none |
 | [[file:watch-the-market-and-clear-its-exceptions.org][Watch the market and clear its exceptions]] | The market's exceptions are cleared where they are seen, so the quotes and the fallbacks belong on one screen. | [[file:watch-the-market-and-clear-its-exceptions/][prototype]] | none |
@@ -41,10 +42,8 @@ generated alternative kept beside the agreed design, never instead of it.
 | [[file:watch-a-curve-or-surface-evolve.org][Watch a curve or surface evolve]] | One instant and a range are the same view at different zoom: the alignment and the added and dropped nodes are the argument. | [[file:watch-a-curve-or-surface-evolve/][prototype]] | none |
 | [[file:see-who-changed-a-curve.org][See who changed a curve, and when]] | The trail of a curve: blueprint changes, builds, hand adjustments, approvals and publishes in one place, each with an actor. | [[file:see-who-changed-a-curve/][prototype]] | none |
 | [[file:oresmd-url-editor.org][oresmd URL editor]] | A valid oresmd URL is very hard to write by hand; this editor composes, parses and validates one from the schema, offers the codes the system already keeps (currencies, day counters, tenors, curve ids, index names, security ids) plus ORE's own vocabularies as pickers, and every dialog that shows a URL calls it. | [[file:oresmd-url-editor/][prototype]] | none |
-| [[file:synthetic-market-simulator.org][Market simulator]] | Authoring synthetic feeds is one composite screen: a tree of the configured feeds, a summary of the selection, and the live chart it produces. Starting a collection is one folder-scoped request, and a node is running, stopped or partial. | [[file:synthetic-market-simulator/][prototype]] | none |
 | [[file:author-an-fx-price-feed.org][Author an FX price feed]] | An FX feed is a process plus a tick clock plus provenance, and the process is read twice before it is saved: the return distribution and the sample paths it implies. | [[file:author-an-fx-price-feed/][prototype]] | [[file:author-an-fx-price-feed/review/][Gemini review]] |
 | [[file:author-an-ir-curve-feed.org][Author an IR curve feed]] | An IR curve feed is a short-rate model, its parameters and the tenor ladder it is bootstrapped from; the curve shape and the sample paths say whether the choice is sane. | [[file:author-an-ir-curve-feed/][prototype]] | none |
-| [[file:browse-the-feed-tree.org][Browse the feed tree]] | Synthetic is one screen with a Dashboard and a Feed tree: providers and what each simulates, the demanded feeds that are not running, and a paged table whose picked rows are started or stopped as an operator test. | [[file:browse-the-feed-tree/][prototype]] | none |
 | [[file:manage-synthetic-collections.org][Manage synthetic collections]] | A collection is the unit a person starts and stops, so it must show what it owns and where it came from before it is run. | [[file:manage-synthetic-collections/][prototype]] | none |
 | [[file:manage-gmm-components.org][Manage GMM components]] | A mixture is browsed across every feed at once, and the weights are normalised on save, so the screen must show the raw sum as well as the normalised weights. | [[file:manage-gmm-components/][prototype]] | none |
 | [[file:manage-yield-curve-process-types.org][Manage yield curve process types]] | The short-rate models and their parameters are data, not code, so a new model appears in the curve editor with no change to the editor. | [[file:manage-yield-curve-process-types/][prototype]] | none |

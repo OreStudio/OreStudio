@@ -34,6 +34,12 @@ namespace ores::marketdata::vendor {
  * and a pricing source between the pair and the key ("EURUSD BGN Curncy") is not described, so the
  * notation refuses it.
  *
+ * Bloomberg writes one pillar of an interest rate curve as the currency, the index family, the
+ * instrument, the tenor the pillar starts at and the tenor it ends at, each a word before the
+ * yellow key, such as "USD SOFR DEPO SPOT 3M Curncy" or "USD SOFR FRA 3M 6M Curncy". A curve
+ * pillar carries one price, so its field is PX_LAST. The index family is written in upper case
+ * and read back in the lower case the refdata catalogue spells it in.
+ *
  * The reader is a Boost.Spirit.X3 grammar, and the notation follows the contract of
  * @c provider_notation: it reads what it writes and writes what it reads.
  */

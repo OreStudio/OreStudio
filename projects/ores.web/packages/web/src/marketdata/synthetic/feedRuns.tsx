@@ -19,29 +19,12 @@
  *
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { api } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { Tag } from '../../ui/Primitives.js';
-
-export const RUNNING_KEY = ['synthetic-running'] as const;
-
-/** How often the screens ask what runs, since a feed can start or stop from anywhere. */
-const RUNNING_EVERY_MS = 5_000;
-
-/**
- * Which feeds run now, by source name: undefined until the server answers.
- * The server knows the running feeds by source name only.
- */
-export function useRunningFeeds(): ReadonlySet<string> | undefined {
-    const running = useQuery({
-        queryKey: RUNNING_KEY,
-        queryFn: api.runningFeeds,
-        refetchInterval: RUNNING_EVERY_MS,
-    });
-    return running.data === undefined ? undefined : new Set(running.data);
-}
+import { ADAPTERS_KEY } from './adapterStatus.js';
 
 /** Whether a feed runs, as a label; nothing while it is not yet known. */
 export function FeedStatus({ running }: { readonly running: boolean | undefined }): ReactNode {
@@ -98,7 +81,7 @@ export async function runFeeds(
 /**
  * Starts or stops many feeds, each in its own call, so one refusal does not
  * stop the others. Every call is made before the answer is told, and the
- * running set is read again after.
+ * adapters are read again after, since they carry what the service demands.
  */
 export function useFeedRuns(): {
     readonly run: (action: 'start' | 'stop', feeds: readonly FeedToRun[]) => void;
@@ -117,7 +100,7 @@ export function useFeedRuns(): {
         }): Promise<RunOutcome> => {
             return runFeeds(action, feeds, action === 'start' ? api.startFeed : api.stopFeed);
         },
-        onSettled: () => queryClient.invalidateQueries({ queryKey: RUNNING_KEY }),
+        onSettled: () => queryClient.invalidateQueries({ queryKey: ADAPTERS_KEY }),
     });
     return {
         run: (action, feeds) => mutation.mutate({ action, feeds }),

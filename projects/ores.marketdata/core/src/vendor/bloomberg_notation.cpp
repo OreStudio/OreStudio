@@ -84,6 +84,31 @@ bloomberg_notation::read(const messaging::vendor_id& id) const {
         return fail(notation_error::kind::wrong_scheme,
                     "Bloomberg ids use the scheme bbg_ticker, not '" + id.id_scheme + "'.");
 
+    // A pillar of a curve: the currency, the index family, the instrument, the tenor it starts at
+    // and the tenor it ends at, as words before the yellow key. Such a ticker names a curve and
+    // not a pair, so the pair reader below never sees it.
+    {
+        ir_curve_pillar pillar;
+        std::string family;
+        const auto curve_ticker =
+            detail::currency_code[detail::assign_to(pillar.currency)] >> x3::lit(' ') >>
+            detail::upper_index_family[detail::assign_to(family)] >> x3::lit(' ') >>
+            detail::instrument_code[detail::assign_to(pillar.instrument_code)] >> x3::lit(' ') >>
+            detail::start_tenor[detail::assign_to(pillar.start_tenor)] >> x3::lit(' ') >>
+            detail::period_tenor[detail::assign_to(pillar.end_tenor)] >> x3::lit(' ') >>
+            x3::lit(std::string(yellow_key));
+        if (detail::parse_all(id.external_id, curve_ticker)) {
+            if (id.field != field_of(price_side::last))
+                return fail(notation_error::kind::wrong_field,
+                            "A Bloomberg curve pillar carries the last price: '" + id.field + "'.");
+            pillar.index_family = detail::lower_case(std::move(family));
+            if (pillar.start_tenor == pillar.end_tenor)
+                return fail(notation_error::kind::malformed,
+                            "A pillar ends after it starts: '" + id.external_id + "'.");
+            return quote_description{pillar};
+        }
+    }
+
     // The ticker of a currency pair: six upper case letters, a space and the yellow key.
     // A ticker with another yellow key is a valid Bloomberg id that this description cannot hold.
     std::string base;
@@ -120,6 +145,16 @@ bloomberg_notation::read(const messaging::vendor_id& id) const {
 
 std::expected<messaging::vendor_id, notation_error>
 bloomberg_notation::write(const quote_description& description) const {
+    if (const auto* pillar = std::get_if<ir_curve_pillar>(&description)) {
+        if (const auto ok = detail::check_pillar(*pillar); !ok)
+            return std::unexpected(ok.error());
+        return messaging::vendor_id{
+            .id_scheme = std::string(scheme),
+            .external_id = pillar->currency + " " + detail::upper_case(pillar->index_family) + " " +
+                           pillar->instrument_code + " " + pillar->start_tenor + " " +
+                           pillar->end_tenor + " " + std::string(yellow_key),
+            .field = std::string(field_of(price_side::last))};
+    }
     const auto fx = detail::fx_spot_of(description);
     if (!fx)
         return std::unexpected(fx.error());

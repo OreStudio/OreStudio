@@ -40,6 +40,7 @@ import { registerPricingEngineRoutes } from './pricing-engines.js';
 import { FeedTickBuffers, marketTickSchema } from './feed-ticks.js';
 import { registerSyntheticRoutes } from './synthetic.js';
 import { registerCurveRoutes } from './curves.js';
+import { registerAdapterRoutes } from './adapters.js';
 import { registerOresmdRoutes } from './oresmd.js';
 import { registerSeriesRoutes } from './series.js';
 import { registerTenorRoutes } from './tenors.js';
@@ -2671,6 +2672,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerPricingEngineRoutes(server, requireSession);
     registerEngineSettingsRoutes(server, requireSession);
     registerCurveRoutes(server, requireSession);
+    registerAdapterRoutes(server, requireSession);
     registerOresmdRoutes(server, requireSession);
     registerSeriesRoutes(server, requireSession);
     registerTenorRoutes(server, requireSession);

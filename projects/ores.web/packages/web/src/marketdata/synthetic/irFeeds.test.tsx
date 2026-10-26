@@ -24,9 +24,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { AccountAccess } from '@ores/wire-protocol/browser';
-import type { RecordRow, SyntheticResourceView } from '../../api/client.js';
+import type { AdapterStatus, RecordRow, SyntheticResourceView } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import { MarketDataPage } from '../MarketDataPage.js';
+import { ADAPTERS_KEY } from './adapterStatus.js';
 import { IrFeedPage } from './irFeeds.js';
 import { SyntheticScreen } from './SyntheticScreen.js';
 
@@ -72,6 +73,27 @@ function access(codes: string[]): AccountAccess {
     };
 }
 
+/** The adapters of one provider: a source that serves the ids it was demanded, or one that does not. */
+function adapters(provider: string, state: string, demanded: number): readonly AdapterStatus[] {
+    return [
+        {
+            adapter_id: `${provider}-sim`,
+            provider_code: provider,
+            state,
+            last_heartbeat_at: '2026-10-25 15:00:00Z',
+            heartbeat_counter: 4,
+            served_count: 2,
+            unknown_count: 0,
+            demanded_count: demanded,
+            routes_seen: 1,
+            ticks_last_minute: 0,
+            last_tick_age_ms: -1,
+            accepted: [],
+            rejected: [],
+        },
+    ];
+}
+
 const feed: RecordRow = {
     version: 2,
     id: FEED_ID,
@@ -90,6 +112,7 @@ const feed: RecordRow = {
     vintage_series_uri: '',
     description: '',
     fixed_leg_payment_frequency_code: 'Annual',
+    provider_code: 'bloomberg',
     source_name: 'synthetic.eureuribor6m',
     folder_id: null,
 };
@@ -153,12 +176,12 @@ describe('the market data area', () => {
         expect(html).toContain('href="/market-data/synthetic"');
     });
 
-    it('draws the Synthetic screen with its dashboard and its feed tree', () => {
+    it('draws the Synthetic screen with its dashboard and its provider screen', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(html).toContain('>Dashboard<');
-        expect(html).toContain('>Feeds<');
+        expect(html).toContain('>Provider<');
         expect(html).not.toContain('IR curve feeds');
     });
 
@@ -337,7 +360,7 @@ describe('the IR curve feed screens', () => {
                 [entry('e1', 0, '3M'), entry('e2', 1, '5Y')],
             );
             client.setQueryData(['records', 'parameter-definitions'], DEFINITIONS);
-            client.setQueryData(['synthetic-running'], ['synthetic.eureuribor6m']);
+            client.setQueryData(ADAPTERS_KEY, adapters('bloomberg', 'serving', 1));
             client.setQueryData(['feed-ticks', FEED_ID, 12], {
                 sourceName: 'synthetic.eureuribor6m',
                 ticks: [

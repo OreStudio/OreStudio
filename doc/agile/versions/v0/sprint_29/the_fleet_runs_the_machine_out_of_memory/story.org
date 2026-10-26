@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: CDEFF0DE-44BC-49B5-967F-C81C03465572
+:END:
+#+title: Story: Hotfix: The fleet runs the machine out of memory
+#+description: The machine went down on 2026-10-26: the NATS client kept every message it received and the shared Hawkes heat ran ticks at about 300 times their configured rate.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:nats:hotfix:synthetic:hotfix:marketdata:sprint_29:v0:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The machine runs the fleet again without running out of memory. On 2026-10-26
+it went down overnight: =ores.marketdata.service= grew by about 195 MiB a minute
+until RAM and swap were gone. Two independent defects caused it. The NATS client
+kept every core message any service received, and the synthetic service's shared
+Hawkes heat ran away once more than forty feeds shared it, so ticks arrived at
+about 300 times their configured rate. Pinning the market regime to =active=,
+which multiplies arrivals by four, made it faster still.
+
+The story also restores the usage records marketdata never wrote, and keeps
+terminated tenants out of demand, routing and usage.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | The leak, the tick runaway and the usage writes are fixed and measured on the live fleet. |
+| Waiting on    | Review and merge of the PR.            |
+| Next          | Find why ores.compute.service spends CPU while idle. |
+| Last touched  | 2026-10-26                               |
+
+* Acceptance
+
+- Every core NATS message is freed once its handler returns, on every path.
+- The shared heat stays bounded for any number of feeds, and the stored tick rate
+  follows the configured rate and the regime multiplier.
+- marketdata memory stays flat under the synthetic feed, in the calm regime and
+  pinned to =active=.
+- Delivery counts and usage intervals are stored, and a terminated tenant's rows
+  neither feed demand nor block another tenant's usage.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:845EDACD-A8B1-4EBB-8842-C9436E18C3DB][Scaffold story: Hotfix: The fleet runs the machine out of memory]] | DONE | 2026-10-26 | 2026-10-26 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:22FE983A-2292-4FAB-9C88-292BCEAA3E5E][Fix the message leak, the tick runaway and the usage writes]] | DONE | 2026-10-26 | 2026-10-26 | Initial task for: Hotfix: The fleet runs the machine out of memory |
+
+* Decisions
+
+- *Own cnats objects through handles.* =nats_handle= is a =unique_ptr= over a cnats
+  object and its destroy function, and =ensure_result= replaces hand-written status
+  checks. A raw pointer with destroy calls beside it leaks on every path that
+  misses one.
+- *Share the heat out instead of capping it.* Each feed enrols its mean rate and
+  takes the share of the heat its rate is of the total, so the loop gain is jump
+  over decay for any feed count. A cap would have hidden the instability.
+- *Leave ingest batching as it is.* At the fixed rate the worker writes about seven
+  small batches a second and marketdata uses 0.9 percent of a core. Waiting a full
+  =target_batch_ms= per batch would delay every live tick by up to a second.
+- *Keep memory and CPU measurement outside the services*, and measure the tick
+  flow inside them: see the captures this story filed.
+
+* Out of scope
+
+- The tick statistics design, the scale requirement of 100,000 feeds, and the
+  defects found along the way, all filed as captures in =next= and =inbox=.
+- The idle CPU of =ores.compute.service=, next after this story.

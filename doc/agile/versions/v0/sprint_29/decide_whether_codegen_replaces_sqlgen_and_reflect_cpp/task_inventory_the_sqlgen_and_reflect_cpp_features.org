@@ -65,6 +65,7 @@ task and name that file in the Command column.
 | Files using reflect-cpp | 1,970, of which 1,837 generated | =grep -rl 'rfl::'= over =projects=, then the generated markers | =ced6c2fc70= |
 | sqlgen calls by kind | =read= 3,692, =limit= 1,052, =delete_from= 864, conditions 842, =offset= 600, =order_by= 443, =count= 73, =insert_or_replace= 32, =insert= 13 | =grep -rhoE 'sqlgen::[a-z_]+'= with counts | =ced6c2fc70= |
 | reflect-cpp calls by kind | =json::write= 5,221, =json::read= 636, enum conversions 18, =msgpack::write= 3, =msgpack::read= 4 | =grep -rhoE 'rfl::[a-z_]+(::[a-z_]+)?'= with counts | =ced6c2fc70= |
+| Generated against hand-written uses | =sqlgen::read= 3,647 / 45, =delete_from= 862 / 2, =insert= 38 / 7, =rfl::json::write= 5,055 / 166, =rfl::json::read= 522 / 114, =rfl::Generic= 0 / 78 | the same counts over files with and without the generated markers | =ced6c2fc70= |
 
 * Notes
 
@@ -73,6 +74,34 @@ task and name that file in the Command column.
 - The NATS wire codec chooses JSON or MessagePack at run time, both through
   reflect-cpp templates instantiated for each message type.
 - Most of the use is generated, so a change to the templates changes most of it.
+
+** What generated code must cover
+
+| Feature in use | Where | Replacement |
+|----------------+-------+-------------|
+| =sqlgen::read= with =where=, =order_by=, =limit=, =offset= | Generated repositories (3,647), a few hand-written reads (45) | Generated statements with typed parameters and row decoders |
+| =sqlgen::delete_from= | Generated (862) | Generated statements |
+| =sqlgen::insert=, =insert_or_replace= | Generated writes through =execute_write_query= (38), hand-written (7) | Generated statements; batch writes as one statement with array parameters, or COPY |
+| =sqlgen::count= | Generated (73) | Generated statements |
+| =sqlgen::dynamic= conditions and ordering | Generated list filters | Generated filter clauses from the model's filterable columns |
+| sqlgen connection pool and sessions | =ores.database= | The pool and unit of work of the data path |
+| =rfl::json::write= / =read= | Generated JSON I/O and logging (5,577), hand-written (280) | Generated JSON codecs over yyjson in each type's =.cpp= |
+| =rfl::msgpack::write= / =read= | The NATS wire codec | Generated MessagePack codecs over msgpack-c in each type's =.cpp= |
+| =rfl::Generic=, =rfl::Object= | Hand-written dynamic JSON (78 and 28) | yyjson directly; nothing to generate |
+| =rfl::json::to_schema= | 7 uses | Schema generated from the model, or kept on reflect-cpp in a tool |
+| =rfl::Skip=, =rfl::Rename=, =rfl::Timestamp=, =rfl::DefaultIfMissing=, =rfl::to_view= | 19 uses in all | Model attributes the generator reads |
+| =rfl::enum_to_string= / =string_to_enum= | 18 uses | Generated enum tables |
+| =std::variant= in messages | 9 API headers | A generated codec per variant, keeping reflect-cpp's encoding |
+
+** Types with a custom encoding
+
+The wire form of these types is set by our reflectors, so the generated codecs
+must reproduce it exactly: =boost::uuids::uuid=, =tenant_id=,
+=std::optional<boost::uuids::uuid>=, =std::chrono::year_month_day=,
+=ores::utility::decimal::decimal=, =boost::asio::ip::address=, =error_code=,
+=std::chrono::system_clock::time_point= (a custom parser), =product_type=,
+=cron_expression=, =step_log_level= and =step_outcome=. The polymorphic payload
+pattern is deprecated, so tagged unions need no support.
 
 * Test Scenarios
 

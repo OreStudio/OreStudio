@@ -19,6 +19,7 @@
  */
 #include "ores.nats/service/client.hpp"
 #include "nats_handle.hpp"
+#include "nats_result.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/compression.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -404,8 +405,7 @@ msg_handle make_msg(std::string_view subject,
                                         reinterpret_cast<const char*>(payload.data()),
                                         static_cast<int>(payload.size()));
 
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("natsMsg_Create failed: ") + natsStatus_GetText(s));
+    ensure_result(s, "natsMsg_Create failed");
 
     msg_handle msg(created);
     for (const auto& [k, v] : headers)
@@ -660,8 +660,7 @@ void client::connect() {
         natsConnection_Close(impl_->conn);
         natsConnection_Destroy(impl_->conn);
         impl_->conn = nullptr;
-        throw std::runtime_error(std::string("NATS JetStream init failed: ") +
-                                 natsStatus_GetText(s));
+        throw nats_failure("NATS JetStream init failed", s);
     }
 
     impl_->connected.store(true, std::memory_order_release);
@@ -745,8 +744,7 @@ void client::publish(std::string_view subject,
 
     const auto msg = make_msg(full_subject, data, headers);
     const natsStatus s = natsConnection_PublishMsg(impl_->conn, msg.get());
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("NATS publish failed: ") + natsStatus_GetText(s));
+    ensure_result(s, "NATS publish failed");
 }
 
 message client::request_sync(std::string_view subject,
@@ -770,7 +768,7 @@ message client::request_sync(std::string_view subject,
             throw nats_connect_error(nats_error_kind::services_unavailable,
                                      "NATS request failed: no service is handling subject '" +
                                          std::string(make_subject(subject)) + "'");
-        throw std::runtime_error(std::string("NATS request failed: ") + natsStatus_GetText(s));
+        throw nats_failure("NATS request failed", s);
     }
 
     return extract_message(reply.get());
@@ -821,9 +819,7 @@ subscription client::subscribe(std::string_view subject, message_handler handler
     const natsStatus s =
         natsConnection_Subscribe(&sub, impl_->conn, full_subject.c_str(), on_msg, cl.get());
 
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("natsConnection_Subscribe failed: ") +
-                                 natsStatus_GetText(s));
+    ensure_result(s, "natsConnection_Subscribe failed");
 
     auto si = std::make_unique<subscription::impl>();
     si->sub = sub;
@@ -866,9 +862,7 @@ subscription client::queue_subscribe(std::string_view subject,
                                                        on_msg,
                                                        cl.get());
 
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("natsConnection_QueueSubscribe failed: ") +
-                                 natsStatus_GetText(s));
+    ensure_result(s, "natsConnection_QueueSubscribe failed");
 
     auto si = std::make_unique<subscription::impl>();
     si->sub = sub;
@@ -889,8 +883,7 @@ void client::js_publish(std::string_view subject,
     const natsStatus s = js_PublishMsg(&received, impl_->js, msg.get(), nullptr, nullptr);
     const pub_ack_handle ack(received);
 
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("JetStream publish failed: ") + natsStatus_GetText(s));
+    ensure_result(s, "JetStream publish failed");
 }
 
 namespace {
@@ -1000,9 +993,7 @@ void ensure_durable_consumer(jsCtx* js,
         // Any other failure is not "the consumer is absent": a permission or
         // connection problem read as absent would silently try to create a
         // consumer that already exists, and report the create's refusal.
-        if (s != NATS_OK)
-            throw std::runtime_error("js_GetConsumerInfo failed for '" + durable +
-                                     "': " + natsStatus_GetText(s));
+        ensure_result(s, "js_GetConsumerInfo failed for '" + durable + "'");
         return info;
     };
 
@@ -1040,8 +1031,8 @@ void ensure_durable_consumer(jsCtx* js,
         // read again and reconcile rather than fail the start on that race.
         existing = read_consumer();
         if (existing == nullptr)
-            throw std::runtime_error("NATS durable '" + durable + "' on '" + stream +
-                                     "' could not be created: " + natsStatus_GetText(cs));
+            throw nats_failure(
+                "NATS durable '" + durable + "' on '" + stream + "' could not be created", cs);
     }
 
     jsConsumerConfig* config = existing->Config;
@@ -1089,10 +1080,9 @@ void ensure_durable_consumer(jsCtx* js,
         js_UpdateConsumer(&updated, js, stream.c_str(), &updated_config, &opts, &jerr);
     const consumer_info_handle updated_info(updated);
 
-    if (us != NATS_OK)
-        throw std::runtime_error("NATS durable '" + durable + "' on '" + stream +
-                                 "' holds a different configuration and could not be updated: " +
-                                 natsStatus_GetText(us));
+    ensure_result(us,
+                  "NATS durable '" + durable + "' on '" + stream +
+                      "' holds a different configuration and could not be updated");
 
     BOOST_LOG_SEV(lg(), info) << "NATS durable '" << durable << "' on '" << stream
                               << "' migrated in place from " << stored.size() << " filter(s), ack "
@@ -1157,8 +1147,7 @@ subscription client::js_queue_subscribe(std::string_view subject,
     const natsStatus s = js_Subscribe(
         &sub, impl_->js, subj_str.c_str(), on_msg, cl.get(), nullptr, &sub_opts, nullptr);
 
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("js_QueueSubscribe failed: ") + natsStatus_GetText(s));
+    ensure_result(s, "js_QueueSubscribe failed");
 
     auto si = std::make_unique<subscription::impl>();
     si->sub = sub;
@@ -1230,8 +1219,7 @@ subscription client::js_queue_subscribe_multi(std::span<const std::string_view> 
                                            &sub_opts,
                                            nullptr);
 
-    if (s != NATS_OK)
-        throw std::runtime_error(std::string("js_SubscribeMulti failed: ") + natsStatus_GetText(s));
+    ensure_result(s, "js_SubscribeMulti failed");
 
     auto si = std::make_unique<subscription::impl>();
     si->sub = sub;

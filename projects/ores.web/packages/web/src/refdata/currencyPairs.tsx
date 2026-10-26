@@ -418,6 +418,7 @@ function PairBody({
                 <RecordTimeline
                     entityType={ENTITY}
                     entityId={code}
+                    gaps={['record_links_unversioned']}
                     parts={[
                         {
                             entityType: CONVENTION_ENTITY,

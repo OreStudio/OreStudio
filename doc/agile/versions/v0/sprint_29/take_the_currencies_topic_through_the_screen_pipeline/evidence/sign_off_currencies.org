@@ -1,0 +1,151 @@
+#+title: Sign off sheet of the currencies screen, 2026-10-26
+#+description: The sign off sheet of the currencies screen after the build: the harness run on the screen alone and the agent's walk through the scenario, with the verdict open for the owner.
+
+Walked on 2026-10-26 by the brave hopper agent as tenant_admin and as adrian.vance, in Chromium at 1400 px, against the web of brave_hopper built from main at the merge of PR 3863, commit 8f96cb0dc6, on a database recreated and provisioned the same day; the walk is the scenario Verify the currencies screens, driven by a script, plus the screenshots it took. The two fixes this task made, the classification link and the pair classification seed, are at this branch.
+
+Sign off sheet for =record currencies=, from the harness run of 2026-10-26T01:51:22.552Z.
+The Harness column is the run's; a person fills Person with Meets, Gap, N/A or
+Not checked on every line marked walk, and the Note with what was seen.
+
+| Line | Rules | Harness | Person | Note |
+|------+-------+---------+--------+------|
+| *The list* | | | | |
+| The header has the breadcrumb, the plural title in sentence case and one sentence on what the records are. | RS-LIST-01 | ✓ |  |  |
+| Refresh, then Import and Export for a kind with an ORE document (Export on the record header when the document is one record), then Workflows, then Add stand at the right. Add shows only for a person who may write. | RS-LIST-03, RS-ORE-02 | RS-LIST-03 ✓, RS-ORE-02 ✓ |  |  |
+| Import and Export are the shared pair: bare verbs with their icons, the server's =ore.v1.ops= triple behind them, no XML in the browser, Export where the document's scope is. | RS-ORE-01, RS-ORE-02, RS-ORE-03, RS-ORE-06 | RS-ORE-02 ✓ | Meets | the harness does not check RS-ORE-01, RS-ORE-03, RS-ORE-06; Import and Export stand as bare verbs with the arrow icons between Refresh and Add currency; Export is a dialog on the list, the document's scope, and Import a page at /refdata/currencies/import; the server wrote 169 records and refused a calendar file by its root element, so no XML was read in the browser |
+| Search, sort, filter and page go to the server. The list never reads every row. | RS-LIST-07, RS-LIST-04, RS-LIST-19 | RS-LIST-04 ✓ | Meets | the harness does not check RS-LIST-07, RS-LIST-19; the search for EUR answered one row from the server with ?q=EUR in the address; ISO code, Name, Monetary nature and Market tier sort through the list contract |
+| The pager shows the count first, then First, Previous, Next, Last and page size. The default is 15. | RS-LIST-17 | ✓ |  |  |
+| Page, page size, search, filter and order live in the address. | RS-LIST-20, RS-LIST-19 |  | Not checked | search lives in the address as ?q=EUR; order, page and page size were not clicked in this walk |
+| Every column sorts on the server, on the value and not on the text shown. | RS-LIST-12 |  | Not checked | ISO code, Name, Monetary nature and Market tier are sort buttons and Symbol is not; the sort was not observed |
+| The first column is the display field or the key. A click or Enter opens the record page. | RS-LIST-10, RS-LIST-09 | RS-LIST-10 ✓ | Not checked | the harness does not check RS-LIST-09; ISO code with the flag is the first column and a click opens the page (harness RS-LIST-10 ✓); Enter was not tried |
+| Audit columns are hidden by default. A tenant id and a UUID id never show. | RS-LIST-13 | ✓ |  |  |
+| The list shows these states: loading, loading again with dimmed rows, none yet, nothing matches with a way to clear, and an error in place with Retry. | RS-LIST-21 |  | Not checked | nothing matches reads 'No currencies match the search.' with Clear the search after the delete; loading, none yet and the error state were not produced |
+| A party appears as a tag with its name, not its code. | ES-LIST-02 |  | N/A | no party column on currencies |
+| Rows that changed after a reload get a gold left edge, pulse three times and clear after four seconds, found by comparing the page with the one read before. | RS-LIST-22, ES-REFRESH-21 |  | Not checked | needs a second writer on the shared environment |
+| *The record page* | | | | |
+| The breadcrumb ends at the subject. The title is the display field. | RS-PAGE-01, ES-PAGE-03, ES-PAGE-01 | RS-PAGE-01 ✓ | Meets | the harness does not check ES-PAGE-03, ES-PAGE-01; Home › Reference data › Currencies › EUR; the title is Euro with the flag and the lead EUR · version 7 |
+| Tabs live in the address. Details is first and History is last. A tab that does not apply is not drawn. | RS-PAGE-09 | ✓ |  |  |
+| A label stands above each value, in sentence case, with no colon. | RS-PAGE-05 | ✓ |  |  |
+| An empty value is a muted dash. | RS-PAGE-07 |  | Meets | ORE currency type shows — on the euro and Flag shows — on the scenario dollar |
+| The details stand in one, two or four columns by breakpoint, in the field table's order, with the meaning or the fixed reason under a value. | RS-PAGE-06 |  | Meets | four columns at 1400 px in the field table's order, ISO code first with the fixed reason; narrower widths not tried |
+| A code that names another record is a link to its page, with its flag or photo. | RS-PAGE-08, ES-REF-01 |  | Meets | the country, calendar and desk group rows open their pages with the flag; Rounding type, Monetary nature and Market tier drew their labels with no link where the prototype drew a link to the classification, fixed in this task: the label now opens the classification's page |
+| A link that cannot open is plain text. It is never a link that goes nowhere. | ES-REF-04 |  | Meets | the country row is plain text with its flag until the countries page exists; nothing links to nowhere |
+| A person is drawn with the photo and a link to the person. | ES-PEOPLE-05 |  | Meets | the last-changed line links Tenant Admin (tenant_admin) for the Reference Data Service |
+| The details end with the last-changed line. | RS-PAGE-10 | ✓ |  |  |
+| A value shows as a name, never as an identifier, where a name exists. | ES-WORDS-06 |  | Gap | the nature, tier and rounding type draw the label the catalogue gives the row, Fiat, G10 and Closest, where the scenario expected the names Fiat Currency, G10 / Majors and Round to Nearest; the last-changed line shows the reason as common.rectification, a code |
+| The page shows the access mark, Editable or Read only. It never shows a permission code. | RS-FEEDBACK-02 | ✓ |  |  |
+| An action the person may not take is not drawn. It is not drawn disabled. | RS-FEEDBACK-01 |  | Not checked | adrian.vance, the harness's reader, is a writer on this environment and saw Add, Edit and Delete with Editable; captured as A seeded reader is editable on currencies; no true reader was available |
+| A record the server will not change shows no Edit and no Delete. One notice says why. | RS-WRITE-33 |  | N/A | every currency is editable; no read-only row on this kind |
+| The screen does not explain what is absent. A sentence that only explains an empty space is removed. | ES-WORDS-07 |  | Meets | no sentence explains an empty space |
+| *Edit* | | | | |
+| Edit is one button with an icon and the word Edit. It is on the card it changes. | ES-EDIT-01 |  | Meets | pencil and Edit in the header |
+| Edit stands on the thing it changes: the header for a record of one kind, the card for an entity. | RS-PAGE-04, ES-PAGE-05 |  | Meets | the header, between the Editable mark and Delete |
+| Edit opens a modal dialog over the page. The dialog has no address. | RS-ADDR-01 |  | Meets | the address stays on the currency |
+| The dialog is titled Edit followed by the title of the page or the card it changes. | RS-WRITE-20, ES-EDIT-02 | RS-WRITE-20 ✓ | Meets | the harness does not check ES-EDIT-02; Edit Scenario dollar |
+| The dialog asks for the change reason and commentary. The page asks for neither. | ES-EDIT-02 |  | Meets | Why and Commentary at the foot of the form; the page asks for neither |
+| The reasons follow the change. "No change in substance" is offered only when nothing changed. | RS-WRITE-22 |  | Not checked | the runner chose a reason with a name change; what Why offers with nothing changed was not observed |
+| Save is enabled once the form is complete. A save with no field change is allowed and is offered only No change in substance. | RS-WRITE-22, ES-EDIT-03 |  | Not checked | the scenario saved a name change; a save with no change was not tried |
+| A commentary is required when the chosen reason needs one. | RS-WRITE-21 |  | Not checked | a reason that requires one was not chosen |
+| A wrong field shows its message under it when the person leaves it. Save waits until the form is complete. | RS-WRITE-05 |  | Not checked | no field was left wrong in the scenario; the Add dialog's Still to fill in names the empty fields and Add waits |
+| The write claims the version that was read. A stale save is refused, and the dialog says so and offers to reload. | RS-WRITE-23, ES-EDIT-04 |  | Meets | the second tab's save was refused with the words that somebody changed the record after it was opened, and Reload closed the dialog and showed the new name |
+| While the dialog is open it listens for a newer version. A warning shows who changed what and offers Keep my edit or Take the new values. | ES-REFRESH-25 |  | Gap | the second tab's open dialog showed no warning while the first tab saved; only the save was refused; the same gap the calendars sheet carries |
+| The dialog says under its title when the record was loaded. | ES-REFRESH-28 |  | Meets | the load time stands under Edit Scenario dollar |
+| Closing with changes asks "You have unsaved changes. Close anyway?" | RS-WRITE-24 | ✓ |  |  |
+| The server's own words show in the dialog. The dialog stays open. | RS-FEEDBACK-07 |  | Not checked | no refusal other than the stale save was produced; that dialog stayed open until Reload |
+| After a save the dialog closes. Refresh turns gold and the person presses it. The page does not reload by itself. | ES-REFRESH-15 |  | Not checked | the dialog closed and nothing reloaded; Refresh was gold on the new record's page after the Add; whether it turns gold after the page's own save was not timed, the gap the calendars topic captured |
+| An optional field has a Clear control. | ES-EDIT-06 |  | Not checked | the flag picker offers None; Symbol and Fraction symbol may be blank and a Clear control was not looked for |
+| *Fields in the form* | | | | |
+| Each field uses the control for its kind: text, number, Yes and No, date, select, picker or image. | RS-WRITE-32, RS-WRITE-01 |  | Meets | text for the codes and names, number for Numeric code, Fractions per unit, Rounding precision, Spot days and Base precedence, selects for the five classifications, the image picker for the flag |
+| A field that names another record or a classification is a select. It is never free text. | RS-WRITE-01 |  | Meets | Rounding type, Monetary nature, Market tier, ORE currency type and Day basis are selects |
+| A combo box offers only values that exist, as the server holds them. | ES-PAGING-08 |  | Meets | the four classification selects list the server's rows; ORE currency type offers Major, Metal and Crypto, the values ORE reads |
+| A screen that shows one value at a time has no "all" choice. | ES-PAGING-09 |  | N/A | no such filter on currencies |
+| The key is fixed after the record exists. So is a field that changes what the record is. | RS-WRITE-03 |  | Meets | ISO code is fixed |
+| A fixed field says why in one line of small text under it. | ES-PAGE-08 |  | Meets | 'Set when the record was made, and never changed here.' |
+| A field that another person owns says who. | ES-PAGE-09 |  | N/A | no such field on currencies |
+| A field that follows from others is not asked for. The dialog fills it. | RS-WRITE-07 |  | N/A | no field follows from another on a currency; the pair's code does, on its own dialog |
+| A rule across fields shows before the save. Save waits on it. | RS-WRITE-08 |  | N/A | no rule across fields on a currency; the pair dialog has one |
+| Long text uses a text area, asked for with the longtext kind. | RS-WRITE-06 |  | N/A | no longtext field; Commentary is a one-line input |
+| The form is one dialog with no tabs; a kind with more than twelve fields declares groups, drawn as titled sections. | RS-WRITE-09 | ✓ |  |  |
+| The fields stand in the field table's order, key first, in two columns from the small breakpoint; a long text spans both. | RS-WRITE-11 |  | Meets | two columns under the headings Identity, Display and Market, ISO code first; Why and Commentary span both |
+| Under a control stands one line of help, meaning or why it is fixed, replaced by the message when the field is wrong. | RS-WRITE-12 | ✓ |  |  |
+| Nothing marks a required field; an empty one says Required when left. | RS-WRITE-13 |  | Meets | no asterisk; Still to fill in lists the empty ones in the Add dialog |
+| The footer holds Cancel, then Add or Save, at the right, each with its icon. Delete is not in the form. | RS-WRITE-14 | ✓ |  |  |
+| Escape asks the closing guard; Enter does not save; Tab moves through the fields in the field table's order. | RS-WRITE-15 |  | Gap | the shared Dialog closes on Escape without the guard, as the sheets of 2026-10-25 found; the Dialog is unchanged and Escape was not re-tried in this walk |
+| The dialog says under its title when its record was loaded and warns of a newer version above the form. | RS-WRITE-16, ES-REFRESH-25, ES-REFRESH-28 | RS-WRITE-16 ✓ | Gap | the harness does not check ES-REFRESH-25, ES-REFRESH-28; the load time is there; the newer-version warning did not appear in the second tab while the first saved |
+| *Create and delete* | | | | |
+| Add is titled "Add <thing>" with the button Add. A new record uses the reason =system.new_record=, stated in a note. | RS-WRITE-18, RS-WRITE-17 |  | Meets | 'Add a currency' with the button Add; the note says the row is recorded as a new record and no reason is needed |
+| A key that exists is refused, and the refusal names the key. | RS-WRITE-18 |  | Not checked | a duplicate code was not tried |
+| After a create the screen opens the new record page. | RS-WRITE-19 |  | Meets | the Add opened /refdata/currencies/ZZS |
+| Delete always confirms, names the record and says what is lost. | RS-WRITE-25 |  | Meets | 'Delete Scenario dollar?' says nothing checks whether trades, books or pairs still use it |
+| Delete asks for a reason. After it the screen returns to the list. | RS-WRITE-30 |  | Meets | Why and Commentary; the list opened and the address answered no such record |
+| A link is removed with Remove, not Delete. | RS-RELATED-03 |  | Gap | the row's button reads Remove and takes the link away on the click, with no dialog and no reason, where RS-FEEDBACK-06 says no write is silent and the prototype drew a remove dialog; captured |
+| Revert writes a new version and says so. | RS-HIST-02 |  | Meets | the revert to version 1 wrote a new version whose note reads Reverted to version 1., and the title read Scenario dollar again after Refresh |
+| *History* | | | | |
+| History is the versions of one record. A log of events is Audit and has Refresh only. | UXL History and Audit |  | Meets | the currency's versions on the timeline; the links are not versioned and the box under the rail says so |
+| The tab is named History, never Timeline. | ES-HIST-40 |  | Meets |  |
+| The shared timeline draws it. Headers are one line, details open on demand. | ES-HIST-18, ES-HIST-09 | ES-HIST-18 ✓ | Meets | the harness does not check ES-HIST-09; the chart, the day divider, one line per entry, Details on demand |
+| The author's photo stands at the left of each entry. The note is on its own line. | ES-HIST-08, ES-HIST-07 |  | Meets | the person's picture at the left; the Reverted to version 1. note on its own line |
+| The newest version carries the current-version emblem and no Revert. | ES-HIST-11 |  | Gap | on the re-created ZZS the emblem and the missing Revert sit on the highest version number, v17, while the newest entry by time is v14 and offers Revert: a re-created code continues the deleted record's history, the gap the calendars topic captured, and the two records' versions interleave |
+| A gap in the history is stated in words. It is never an empty list. | ES-HIST-39, ES-HIST-38, ES-HIST-37 |  | Meets | 'What this history cannot show' says the links to other records are not versioned, added in this task |
+| *Refresh and live updates* | | | | |
+| The header has the shared Refresh button, with the load time under it. | ES-REFRESH-06, ES-REFRESH-16 | ES-REFRESH-16 list ✓, ES-REFRESH-16 record ✓ | Meets | the harness does not check ES-REFRESH-06; Refresh with the load time on the list and on the page |
+| Refresh turns gold when the data changed on the server. Gold means that and nothing else. | ES-REFRESH-08 |  | Not checked | gold on the scenario dollar's page right after the Add, the create event arriving after the page's read; not timed after an own save |
+| Nothing reloads by itself. Nothing the person typed is lost. | ES-REFRESH-13 |  | Meets | nothing reloaded during the walk |
+| The screen names the entities it shows, so it hears only their changes. | ES-REFRESH-02 |  | Meets | the page watches the currencies and the three link entries of the registry |
+| *Words, icons and colour* | | | | |
+| The verbs are Add, Edit, Save, Delete, Remove, Revert, Refresh, Cancel and Propose. An own action is a verb and its object. | RS-NAME-02, ES-WORDS-04 |  | Meets | Refresh, Import, Export, Add currency, Edit, Delete, Cancel, Save, Add, Remove, Revert |
+| Every action carries the icon of the icon table beside its word. | RS-ICON-01 |  | Meets | each header and footer action carries one; Import and Export the arrow icons |
+| Each idea has one icon, and each icon has one idea. | RS-ICON-02 |  | Meets |  |
+| Words are in sentence case. | RS-NAME-01 |  | Gap | the scenario dollar's tier badge reads Exotic Tier in title case; the seeded names read Fiat Currency and Round to Nearest in the selects |
+| Every string exists in English, French and Portuguese before the screen ships. | ES-WORDS-05 |  | Meets | the keys of the topic were added to en, fr and pt and the locale test checks the key set |
+| Every message says what happened and what to do. "Error" alone is not a message. | RS-FEEDBACK-07 |  | Meets | the stale save names Reload; the import refusal names the root element found and the file wanted; the imported notice counts the rows and says Refresh shows the new versions |
+| A time is relative, with the exact time on hover. A missing time is a phrase, not a date. | ES-WORDS-03 |  | Meets | '2 seconds ago' and '59 minutes ago' on the last-changed line; the hover was not tried |
+| A code or number is monospace. A number is right-aligned with tabular figures. | RS-ICON-03 |  | Meets | ISO code, Numeric code and the reason code in the last-changed line are monospace |
+| Grey means inactive and nothing else. Orange means a missing badge definition. | UXL Colour semantics |  | Meets | the reason badge in the timeline is amber, the timeline's own colour for a reason; no grey or orange seen |
+| Red, amber and green carry a real status. They never mark a plain category. | UXL Colour semantics |  | Gap | the Market tier label G10 is green and the Rounding type label Closest is teal, categories, not statuses; the label catalogue gives them the colour |
+| Colour appears only when it means something. | UDP Color for Meaning Only |  | Gap | the nature, tier and rounding labels carry colour with no meaning |
+| Spacing is on the 4 pixel grid, and padding is symmetrical. | UDP The 4px Grid, Symmetrical Padding |  | Not checked | not measured |
+| A control is not a native form element when it needs styling. | UDP Isolated Controls |  | Not checked | the five classification selects and Why are native selects, captured already as Replace the native select |
+| *Access and safety* | | | | |
+| The screen needs a typed permission. The menu, the route guard and the button read it. | ES-NEEDS-01 |  | Meets | refdata::currencies:write and :delete through the registry; Export needs :read and Import :write |
+| A refused read is stated as a refusal in words. It is never shown as a failure. | ES-WORDS-02 |  | Not checked | no reader was refused in this walk |
+| Every write carries a change reason. There is no silent write. | RS-FEEDBACK-06 |  | Gap | Edit, Delete, Revert and Import ask Why; Add states the new-record reason; a link's Remove writes with no reason, captured |
+| A save goes through the shared record dialog, remove dialog or revert dialog. A screen builds no dialog of its own. | RS-WRITE-31 |  | Meets | RecordDialog, RemoveRecordDialog and RevertDialog; Export is the operation dialog and Import the journey page the standard names (RS-ORE-05) |
+| *The configuration screen* | | | | |
+| The kind is named as the standard names it: *Pricing engine configuration*, *Engine run settings*, and the rest of the table. No screen says *Pricing engines* or *Engine settings* alone. | CFG The name of each kind |  | N/A | a record screen; the configuration screen standard does not apply |
+| The pricing page's parameter tab is *Parameters*. No configuration screen has a *Settings* tab. | CFG The name of each kind |  | N/A | a record screen; the configuration screen standard does not apply |
+| Details is first, the section tabs follow in the declared order, and Used by and History are last. | CFG The record page |  | N/A | a record screen; the configuration screen standard does not apply |
+| A group shows the value in force, and the default where the parameter is unset. | CFG Reading a group |  | N/A | a record screen; the configuration screen standard does not apply |
+| A group is edited in place; a collection is edited in a dialog per row. | CFG Changing a group; Changing a collection |  | N/A | a record screen; the configuration screen standard does not apply |
+| Every label, help, description, default, format and release comes from the documentation contract, not from the screen. | CFG The documentation contract |  | N/A | a record screen; the configuration screen standard does not apply |
+| A setting with no documentation entry shows its ORE name and a note. | CFG Reading a group |  | N/A | a record screen; the configuration screen standard does not apply |
+| Simple and Advanced are the shared switch, and Advanced adds the schema entry. | CFG Reading a group |  | N/A | a record screen; the configuration screen standard does not apply |
+| The page says what the configuration decides and lists the related configurations the same report binds, with links both ways. | CFG What this configuration decides, and the related configurations |  | N/A | a record screen; the configuration screen standard does not apply |
+| Used by lists the reports that bind the configuration and states the reach rule. | CFG Reach |  | N/A | a record screen; the configuration screen standard does not apply |
+| History is the shared timeline, and a change names the section and moves the version of the whole. | CFG History |  | N/A | a record screen; the configuration screen standard does not apply |
+| A change to a numbers-changing section of a bound configuration is a proposal: the version in force stays and the proposer cannot sign. | CFG The lifecycle |  | N/A | a record screen; the configuration screen standard does not apply |
+| A change to an operational section writes directly, with a reason. | CFG The lifecycle |  | N/A | a record screen; the configuration screen standard does not apply |
+| An import parses on the server, names every dropped value, lists removed rows first with *Keep it* as the default, and never makes a file official. | RS-ORE-05 |  | Meets | the import parsed on the server, listed the seven fields the document has no element for and the thirteen values with no row, and wrote nothing before the last step; the walk had no removed row, so the Keep it default was not seen |
+| *A value ORE reads* | | | | |
+| Every word for a leaf comes from the =oreParameter= namespace; the screen keeps no copy, and names the leaf with its kind's noun. | OL-WORDS-01; OLS The words a screen prints |  | N/A | a record screen; the standard of a value ORE reads does not apply |
+| One Simple and Advanced switch per page, remembered for every screen, named and explained in the words for leaves. | OL-MODE-01, OL-MODE-06; OLS The Simple and Advanced switch |  | N/A | a record screen; the standard of a value ORE reads does not apply |
+| Advanced adds only the schema entry; the switch hides no value, control or gap. | OL-MODE-04, OL-MODE-05; OLS The Simple and Advanced switch |  | N/A | a record screen; the standard of a value ORE reads does not apply |
+| A row has one label, from the documentation entry, then its marks, then the value in force; a leaf not set shows *Default: X*. | OL-READ-01, OL-READ-02, OL-READ-03; OLS Reading a leaf |  | N/A | a record screen; the standard of a value ORE reads does not apply |
+| Every leaf the element type takes is a row, set or not. | OL-READ-04; OLS Reading a leaf |  | N/A | a record screen; the standard of a value ORE reads does not apply |
+| A leaf that changes the numbers carries the mark in its row. | OL-READ-07; OLS Reading a leaf |  | N/A | a record screen; the standard of a value ORE reads does not apply |
+| *Documentation* opens the shared panel under one leaf, *Show all documentation* opens it for the section, and focus in edit opens it. | OL-DOC-01, OL-DOC-03, OL-DOC-04, OL-DOC-07; OLS The documentation under a leaf |  | N/A | a record screen; the standard of a value ORE reads does not apply |
+| The element type's card says what it is, with its asset class from data and its source tag. | OL-ELEMENT-01, OL-ELEMENT-04, OL-SOURCE-01; OLS The element type |  | N/A | a record screen; the standard of a value ORE reads does not apply |
+| Every select starts with *Default (X)*, and no control offers a value the set refuses. | OL-CONTROL-01, OL-CONTROL-02; OLS The control |  | N/A | a record screen; the standard of a value ORE reads does not apply |
+| A changed leaf shows *changed*, and the foot counts the changes. | OL-EDIT-02; OLS Changing a leaf |  | N/A | a record screen; the standard of a value ORE reads does not apply |
+| *Set in this configuration* keeps every held value, a filter is drawn only where the data answers it, and no filter hides a problem. | OL-FILTER-02, OL-FILTER-03, OL-FILTER-04; OLS Filters |  | N/A | a record screen; the standard of a value ORE reads does not apply |
+| A leaf with no documentation entry shows its ORE name, its value and *No documentation is held for {name}.*; a failed read of the documentation still shows every value. | OL-READ-02, OL-STATE-01; OLS Gaps and states |  | N/A | a record screen; the standard of a value ORE reads does not apply |
+| *Exceptions* | | | | |
+| A part the screen lacks is named in the standard's list of how screens conform, with the reason. | RS-EXCEPT-01 |  | N/A | the standard names no exception for currencies |
+| An exception changes which parts exist. It never changes how a part looks. | RS-EXCEPT-02 |  | N/A | no exception |
+| *Check on the running screen* | | | | |
+| Try list, page, search, open, edit with a stale version, history, and the empty, error and no-permission states. | RS-BUILD-01 |  | Meets | the scenario tried list, search, open, add, links, the stale edit, history, revert, export, import, delete and the reader; the error and no-permission states were not produced |
+| Try data of the real size, as a member and as an administrator. | ES-VERIFY-01 |  | Meets | 168 seeded currencies plus one created; as tenant_admin and as adrian.vance |
+
+The harness marks 20 lines, 0 of them with a failure; 111 lines need the person, 103 of them with no harness mark at all.
+
+*Verdict: open; the owner walks the lines next.* The harness marks no line of the currencies screen with a failure. The agent's walk found 10 gaps, met 49 lines, set 34 aside as N/A and could not check 18. The gaps are a link's Remove with no reason, the labels drawn as codes of the catalogue where the scenario expected names and the reason code on the last-changed line, the open dialog not warning of a newer version, Escape closing without the guard, the title case of a tier label, the colour of the nature, tier and rounding labels, and the emblem on a re-created code's interleaved history. Two are fixes of this task, the classification link and the links gap stated in the history; the rest are captures of this topic or of the calendars topic. The sign off that closes the topic is the owner's.

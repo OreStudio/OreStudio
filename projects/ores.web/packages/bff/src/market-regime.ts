@@ -86,6 +86,7 @@ const feedRow = z.object({
     label: z.string(),
     source_name: z.string(),
     asset_class_code: z.string().default(''),
+    ticks_per_hour: z.number().default(0),
 });
 
 const feedPage = operationReplySchema.extend({ feeds: z.array(feedRow).default([]) });
@@ -107,6 +108,8 @@ interface RasterRow {
     readonly assetClass: string;
     readonly running: boolean;
     readonly ticks: readonly string[];
+    /** The rate the feed's own configuration asks for, in ticks a second. */
+    readonly expectedPerSecond: number;
 }
 
 /** The regime in force, as the screen reads it. */
@@ -221,6 +224,7 @@ export function registerMarketRegimeRoutes(
                 assetClass: row.asset_class_code,
                 running: row.running,
                 ticks: row.running ? ticks.arrivalTimes(row.source_name, since) : [],
+                expectedPerSecond: row.ticks_per_hour / 3600,
             };
         });
         return { seconds: query.seconds, feeds };

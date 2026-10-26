@@ -4590,6 +4590,8 @@ export const en: SourceCatalogue = {
                 title: 'The factor over the window',
             },
             raster: {
+                seen: 'seen',
+                asked: 'asked',
                 heat: 'the shared heat',
                 rate: 'ticks a second, per feed',
                 band: 'an active market',

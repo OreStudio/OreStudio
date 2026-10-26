@@ -284,11 +284,17 @@ describe('the market regime', () => {
                 success: true,
                 total: 2,
                 feeds: [
-                    { label: 'EUR/USD', source_name: 'live.eurusd', asset_class_code: 'fx' },
+                    {
+                        label: 'EUR/USD',
+                        source_name: 'live.eurusd',
+                        asset_class_code: 'fx',
+                        ticks_per_hour: 3600,
+                    },
                     {
                         label: 'USD SOFR',
                         source_name: 'live.usdsofr',
                         asset_class_code: 'interest_rates',
+                        ticks_per_hour: 60,
                     },
                 ],
             },
@@ -331,6 +337,7 @@ describe('the market regime', () => {
                     assetClass: 'fx',
                     running: true,
                     ticks: [at(20), at(5)],
+                    expectedPerSecond: 1,
                 },
                 {
                     sourceName: 'live.usdsofr',
@@ -338,6 +345,7 @@ describe('the market regime', () => {
                     assetClass: 'interest_rates',
                     running: true,
                     ticks: [at(10)],
+                    expectedPerSecond: 1 / 60,
                 },
             ],
         });
@@ -352,7 +360,14 @@ describe('the market regime', () => {
             'synthetic.v1.ops.list_folder_feeds': {
                 success: true,
                 total: 1,
-                feeds: [{ label: 'EUR/USD', source_name: 'live.eurusd', asset_class_code: 'fx' }],
+                feeds: [
+                    {
+                        label: 'EUR/USD',
+                        source_name: 'live.eurusd',
+                        asset_class_code: 'fx',
+                        ticks_per_hour: 3600,
+                    },
+                ],
             },
         };
         const { server, sessionId, publish } = buildTestServer(replies);
@@ -370,8 +385,18 @@ describe('the market regime', () => {
             success: true,
             total: 2,
             feeds: [
-                { label: 'EUR/USD', source_name: 'live.eurusd', asset_class_code: 'fx' },
-                { label: 'GBP/USD', source_name: 'live.gbpusd', asset_class_code: 'fx' },
+                {
+                    label: 'EUR/USD',
+                    source_name: 'live.eurusd',
+                    asset_class_code: 'fx',
+                    ticks_per_hour: 3600,
+                },
+                {
+                    label: 'GBP/USD',
+                    source_name: 'live.gbpusd',
+                    asset_class_code: 'fx',
+                    ticks_per_hour: 3600,
+                },
             ],
         };
         await send(server, sessionId, 'GET', '/api/synthetic/feed-raster');
@@ -394,6 +419,7 @@ describe('the market regime', () => {
                     assetClass: 'fx',
                     running: true,
                     ticks: [],
+                    expectedPerSecond: 1,
                 },
                 {
                     sourceName: 'live.eurusd',
@@ -401,6 +427,7 @@ describe('the market regime', () => {
                     assetClass: 'fx',
                     running: false,
                     ticks: [],
+                    expectedPerSecond: 1,
                 },
             ],
         });
@@ -415,7 +442,14 @@ describe('the market regime', () => {
             'synthetic.v1.ops.list_folder_feeds': {
                 success: true,
                 total: 1,
-                feeds: [{ label: 'EUR/USD', source_name: 'live.eurusd', asset_class_code: 'fx' }],
+                feeds: [
+                    {
+                        label: 'EUR/USD',
+                        source_name: 'live.eurusd',
+                        asset_class_code: 'fx',
+                        ticks_per_hour: 3600,
+                    },
+                ],
             },
         };
         const { server, sessionId } = buildTestServer(replies);
@@ -432,6 +466,7 @@ describe('the market regime', () => {
                     assetClass: 'fx',
                     running: false,
                     ticks: [],
+                    expectedPerSecond: 1,
                 },
             ],
         });

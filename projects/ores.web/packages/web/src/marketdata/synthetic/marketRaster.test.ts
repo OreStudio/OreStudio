@@ -23,6 +23,7 @@ import { describe, expect, it } from 'vitest';
 import {
     arrivalPositions,
     curvePath,
+    markGroups,
     multiplierText,
     rateCurves,
     stateBands,
@@ -156,5 +157,22 @@ describe('a rate curve as a path', () => {
 
     it('draws nothing for no points', () => {
         expect(curvePath([], 1)).toBe('');
+    });
+});
+
+describe('arrivals that landed at one instant', () => {
+    it('groups the pillars of one curve tick into one mark of many', () => {
+        const one = at(10);
+        expect(markGroups([one, one, one], 60, NOW)).toEqual([
+            { position: expect.closeTo(5 / 6, 5), count: 3 },
+        ]);
+    });
+
+    it('keeps two arrivals a second apart as two marks', () => {
+        expect(markGroups([at(10), at(9)], 60, NOW).map((group) => group.count)).toEqual([1, 1]);
+    });
+
+    it('drops an arrival that has left the window', () => {
+        expect(markGroups([at(120)], 60, NOW)).toEqual([]);
     });
 });

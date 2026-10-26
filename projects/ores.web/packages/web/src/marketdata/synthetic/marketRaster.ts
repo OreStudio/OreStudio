@@ -238,3 +238,43 @@ export function heatSeries(
         .sort((left, right) => left.at - right.at)
         .map((sample) => sample.heat);
 }
+
+/** The arrivals that landed at one instant, and how many of them there were. */
+export interface MarkGroup {
+    readonly position: number;
+    readonly count: number;
+}
+
+/**
+ * The arrivals grouped by the instant they landed at, oldest first.
+ *
+ * One curve tick publishes a tick for every pillar of its curve, so a row can
+ * receive a dozen arrivals with the same timestamp: drawn as a dozen dots they
+ * are one dot overdraw, which claims one event where the market published
+ * twelve. Grouping lets the picture say how many landed together.
+ */
+export function markGroups(
+    ticks: readonly string[],
+    seconds: number,
+    now: number,
+): readonly MarkGroup[] {
+    const span = seconds * 1000;
+    if (span <= 0) {
+        return [];
+    }
+    const byInstant = new Map<string, number>();
+    for (const tick of ticks) {
+        const at = Date.parse(tick);
+        if (!Number.isFinite(at)) {
+            continue;
+        }
+        const age = now - at;
+        if (age < 0 || age > span) {
+            continue;
+        }
+        byInstant.set(tick, (byInstant.get(tick) ?? 0) + 1);
+    }
+    return [...byInstant.entries()]
+        .map(([tick, count]) => ({ position: 1 - (now - Date.parse(tick)) / span, count }))
+        .sort((left, right) => left.position - right.position);
+}

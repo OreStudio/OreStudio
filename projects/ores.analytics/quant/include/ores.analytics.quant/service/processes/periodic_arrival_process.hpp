@@ -21,6 +21,8 @@
 
 #include "ores.analytics.quant/domain/i_arrival_process.hpp"
 #include "ores.analytics.quant/export.hpp"
+#include <cstdint>
+#include <random>
 
 namespace ores::analytics::quant::service {
 
@@ -31,14 +33,23 @@ namespace ores::analytics::quant::service {
  * The parameter is the long-run mean rate, in arrivals per second, so that all
  * three arrival processes take the same argument; the gap is its reciprocal.
  *
+ * The first gap is drawn uniformly from the mean gap, so two feeds of the same
+ * rate do not tick in lockstep: without it every periodic feed of a run fires on
+ * the same step of the shared clock, which no market does and which biases any
+ * statistic that looks across series at one instant. After the first gap the
+ * process is exactly periodic, so the mean rate is unchanged.
+ *
  * Inspired by the tick library (BSD 3-clause, the tick developers, CMAP); see
  * =doc/knowledge/external/tick.org=.
  */
 class ORES_ANALYTICS_QUANT_EXPORT periodic_arrival_process final
     : public ores::analytics::quant::domain::i_arrival_process {
 public:
-    /// @param mean_rate Arrivals per second. Must be finite and strictly positive.
-    explicit periodic_arrival_process(double mean_rate);
+    /**
+     * @param mean_rate Arrivals per second. Must be finite and strictly positive.
+     * @param seed the draw of the first gap's phase, so a run reproduces.
+     */
+    explicit periodic_arrival_process(double mean_rate, std::uint32_t seed = 0);
 
     double next_gap() override;
     void set_baseline_multiplier(double multiplier) override;
@@ -47,6 +58,9 @@ private:
     double mean_rate_;
     double multiplier_ = 1.0;
     double gap_;
+    /// How far into its first gap the process starts, as a fraction of that gap.
+    double phase_;
+    bool first_ = true;
 };
 
 }

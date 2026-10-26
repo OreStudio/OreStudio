@@ -437,6 +437,8 @@ const feedRasterSchema = z.object({
             assetClass: z.string(),
             running: z.boolean(),
             ticks: z.array(z.string()),
+            /** The rate the feed's own configuration asks for, in ticks a second. */
+            expectedPerSecond: z.number(),
         }),
     ),
 });

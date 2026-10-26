@@ -4654,6 +4654,8 @@ const fr: SourceCatalogue = {
                 title: 'Le facteur sur la fenêtre',
             },
             raster: {
+                seen: 'vus',
+                asked: 'demandé',
                 heat: 'la chaleur partagée',
                 rate: 'ticks par seconde, par flux',
                 band: 'un marché actif',

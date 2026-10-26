@@ -36,6 +36,7 @@ import {
     arrivalPositions,
     curvePath,
     heatSeries,
+    markGroups,
     multiplierText,
     rateCurves,
     RASTER_SECONDS,
@@ -436,7 +437,12 @@ export function MarketRaster({
                     <span>{`\u2212${String(Math.round(seconds / 3))}s`}</span>
                     <span>{t('marketdata.marketRegime.raster.now')}</span>
                 </span>
-                <span className="w-12 shrink-0" />
+                <span className="w-10 shrink-0 text-right text-[9px] text-ink-faint">
+                    {t('marketdata.marketRegime.raster.seen')}
+                </span>
+                <span className="w-14 shrink-0 text-right text-[9px] text-ink-faint">
+                    {t('marketdata.marketRegime.raster.asked')}
+                </span>
             </div>
             <div className="flex flex-wrap items-center gap-4 px-3 pt-1 text-[10px] text-ink-faint">
                 <span className="flex items-center gap-1">
@@ -484,6 +490,7 @@ function RasterRow({
 }): ReactNode {
     const { t } = useTranslation();
     const positions = arrivalPositions(feed.ticks, seconds, now);
+    const groups = markGroups(feed.ticks, seconds, now);
     return (
         <div
             className="flex items-center gap-3 px-3"
@@ -510,13 +517,25 @@ function RasterRow({
                         />
                     ) : null,
                 )}
-                {positions.map((position, index) => (
+                {groups.map((group, index) => (
                     <span
                         key={index}
-                        data-mark
-                        className={`absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full ${assetClassColour(feed.assetClass).dot}`}
-                        style={{ left: `${String(position * 100)}%` }}
-                    />
+                        className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2"
+                        style={{ left: `${String(group.position * 100)}%` }}
+                    >
+                        {group.count > 1 ? (
+                            // Several arrivals at one instant: a ring, because a
+                            // dozen dots in one place read as one.
+                            <span
+                                data-coincident
+                                className="absolute top-1/2 left-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-current opacity-60"
+                            />
+                        ) : null}
+                        <span
+                            data-mark
+                            className={`block size-1.5 rounded-full ${assetClassColour(feed.assetClass).dot}`}
+                        />
+                    </span>
                 ))}
                 {markAt === undefined ? null : (
                     <span
@@ -525,8 +544,11 @@ function RasterRow({
                     />
                 )}
             </span>
-            <span className="w-12 shrink-0 text-right font-mono text-[10px] tabular-nums text-ink-faint">
+            <span className="w-10 shrink-0 text-right font-mono text-[10px] tabular-nums text-ink-faint">
                 {feed.running ? positions.length : t('marketdata.marketRegime.raster.stopped')}
+            </span>
+            <span className="w-14 shrink-0 text-right font-mono text-[10px] tabular-nums text-ink-faint/70">
+                {`${feed.expectedPerSecond.toFixed(2)}/s`}
             </span>
         </div>
     );

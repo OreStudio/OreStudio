@@ -4621,6 +4621,8 @@ const pt: SourceCatalogue = {
                 title: 'O fator ao longo da janela',
             },
             raster: {
+                seen: 'vistos',
+                asked: 'pedido',
                 heat: 'o calor partilhado',
                 rate: 'ticks por segundo, por fluxo',
                 band: 'um mercado ativo',

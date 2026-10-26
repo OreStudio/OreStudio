@@ -59,6 +59,7 @@ function raster(over: Partial<FeedRaster> = {}): FeedRaster {
                 assetClass: 'fx',
                 running: true,
                 ticks: [new Date(NOW - 10_000).toISOString()],
+                expectedPerSecond: 1,
             },
             {
                 sourceName: 'live.usdsofr',
@@ -66,6 +67,7 @@ function raster(over: Partial<FeedRaster> = {}): FeedRaster {
                 assetClass: 'interest_rates',
                 running: true,
                 ticks: [new Date(NOW - 20_000).toISOString()],
+                expectedPerSecond: 1 / 60,
             },
         ],
         ...over,
@@ -157,6 +159,7 @@ describe('the market regime tab', () => {
                     assetClass: 'fx',
                     running: false,
                     ticks: [],
+                    expectedPerSecond: 1,
                 },
             ],
         });
@@ -218,7 +221,16 @@ describe('the market regime tab', () => {
     it('says a picture that has not filled yet starts when the tab opens', () => {
         const html = render(regime(), {
             seconds: 120,
-            feeds: [{ sourceName: 'live.eurusd', ticks: [] }],
+            feeds: [
+                {
+                    sourceName: 'live.eurusd',
+                    label: 'EUR/USD',
+                    assetClass: 'fx',
+                    running: true,
+                    ticks: [],
+                    expectedPerSecond: 1,
+                },
+            ],
         });
         expect(html).toContain('A row fills as its feed ticks');
     });
@@ -242,7 +254,16 @@ describe('the market regime tab', () => {
         const old = new Date(NOW - 120_000).toISOString();
         const html = render(regime(), {
             seconds: 60,
-            feeds: [{ sourceName: 'live.eurusd', ticks: [old] }],
+            feeds: [
+                {
+                    sourceName: 'live.eurusd',
+                    label: 'EUR/USD',
+                    assetClass: 'fx',
+                    running: true,
+                    ticks: [old],
+                    expectedPerSecond: 1,
+                },
+            ],
         });
         expect(html).not.toContain('data-mark');
     });

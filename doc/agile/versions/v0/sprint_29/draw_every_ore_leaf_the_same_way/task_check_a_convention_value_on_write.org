@@ -8,7 +8,7 @@
 #+filetags: :draw_every_ore_leaf_the_same_way:sprint_29:v0:
 #+owner: marco
 #+branch: feature/check-a-convention-value-on-write
-#+pr:
+#+pr: 3875
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3875][#3875]] | [sql] Check a convention value against its term's set on write |
 
 * Review
 

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ ACME's books hold equity trades: total return swaps, vanilla, barrier, digital, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -43,9 +43,71 @@ ACME's books hold equity trades: total return swaps, vanilla, barrier, digital, 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** What the tree already holds
+
+- *The routing.* Eighteen types reach nine tables: =equity_option_instrument=
+  (EquityOption, EquityCliquetOption, EquityOutperformanceOption),
+  =equity_asian_option_instrument= (EquityAsianOption),
+  =equity_barrier_option_instrument= (EquityBarrierOption,
+  EquityDoubleBarrierOption, EquityEuropeanBarrierOption),
+  =equity_digital_option_instrument= (EquityTouchOption, EquityDigitalOption),
+  =equity_forward_instrument= (EquityForward),
+  =equity_swap_instrument= (EquitySwap, EquityWorstOfBasketSwap),
+  =equity_variance_swap_instrument= (EquityVarianceSwap),
+  =equity_accumulator_instrument= (EquityAccumulator, EquityTaRF) and
+  =equity_position_instrument= (EquityPosition, EquityOptionPosition).
+- *The writer, service side.* =write_instrument_batch= writes every one of those
+  arrays.
+- *The pair and index precedents.* Commodities and currency pairs are drawn from
+  tenant reference data, so the shape of a catalogue and its scope load is
+  settled.
+
+** The gap this family has that the others did not
+
+An equity instrument states =underlying_name=, documented as the ORE equity
+Name identifier, and **nothing in the tree holds one**. The instrument code
+catalogue is not it: =ores_refdata_instrument_codes_tbl= holds product codes
+(=EQOPT=, =EQFWD=, =EQSWP=), which is what maps an ORE product to a trade type,
+not what an equity trade is written on.
+
+So the family needs reference data it does not have, and it belongs in the data
+quality pipeline in the way the commodity catalogue did: an entity, an artefact
+table, a publish function, a dataset and a catalogue, seeded from a source that
+can be checked.
+
+*The source is ORE's own examples.* The trade corpus names the underlyings it
+prices, and they are real: =.SPX=, =.NDX=, =.STOXX50E=, =.STOXX50=, plus the
+ISINs and RIC forms the same files state. A catalogue seeded from those is not
+invented, and a reader can check each row against the file it came from.
+
+** Decisions
+
+- *D1 — the catalogue is its own task, as the commodity one was.* It carries a
+  schema, a DQ pipeline and a publish, and mixing it with the planner would make
+  one task that cannot be verified in two steps.
+- *D2 — the payload states one idiom or two.* The nine tables are less varied
+  than FX's seven were: an option shape, a forward, a swap, a variance swap, an
+  accumulator and a position. =equity_terms= carries the union as =fx_terms=
+  does, and the writer dispatches per table.
+- *D3 — basket columns are named out of scope unless a source exists.*
+  =equity_swap_instrument= carries four =*_json= columns for baskets, knockout
+  levels and trigger levels. A population that filled them with invented JSON
+  would be worse than one that leaves them null, so the task states which it
+  does and why.
+
+** Steps
+
+1. *The catalogue.* Seed the equity underlyings from the ORE examples through
+   the DQ pipeline, as its own task.
+2. *The payload.* =equity_terms= and its variant entry, plus the underlying list
+   on the scope.
+3. *The planner.* =equity_trade_planner= registered under =equity=, cycling the
+   eighteen routed types.
+4. *The writer.* One arm per routed table.
+5. *The profile.* A config for an entity whose books trade equities.
+6. *The proof.* Nine export cases, one per table, then a population run
+   measuring the type coverage and the share.
+7. *The record.* Measurements, Result, and the gaps this task cannot close.
 
 * Measurements
 

@@ -36,7 +36,7 @@ salt
       For real use | For demos and testing
       Production-ready setup | Pre-configured sandbox
       - Standard reference data | - 4 legal entities, books, desks
-      - Your parties, from their LEI | - 45 staff to sign in as
+      - Your parties, from their LEI | - 73 staff to sign in as
       - No test data | - Live synthetic market data
       2 settings, 6 steps | 0 settings, 9 steps
     }

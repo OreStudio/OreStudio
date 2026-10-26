@@ -35,7 +35,10 @@ Numbers for one component's build as a unity build at a few batch sizes, against
 
 * Acceptance
 
--
+- The generator's templates give every file-local helper a name of its own, so
+  =ores.dq.core= builds as a unity build.
+- Total CPU, wall time and peak memory of =ores.dq.core= as a unity build at two
+  batch sizes, alone and with the precompiled header, against the baseline.
 
 * Plan
 

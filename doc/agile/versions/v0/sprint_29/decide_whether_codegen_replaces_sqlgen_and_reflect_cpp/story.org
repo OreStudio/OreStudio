@@ -54,6 +54,10 @@ A decision, with measurements, on whether the generator emits raw SQL, MessagePa
 
 * Decisions
 
+- *Generated code must build as a unity build.* No file-local helper of a
+  generated file may share a name with one in another generated file: helpers are
+  named after their type, or sit in a namespace keyed by CMake's
+  =UNITY_BUILD_UNIQUE_ID=. Every generator change this story leads to meets it.
 - *Total build time is the measure.* The codec rewrite is weighed against
   build-setting levers, precompiled headers, unity builds and the optimisation
   level of tests, on the same measure, because the sample put reflect-cpp at about

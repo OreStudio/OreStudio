@@ -140,7 +140,9 @@ std::string what_differs(const currency& ours, const currency& theirs) {
         if (a != b)
             parts.push_back(std::format("{} {} → {}", label, a, b));
     };
-    const auto text = [](const std::optional<std::string>& v) { return v.value_or("—"); };
+    const auto text = [](const std::optional<std::string>& v) {
+        return v.value_or("—");
+    };
     note("Name", ours.name, theirs.name);
     note("Numeric code", ours.numeric_code, theirs.numeric_code);
     note("Symbol", ours.symbol, theirs.symbol);
@@ -191,9 +193,10 @@ difference compute_difference(ores::nats::service::nats_client& owners,
     std::set<std::string> seen;
     for (auto& c : parse_document(content)) {
         if (!seen.insert(c.iso_code).second) {
-            d.issues.push_back({.kind = "duplicate",
-                                .subject = c.iso_code,
-                                .detail = "The file names this currency twice; the first is kept."});
+            d.issues.push_back(
+                {.kind = "duplicate",
+                 .subject = c.iso_code,
+                 .detail = "The file names this currency twice; the first is kept."});
             continue;
         }
         if (const auto problem = ores::ore::xml::importer::validate_currency(c); !problem.empty())
@@ -227,8 +230,7 @@ difference compute_difference(ores::nats::service::nats_client& owners,
     return d;
 }
 
-std::string action_for(const import_currency_config_request& req,
-                       const currency_import_row& row) {
+std::string action_for(const import_currency_config_request& req, const currency_import_row& row) {
     for (const auto& choice : req.choices)
         if (choice.iso_code == row.iso_code)
             return choice.action;
@@ -273,9 +275,9 @@ void currency_config_handler::export_currency_config(ores::nats::message msg) {
         }
         export_currency_config_response response;
         response.count = static_cast<std::uint32_t>(currencies.size());
-        response.files.push_back({.name = std::string(document_name),
-                                  .content = ores::ore::xml::exporter::export_currency_config(
-                                      currencies)});
+        response.files.push_back(
+            {.name = std::string(document_name),
+             .content = ores::ore::xml::exporter::export_currency_config(currencies)});
         response.success = true;
         response.message = std::format("Exported {} currencies.", currencies.size());
         BOOST_LOG_SEV(lg(), info) << "currency config exported | corr=" << correlation_id
@@ -372,7 +374,8 @@ void currency_config_handler::import_currency_config(ores::nats::message msg) {
                     .removal = {.key = {.iso_code = row.iso_code}}, .intent = intent};
                 auto resp = nats_call(owners, remove, error);
                 if (!resp || !error.empty())
-                    response.errors.push_back({row.iso_code, error.empty() ? "no response" : error});
+                    response.errors.push_back(
+                        {row.iso_code, error.empty() ? "no response" : error});
                 else
                     ++response.deleted;
                 continue;
@@ -386,15 +389,15 @@ void currency_config_handler::import_currency_config(ores::nats::message msg) {
             const auto ours = d.ours.find(row.iso_code);
             auto write = to_write(ours == d.ours.end() ? *theirs : merged(ours->second, *theirs));
             ores::refdata::messaging::put_currency_request put{
-                .change = {.write = std::move(write),
-                           .precondition =
-                               ours == d.ours.end() ?
-                                   ores::utility::domain::precondition{} :
-                                   ores::utility::domain::precondition{
-                                       .kind = ores::utility::domain::precondition_kind::
-                                           must_match_version,
-                                       .version = static_cast<std::uint32_t>(
-                                           ours->second.version)}},
+                .change =
+                    {.write = std::move(write),
+                     .precondition =
+                         ours == d.ours.end() ?
+                             ores::utility::domain::precondition{} :
+                             ores::utility::domain::precondition{
+                                 .kind =
+                                     ores::utility::domain::precondition_kind::must_match_version,
+                                 .version = static_cast<std::uint32_t>(ours->second.version)}},
                 .intent = intent};
             auto resp = nats_call(owners, put, error);
             if (!resp || !error.empty()) {

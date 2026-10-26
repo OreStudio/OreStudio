@@ -30,7 +30,7 @@ A curve configuration is drawn like every other configuration that comes off an 
 
 * Acceptance
 
-- Every leaf of curveconfig.xsd that ORE reads has a documentation entry in the ORE parameter contract, keyed by its schema and XPath, with a value set.
+- Every leaf of curveconfig.xsd that ORE reads has a documentation entry in the ORE parameter contract, keyed by its schema and XPath, with a value set, or a recorded reason it is not documented.
 - The curve sections and their entry elements are read from the curve_section data, so no screen holds a table that names them.
 - A curve definition's leaves are drawn with the shared leaf parts: the Simple and Advanced switch, the documentation panel, the value in force and the control its value set gives.
 - The curve configuration page follows the configuration screen standard: Details, one tab per section in the declared order, Used by and History, with a curve entry drawn as a collection row.

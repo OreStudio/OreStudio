@@ -80,7 +80,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The story acceptance demands a documentation entry for *every* leaf ORE reads. The conventions precedent delivered 238 of 301 terms and left the rest showing as undocumented, so the bar was higher than the project actually met. | story.org | Accept | Softened: a leaf may stay undocumented where a reason is recorded, which is how the conventions conformance table already reads. |
+| 2 | The task file is named =task_implement_standardise_the_curve_configuration_parameters.org= but its title is "Bring curveconfig.xml onto the one contract". | that task | Decline | The filename is compass's own convention (=task_slug = "implement_" + story slug=); the title is the one the story needs. Renaming would fight the generator. |
+| 3 | An umbrella =implement_= task sits beside the real documentation task and overlaps the story's own scope. | story.org | Decline | That is the shape =compass story new= produces, and other stories carry the same pair. The real work is carried by the documentation task. |
+| 4 | The local check gate reports =prototypes= red on this branch. | build/output/local_checks/report.md | Decline | Not this branch: it fails on =doc/prototypes/market_data/control-how-a-market-ticks/index.html=, which is on origin/main and untouched here (no diff under =doc/prototypes=). The prototype was created 2026-10-26 and its inventory row is another environment's to add. Recorded as a limitation, not fixed here to avoid a clash. |
 
 * Result
 

@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: A439B007-0810-449F-A78B-6F5A66D4D416
+:END:
+#+title: Task: Document the curve configuration leaves in the one contract
+#+description: Give every leaf of curveconfig.xsd that ORE reads a documentation entry and a value set in the ORE parameter contract, extracted from the ORE source and the guide with provenance per row, so a curve screen can read its words from data rather than hold them.
+#+type: task
+#+level: s1
+#+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
+#+owner: marco
+#+branch: feature/standardise-the-curve-configuration-parameters
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every leaf of curveconfig.xsd that ORE reads is documented once, in the ORE parameter contract, keyed by curveconfig.xsd and its XPath, with the value set its values belong to. The extraction is a script, so the next ORE release is a rerun and not a hand edit.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
+| Now          | Not yet started. The story is scaffolded and the branch exists. |
+| Waiting on   | Nothing.                               |
+| Next         | Build =extract_curve_terms.py=, then the contract rows and their value sets. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- An extractor reads the ORE source and records every curve section, its entry element and each leaf ORE reads, with the source file and line of each fact.
+- Every extracted leaf has an ore_parameter row keyed by curveconfig.xsd and its XPath, with label, description, format, default and release where the source gives them.
+- Every row carries a value set: a flag, a closed list, a number, a text, or a catalogue of refdata data such as a currency, a calendar or a day counter.
+- The generator's check mode passes and reports the coverage counts, and the counts are recorded on the task with the command and the commit.
+- No screen or web change is made by this task.
+
+* Plan
+
+1. Build =extract_curve_terms.py= beside =extract_convention_terms.py=. It takes
+   =--ore=, else =ORES_ORE_ENGINE=, else the default the guide extractor uses.
+   It reads =OREData/ored/configuration/curveconfigurations.cpp= for the
+   document root and the section skeleton, then each family parser for the
+   leaves, with the same =XMLUtils::checkNode=, =getChildValue= and =parse*=
+   regexes the conventions extractor uses. It writes =curve_terms.json= with the
+   source file and line behind each fact.
+2. Turn the terms into contract rows: =schema_name = curveconfig.xsd=, and the
+   XPath from the section, the entry element and the leaf path.
+3. Give every row a value set: a closed list from the parser where ORE maps one,
+   a catalogue where the value belongs to refdata — a currency, a calendar, a
+   day counter, an index.
+4. Add a check mode and record the coverage counts on this task.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Curve config parser sources the extractor reads | 22 | =ls OREData/ored/configuration/{curveconfigurations,*curveconfig,volatilityconfig,parametricsmileconfiguration,bootstrapconfig,reportconfig}.cpp \| wc -l= | =3d75a6908= (ORE) |
+| Lines across those sources | 7,437 | =wc -l= over the same list | =3d75a6908= (ORE) |
+| The guide chapter of =curveconfig.xml= | 92,273 bytes | =wc -c Docs/UserGuide/parameterisation/curveconfig.tex= | =3d75a6908= (ORE) |
+
+* Notes
+
+- *The extractor has a close precedent.* =extract_convention_terms.py= records
+  for each term its member, name, path, read call, parse function, mandatory and
+  conditional flags, the source file and line, and the guide line of its text.
+  The curve extractor records the same facts, so the two datasets are read the
+  same way and a later reader compares them without a translation.
+- *The guide is the prose and the source is the structure*, as they were for the
+  conventions. =Docs/UserGuide/parameterisation/curveconfig.tex= and its
+  =curve_configurations/*.tex= sub-sections give the text; the parser files give
+  the reads.
+- *A word collision to fix.* The refdata entity docstrings call these leaves
+  *settings*: =yield_curve_config= says "The settings of one ORE yield curve
+  entry", and =curve_definition= says "the settings every section shares". The
+  engine run settings own that word, so those docstrings contradict the decision
+  this story makes. Correct them when the metadata moves into data.
+- *=curve_section= is the authority* on the sections and their entry elements.
+  The extractor must agree with it. A disagreement is a finding, not a silent
+  rename.
+- *The contract id derives from =schema_name= and =XPath=*
+  (=ore_parameter_seed.py=), so the schema must be right on the first write. The
+  pricing rows still carry =ore.xsd=, and their correction is separate work.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

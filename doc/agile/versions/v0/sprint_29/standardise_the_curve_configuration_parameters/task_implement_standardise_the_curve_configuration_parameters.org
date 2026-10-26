@@ -35,11 +35,11 @@ The work that follows the documentation task, and it owns the rest of the story.
 
 * Acceptance
 
-- Every leaf of curveconfig.xsd that ORE reads has a documentation entry in the ORE parameter contract, keyed by its schema and XPath, with a value set.
 - The curve sections and their entry elements are read from the curve_section data, so no screen holds a table that names them.
+- Each documented leaf is linked to its value set, and the write path refuses a value outside it, so every client gets the same answer.
 - A curve definition's leaves are drawn with the shared leaf parts: the Simple and Advanced switch, the documentation panel, the value in force and the control its value set gives.
 - The curve configuration page follows the configuration screen standard: Details, one tab per section in the declared order, Used by and History, with a curve entry drawn as a collection row.
-- A write whose value lies outside its leaf's value set is refused on the server, so every client gets the same answer.
+- The =yield_curve_config= and =curve_definition= docstrings call these leaves by the story's word, not *settings*.
 
 * Plan
 

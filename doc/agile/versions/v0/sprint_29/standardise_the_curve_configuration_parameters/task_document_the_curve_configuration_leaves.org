@@ -93,7 +93,8 @@ task and name that file in the Command column.
   *settings*: =yield_curve_config= says "The settings of one ORE yield curve
   entry", and =curve_definition= says "the settings every section shares". The
   engine run settings own that word, so those docstrings contradict the decision
-  this story makes. Correct them when the metadata moves into data.
+  this story makes. The implement task corrects them, when the metadata moves
+  into data.
 - *=curve_section= is the authority* on the sections and their entry elements.
   The extractor must agree with it. A disagreement is a finding, not a silent
   rename.

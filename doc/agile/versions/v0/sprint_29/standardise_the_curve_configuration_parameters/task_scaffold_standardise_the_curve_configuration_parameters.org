@@ -97,6 +97,13 @@ the on-demand Claude review of PR #3885.
 | 9 | The story says the first task widens the /Parameter/ definition, but the task's Plan and Acceptance do not list that edit. | documentation task | Accept | Added to the task's Acceptance and as Plan step 5. |
 | 10 | The "settings" wording in the =yield_curve_config= and =curve_definition= docstrings is deferred to nobody. | implement task | Accept | Named in the implement task's description and Goal, which now own the correction. |
 
+The two below came from the re-review of the updated PR.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 11 | The implement task's Acceptance copies the story's five bullets, and its first bullet claims the extraction that the documentation task owns. | implement task | Accept | Its Acceptance now states the post-documentation scope: the sections in data, the value sets linked and enforced on write, the page, and the docstring correction. The extraction bullet is gone. |
+| 12 | The documentation task's Notes defer the docstring fix without naming the task that owns it. | documentation task | Accept | The Notes now name the implement task. |
+
 * Result
 
 The story, its scaffold task and its documentation task are scaffolded on

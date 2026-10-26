@@ -163,7 +163,7 @@ via its "Verifies task" field.
 
 ** The build
 
-Committed on =feature/export-a-pricing-engine-configuration-as-ore-xml= in six commits:
+Committed on =feature/export-a-pricing-engine-configuration-as-ore-xml= in seven commits:
 
 | Commit | What |
 |--------+------|
@@ -173,11 +173,12 @@ Committed on =feature/export-a-pricing-engine-configuration-as-ore-xml= in six c
 | =3eb3994987= | =GET /api/reporting/pricing-engines/:id/ore-document=, answering =application/xml= with the server's name |
 | =4529dd3c9d= | The Export button and its dialog on the record header, in English, French and Portuguese |
 | =e1df37bb46= | =pricing_engines export <id> [--file <path>]= in =ores.shell= |
+| =db5ab9ec2e= | The four cases that state which file type row names the document, and its absence |
 
 ** What was proved
 
 - =./compass.sh build= passes.
-- The ORE core suite passes (400 cases, 475504 assertions), as does the analytics core suite (76 cases), the shell reporting suite (571 cases), the BFF suite (1005 tests), the web suite (2067 tests) and the wire protocol suite (225 tests). =ores.ore.service.tests= holds no cases: the service's units are covered by the core suite and by the run below.
+- The ORE core suite passes (400 cases, 475504 assertions), as does the analytics core suite (76 cases), the shell reporting suite (571 cases), the reporting api suite (68 cases), the BFF suite (1005 tests), the web suite (2067 tests) and the wire protocol suite (225 tests). =ores.ore.service.tests= holds no cases: the service's units are covered by the core suite and by the run below.
 - =GET /api/reporting/pricing-engines/5979e68e-ad30-fb47-b828-e7b08398f43d/ore-document= answered 200, =content-type: application/xml=, =content-disposition: attachment; filename="pricingengine.xml"=, for the HK party's *XVA Overnight* configuration. The document is well formed under =xmllint --noout= and holds the five products in their stored positions (Swap 0, CrossCurrencySwap 1, FxForward 2, CreditDefaultSwap 3, Bond 4), their models, engines and parameters, and one =GlobalParameters= block holding =ContinueOnCalibrationError=.
 - The web package's tests hold no browser: the screens render to static markup there, so the button, its permission and the dialog's sentence are asserted on the rendered page, and the download request is asserted against a stubbed =fetch= in =api/pricingEngines.test.ts=. The click itself was not driven through a browser.
 - =pricing_engines export <id> --file <path>= wrote the same document, byte for byte, after =account_operations switch-party= to the HK party of the ACME Corporation tenant. The name came from =ores_reporting_file_types_tbl= (row =setup.pricingEnginesFile=, configuration type =pricing_engines=, kind =input_document=, direction =input=, name pattern =pricingengine.xml=).

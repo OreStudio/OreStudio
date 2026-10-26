@@ -91,6 +91,55 @@ and 2026-10-26, not a modelling idea of its own.
    ([[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]]),
    which already draws a convention's terms with the shared leaf parts.
 
+* Notes
+
+** 2026-10-26: the family service refuses a grouped member
+
+The grouping was attempted on =tenor_basis_swap_pay_receive= first, with four
+field groups -- identity, legs, coupon, and the =ores.dq.audit_record= tail --
+and the refdata regeneration refused it before writing any C++:
+
+#+begin_example
+ValueError: tenor_basis_swap_convention: the part 'pay_receive'
+'tenor_basis_swap_pay_receive' is a grouped entity; the composite family
+service writes flat domain objects
+#+end_example
+
+The refusal is deliberate and sits in =_family_entity_view()= in
+=projects/ores.codegen/src/codegen/core.py=. The family service addresses a
+row by one key column, builds flat domain objects from the write records and
+reads a part by its parent, so a nested domain object is outside the shape it
+can generate. It refuses the central row as well as a part, so no member of a
+convention family can be grouped without teaching the family service to build
+and read grouped domain objects.
+
+Measured on main at =dd4af2b9ca=, from the generated headers:
+
+| Struct                            | Members |
+|-----------------------------------+---------|
+| =convention=                      |      13 |
+| =tenor_basis_swap_pay_receive=    |      20 |
+| =tenor_basis_swap_long_short=     |      18 |
+
+The atomisation of 2026-10-15 already cut the one 24-member literal into
+three, and made each leg form a table of its own. What remains is the width of
+each part, and the family protocol that carries the central row and a part in
+one message.
+
+Three ways forward, and the choice is the owner's:
+
+1. Teach the family service to build and read grouped domain objects, then
+   group the parts. It is the shape the acceptance asks for. It touches the
+   family service template, and the family protocol's JSON becomes nested,
+   which is a contract change -- the decomposition section of
+   =data_oriented_design.org= warns that grouping is not a wire decision.
+2. Leave the family flat and treat the atomisation as the decomposition the
+   page asks for: the per-literal width is now 20 at its widest, and the
+   question left is the accumulation path, which is the sibling task "Split the
+   configuration document protocol by document family".
+3. Group only where a member is not part of a family, which does not apply to
+   this convention.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it

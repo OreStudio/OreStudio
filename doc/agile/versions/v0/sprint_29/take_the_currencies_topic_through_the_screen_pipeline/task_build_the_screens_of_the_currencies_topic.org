@@ -33,9 +33,9 @@ operations.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]] |
-| Now          | Step 1 is built and proven on the running web: the three screens on the shared timeline, the page refresh, the titled dialogs and the pair dialog of two groups. |
+| Now          | Steps 1 and 2 are built and proven on the running web: the three screens on the shared timeline, and the Import and Export pair on the currencies with its three server operations. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 2: the server's three ORE operations, the BFF routes, the shared =OreExchange= and the two icons; then step 3, the two classification lists and the harness checks. |
+| Next         | Step 3: the two classification lists and the strings' review; then the test task. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -81,6 +81,9 @@ task and name that file in the Command column.
 | Web unit tests | 2028 passed in 162 files | =npx vitest run --root packages/web= in =projects/ores.web= | 65c6dd6e8f |
 | Harness on currencies, desk groups, pairs and calendars | 84 passed, 6 skipped, 0 failed; one run had two flakes, RS-LIST-10 on calendars and RS-PAGE-01 on currencies, both green alone | =npx playwright test --grep "record currencies\|record currency-groups\|record currency-pairs\|record calendars"= in =packages/harness= | 65c6dd6e8f |
 | Screens still on the legacy history panel | 7 of 10: four journey steps, the classification row page, the tenant page, =records.tsx= | =grep -rln HistoryPanel packages/web/src --include=*.tsx= | 65c6dd6e8f |
+| Round trip of the currency configuration | 167 in the file, 167 already held, 0 changed, 1 not in the file after GBP is cut; a changed symbol is 1 changed and bumps EUR to version 6 with Symbol in its history | =node evidence/drive_currency_import_export.mjs= on the fresh database | 56ad1f1ed9 |
+| ORE core XML tests | 202 cases, 40517 assertions, all passed | =ores.ore.core.tests "[ore][xml]"= with the environment sourced | 56ad1f1ed9 |
+| Harness on the currencies list | RS-LIST-03, RS-ORE-02 and RS-ORE-04 green; 5 checks | =npx playwright test --grep "record currencies.*RS-ORE"= | d32a540785 |
 
 * Notes
 
@@ -100,6 +103,23 @@ Found while building step 1:
 - The convention's versions have no Revert of their own in the pair's story:
   a part is reverted through its parent, as RS-HIST-02 offers Revert on the
   record's versions, and the calendar's rules have none either. Intended.
+
+Found while building step 2:
+
+- The ORE currency configuration carries a currency's name, codes, symbols,
+  rounding and ORE type and nothing else. The first import compared and wrote
+  every field, so a round trip marked 120 currencies changed and emptied
+  their format, market tier, spot days, day basis and base precedence on the
+  development database. The preview now reads the difference on the
+  document's fields alone, the import lays the document over the tenant's
+  row, and step 3 names the fields the document has no element for. The
+  database was recreated and Acme provisioned again, which the schema drift
+  needed anyway.
+- The document carries the numeric code as a number, so 036 came back as 36
+  and fifteen currencies read as changed; the importer pads it to the three
+  digits ISO 4217 gives, with a core test.
+- The import's choices default as the standard says: Keep it for a row the
+  file omits, Take the file's for a changed or new one.
 
 From the journeys' judgement, for this task:
 

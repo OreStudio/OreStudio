@@ -1,6 +1,6 @@
 :PROPERTIES:
 :ID: 7A3F9C28-1D56-4E90-B4C1-8F2E5A6D0917
-:END
+:END:
 #+title: A session outlives the data it names (wrong)
 #+description: Discarded. The refusal was a book of another party, not an old session: the picker offered books the booking could not use.
 #+type: capture

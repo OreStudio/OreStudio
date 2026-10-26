@@ -20,11 +20,14 @@
 #define ORES_ANALYTICS_QUANT_DOMAIN_SHARED_INTENSITY_HPP
 
 #include <atomic>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
+#include <deque>
 #include <mutex>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 namespace ores::analytics::quant::domain {
 
@@ -60,6 +63,12 @@ namespace ores::analytics::quant::domain {
  *
  * The stationary mean of the intensity is jump/decay: the rate at which events
  * add heat divided by how fast it fades.
+ *
+ * *The owner keeps a reading of the heat.* The owner fades it on a period, and
+ * takes a reading while it does, so a screen can draw what jump and decay did
+ * rather than infer it from the ticks: a spike and the fall that follows it are
+ * the internals of the process. Readings are bounded in number and in age, and
+ * the lock they take is never on a tick.
  */
 class shared_intensity final {
 public:
@@ -201,6 +210,8 @@ public:
         while (!excess_.compare_exchange_weak(
             current, current * factor, std::memory_order_relaxed, std::memory_order_relaxed)) {
         }
+
+        take_reading(std::chrono::system_clock::now());
     }
 
     /// @brief The heat before decay, for a test that wants the raw state.
@@ -208,7 +219,53 @@ public:
         return excess_.load(std::memory_order_relaxed);
     }
 
+    /** @brief One reading of the heat, stamped with when the owner took it. */
+    struct heat_reading {
+        std::chrono::system_clock::time_point at;
+        double heat = 0.0;
+    };
+
+    /// @brief How often the owner takes a reading, in milliseconds.
+    static constexpr std::chrono::milliseconds sample_period{100};
+
+    /// @brief How many readings the history keeps, which bounds what a read returns.
+    static constexpr std::size_t history_capacity = 2048;
+
+    /**
+     * @brief The readings taken since @p from, oldest first.
+     *
+     * A copy under a short lock: the owner appends one reading a period, which
+     * is rare enough that a reader never waits on it, and no tick takes the lock.
+     */
+    [[nodiscard]] std::vector<heat_reading>
+    readings_since(std::chrono::system_clock::time_point from) const {
+        std::lock_guard lock(history_mu_);
+        std::vector<heat_reading> taken;
+        taken.reserve(history_.size());
+        for (const auto& reading : history_) {
+            if (reading.at >= from)
+                taken.push_back(reading);
+        }
+        return taken;
+    }
+
+    /// @brief How many readings the history holds, which is what a test asserts on.
+    [[nodiscard]] std::size_t reading_count() const {
+        std::lock_guard lock(history_mu_);
+        return history_.size();
+    }
+
 private:
+    /** Appends a reading when the last one is a period old, so the sample rate is fixed. */
+    void take_reading(std::chrono::system_clock::time_point now) {
+        std::lock_guard lock(history_mu_);
+        if (!history_.empty() && now - history_.back().at < sample_period)
+            return;
+        history_.push_back(heat_reading{.at = now, .heat = excess_.load(std::memory_order_relaxed)});
+        while (history_.size() > history_capacity)
+            history_.pop_front();
+    }
+
     void add_rate(double delta) {
         // A sum of doubles added and taken away drifts, and a few rounding errors left
         // behind by series that have all gone would divide the heat by almost nothing.
@@ -226,6 +283,8 @@ private:
     const double decay_;
     std::atomic<double> excess_{0.0};
     std::atomic<double> population_rate_{0.0};
+    mutable std::mutex history_mu_;
+    std::deque<heat_reading> history_;
     std::mutex enrol_mu_;
     std::uint64_t enrolled_ = 0;
 };

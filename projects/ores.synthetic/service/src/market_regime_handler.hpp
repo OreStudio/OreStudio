@@ -21,8 +21,10 @@
 
 #include "feed_kind_registry.hpp"
 #include "ores.analytics.quant/domain/market_regime.hpp"
+#include "ores.analytics.quant/domain/shared_intensity.hpp"
 #include "ores.synthetic.api/messaging/market_regime_protocol.hpp"
 #include <boost/log/trivial.hpp>
+#include <chrono>
 #include <optional>
 #include <string>
 #include <utility>
@@ -52,10 +54,12 @@ class market_regime_handler {
 public:
     market_regime_handler(ores::nats::service::client& nats,
                           ores::analytics::quant::domain::market_regime& regime,
+                          ores::analytics::quant::domain::shared_intensity& intensity,
                           ores::database::context ctx,
                           std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , regime_(regime)
+        , intensity_(intensity)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
@@ -77,6 +81,7 @@ public:
         messaging::get_market_regime_response response;
         response.success = true;
         fill(response);
+        fill_heat(response);
         BOOST_LOG_SEV(market_regime_handler_lg(), info)
             << "market_regime get: replying to '" << msg.reply_subject << "' with state '"
             << response.state << "'.";
@@ -149,8 +154,29 @@ private:
         response.pinned = regime_.is_pinned();
     }
 
+    /**
+     * Fills the endogenous half: the heat now, the two numbers that move it, and
+     * the readings the owner took while fading it.
+     *
+     * The window is the last two minutes, which is what a raster draws, and the
+     * service's own history bounds it: a reader asks for a window and receives at
+     * most what the owner kept.
+     */
+    void fill_heat(ores::synthetic::messaging::get_market_regime_response& response) const {
+        response.heat = intensity_.value();
+        response.jump = intensity_.jump();
+        response.decay = intensity_.decay();
+        constexpr auto window = std::chrono::minutes(2);
+        const auto from = std::chrono::system_clock::now() - window;
+        for (const auto& reading : intensity_.readings_since(from)) {
+            response.samples.push_back(ores::synthetic::messaging::market_regime_sample{
+                .at = reading.at, .heat = reading.heat});
+        }
+    }
+
     ores::nats::service::client& nats_;
     ores::analytics::quant::domain::market_regime& regime_;
+    ores::analytics::quant::domain::shared_intensity& intensity_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };

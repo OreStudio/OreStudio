@@ -101,16 +101,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(
         nats.queue_subscribe(std::string(messaging::get_market_regime_request::nats_subject),
                              queue,
-                             [&nats, market, ctx, verifier](ores::nats::message msg) {
-                                 market_regime_handler h(nats, *market, ctx, verifier);
+                             [&nats, market, intensity, ctx, verifier](ores::nats::message msg) {
+                                 market_regime_handler h(nats, *market, *intensity, ctx, verifier);
                                  h.get(std::move(msg));
                              }));
 
     subs.push_back(
         nats.queue_subscribe(std::string(messaging::pin_market_regime_request::nats_subject),
                              queue,
-                             [&nats, market, ctx, verifier](ores::nats::message msg) {
-                                 market_regime_handler h(nats, *market, ctx, verifier);
+                             [&nats, market, intensity, ctx, verifier](ores::nats::message msg) {
+                                 market_regime_handler h(nats, *market, *intensity, ctx, verifier);
                                  h.pin(std::move(msg));
                              }));
 

@@ -26,6 +26,7 @@
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
+#include "ores.synthetic.api/feeds/feed_seed.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include "ores.synthetic.api/feeds/vintage_lookup.hpp"
@@ -173,7 +174,8 @@ fx_spot_feed::fx_spot_feed(
     , quote_uri_(std::move(quote_uri))
     , source_name_(std::move(source_name))
     , process_(std::move(process))
-    , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(arrival))
+    , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(
+          arrival, ores::synthetic::feed::arrival_seed_for(source_name_)))
     , arrival_(arrival)
     , link_(link)
     , scheduler_(scheduler)

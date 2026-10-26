@@ -36,8 +36,10 @@ namespace ores::analytics::quant::service {
  * The first gap is drawn uniformly from the mean gap, so two feeds of the same
  * rate do not tick in lockstep: without it every periodic feed of a run fires on
  * the same step of the shared clock, which no market does and which biases any
- * statistic that looks across series at one instant. After the first gap the
- * process is exactly periodic, so the mean rate is unchanged.
+ * statistic that looks across series at one instant. After that gap the process
+ * is exactly periodic, so the rate is the configured one from the first arrival
+ * on; a feed starts somewhere inside its first gap, as a process already running
+ * would, rather than always at the start of one.
  *
  * Inspired by the tick library (BSD 3-clause, the tick developers, CMAP); see
  * =doc/knowledge/external/tick.org=.

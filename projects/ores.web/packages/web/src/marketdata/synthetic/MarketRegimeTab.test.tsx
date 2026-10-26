@@ -145,8 +145,9 @@ describe('the market regime tab', () => {
 
     it('draws a feed of each asset class in its class’s colour', () => {
         const html = render(regime());
-        expect(html).toContain('bg-class-fx');
-        expect(html).toContain('bg-class-interest-rates');
+        // The dot of the feed's own row, not the legend's swatch.
+        expect(html).toMatch(/rounded-full bg-class-fx"/);
+        expect(html).toMatch(/rounded-full bg-class-interest-rates"/);
     });
 
     it('says a feed that is not running is stopped, and draws no dot for it', () => {
@@ -179,8 +180,9 @@ describe('the market regime tab', () => {
 
     it('writes a feed’s name in its asset class colour', () => {
         const html = render(regime());
-        expect(html).toContain('text-class-fx');
-        expect(html).toContain('text-class-interest-rates');
+        // The name's own element, so the chart's line cannot satisfy it.
+        expect(html).toMatch(/text-class-fx[^>]*>EUR\/USD</);
+        expect(html).toMatch(/text-class-interest-rates[^>]*>USD SOFR</);
     });
 
     it('draws the shared heat the service sampled, and the numbers that move it', () => {

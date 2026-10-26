@@ -67,8 +67,8 @@ namespace ores::analytics::quant::domain {
  * *The owner keeps a reading of the heat.* The owner fades it on a period, and
  * takes a reading while it does, so a screen can draw what jump and decay did
  * rather than infer it from the ticks: a spike and the fall that follows it are
- * the internals of the process. Readings are bounded in number and in age, and
- * the lock they take is never on a tick.
+ * the internals of the process. The history is bounded in number, and a read
+ * filters it by age; the lock it takes is never on a tick.
  */
 class shared_intensity final {
 public:

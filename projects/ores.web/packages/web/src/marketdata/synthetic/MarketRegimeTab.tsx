@@ -228,32 +228,6 @@ export function MarketRegimePanel({
 }
 
 /**
- * One row for each feed, and a dot for each tick it published.
- *
- * The feeds that run come first, because the picture opens on the market; a
- * stopped feed keeps its row in the colour that says so, because a picture that
- * left the silent feeds out could not show that they are silent. A row carries
- * times and not prices: what a market-wide factor changes is when ticks arrive,
- * and the count on the right says how many arrived.
- *
- * A row is a name, a track and a count, drawn as one because a picture of a
- * thousand dots is not one a person reads on a canvas: the name stays text, so
- * it is legible and can be selected.
- */
-/**
- * One row for each feed, and a dot for each tick it published.
- *
- * The feeds that run are drawn first, because the picture opens on the market;
- * a stopped feed keeps its row, opened by the reader, in the count that says so,
- * because a picture that left the silent feeds out could not show that they are
- * silent. A row carries times and not prices: what a market-wide factor changes
- * is when ticks arrive, and the count on the right says how many arrived.
- *
- * A row is a name, a track and a count, drawn as one because a picture of a
- * thousand dots is not one a person reads on a canvas: the name stays text, so
- * it is legible and can be selected.
- */
-/**
  * The two halves of the factor, over the window, in one section above the
  * arrivals they moved.
  *
@@ -489,7 +463,6 @@ function RasterRow({
     }[];
 }): ReactNode {
     const { t } = useTranslation();
-    const positions = arrivalPositions(feed.ticks, seconds, now);
     const groups = markGroups(feed.ticks, seconds, now);
     return (
         <div
@@ -528,7 +501,7 @@ function RasterRow({
                             // dozen dots in one place read as one.
                             <span
                                 data-coincident
-                                className="absolute top-1/2 left-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-current opacity-60"
+                                className={`absolute top-1/2 left-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border opacity-70 ${assetClassColour(feed.assetClass).text}`}
                             />
                         ) : null}
                         <span
@@ -545,7 +518,7 @@ function RasterRow({
                 )}
             </span>
             <span className="w-10 shrink-0 text-right font-mono text-[10px] tabular-nums text-ink-faint">
-                {feed.running ? positions.length : t('marketdata.marketRegime.raster.stopped')}
+                {feed.running ? groups.length : t('marketdata.marketRegime.raster.stopped')}
             </span>
             <span className="w-14 shrink-0 text-right font-mono text-[10px] tabular-nums text-ink-faint/70">
                 {`${feed.expectedPerSecond.toFixed(2)}/s`}

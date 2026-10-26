@@ -108,11 +108,9 @@ export function stateBands(
         return [];
     }
     const bands: StateBand[] = [];
-    const first = placed[0];
-    if (first === undefined) {
+    if (placed[0] === undefined) {
         return [];
     }
-    bands.push({ from: 0, to: first.x, state: first.state });
     for (let i = 0; i < placed.length; i += 1) {
         const here = placed[i];
         const next = placed[i + 1];
@@ -172,7 +170,9 @@ export function rateCurves(
             counts: new Array<number>(bins).fill(0),
         };
         held.running += 1;
-        for (const tick of feed.ticks) {
+        // One event per instant: a curve tick publishes a tick for every pillar,
+        // and the rate a feed asks for is a rate of events, not of pillars.
+        for (const tick of new Set(feed.ticks)) {
             const at = Date.parse(tick);
             if (!Number.isFinite(at) || at < start || at > now) {
                 continue;

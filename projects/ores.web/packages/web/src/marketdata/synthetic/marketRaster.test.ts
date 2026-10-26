@@ -79,7 +79,8 @@ describe('the multiplier as a screen writes it', () => {
 });
 
 describe('the stretch a market held a state', () => {
-    it('draws a band from the left edge to the first reading, then a band per reading', () => {
+    it('draws a band from each reading to the next, and nothing before the first', () => {
+        // The tab saw nothing before its first read, so it claims nothing there.
         expect(
             stateBands(
                 [
@@ -90,7 +91,6 @@ describe('the stretch a market held a state', () => {
                 NOW,
             ),
         ).toEqual([
-            { from: 0, to: 0, state: 'calm' },
             { from: 0, to: 50, state: 'calm' },
             { from: 50, to: 100, state: 'active' },
         ]);

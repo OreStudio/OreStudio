@@ -20,6 +20,7 @@
 // doc/knowledge/external/tick.org.
 #include "ores.analytics.quant/service/processes/periodic_arrival_process.hpp"
 #include <cmath>
+#include <random>
 #include <stdexcept>
 
 namespace ores::analytics::quant::service {

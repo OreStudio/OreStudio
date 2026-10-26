@@ -28,12 +28,12 @@
  * scheme does not name is drawn in the accent, so a new class appears at once
  * rather than not at all.
  */
-export interface AssetClassColour {
+export type AssetClassColour = {
     /** The fill of a mark, such as an arrival's dot. */
     readonly dot: string;
     /** The same colour for text and for a line, which strokes in currentColor. */
     readonly text: string;
-}
+};
 
 /** The scheme, by the code the asset class carries. */
 const SCHEME: Readonly<Record<string, AssetClassColour>> = {

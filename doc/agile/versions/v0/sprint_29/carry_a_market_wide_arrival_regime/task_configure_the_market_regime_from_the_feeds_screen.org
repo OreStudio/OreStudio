@@ -108,9 +108,11 @@ task and name that file in the Command column.
   sources, not tree paths. The feeds that run come first and the label order
   holds inside each group.
 - A row is empty for three different reasons: a feed too slow to tick inside the
-  window, a curve feed that serves an adapter and so publishes no display tick
-  at all — a defect, captured for the backlog — and a tab that has just opened,
-  whose rows fill as each feed ticks. The third is stated on the screen.
+  window, a curve feed that serves an adapter and published no display tick,
+  which was a defect and is fixed on this branch, and a tab that has just
+  opened, whose rows fill as each feed ticks. The third is stated on the screen,
+  and the second is now the expected-rate column's job: a row that asks for
+  0.02 a second says so.
 - The state names and the multiplier are the screen's only claim about the
   market; who pinned it and why is in the change record, not in this reply.
 - =compass smoke ticks= fails on this environment with 20 of 86 demanded ids
@@ -167,6 +169,27 @@ answered in =baa7889e1d= or in the commit that follows it.
 | 19 | A query hook module also holds presentation formatters | =useMarketRegime.ts= | Decline | One module for the market as the web sees it: the read, and the two formatters that read it. Splitting adds a file for two functions. |
 | 20 | The save key change is unrelated | =ArrivalsPanel.tsx= | Decline | =common.save= is not in the catalogue, so the button read "common.save" on this very tab. It is a defect in scope, and visible in the screenshot. |
 | 21 | Prettier reflowed three help strings | locales | Decline | Prettier is the gate; the file is formatted by it. |
+
+Second round, on the heat, the colours, the phase and the rings.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 22 | The drawn phase never reaches a run: the factory's seed defaults to 42, so every periodic feed draws the same one | =fx_spot_feed.cpp=, =ir_curve_feed.cpp= | Accept | The seed comes from the source name now, through =arrival_seed_for=: unique per feed and stable across runs. The test proved a property the factory did not deliver, which is the worse half of the finding. |
+| 23 | "The mean rate is unchanged" is not true of the first interval, and the test hides it | =periodic_arrival_process.hpp= | Accept | The claim is now that the rate is the configured one from the first arrival on, and that a feed starts inside its first gap. |
+| 24 | The history is said to be bounded in age, but only in number | =shared_intensity.hpp= | Accept | The words now match the code; a read filters by age. |
+| 25 | Two orphaned and contradictory doc blocks above =MarketRaster= | =MarketRegimeTab.tsx= | Accept | The split left them; removed. |
+| 26 | A coincidence ring inherits the text colour, not the class's | =MarketRegimeTab.tsx= | Accept | The ring takes the class colour, as the dots do. |
+| 27 | The state band shades the whole window before the tab's first read | =marketRaster.ts= | Accept | The band begins at the first reading; the test now asserts it. |
+| 28 | "Seen" counts arrivals while "asked" counts events, so a curve feed reads many times its own rate | =MarketRegimeTab.tsx=, =marketRaster.ts= | Accept | The count and the rate curves now count events, one per instant, so the two columns compare. |
+| 29 | The BFF defaults the heat fields, so a reply without them parses | =market-regime.ts= | Accept | The four fields are required; a reply that lacks them fails at the boundary. |
+| 30 | The heat shape is spelled four times across C++, the protocol, the BFF and the browser | all | Decline | Two languages cannot share a struct. Each end parses its own boundary, and the C++ struct is the source the other three follow. |
+| 31 | =AssetClassColour= is declared as an interface | =assetClassColour.ts= | Accept | A type alias, as the module's neighbours are. |
+| 32 | =NAMED_ASSET_CLASSES= and =FactorCharts= are exported but unread outside their module | =assetClassColour.ts=, =MarketRegimeTab.tsx= | Partly | =FactorCharts= is no longer exported. =NAMED_ASSET_CLASSES= stays: it is how the legend and the scheme test name the classes. |
+| 33 | The colour tests match strings the legend also emits | =MarketRegimeTab.test.tsx= | Accept | The assertions name the label's own element, so the legend cannot satisfy them. |
+| 34 | =syntheticStore.test.ts= asserts source text rather than a rendered screen | =syntheticStore.test.ts= | Decline | It predates this branch and exists because a static render never fetches; the store cannot be seen any other way. |
+| 35 | The market tick is built twice in a curve feed | =ir_curve_feed.cpp= | Decline | The two copies differ: one is the display shape, the other the market shape with its own subject. A helper would hide that they are different messages. |
+| 36 | Per-feed Hawkes state is not exposed, only the shared heat, and =jump=/=decay= are hard-coded | =application.cpp= | Decline | The task asked for the market factor's internals; a per-feed intensity is a different read and its own task. The hard-coded demo parameters are the environment's, and settable is task 4A5C7202. |
+| 37 | The raster now keeps rows for feeds that are not running, which the plan did not ask for | =feed-raster= | Decline | Asked for in review: the product owner wanted a stopped feed to be tellable, and a row with a count of "stopped" is how. The plan's words are the older ones. |
 
 * Result
 

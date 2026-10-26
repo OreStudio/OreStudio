@@ -59,10 +59,10 @@ const answeredRegime = z.object({
     state: stateSchema,
     multiplier: z.number(),
     pinned: z.boolean(),
-    heat: z.number().default(0),
-    jump: z.number().default(0),
-    decay: z.number().default(0),
-    samples: z.array(heatSample).default([]),
+    heat: z.number(),
+    jump: z.number(),
+    decay: z.number(),
+    samples: z.array(heatSample),
 });
 
 /** A request the service would not carry out. It says why, and nothing else. */

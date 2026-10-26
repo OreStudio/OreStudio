@@ -135,9 +135,10 @@ about what the simulator claims to model, not about effort.
   auto, calm or active, and draws the arrivals of every feed beside the factor
   that moved them. Above the rows it draws the shared heat, read from the
   readings the service takes while it fades it, so the endogenous half is
-  visible as the process it is and not inferred from the ticks. The three
-  numbers this bullet lists are shown but not yet settable: the service has no
-  verb that sets them.
+  visible as the process it is and not inferred from the ticks. The heat's jump
+  and decay are shown with it; the chain's two transition rates are neither
+  shown nor settable, because the reply does not carry them, and no verb sets
+  either.
 - As a switch, for testing: forcing the state takes effect on the next tick,
   needs no restart, is available from the screen and from the shell, and reports
   what it forced. A test that has to wait for a Markov chain to reach the active

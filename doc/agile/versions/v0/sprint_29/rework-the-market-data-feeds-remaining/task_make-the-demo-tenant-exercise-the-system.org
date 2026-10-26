@@ -26,11 +26,11 @@ The role seeds grant every screen's permission to the roles that perform it, and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
@@ -83,4 +83,36 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Measurements
+
+| What | Value |
+|------+-------|
+| Role grants added | 17, each tied to a screen card or a journey actor |
+| Acme accounts | 65, with Member, Trading, Operations, Viewer, Sales, Support, TenantAdmin |
+| Parties on distinct providers | ACMCOR bloomberg, ACCOUK demo, ACCOUS lseg, ACCOHK bloomberg |
+| Adapter accepts | bloomberg 362 of 362, demo 71 of 71, lseg 14 of 14, zero rejects |
+| Trades and requests | 60 each, 28 distinct requesters |
+| Catalogue instruments | 447, generated from the feeds by the committed tool |
+| Engine settings | 502 before the recreate, working after it |
+| Ticks smoke | passed |
+
 * Result
+
+Every screen a human role needs is reachable, and Acme exercises the system.
+
+- The role seed holds the reads and writes the screens' cards and the journeys'
+  actors name: Trading the synthetic and curve authoring, Operations the pricing
+  engine and market-risk approval and subscriptions, Member the engine settings
+  groups, with the earlier market data reads.
+- The Acme profile entitles each party to its own provider and source, written
+  by the subscribe step itself, so a recreate keeps the spread and every adapter
+  accepts every demanded id.
+- The trade population is entered by each party's own people, so a party user
+  sees the party's requests. The group's treasurer carries the group's.
+- The IR and FX catalogues are generated from the feeds, so a provider's
+  catalogue is exactly what its feeds serve.
+
+Open. The decision queue is empty for party personas because no party role holds
+the permission to decide a trading operational authorisation; the tenant
+administrator holds it and sees 52. The SuperAdmin screens stay with the platform
+administrator, as their journeys say.

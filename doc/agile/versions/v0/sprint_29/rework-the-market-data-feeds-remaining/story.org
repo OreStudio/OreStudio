@@ -64,7 +64,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:2D2E09E9-42CE-4467-A9B9-B7FA73975285][Audit the market data documents for the service]] | DONE | 2026-10-25 | 2026-10-25 | The standards, journeys and prototype notes still describe the old feeds world: bindings, auto-start, feeds that should run, and real market data yet to arrive. |
 | [[id:52CA4F5E-5B0F-4C34-A946-1209AB8DDEA2][Make the existing market data screens correct]] | DONE | | 2026-10-26 | The screens still read the old run model and some names no longer match the service. Make the names and the behaviour correct before adding anything. |
 | [[id:425C5D94-F627-4994-AF59-63561FA5806E][Build the market data sources board and the subscriptions screen]] | DONE | 2026-10-26 | 2026-10-26 | The two screens are signed off as prototypes and not built. Build them in the app. |
-| [[id:BBA008DA-8086-44C0-9369-4152AB75F6FB][Make the demo tenant exercise the system]] | STARTED | 2026-10-26 | | Every screen must be reachable by the roles whose job it is, and Acme must hold the data to exercise them. |
+| [[id:BBA008DA-8086-44C0-9369-4152AB75F6FB][Make the demo tenant exercise the system]] | DONE | 2026-10-26 | 2026-10-26 | Every screen must be reachable by the roles whose job it is, and Acme must hold the data to exercise them. |
 
 * Decisions
 

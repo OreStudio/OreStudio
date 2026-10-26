@@ -8,7 +8,7 @@
 #+filetags: :carry_one_hundred_thousand_feeds_on_the_data_path:sprint_29:v0:
 #+owner: marco
 #+branch: feature/carry-one-hundred-thousand-feeds-on-the-data-path
-#+pr:
+#+pr: 3881
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3881][#3881]] | [doc] Set out the target-state architecture of the data path |
 
 * Review
 

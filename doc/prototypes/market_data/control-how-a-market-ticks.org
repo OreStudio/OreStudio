@@ -205,3 +205,23 @@ The panel keeps the screen standard's Simple and Advanced switch as a pair, and
 Advanced adds the raw rows rather than hiding anything: the chain's rates are in
 Simple because they are the value in force, and Advanced adds the shared heat and
 the ORE XML path behind the multiplier.
+
+* Signed off
+
+Decided 2026-10-26. The split and the names stand, and the build follows this
+page.
+
+- *Arrivals*, a tab of a feed's editor beside Instrument, Price behaviour and
+  Provenance: a tick arrival model selector (periodic, Poisson, Hawkes), the two
+  Hawkes fields, the sensitivity, and one row of that feed's ticks. The fields
+  below the selector are Hawkes-only and the built screen disables them
+  otherwise; the prototype keeps them visible to show the full shape.
+- *Market regime*, its own tab: the state, the multiplier, auto, calm and active,
+  who pinned it and why, and one raster of every live feed, rows in tree order
+  and named because eight unlabelled rows cannot be read.
+- Nothing else on either tab. The by-sensitivity table, the third column and the
+  separate arrivals screen were all dropped.
+
+Build order: the Arrivals tab first, because its controls already exist in the
+editor; the Market regime tab second, because its verbs already exist on the
+service; the raster last, since it is the only part with no backend yet.

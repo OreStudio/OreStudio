@@ -33,7 +33,7 @@ The session already did the following. Confirm the system is in this state befor
 | Parent story  | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]]   |
 | Target screen | Reporting → Product pricing, and Reporting → Engine run settings, on http://localhost:21002 |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | PASSED |
 
 * Steps
 
@@ -44,6 +44,12 @@ The session already did the following. Confirm the system is in this state befor
 - Select the tenant =Acme Corporation= if the screen asks for one.
 - The reporting area opens. If it does not, the login or the tenant failed; stop here.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open Product pricing from the menu
 
 - Open Reporting, then Product pricing.
@@ -53,11 +59,23 @@ The session already did the following. Confirm the system is in this state befor
 - The lead sentence says how each product type is priced.
 - No visible text calls this screen *Pricing engines*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open one pricing configuration
 
 - Click any row in the list.
 - The page opens on the configuration; the breadcrumb ends at its name.
 - No heading on the page repeats the old screen name.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Open the engine run settings screen
 
@@ -67,17 +85,35 @@ The session already did the following. Confirm the system is in this state befor
 - The lead sentence says how the engine runs every report.
 - No visible text calls this screen *Engine settings* on its own.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Switch the language to French
 
 - Open the account menu and set the language to French.
 - Product pricing reads *Tarification des produits*, in the menu and on the page.
 - Engine run settings reads *Réglages d'exécution du moteur*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Switch the language to Portuguese
 
 - Set the language to Portuguese.
 - Product pricing reads *Preços por produto*, in the menu and on the page.
 - Engine run settings reads *Configurações de execução do motor*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Check the configuration type on a report
 
@@ -87,12 +123,18 @@ The session already did the following. Confirm the system is in this state befor
 - The pricing binding is labelled *Product pricing*, not *Pricing engines*.
 - The engine binding is labelled *Engine run settings*, not *Engine settings*.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
+| Status        | PASSED |
+| Completed at  | 2026-10-26T00:15:52Z |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

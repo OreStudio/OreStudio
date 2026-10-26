@@ -161,6 +161,13 @@ OFFICES = [
 DESK_STAFF_ROLE = "Trading"
 SUPPORT_MANAGER_ROLE = "Operations"
 SUPPORT_ANALYST_ROLE = "Viewer"
+# The two functions every office kept no staff for. Both role names are the
+# seed's own, match verbatim against ores_iam_roles_tbl.name, and each has a
+# persona the demonstration exercises: the salesperson reads what the desk
+# may show a client, and the support engineer reads the tenant's
+# administrative state without changing it.
+SALES_ROLE = "Sales"
+CLIENT_SUPPORT_ROLE = "Support"
 
 
 def seniority_title(role_label, index, count):
@@ -582,6 +589,17 @@ def build_office(office, faker, group_ceo_username=None):
             title = seniority_title("Analyst", i, func["analyst_count"])
             add_account(func_code, title, SUPPORT_ANALYST_ROLE,
                        reports_to_username=manager_username)
+
+    # The two seeded roles the offices carried nobody for: =Sales= and
+    # =Support=. A demonstration of either persona had no account to sign in
+    # as, so the screens those roles reach were exercised by nobody. Both are
+    # global-markets functions and report to the Country Head, like the other
+    # function heads. They are added last so the people above keep the names,
+    # the usernames and the photos the earlier demonstrations know.
+    add_account(global_markets_code, "Head of Sales", SALES_ROLE,
+                reports_to_username=ceo_username)
+    add_account(global_markets_code, "Head of Client Support", CLIENT_SUPPORT_ROLE,
+                reports_to_username=ceo_username)
 
     return lei, lei_entity, business_units, portfolios, books, accounts
 

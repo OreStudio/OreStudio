@@ -29,6 +29,7 @@ import { syntheticStore } from '../../refdata/store.js';
 import { FeedPage } from './FeedScreens.js';
 import { feedPath, type FeedKind } from './feedKind.js';
 import { COMPONENTS, MixturePanel } from './MixturePanel.js';
+import { ArrivalsPanel } from './ArrivalsPanel.js';
 import { TicksPanel } from './TicksPanel.js';
 
 const FEEDS = 'fx-feeds';
@@ -304,6 +305,32 @@ export const FX_FEED_KIND: FeedKind = {
                             [
                                 {
                                     write: feedWrite(feed, { process_type: engine }),
+                                    version: feed.version,
+                                },
+                            ],
+                            intent,
+                        );
+                    }}
+                />
+            ),
+        },
+        {
+            name: 'arrivals',
+            render: ({ feed, running, mayWrite }) => (
+                <ArrivalsPanel
+                    feed={feed}
+                    mayWriteFeed={mayWrite && running !== true}
+                    save={async (model, ratio, decay, sensitivity, intent) => {
+                        await api.saveSynthetic(
+                            FEEDS,
+                            [
+                                {
+                                    write: feedWrite(feed, {
+                                        arrival_mode: model,
+                                        branching_ratio: ratio,
+                                        decay,
+                                        sensitivity,
+                                    }),
                                     version: feed.version,
                                 },
                             ],

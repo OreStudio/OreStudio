@@ -4289,6 +4289,7 @@ const pt: SourceCatalogue = {
             rebuilt: '{count} dias escritos.',
         },
         currencies: {
+            fieldGroups: { identity: 'Identidade', display: 'Apresentação', market: 'Mercado' },
             title: 'Moedas',
             lead: 'As moedas com que o inquilino trabalha, com os países, calendários e grupos a que cada uma pertence.',
             add: 'Adicionar moeda',

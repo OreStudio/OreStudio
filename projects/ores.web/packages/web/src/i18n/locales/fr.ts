@@ -4317,6 +4317,7 @@ const fr: SourceCatalogue = {
             rebuilt: '{count} jours écrits.',
         },
         currencies: {
+            fieldGroups: { identity: 'Identité', display: 'Affichage', market: 'Marché' },
             title: 'Devises',
             lead: 'Les devises du locataire, avec les pays, calendriers et groupes auxquels chacune appartient.',
             add: 'Ajouter une devise',

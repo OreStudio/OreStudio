@@ -4255,6 +4255,7 @@ export const en: SourceCatalogue = {
             rebuilt: '{count} days written.',
         },
         currencies: {
+            fieldGroups: { identity: 'Identity', display: 'Display', market: 'Market' },
             title: 'Currencies',
             lead: 'The currencies the tenant works in, with the countries, calendars and desk groups each belongs to.',
             add: 'Add currency',

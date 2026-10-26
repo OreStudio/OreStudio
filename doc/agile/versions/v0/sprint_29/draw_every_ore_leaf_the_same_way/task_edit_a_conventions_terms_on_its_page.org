@@ -8,7 +8,7 @@
 #+filetags: :draw_every_ore_leaf_the_same_way:sprint_29:v0:
 #+owner: marco
 #+branch: feature/edit-a-conventions-terms-on-its-page
-#+pr:
+#+pr: 3898
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3898][#3898]] | [web] Edit a convention's terms on its record page |
 
 * Review
 

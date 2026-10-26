@@ -8,7 +8,7 @@
 #+filetags: :codegen:database:serialisation:analysis:sprint_29:v0:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ A decision, with measurements, on whether the generator emits raw SQL, MessagePa
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -42,7 +42,7 @@ A decision, with measurements, on whether the generator emits raw SQL, MessagePa
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:5A8896F6-E9AF-4047-A038-3771ED77C1BC][Compare generated raw code with sqlgen and reflect-cpp]] | BACKLOG | | | Prototype generated raw SQL, MessagePack and JSON code for a few entities and measure it against sqlgen and reflect-cpp for speed, build time, binary size and the features the platform uses. |
+| [[id:5A8896F6-E9AF-4047-A038-3771ED77C1BC][Compare generated raw code with sqlgen and reflect-cpp]] | STARTED | 2026-10-26 | | Prototype generated raw SQL, MessagePack and JSON code for a few entities and measure it against sqlgen and reflect-cpp for speed, build time, binary size and the features the platform uses. |
 
 * Decisions
 

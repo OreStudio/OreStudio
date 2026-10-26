@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :decide_whether_codegen_replaces_sqlgen_and_reflect_cpp:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decide-whether-codegen-replaces-sqlgen-and-reflect-cpp
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Numbers and a recommendation: for a few representative entities, generated raw c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -61,9 +61,18 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files using sqlgen | 1,429, of which 924 generated | =grep -rl 'sqlgen::'= over =projects=, then the generated markers | =ced6c2fc70= |
+| Files using reflect-cpp | 1,970, of which 1,837 generated | =grep -rl 'rfl::'= over =projects=, then the generated markers | =ced6c2fc70= |
+| sqlgen calls by kind | =read= 3,692, =limit= 1,052, =delete_from= 864, conditions 842, =offset= 600, =order_by= 443, =count= 73, =insert_or_replace= 32, =insert= 13 | =grep -rhoE 'sqlgen::[a-z_]+'= with counts | =ced6c2fc70= |
+| reflect-cpp calls by kind | =json::write= 5,221, =json::read= 636, enum conversions 18, =msgpack::write= 3, =msgpack::read= 4 | =grep -rhoE 'rfl::[a-z_]+(::[a-z_]+)?'= with counts | =ced6c2fc70= |
 
 * Notes
+
+- Writes go through =execute_write_query= in =ores.database=, which issues one
+  =sqlgen::insert= for each row, inside a unit of work for a batch.
+- The NATS wire codec chooses JSON or MessagePack at run time, both through
+  reflect-cpp templates instantiated for each message type.
+- Most of the use is generated, so a change to the templates changes most of it.
 
 * Test Scenarios
 

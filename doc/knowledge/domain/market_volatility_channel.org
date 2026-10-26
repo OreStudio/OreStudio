@@ -374,6 +374,30 @@ lists only its support is a sales document.
   keep the heat bounded is an engineering choice with no paper behind it, and its
   long-run effect on cross-series correlation has not been measured.
 
+
+* Deferred, and what would make each matter
+
+None of the limitations above is in scope for the tasks this note scopes, and
+none should be. They are listed here with the condition that would make each one
+worth a story, so the decision is taken later on evidence rather than on memory.
+
+| Limitation | What would make it matter | Where it would live |
+|------------+---------------------------+---------------------|
+| No vol-of-vol and no leverage effect | A generated surface has to price an option off the series, so skew and the price/variance correlation are read | New story: a second factor with its own law |
+| Jumps reweighted, not arrived | A stress scenario needs a gap that spreads across series, not a wider walk in one | Extends task "Let the factor reach the tails" |
+| Two regimes with hand-set rates | A scenario needs a third state, a rating ladder, or an estimated transition matrix | Extends whatever sets the chain's rates |
+| No intraday seasonality | Generated ticks feed a realized-volatility or VaR backtest whose window spans a day | New task on the synthetic service |
+| No long memory | A client compares our volatility persistence against a real instrument's | With the seasonality task, or a separate one |
+| No microstructure noise | Someone validates our output against a real feed's high-frequency statistics, or prices an engine sensitive to noise | New task, following Bacry et al. |
+| The loading is set, not estimated | Generated series have to be calibrated to a real instrument rather than to a configuration | New story: estimation rather than generation |
+| Cross-series correlation depends on the window | A report claims the regime correlates the series, which the arrival story's acceptance already asks for | Measurement work inside that report |
+| The rank-one stability test is not sufficient in two dimensions | The bivariate Hawkes is taken up | The capture for it, in the inbox |
+| The enrolment-and-share device is unpublished | The enrolled population grows past a few hundred series, or a client asks why counts correlate as they do | An investigation against the shared heat |
+
+The first two carry the most weight for a demonstration: a panic that cannot gap
+and cannot skew is a panic a person recognises as synthetic. The rest become
+important as the platform's output is used for something other than display.
+
 * See also
 
 - [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] — the

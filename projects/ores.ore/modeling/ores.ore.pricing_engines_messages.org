@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 44fecaa3-95de-464c-925c-30ed9da87a1a
+:END:
+#+title: ores.ore.pricing_engines_messages
+#+description: Codegen operation model for the ORE pricing engine configuration's export: the operation that writes pricingengine.xml from one configuration. Rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: ore
+#+subcomponent: api
+#+entity_singular: pricing_engines
+#+namespace: ores::ore::messaging
+#+brief: Export a pricing engine configuration as the ORE document.
+#+filetags: :model:operation:ore:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+A pricing engine configuration is one ORE document, =pricingengine.xml=, whose
+root element is =PricingEngines=. The export writes it from one configuration
+and answers with the file, as the currencies' export answers with
+=currencyconfig.xml=. The ORE service reads the configuration through
+analytics' own messages, under the caller's delegated session, and never
+touches analytics' tables.
+
+The export is read-only: it writes no row and records no history.
+
+The names of the operation, of its request and of its response follow the
+record screen standard's =ore.v1.ops.export_<document>= (RS-ORE-06). The file
+name is not stated here: it is the =name_pattern= of the file type row whose
+=configuration_type_code= is =pricing_engines=, in the direction ORE Studio
+reads and of the kind that is a document, so the table and not the code names
+the file (RS-ORE-01).
+
+* Physical space
+
+The shell commands are switched off for the same reason as the ORE import's: the
+component has no part under =projects/ores.shell=.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.ore.api/messaging/ore_document_protocol.hpp"
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** pricing_engines_export_problem
+
+#+begin_src cpp :name comment
+/**
+ * @brief One reason the export is refused, named so a client can act on it.
+ *
+ * A refusal reports every reason it found, not the first, so a person fixes
+ * them in one pass.
+ */
+#+end_src
+
+*** code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Which rule the export could not follow: configuration_missing,
+ * document_missing, file_name_missing or write_failed.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** export_pricing_engines_request
+:PROPERTIES:
+:subject: ore.v1.ops.export_pricing_engines
+:response: export_pricing_engines_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Writes one pricing engine configuration as an ORE pricing engines
+ * document.
+ *
+ * The configuration is named by the reporting configuration it fills, which is
+ * what analytics' own read finds a document by.
+ */
+#+end_src
+
+*** configuration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** export_pricing_engines_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The document, one file, and how many products it holds.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** count
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** files
+:PROPERTIES:
+:cpp_type: std::vector<ores::ore::messaging::ore_document>
+:END:
+
+*** problems
+:PROPERTIES:
+:cpp_type: std::vector<pricing_engines_export_problem>
+:END:
+
+* See also
+
+- [[id:AF63E82F-D4DD-41EC-A1FE-6B3B5824F462][ores.ore.currency_config_messages]] — the export this one follows in shape.
+- [[id:d50f9b8c-cfaf-451b-8cd1-71c12fe21d41][ores.ore.ore_document_messages]] — the file the answer carries.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the Import and Export section that names the operation.

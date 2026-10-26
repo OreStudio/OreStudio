@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: d50f9b8c-cfaf-451b-8cd1-71c12fe21d41
+:END:
+#+title: ores.ore.ore_document_messages
+#+description: Codegen operation model for the one ORE document type the ORE component's exports return: a file name and its text. Rendered to C++ and TypeScript from one source, and shared by every document export.
+#+type: ores.codegen.operation
+#+component: ore
+#+subcomponent: api
+#+entity_singular: ore_document
+#+namespace: ores::ore::messaging
+#+brief: One ORE document, as a browser saves it.
+#+filetags: :model:operation:ore:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+The ORE component writes a document and answers with the files a browser
+saves: each is a name and the text under it. The type is stated once here
+because every export answers with it, and a second statement of the same
+struct in a second protocol would be two types with one name: the two
+protocols cannot be included in one unit, and a reader of one cannot be sure
+it is the other.
+
+This model has no operation of its own. It states the shared payload the
+exports carry, which is the whole of what a caller reads it for.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** ore_document
+
+#+begin_src cpp :name comment
+/**
+ * @brief One ORE document, as the browser saves it: its file name and its text.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** content
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+* See also
+
+- [[id:AF63E82F-D4DD-41EC-A1FE-6B3B5824F462][ores.ore.currency_config_messages]] — the first export that answers with it.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the Import and Export section that names the export's answer.

@@ -41,6 +41,7 @@ set(files
     "ore_parameter_value_set_catalogue_commands_tests.cpp"
     "ore_parameter_value_set_commands_tests.cpp"
     "ore_parameter_value_set_value_commands_tests.cpp"
+    "pricing_engines_commands_tests.cpp"
     "report_configuration_commands_tests.cpp"
     "report_definition_commands_tests.cpp"
     "report_error_event_commands_tests.cpp"

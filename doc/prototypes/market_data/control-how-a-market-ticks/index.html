@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control how a market ticks — three prototypes</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:150px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 14px}
+.tabs button[aria-selected="true"]{background:var(--accent);color:#0d1117;border-color:var(--accent);font-weight:600}
+.split{display:grid;grid-template-columns:190px 1fr;gap:12px}
+.split3{display:grid;grid-template-columns:200px 1fr 320px;gap:12px}
+.tree{font-size:.86rem;display:grid;gap:2px}
+.tree .node{padding:3px 6px;border-radius:5px}.tree .node.sel{background:var(--panel-2);outline:1px solid var(--line)}
+.tree .node .state{float:right;color:var(--ok);font-size:.8em}
+.gaps{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;height:74px;width:100%}
+.for{display:grid;gap:4px;font-size:.84rem}.for b{color:var(--ok);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+.against b{color:var(--bad)}
+.rail{display:flex;gap:6px;flex-wrap:wrap;counter-reset:step}
+.rail button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 12px;font-size:.82rem}
+.rail button[aria-selected="true"]{background:var(--accent-dim, #21262d);border-color:var(--accent);color:var(--accent)}
+.rail button::before{counter-increment:step;content:counter(step) ". ";color:var(--ink-faint)}
+.legend{display:flex;gap:14px;font-size:.78rem;color:var(--ink-dim);flex-wrap:wrap}
+.sw{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px}
+h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Control how a market ticks</h1>
+    <span class="tag">prototype · throwaway · <a href="../../../../knowledge/ui/synthetic_data_generation_screens.org">screens standard</a></span>
+  </div>
+  <p class="muted">Three shapes for the arrival regime: a pair's own clustering and sensitivity, and the run-wide market state. Each shows the same feed and the same numbers; only the place differs.</p>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true"  data-v="A">A · inline in the editor</button>
+    <button role="tab" aria-selected="false" data-v="B">B · market panel beside the tree</button>
+    <button role="tab" aria-selected="false" data-v="C">C · one arrivals screen</button>
+  </div>
+
+  <!-- A ------------------------------------------------------------------ -->
+  <section id="vA" class="panel">
+    <h2>Author FX rate · EUR/USD</h2>
+    <div class="row">
+      <div class="field"><label>Rate, ticks/hour</label><input value="3600"></div>
+      <div class="field"><label>Arrival mode</label>
+        <select id="mA"><option>periodic</option><option selected>hawkes</option><option>poisson</option></select></div>
+      <div class="field"><label>Branching ratio</label><input id="nA" value="0.6"></div>
+      <div class="field"><label>Decay, per second</label><input id="dA" value="20"></div>
+      <div class="field"><label>Sensitivity</label><input value="1.3"></div>
+    </div>
+    <h3 class="of">What these numbers produce</h3>
+    <canvas class="gaps" id="gapsA" height="74"></canvas>
+    <div class="row">
+      <div class="field"><label>Long-run rate</label><div class="value mono">1.0 / s</div></div>
+      <div class="field"><label>Fano factor of gaps</label><div class="value mono" id="fanoA">—</div></div>
+      <div class="field"><label>Market now</label><div class="value"><span class="tag">active</span> ×2 · <a href="#" data-jump="B">manage</a></div></div>
+    </div>
+    <div class="for"><b>For</b> the consequence sits beside the choice, and a person learns what 0.9 means by looking.</div>
+    <div class="for against"><b>Against</b> every feed repeats the market line, and the run's state still has no home of its own.</div>
+  </section>
+
+  <!-- B ------------------------------------------------------------------ -->
+  <section id="vB" class="panel" hidden>
+    <h2>Market Simulator · a collection under a busy market</h2>
+    <div class="split3">
+      <div class="tree">
+        <div class="node">Demo collection <span class="state">8 of 12</span></div>
+        <div class="node">FX</div>
+        <div class="node sel">EUR/USD <span class="state">running</span></div>
+        <div class="node">GBP/USD <span class="state">running</span></div>
+        <div class="node">USD/JPY <span class="state">stopped</span></div>
+        <div class="node">IR</div>
+        <div class="node">USD SOFR <span class="state">running</span></div>
+        <div class="node">EUR ESTR <span class="state">partial</span></div>
+      </div>
+      <div class="panel" style="background:var(--bg)">
+        <h2>EUR/USD</h2>
+        <div class="row">
+          <div class="field"><label>Arrival mode</label><div class="value">hawkes</div></div>
+          <div class="field"><label>Ratio · decay</label><div class="value mono">0.6 · 20/s</div></div>
+          <div class="field"><label>Sensitivity</label><div class="value mono">1.3</div></div>
+        </div>
+        <canvas class="gaps" id="gapsB" height="74"></canvas>
+        <h3 class="of">Two feeds, before and after a pin</h3>
+        <canvas class="gaps" id="countsB" height="96"></canvas>
+        <div class="legend"><span><i class="sw" style="background:#58a6ff"></i>EUR/USD</span><span><i class="sw" style="background:#d29922"></i>USD SOFR</span></div>
+      </div>
+      <div class="panel">
+        <h2>Market</h2>
+        <div class="row">
+          <div class="field"><label>State</label><div class="value"><span class="tag" id="stateB">active</span></div></div>
+          <div class="field"><label>Multiplier</label><div class="value mono" id="multB">2.0</div></div>
+        </div>
+        <div class="row">
+          <button class="btn" data-mode="auto">Auto</button>
+          <button class="btn" data-mode="calm">Calm</button>
+          <button class="btn primary" data-mode="active">Active</button>
+        </div>
+        <p class="faint" style="font-size:.8rem">Pinned by marco at 14:02, reason: stress run. Auto hands control back to the chain.</p>
+        <h3 class="of">Who follows it hardest</h3>
+        <table><thead><tr><th>Feed</th><th class="num">Sens.</th><th class="num">Rate now</th></tr></thead>
+        <tbody>
+          <tr><td>EUR/USD</td><td class="num">1.3</td><td class="num">2.6 / s</td></tr>
+          <tr><td>GBP/USD</td><td class="num">1.1</td><td class="num">2.2 / s</td></tr>
+          <tr><td>USD/JPY</td><td class="num">0.9</td><td class="num">1.8 / s</td></tr>
+          <tr><td>USD SOFR</td><td class="num">0.4</td><td class="num">0.4 / s</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+    <div class="for"><b>For</b> the two levels are finally adjacent: the state, the switch, who follows it, and the feed being edited.</div>
+    <div class="for against"><b>Against</b> clustering is edited in one place and its consequence read in another.</div>
+  </section>
+
+  <!-- C ------------------------------------------------------------------ -->
+  <section id="vC" class="panel" hidden>
+    <h2>Arrivals · every feed's regime in one table</h2>
+    <div class="rail">
+      <button aria-selected="true">The run</button><button>The feeds</button><button>The preview</button>
+    </div>
+    <div class="row">
+      <div class="field"><label>Market</label><div class="value"><span class="tag">active</span> ×2 · pinned</div></div>
+      <div class="field"><label>Feeds live</label><div class="value mono">8 / 12</div></div>
+      <div class="field"><label>Auto · Calm · Active</label><div class="value mono">active</div></div>
+    </div>
+    <table><thead><tr><th>Feed</th><th>Mode</th><th class="num">Ratio</th><th class="num">Decay</th><th class="num">Sens.</th><th class="num">Rate</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>EUR/USD</td><td>hawkes</td><td class="num">0.6</td><td class="num">20</td><td class="num">1.3</td><td class="num">2.6 / s</td><td><a href="#">preview</a></td></tr>
+      <tr><td>GBP/USD</td><td>hawkes</td><td class="num">0.5</td><td class="num">10</td><td class="num">1.1</td><td class="num">2.2 / s</td><td><a href="#">preview</a></td></tr>
+      <tr><td>USD/JPY</td><td>poisson</td><td class="num">—</td><td class="num">—</td><td class="num">0.9</td><td class="num">1.8 / s</td><td><a href="#">preview</a></td></tr>
+      <tr><td>USD SOFR</td><td>periodic</td><td class="num">—</td><td class="num">—</td><td class="num">0.4</td><td class="num">0.4 / s</td><td><a href="#">preview</a></td></tr>
+    </tbody></table>
+    <h3 class="of">Preview · EUR/USD</h3>
+    <canvas class="gaps" id="gapsC" height="74"></canvas>
+    <div class="for"><b>For</b> a table is the only shape that compares twenty feeds, and every control is in one place.</div>
+    <div class="for against"><b>Against</b> the choice is away from its row, and a rate now has two places it can be edited.</div>
+  </section>
+
+  <p class="faint" style="font-size:.8rem">The previews are drawn from the numbers above with a fixed seed, so the same input always draws the same gaps. A Hawkes preview bursts; a periodic one does not. That difference is the whole argument for showing it.</p>
+</div>
+
+<script>
+// Deterministic gaps: a linear congruential generator, so a reload redraws the same picture.
+function rng(seed){let s=seed>>>0;return()=>((s=(s*1664525+1013904223)>>>0)/4294967296);}
+function gaps(mode, ratio, decay, seconds, meanRate, seed){
+  const r=rng(seed), out=[]; let t=0, heat=0;
+  while(t<seconds){
+    const rate=Math.max(0.001, meanRate+heat);
+    t+= -Math.log(1-r())/rate;
+    heat=heat*Math.exp(-decay*0.02)+(mode==='hawkes'?ratio*meanRate*0.02:0);
+    if(heat>meanRate*6)heat=meanRate*6;
+    out.push(t);
+  }
+  return out;
+}
+function drawGaps(id, mode, ratio, decay){
+  const c=document.getElementById(id); if(!c) return;
+  const dpr=window.devicePixelRatio||1; c.width=c.clientWidth*dpr; c.height=c.clientHeight*dpr;
+  const g=c.getContext('2d'); g.scale(dpr,dpr);
+  const w=c.clientWidth,h=c.clientHeight;
+  g.fillStyle='#26262b';g.fillRect(0,0,w,h);
+  const seconds=20, pts=gaps(mode,ratio,decay,seconds,1.0,7);
+  g.strokeStyle='#58a6ff';g.lineWidth=1;
+  pts.forEach(t=>{const x=8+(t/seconds)*(w-16);g.beginPath();g.moveTo(x,8);g.lineTo(x,h-8);g.stroke();});
+  g.fillStyle='#71717a';g.font='11px ui-monospace,monospace';
+  g.fillText(mode+' · '+pts.length+' ticks in 20 s',10,h-6);
+}
+function drawCounts(id){
+  const c=document.getElementById(id); if(!c) return;
+  const dpr=window.devicePixelRatio||1; c.width=c.clientWidth*dpr; c.height=c.clientHeight*dpr;
+  const g=c.getContext('2d'); g.scale(dpr,dpr);
+  const w=c.clientWidth,h=c.clientHeight; g.fillStyle='#26262b';g.fillRect(0,0,w,h);
+  const windows=12, before=[3,4,3,5,4,3,4,5,3,4,3,4], after=[9,11,10,12,11,9,10,12,11,10,9,11];
+  const bw=(w-40)/windows, max=14;
+  for(let i=0;i<windows;i++){
+    const x=20+i*bw;
+    g.fillStyle='#58a6ff'; g.fillRect(x, h-14-(before[i]/max)*(h-30), bw*0.38, (before[i]/max)*(h-30));
+    g.fillStyle='#d29922'; g.fillRect(x+bw*0.42, h-14-(after[i]/max)*(h-30), bw*0.38, (after[i]/max)*(h-30));
+  }
+  g.fillStyle='#71717a';g.font='11px ui-monospace,monospace';
+  g.fillText('counts per 30 s · left of the mark before the pin, right of it after',20,h-2);
+  g.strokeStyle='#30363d';g.beginPath();g.moveTo(w/2,6);g.lineTo(w/2,h-16);g.stroke();
+}
+function redraw(){
+  drawGaps('gapsA', document.getElementById('mA').value,
+           parseFloat(document.getElementById('nA').value)||0,
+           parseFloat(document.getElementById('dA').value)||1);
+  drawGaps('gapsB','hawkes',0.6,20);
+  drawGaps('gapsC','hawkes',0.6,20);
+  drawCounts('countsB');
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tabs button').forEach(o=>o.setAttribute('aria-selected',String(o===b)));
+  ['A','B','C'].forEach(v=>document.getElementById('v'+v).hidden = ('v'+v)!==('v'+b.dataset.v));
+  redraw();
+}));
+document.querySelectorAll('[data-jump]').forEach(a=>a.addEventListener('click',e=>{
+  e.preventDefault();
+  document.querySelector('.tabs button[data-v="'+a.dataset.jump+'"]').click();
+}));
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{
+  const mode=b.dataset.mode;
+  document.getElementById('stateB').textContent = mode==='auto' ? 'calm (chain)' : mode;
+  document.getElementById('multB').textContent = mode==='active' ? '2.0' : (mode==='calm' ? '0.5' : '0.5');
+}));
+['mA','nA','dA'].forEach(id=>document.getElementById(id).addEventListener('input',redraw));
+window.addEventListener('resize',redraw);
+redraw();
+</script>
+</body>
+</html>

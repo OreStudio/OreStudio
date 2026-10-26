@@ -87,19 +87,21 @@ demand_states(const std::vector<party_demand>& demand);
  *
  * A state with no open interval opens one. An open interval whose state is gone, or whose rights
  * or source changed, closes. A change of source or rights therefore closes one interval and opens
- * the next. An interval already open for a state stays as it is.
+ * the next. An interval already open for a state stays as it is. Every interval it plans is
+ * stamped with @p actor, the account the store writes it as.
  */
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT interval_plan<domain::subscription_interval>
 plan_subscription_intervals(const std::vector<subscription_state>& now_state,
                             const std::vector<domain::subscription_interval>& open,
-                            std::chrono::system_clock::time_point now);
+                            std::chrono::system_clock::time_point now,
+                            const std::string& actor);
 
 /// Compares the open demand intervals with the demand now, by the same rule.
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT interval_plan<domain::demand_interval>
 plan_demand_intervals(const std::vector<demand_state>& now_state,
                       const std::vector<domain::demand_interval>& open,
-                      std::chrono::system_clock::time_point now);
-
+                      std::chrono::system_clock::time_point now,
+                      const std::string& actor);
 }
 
 #endif

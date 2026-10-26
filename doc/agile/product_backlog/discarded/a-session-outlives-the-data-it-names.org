@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 7A3F9C28-1D56-4E90-B4C1-8F2E5A6D0917
 :END
-#+title: A session outlives the data it names
-#+description: After a database recreation an open browser session keeps a party id and book ids that no longer exist, and a booking is refused with a message about the book rather than about the session.
+#+title: A session outlives the data it names (wrong)
+#+description: Discarded. The refusal was a book of another party, not an old session: the picker offered books the booking could not use.
 #+type: capture
 #+level: cross
 #+filetags: :web:iam:bug:
@@ -36,3 +36,28 @@ world that can be replaced under it. Two things could say so:
 The second is smaller and helps every write, not just a booking: the change
 belongs where the trading service already answers =invalid book_id=, and where
 any other service answers about a foreign key it can no longer see.
+
+
+* Why this was discarded
+
+I read the refusal as a stale session and wrote the capture from that reading.
+The ids in the error are not stale: they are books that exist now, and each
+belongs to a *different party* than the one the booking is stamped with.
+
+#+begin_example
+1c2248c6-… | G10 Americas Spot Forward | Active | f4f499b9-…
+04624bc9-… | HKD Vanilla Swaps          | Active | e52acd16-…
+d8d2dde9-… | GBP Vanilla Swaps          | Active | bcb5cf28-…
+#+end_example
+
+So the fault was the form's book picker, which offered every book the session
+could *see* rather than the books the session could *book into*. It is fixed:
+the picker is read in the booking's route, where the acting party is known, and
+filtered to that party's open books.
+
+* What remains true
+
+A session is still a snapshot of a world that can be replaced under it, and a
+stale one would still produce a confusing refusal. That is a real risk, but
+nothing in this test demonstrated it, and a capture that says otherwise would
+send the next person down the wrong path.

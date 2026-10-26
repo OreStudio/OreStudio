@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/operations-sources-and-subscriptions
-#+pr:
+#+pr: 3868
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3868][#3868]] | [web] Draw the market data sources board and the subscriptions screen |
 
 * Review
 

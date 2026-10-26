@@ -50,6 +50,19 @@ from compass_db import load_env
 # from ones the old process_supervisor would have created.
 HOST_ID_NAMESPACE = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 
+# Every fleet unit gets its own memory cap, so a leaking service dies alone in
+# its own cgroup. Without it the kernel OOM killer waits until RAM and swap are
+# both full, and the machine thrashes swap until it stops responding: this took
+# the box down on 2026-10-26 when ores.marketdata.service leaked. MemoryMax is
+# the hard kill, and Restart=always brings the killed service back.
+# MemorySwapMax stops the leak from filling swap on its way to the cap.
+# There is deliberately no MemoryHigh: a leak held under MemoryHigh is
+# throttled so hard that it never reaches MemoryMax, so the service hangs
+# instead of dying and restarting. A test leak under MemoryHigh=7G stalled at
+# 8.7 GiB for minutes with zero OOM kills.
+FLEET_MEMORY_LIMITS = """MemoryMax=8G
+MemorySwapMax=1G"""
+
 # tenant_id::system().to_string() -- the max UUID sentinel (RFC 9562), always
 # this literal value regardless of environment; see process_supervisor.cpp's
 # own {tenant_id} substitution and its accompanying comment.
@@ -231,6 +244,7 @@ EnvironmentFile={env_file}
 ExecStart=/bin/sh -c '{shell_cmd}'
 Restart=always
 RestartSec=2
+{FLEET_MEMORY_LIMITS}
 # Exit code 7 is schema_mismatch: the database was built from other SQL.
 # A restart cannot fix it, so the unit fails once with the refusal.
 RestartPreventExitStatus=7
@@ -294,6 +308,7 @@ EnvironmentFile={env_file}
 ExecStart=/bin/sh -c '{shell_cmd}'
 Restart=always
 RestartSec=2
+{FLEET_MEMORY_LIMITS}
 
 [Install]
 WantedBy={target_name}
@@ -350,6 +365,7 @@ EnvironmentFile={env_file}
 ExecStart=/bin/sh -c '{shell_cmd}'
 Restart=always
 RestartSec=2
+{FLEET_MEMORY_LIMITS}
 # Exit code 7 is schema_mismatch: the database was built from other SQL.
 # A restart cannot fix it, so the unit fails once with the refusal.
 RestartPreventExitStatus=7
@@ -411,6 +427,7 @@ ExecStart=/usr/sbin/nats-server --config {checkout_root}/build/config/nats-{nats
 ExecStartPost=/bin/sh -c '{port_probe}'
 Restart=always
 RestartSec=2
+{FLEET_MEMORY_LIMITS}
 
 [Install]
 WantedBy={target_name}
@@ -735,6 +752,7 @@ Notify=healthy
 EnvironmentFile={env_file}
 Restart=always
 RestartSec=2
+{FLEET_MEMORY_LIMITS}
 
 [Install]
 WantedBy={target_name}
@@ -794,6 +812,7 @@ Notify=healthy
 EnvironmentFile={env_file}
 Restart=always
 RestartSec=2
+{FLEET_MEMORY_LIMITS}
 
 [Install]
 WantedBy={target_name}
@@ -824,6 +843,7 @@ Exec=--config {checkout_root}/build/config/nats-{nats_label}.conf
 [Service]
 Restart=always
 RestartSec=2
+{FLEET_MEMORY_LIMITS}
 
 [Install]
 WantedBy={target_name}

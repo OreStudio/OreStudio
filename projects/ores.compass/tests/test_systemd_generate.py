@@ -208,3 +208,61 @@ class TestReloadSystemd:
                             lambda: True)
         assert systemd_generate._reload_systemd() == 1
         assert "set ORES_USE_BUSCTL=1" not in capsys.readouterr().err
+
+
+def _native_def(service_name="ores.marketdata.service", replicas=1):
+    return {
+        "service_name": service_name,
+        "binary_name": service_name,
+        "desired_replicas": replicas,
+        "enabled": True,
+        "args_template": "",
+        "runtime": "native",
+    }
+
+
+def _fleet_units():
+    wrapper = _native_def("ores.compute.wrapper", replicas=2)
+    units = [
+        systemd_generate.render_singleton_unit(
+            _native_def(), [], "/checkout", "eager_maxwell", TARGET),
+        _render(),
+        systemd_generate.render_nats_unit(
+            "/checkout", "eager_maxwell", TARGET, 4222),
+        systemd_generate.render_quadlet_singleton_unit(
+            _native_def(), [], "/checkout", "eager_maxwell", TARGET),
+        systemd_generate.render_quadlet_nats_unit(
+            "/checkout", "eager_maxwell", TARGET),
+    ]
+    units += [u for _, u in systemd_generate.render_wrapper_units(
+        wrapper, [], "/checkout", "eager_maxwell", TARGET)]
+    units += [u for _, u in systemd_generate.render_quadlet_wrapper_units(
+        wrapper, [], "/checkout", "eager_maxwell", TARGET)]
+    return units
+
+
+def _service_section(unit):
+    return unit.split("[Service]", 1)[1].split("\n[", 1)[0]
+
+
+class TestFleetMemoryCap:
+    """A leaking service must die alone in its own cgroup.
+
+    Without a cap the kernel OOM killer waits until RAM and swap are both
+    full, and the machine thrashes swap until it stops responding."""
+
+    def test_every_fleet_unit_caps_memory_and_swap(self):
+        for unit in _fleet_units():
+            section = _service_section(unit)
+            assert "MemoryMax=8G" in section, unit
+            assert "MemorySwapMax=1G" in section, unit
+
+    def test_no_fleet_unit_throttles_a_leak_short_of_the_kill(self):
+        """MemoryHigh throttles a leak so hard that it never reaches
+        MemoryMax: the service hangs instead of dying and restarting."""
+        for unit in _fleet_units():
+            assert "MemoryHigh" not in unit, unit
+
+    def test_the_site_preview_unit_is_not_part_of_the_fleet_cap(self):
+        unit = systemd_generate.render_site_unit("/checkout", "eager_maxwell", 8000)
+        assert "MemoryMax" not in unit

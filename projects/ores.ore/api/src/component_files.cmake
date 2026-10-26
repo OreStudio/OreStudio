@@ -25,6 +25,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/messaging/currency_config_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/messaging/ore_import_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/messaging/run_configuration_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.api/net/ore_storage.hpp"

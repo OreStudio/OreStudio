@@ -3811,6 +3811,68 @@ export const en: SourceCatalogue = {
             commentaryRequired: 'This reason needs a commentary.',
             revertCommentary: 'Reverted to version {version}.',
         },
+        ore: {
+            import: 'Import',
+            export: 'Export',
+            close: 'Close',
+            next: 'Next',
+            exportLead:
+                "Writes {file}, the ORE document, with the tenant's {plural} as they stand now.",
+            exportNote:
+                'The server writes the document; your browser saves it. Nothing changes here.',
+            exported: 'Saved {file}, {count} records.',
+            importTitle: 'Import {plural}',
+            importLead:
+                'Bring an ORE document in. The server reads it, you review the difference, and nothing is written before the last step.',
+            fileSize: '{kb} KB',
+            steps: {
+                file: 'Choose the file',
+                fileLead:
+                    'An ORE document whose root element is {root}. A file of another kind is refused.',
+                holds: 'What the file holds',
+                holdsLead: 'The server read the file. Nothing is written yet.',
+                unknown: 'What the system does not know',
+                unknownLead:
+                    'A value with no row, an element with no column, or a record the file names twice. Nothing is dropped in silence.',
+                review: 'The difference, and the review',
+                reviewLead:
+                    'What the import writes, removed rows first. A file that omits a record usually leaves it out by accident, so Keep it is the default.',
+            },
+            counts: {
+                inFile: 'In the file',
+                held: 'Already held',
+                changed: 'Changed',
+                added: 'New',
+                removed: 'Not in the file',
+            },
+            countsNote:
+                'Already held is a record the tenant has with the same values. Changed is one it has with other values. Not in the file is one the tenant has and the file omits.',
+            nothingUnknown:
+                'Everything in the file is known: every value has its row, every element has its column, and no record appears twice.',
+            issues: {
+                value: 'Values with no row',
+                valueLead:
+                    'A value the lists do not hold; the import writes the row as the file states it and names the value here.',
+                dropped: 'Elements with no column',
+                droppedLead: 'Dropped, and named here so nothing is dropped in silence.',
+                duplicate: 'Duplicates',
+                duplicateLead: 'A record the file names twice; the first is kept.',
+            },
+            noDifference: 'The file holds what the tenant holds. There is nothing to write.',
+            change: 'Change',
+            what: 'What',
+            choice: 'Choice',
+            changes: { added: 'Added', changed: 'Changed', removed: 'Removed' },
+            choices: {
+                take: "Take the file's",
+                keep: 'Keep ours',
+                delete: 'Delete it',
+                skip: 'Skip it',
+            },
+            reach: 'The records written are read by everything that names them. The write claims the versions the server holds now.',
+            imported:
+                'Imported: {added} added, {changed} changed, {deleted} deleted, {kept} kept. Refresh shows the new versions.',
+        },
         records: {
             deletePartWarning: 'The row closes. Its history stays.',
             historyOf: 'History of {name}',

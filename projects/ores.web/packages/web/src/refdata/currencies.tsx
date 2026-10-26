@@ -28,6 +28,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
+import { OreExchangeActions, OreImportPage, type OreDocumentKind } from '../ore/OreExchange.js';
 import { RecordList, useRecordSource } from './RecordList.js';
 import { RecordTimeline } from './RecordTimeline.js';
 import {
@@ -51,6 +52,16 @@ import {
 const RESOURCE = 'currencies';
 const ENTITY = 'ores.refdata.currency';
 const LINKS = ['currency-countries', 'currency-calendars', 'currency-memberships'] as const;
+
+/** The ORE document the currencies are: the first kind to carry the standard Import and Export pair. */
+const ORE_DOCUMENT: OreDocumentKind = {
+    resource: RESOURCE,
+    fileName: 'currencyconfig.xml',
+    rootElement: 'CurrencyConfig',
+    listPath: '/refdata/currencies',
+    importPath: '/refdata/currencies/import',
+    words: 'refdata.currencies',
+};
 
 /** The currency fields a person edits, in form order, with the names the history gives them. */
 export const CURRENCY_FIELDS: readonly FieldSpec[] = [
@@ -107,10 +118,12 @@ export function CurrenciesPage(): ReactNode {
     const navigate = useNavigate();
     const [adding, setAdding] = useState(false);
     const source = useRecordSource(RESOURCE);
+    const may = useRecordPermissions(RESOURCE);
     return (
         <>
             <RecordList
                 source={source}
+                actions={<OreExchangeActions kind={ORE_DOCUMENT} mayWrite={may.write} />}
                 title={t('refdata.currencies.title')}
                 lead={t('refdata.currencies.lead')}
                 crumbs={[...useAreaRoot('refdata'), { label: t('refdata.currencies.title') }]}
@@ -173,6 +186,11 @@ export function CurrenciesPage(): ReactNode {
             )}
         </>
     );
+}
+
+/** The Import steps of the currencies, at their own address (RS-ORE-05). */
+export function CurrencyImportPage(): ReactNode {
+    return <OreImportPage kind={ORE_DOCUMENT} />;
 }
 
 /**

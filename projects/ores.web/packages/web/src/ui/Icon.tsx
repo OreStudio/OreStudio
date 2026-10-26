@@ -23,6 +23,8 @@ import type { ReactNode } from 'react';
 import add from '../assets/icons/ic_fluent_add_20_regular.svg';
 import alert from '../assets/icons/ic_fluent_alert_20_regular.svg';
 import arrowClockwise from '../assets/icons/ic_fluent_arrow_clockwise_20_regular.svg';
+import arrowExport from '../assets/icons/ic_fluent_arrow_export_20_regular.svg';
+import arrowImport from '../assets/icons/ic_fluent_arrow_import_20_regular.svg';
 import arrowRotateCounterclockwise from '../assets/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg';
 import copy from '../assets/icons/ic_fluent_copy_20_regular.svg';
 import deleteIcon from '../assets/icons/ic_fluent_delete_20_regular.svg';
@@ -78,8 +80,10 @@ const ICONS = {
     desk,
     document,
     edit,
+    export: arrowExport,
     filter,
     history,
+    import: arrowImport,
     locked: lockClosed,
     log,
     pairs: arrowSync,

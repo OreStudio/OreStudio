@@ -52,14 +52,11 @@ HOST_ID_NAMESPACE = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 
 # Every fleet unit gets its own memory cap, so a leaking service dies alone in
 # its own cgroup. Without it the kernel OOM killer waits until RAM and swap are
-# both full, and the machine thrashes swap until it stops responding: this took
-# the box down on 2026-10-26 when ores.marketdata.service leaked. MemoryMax is
-# the hard kill, and Restart=always brings the killed service back.
+# both full, and the machine thrashes swap until it stops responding. MemoryMax
+# is the hard kill, and Restart=always brings the killed service back.
 # MemorySwapMax stops the leak from filling swap on its way to the cap.
-# There is deliberately no MemoryHigh: a leak held under MemoryHigh is
-# throttled so hard that it never reaches MemoryMax, so the service hangs
-# instead of dying and restarting. A test leak under MemoryHigh=7G stalled at
-# 8.7 GiB for minutes with zero OOM kills.
+# There is deliberately no MemoryHigh: it throttles a leak so hard that the
+# leak never reaches MemoryMax, so the service hangs instead of restarting.
 FLEET_MEMORY_LIMITS = """MemoryMax=8G
 MemorySwapMax=1G"""
 

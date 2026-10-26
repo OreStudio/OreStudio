@@ -1,32 +1,32 @@
 :PROPERTIES:
-:ID: 5A8896F6-E9AF-4047-A038-3771ED77C1BC
+:ID: B8842E1C-01C5-493A-9A83-F48F39A20BDF
 :END:
-#+title: Task: Compare generated raw code with sqlgen and reflect-cpp
-#+description: Prototype generated raw SQL, MessagePack and JSON code for a few entities and measure it against sqlgen and reflect-cpp for speed, build time, binary size and the features the platform uses.
+#+title: Task: Check libpqxx 8 against the data path's requirements
+#+description: Read libpqxx 8.0.2 and probe it for binary parameters and results, libpq pipeline mode, COPY, prepared statements, transactions and SQLSTATE error classes.
 #+type: task
 #+level: s1
 #+filetags: :decide_whether_codegen_replaces_sqlgen_and_reflect_cpp:sprint_29:v0:
 #+owner: marco
-#+branch: feature/decide-whether-codegen-replaces-sqlgen-and-reflect-cpp
+#+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment: brave_hopper
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Numbers and a recommendation: for a few representative entities, generated raw code against sqlgen and reflect-cpp, on read and write speed, allocation, build time, binary size, and coverage of the features the platform uses.
+A yes or no, with evidence, for each data path requirement libpqxx 8 must meet, and the gaps a thin wrapper of our own would fill.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,13 +35,7 @@ Numbers and a recommendation: for a few representative entities, generated raw c
 
 * Acceptance
 
-- A prototype generates raw SQL access (libpq, binary format), MessagePack and
-  JSON code for at least one bitemporal entity, one entity with children and one
-  wide reference entity.
-- Each is measured against the sqlgen and reflect-cpp code it would replace, and
-  the numbers are recorded with their commands and commits.
-- The recommendation names what the generator would have to own that the
-  libraries own today.
+-
 
 * Plan
 
@@ -61,18 +55,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Files using sqlgen | 1,429, of which 924 generated | =grep -rl 'sqlgen::'= over =projects=, then the generated markers | =ced6c2fc70= |
-| Files using reflect-cpp | 1,970, of which 1,837 generated | =grep -rl 'rfl::'= over =projects=, then the generated markers | =ced6c2fc70= |
-| sqlgen calls by kind | =read= 3,692, =limit= 1,052, =delete_from= 864, conditions 842, =offset= 600, =order_by= 443, =count= 73, =insert_or_replace= 32, =insert= 13 | =grep -rhoE 'sqlgen::[a-z_]+'= with counts | =ced6c2fc70= |
-| reflect-cpp calls by kind | =json::write= 5,221, =json::read= 636, enum conversions 18, =msgpack::write= 3, =msgpack::read= 4 | =grep -rhoE 'rfl::[a-z_]+(::[a-z_]+)?'= with counts | =ced6c2fc70= |
+|      |       |         |        |
 
 * Notes
-
-- Writes go through =execute_write_query= in =ores.database=, which issues one
-  =sqlgen::insert= for each row, inside a unit of work for a batch.
-- The NATS wire codec chooses JSON or MessagePack at run time, both through
-  reflect-cpp templates instantiated for each message type.
-- Most of the use is generated, so a change to the templates changes most of it.
 
 * Test Scenarios
 

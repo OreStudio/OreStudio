@@ -21,11 +21,11 @@
 #ifndef ORES_ORE_CORE_XML_EXPORTER_HPP
 #define ORES_ORE_CORE_XML_EXPORTER_HPP
 
+#include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/export.hpp"
-#include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"

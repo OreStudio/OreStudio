@@ -949,8 +949,11 @@ namespace {
 
 /** One row of the configuration, with the fields the document reads. */
 ores::analytics::domain::pricing_model_product
-product_at(const std::string& type, const std::string& model, const std::string& engine,
-           int position, const boost::uuids::uuid& id = boost::uuids::random_generator()()) {
+product_at(const std::string& type,
+           const std::string& model,
+           const std::string& engine,
+           int position,
+           const boost::uuids::uuid& id = boost::uuids::random_generator()()) {
     ores::analytics::domain::pricing_model_product row;
     row.id = id;
     row.pricing_engine_type_code = type;

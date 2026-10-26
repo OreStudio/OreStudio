@@ -64,8 +64,8 @@ component has no part under =projects/ores.shell=.
 
 #+begin_src cpp :name comment
 /**
- * @brief Which rule the export could not follow: configuration_missing,
- * document_missing, file_name_missing or write_failed.
+ * @brief Which rule the export could not follow: document_unreadable,
+ * file_name_missing or write_failed.
  */
 #+end_src
 

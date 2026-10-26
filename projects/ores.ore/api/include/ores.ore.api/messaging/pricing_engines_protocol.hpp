@@ -41,8 +41,8 @@ namespace ores::ore::messaging {
  */
 struct pricing_engines_export_problem {
     /**
-     * @brief Which rule the export could not follow: configuration_missing,
-     * document_missing, file_name_missing or write_failed.
+     * @brief Which rule the export could not follow: document_unreadable,
+     * file_name_missing or write_failed.
      */
     std::string code;
     std::string message;

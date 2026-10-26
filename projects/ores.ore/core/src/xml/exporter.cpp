@@ -179,8 +179,8 @@ std::string exporter::export_currency_config(const std::vector<currency>& v) {
     return out;
 }
 
-std::string exporter::export_pricing_engines(
-    const analytics::messaging::pricing_engines_document& v) {
+std::string
+exporter::export_pricing_engines(const analytics::messaging::pricing_engines_document& v) {
     BOOST_LOG_SEV(lg(), debug) << "Exporting pricing engines. Products: " << v.products.size();
 
     // The projection is the one statement of which parameter belongs to which

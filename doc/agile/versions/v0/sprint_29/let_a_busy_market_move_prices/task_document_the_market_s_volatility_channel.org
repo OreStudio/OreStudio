@@ -53,6 +53,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
   meanings of volatility that test measures.
 - The note says what is out of scope, and that the bivariate Hawkes is a capture
   rather than a task.
+- The note cites the prior art the approach rests on, grouped by the part that
+  leans on each paper, and names the models it deliberately does not adopt.
+- The note states its own limitations: what is assumed rather than estimated, what
+  its tests cannot see, and where the cited work does not carry over to this
+  design.
 - The three tasks the note scopes are raised, in the order it recommends.
 
 * Plan
@@ -150,3 +155,23 @@ the scalar stability test with a spectral radius, which is a model of its own.
 The three tasks the note scopes are raised on the story, in its order: sampling
 before time, the loading with its calibration, and the tails. The bivariate Hawkes
 stays captured.
+
+The note carries the prior art and the limitations as well as the design. The
+reading is grouped by the section that leans on it — Clark and the duration
+literature for activity driving volatility, Bochner and Ané and Geman for
+business time, Engle, Bollerslev, Hull and White and Heston for the stochastic
+volatility models deliberately not adopted, Hawkes and its multivariate stability,
+Merton and Barndorff-Nielsen and Shephard for the tails, Epps and Lo and MacKinlay
+for why cross-series correlation is interval-dependent, Andersen and Bollerslev
+and Baillie and colleagues for the seasonality and long memory the factor does not
+produce, and Zhang and colleagues for the two meanings of volatility.
+
+The limitations section is the part a reader should test the design against: no
+vol-of-vol or leverage effect, no jumps as events, two regimes, no intraday shape
+and no long memory, no explicit microstructure noise; a loading that is set rather
+than estimated; and three things our own tests cannot see — which volatility they
+measure, how the window moves a cross-series correlation, and the fact that a
+synthetic series can never validate the model against a market. It also states
+where the cited work does not carry over, including that the enrolment-and-share
+device which keeps the heat bounded is an engineering choice with no paper behind
+it.

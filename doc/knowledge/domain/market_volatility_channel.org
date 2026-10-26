@@ -169,86 +169,210 @@ the above, and it is captured in the inbox rather than scoped here.
 
 * Literature
 
-The approach is not novel and should not be argued as if it were: each part of it
-is a named idea with a paper behind it. The list is grouped by the section that
-leans on it, and each entry says what it gives us rather than who said it first.
+Every part of this approach is a named idea with a paper behind it, and the ones
+it deliberately does not adopt matter as much as the ones it does. Grouped by the
+section that leans on each entry, with one line on what it gives us.
 
 ** Activity and volatility are one latent process
 
 - [[https://jstor.econometricsociety.org/publications/econometrica/1973/01/01/subordinated-stochastic-process-model-finite-variance][Clark (1973), *A subordinated stochastic process model with finite variance for
   speculative prices*, Econometrica 41(1)]] — the mixture-of-distributions
   hypothesis: returns are a mixture over an unobservable information-arrival
-  rate, and tick counts and |returns| are two proxies for it. This is the paper
-  the loading's "variance proportional to activity" comes from.
+  rate, and tick counts and |returns| are two proxies for it. The paper the
+  loading's "variance proportional to activity" comes from.
 - Easley and O'Hara (1992), *Time and the process of security price adjustment*,
-  Journal of Finance 47(2) — trading time carries information, so a price law
-  indexed by clock time misses the variable that matters.
+  Journal of Finance 47(2) — trading time carries information, so a law indexed
+  by clock time misses the variable that matters.
+- [[https://acnpsearch.unibo.it/singlejournalindex/75764135][Ané and Geman (2000),
+  *Order flow, transaction clock, and normality of asset returns*, Journal of
+  Finance 55(5)]] — near-normal in transaction time, fat-tailed in calendar time.
+  The sharpest case for keeping sampling and time apart, which is the story's
+  first task.
 - Engle (2000), *The econometrics of ultra-high-frequency data*, Econometrica
-  68(1) — the joint model of durations and returns: activity and volatility
-  estimated together, which is the statistical shape of what this note proposes.
+  68(1) — durations and returns estimated jointly: the statistical shape of what
+  this note proposes.
 - Engle and Russell (1998), *Autoregressive conditional duration*, Econometrica
-  66(5) — the durations model the arrival processes echo, and the reason a
-  clustering rate belongs in a price model at all.
+  66(5) — the durations model the arrival processes echo.
+- Karpoff (1987), *The relation between price changes and trading volume: a
+  survey*, Journal of Financial and Quantitative Analysis 22(1) — the empirical
+  volume-volatility relation the factor stands in for.
+- Easley, López de Prado and O'Hara (2012), *The volume clock*, Journal of
+  Portfolio Management 39(1) — sampling on activity rather than on the clock, in
+  practice rather than in theory.
 - Cont, Kukanov and Stoikov (2014), *The price impact of order book events*,
   Journal of Financial Econometrics 12(1) — the measured link between event
   intensity and short-horizon volatility.
 
-** Business time, or why more ticks is not more variance
+** Business time
 
-- Bochner (1955), *Harmonic Analysis and the Theory of Probability* — the
-  subordination of one process by another, the mathematics of a clock that runs on
-  activity.
+- Bochner (1955), *Harmonic Analysis and the Theory of Probability* — subordinating
+  one process by another: the mathematics of a clock that runs on activity.
 - Mandelbrot and Taylor (1967), *On the distribution of stock price differences*,
   Operations Research 15(6) — operation time, the first trading-time formulation.
-- [[https://acnpsearch.unibo.it/singlejournalindex/75764135][Ané and Geman (2000),
-  *Order flow, transaction clock, and normality of asset returns*, Journal of
-  Finance 55(5)]] — returns are near-normal in transaction time and fat-tailed in
-  calendar time. The strongest statement of the case for keeping sampling and
-  time apart, which is the first task of the story.
+- Madan and Seneta (1990), *The variance gamma model for share market returns*,
+  Journal of Business 63(4) — a time change that already carries the tail, and the
+  prior art for gamma rather than activity as the clock.
+- Carr and Wu (2004), *Time-changed Lévy processes and option pricing*, Journal of
+  Financial Economics 71(1) — time-changing a process *with jumps*, which is the
+  honest version of "the tails move with activity".
 
-** Hawkes, endogenous activity, and its stability
+** Stochastic volatility and regime switching — the models not adopted
+
+- Engle (1982), *Autoregressive conditional heteroscedasticity*, Econometrica
+  50(4), and Bollerslev (1986), *Generalized autoregressive conditional
+  heteroskedasticity*, Journal of Econometrics 31(3) — volatility clustering as a
+  process on variance itself. The standard the generated series will be compared
+  against, and what this design is not.
+- Hull and White (1987), *The pricing of options on assets with stochastic
+  volatilities*, Journal of Finance 42(2), and Heston (1993), *A closed-form
+  solution for options with stochastic volatility*, Review of Financial Studies
+  6(2) — stochastic volatility as a second factor with its own law: vol-of-vol and
+  the leverage effect, neither of which activity-driven variance reproduces.
+- Hamilton (1989), *A new approach to the economic analysis of nonstationary time
+  series and the business cycle*, Econometrica 57(2) — the regime-switching
+  ancestor of the calm/active chain.
+
+** Hawkes, endogenous activity, and multivariate stability
 
 - Hawkes (1971), *Spectra of some self-exciting and mutually exciting point
-  processes*, Biometrika 58(1) — the model, and already the *mutually exciting*
-  form: activity exciting volatility is not an extension of it but a use of it.
+  processes*, Biometrika 58(1) — the model, and already the mutually exciting
+  form: activity exciting volatility is a use of it, not an extension.
+- Ozaki (1979), *Maximum likelihood estimation of Hawkes' self-exciting point
+  processes* — how such a process is fitted, which is what a calibration path
+  would need.
 - Ogata (1981), *On Lewis' simulation method for point processes*, IEEE
-  Transactions on Information Theory 27(1) — thinning, the simulation method the
-  arrival processes use.
+  Transactions on Information Theory 27(1) — thinning, the method the arrival
+  processes use.
+- Daley and Vere-Jones (2003), *An Introduction to the Theory of Point
+  Processes* — the reference for the conditions the kernel must satisfy.
 - Bacry, Delattre, Hoffmann and Muzy (2013), *Modelling microstructure noise with
   mutually exciting point processes*, Quantitative Finance 13(1) — the closest
-  published model to what ORE Studio does today, noise included.
+  published model to what the platform runs today.
 - [[https://scholar.google.com.ec/citations?view_op=view_citation&hl=ja&user=JII6yu8AAAAJ&citation_for_view=JII6yu8AAAAJ:MXK_kJrjxJIC][Bacry,
   Mastromarino and Muzy (2015), *Hawkes processes in finance*, Market
-  Microstructure and Liquidity 1(1)]] — the survey to read before touching the
-  kernel; it states the stability conditions in the multivariate case.
+  Microstructure and Liquidity 1(1)]] — the survey that states the multivariate
+  stability conditions.
 - Brémaud and Massoulié (1996), *Stability of nonlinear Hawkes processes*, Annals
-  of Probability 24(3) — why the scalar rank-one test becomes a spectral radius,
-  which is the condition the bivariate design has to state.
+  of Probability 24(3) — why a scalar rank-one test becomes a spectral radius.
 - [[https://www.sciencedirect.com/science/article/abs/pii/S0304405X15000264][Aït-Sahalia,
   Cacho-Diaz and Laeven (2015), *Modeling financial contagion using mutually
   exciting jump processes*, Journal of Financial Economics 117(3)]] — contagion as
-  two mutually exciting jump processes: the bivariate design, with jumps, and the
-  empirical case for it.
+  two mutually exciting jump processes: the bivariate design with jumps, and its
+  empirical case.
 
 ** The tails
 
 - Merton (1976), *Option pricing when underlying stock returns are
   discontinuous*, Journal of Financial Economics 3(1) — the jump-diffusion whose
   tail a diffusion scale cannot reproduce.
-- Barndorff-Nielsen and Shephard (2006), *Econometrics of testing for jumps in
-  financial economics using bipower variation*, Journal of Financial Econometrics
-  4(1) — how a jump is told from a diffusion in observed data, which is how a test
-  of our own tails should be written.
+- Barndorff-Nielsen and Shephard (2006), *Econometrics of testing for jumps using
+  bipower variation*, Journal of Financial Econometrics 4(1) — how a jump is told
+  from a diffusion in observed data, which is how our tail test should be written.
 
-** Sampling, noise, and what "volatility" means in a test
+** Cross-series correlation: asynchrony and the Epps effect
+
+- Epps (1979), *Comovements in stock prices in the very short run*, Journal of the
+  American Statistical Association 74(366) — measured correlation falls as the
+  sampling interval shrinks. The limitation on any claim that cross-series
+  correlation rises with the factor: it must be measured over a stated interval.
+- Lo and MacKinlay (1990), *An econometric analysis of nonsynchronous trading*,
+  Journal of Econometrics 45(1-2) — non-synchronous observations bias cross-series
+  statistics, which is what desynchronising the feeds trades one way and the other.
+
+** Long memory and intraday seasonality
+
+- Andersen and Bollerslev (1997), *Intraday periodicity and volatility
+  persistence*, Journal of Empirical Finance 4(2-3) — the intraday U-shape real
+  markets have and the model does not.
+- Admati and Pfleiderer (1988), *A theory of intraday patterns*, Review of
+  Financial Studies 1(1) — why that shape exists: liquidity traders cluster.
+- Baillie, Bollerslev and Mikkelsen (1996), *Fractionally integrated
+  GARCH*, Journal of Econometrics 74(1) — the long memory in volatility that a
+  finite-decay heat cannot reproduce.
+
+** Sampling, noise and what "volatility" means in a test
 
 - Andersen, Bollerslev, Diebold and Labys (2003), *Modeling and forecasting
-  realized volatility*, Econometrica 71(2) — realized variance as an estimator,
-  and its sampling dependence.
+  realized volatility*, Econometrica 71(2) — realized variance as an estimator and
+  its sampling dependence.
+- Hansen and Lunde (2006), *Realized variance and market microstructure noise*,
+  Journal of Business and Economic Statistics 24(2) — how much of realized
+  variance can be noise at high frequency.
 - Zhang, Mykland and Aït-Sahalia (2005), *A tale of two time scales*, Journal of
-  the American Statistical Association 100(472) — microstructure noise biases
-  realized variance upward, more so the more often you sample. This is the reason
-  the note insists every test says which volatility it measures.
+  the American Statistical Association 100(472) — noise biases realized variance
+  upward, more so the more often you sample. The reason every test must say which
+  volatility it measures.
+
+* Limitations
+
+What this design does not do, and what the papers above say about it. A note that
+lists only its support is a sales document.
+
+** Scope: what is not modelled
+
+- *Not a stochastic volatility model.* There is no vol-of-vol, no leverage effect
+  (returns feeding back into variance) and no correlation between price and
+  variance as there is in Hull–White and Heston. Variance is a deterministic
+  function of the activity factor, so the generated surface has one source of
+  volatility randomness where a real one has two.
+- *No jumps of its own.* Activity reweights a static mixture; a jump is not an
+  event that arrives, excites the heat and excites further jumps. Aït-Sahalia et
+  al. and Merton model the jump as a process; this design sets its probability.
+- *Two regimes and fixed rates.* The calm/active chain is two states with
+  transition rates a person sets; Hamilton's class allows many states and an
+  estimated transition matrix. There is no parameter uncertainty and no regime
+  uncertainty beyond the chain itself.
+- *No intraday seasonality and no long memory.* Andersen and Bollerslev (1997)
+  and Admati and Pfleiderer (1988) document the U-shape every real intraday series
+  has; Baillie et al. (1996) document the long memory. The factor produces neither,
+  so a generated day is stationary in a way a real day is not.
+- *No explicit microstructure noise.* The bid-ask bounce that makes real
+  high-frequency data noisy is absent; a client computing realized variance from
+  our ticks gets a cleaner number than from a real feed of the same frequency.
+  Bacry et al. (2013) model that noise explicitly, and Zhang et al. (2005) show
+  why its absence changes the answer.
+
+** Identification: what is assumed rather than estimated
+
+- *The loading is a free parameter.* Nothing in the platform estimates it from
+  data; it is set by hand, and calibration means "the long-run sigma is the one
+  the config states", not "the loading matches a market".
+- *Variance proportional to activity is a choice, not a measurement.* Clark leaves
+  the mixing variable latent; this design makes it an observable factor and fixes
+  the exponent to one. The exponent is a knob because the evidence does not settle
+  it.
+- *The heat is not the only latent variable.* A real market's information arrival
+  is what Clark's mixture is over; ours is a constructed heat whose jump and decay
+  are demo constants, so the factor is a stand-in for a latent process that in
+  reality is unobserved.
+
+** Measurement: what our own tests cannot see
+
+- *"Volatility" means two things* — the process's sigma and the sigma a client
+  computes from published ticks — and sampling frequency moves the second even
+  when the first is unchanged. A test that does not say which one it measures can
+  pass while the product is wrong.
+- *Cross-series correlation is interval-dependent.* The Epps effect means a claim
+  that a pinned market correlates the series must state the window; measured at
+  tick frequency it will look weaker than at one minute, and desynchronising the
+  feeds changes the number again (Lo and MacKinlay 1990).
+- *A synthetic series cannot validate the model.* Every statistic here is
+  measured on data the model produced, so calibration is proved against the
+  configuration, never against a market. Fitting the factor to real ticks is
+  outside this story and would need Ozaki's or Bacry's estimation machinery.
+
+** Limits of the cited work, as they apply here
+
+- Clark's mixture identifies activity only through its proxies; two very different
+  activity processes can produce the same return distribution, so a generated
+  series matching the returns does not prove the activity is right.
+- Hawkes models are stable only inside their kernel's radius; our rank-one
+  condition is necessary for the bivariate case but not sufficient, which is why
+  the stability test has to become a spectral radius before two dimensions exist.
+- The Hawkes literature is fitted to message or trade arrivals, not to a shared
+  heat across asset classes; the enrolment-and-share device this platform uses to
+  keep the heat bounded is an engineering choice with no paper behind it, and its
+  long-run effect on cross-series correlation has not been measured.
 
 * See also
 

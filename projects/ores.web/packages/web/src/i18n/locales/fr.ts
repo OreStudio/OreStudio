@@ -5331,12 +5331,41 @@ const fr: SourceCatalogue = {
             errors: 'Lire les erreurs de cette exécution',
         },
         results: {
-            title: 'Résultats',
+            oneRowPer: {
+                trade: 'Une ligne par transaction',
+                book: 'Une ligne par livre',
+                counterparty: 'Une ligne par contrepartie',
+            },
+            aggregateBy: 'Agréger par',
+            level: {
+                trade: 'Transaction',
+                book: 'Livre',
+                counterparty: 'Contrepartie',
+            },
+            runTag_one: '{count} transaction · valorisée le {date}',
+            runTag_other: '{count} transactions · valorisées le {date}',
+            sourceNote:
+                "Ce tableau lit npv.csv dans l'archive de sortie de l'exécution. Chaque ligne est une transaction évaluée par le moteur ; une transaction qu'il n'a pas pu construire n'écrit aucune ligne.",
+            aggregateNote:
+                "Ces chiffres sont les transactions de l'exécution agrégées par {level}. L'exécution a valorisé au {date}.",
+            degraded:
+                "Les livres ou contreparties derrière ces chiffres n'ont pas pu être lus : un nom vide signifie que le nom n'a pas été lu, non qu'il n'en existe aucun.",
+            selectHint:
+                "Sélectionnez une ligne pour lire le résultat de cette transaction : sa VAN, sa VAN en devise de base, son notionnel, sa contrepartie et toute erreur enregistrée par l'exécution.",
+            aggregateHint:
+                'Une ligne ouvre son enregistrement ; « Voir les transactions » lit les transactions en dessous.',
+            showTrades: 'Voir les transactions',
+            filteredTo: '{name} · {count} transactions',
+            clearFilter: 'Effacer le filtre',
             trades: 'Transactions',
             total: 'VAN totale',
             totalIn: 'VAN totale ({currency})',
             trade: 'Transaction',
             type: 'Type',
+            book: 'Livre',
+            actions: 'Actions',
+            unbooked: 'Non affectée',
+            unassigned: 'Non indiquée',
             npv: 'VAN',
             npvBase: 'VAN (base)',
             notional: 'Notionnel',
@@ -5346,6 +5375,10 @@ const fr: SourceCatalogue = {
             noResultFile: 'La sortie de cette exécution ne contient pas de npv.csv.',
             noFigures: 'Le npv.csv de cette exécution ne contient ni transaction ni chiffre.',
             failed: "Les résultats n'ont pas pu être lus.",
+            selectedTrade: 'La transaction ouverte',
+            tradeErrors: "Ce que l'exécution a enregistré sur cette transaction",
+            noTradeError: "L'exécution n'a enregistré aucune erreur sur cette transaction.",
+            error: 'erreur',
         },
         tabs: {
             definition: 'Définition',

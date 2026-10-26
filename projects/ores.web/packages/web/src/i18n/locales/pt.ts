@@ -5295,12 +5295,41 @@ const pt: SourceCatalogue = {
             errors: 'Ler os erros desta execução',
         },
         results: {
-            title: 'Resultados',
+            oneRowPer: {
+                trade: 'Uma linha por transação',
+                book: 'Uma linha por livro',
+                counterparty: 'Uma linha por contraparte',
+            },
+            aggregateBy: 'Agregar por',
+            level: {
+                trade: 'Transação',
+                book: 'Livro',
+                counterparty: 'Contraparte',
+            },
+            runTag_one: '{count} transação · avaliada em {date}',
+            runTag_other: '{count} transações · avaliadas em {date}',
+            sourceNote:
+                'Esta tabela lê npv.csv do arquivo de saída da execução. Cada linha é uma transação avaliada pelo motor; uma transação que ele não conseguiu construir não escreve linha.',
+            aggregateNote:
+                'Estes valores são as transações da execução agregadas por {level}. A execução avaliou em {date}.',
+            degraded:
+                'Os livros ou contrapartes por trás destes valores não puderam ser lidos: um nome vazio significa que o nome não foi lido, não que não exista.',
+            selectHint:
+                'Selecione uma linha para ler o resultado dessa transação: o seu VAL, o VAL na moeda base, o notional, a contraparte e qualquer erro registado pela execução.',
+            aggregateHint:
+                'Uma linha abre o seu registo, e « Ver as transações » lê as transações por baixo.',
+            showTrades: 'Ver as transações',
+            filteredTo: '{name} · {count} transações',
+            clearFilter: 'Limpar o filtro',
             trades: 'Transações',
             total: 'VAL total',
             totalIn: 'VAL total ({currency})',
             trade: 'Transação',
             type: 'Tipo',
+            book: 'Livro',
+            actions: 'Ações',
+            unbooked: 'Sem livro',
+            unassigned: 'Não indicada',
             npv: 'VAL',
             npvBase: 'VAL (base)',
             notional: 'Notional',
@@ -5310,6 +5339,10 @@ const pt: SourceCatalogue = {
             noResultFile: 'A saída desta execução não contém npv.csv.',
             noFigures: 'O npv.csv desta execução não contém transação nem valor.',
             failed: 'Os resultados não puderam ser lidos.',
+            selectedTrade: 'A transação aberta',
+            tradeErrors: 'O que a execução registou sobre esta transação',
+            noTradeError: 'A execução não registou erros sobre esta transação.',
+            error: 'erro',
         },
         tabs: {
             definition: 'Definição',

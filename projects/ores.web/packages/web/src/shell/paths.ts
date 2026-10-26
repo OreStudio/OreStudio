@@ -115,6 +115,21 @@ export function gridNodePath(hostId: string): string {
  * sees several definitions of one name. The id is the primary key, so the
  * address names one record exactly.
  */
+/** The page of one trade. */
+export function tradePath(id: string): string {
+    return `/trading/trades/${encodeURIComponent(id)}`;
+}
+
+/** The page of one book. */
+export function bookPath(id: string): string {
+    return `/refdata/books/${encodeURIComponent(id)}`;
+}
+
+/** The page of one counterparty. */
+export function counterpartyPath(id: string): string {
+    return `/refdata/counterparties/${encodeURIComponent(id)}`;
+}
+
 /** The reporting area's page for one run. */
 export function reportRunPath(reportInstanceId: string): string {
     return `/reporting/runs/${encodeURIComponent(reportInstanceId)}`;

@@ -73,10 +73,7 @@ export function ReportRunPage(): ReactNode {
             {run.isSuccess && (
                 <>
                     {tab === 'results' ? (
-                        <RunResultsPanel
-                            queryKey={['reporting-run-results', id]}
-                            load={() => api.reportRunResults(id)}
-                        />
+                        <RunResultsPanel runId={id} pricedAt={run.data.priced_at.slice(0, 10)} />
                     ) : (
                         <section className="card space-y-4 p-6">
                             <h2 className="text-lg font-medium">{run.data.name}</h2>

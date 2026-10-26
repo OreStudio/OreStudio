@@ -1,5 +1,6 @@
 // Drives the currencies' Export and Import end to end on the running web: the export, a wrong file refused,
-// a changed file through the four steps, the import, and the record's history after it.
+// a changed file with a new currency through the four steps, the import, a second pass that deletes it,
+// and the record's history after it.
 // Usage: node drive_currency_import_export.mjs [web base url] [screenshot folder]; Playwright from projects/ores.web.
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -60,6 +61,13 @@ const changedEur = eur[0].replace(/<Symbol>[^<]*<\/Symbol>/, '<Symbol>EUR</Symbo
 let changed = content.replace(eur[0], changedEur);
 const gbp = changed.match(/<Currency>(?:(?!<\/Currency>)[\s\S])*?<ISOCode>GBP<\/ISOCode>(?:(?!<\/Currency>)[\s\S])*?<\/Currency>/);
 if (gbp) changed = changed.replace(gbp[0], '');
+// And a currency the tenant lacks, so the added path is walked.
+const added = eur[0]
+    .replace(/<Name>[^<]*<\/Name>/, '<Name>Test Currency</Name>')
+    .replace(/<ISOCode>EUR<\/ISOCode>/, '<ISOCode>ZZT</ISOCode>')
+    .replace(/<NumericCode>\d+<\/NumericCode>/, '<NumericCode>999</NumericCode>')
+    .replace(/<Symbol>[^<]*<\/Symbol>/, '<Symbol>T</Symbol>');
+changed = changed.replace('</CurrencyConfig>', `${added}\n</CurrencyConfig>`);
 const changedPath = `${out}/currencyconfig_changed.xml`;
 writeFileSync(changedPath, changed);
 const wrongPath = `${out}/calendaradjustment.xml`;
@@ -95,7 +103,25 @@ await page.waitForTimeout(800);
 await shot('imported');
 console.log('toast:', (await page.locator('body').innerText()).match(/Imported:[^\n]*/)?.[0]);
 
-// 5. The record shows the new version and the history the change.
+// 5. A second pass with the original file: ZZT is now the row the file omits; Delete it.
+await page.goto(`${base}/refdata/currencies/import`);
+await page.getByRole('heading', { level: 1 }).waitFor();
+await page.locator('input[type="file"]').setInputFiles(saved);
+await page.getByRole('button', { name: 'Next', exact: true }).click();
+await page.getByRole('heading', { name: /What the file holds/ }).waitFor({ timeout: 30000 });
+await page.getByRole('button', { name: 'Next', exact: true }).click();
+await page.getByRole('heading', { name: /What the system does not know/ }).waitFor();
+await page.getByRole('button', { name: 'Next', exact: true }).click();
+await page.getByRole('heading', { name: /The difference/ }).waitFor();
+const second = await page.locator('main table tbody tr').allInnerTexts();
+console.log('second pass rows:', second.map((r) => r.replace(/\s+/g, ' ').slice(0, 80)));
+await page.locator('main table tbody tr', { hasText: 'ZZT' }).getByLabel('Delete it').check();
+await page.getByRole('button', { name: 'Import', exact: true }).click();
+await page.waitForURL(/\/refdata\/currencies$/, { timeout: 30000 });
+await page.waitForTimeout(800);
+console.log('second toast:', (await page.locator('body').innerText()).match(/Imported:[^\n]*/)?.[0]);
+
+// 6. The record shows the new version and the history the change.
 await page.goto(`${base}/refdata/currencies/EUR?tab=history`);
 await page.waitForTimeout(1500);
 await shot('eur-history-after');

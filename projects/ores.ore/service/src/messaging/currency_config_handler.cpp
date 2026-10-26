@@ -28,8 +28,11 @@
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <format>
+#include <iterator>
 #include <map>
 #include <optional>
 #include <set>
@@ -51,20 +54,39 @@ constexpr std::string_view document_name = "currencyconfig.xml";
 constexpr std::string_view root_element = "CurrencyConfig";
 constexpr std::uint32_t page = 500;
 
-// The name of the first element of a document, past the prolog and any comment.
+// The name of the first element of a document, past the prolog, a comment or a
+// document type declaration. The real parse follows, so this only has to be
+// right enough to name the kind of file in a refusal.
 std::string root_element_of(std::string_view text) {
     std::size_t at = text.find('<');
     while (at != std::string_view::npos) {
-        if (at + 1 < text.size() && (text[at + 1] == '?' || text[at + 1] == '!')) {
-            const auto end = text.find('>', at + 2);
+        if (text.substr(at, 4) == "<!--") {
+            const auto end = text.find("-->", at + 4);
             if (end == std::string_view::npos)
+                return {};
+            at = text.find('<', end + 3);
+            continue;
+        }
+        if (at + 1 < text.size() && (text[at + 1] == '?' || text[at + 1] == '!')) {
+            std::size_t end = at + 2;
+            int brackets = 0;
+            for (; end < text.size(); ++end) {
+                if (text[end] == '[')
+                    ++brackets;
+                else if (text[end] == ']')
+                    --brackets;
+                else if (text[end] == '>' && brackets <= 0)
+                    break;
+            }
+            if (end >= text.size())
                 return {};
             at = text.find('<', end + 1);
             continue;
         }
         auto end = at + 1;
-        while (end < text.size() && (std::isalpha(static_cast<unsigned char>(text[end])) ||
-                                     text[end] == '_' || text[end] == ':'))
+        while (end < text.size() &&
+               (std::isalnum(static_cast<unsigned char>(text[end])) || text[end] == '_' ||
+                text[end] == ':' || text[end] == '-' || text[end] == '.'))
             ++end;
         return std::string(text.substr(at + 1, end - at - 1));
     }
@@ -220,21 +242,28 @@ difference compute_difference(ores::nats::service::nats_client& owners,
             d.rows.push_back(
                 {.iso_code = c.iso_code, .name = c.name, .change = "changed", .what = what});
     }
-    for (const auto& [code, c] : d.ours) {
-        const bool in_file =
-            std::ranges::any_of(d.theirs, [&](const auto& t) { return t.iso_code == code; });
-        if (!in_file)
+    for (const auto& [code, c] : d.ours)
+        if (!seen.contains(code))
             d.rows.push_back(
                 {.iso_code = code, .name = c.name, .change = "removed", .what = "Not in the file"});
-    }
     return d;
 }
 
-std::string action_for(const import_currency_config_request& req, const currency_import_row& row) {
+// The choice the person made for a row, or the default: a row the file omits
+// is kept, a new or changed one takes the file's. A choice a row cannot take,
+// such as deleting a currency the file still holds, is refused as an error.
+std::optional<std::string> action_for(const import_currency_config_request& req,
+                                      const currency_import_row& row) {
+    std::string action = row.change == "removed" ? "keep" : "take";
     for (const auto& choice : req.choices)
         if (choice.iso_code == row.iso_code)
-            return choice.action;
-    return row.change == "removed" ? "keep" : "take";
+            action = choice.action;
+    const bool fits = row.change == "removed" ? (action == "keep" || action == "delete") :
+                      row.change == "added"   ? (action == "take" || action == "skip") :
+                                                (action == "take" || action == "keep");
+    if (!fits)
+        return std::nullopt;
+    return action;
 }
 
 }
@@ -364,12 +393,18 @@ void currency_config_handler::import_currency_config(ores::nats::message msg) {
                                                     req->commentary};
         for (const auto& row : d.rows) {
             const auto action = action_for(*req, row);
-            if (action == "keep" || action == "skip") {
+            if (!action) {
+                response.errors.push_back(
+                    {row.iso_code,
+                     std::format("The choice does not fit a {} currency.", row.change)});
+                continue;
+            }
+            if (*action == "keep" || *action == "skip") {
                 ++response.kept;
                 continue;
             }
             std::string error;
-            if (action == "delete") {
+            if (*action == "delete") {
                 ores::refdata::messaging::delete_currency_request remove{
                     .removal = {.key = {.iso_code = row.iso_code}}, .intent = intent};
                 auto resp = nats_call(owners, remove, error);

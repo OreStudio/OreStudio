@@ -408,11 +408,16 @@ const oreImportResultSchema = z.object({
 
 const oreImportBodySchema = z.object({
     content: z.string().min(1),
-    choices: z.array(
-        z.object({ iso_code: z.string(), action: z.enum(['take', 'keep', 'delete', 'skip']) }),
-    ),
-    reasonCode: z.string(),
-    commentary: z.string(),
+    choices: z
+        .array(
+            z.object({
+                iso_code: z.string().trim().min(1).max(10),
+                action: z.enum(['take', 'keep', 'delete', 'skip']),
+            }),
+        )
+        .max(10_000),
+    reasonCode: z.string().trim().min(1).max(200),
+    commentary: z.string().max(2000),
 });
 
 export function registerRecordRoutes(

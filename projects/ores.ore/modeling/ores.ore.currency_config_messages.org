@@ -22,6 +22,14 @@ person's choices. The ORE service reads and writes the currencies through
 refdata's own messages, under the caller's delegated session, and never
 touches refdata's tables. The pair's screen is the currencies list.
 
+The import writes one currency at a time through refdata's put and delete,
+so it is not one transaction: a write that fails part way leaves the rows
+before it written, and the response names every row it could not write, so
+the person sees what stands. Each write claims the version the import read
+just before it, not the one the preview showed, so a change made between the
+preview and the import is overwritten by the document's fields; the preview
+is a reading, and the import is the write.
+
 * Physical space
 
 The shell commands are switched off for the same reason as the ORE import's: the

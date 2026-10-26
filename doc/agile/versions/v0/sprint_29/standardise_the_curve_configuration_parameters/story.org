@@ -23,7 +23,7 @@ A curve configuration is drawn like every other configuration that comes off an 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The story is scaffolded. The branch carries the story, its scaffold task and the documentation task. No code has changed. |
+| Now           | The story is scaffolded. The branch carries the story, its scaffold task, the umbrella implementation task and the documentation task. No code has changed. |
 | Waiting on    | Nothing.                               |
 | Next          | Document the leaves, then model the section metadata and the value sets, then draw the page. |
 | Last touched  | 2026-10-26                               |
@@ -74,7 +74,10 @@ A curve configuration is drawn like every other configuration that comes off an 
 - *The element type is the ORE entry element*, read from =curve_section=,
   decided 2026-10-26. That table already holds the container and the element its
   entries use: =YieldCurves= holds =YieldCurve=, =Correlations= holds
-  =Correlation=, and 19 sections cover ORE's 76 shipped documents. This is the
+  =Correlation=. Its own model records nineteen sections across the
+  seventy-six =curveconfig.xml= documents ORE ships; that count is the entity's
+  claim, not a measurement this story has taken, and the extractor re-measures
+  it in the first task. This is the
   shape the convention kind already has — a declaration in data that a screen
   reads and does not restate. =curve_section= is to this story what
   =convention_kind= was to [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way]].

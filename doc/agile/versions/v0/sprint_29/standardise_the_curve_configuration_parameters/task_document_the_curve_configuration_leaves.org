@@ -39,6 +39,7 @@ Every leaf of curveconfig.xsd that ORE reads is documented once, in the ORE para
 - Every extracted leaf has an ore_parameter row keyed by curveconfig.xsd and its XPath, with label, description, format, default and release where the source gives them.
 - Every row carries a value set: a flag, a closed list, a number, a text, or a catalogue of refdata data such as a currency, a calendar or a day counter.
 - The generator's check mode passes and reports the coverage counts, and the counts are recorded on the task with the command and the commit.
+- The [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]] defines /Parameter/ broadly enough for this kind, since the story decided a curve configuration's leaf is a parameter.
 - No screen or web change is made by this task.
 
 * Plan
@@ -56,6 +57,10 @@ Every leaf of curveconfig.xsd that ORE reads is documented once, in the ORE para
    a catalogue where the value belongs to refdata — a currency, a calendar, a
    day counter, an index.
 4. Add a check mode and record the coverage counts on this task.
+5. Widen the /Parameter/ definition in the [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]]
+   so it covers a curve configuration's leaf and not only a product's or the
+   document's global parameters. The story decided the word; this task makes the
+   page say it.
 
 * Measurements
 

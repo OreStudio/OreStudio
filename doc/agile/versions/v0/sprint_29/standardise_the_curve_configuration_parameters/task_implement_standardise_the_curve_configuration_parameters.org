@@ -2,7 +2,7 @@
 :ID: DEFAE250-79A6-4916-B081-267B9B0B4A89
 :END:
 #+title: Task: Bring curveconfig.xml onto the one contract
-#+description: Initial task for: Standardise the curve configuration's parameters on the one contract
+#+description: The work after the documentation: the curve section metadata in data, the terms linked to their value sets, the page drawn with the shared leaf parts, the value check on write, and the correction of the entity docstrings that call these leaves settings.
 #+type: task
 #+level: s1
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A curve configuration is drawn like every other configuration that comes off an ORE document. Its leaves are documented once, in the ORE parameter contract, keyed by curveconfig.xsd and XPath; its sections and entry elements come from data; and a person reads and changes a curve's leaves with the shared switch, documentation panel, value in force and control that a product parameter, an engine run setting and a convention term already use. Nothing about a curve section is restated in code.
+The work that follows the documentation task, and it owns the rest of the story. The curve section metadata moves into data, each documented term is linked to its value set, the page draws a curve's leaves with the shared leaf parts, and the write path checks a value against its set. It also corrects the entity docstrings that call these leaves *settings*, since that word belongs to the engine run settings.
 
 * Status
 

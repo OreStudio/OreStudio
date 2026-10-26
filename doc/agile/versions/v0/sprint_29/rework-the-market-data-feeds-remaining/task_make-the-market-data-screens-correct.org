@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-25
 #+updated: 2026-10-25
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The dashboard, the feed tree and the feed page read the demand state, start and 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -142,6 +142,29 @@ words; they are service wire fields, so the rename needs a service change. The
 provider a feed page reads is derived on the read from its collection.
 
 * Result
+
+The existing Synthetic screens now read the service's world and the legacy
+controller is gone.
+
+- The dashboard tiles and the Provider grid read each feed's own state, from
+  the demand runner. A provider row still shows its source's serving state.
+- The Provider tab has a provider combo, a collection filter and an asset class
+  filter, with the underlying first and no oresmd URI or folder tree.
+- A feed's page keeps its detailed tabs and process editor, and its status, its
+  trail and its Start and Stop follow the provider's source.
+- Start and Stop are the operator test control on the runner: a manual run
+  survives the next demand, and a demand that names the group takes it over.
+- The feed controller, its producer start path and its tests are deleted. One
+  running set, from the runner, answers every read.
+
+Evidence: build clean; the affected C++ suites 9 of 9; web typecheck clean and
+3301 JS tests; live 77 running and 33 stopped of 110 feeds, a serving provider
+with 9 stopped feeds, and Start and Stop moving a chosen feed between Running
+and Stopped.
+
+Deferred: the operations sources board and the subscriptions screen are signed
+off prototypes but not built screens. The feed screen standard and the
+prototype already describe the screens above.
 
 * Prototype for sign-off
 

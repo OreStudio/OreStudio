@@ -22,26 +22,42 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { gunzipSync } from 'node:zlib';
 import { z } from 'zod';
+import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
+import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
+import { subjects as bookingSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_booking_protocol';
 import { invalidRequest, notFound } from './errors.js';
 import { readAll, resultSchema, row, text } from './refdata-calls.js';
-import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
 import { fetchStored } from './grid-downloads.js';
-import { readRun, readRunStates } from './grid-report-runs.js';
+import { readRun, readRunStates as readStates } from './grid-report-runs.js';
 import type { LiveSession } from './sessions.js';
 
 /*
- * The per-trade results a run wrote.
+ * The results a run wrote, at the level a reader asks for.
  *
- * The engine writes them into the run's output archive as npv.csv, and nothing
- * else reads that file. The BFF reads it here so the screen receives rows rather
- * than an archive, and the engine's column names stay in one place. The answer
- * carries a reason code rather than a sentence: the screen words it, in the
- * reader's language.
+ * The engine writes one row per trade into npv.csv, and nothing else reads that
+ * file. The BFF reads it here, joins the trades to their books and names their
+ * counterparties, and rolls the figures up when the reader asks for a book or a
+ * counterparty view. The browser receives rows rather than four lists to join.
+ *
+ * The answer carries a reason code rather than a sentence: the screen words it,
+ * in the reader's language.
  */
 
 const runParamsSchema = z.object({ id: z.uuid() });
+const resultsQuerySchema = z.object({
+    by: z.enum(['trade', 'book', 'counterparty']).default('trade'),
+});
 
-/** One trade's row, as the engine wrote it. The figures stay text. */
+/** The levels a result can be read at. */
+export type ResultLevel = 'trade' | 'book' | 'counterparty';
+
+/** One figure in the currency it is stated in. */
+export interface Money {
+    readonly currency: string;
+    readonly total: string;
+}
+
+/** One trade's row, as the engine wrote it, with the records it names. */
 export interface RunResultRow {
     readonly trade_id: string;
     readonly trade_type: string;
@@ -49,22 +65,40 @@ export interface RunResultRow {
     readonly npv_currency: string;
     readonly npv_base: string;
     readonly notional: string;
+    readonly notional_currency: string;
     readonly counterparty: string;
     readonly counterparty_name: string;
+    readonly book_id: string;
+    readonly book_name: string;
 }
 
-/**
- * Why a report has no rows to show.
- *
- * The empty answer is a fact about the run rather than an error, so it is a code
- * the screen words rather than a failure the caller must catch.
- */
+/** One book's or counterparty's share of a run. */
+export interface AggregateRow {
+    readonly key: string;
+    readonly name: string;
+    readonly trades: number;
+    readonly totals: readonly Money[];
+    readonly notional: readonly Money[];
+}
+
+/** Why a report has no rows to show. */
 export type ResultReason = '' | 'no-run' | 'no-output' | 'no-result-file' | 'no-figures';
 
-export interface ResultsAnswer {
+interface TradeAnswer {
+    readonly level: 'trade';
     readonly rows: readonly RunResultRow[];
+    readonly totals: readonly Money[];
     readonly reason: ResultReason;
 }
+
+interface AggregateAnswer {
+    readonly level: 'book' | 'counterparty';
+    readonly rows: readonly AggregateRow[];
+    readonly totals: readonly Money[];
+    readonly reason: ResultReason;
+}
+
+export type ResultsAnswer = TradeAnswer | AggregateAnswer;
 
 const TAR_BLOCK_BYTES = 512;
 const TAR_NAME_OFFSET = 0;
@@ -147,6 +181,7 @@ const COLUMNS = {
     npv_currency: 'NpvCurrency',
     npv_base: 'NPV(Base)',
     notional: 'Notional',
+    notional_currency: 'NotionalCurrency',
     counterparty: 'CounterParty',
 } as const;
 
@@ -179,15 +214,161 @@ export function rowsOf(rawCsv: string): readonly RunResultRow[] | null {
                 npv_currency: at(COLUMNS.npv_currency),
                 npv_base: at(COLUMNS.npv_base),
                 notional: at(COLUMNS.notional),
+                notional_currency: at(COLUMNS.notional_currency),
                 counterparty: at(COLUMNS.counterparty),
                 counterparty_name: '',
+                book_id: '',
+                book_name: '',
             };
         })
         .filter((row) => row.trade_id !== '');
 }
 
+/** What the records say about the trades in a run. */
+interface TradeRecords {
+    readonly counterpartyName: ReadonlyMap<string, string>;
+    readonly counterpartyGroup: ReadonlyMap<string, string>;
+    readonly bookOf: ReadonlyMap<string, string>;
+    readonly bookName: ReadonlyMap<string, string>;
+}
+
+/**
+ * The names and books behind the ids npv.csv writes.
+ *
+ * A read that fails leaves the names empty rather than failing the figures. A
+ * trade with no booking keeps an empty book, which the book level shows as
+ * unbooked rather than dropping.
+ */
+async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Promise<TradeRecords> {
+    const empty = {
+        counterpartyName: new Map<string, string>(),
+        counterpartyGroup: new Map<string, string>(),
+        bookOf: new Map<string, string>(),
+        bookName: new Map<string, string>(),
+    };
+    try {
+        const [counterparties, bookings, books] = await Promise.all([
+            readAll(session, counterpartySubjects.list_counterparties_request, 'counterparties', {
+                filter: null,
+                as_of: null,
+            }),
+            readAll(session, bookingSubjects.list_trade_bookings_request, 'trade_bookings', {
+                filter: { trade_id_one_of: [...tradeIds] },
+            }),
+            readAll(session, bookSubjects.list_books_request, 'books', { filter: null }),
+        ]);
+        const counterpartyName = new Map(
+            counterparties.map((counterparty) => [
+                text(counterparty['id']),
+                text(counterparty['full_name']),
+            ]),
+        );
+        const counterpartyGroup = new Map(
+            counterparties.map((counterparty) => [
+                text(counterparty['id']),
+                text(counterparty['parent_counterparty_id']),
+            ]),
+        );
+        const resolvedGroup = new Map<string, string>();
+        for (const [id, parent] of counterpartyGroup) {
+            if (parent !== '') {
+                resolvedGroup.set(id, counterpartyName.get(parent) ?? '');
+            }
+        }
+        return {
+            counterpartyName,
+            counterpartyGroup: resolvedGroup,
+            bookOf: new Map(
+                bookings.map((booking) => [text(booking['trade_id']), text(booking['book_id'])]),
+            ),
+            bookName: new Map(books.map((book) => [text(book['id']), text(book['name'])])),
+        };
+    } catch {
+        return empty;
+    }
+}
+
+/** The rows with the names and books they point at. */
+async function withRecords(
+    session: LiveSession,
+    rows: readonly RunResultRow[],
+): Promise<readonly RunResultRow[]> {
+    const records = await recordsOf(
+        session,
+        rows.map((row) => row.trade_id),
+    );
+    return rows.map((row) => {
+        const bookId = records.bookOf.get(row.trade_id) ?? '';
+        return {
+            ...row,
+            counterparty_name: records.counterpartyName.get(row.counterparty) ?? '',
+            book_id: bookId,
+            book_name: records.bookName.get(bookId) ?? '',
+        };
+    });
+}
+
+/** The per-currency total of a figure the rows carry. */
+function totalsOf(
+    rows: readonly RunResultRow[],
+    figureOf: (row: RunResultRow) => { readonly amount: string; readonly currency: string },
+): readonly Money[] {
+    const totals = new Map<string, number>();
+    for (const row of rows) {
+        const { amount, currency } = figureOf(row);
+        const figure = Number.parseFloat(amount);
+        if (!Number.isFinite(figure)) {
+            continue;
+        }
+        totals.set(currency, (totals.get(currency) ?? 0) + figure);
+    }
+    return [...totals.entries()].map(([currency, total]) => ({
+        currency,
+        total: total.toFixed(2),
+    }));
+}
+
+/** The rows rolled up by the key they share. */
+function aggregateRows(
+    rows: readonly RunResultRow[],
+    keyOf: (row: RunResultRow) => string,
+    detailsOf: (key: string) => { readonly name: string; readonly group: string },
+): readonly AggregateRow[] {
+    const groups = new Map<string, RunResultRow[]>();
+    for (const row of rows) {
+        const key = keyOf(row);
+        groups.set(key, [...(groups.get(key) ?? []), row]);
+    }
+    return [...groups.entries()]
+        .map(([key, members]) => ({
+            key,
+            ...detailsOf(key),
+            trades: members.length,
+            totals: totalsOf(members, (row) => ({
+                amount: row.npv,
+                currency: row.npv_currency,
+            })),
+            notional: totalsOf(members, (row) => ({
+                amount: row.notional,
+                currency: row.notional_currency,
+            })),
+        }))
+        .sort((left, right) => magnitudeOf(right) - magnitudeOf(left));
+}
+
+/** A row's size, so the largest reads first. */
+function magnitudeOf(row: AggregateRow): number {
+    return row.totals.reduce((sum, total) => {
+        const figure = Number.parseFloat(total.total);
+        return sum + (Number.isFinite(figure) ? Math.abs(figure) : 0);
+    }, 0);
+}
+
 /** The rows of a run's result, or the reason there are none. */
-async function resultsOfKey(session: LiveSession, key: string): Promise<ResultsAnswer> {
+async function tradeRowsOfKey(
+    session: LiveSession,
+    key: string,
+): Promise<{ rows: readonly RunResultRow[]; reason: ResultReason }> {
     if (key === '') {
         return { rows: [], reason: 'no-output' };
     }
@@ -203,40 +384,51 @@ async function resultsOfKey(session: LiveSession, key: string): Promise<ResultsA
     if (rows === null) {
         return { rows: [], reason: 'no-figures' };
     }
-    return { rows: await namedCounterparties(session, rows), reason: '' };
+    return { rows: await withRecords(session, rows), reason: '' };
 }
 
-/**
- * The rows with each counterparty's name beside its id.
- *
- * The engine writes the party's id, and a screen never shows an identifier where
- * a name would do. A name that cannot be read leaves the cell empty rather than
- * failing the figures.
- */
-async function namedCounterparties(
+/** The answer for the level the reader asked for. */
+async function resultsOfKey(
     session: LiveSession,
-    rows: readonly RunResultRow[],
-): Promise<readonly RunResultRow[]> {
-    try {
-        const counterparties = await readAll(
-            session,
-            counterpartySubjects.list_counterparties_request,
-            'counterparties',
-            { filter: null, as_of: null },
-        );
-        const names = new Map(
-            counterparties.map((counterparty) => [
-                text(counterparty['id']),
-                text(counterparty['full_name']),
-            ]),
-        );
-        return rows.map((row) => ({
-            ...row,
-            counterparty_name: names.get(row.counterparty) ?? '',
-        }));
-    } catch {
-        return rows;
+    key: string,
+    level: ResultLevel,
+): Promise<ResultsAnswer> {
+    const read = await tradeRowsOfKey(session, key);
+    const totals = totalsOf(read.rows, (row) => ({
+        amount: row.npv,
+        currency: row.npv_currency,
+    }));
+    if (level === 'trade') {
+        return { level, rows: read.rows, totals, reason: read.reason };
     }
+    if (level === 'book') {
+        return {
+            level,
+            rows: aggregateRows(
+                read.rows,
+                (row) => row.book_id,
+                (key) => ({
+                    name: read.rows.find((row) => row.book_id === key)?.book_name ?? '',
+                    group: '',
+                }),
+            ),
+            totals,
+            reason: read.reason,
+        };
+    }
+    return {
+        level,
+        rows: aggregateRows(
+            read.rows,
+            (row) => row.counterparty,
+            (key) => ({
+                name: read.rows.find((row) => row.counterparty === key)?.counterparty_name ?? '',
+                group: '',
+            }),
+        ),
+        totals,
+        reason: read.reason,
+    };
 }
 
 export function registerGridReportResultsRoutes(
@@ -254,7 +446,7 @@ export function registerGridReportResultsRoutes(
         if (run === null) {
             throw notFound('No report run has this id.');
         }
-        const states = await readRunStates(session, [parsed.data.id]);
+        const states = await readStates(session, [parsed.data.id]);
         return {
             id: text(run['id']),
             name: text(run['name']),
@@ -271,18 +463,22 @@ export function registerGridReportResultsRoutes(
         };
     });
 
-    /** The per-trade results of one run. */
+    /** The results of one run, at the level the reader asked for. */
     server.get('/api/reporting/runs/:id/results', async (request): Promise<ResultsAnswer> => {
         const session = requireSession(request);
         const parsed = runParamsSchema.safeParse(request.params);
         if (!parsed.success) {
             throw invalidRequest('The address names an id that is not a uuid.');
         }
+        const query = resultsQuerySchema.safeParse(request.query);
+        if (!query.success) {
+            throw invalidRequest('The level asked for is not one a result is read at.');
+        }
         const run = await readRun(session, parsed.data.id);
         if (run === null) {
-            return { rows: [], reason: 'no-run' };
+            return { level: query.data.by, rows: [], totals: [], reason: 'no-run' };
         }
-        return resultsOfKey(session, text(run['output_storage_key']));
+        return resultsOfKey(session, text(run['output_storage_key']), query.data.by);
     });
 
     /** The output archive of one run, as the run stored it. */

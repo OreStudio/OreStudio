@@ -465,6 +465,47 @@ export type ReportOpen =
           readonly choices: readonly ReportNameChoice[];
       };
 
+/** The levels a result can be read at. */
+export type ResultLevel = 'trade' | 'book' | 'counterparty';
+
+/** One figure in the currency it is stated in. */
+export interface Money {
+    readonly currency: string;
+    readonly total: string;
+}
+
+/** One trade's result, as the engine wrote it. */
+export interface RunResultRow {
+    readonly trade_id: string;
+    readonly trade_type: string;
+    readonly npv: string;
+    readonly npv_currency: string;
+    readonly npv_base: string;
+    readonly notional: string;
+    readonly notional_currency: string;
+    readonly counterparty: string;
+    readonly counterparty_name: string;
+    readonly book_id: string;
+    readonly book_name: string;
+}
+
+/** One book's or counterparty's share of a run. */
+export interface AggregateRow {
+    readonly key: string;
+    readonly name: string;
+    readonly trades: number;
+    readonly totals: readonly Money[];
+    readonly notional: readonly Money[];
+}
+
+/** A run's results, as the server answered them. */
+export interface RunResults {
+    readonly level: ResultLevel;
+    readonly rows: readonly unknown[];
+    readonly totals: readonly Money[];
+    readonly reason: ResultReason;
+}
+
 /** One report run, as the reporting area reads it. */
 export interface ReportRunDetail {
     readonly id: string;
@@ -479,6 +520,16 @@ export interface ReportRunDetail {
     readonly price_note: string;
     readonly output_message: string;
     readonly output_storage_key: string;
+}
+
+/** One book's share of a run. */
+export interface ReportBookRow {
+    readonly book_id: string;
+    readonly book_name: string;
+    readonly portfolio_id: string;
+    readonly portfolio_name: string;
+    readonly trades: number;
+    readonly totals: readonly { readonly currency: string; readonly total: string }[];
 }
 
 /** Why a report shows no rows, as the server stated it. */
@@ -2473,14 +2524,23 @@ export const api = {
         return (await request(`/api/reporting/runs/${id}`, { method: 'GET' })) as ReportRunDetail;
     },
 
-    /** The results of one run, and why it has none. */
-    async reportRunResults(
-        id: string,
-    ): Promise<{ rows: readonly unknown[]; reason: ResultReason }> {
-        const reply = (await request(`/api/reporting/runs/${id}/results`, {
-            method: 'GET',
-        })) as { rows?: readonly unknown[]; reason?: string };
-        return { rows: reply.rows ?? [], reason: resultReasonOf(reply.reason) };
+    /** The results of one run, at the level the reader asked for. */
+    async reportRunResults(id: string, by: ResultLevel): Promise<RunResults> {
+        const reply = (await request(
+            `/api/reporting/runs/${id}/results?by=${encodeURIComponent(by)}`,
+            { method: 'GET' },
+        )) as {
+            level?: string;
+            rows?: readonly unknown[];
+            totals?: readonly Money[];
+            reason?: string;
+        };
+        return {
+            level: by,
+            rows: reply.rows ?? [],
+            totals: reply.totals ?? [],
+            reason: resultReasonOf(reply.reason),
+        };
     },
 
     /** Where the run's output archive is downloaded from. */

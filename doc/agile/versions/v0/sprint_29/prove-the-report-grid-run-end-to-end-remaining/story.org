@@ -53,6 +53,7 @@ The ACME report definition runs to completion against the compute grid from an i
 | [[id:95D7E980-A327-4198-85DB-28291B62A77C][Read a run's results in the reporting area]] | DONE | | 2026-10-25 | The report page gains Definition, Runs and Results tabs, and the results are read from the run's output archive. |
 | [[id:CACDECCE-638E-4F72-AF7E-D4EE1D238FD5][Read a report's runs and one run's results]] | DONE | | 2026-10-25 | The report page keeps the definition first and lists the runs beside it; a run's details and results live on the run's own page. |
 | [[id:1E27811E-5193-48BF-A4F2-0C5F6C0F2EA3][Read a trade from a run's results]] | DONE | | 2026-10-26 | Each result row names its trade and its counterparty, links to both, and opens onto that trade's figures and the error the run recorded against it. |
+| [[id:627A5FF2-C353-4861-8401-4BF6C985AC3F][Read a run's results at trade, book or counterparty level]] | DONE | | 2026-10-26 | One control chooses the level a run's results are read at, and the server does the aggregation. |
 
 * Decisions
 

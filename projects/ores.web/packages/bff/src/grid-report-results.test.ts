@@ -65,6 +65,9 @@ describe('rowsOf', () => {
             notional: '7087413.92',
             counterparty: 'Northwind Capital, Ltd',
             counterparty_name: '',
+            notional_currency: 'GBP',
+            book_id: '',
+            book_name: '',
         });
         expect(rows?.[1]?.npv).toBe('1142973.707486');
     });

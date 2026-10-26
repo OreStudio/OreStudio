@@ -167,6 +167,89 @@ becomes a 2x2 block of the same shape, and stability stops being the scalar test
 mean kernel must be below one. That is a model of its own, it depends on all of
 the above, and it is captured in the inbox rather than scoped here.
 
+* Literature
+
+The approach is not novel and should not be argued as if it were: each part of it
+is a named idea with a paper behind it. The list is grouped by the section that
+leans on it, and each entry says what it gives us rather than who said it first.
+
+** Activity and volatility are one latent process
+
+- [[https://jstor.econometricsociety.org/publications/econometrica/1973/01/01/subordinated-stochastic-process-model-finite-variance][Clark (1973), *A subordinated stochastic process model with finite variance for
+  speculative prices*, Econometrica 41(1)]] — the mixture-of-distributions
+  hypothesis: returns are a mixture over an unobservable information-arrival
+  rate, and tick counts and |returns| are two proxies for it. This is the paper
+  the loading's "variance proportional to activity" comes from.
+- Easley and O'Hara (1992), *Time and the process of security price adjustment*,
+  Journal of Finance 47(2) — trading time carries information, so a price law
+  indexed by clock time misses the variable that matters.
+- Engle (2000), *The econometrics of ultra-high-frequency data*, Econometrica
+  68(1) — the joint model of durations and returns: activity and volatility
+  estimated together, which is the statistical shape of what this note proposes.
+- Engle and Russell (1998), *Autoregressive conditional duration*, Econometrica
+  66(5) — the durations model the arrival processes echo, and the reason a
+  clustering rate belongs in a price model at all.
+- Cont, Kukanov and Stoikov (2014), *The price impact of order book events*,
+  Journal of Financial Econometrics 12(1) — the measured link between event
+  intensity and short-horizon volatility.
+
+** Business time, or why more ticks is not more variance
+
+- Bochner (1955), *Harmonic Analysis and the Theory of Probability* — the
+  subordination of one process by another, the mathematics of a clock that runs on
+  activity.
+- Mandelbrot and Taylor (1967), *On the distribution of stock price differences*,
+  Operations Research 15(6) — operation time, the first trading-time formulation.
+- [[https://acnpsearch.unibo.it/singlejournalindex/75764135][Ané and Geman (2000),
+  *Order flow, transaction clock, and normality of asset returns*, Journal of
+  Finance 55(5)]] — returns are near-normal in transaction time and fat-tailed in
+  calendar time. The strongest statement of the case for keeping sampling and
+  time apart, which is the first task of the story.
+
+** Hawkes, endogenous activity, and its stability
+
+- Hawkes (1971), *Spectra of some self-exciting and mutually exciting point
+  processes*, Biometrika 58(1) — the model, and already the *mutually exciting*
+  form: activity exciting volatility is not an extension of it but a use of it.
+- Ogata (1981), *On Lewis' simulation method for point processes*, IEEE
+  Transactions on Information Theory 27(1) — thinning, the simulation method the
+  arrival processes use.
+- Bacry, Delattre, Hoffmann and Muzy (2013), *Modelling microstructure noise with
+  mutually exciting point processes*, Quantitative Finance 13(1) — the closest
+  published model to what ORE Studio does today, noise included.
+- [[https://scholar.google.com.ec/citations?view_op=view_citation&hl=ja&user=JII6yu8AAAAJ&citation_for_view=JII6yu8AAAAJ:MXK_kJrjxJIC][Bacry,
+  Mastromarino and Muzy (2015), *Hawkes processes in finance*, Market
+  Microstructure and Liquidity 1(1)]] — the survey to read before touching the
+  kernel; it states the stability conditions in the multivariate case.
+- Brémaud and Massoulié (1996), *Stability of nonlinear Hawkes processes*, Annals
+  of Probability 24(3) — why the scalar rank-one test becomes a spectral radius,
+  which is the condition the bivariate design has to state.
+- [[https://www.sciencedirect.com/science/article/abs/pii/S0304405X15000264][Aït-Sahalia,
+  Cacho-Diaz and Laeven (2015), *Modeling financial contagion using mutually
+  exciting jump processes*, Journal of Financial Economics 117(3)]] — contagion as
+  two mutually exciting jump processes: the bivariate design, with jumps, and the
+  empirical case for it.
+
+** The tails
+
+- Merton (1976), *Option pricing when underlying stock returns are
+  discontinuous*, Journal of Financial Economics 3(1) — the jump-diffusion whose
+  tail a diffusion scale cannot reproduce.
+- Barndorff-Nielsen and Shephard (2006), *Econometrics of testing for jumps in
+  financial economics using bipower variation*, Journal of Financial Econometrics
+  4(1) — how a jump is told from a diffusion in observed data, which is how a test
+  of our own tails should be written.
+
+** Sampling, noise, and what "volatility" means in a test
+
+- Andersen, Bollerslev, Diebold and Labys (2003), *Modeling and forecasting
+  realized volatility*, Econometrica 71(2) — realized variance as an estimator,
+  and its sampling dependence.
+- Zhang, Mykland and Aït-Sahalia (2005), *A tale of two time scales*, Journal of
+  the American Statistical Association 100(472) — microstructure noise biases
+  realized variance upward, more so the more often you sample. This is the reason
+  the note insists every test says which volatility it measures.
+
 * See also
 
 - [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] — the

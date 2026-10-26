@@ -25,6 +25,7 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/command_token.hpp"
+#include "ores.nats/service/request_helpers.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
@@ -808,8 +809,11 @@ void synthetic_commands::process_regime_get(std::ostream& out,
         return;
     }
 
-    const auto response =
-        do_request(out, session, ores::synthetic::messaging::get_market_regime_request{}, {}, true);
+    const auto response = ores::nats::service::authenticated_request_and_decode<
+        ores::synthetic::messaging::get_market_regime_response>(
+        session,
+        ores::synthetic::messaging::get_market_regime_request::nats_subject,
+        ores::synthetic::messaging::get_market_regime_request{});
     if (!response)
         return;
     if (!response->success) {
@@ -842,7 +846,9 @@ void synthetic_commands::process_regime_pin(std::ostream& out,
 
     ores::synthetic::messaging::pin_market_regime_request request;
     request.mode = mode;
-    const auto response = do_request(out, session, request, {}, true);
+    const auto response = ores::nats::service::authenticated_request_and_decode<
+        ores::synthetic::messaging::pin_market_regime_response>(
+        session, ores::synthetic::messaging::pin_market_regime_request::nats_subject, request);
     if (!response)
         return;
     if (!response->success) {

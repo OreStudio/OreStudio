@@ -187,14 +187,16 @@ exporter::export_pricing_engines(const analytics::messaging::pricing_engines_doc
     // product, of what a row the document has no place for is refused with, and
     // of the order the rows were written in, so the writer adds no rule of its
     // own on top of it.
-    const auto record = domain::pricing_engine_projection::reverse(v);
+    return export_pricing_engines(domain::pricing_engine_projection::reverse(v));
+}
 
+std::string exporter::export_pricing_engines(const pricing_engines_document& v) {
     pugi::xml_document document;
     auto declaration = document.append_child(pugi::node_declaration);
     declaration.append_attribute("version").set_value("1.0");
 
     auto root = document.append_child("PricingEngines");
-    for (const auto& product : record.product) {
+    for (const auto& product : v.product) {
         auto node = root.append_child("Product");
         node.append_attribute("type").set_value(product.type.c_str());
         node.append_child("Model").text().set(product.model.c_str());
@@ -203,7 +205,7 @@ exporter::export_pricing_engines(const analytics::messaging::pricing_engines_doc
         write_parameters(node, "EngineParameters", product.engine_parameters.parameter);
     }
     // One block, after the products, holding the parameters no product owns.
-    write_parameters(root, "GlobalParameters", record.global_parameters.parameter);
+    write_parameters(root, "GlobalParameters", v.global_parameters.parameter);
 
     std::ostringstream out;
     document.save(out, "  ", pugi::format_default, pugi::encoding_utf8);

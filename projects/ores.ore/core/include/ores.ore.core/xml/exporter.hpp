@@ -25,6 +25,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
+#include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
@@ -34,6 +35,16 @@
 #include <vector>
 
 namespace ores::ore::xml {
+
+/**
+ * @brief One pricing engines document as the projection holds it: the rows of a
+ * configuration regrouped into the shape the document states.
+ *
+ * It is the type pricing_engine_projection::reverse answers with and that
+ * pricing_engine_projection::write takes, so a caller that holds rows and one
+ * that holds a document reach the same writer.
+ */
+using pricing_engines_document = domain::pricing_engine_projection::document;
 
 /**
  * @brief Exports domain objects to their ORE XML representation.
@@ -67,13 +78,30 @@ public:
     static std::string export_currency_config(const std::vector<refdata::domain::currency>& v);
 
     /**
+     * @brief Writes a pricing engines document as the ORE document ORE reads.
+     *
+     * The products come first, in the order the document holds them, and each
+     * carries its model, its model parameters, its engine and its engine
+     * parameters in that order. One GlobalParameters block follows them,
+     * holding the parameters no product owns. An empty section is written as
+     * an empty element, because the document states every section.
+     *
+     * This is the one writer of this document: both entry points below reach
+     * it, and pricing_engine_projection::write delegates to it, so the export
+     * and the round trip cannot drift apart.
+     *
+     * @param v The document, as pricing_engine_projection::reverse regroups the
+     *          rows into it, or as a reader bound it.
+     */
+    static std::string export_pricing_engines(const pricing_engines_document& v);
+
+    /**
      * @brief Writes one pricing engine configuration as the ORE document
      * PricingEngines.
      *
-     * The products come first, in the position their rows carry, and each
-     * carries its model, its model parameters, its engine and its engine
-     * parameters in that order. One GlobalParameters block follows them,
-     * holding the parameters no product owns.
+     * The thin caller of the writer above: it regroups the configuration's rows
+     * with pricing_engine_projection::reverse, which also refuses a parameter
+     * row the document has no place for.
      *
      * @param v The configuration's header, products and parameters, as
      *          analytics' own messages answer them.

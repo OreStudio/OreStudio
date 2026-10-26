@@ -105,10 +105,21 @@ The plan above predates the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record sc
 | A golden file beside the test | An exact-string test of the whole document, and a round trip through =pricing_engine_projection= |
 | The handler checks the party itself | Analytics refuses a configuration the session's party cannot see, in its own words, and the handler answers those words |
 
-Two further points, neither a defect:
+One further point, not a defect:
 
 - The run parameter that =configuration_type.run_parameter= records may override the name for a run. The export is a screen and shell action on a configuration, not a run, so it writes the table's name pattern as it stands.
-- The projection's =write= states the schema-driven emitter, and this exporter states pugixml. The two differ on one point: an empty =GlobalParameters= is written by the exporter, because the specification says an empty section is an empty element, and left out by the emitter, because an absent block maps to the same rows. Both documents ORE reads.
+
+** One writer
+
+The review of this task found the document stated twice: the exporter wrote it with pugixml and =pricing_engine_projection::write= wrote it with the schema-driven emitter, and the two already disagreed on an empty =GlobalParameters=. RS-ORE-04 names one ORE exporter, so the export became the only writer:
+
+- =exporter::export_pricing_engines= has one pugixml body, and two entry points: the ORE domain document (the type =pricing_engine_projection::reverse= answers with and =write= takes) and the analytics messaging document, which regroups the rows and calls the first.
+- =pricing_engine_projection::write= delegates to the domain entry point, and the emitter call it used is gone. Read, map and reverse are untouched, so =xg::pricing_engines_document= stays where the row mapping needs it.
+
+The consolidation changed what the run import writes back: a configuration whose source names no =GlobalParameters= block now leaves the store with an empty one, because the writer states every section. ORE reads it, and the only difference is that block. Two tests state it rather than hide it:
+
+- =every_pricing_engine_document_in_the_corpus_round_trips= accepts exactly one difference, =GlobalParameters was added= at the document, and pins the count: 70 of the 125 corpus documents gain the block, the other 55 round trip byte for byte as structure.
+- =a run's configuration imports and exports as the same files= accepts only a difference that ends in =: GlobalParameters was added=.
 
 * Notes
 
@@ -163,7 +174,7 @@ via its "Verifies task" field.
 
 ** The build
 
-Committed on =feature/export-a-pricing-engine-configuration-as-ore-xml= in seven commits:
+Committed on =feature/export-a-pricing-engine-configuration-as-ore-xml= in eight commits:
 
 | Commit | What |
 |--------+------|
@@ -174,11 +185,13 @@ Committed on =feature/export-a-pricing-engine-configuration-as-ore-xml= in seven
 | =4529dd3c9d= | The Export button and its dialog on the record header, in English, French and Portuguese |
 | =e1df37bb46= | =pricing_engines export <id> [--file <path>]= in =ores.shell= |
 | =db5ab9ec2e= | The four cases that state which file type row names the document, and its absence |
+| The consolidation commit | One writer: the pugixml body takes the ORE domain document, the projection delegates to it, and the round-trip tests state the empty =GlobalParameters= they now gain |
 
 ** What was proved
 
 - =./compass.sh build= passes.
-- The ORE core suite passes (400 cases, 475504 assertions), as does the analytics core suite (76 cases), the shell reporting suite (571 cases), the reporting api suite (68 cases), the BFF suite (1005 tests), the web suite (2067 tests) and the wire protocol suite (225 tests). =ores.ore.service.tests= holds no cases: the service's units are covered by the core suite and by the run below.
+- The ORE core suite passes (401 cases, 475592 assertions), as does the analytics core suite (76 cases), the shell reporting suite (571 cases), the reporting api suite (68 cases), the BFF suite (1005 tests), the web suite (2067 tests) and the wire protocol suite (225 tests). =ores.ore.service.tests= holds no cases: the service's units are covered by the core suite and by the run below.
 - =GET /api/reporting/pricing-engines/5979e68e-ad30-fb47-b828-e7b08398f43d/ore-document= answered 200, =content-type: application/xml=, =content-disposition: attachment; filename="pricingengine.xml"=, for the HK party's *XVA Overnight* configuration. The document is well formed under =xmllint --noout= and holds the five products in their stored positions (Swap 0, CrossCurrencySwap 1, FxForward 2, CreditDefaultSwap 3, Bond 4), their models, engines and parameters, and one =GlobalParameters= block holding =ContinueOnCalibrationError=.
 - The web package's tests hold no browser: the screens render to static markup there, so the button, its permission and the dialog's sentence are asserted on the rendered page, and the download request is asserted against a stubbed =fetch= in =api/pricingEngines.test.ts=. The click itself was not driven through a browser.
+- After the consolidation the route and the command were run again and their documents are byte identical to the ones above, because this configuration holds a global parameter. The consolidation's own change is the other case: 70 of the 125 corpus documents gained an empty =GlobalParameters=, and the round-trip cases state it.
 - =pricing_engines export <id> --file <path>= wrote the same document, byte for byte, after =account_operations switch-party= to the HK party of the ACME Corporation tenant. The name came from =ores_reporting_file_types_tbl= (row =setup.pricingEnginesFile=, configuration type =pricing_engines=, kind =input_document=, direction =input=, name pattern =pricingengine.xml=).

@@ -1096,6 +1096,24 @@ TEST_CASE("export_pricing_engines_writes_an_empty_configuration_as_empty_section
 )");
 }
 
+TEST_CASE("export_pricing_engines_states_the_document_the_round_trip_states", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto configuration = swap_configuration();
+    const auto from_rows = exporter::export_pricing_engines(configuration);
+
+    // One writer, two entry points: the document the projection regroups the
+    // rows into is written by the same body, and the round trip that delegates
+    // to it cannot state a different document.
+    const auto document = ores::ore::domain::pricing_engine_projection::reverse(configuration);
+    const auto from_document = exporter::export_pricing_engines(document);
+    const auto from_round_trip = ores::ore::domain::pricing_engine_projection::write(document);
+
+    BOOST_LOG_SEV(lg, debug) << "From rows:\n" << from_rows;
+    CHECK(from_document == from_rows);
+    CHECK(from_round_trip == from_rows);
+}
+
 TEST_CASE("export_pricing_engines_refuses_a_row_the_document_has_no_place_for", tags) {
     auto lg(make_logger(test_suite));
 

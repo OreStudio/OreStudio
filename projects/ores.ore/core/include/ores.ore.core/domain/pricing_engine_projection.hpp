@@ -66,9 +66,9 @@ public:
      * Products are emitted in =position= order, and each product's model and
      * engine parameters in the =position= order of their own scope; rows that
      * share a position are ordered by id, which is stable but not the order
-     * they were created in. GlobalParameters is written only when
-     * a global-scope row exists, which is equivalent because no shipped document
-     * writes an empty one.
+     * they were created in. The GlobalParameters block is marked present only
+     * when a global-scope row exists; the writer states the block either way,
+     * because the document states every section.
      *
      * @throws std::runtime_error for a parameter row the document has no place
      * for: an unknown scope, a global row that names a product, or a model or

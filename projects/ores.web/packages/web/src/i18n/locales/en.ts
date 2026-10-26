@@ -5503,7 +5503,7 @@ export const en: SourceCatalogue = {
             aggregateNote:
                 "These figures are the run's trades rolled up to their {level}. The run priced {date}.",
             degraded:
-                'The books or counterparties behind these figures could not be read, so an empty name means the name was not read, not that none was recorded.',
+                'The books, portfolios or counterparties behind these figures could not be read, so an empty name means the name was not read, not that none was recorded.',
             selectHint:
                 "Select a row to read that trade's result: its NPV, its base-currency NPV, its notional, its counterparty, and any error the run recorded against it.",
             aggregateHint:

@@ -291,12 +291,16 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
         ]);
         // A portfolio read that fails costs the portfolio names, not the
         // counterparties and the books beside it.
+        let portfoliosRead = true;
         const portfolios = await readAll(
             session,
             portfolioSubjects.list_portfolios_request,
             'portfolios',
             { filter: null },
-        ).catch(() => []);
+        ).catch(() => {
+            portfoliosRead = false;
+            return [];
+        });
         const counterpartyName = new Map(
             counterparties.map((counterparty) => [
                 text(counterparty['id']),
@@ -328,7 +332,7 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
             portfolioName: new Map(
                 portfolios.map((portfolio) => [text(portfolio['id']), text(portfolio['name'])]),
             ),
-            complete: true,
+            complete: portfoliosRead,
         };
     } catch {
         return empty;

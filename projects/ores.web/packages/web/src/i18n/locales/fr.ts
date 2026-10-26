@@ -5588,7 +5588,7 @@ const fr: SourceCatalogue = {
             aggregateNote:
                 "Ces chiffres sont les transactions de l'exécution agrégées par {level}. L'exécution a valorisé au {date}.",
             degraded:
-                "Les livres ou contreparties derrière ces chiffres n'ont pas pu être lus : un nom vide signifie que le nom n'a pas été lu, non qu'il n'en existe aucun.",
+                "Les livres, portefeuilles ou contreparties derrière ces chiffres n'ont pas pu être lus : un nom vide signifie que le nom n'a pas été lu, non qu'il n'en existe aucun.",
             selectHint:
                 "Sélectionnez une ligne pour lire le résultat de cette transaction : sa VAN, sa VAN en devise de base, son notionnel, sa contrepartie et toute erreur enregistrée par l'exécution.",
             aggregateHint:

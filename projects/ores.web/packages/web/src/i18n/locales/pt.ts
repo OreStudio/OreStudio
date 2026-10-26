@@ -5546,7 +5546,7 @@ const pt: SourceCatalogue = {
             aggregateNote:
                 'Estes valores são as transações da execução agregadas por {level}. A execução avaliou em {date}.',
             degraded:
-                'Os livros ou contrapartes por trás destes valores não puderam ser lidos: um nome vazio significa que o nome não foi lido, não que não exista.',
+                'Os livros, carteiras ou contrapartes por trás destes valores não puderam ser lidos: um nome vazio significa que o nome não foi lido, não que não exista.',
             selectHint:
                 'Selecione uma linha para ler o resultado dessa transação: o seu VAL, o VAL na moeda base, o notional, a contraparte e qualquer erro registado pela execução.',
             aggregateHint:

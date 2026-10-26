@@ -21,6 +21,27 @@
     "photo_key": "acme_staff_photo:male_age20_european_01"
   },
   {
+    "company_code": "acme_group",
+    "id": "ca11a713-050e-5025-ae66-460597328e09",
+    "username": "nadia.fischer",
+    "email": "nadia.fischer@acmecorp.com",
+    "full_name": "Nadia Fischer",
+    "gender": "female",
+    "password_hash": "",
+    "account_type": "user",
+    "role": "Trading",
+    "job_title": "Group Treasurer",
+    "reports_to_username": "adrian.vance",
+    "business_unit_code": "acme_group.treasury",
+    "street": "25 Old Broad Street",
+    "city": "London",
+    "state": null,
+    "country_code": "GB",
+    "postal_code": "EC2N 1HQ",
+    "phone": "+44 20 7946 0000",
+    "photo_key": "acme_staff_photo:female_age35_european_01"
+  },
+  {
     "company_code": "acme_uk",
     "id": "45c825ea-4a56-5998-a3ab-e9090223a20c",
     "username": "leanne.shaw",

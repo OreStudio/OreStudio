@@ -62,5 +62,6 @@ begin
         job_title, reports_to_username, photo_key
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd5124a10-9284-5243-a017-07abf0dc5a60', 0, 'adrian.vance', 'Adrian Vance', 'adrian.vance@acmecorp.com', '', 'user', null, 'Operations', 'Group Chief Executive Officer', null, 'acme_staff_photo:male_age20_european_01');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd5124a10-9284-5243-a017-07abf0dc5a60', 0, 'adrian.vance', 'Adrian Vance', 'adrian.vance@acmecorp.com', '', 'user', null, 'Operations', 'Group Chief Executive Officer', null, 'acme_staff_photo:male_age20_european_01'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ca11a713-050e-5025-ae66-460597328e09', 0, 'nadia.fischer', 'Nadia Fischer', 'nadia.fischer@acmecorp.com', '', 'user', 'acme_group.treasury', 'Trading', 'Group Treasurer', 'adrian.vance', 'acme_staff_photo:female_age35_european_01');
 end $$;

@@ -20,8 +20,8 @@
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
-#include "ores.iam.api/messaging/account_role_protocol.hpp"
-#include "ores.iam.api/messaging/role_protocol.hpp"
+#include "ores.iam.api/messaging/authorization_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/commodity_protocol.hpp"
@@ -51,6 +51,7 @@
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
+#include <array>
 #include <format>
 #include <optional>
 #include <string>
@@ -60,6 +61,12 @@
 namespace ores::synthetic::service {
 
 namespace {
+
+auto& lg() {
+    static auto instance =
+        ores::logging::make_logger("ores.synthetic.core.trading_trade_population_writer");
+    return instance;
+}
 
 namespace domain = ores::synthetic::domain;
 using ores::utility::domain::outcome;
@@ -96,11 +103,23 @@ constexpr double coupon_rate = 0.05;
  */
 constexpr double security_face_value = 1.0;
 
+/*
+ * The permissions a booking of a generated trade needs, which are the ones the booking operation
+ * checks: the trade write, and the service-origin write that a population's origin claims. A
+ * person who holds both may enter a generated trade for their party.
+ */
+constexpr std::array<std::string_view, 2> booking_permissions{
+    "trading::trades:write", "trading::trades:write_service_origin"};
+
 }
 
 trading_trade_population_writer::trading_trade_population_writer(
-    ores::nats::service::nats_client& nats)
-    : nats_(nats) {}
+    ores::nats::service::nats_client& nats,
+    booking_client booker,
+    std::optional<domain::trade_population_trader> fallback)
+    : nats_(nats)
+    , booker_(std::move(booker))
+    , fallback_(std::move(fallback)) {}
 
 domain::trade_generation_scope
 trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_id) {
@@ -265,27 +284,50 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     }
 
     /*
-     * The person who may enter a trade comes from the tenant's own staff: the
-     * party's accounts that hold the Trading role. A party with none is a party
-     * whose trades cannot name an author, so the run stops rather than writing
-     * an anonymous one.
+     * The people who may enter a trade come from the tenant's own staff: the party's accounts that
+     * hold the permissions a booking of a generated trade needs. They are asked for by account,
+     * with the same check the booking makes, because a person the run cannot book as is a person
+     * who cannot ask for a trade's authorisation either.
+     *
+     * Each of them is named with their account, because the population is entered as those people
+     * and not as whatever principal runs the generator: the booking carries the trader's session,
+     * so the trade states them as its author and the authorisation request the booking raises is
+     * theirs.
      */
     ores::iam::messaging::list_accounts_request accounts_req;
     accounts_req.limit = page;
     const auto accounts = read(accounts_req);
 
-    /*
-     * The person who may enter a trade comes from the tenant's own staff: the
-     * accounts the tenant holds that carry the booking party as their own. A
-     * party with none is a party whose trades cannot name an author, so the run
-     * stops rather than writing an anonymous one.
-     */
     for (const auto& account : accounts.accounts) {
         if (account.account_type != "user")
             continue;
         if (!account.default_party_id || *account.default_party_id != scope.party_id)
             continue;
-        scope.trader_usernames.push_back(account.username);
+
+        ores::iam::messaging::get_account_roles_request roles_req;
+        roles_req.account_id = boost::uuids::to_string(account.id);
+        const auto access = read(roles_req);
+        std::set<std::string> held;
+        for (const auto& role : access.roles)
+            held.insert(role.permission_codes.begin(), role.permission_codes.end());
+        const auto may_book = std::ranges::all_of(booking_permissions, [&held](const auto& one) {
+            return held.contains(std::string(one));
+        });
+        if (!may_book)
+            continue;
+
+        scope.traders.push_back(domain::trade_population_trader{account.id, account.username});
+    }
+
+    // A party whose staff holds no trader is entered by the run's own principal, which the caller
+    // states. The population is then booked as nobody of the party, so the run says so rather than
+    // leaving the party's staff with trades none of them can own.
+    if (scope.traders.empty() && fallback_) {
+        BOOST_LOG_SEV(lg(), ores::logging::warn)
+            << "Party " << boost::uuids::to_string(scope.party_id)
+            << " holds no account with the Trading role, so its population is entered by '"
+            << fallback_->username << "' and no person of the party owns its requests.";
+        scope.traders.push_back(*fallback_);
     }
 
     return scope;
@@ -477,15 +519,15 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
      */
     book_req.anchor.origin = ores::trading::domain::origin::synthetic;
     book_req.anchor.origin_reference = boost::uuids::to_string(scope.config_id);
-    book_req.anchor.modified_by = slot.trader_username;
-    book_req.anchor.performed_by = slot.trader_username;
+    book_req.anchor.modified_by = slot.trader.username;
+    book_req.anchor.performed_by = slot.trader.username;
     book_req.anchor.change_reason_code = std::string(population_reason);
     book_req.anchor.change_commentary = "Generated trade population.";
     book_req.booking.book_id = slot.book_id;
     book_req.booking.netting_set_id = slot.netting_set_id;
     book_req.booking.trade_date = slot.trade_date;
-    book_req.booking.modified_by = slot.trader_username;
-    book_req.booking.performed_by = slot.trader_username;
+    book_req.booking.modified_by = slot.trader.username;
+    book_req.booking.performed_by = slot.trader.username;
     book_req.booking.change_reason_code = std::string(population_reason);
     book_req.booking.change_commentary = "Generated trade population.";
     book_req.activity_type_code = "new_booking";
@@ -499,8 +541,8 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
     identifier.id_type = std::string(internal_id_type);
     identifier.id_value = slot.internal_identifier;
     identifier.issuing_party_id = scope.party_id;
-    identifier.modified_by = slot.trader_username;
-    identifier.performed_by = slot.trader_username;
+    identifier.modified_by = slot.trader.username;
+    identifier.performed_by = slot.trader.username;
     identifier.change_reason_code = std::string(population_reason);
     identifier.change_commentary = "Generated trade population.";
     book_req.identifiers.push_back(identifier);
@@ -844,7 +886,12 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             "The slot states no terms this writer knows how to book.");
     }
 
-    const auto reply = nats_.authenticated_request(
+    /*
+     * The booking is the person's, not the run's: the trade states its author and the
+     * authorisation request the booking raises is theirs.
+     */
+    auto& booker = booker_ ? booker_(slot) : nats_;
+    const auto reply = booker.authenticated_request(
         ores::trading::messaging::book_trade_request::nats_subject, codec.encode(book_req));
     const auto error = reply.headers.find("X-Error");
     if (error != reply.headers.end())

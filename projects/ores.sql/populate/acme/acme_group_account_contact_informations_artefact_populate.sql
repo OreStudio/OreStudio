@@ -58,5 +58,6 @@ begin
         postal_code, phone, email, web_page
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f2fbfa25-d92f-5e80-9e16-71e13170499d', 0, 'adrian.vance', '25 Old Broad Street', null, 'London', null, 'GB', 'EC2N 1HQ', '+44 20 7946 0000', 'adrian.vance@acmecorp.com', null);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f2fbfa25-d92f-5e80-9e16-71e13170499d', 0, 'adrian.vance', '25 Old Broad Street', null, 'London', null, 'GB', 'EC2N 1HQ', '+44 20 7946 0000', 'adrian.vance@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'bef5f785-0630-5eb7-8431-7f5148463d5d', 0, 'nadia.fischer', '25 Old Broad Street', null, 'London', null, 'GB', 'EC2N 1HQ', '+44 20 7946 0000', 'nadia.fischer@acmecorp.com', null);
 end $$;

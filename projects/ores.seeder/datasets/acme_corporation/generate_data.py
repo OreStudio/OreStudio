@@ -384,14 +384,25 @@ def gen_person(office, faker, index, used_slugs):
 
 
 def build_group_accounts():
-    """The holding company's own staff -- just a Group CEO today, no
-    desks/business units of its own beyond Group Treasury (see
-    build_group_treasury() -- trading desks still live per-office). Every
-    office's Country Head reports to this account, so the org chart is one
-    real tree rather than three disconnected per-office roots. Fixed (not
-    Faker-generated): a single person doesn't need per-office locale/name
-    variety, and staying deterministic keeps it stable across regenerations."""
+    """The holding company's own staff: the Group CEO and the Group Treasurer, in
+    that order. No desks or business units of its own beyond Group Treasury (see
+    build_group_treasury() -- trading desks still live per-office), and the
+    Treasurer sits in that unit. Every office's Country Head reports to the CEO,
+    so the org chart is one real tree rather than three disconnected per-office
+    roots, and the Treasurer reports to the CEO.
+
+    The Treasurer carries the Trading role because the group carries trades of
+    its own -- intercompany loans and hedges in its treasury books -- and the
+    person who enters them must be somebody of the group who may book: the
+    population the demonstration generates states its author, and the
+    authorisation requests it raises belong to that author. The CEO keeps the
+    Operations role and books nothing.
+
+    Fixed (not Faker-generated): two people don't need per-office locale/name
+    variety, and staying deterministic keeps it stable across regenerations.
+    The CEO must stay first, because main() names it from the first entry."""
     username = "adrian.vance"
+    treasurer_username = "nadia.fischer"
     return [{
         "company_code": HOLDING["code"],
         "id": new_uuid(f"account:{username}"),
@@ -405,6 +416,25 @@ def build_group_accounts():
         "job_title": "Group Chief Executive Officer",
         "reports_to_username": None,
         "business_unit_code": None,
+        "street": HOLDING["street"],
+        "city": HOLDING["city"],
+        "state": None,
+        "country_code": HOLDING["country"],
+        "postal_code": HOLDING["postal_code"],
+        "phone": HOLDING["phone"],
+    }, {
+        "company_code": HOLDING["code"],
+        "id": new_uuid(f"account:{treasurer_username}"),
+        "username": treasurer_username,
+        "email": f"{treasurer_username}@acmecorp.com",
+        "full_name": "Nadia Fischer",
+        "gender": "female",
+        "password_hash": NO_STAGED_PASSWORD,
+        "account_type": "user",
+        "role": "Trading",
+        "job_title": "Group Treasurer",
+        "reports_to_username": username,
+        "business_unit_code": f"{HOLDING['code']}.treasury",
         "street": HOLDING["street"],
         "city": HOLDING["city"],
         "state": None,

@@ -134,6 +134,27 @@ public:
 };
 
 /**
+ * @brief The planner for a foreign exchange population.
+ *
+ * The routing table sends sixteen trade types to seven tables, and those tables
+ * state three idioms: a bought currency against a sold one, a digital payoff
+ * struck against a foreign and a domestic currency, and an index written on a
+ * reference notional. The planner draws a pair from the tenant's catalogue,
+ * preferring the pairs that name the book's own currency because a desk books
+ * what it quotes, and states the fields the type it draws needs.
+ *
+ * It refuses when the tenant holds no currency pair, because a population that
+ * invented one would name a pair the store cannot resolve.
+ */
+class ORES_SYNTHETIC_CORE_EXPORT fx_trade_planner final : public trade_planner {
+public:
+    [[nodiscard]] domain::trade_population_plan
+    plan(const domain::trade_generation_scope& scope) const override;
+
+    [[nodiscard]] std::string_view asset_class_code() const override;
+};
+
+/**
  * @brief The planner registered for an asset class.
  *
  * A class with no planner is refused by name rather than falling back to one,

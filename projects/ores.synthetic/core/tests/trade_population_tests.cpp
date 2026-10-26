@@ -66,6 +66,11 @@ const domain::rate_terms& rate_of(const domain::trade_population_slot& slot) {
     return std::get<domain::rate_terms>(slot.terms);
 }
 
+const domain::fx_terms& fx_of(const domain::trade_population_slot& slot) {
+    return std::get<domain::fx_terms>(slot.terms);
+}
+
+
 
 const boost::uuids::uuid config_id =
     boost::uuids::string_generator()("0cd68b09-6ebc-4180-a298-0cc386590f31");
@@ -116,6 +121,20 @@ domain::trade_generation_scope rate_scope() {
     auto scope = bond_scope();
     scope.asset_class_code = "interest_rates";
     scope.floating_index_codes = {"EUR-EURIBOR-6M", "EUR-EONIA", "EUR-ESTR", "USD-SOFR"};
+    return scope;
+}
+
+/*
+ * A scope of the FX family. The ten routed types are sixteen here, and the
+ * catalogue carries one pair of the book's currency and one that names neither
+ * side of it, so the preference is testable.
+ */
+domain::trade_generation_scope fx_scope() {
+    auto scope = bond_scope();
+    scope.asset_class_code = "fx";
+    scope.currency_code = "EUR";
+    scope.currency_pairs = {{.base = "EUR", .quote = "USD"},
+                            {.base = "GBP", .quote = "USD"}};
     return scope;
 }
 
@@ -411,6 +430,78 @@ TEST_CASE("every_routed_rate_type_appears_in_a_population_of_that_length", tags)
 TEST_CASE("a_rate_population_without_an_index_catalogue_is_refused", tags) {
     auto scope = rate_scope();
     scope.floating_index_codes.clear();
+
+    CHECK_THROWS_AS(plan_of(scope), trade_population_error);
+}
+
+TEST_CASE("an_fx_population_states_the_idiom_its_type_needs", tags) {
+    const auto scope = fx_scope();
+    const auto plan = plan_of(scope);
+
+    const auto bought_and_sold = [](const std::string& type) {
+        return type == "FxForward" || type == "FxSwap" || type == "FxOption" ||
+               type.starts_with("FxBarrier") || type == "FxDoubleBarrierOption" ||
+               type == "FxEuropeanBarrierOption" || type == "FxGenericBarrierOption" ||
+               type == "FxKIKOBarrierOption";
+    };
+    const auto digital = [](const std::string& type) {
+        return type == "FxDigitalOption" || type == "FxTouchOption" ||
+               type == "FxDoubleTouchOption" || type == "FxDigitalBarrierOption";
+    };
+
+    REQUIRE(!plan.slots.empty());
+    for (const auto& slot : plan.slots) {
+        const auto& terms = fx_of(slot);
+        const auto& type = slot.trade_type_code;
+        if (bought_and_sold(type)) {
+            CHECK_FALSE(terms.bought_currency.empty());
+            CHECK_FALSE(terms.sold_currency.empty());
+            CHECK(terms.bought_amount > 0.0);
+        } else if (digital(type)) {
+            CHECK_FALSE(terms.foreign_currency.empty());
+            CHECK_FALSE(terms.payoff_currency.empty());
+            REQUIRE(terms.payoff_amount.has_value());
+        } else if (type == "FxAverageForward" || type == "FxTaRF") {
+            // The average forward and the target redemption forward are
+            // written on an index, not on a named underlying.
+            CHECK_FALSE(terms.fx_index.empty());
+            CHECK(terms.fixing_amount > 0.0);
+        } else {
+            CHECK_FALSE(terms.underlying_code.empty());
+            CHECK(terms.fixing_amount > 0.0);
+        }
+    }
+}
+
+TEST_CASE("every_routed_fx_type_appears_in_a_population_of_that_length", tags) {
+    const auto plan = plan_of(fx_scope());
+
+    std::set<std::string> types;
+    for (const auto& slot : plan.slots)
+        types.insert(slot.trade_type_code);
+
+    CHECK(types.size() == 16);
+}
+
+TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", tags) {
+    const auto scope = fx_scope();
+    const auto plan = plan_of(scope);
+
+    // EUR/USD names the book's currency and GBP/USD does not, so every slot
+    // takes the first.
+    for (const auto& slot : plan.slots) {
+        const auto& terms = fx_of(slot);
+        if (!terms.bought_currency.empty()) {
+            CHECK(terms.bought_currency == "EUR");
+        } else if (!terms.reference_currency.empty()) {
+            CHECK(terms.reference_currency == "EUR");
+        }
+    }
+}
+
+TEST_CASE("an_fx_population_without_a_pair_catalogue_is_refused", tags) {
+    auto scope = fx_scope();
+    scope.currency_pairs.clear();
 
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }

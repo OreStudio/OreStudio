@@ -212,7 +212,12 @@ cross join (values
          "description": "The interest rate trades ACME UK plc books, generated from its own books, counterparties, staff and benchmark catalogue. Twelve a book so each of the nine routed types appears at least once and three appear twice.",
          "asset_class_code": "interest_rates", "book": "GBP Vanilla Swaps",
          "min_tenor_code": "1Y", "max_tenor_code": "10Y",
-         "min_notional": "1000000", "max_notional": "50000000", "seed": 43, "trades_per_book": 12}
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 43, "trades_per_book": 12},
+        {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK FX population",
+         "description": "The foreign exchange trades ACME UK plc books, generated from its own books, counterparties, staff and currency pair catalogue. Sixteen a book so each of the sixteen routed types appears once.",
+         "asset_class_code": "fx", "book": "Cable Spot Forward",
+         "min_tenor_code": "1M", "max_tenor_code": "2Y",
+         "min_notional": "1000000", "max_notional": "50000000", "seed": 44, "trades_per_book": 16}
     ]}'::jsonb),
     -- Northwind Traders: the second demonstration tenant. Lighter than ACME --
     -- one legal entity, one party, nine staff and seven books -- and its party

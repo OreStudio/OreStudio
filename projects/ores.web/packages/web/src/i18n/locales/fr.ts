@@ -4628,13 +4628,32 @@ const fr: SourceCatalogue = {
             sensitivity: 'Sensibilité au marché',
             sensitivityHelp: 'À quel point ce flux suit le marché, où un représente le flux moyen.',
             ratio: 'Rapport de branchement',
-            ratioHelp: 'Hawkes uniquement : combien de ticks supplémentaires un tick provoque, en dessous de un.',
+            ratioHelp:
+                'Hawkes uniquement : combien de ticks supplémentaires un tick provoque, en dessous de un.',
             decay: 'Décroissance, par seconde',
-            decayHelp: 'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, en unités de un sur une seconde.',
+            decayHelp:
+                'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, en unités de un sur une seconde.',
             market: 'Marché maintenant : {state}. Il se lit ici et se règle dans l’onglet Régime de marché.',
-            marketUnknown: 'l’onglet Régime de marché n’est pas encore branché',
+            marketUnknown: 'l’état du marché n’est pas lisible pour le moment',
             unsaved: 'Modifications non enregistrées',
             reasonCode: 'system.update',
+        },
+        marketRegime: {
+            title: 'Régime de marché',
+            lead: 'L’état par lequel le rythme de chaque flux est mis à l’échelle. Il appartient au run, donc il se règle ici et non sur un flux : le regroupement propre à un flux se règle dans son onglet Arrivées.',
+            state: 'État',
+            states: { calm: 'Calme', active: 'Actif' },
+            multiplier: 'Multiplicateur',
+            heldBy: 'Défini par',
+            pinned: 'Une personne, et il tient jusqu’à ce qu’on le rende',
+            chain: 'La chaîne, qui tourne seule',
+            force: 'Forcer l’état',
+            set: { auto: 'Auto', calm: 'Calme', active: 'Actif' },
+            raster: {
+                title: 'Ticks de chaque flux en cours · {seconds} dernières secondes',
+                label: 'Arrivées de ticks de chaque flux en cours',
+                none: 'Aucun flux ne tourne, donc il n’y a pas de lignes. Un flux dessine une ligne dès que son générateur tourne.',
+            },
         },
         fxFeeds: {
             add: 'Ajouter',
@@ -4664,7 +4683,11 @@ const fr: SourceCatalogue = {
         synthetic: {
             title: 'Synthétique',
             lead: "Les données de marché que la plateforme génère au lieu de les recevoir : ce qui tourne par fournisseur, et les flux d'un fournisseur.",
-            tabs: { dashboard: 'Tableau de bord', provider: 'Fournisseur' },
+            tabs: {
+                dashboard: 'Tableau de bord',
+                provider: 'Fournisseur',
+                regime: 'Régime de marché',
+            },
             state: { serving: 'En service', running: 'En cours', stopped: 'Arrêté' },
             dashboard: {
                 none: "Il n'y a pas encore de flux. Un jeu de données de flux synthétiques publié pour votre partie remplit cet écran.",

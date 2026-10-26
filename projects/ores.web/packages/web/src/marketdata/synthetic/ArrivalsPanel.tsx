@@ -23,6 +23,7 @@ import { useTranslation } from '../../i18n/Provider.js';
 import { api, type RecordRow } from '../../api/client.js';
 import { show } from '../../refdata/records.js';
 import { Notice } from '../../ui/Primitives.js';
+import { regimeLabel, useMarketRegime } from './useMarketRegime.js';
 
 /** The models a feed's ticks can arrive under. */
 const MODELS = ['periodic', 'poisson', 'hawkes'] as const;
@@ -42,10 +43,13 @@ type Model = (typeof MODELS)[number];
  */
 export function ArrivalsPanel({
     feed,
+    market,
     mayWriteFeed,
     save,
 }: {
     readonly feed: RecordRow;
+    /** The market state and multiplier as the run reports them, or undefined while they are not read. */
+    readonly market: string | undefined;
     readonly mayWriteFeed: boolean;
     readonly save: (
         model: Model,
@@ -133,7 +137,9 @@ export function ArrivalsPanel({
 
             {/* Read only, and the only global fact on this tab. */}
             <p className="text-sm text-ink-muted">
-                {t('marketdata.arrivals.market', { state: t('marketdata.arrivals.marketUnknown') })}
+                {t('marketdata.arrivals.market', {
+                    state: market ?? t('marketdata.arrivals.marketUnknown'),
+                })}
             </p>
 
             {error === null ? null : <Notice tone="error">{error}</Notice>}
@@ -145,13 +151,50 @@ export function ArrivalsPanel({
                     disabled={!mayWriteFeed || !changed || saving}
                     onClick={() => void saveNow()}
                 >
-                    {saving ? t('common.saving') : t('common.save')}
+                    {saving ? t('entity.saving') : t('entity.save')}
                 </button>
                 {changed ? (
-                    <span className="text-xs text-ink-muted">{t('marketdata.arrivals.unsaved')}</span>
+                    <span className="text-xs text-ink-muted">
+                        {t('marketdata.arrivals.unsaved')}
+                    </span>
                 ) : null}
             </div>
         </section>
+    );
+}
+
+/**
+ * A feed's Arrivals tab: the panel above, with the market state the run reports
+ * filled in.
+ *
+ * The state is read here rather than handed down, because the tab is a page of
+ * its own and the feed's screen knows nothing of the market. A market that cannot
+ * be read leaves the line saying so, and nothing else on the tab changes.
+ */
+export function ArrivalsTab({
+    feed,
+    mayWriteFeed,
+    save,
+}: {
+    readonly feed: RecordRow;
+    readonly mayWriteFeed: boolean;
+    readonly save: (
+        model: Model,
+        ratio: number,
+        decay: number,
+        sensitivity: number,
+        intent: { readonly reasonCode: string; readonly commentary: string },
+    ) => Promise<void>;
+}): ReactNode {
+    const { t } = useTranslation();
+    const regime = useMarketRegime();
+    return (
+        <ArrivalsPanel
+            feed={feed}
+            market={regime === undefined ? undefined : regimeLabel(regime, t)}
+            mayWriteFeed={mayWriteFeed}
+            save={save}
+        />
     );
 }
 

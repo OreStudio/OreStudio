@@ -90,6 +90,22 @@ export class FeedTickBuffers {
         return ticks.slice(Math.max(0, ticks.length - limit));
     }
 
+    /**
+     * When the ticks of a feed's current run arrived, oldest first, from an
+     * instant on and at most `limit` of them.
+     *
+     * A raster draws when ticks arrived and nothing else, so it reads times
+     * rather than prices: the value of a tick says nothing about the market-wide
+     * factor, and a row of prices is a chart the feed's own page already draws.
+     */
+    arrivalTimes(sourceName: string, since: number, limit: number): readonly string[] {
+        const ticks = this.#runs.get(sourceName)?.ticks ?? [];
+        return ticks
+            .filter((tick) => Date.parse(tick.at) >= since)
+            .slice(-limit)
+            .map((tick) => tick.at);
+    }
+
     /** How many runs are heard from, which is what a test asserts on. */
     get size(): number {
         return this.#runs.size;

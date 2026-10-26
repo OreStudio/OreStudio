@@ -35,7 +35,7 @@ import { syntheticStore } from '../../refdata/store.js';
 import { FeedPage } from './FeedScreens.js';
 import { feedPath, type FeedKind } from './feedKind.js';
 import { INDEX_FAMILIES, TERM_FAMILIES, completeIrFeed, curveOf, irSeriesUri } from './irCurve.js';
-import { ArrivalsPanel } from './ArrivalsPanel.js';
+import { ArrivalsTab } from './ArrivalsPanel.js';
 import { IrTicksPanel, savedParameters } from './IrTicksPanel.js';
 import { IrProcessPanel, NO_ROWS, engineName } from './IrProcessPanel.js';
 import type { SaveEngine } from './SavePartsDialog.js';
@@ -476,7 +476,7 @@ export const IR_FEED_KIND: FeedKind = {
         {
             name: 'arrivals',
             render: ({ feed, running, mayWrite }) => (
-                <ArrivalsPanel
+                <ArrivalsTab
                     feed={feed}
                     mayWriteFeed={mayWrite && running !== true}
                     save={async (model, ratio, decay, sensitivity, intent) => {

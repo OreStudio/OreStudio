@@ -399,6 +399,26 @@ const feedFolderSchema = z.object({
 /** A folder of the feed hierarchy, with how many feeds of each kind it holds. */
 export type FeedFolder = z.infer<typeof feedFolderSchema>;
 
+/** The market-wide arrival factor in force: what a screen shows and a switch forces. */
+const marketRegimeSchema = z.object({
+    state: z.string(),
+    multiplier: z.number(),
+    pinned: z.boolean(),
+});
+
+export type MarketRegime = z.infer<typeof marketRegimeSchema>;
+
+/** What the market switch may force: a state, or control handed back to the chain. */
+export type RegimeMode = 'auto' | 'calm' | 'active';
+
+/** The times one running feed's ticks arrived, and the window they were read over. */
+const feedRasterSchema = z.object({
+    seconds: z.number(),
+    feeds: z.array(z.object({ sourceName: z.string(), ticks: z.array(z.string()) })),
+});
+
+export type FeedRaster = z.infer<typeof feedRasterSchema>;
+
 const folderFeedSchema = z.object({
     id: z.string(),
     kind: z.string(),
@@ -2160,6 +2180,45 @@ export const api = {
                     { method: 'GET' },
                 ),
             );
+    },
+
+    /**
+     * The market-wide arrival factor in force. The factor belongs to the run, so
+     * this is one read for the whole screen and not a value of any feed.
+     */
+    async marketRegime(): Promise<MarketRegime> {
+        return marketRegimeSchema.parse(
+            await request('/api/synthetic/market-regime', { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Forces the market state, or hands it back to the chain. The answer is the
+     * regime the service says is in force after the request, not what was asked.
+     */
+    async pinMarketRegime(mode: RegimeMode): Promise<MarketRegime> {
+        return marketRegimeSchema.parse(
+            await request('/api/synthetic/market-regime', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ mode }),
+            }),
+        );
+    },
+
+    /**
+     * When the ticks of every running feed arrived in the last window, one row
+     * per feed, oldest first. The rows are the feeds the service says run.
+     */
+    async feedRaster(input: { readonly seconds: number }): Promise<FeedRaster> {
+        return feedRasterSchema.parse(
+            await request(
+                `/api/synthetic/feed-raster?${new URLSearchParams({
+                    seconds: String(input.seconds),
+                }).toString()}`,
+                { method: 'GET' },
+            ),
+        );
     },
 
     /** The materialised days of one calendar in one year. */

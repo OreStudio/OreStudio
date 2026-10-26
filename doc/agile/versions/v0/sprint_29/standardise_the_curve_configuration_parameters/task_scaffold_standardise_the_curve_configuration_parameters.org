@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 73E53884-1EB9-495A-AFB7-24082429C9D2
+:END:
+#+title: Task: Scaffold story: Standardise the curve configuration's parameters on the one contract
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
+#+owner: marco
+#+branch: feature/standardise-the-curve-configuration-parameters
+#+pr: 3885
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3885][#3885]] | [agile] Scaffold the curve configuration parameters story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The story acceptance demands a documentation entry for *every* leaf ORE reads. The conventions precedent delivered 238 of 301 terms and left the rest showing as undocumented, so the bar was higher than the project actually met. | story.org | Accept | Softened: a leaf may stay undocumented where a reason is recorded, which is how the conventions conformance table already reads. |
+| 2 | The task file is named =task_implement_standardise_the_curve_configuration_parameters.org= but its title is "Bring curveconfig.xml onto the one contract". | that task | Decline | The filename is compass's own convention (=task_slug = "implement_" + story slug=); the title is the one the story needs. Renaming would fight the generator. |
+| 3 | An umbrella =implement_= task sits beside the real documentation task and overlaps the story's own scope. | story.org | Accept | Revised on the Claude review: the implement task now owns the work *after* the documentation — metadata in data, value sets, the page, the write check and the docstring correction — so the two scopes no longer overlap. The first call, to leave the overlap, was wrong. |
+| 4 | The local check gate reports =prototypes= red on this branch. | build/output/local_checks/report.md | Decline | Not this branch: it fails on =doc/prototypes/market_data/control-how-a-market-ticks/index.html=, which is on origin/main and untouched here (no diff under =doc/prototypes=). The prototype was created 2026-10-26 and its inventory row is another environment's to add. Recorded as a limitation, not fixed here to avoid a clash. |
+
+These four were found by the local review, before the PR. The six below came from
+the on-demand Claude review of PR #3885.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 5 | The story's task table lists both the generic implement task and the documentation task, their scopes overlap, and a reader cannot tell which owns the extraction. | story.org | Accept | See row 3. The implement task now carries the work after the documentation. |
+| 6 | The story's Status *Now* row names the scaffold and documentation tasks but not the implement task. | story.org | Accept | The Now row now names all three. |
+| 7 | The documentation task has no PR recorded, and the PR body names the scaffold task; check the owner before merge. | that task | Accept | Verified and made correct: #3885 is recorded on the scaffold task it closes, and the documentation task's =#+pr:= and PRs row were cleared so the sprint audit does not read it as ready to close. |
+| 8 | The claim that 19 sections cover ORE's 76 shipped documents carries no command or commit, which the task's own Measurements rule forbids. | story.org | Accept | Attributed to the =curve_section= model, which is where it comes from, and the extractor re-measures it in the first task. It is the entity's claim, not a measurement this story took. |
+| 9 | The story says the first task widens the /Parameter/ definition, but the task's Plan and Acceptance do not list that edit. | documentation task | Accept | Added to the task's Acceptance and as Plan step 5. |
+| 10 | The "settings" wording in the =yield_curve_config= and =curve_definition= docstrings is deferred to nobody. | implement task | Accept | Named in the implement task's description and Goal, which now own the correction. |
+
+The two below came from the re-review of the updated PR.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 11 | The implement task's Acceptance copies the story's five bullets, and its first bullet claims the extraction that the documentation task owns. | implement task | Accept | Its Acceptance now states the post-documentation scope: the sections in data, the value sets linked and enforced on write, the page, and the docstring correction. The extraction bullet is gone. |
+| 12 | The documentation task's Notes defer the docstring fix without naming the task that owns it. | documentation task | Accept | The Notes now name the implement task. |
+
+* Result
+
+The story, its scaffold task and its documentation task are scaffolded on
+=feature/standardise-the-curve-configuration-parameters=, and the story is
+wired into Sprint 29's =* Stories= table at STARTED.
+
+The story records the two decisions its first task depends on: a curve
+configuration's leaf is a /parameter/, with the comparison that rules out
+/setting/, /term/, /field/, /entry/, /option/ and /attribute/; and the element
+type is the ORE entry element that =curve_section= already holds.
+
+The documentation task carries the plan and the ORE-side measurements its work
+starts from, at ORE commit =3d75a6908=.

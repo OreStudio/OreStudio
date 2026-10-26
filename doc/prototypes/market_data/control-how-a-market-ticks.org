@@ -126,14 +126,17 @@ second place a rate is edited.
 The first build conflated a feed's own view with the run's. They are different
 jobs and belong in different places.
 
-- *Local, one row, in the feed's own tab.* A feed's arrival regime is edited and
+- *The model is a field, not a tab.* The tab carries a *tick arrival model*
+  selector — periodic, Poisson or Hawkes — and the fields below it mean something
+  for Hawkes. A fourth model joins that selector rather than a screen of its own.
+- *Local, one row, in the feed's own Arrivals tab.* A feed's arrival regime is edited and
   judged in a tab of its editor, beside the Instrument, Price behaviour and
   Provenance tabs it already has: the four fields, and a raster of that feed's
   ticks alone — one row, at the market's current state. Nothing here changes the
   market and nothing here shows another feed.
 - The tab is called *Arrivals*, not *Hawkes*. Two of the three modes are not
   Hawkes, and a person on a periodic feed would read a Hawkes tab as not theirs.
-- *Global, every row, in a Market tab.* The market is a property of the run, so it
+- *Global, every row, in a Market regime tab.* The market is a property of the run, so it
   gets its own tab: the state in force, the multiplier, the auto/calm/active
   switch, who pinned it and why, and the raster of every live feed. The tab sets
   the market and reads the feeds; it edits no feed's clustering.
@@ -183,10 +186,9 @@ the clustering is one feed's, so it is not the panel's.
 
 * What to prototype next
 
-Built. The page carries the two views, and the second is the one that shows the
-market: the tree on the left, the market in the middle with its Simple and
-Advanced switch and the raster of every feed's ticks, and the by-sensitivity list
-on the right.
+Built. The page carries the two views: the feed's Arrivals tab with one row, and
+the Market tab with its Simple and Advanced switch and the raster of every live
+feed. There is no list of feeds on the Market tab; that was a table of configs.
 
 The raster is drawn from the same model the service uses: a shared heat that
 every event feeds and that fades, each feed's intensity

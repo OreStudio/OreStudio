@@ -55,9 +55,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =ores.dq.core.tests= at =-O3= (the release preset) | 1 min 21 s wall, 3 min 54 s CPU, 1.6 GiB peak; tests run in 10.1 to 10.2 s | =build_any.sh= on =ores.dq.core.tests= (32 files), the level set last by =target_compile_options=; two timed runs of the test binary | =ced6c2fc70=, release preset, 3 jobs, no ccache |
+| at =-O1= | 1 min 23 s wall, 3 min 52 s CPU, 1.8 GiB peak | the same | =ced6c2fc70=, release preset, 3 jobs, no ccache |
+| at =-O0= | 1 min 15 s wall, 3 min 28 s CPU (-11%), 1.8 GiB peak; tests run in 10.1 to 10.2 s | the same | =ced6c2fc70=, release preset, 3 jobs, no ccache |
 
 * Notes
+
+- The test files spend little time in the optimiser; their cost is parsing and
+  instantiation. =-O0= saves 11% of their compile CPU at no cost to the test run,
+  which waits on the database. Tests are about an eighth of the files, so this is
+  about 1.4% of the total build: worth taking, and it makes tests easier to
+  debug, but it is a small lever.
 
 * Test Scenarios
 

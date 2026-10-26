@@ -8,7 +8,7 @@
 #+filetags: :the_fleet_runs_the_machine_out_of_memory:sprint_29:v0:
 #+owner: marco
 #+branch: hotfix/the-fleet-runs-the-machine-out-of-memory
-#+pr:
+#+pr: 3876
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3876][#3876]] | [nats] Fix the message leak and the tick runaway that took the machine down |
 
 * Review
 

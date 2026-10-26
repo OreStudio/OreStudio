@@ -31,7 +31,6 @@ td.num{text-align:right;font-family:var(--mono)}
 .tabs button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 14px}
 .tabs button[aria-selected="true"]{background:var(--accent);color:#0d1117;border-color:var(--accent);font-weight:600}
 .split{display:grid;grid-template-columns:190px 1fr;gap:12px}
-.split3{display:grid;grid-template-columns:200px 1fr 320px;gap:12px}
 .tree{font-size:.86rem;display:grid;gap:2px}
 .tree .node{padding:3px 6px;border-radius:5px}.tree .node.sel{background:var(--panel-2);outline:1px solid var(--line)}
 .tree .node .state{float:right;color:var(--ok);font-size:.8em}
@@ -58,7 +57,7 @@ h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--
 
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true"  data-v="A">Local · the feed's Arrivals tab</button>
-    <button role="tab" aria-selected="false" data-v="B">Global · the Market tab</button>
+    <button role="tab" aria-selected="false" data-v="B">Global · the Market regime tab</button>
   </div>
 
   <!-- A ------------------------------------------------------------------ -->
@@ -67,8 +66,9 @@ h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--
     <div class="tabs feed"><button disabled>Instrument</button><button disabled>Price behaviour</button><button aria-selected="true">Arrivals</button><button disabled>Provenance</button></div>
     <div class="row">
       <div class="field"><label>Rate, ticks/hour</label><input value="3600"></div>
-      <div class="field"><label>Arrival mode</label>
-        <select id="mA"><option>periodic</option><option selected>hawkes</option><option>poisson</option></select></div>
+      <div class="field"><label>Tick arrival model</label>
+        <select id="mA"><option>periodic</option><option>poisson</option><option selected>hawkes</option></select>
+        <span class="faint" style="font-size:.72rem">one model per feed</span></div>
       <div class="field"><label>Branching ratio</label><input id="nA" value="0.6"></div>
       <div class="field"><label>Decay, per second</label><input id="dA" value="20"></div>
       <div class="field"><label>Sensitivity</label><input id="sensA" value="1.3"></div>
@@ -78,7 +78,7 @@ h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--
     <div class="row">
       <div class="field"><label>Intensity now</label><div class="value mono" id="rateA">—</div></div>
       <div class="field"><label>Fano factor of gaps</label><div class="value mono" id="fanoA">—</div></div>
-      <div class="field"><label>Market now</label><div class="value"><span class="tag" id="mAstate">active</span> ×<span id="mAmp">2.0</span></div></div>
+      <div class="field"><label>Market now</label><div class="value"><span class="tag" id="mAstate">active</span> ×<span id="mAmp">2.0</span> <span class="faint">read only</span></div></div>
     </div>
     <p class="faint" style="font-size:.8rem">One row: this feed's ticks, its own clustering, at the market's current state. The market is not edited here — it is read, and B is where it is set.</p>
     <div class="for"><b>Local</b> the consequence sits beside the choice, and a person learns what 0.6 means by looking.</div>
@@ -87,8 +87,8 @@ h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--
 
   <!-- B ------------------------------------------------------------------ -->
   <section id="vB" class="panel" hidden>
-    <h2>Market Simulator · the run, under a busy market</h2>
-    <div class="split3">
+    <h2>Market Simulator · the Market regime tab</h2>
+    <div class="split">
       <div class="tree">
         <div class="node">Demo collection <span class="state">8 of 12</span></div>
         <div class="node">FX</div>
@@ -103,17 +103,17 @@ h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--
         <div class="mode"><button class="btn primary" data-mode-tab="simple">Simple</button><button class="btn" data-mode-tab="advanced">Advanced</button><span class="faint" style="font-size:.78rem;margin-left:auto">how much detail the panel shows</span></div>
         <h2>The market</h2>
         <div class="row">
-          <div class="field"><label>State</label><div class="value"><span class="tag" id="stateB">active</span> <span class="muted">pinned</span></div></div>
+          <div class="field"><label>State</label><div class="value"><span class="tag" id="stateB">active</span> <span class="muted" id="pinB">pinned</span></div></div>
           <div class="field"><label>Multiplier</label><div class="value mono" id="multB">2.0</div></div>
-          <div class="field"><label>Set by</label><div class="value">marco · 14:02 · stress run</div></div>
+          <div class="field"><label>Set by</label><div class="value" id="byB">marco · 14:02 · stress run</div></div>
         </div>
         <div class="row">
           <button class="btn" data-mode="auto">Auto</button>
           <button class="btn" data-mode="calm">Calm</button>
           <button class="btn primary" data-mode="active">Active</button>
         </div>
-        <h3 class="of">Every feed's ticks, at once</h3>
-        <canvas class="raster" id="rasterB" height="150"></canvas>
+        <h3 class="of">Every live feed's ticks</h3>
+        <canvas class="raster" id="rasterB"></canvas>
         <div class="legend"><span><i class="sw" style="background:#58a6ff"></i>FX</span><span><i class="sw" style="background:#d29922"></i>IR</span><span class="faint">a pinned market starts at the mark</span></div>
         <h3 class="of">The chain that drives it</h3>
         <table><tbody>
@@ -128,17 +128,6 @@ h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--
           </tbody></table>
         </div>
       </div>
-      <div class="panel">
-        <h2>Who follows it</h2>
-        <table><thead><tr><th>Feed</th><th class="num">Mode</th><th class="num">Sens.</th><th class="num">Intensity now</th></tr></thead>
-        <tbody>
-          <tr><td>EUR/USD</td><td class="num">hawkes .6</td><td class="num">1.3</td><td class="num">3.1 / s</td></tr>
-          <tr><td>GBP/USD</td><td class="num">hawkes .5</td><td class="num">1.1</td><td class="num">2.4 / s</td></tr>
-          <tr><td>USD/JPY</td><td class="num">poisson</td><td class="num">0.9</td><td class="num">1.8 / s</td></tr>
-          <tr><td>USD SOFR</td><td class="num">periodic</td><td class="num">0.4</td><td class="num">0.8 / s</td></tr>
-        </tbody></table>
-        <p class="faint" style="font-size:.8rem">Every live feed, ranked by how hard it follows the market. A row is read here; its clustering is edited in that feed's own editor, one row at a time, which is what A is for.</p>
-      </div>
     </div>
     <div class="for"><b>Global</b> the raster is the only figure that shows what a market-wide factor means: rows densify together, and a burst in one row lifts the others.</div>
     <div class="for boundary"><b>Boundary</b> it sets the market and reads the feeds; it edits no feed's clustering, so the two views never do the same job.</div>
@@ -149,7 +138,7 @@ h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--
 
 <script>
 // One market for both views: the Market tab sets it and the feed's row reads it.
-const market={S:2.0,label:'active'};
+const market={S:2.0,label:'active',pinned:true,by:'marco',at:'14:02',why:'stress run'};
 
 // A linear congruential generator, so a reload redraws the same picture.
 function rng(seed){let s=seed>>>0;return()=>((s=(s*1664525+1013904223)>>>0)/4294967296);}
@@ -193,7 +182,6 @@ function drawRaster(id){
   const feeds=[
     {name:'EUR/USD', mean:1.0, n:0.6, decay:20, sens:1.3, colour:'#58a6ff'},
     {name:'GBP/USD', mean:1.0, n:0.5, decay:10, sens:1.1, colour:'#58a6ff'},
-    {name:'USD/JPY', mean:1.0, n:0.0, decay:1,  sens:0.9, colour:'#58a6ff'},
     {name:'AUD/USD', mean:0.8, n:0.3, decay:8,  sens:1.0, colour:'#58a6ff'},
     {name:'USD/CHF', mean:0.8, n:0.0, decay:1,  sens:0.8, colour:'#58a6ff'},
     {name:'USD/CAD', mean:0.8, n:0.4, decay:12, sens:1.0, colour:'#58a6ff'},
@@ -205,8 +193,8 @@ function drawRaster(id){
   // The chain before the pin, so the market is not flat before it: a third of the
   // time active, which the calibration fixes.
   function stateAt(s){
-    if(s>=pin) return 2.0;                      // pinned active
-    return (Math.floor(s/3)%3===0) ? 0.5 : 2.0; // the chain turning on its own
+    if(market.pinned && s>=pin) return market.S; // held where the switch put it
+    return (Math.floor(s/3)%3===0) ? 0.5 : 2.0;  // the chain turning on its own
   }
 
   // What the service computes: a shared heat any event feeds and that fades, and
@@ -274,10 +262,14 @@ document.querySelectorAll('[data-mode-tab]').forEach(b=>b.addEventListener('clic
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{
   const mode=b.dataset.mode;
   const state = mode==='auto' ? 'calm (chain)' : mode;
-  document.getElementById('stateB').textContent = state;
-  document.getElementById('multB').textContent = mode==='active' ? '2.0' : '0.5';
-  market.S = mode==='active' ? 2.0 : 0.5;
+  market.pinned = mode !== 'auto';
+  market.S = mode==='active' ? 2.0 : (mode==='calm' ? 0.5 : 2.0);
   market.label = state;
+  document.getElementById('stateB').textContent = state;
+  document.getElementById('multB').textContent = market.S.toFixed(1);
+  document.getElementById('pinB').textContent = market.pinned ? 'pinned' : 'chain';
+  document.getElementById('byB').textContent =
+    market.pinned ? 'you · now · pinned here' : 'the chain, unpinned';
   document.querySelectorAll('[data-mode]').forEach(o=>o.classList.toggle('primary', o===b));
   redraw();
 }));

@@ -42,6 +42,7 @@ import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/gener
 import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_setting_value_set_protocol';
 import { subjects as documentSubjects } from '@ores/wire-protocol/generated/analytics/protocol/configuration_document_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_protocol';
+import { subjects as orePricingSubjects } from '@ores/wire-protocol/generated/ore/protocol/pricing_engines_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import { input, intentSchema, readAll, refusal, resultSchema, text } from './refdata-calls.js';
 import { readValueSets, type ValueFields } from './ore-value-sets.js';
@@ -109,6 +110,14 @@ const documentBodySchema = z.object({
 
 const updateBodySchema = documentBodySchema.extend({
     version: z.int().min(1),
+});
+
+/** The export's answer: the files the ORE service wrote and the reasons a refusal gives. */
+const oreExportSchema = z.looseObject({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    count: z.int().default(0),
+    files: z.array(z.object({ name: z.string(), content: z.string() })).default([]),
 });
 
 type DocumentBody = z.infer<typeof documentBodySchema>;
@@ -778,6 +787,18 @@ async function documentHistory(
     return out;
 }
 
+/**
+ * The header that offers one file to the browser, under the name the ORE
+ * service stated.
+ *
+ * The name comes from the reporting file types table rather than from this
+ * server, so it is quoted and stripped of the characters that would end the
+ * value, and nothing else about it is rewritten.
+ */
+export function attachmentOf(name: string): string {
+    return `attachment; filename="${name.replace(/["\\\r\n]/g, '')}"`;
+}
+
 export function registerPricingEngineRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
@@ -846,6 +867,42 @@ export function registerPricingEngineRoutes(
         const session = requireSession(request);
         const id = input(idSchema, (request.params as { id: string }).id);
         return { versions: await documentHistory(session, id) };
+    });
+
+    /**
+     * The ORE document of one configuration (RS-ORE-06): the ORE service writes
+     * it, names it, and this route hands it to the browser as a file.
+     *
+     * The configuration is named by the id the screen shows; the service reads
+     * the document by the reporting configuration the record fills, so the two
+     * ids are joined here rather than sent to the screen. A reply that carries
+     * more than one file is answered as it stands, because one response cannot
+     * name two files.
+     */
+    server.get('/api/reporting/pricing-engines/:id/ore-document', async (request, reply) => {
+        const session = requireSession(request);
+        const id = input(idSchema, (request.params as { id: string }).id);
+        const stored = await readStored(session, id);
+        const exported = await session.client.callAuthenticated(
+            orePricingSubjects.export_pricing_engines_request,
+            { configuration_id: text(stored.config['configuration_id']) },
+            oreExportSchema,
+        );
+        const [file, ...others] = exported.files;
+        if (!exported.success || file === undefined) {
+            throw invalidRequest(
+                exported.message === ''
+                    ? 'The pricing engines document could not be written.'
+                    : exported.message,
+            );
+        }
+        if (others.length > 0) {
+            return { ...exported };
+        }
+        void reply
+            .header('content-disposition', attachmentOf(file.name))
+            .type('application/xml');
+        return file.content;
     });
 
     server.post('/api/reporting/pricing-engines', async (request, reply) => {

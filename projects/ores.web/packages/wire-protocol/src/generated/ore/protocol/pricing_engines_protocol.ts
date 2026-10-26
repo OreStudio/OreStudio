@@ -32,8 +32,8 @@ import type { OreDocument } from '../../../generated/ore/protocol/ore_document_p
  */
 export interface PricingEnginesExportProblem {
     /**
-     * @brief Which rule the export could not follow: configuration_missing,
-     * document_missing, file_name_missing or write_failed.
+     * @brief Which rule the export could not follow: document_unreadable,
+     * file_name_missing or write_failed.
      */
     code: string;
     message: string;

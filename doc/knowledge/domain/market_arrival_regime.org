@@ -132,9 +132,12 @@ about what the simulator claims to model, not about effort.
 
   The Market regime tab of the synthetic screen is that panel today: it shows
   the state, the multiplier and whether the chain or a person holds it, sets
-  auto, calm or active, and draws the arrivals of every running feed on one
-  raster beside the switch. The three numbers this bullet lists are not on it
-  yet, because the service has no verb that sets them.
+  auto, calm or active, and draws the arrivals of every feed beside the factor
+  that moved them. Above the rows it draws the shared heat, read from the
+  readings the service takes while it fades it, so the endogenous half is
+  visible as the process it is and not inferred from the ticks. The three
+  numbers this bullet lists are shown but not yet settable: the service has no
+  verb that sets them.
 - As a switch, for testing: forcing the state takes effect on the next tick,
   needs no restart, is available from the screen and from the shell, and reports
   what it forced. A test that has to wait for a Markov chain to reach the active

@@ -93,11 +93,15 @@ task and name that file in the Command column.
   is the axis, the dots take their colour from the asset class, and the count at
   the end of the row says how many arrivals the window held: times, not prices,
   because what a shared factor changes is when ticks arrive.
-- Above the rows sits the rate each asset class ticked at, in ticks a second per
-  feed, binned over the window: the shape of the market rather than its switch,
-  because the rate is the variable a shared factor moves. The state is the band
-  the arrivals sit on, a line marks the moment a switch landed, and the legend
-  names all three.
+- Above the rows sit the two halves of the factor: the shared heat the service
+  sampled, which is the internal state jump and decay act on, and the rate each
+  asset class ticked at, in ticks a second per feed. The state is the band the
+  arrivals sit on, a line marks the moment a switch landed, the legend names all
+  of them, and the numbers that move the heat are stated beside it.
+- The heat is served by the service, not inferred by the browser: the owner of
+  the heat takes a reading every 100ms as it fades it and keeps the last 2048,
+  so the window is the service's own record rather than what one tab happened to
+  see. The jump and the decay travel with it.
 - The state band begins when the tab opens, because the service reports the state
   in force and not its history; the rate curve fills as the BFF's buffers fill.
 - The tree order the prototype asked for is not available: the service lists

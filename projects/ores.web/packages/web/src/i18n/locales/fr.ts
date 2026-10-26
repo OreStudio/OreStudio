@@ -3770,6 +3770,10 @@ const fr: SourceCatalogue = {
             role: 'Rôle',
             party: 'Partie',
             noRoles: 'Aucun rôle enregistré avec cette transaction.',
+            linkTypesUnreadable:
+                'Les types de lien ne sont pas encore lisibles pour ce locataire, donc aucun lien ne peut être enregistré ici.',
+            addLink: 'Enregistrer un lien',
+            addLinkSubmit: 'Enregistrer le lien',
             linksFrom: 'Liens depuis cette transaction',
             linksTo: 'Liens vers cette transaction',
             linkType: 'Lien',
@@ -4628,9 +4632,11 @@ const fr: SourceCatalogue = {
             sensitivity: 'Sensibilité au marché',
             sensitivityHelp: 'À quel point ce flux suit le marché, où un représente le flux moyen.',
             ratio: 'Rapport de branchement',
-            ratioHelp: 'Hawkes uniquement : combien de ticks supplémentaires un tick provoque, en dessous de un.',
+            ratioHelp:
+                'Hawkes uniquement : combien de ticks supplémentaires un tick provoque, en dessous de un.',
             decay: 'Décroissance, par seconde',
-            decayHelp: 'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, en unités de un sur une seconde.',
+            decayHelp:
+                'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, en unités de un sur une seconde.',
             market: 'Marché maintenant : {state}. Il se lit ici et se règle dans l’onglet Régime de marché.',
             marketUnknown: 'l’onglet Régime de marché n’est pas encore branché',
             unsaved: 'Modifications non enregistrées',

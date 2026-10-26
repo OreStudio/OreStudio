@@ -93,6 +93,8 @@ export interface TradeLink {
     readonly from_trade_id: string;
     readonly to_trade_id: string;
     readonly link_type: string;
+    /** The identifier of the trade at the other end, or empty when it has none. */
+    readonly other_label?: string;
 }
 
 /** One version of the trade, newest first. */
@@ -176,6 +178,7 @@ const tradePageRecordSchema = z.object({
                 from_trade_id: z.string(),
                 to_trade_id: z.string(),
                 link_type: z.string(),
+                other_label: z.string().default(''),
             }),
         ),
         to: z.array(
@@ -183,6 +186,7 @@ const tradePageRecordSchema = z.object({
                 from_trade_id: z.string(),
                 to_trade_id: z.string(),
                 link_type: z.string(),
+                other_label: z.string().default(''),
             }),
         ),
     }),
@@ -203,6 +207,32 @@ export const trades = {
         return bookingOptionsSchema.parse(
             await request('/api/trades/new', { method: 'GET' }),
         ) as BookingOptions;
+    },
+
+    /** The link types a person can record between two trades. */
+    async linkTypes(): Promise<readonly { readonly code: string; readonly description: string }[]> {
+        const answer = z
+            .object({
+                rows: z
+                    .array(
+                        z.looseObject({
+                            code: z.string().default(''),
+                            description: z.string().default(''),
+                        }),
+                    )
+                    .default([]),
+            })
+            .parse(await request('/api/trade-link-types', { method: 'GET' }));
+        return answer.rows;
+    },
+
+    /** Records a link from one trade to another, by its type. */
+    async addLink(id: string, linkType: string, otherTradeId: string): Promise<void> {
+        await request(`/api/trades/${encodeURIComponent(id)}/links`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ linkType, otherTradeId }),
+        });
     },
 
     /** Books a trade, and answers the one it made. */

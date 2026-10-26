@@ -3724,6 +3724,10 @@ export const en: SourceCatalogue = {
             role: 'Role',
             party: 'Party',
             noRoles: 'No role was recorded with this trade.',
+            linkTypesUnreadable:
+                'The link types cannot be read for this tenant yet, so no link can be recorded here.',
+            addLink: 'Record a link',
+            addLinkSubmit: 'Record the link',
             linksFrom: 'Links from this trade',
             linksTo: 'Links to this trade',
             linkType: 'Link',
@@ -4563,7 +4567,8 @@ export const en: SourceCatalogue = {
             'model.poisson': 'Poisson — exponential gaps',
             'model.hawkes': 'Hawkes — bursts of ticks',
             sensitivity: 'Sensitivity to the market',
-            sensitivityHelp: 'How hard this feed follows the market, where one is the average series.',
+            sensitivityHelp:
+                'How hard this feed follows the market, where one is the average series.',
             ratio: 'Branching ratio',
             ratioHelp: 'Hawkes only: how many further ticks one tick causes, below one.',
             decay: 'Decay, per second',

@@ -19,15 +19,15 @@
  *
  */
 
-import { useQuery } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
 import { trades, type TradePageRecord } from '../api/trades.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { PATHS } from '../shell/paths.js';
-import { Fact, Notice, Tag } from '../ui/Primitives.js';
+import { Button, Fact, Field, Notice, Select, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 
 /** The page's tabs, in the order the prototype settled: the trade first, then its parts. */
@@ -42,7 +42,7 @@ function PartTable({
 }: {
     readonly caption: string;
     readonly columns: readonly string[];
-    readonly rows: readonly (readonly string[])[];
+    readonly rows: readonly (readonly ReactNode[])[];
     readonly empty: string;
 }): ReactNode {
     return (
@@ -86,6 +86,140 @@ function withoutId(value: string): string {
         value,
     );
     return looksLikeId ? '' : value;
+}
+
+/**
+ * The links at both ends, and the form that records one.
+ *
+ * A link is a fact about two trades — a hedge, a close-out, a novation — so the
+ * type is chosen by the words that describe it and the other trade by the
+ * identifier the desk knows it by. The write is the trading service's; this
+ * states the request and reads the answer.
+ */
+function LinksTab({ record }: { readonly record: TradePageRecord }): ReactNode {
+    const { t } = useTranslation();
+    const queries = useQueryClient();
+    const id = record.trade.id;
+    const types = useQuery({ queryKey: ['trade-link-types'], queryFn: () => trades.linkTypes() });
+    const known = useQuery({
+        queryKey: ['trades', 'link-picker'],
+        queryFn: () =>
+            trades.page({
+                offset: 0,
+                limit: 200,
+                search: '',
+                sort: 'trade_date',
+                descending: true,
+                status: '',
+                type: '',
+            }),
+    });
+    const [linkType, setLinkType] = useState('');
+    const [otherTradeId, setOtherTradeId] = useState('');
+    const link = useMutation({
+        mutationFn: () => trades.addLink(id, linkType, otherTradeId),
+        onSuccess: async () => {
+            setOtherTradeId('');
+            await queries.invalidateQueries({ queryKey: ['trades', id] });
+        },
+    });
+
+    const others = (known.data?.rows ?? []).filter(
+        (row) => row.row_kind === 'trade' && row.id !== id,
+    );
+
+    return (
+        <div className="space-y-5">
+            <PartTable
+                caption={t('trading.page.linksFrom')}
+                columns={[t('trading.page.linkType'), t('trading.page.otherTrade')]}
+                rows={record.links.from.map((entry) => [
+                    entry.link_type,
+                    <Link
+                        className="text-accent hover:text-accent-bright"
+                        key={entry.to_trade_id}
+                        to={`${PATHS.trades}/${entry.to_trade_id}`}
+                    >
+                        {entry.other_label === undefined || entry.other_label === ''
+                            ? entry.to_trade_id
+                            : entry.other_label}
+                    </Link>,
+                ])}
+                empty={t('trading.page.noLinks')}
+            />
+            <PartTable
+                caption={t('trading.page.linksTo')}
+                columns={[t('trading.page.linkType'), t('trading.page.otherTrade')]}
+                rows={record.links.to.map((entry) => [
+                    entry.link_type,
+                    <Link
+                        className="text-accent hover:text-accent-bright"
+                        key={entry.from_trade_id}
+                        to={`${PATHS.trades}/${entry.from_trade_id}`}
+                    >
+                        {entry.other_label === undefined || entry.other_label === ''
+                            ? entry.from_trade_id
+                            : entry.other_label}
+                    </Link>,
+                ])}
+                empty={t('trading.page.noLinks')}
+            />
+            <section className="space-y-3 rounded-md border border-line bg-surface-raised p-4">
+                <h2 className="text-sm font-medium text-ink">{t('trading.page.addLink')}</h2>
+                {(types.data ?? []).length === 0 && (
+                    /*
+                     * The link types are system-tenant reference data, which a
+                     * tenant session cannot read; the capture says so. A form
+                     * with an empty picker would look like a screen that forgot
+                     * to load.
+                     */
+                    <Notice tone="info">{t('trading.page.linkTypesUnreadable')}</Notice>
+                )}
+                {link.isError && <Notice tone="error">{link.error.message}</Notice>}
+                {(types.data ?? []).length > 0 && (
+                    <>
+                        <div className="grid gap-3 md:grid-cols-2">
+                            <Field label={t('trading.page.linkType')}>
+                                <Select
+                                    value={linkType}
+                                    onChange={(event) => setLinkType(event.target.value)}
+                                >
+                                    <option value="">{t('trading.booking.choose')}</option>
+                                    {(types.data ?? []).map((row) => (
+                                        <option key={row.code} value={row.code}>
+                                            {row.description === '' ? row.code : row.description}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </Field>
+                            <Field label={t('trading.page.otherTrade')}>
+                                <Select
+                                    value={otherTradeId}
+                                    onChange={(event) => setOtherTradeId(event.target.value)}
+                                >
+                                    <option value="">{t('trading.booking.choose')}</option>
+                                    {others.map((row) => (
+                                        <option key={row.id} value={row.id}>
+                                            {row.identifier}
+                                        </option>
+                                    ))}
+                                </Select>
+                            </Field>
+                        </div>
+                        <Button
+                            type="button"
+                            variant="primary"
+                            pending={link.isPending}
+                            disabled={linkType === '' || otherTradeId === ''}
+                            onClick={() => link.mutate()}
+                        >
+                            {t('trading.page.addLinkSubmit')}
+                        </Button>
+                    </>
+                )}
+            </section>
+        </div>
+    );
 }
 
 /** The tone a state is drawn in, so the badge says more than the word does. */
@@ -353,28 +487,7 @@ export function TradePage(): ReactNode {
                         />
                     </div>
                 )}
-                {tabs.tab === 'links' && (
-                    <div className="space-y-4">
-                        <PartTable
-                            caption={t('trading.page.linksFrom')}
-                            columns={[t('trading.page.linkType'), t('trading.page.otherTrade')]}
-                            rows={record.links.from.map((entry) => [
-                                entry.link_type,
-                                entry.to_trade_id,
-                            ])}
-                            empty={t('trading.page.noLinks')}
-                        />
-                        <PartTable
-                            caption={t('trading.page.linksTo')}
-                            columns={[t('trading.page.linkType'), t('trading.page.otherTrade')]}
-                            rows={record.links.to.map((entry) => [
-                                entry.link_type,
-                                entry.from_trade_id,
-                            ])}
-                            empty={t('trading.page.noLinks')}
-                        />
-                    </div>
-                )}
+                {tabs.tab === 'links' && <LinksTab record={record} />}
                 {tabs.tab === 'history' && (
                     <PartTable
                         caption={t('trading.page.history')}

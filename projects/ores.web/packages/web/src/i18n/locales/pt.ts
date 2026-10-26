@@ -3751,6 +3751,10 @@ const pt: SourceCatalogue = {
             role: 'Papel',
             party: 'Parte',
             noRoles: 'Nenhum papel foi registado com esta transação.',
+            linkTypesUnreadable:
+                'Os tipos de ligação ainda não são legíveis para este inquilino, por isso não é possível registar ligações aqui.',
+            addLink: 'Registar uma ligação',
+            addLinkSubmit: 'Registar a ligação',
             linksFrom: 'Ligações a partir desta transação',
             linksTo: 'Ligações para esta transação',
             linkType: 'Ligação',
@@ -4598,7 +4602,8 @@ const pt: SourceCatalogue = {
             ratio: 'Rácio de ramificação',
             ratioHelp: 'Apenas Hawkes: quantos ticks adicionais um tick provoca, abaixo de um.',
             decay: 'Decaimento, por segundo',
-            decayHelp: 'Apenas Hawkes: com que rapidez uma rajada desaparece, em unidades de um por segundo.',
+            decayHelp:
+                'Apenas Hawkes: com que rapidez uma rajada desaparece, em unidades de um por segundo.',
             market: 'Mercado agora: {state}. Lê-se aqui e define-se no separador Regime de mercado.',
             marketUnknown: 'o separador Regime de mercado ainda não está ligado',
             unsaved: 'Alterações por guardar',

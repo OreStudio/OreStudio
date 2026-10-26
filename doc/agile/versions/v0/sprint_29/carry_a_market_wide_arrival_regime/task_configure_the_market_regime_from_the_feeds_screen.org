@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch: feature/configure-the-market-regime-from-the-feeds-screen
+#+branch: feature/set-the-market-regime-from-the-feeds-screen
 #+pr:
 #+pr: 3795
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
-#+updated: 2026-10-25
+#+updated: 2026-10-26
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -30,17 +30,20 @@ forces it with a switch that takes effect on the next tick.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | The clock is proven and the two verbs are in. The screen is not touched. |
-| Waiting on   | The work in flight on the screen and market-data trees for the screen itself. |
-| Next         | The screen, once the UI tree is free. |
-| Last touched | 2026-10-25                               |
+| Now          | The Market regime tab is in and proven in a browser; the PR is open. |
+| Waiting on   | Review and merge.                    |
+| Next         | The three numbers the switch does not set are the [[id:4A5C7202-6D31-43BE-8E06-42BE74FD1A5C][chain and heat task]]. |
+| Last touched | 2026-10-26                               |
 
 * Acceptance
 
 - The feeds screen shows the market state in force: calm, active or forced.
-- A user sets the regime there: auto, pinned calm or pinned active, the
-  transition rate, and the shared intensity's jump and decay.
-- The same screen edits the per-feed sensitivity.
+- A user sets the regime there: auto, pinned calm or pinned active. The
+  transition rate and the shared intensity's jump and decay need verbs the
+  service does not have yet, so they are the
+  [[id:4A5C7202-6D31-43BE-8E06-42BE74FD1A5C][chain and heat task]].
+- The same screen edits the per-feed sensitivity, on the feed's Arrivals tab,
+  which reads the market and cannot change it.
 - A manual switch forces the state at runtime, from the screen and from a shell
   command, and takes effect on the next tick without a restart.
 - The switch reports what it forced, so a test can assert it.
@@ -49,9 +52,16 @@ forces it with a switch that takes effect on the next tick.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Read the screen's boundary first: the factor belongs to the run, so the
+   control is a tab of the synthetic screen and not a field of a feed. A feed's
+   Arrivals tab reads it and shows it, and changes nothing.
+2. Give the browser one route for the state and one switch, both over the two
+   subjects the service already handles, and one route for the raster.
+3. Draw the raster from the ticks the browser can already see: the BFF owns a
+   per-source tick buffer, so the read is the running feeds the service names,
+   each with the times of its ticks in the window.
+4. Prove it where a person would: a harness test opens the tab, forces the
+   active state, and hands it back.
 
 * Measurements
 
@@ -65,9 +75,28 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Every unit of the environment carries the memory cap the outage fix added (8G, swap 1G, no high) | 25 of 25 | =compass systemd generate=, =compass systemd deploy=, then =busctl --user get-property= for each unit | =dd4af2b9ca= |
+| BFF suite | 1008 tests, 79 files, all pass | =npm test --workspace @ores/bff= | =dd4af2b9ca= |
+| Web suite | 2076 tests, 167 files, all pass | =npm test --workspace @ores/web= | =dd4af2b9ca= |
+| Harness, the regime tab | 5 checks, all pass | =npx playwright test tests/market-regime.spec.ts= | =dd4af2b9ca= |
+| Raster rows on a demo environment | 46 running feeds, 26 of them with a tick in the window | =GET /api/synthetic/feed-raster?seconds=120= | =dd4af2b9ca= |
 
 * Notes
+
+- The tab is =?tab=regime= on the synthetic screen, beside Dashboard and
+  Provider.
+- The raster draws the feeds the service names as running, in the order the
+  service names them, and stops at 120 rows. It draws times, not prices, because
+  what a shared factor changes is when ticks arrive.
+- A row is empty for two different reasons, and the screen does not tell them
+  apart yet: a feed too slow to tick inside the window, and a curve feed that
+  serves an adapter and so publishes no display tick at all. The second is a
+  defect, captured for the backlog.
+- The state names and the multiplier are the screen's only claim about the
+  market; who pinned it and why is in the change record, not in this reply.
+- =compass smoke ticks= fails on this environment with 20 of 86 demanded ids
+  rejected. It is not this task's doing, and it is captured: the demo profile
+  asks for series no feed in this build makes.
 
 * Test Scenarios
 
@@ -111,3 +140,19 @@ twenty steps are taken, and their own counts add up to the steps.
 
 What is left is the screen, which is the part that collides with the work in flight
 on the UI tree.
+
+The screen is in and proven in a browser.
+
+The Market regime tab reads the factor and forces it: the state, the multiplier,
+whether a person or the chain holds it, and three switches. Beside them the
+raster gives every running feed a row, read from the ticks the browser already
+tails, so a reader sees one market rather than one feed's copy of it.
+
+The BFF holds the two routes and the raster, and a web test proves each. The
+harness opens the tab as the tenant administrator, presses Active, sees the
+multiplier and the pinned wording, presses Auto, and sees the chain take it back.
+
+What the switch does not set is the three numbers the story also asks for, the
+chain's two transition rates and the shared heat's jump and decay: the service
+has no verb to set them, so they are the chain and heat task rather than a
+control this screen pretends to have.

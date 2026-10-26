@@ -134,8 +134,25 @@ function send(
 const GET_SUBJECT = 'synthetic.v1.ops.get_market_regime';
 const PIN_SUBJECT = 'synthetic.v1.ops.pin_market_regime';
 
-const ACTIVE = { success: true, message: '', state: 'active', multiplier: 2, pinned: false };
-const CALM = { success: true, message: '', state: 'calm', multiplier: 0.5, pinned: false };
+/** What the service answers with when nothing has moved the heat. */
+const NO_HEAT = { heat: 0, jump: 0.5, decay: 20, samples: [] };
+
+const ACTIVE = {
+    success: true,
+    message: '',
+    state: 'active',
+    multiplier: 2,
+    pinned: false,
+    ...NO_HEAT,
+};
+const CALM = {
+    success: true,
+    message: '',
+    state: 'calm',
+    multiplier: 0.5,
+    pinned: false,
+    ...NO_HEAT,
+};
 
 describe('the market regime', () => {
     it('reads the state in force, the multiplier and whether it is pinned', async () => {
@@ -144,7 +161,15 @@ describe('the market regime', () => {
         const response = await send(server, sessionId, 'GET', '/api/synthetic/market-regime');
 
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({ state: 'active', multiplier: 2, pinned: false });
+        expect(response.json()).toEqual({
+            state: 'active',
+            multiplier: 2,
+            pinned: false,
+            heat: 0,
+            jump: 0.5,
+            decay: 20,
+            samples: [],
+        });
     });
 
     it('reports a service that will not answer as unavailable rather than as an empty state', async () => {
@@ -178,6 +203,30 @@ describe('the market regime', () => {
         expect(response.statusCode).toBe(401);
     });
 
+    it('carries the heat, the two numbers that move it, and its readings', async () => {
+        const { server, sessionId } = buildTestServer({
+            [GET_SUBJECT]: {
+                ...ACTIVE,
+                heat: 0.4,
+                jump: 0.5,
+                decay: 20,
+                samples: [{ at: '2026-10-26T12:00:00Z', heat: 0.4 }],
+            },
+        });
+
+        const response = await send(server, sessionId, 'GET', '/api/synthetic/market-regime');
+
+        expect(response.json()).toEqual({
+            state: 'active',
+            multiplier: 2,
+            pinned: false,
+            heat: 0.4,
+            jump: 0.5,
+            decay: 20,
+            samples: [{ at: '2026-10-26T12:00:00Z', heat: 0.4 }],
+        });
+    });
+
     it('pins a state, and reports the state the service says is in force', async () => {
         const { server, sessionId, calls } = buildTestServer({
             [PIN_SUBJECT]: { ...CALM, pinned: true },
@@ -188,7 +237,15 @@ describe('the market regime', () => {
         });
 
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({ state: 'calm', multiplier: 0.5, pinned: true });
+        expect(response.json()).toEqual({
+            state: 'calm',
+            multiplier: 0.5,
+            pinned: true,
+            heat: 0,
+            jump: 0.5,
+            decay: 20,
+            samples: [],
+        });
         expect(calls).toEqual([{ subject: PIN_SUBJECT, body: { mode: 'calm' } }]);
     });
 

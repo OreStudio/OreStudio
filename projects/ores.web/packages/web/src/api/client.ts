@@ -402,11 +402,22 @@ export type FeedFolder = z.infer<typeof feedFolderSchema>;
 /** The states the market chain has. A state the screen does not know is a reply it does not read. */
 const marketStateSchema = z.enum(['calm', 'active']);
 
+/** One reading of the shared heat, as the service took it. */
+const heatSampleSchema = z.object({
+    at: z.string(),
+    heat: z.number(),
+});
+
 /** The market-wide arrival factor in force: what a screen shows and a switch forces. */
 const marketRegimeSchema = z.object({
     state: marketStateSchema,
     multiplier: z.number(),
     pinned: z.boolean(),
+    /** The endogenous half: the heat now, the two numbers that move it, and its readings. */
+    heat: z.number(),
+    jump: z.number(),
+    decay: z.number(),
+    samples: z.array(heatSampleSchema),
 });
 
 export type MarketRegime = z.infer<typeof marketRegimeSchema>;

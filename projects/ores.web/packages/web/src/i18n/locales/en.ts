@@ -4587,8 +4587,10 @@ export const en: SourceCatalogue = {
             forced: 'forced',
             set: { auto: 'Auto', calm: 'Calm', active: 'Active' },
             raster: {
+                heat: 'the shared heat',
                 rate: 'ticks a second, per feed',
                 band: 'an active market',
+                heatParams: 'one event adds {jump} of heat, and it fades at {decay} a second',
                 stoppedFeeds: '{count} feeds that do not run',
                 marked: 'the line is when the state was set: {state}',
                 stopped: 'stopped',

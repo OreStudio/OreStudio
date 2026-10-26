@@ -31,9 +31,11 @@ import {
 } from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { Button, Fact, Notice, Tag } from '../../ui/Primitives.js';
+import { assetClassColour } from '../assetClassColour.js';
 import {
     arrivalPositions,
     curvePath,
+    heatSeries,
     multiplierText,
     rateCurves,
     RASTER_SECONDS,
@@ -54,22 +56,6 @@ const LANE_HEIGHT = 18;
 
 /** The room the rate curves take above the rows. */
 const RATE_HEIGHT = 48;
-
-/**
- * The dot colour of a feed's class. A class this screen does not know is drawn
- * in the accent, so a new asset class appears at once rather than not at all.
- */
-function colourOf(assetClass: string): string {
-    if (assetClass === 'interest_rates') {
-        return 'bg-ir';
-    }
-    return 'bg-fx';
-}
-
-/** The same colour, for a line rather than a dot. */
-function colourTextOf(assetClass: string): string {
-    return colourOf(assetClass).replace('bg-', 'text-');
-}
 
 /**
  * The market-wide arrival factor: the state every feed's rate is scaled by, the
@@ -222,6 +208,7 @@ export function MarketRegimePanel({
                     now={now}
                     marked={marked}
                     states={states}
+                    regime={regime}
                 />
                 {warming ? (
                     <p className="text-xs text-ink-faint">
@@ -265,6 +252,7 @@ export function MarketRaster({
     now,
     marked,
     states,
+    regime,
 }: {
     readonly feeds: FeedRaster['feeds'];
     /** The window the rows were read over, which is what the marks are placed in. */
@@ -273,6 +261,8 @@ export function MarketRaster({
     readonly marked: { readonly at: number; readonly state: MarketState } | null;
     /** The state over the window, drawn as the band the arrivals sit on. */
     readonly states: readonly StateSample[];
+    /** The factor in force, which carries the heat the service sampled. */
+    readonly regime: MarketRegime;
 }): ReactNode {
     const { t } = useTranslation();
     if (feeds.length === 0) {
@@ -284,6 +274,8 @@ export function MarketRaster({
             : arrivalPositions([new Date(marked.at).toISOString()], seconds, now)[0];
     const bands = stateBands(states, seconds, now);
     const rates = rateCurves(feeds, seconds, now);
+    const heat = heatSeries(regime.samples, seconds, now);
+    const heatPeak = heat.reduce((high, value) => Math.max(high, value), 0);
     const running = feeds.filter((feed) => feed.running);
     const stopped = feeds.filter((feed) => !feed.running);
     return (
@@ -292,6 +284,30 @@ export function MarketRaster({
             aria-label={t('marketdata.marketRegime.raster.label')}
             className="rounded-md border border-line bg-surface-base py-2"
         >
+            {heat.length < 2 ? null : (
+                <div className="flex items-stretch gap-3 px-3 pb-1" style={{ height: RATE_HEIGHT }}>
+                    <span className="w-44 shrink-0 self-end pb-1 text-[10px] text-ink-faint">
+                        {t('marketdata.marketRegime.raster.heat')}
+                    </span>
+                    <svg
+                        aria-hidden
+                        className="flex-1 text-flow"
+                        viewBox="0 0 100 1"
+                        preserveAspectRatio="none"
+                    >
+                        <path
+                            d={curvePath(heat, heatPeak)}
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            vectorEffect="non-scaling-stroke"
+                        />
+                    </svg>
+                    <span className="w-12 shrink-0 self-end pb-1 text-right font-mono text-[10px] tabular-nums text-ink-faint">
+                        {regime.heat.toFixed(2)}
+                    </span>
+                </div>
+            )}
             {rates.curves.length === 0 ? null : (
                 <div className="flex items-stretch gap-3 px-3 pb-1" style={{ height: RATE_HEIGHT }}>
                     <span className="w-44 shrink-0 self-end pb-1 text-[10px] text-ink-faint">
@@ -307,7 +323,7 @@ export function MarketRaster({
                             <path
                                 key={curve.assetClass}
                                 d={curvePath(curve.points, rates.peak)}
-                                className={colourTextOf(curve.assetClass)}
+                                className={assetClassColour(curve.assetClass).text}
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="1.5"
@@ -361,16 +377,22 @@ export function MarketRaster({
             </div>
             <div className="flex flex-wrap items-center gap-4 px-3 pt-1 text-[10px] text-ink-faint">
                 <span className="flex items-center gap-1">
-                    <span className="size-1.5 rounded-full bg-fx" />
+                    <span className="size-1.5 rounded-full bg-class-fx" />
                     {t('marketdata.marketRegime.raster.fx')}
                 </span>
                 <span className="flex items-center gap-1">
-                    <span className="size-1.5 rounded-full bg-ir" />
+                    <span className="size-1.5 rounded-full bg-class-interest-rates" />
                     {t('marketdata.marketRegime.raster.ir')}
                 </span>
                 <span className="flex items-center gap-1">
                     <span className="h-2 w-3 rounded-sm bg-ink/10" />
                     {t('marketdata.marketRegime.raster.band')}
+                </span>
+                <span>
+                    {t('marketdata.marketRegime.raster.heatParams', {
+                        jump: regime.jump,
+                        decay: regime.decay,
+                    })}
                 </span>
                 {marked === null ? null : (
                     <span className="flex items-center gap-1">
@@ -435,7 +457,7 @@ function RasterRow({
                     <span
                         key={index}
                         data-mark
-                        className={`absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full ${colourOf(feed.assetClass)}`}
+                        className={`absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full ${assetClassColour(feed.assetClass).dot}`}
                         style={{ left: `${String(position * 100)}%` }}
                     />
                 ))}

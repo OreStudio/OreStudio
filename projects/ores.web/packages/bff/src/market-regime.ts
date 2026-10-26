@@ -46,13 +46,23 @@ export type RegimeMode = (typeof REGIME_MODES)[number];
 /** The states the chain has. A state the screen does not know is a reply it does not read. */
 const stateSchema = z.enum(['calm', 'active']);
 
-/** The factor the service reports: all three facts, because the request was answered. */
+/** One reading of the heat, as the service took it. */
+const heatSample = z.object({
+    at: z.string(),
+    heat: z.number(),
+});
+
+/** The factor the service reports: all of it, because the request was answered. */
 const answeredRegime = z.object({
     success: z.literal(true),
     message: z.string().default(''),
     state: stateSchema,
     multiplier: z.number(),
     pinned: z.boolean(),
+    heat: z.number().default(0),
+    jump: z.number().default(0),
+    decay: z.number().default(0),
+    samples: z.array(heatSample).default([]),
 });
 
 /** A request the service would not carry out. It says why, and nothing else. */
@@ -104,6 +114,11 @@ interface Regime {
     readonly state: z.infer<typeof stateSchema>;
     readonly multiplier: number;
     readonly pinned: boolean;
+    /** The endogenous half: the heat now, the two numbers that move it, and its readings. */
+    readonly heat: number;
+    readonly jump: number;
+    readonly decay: number;
+    readonly samples: z.infer<typeof heatSample>[];
 }
 
 /**
@@ -115,7 +130,15 @@ function answered(reply: z.infer<typeof regimeReply>): Regime {
     if (!reply.success) {
         throw upstreamFailure(reply.message || 'The synthetic service refused the regime read.');
     }
-    return { state: reply.state, multiplier: reply.multiplier, pinned: reply.pinned };
+    return {
+        state: reply.state,
+        multiplier: reply.multiplier,
+        pinned: reply.pinned,
+        heat: reply.heat,
+        jump: reply.jump,
+        decay: reply.decay,
+        samples: reply.samples,
+    };
 }
 
 export function registerMarketRegimeRoutes(

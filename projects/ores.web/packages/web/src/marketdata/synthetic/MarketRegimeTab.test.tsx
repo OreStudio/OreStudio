@@ -29,7 +29,24 @@ import { MarketRegimePanel } from './MarketRegimeTab.js';
 const NOW = Date.parse('2026-10-26T12:00:00Z');
 
 function regime(over: Partial<MarketRegime> = {}): MarketRegime {
-    return { state: 'calm', multiplier: 0.5, pinned: false, ...over };
+    return {
+        state: 'calm',
+        multiplier: 0.5,
+        pinned: false,
+        heat: 0.12,
+        jump: 0.5,
+        decay: 20,
+        samples: [],
+        ...over,
+    };
+}
+
+/** Two readings of the heat, so the chart has a line to draw. */
+function heatReadings(): MarketRegime['samples'] {
+    return [
+        { at: new Date(NOW - 20_000).toISOString(), heat: 0.5 },
+        { at: new Date(NOW - 10_000).toISOString(), heat: 0.02 },
+    ];
 }
 
 function raster(over: Partial<FeedRaster> = {}): FeedRaster {
@@ -126,8 +143,8 @@ describe('the market regime tab', () => {
 
     it('draws a feed of each asset class in its class’s colour', () => {
         const html = render(regime());
-        expect(html).toContain('bg-fx');
-        expect(html).toContain('bg-ir');
+        expect(html).toContain('bg-class-fx');
+        expect(html).toContain('bg-class-interest-rates');
     });
 
     it('says a feed that is not running is stopped, and draws no dot for it', () => {
@@ -152,11 +169,22 @@ describe('the market regime tab', () => {
         expect(html.match(/data-mark/g)).toHaveLength(2);
     });
 
+    it('draws the shared heat the service sampled, and the numbers that move it', () => {
+        const html = render(regime({ samples: heatReadings() }));
+        expect(html).toContain('the shared heat');
+        expect(html).toContain('0.12');
+        expect(html).toContain('one event adds 0.5 of heat');
+    });
+
+    it('draws no heat line before the service has sampled one', () => {
+        expect(render(regime())).not.toContain('the shared heat');
+    });
+
     it('draws how fast each class ticked above the arrivals', () => {
         const html = render(regime());
         expect(html).toContain('ticks a second, per feed');
         expect(html).toContain('<path');
-        expect(html).toContain('text-fx');
+        expect(html).toContain('text-class-fx');
     });
 
     it('draws the state as the band the arrivals sit on', () => {

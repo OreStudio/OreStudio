@@ -206,3 +206,35 @@ export function curvePath(points: readonly number[], peak: number): string {
         })
         .join(' ');
 }
+
+/** One reading of the shared heat, as the service took it. */
+export interface HeatSample {
+    /** When the service took the reading. */
+    readonly at: string;
+    /** The shared heat then, in units of a rate. */
+    readonly heat: number;
+}
+
+/**
+ * The heat over the window, oldest first, at the service's own sample rate.
+ *
+ * A reading older than the window has left it, and one stamped after the clock
+ * the picture is drawn at has not arrived; both are dropped, as an arrival is.
+ */
+export function heatSeries(
+    samples: readonly HeatSample[],
+    seconds: number,
+    now: number,
+): readonly number[] {
+    const span = seconds * 1000;
+    if (span <= 0) {
+        return [];
+    }
+    return samples
+        .map((sample) => ({ at: Date.parse(sample.at), heat: sample.heat }))
+        .filter(
+            (sample) => Number.isFinite(sample.at) && now - sample.at <= span && sample.at <= now,
+        )
+        .sort((left, right) => left.at - right.at)
+        .map((sample) => sample.heat);
+}

@@ -4651,8 +4651,11 @@ const fr: SourceCatalogue = {
             forced: 'forcé',
             set: { auto: 'Auto', calm: 'Calme', active: 'Actif' },
             raster: {
+                heat: 'la chaleur partagée',
                 rate: 'ticks par seconde, par flux',
                 band: 'un marché actif',
+                heatParams:
+                    'un événement ajoute {jump} de chaleur, qui s’estompe à {decay} par seconde',
                 stoppedFeeds: '{count} flux qui ne tournent pas',
                 marked: 'la ligne est le moment où l’état a été fixé : {state}',
                 stopped: 'arrêté',

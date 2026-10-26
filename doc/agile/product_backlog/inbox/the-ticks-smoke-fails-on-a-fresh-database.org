@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A2D2781D-B0CF-4ABA-97D0-801D9C025243
+:END:
+#+title: The ticks smoke fails on a fresh database
+#+description: compass smoke ticks reports that the adapters accepted 66 of the 86 ids demanded, so the gate fails on a database provisioned from scratch. The reporting work is not affected, but a fresh environment cannot pass its own smoke until this is understood.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

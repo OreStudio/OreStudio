@@ -20,8 +20,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { aggregateRows, entriesOf, rowsOf } from './grid-report-results.js';
-import type { RunResultRow } from './grid-report-results.js';
+import { aggregateRows, entriesOf, rowsOf, withCounterpartyGroups } from './grid-report-results.js';
+import type { AggregateRow, RunResultRow } from './grid-report-results.js';
 
 /*
  * The run result file: the engine's npv.csv, read by column name.
@@ -163,5 +163,206 @@ describe('aggregateRows', () => {
             { currency: 'GBP', total: '100.00' },
             { currency: 'USD', total: '200.00' },
         ]);
+    });
+});
+
+describe('withCounterpartyGroups', () => {
+    const aggregate = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'c1',
+        name: 'First',
+        trades: 1,
+        totals: [{ currency: 'GBP', total: '100.00' }],
+        notional: [{ currency: 'GBP', total: '1000.00' }],
+        group: '',
+        is_group: false,
+        ...over,
+    });
+
+    it('puts a group row above the members that share a parent', () => {
+        const rows = withCounterpartyGroups(
+            [
+                aggregate({
+                    key: 'c1',
+                    name: 'First',
+                    totals: [{ currency: 'GBP', total: '100.00' }],
+                }),
+                aggregate({
+                    key: 'c2',
+                    name: 'Second',
+                    totals: [{ currency: 'GBP', total: '50.00' }],
+                }),
+                aggregate({
+                    key: 'c3',
+                    name: 'Third',
+                    totals: [{ currency: 'GBP', total: '200.00' }],
+                }),
+            ],
+            new Map([
+                ['c1', 'p1'],
+                ['c2', 'p1'],
+            ]),
+            new Map([['p1', 'The Group']]),
+        );
+
+        expect(rows.map((row) => `${row.name}${row.is_group ? ' (group)' : ''}`)).toEqual([
+            'The Group (group)',
+            'First',
+            'Second',
+            'Third',
+        ]);
+        expect(rows[0]?.trades).toBe(2);
+        expect(rows[0]?.totals).toEqual([{ currency: 'GBP', total: '150.00' }]);
+        expect(rows[1]?.group).toBe('The Group');
+        expect(rows[3]?.group).toBe('');
+    });
+
+    it('leaves a counterparty with no parent standing on its own', () => {
+        const rows = withCounterpartyGroups(
+            [aggregate({ key: 'c3', name: 'Third' })],
+            new Map(),
+            new Map(),
+        );
+
+        expect(rows).toHaveLength(1);
+        expect(rows[0]?.is_group).toBe(false);
+    });
+});
+
+describe('withCounterpartyGroups, the cases a group hides', () => {
+    const aggregate = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'c1',
+        name: 'First',
+        trades: 1,
+        totals: [{ currency: 'GBP', total: '100.00' }],
+        notional: [{ currency: 'GBP', total: '1000.00' }],
+        group: '',
+        is_group: false,
+        ...over,
+    });
+
+    it('counts a parent that trades in the run as one of its own members', () => {
+        const rows = withCounterpartyGroups(
+            [
+                aggregate({
+                    key: 'p1',
+                    name: 'The Group',
+                    totals: [{ currency: 'GBP', total: '70.00' }],
+                }),
+                aggregate({
+                    key: 'c1',
+                    name: 'First',
+                    totals: [{ currency: 'GBP', total: '100.00' }],
+                }),
+                aggregate({
+                    key: 'c2',
+                    name: 'Second',
+                    totals: [{ currency: 'GBP', total: '50.00' }],
+                }),
+            ],
+            new Map([
+                ['c1', 'p1'],
+                ['c2', 'p1'],
+            ]),
+            new Map([['p1', 'The Group']]),
+        );
+
+        const group = rows.find((row) => row.is_group);
+        expect(group?.trades).toBe(3);
+        expect(group?.totals).toEqual([{ currency: 'GBP', total: '220.00' }]);
+        expect(rows.filter((row) => row.key === 'p1')).toHaveLength(2);
+        expect(rows.filter((row) => row.key === 'p1' && row.is_group)).toHaveLength(1);
+    });
+
+    it('leaves members standing when the parent name was not read', () => {
+        const rows = withCounterpartyGroups(
+            [aggregate({ key: 'c1', name: 'First' }), aggregate({ key: 'c2', name: 'Second' })],
+            new Map([
+                ['c1', 'p1'],
+                ['c2', 'p1'],
+            ]),
+            new Map(),
+        );
+
+        expect(rows.every((row) => !row.is_group)).toBe(true);
+        expect(rows.every((row) => row.group === '')).toBe(true);
+    });
+
+    it('keeps each currency apart in a group total', () => {
+        const rows = withCounterpartyGroups(
+            [
+                aggregate({ key: 'c1', totals: [{ currency: 'GBP', total: '100.00' }] }),
+                aggregate({
+                    key: 'c2',
+                    totals: [
+                        { currency: 'GBP', total: '50.00' },
+                        { currency: 'USD', total: '25.00' },
+                    ],
+                }),
+            ],
+            new Map([
+                ['c1', 'p1'],
+                ['c2', 'p1'],
+            ]),
+            new Map([['p1', 'The Group']]),
+        );
+
+        expect(rows[0]?.totals).toEqual([
+            { currency: 'GBP', total: '150.00' },
+            { currency: 'USD', total: '25.00' },
+        ]);
+    });
+});
+
+describe('withCounterpartyGroups, the group ordering', () => {
+    const aggregate = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'c1',
+        name: 'First',
+        trades: 1,
+        totals: [{ currency: 'GBP', total: '100.00' }],
+        notional: [{ currency: 'GBP', total: '1000.00' }],
+        group: '',
+        is_group: false,
+        ...over,
+    });
+
+    it('orders the groups by their own figure, not by their members', () => {
+        const rows = withCounterpartyGroups(
+            [
+                aggregate({ key: 'a1', totals: [{ currency: 'GBP', total: '10.00' }] }),
+                aggregate({ key: 'a2', totals: [{ currency: 'GBP', total: '20.00' }] }),
+                aggregate({ key: 'b1', totals: [{ currency: 'GBP', total: '500.00' }] }),
+            ],
+            new Map([
+                ['a1', 'pa'],
+                ['a2', 'pa'],
+                ['b1', 'pb'],
+            ]),
+            new Map([
+                ['pa', 'Group A'],
+                ['pb', 'Group B'],
+            ]),
+        );
+
+        expect(rows.filter((row) => row.is_group).map((row) => row.name)).toEqual([
+            'Group B',
+            'Group A',
+        ]);
+        expect(rows.map((row) => row.name)).toEqual([
+            'Group B',
+            'First',
+            'Group A',
+            'First',
+            'First',
+        ]);
+    });
+
+    it('leaves a parent alone when none of its children traded', () => {
+        const rows = withCounterpartyGroups(
+            [aggregate({ key: 'p1', name: 'The Group' })],
+            new Map([['p1', 'p0']]),
+            new Map([['p1', 'The Group']]),
+        );
+
+        expect(rows.every((row) => !row.is_group)).toBe(true);
     });
 });

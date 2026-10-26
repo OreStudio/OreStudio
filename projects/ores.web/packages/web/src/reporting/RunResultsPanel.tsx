@@ -329,42 +329,37 @@ export function RunResultsPanel({
                                         </dd>
                                     </div>
                                 ))}
-                                {results.data?.baseline?.totals.map((money, index) => (
-                                    <div key={`baseline-${money.currency}`}>
-                                        <dt className="text-xs text-ink-faint">
-                                            {t(`${field}.was`)}
-                                        </dt>
-                                        <dd className="font-mono text-sm">
-                                            {asFigure(money.total)}
-                                        </dd>
-                                        <dd
-                                            className={`font-mono text-xs ${
-                                                (
-                                                    results.data?.baseline?.change[index]?.total ??
-                                                    ''
-                                                ).startsWith('-')
-                                                    ? 'text-down'
-                                                    : 'text-ink-muted'
-                                            }`}
-                                        >
-                                            {results.data?.baseline?.change[index] === undefined
-                                                ? ''
-                                                : asFigure(
-                                                      results.data.baseline.change[index]?.total ??
-                                                          '',
-                                                  )}
-                                            {' · '}
-                                            {results.data?.baseline?.change_pct[index]?.total ===
-                                                undefined ||
-                                            results.data?.baseline?.change_pct[index]?.total === ''
-                                                ? '—'
-                                                : `${asFigure(
-                                                      results.data.baseline.change_pct[index]
-                                                          ?.total ?? '',
-                                                  )}%`}
-                                        </dd>
-                                    </div>
-                                ))}
+                                {results.data?.baseline?.change.map((money) => {
+                                    const was = results.data?.baseline?.totals.find(
+                                        (entry) => entry.currency === money.currency,
+                                    );
+                                    const share = results.data?.baseline?.change_pct.find(
+                                        (entry) => entry.currency === money.currency,
+                                    );
+                                    return (
+                                        <div key={`baseline-${money.currency}`}>
+                                            <dt className="text-xs text-ink-faint">
+                                                {t(`${field}.was`)}
+                                            </dt>
+                                            <dd className="font-mono text-sm">
+                                                {was === undefined ? '—' : asFigure(was.total)}
+                                            </dd>
+                                            <dd
+                                                className={`font-mono text-xs ${
+                                                    money.total.startsWith('-')
+                                                        ? 'text-down'
+                                                        : 'text-ink-muted'
+                                                }`}
+                                            >
+                                                {asFigure(money.total)}
+                                                {' · '}
+                                                {share === undefined || share.total === ''
+                                                    ? '—'
+                                                    : `${asFigure(share.total)}%`}
+                                            </dd>
+                                        </div>
+                                    );
+                                })}
                             </dl>
                             {filtering && level === 'trade' && (
                                 <p className="flex items-center gap-2 text-sm">

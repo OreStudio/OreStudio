@@ -470,3 +470,41 @@ describe('comparedWith, the rows only the earlier run had', () => {
         expect(rows[index + 1]?.key).toBe('p2');
     });
 });
+
+describe('comparedWith, currencies in a different order', () => {
+    const aggregate = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'b1',
+        name: 'Book One',
+        trades: 1,
+        totals: [],
+        notional: [],
+        group: '',
+        is_group: false,
+        previous: [],
+        change: [],
+        change_pct: [],
+        is_removed: false,
+        ...over,
+    });
+
+    it('states each currency against its own earlier figure', () => {
+        const rows = comparedWith(
+            [
+                aggregate({
+                    totals: [
+                        { currency: 'USD', total: '200.00' },
+                        { currency: 'GBP', total: '150.00' },
+                    ],
+                }),
+            ],
+            [aggregate({ totals: [{ currency: 'GBP', total: '100.00' }] })],
+        );
+
+        const row = rows[0];
+        const changeFor = (currency: string): string | undefined =>
+            row?.change.find((money) => money.currency === currency)?.total;
+        expect(changeFor('GBP')).toBe('50.00');
+        expect(changeFor('USD')).toBe('200.00');
+        expect(row?.change_pct.find((money) => money.currency === 'GBP')?.total).toBe('50.00');
+    });
+});

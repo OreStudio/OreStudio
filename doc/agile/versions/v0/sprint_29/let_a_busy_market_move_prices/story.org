@@ -28,7 +28,7 @@ whether a higher tick rate changes how much time the price process covers.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Scoped by the discussion that closed the arrival regime story. |
 | Waiting on    | The design note, so the tasks are scoped from it rather than from a conversation. |
@@ -57,7 +57,10 @@ whether a higher tick rate changes how much time the price process covers.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:FE158821-22B9-4FDB-9E77-256BA2CF3D4E][Document the market's volatility channel]] | BACKLOG | | | Write the design note the volatility work is built from: what the factor does to a price law, business time against sampling, the volatility loading and its normalisation, the tail channel through the mixture, and the bivariate Hawkes whose one coordinate is today's heat. State the control plane, the tests each part must pass, and what is deliberately out of scope. |
+| [[id:FE158821-22B9-4FDB-9E77-256BA2CF3D4E][Document the market's volatility channel]] | DONE | 2026-10-26 | 2026-10-26 | Write the design note the volatility work is built from: what the factor does to a price law, business time against sampling, the volatility loading and its normalisation, the tail channel through the mixture, and the bivariate Hawkes whose one coordinate is today's heat. State the control plane, the tests each part must pass, and what is deliberately out of scope. |
+| [[id:7C4EF710-3A04-4E3E-B5A0-9BE3FC25418F][Make a rate change change sampling, not time]] | BACKLOG | | | A process that steps once per nominal tick gains variance per wall-clock second when the rate rises, because more steps fit into the second; a curve process also runs its calendar faster. Make a rate change change only how often a series is observed, with a test that variance per wall-clock second is invariant under the rate factor. |
+| [[id:4466B476-9462-48E9-84A6-E282F6FA843E][Add a volatility loading to the shared factor]] | BACKLOG | | | Carry the shared factor into the price law: a setter on the stochastic process mirroring the arrival process's, a volatility sensitivity on the link and on both generation-config kinds, and one line in each feed — centred so the heat's long-run mean does not drift a run's calibration, with tests for long-run sigma and for a pinned market's response. |
+| [[id:22CD9DD2-0FFE-4BB1-B139-636A0A70A207][Let the factor reach the tails]] | BACKLOG | | | Reweight an FX feed's Gaussian mixture toward its wide components as activity rises, renormalised so the mean holds, so a pinned panic produces gaps and kurtosis rather than a wider walk of the same shape. |
 
 * Decisions
 
@@ -90,3 +93,15 @@ that replaces the rank-one test.
 
 See [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]]
 for the factor this builds on.
+* Deferred
+
+The design note states the approach's limitations and, beside each, the condition
+that would make it worth a story. None of them is in scope here, and none is a
+task: they are decisions waiting for evidence, recorded so that the decision can
+be taken later rather than remembered.
+
+Read [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]],
+section *Deferred, and what would make each matter*, when deciding what to do
+after the three tasks here land. The two the note puts first are the ones a
+demonstration would notice: a panic that can neither gap nor skew reads as
+synthetic.

@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 22CD9DD2-0FFE-4BB1-B139-636A0A70A207
+:END:
+#+title: Task: Let the factor reach the tails
+#+description: Reweight an FX feed's Gaussian mixture toward its wide components as activity rises, renormalised so the mean holds, so a pinned panic produces gaps and kurtosis rather than a wider walk of the same shape.
+#+type: task
+#+level: s1
+#+filetags: :let_a_busy_market_move_prices:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A pinned panic produces gaps and heavy tails, not only a wider walk: as activity
+rises, an FX feed's mixture moves weight toward its wide components, and the shape
+of its returns changes with the market.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- The weights move with =A= by a stated rule, renormalised to sum to one.
+- The reweighting is variance-preserving: the stdevs are rescaled after the
+  weights move, so the loading remains the only channel to sigma and the
+  calibration test of the previous task still holds.
+- The mean of the series is unchanged.
+- The kurtosis of returns rises with activity; a test states the window and the
+  sampling interval it measures.
+- A feed with the tail channel off behaves exactly as it does today.
+
+* Plan
+
+1. The reweighting function on the mixture the FX feeds carry, with its
+   renormalisation and the variance-preserving rescale.
+2. The test: the same seed under calm and under a pinned active market, kurtosis
+   and mean compared.
+3. A switch per feed, so the channel can be turned off while it is being proved.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

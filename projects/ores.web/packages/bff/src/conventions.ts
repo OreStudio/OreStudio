@@ -26,6 +26,12 @@ import { subjects as businessDayConventionSubjects } from '@ores/wire-protocol/g
 import { subjects as calendarNameSubjects } from '@ores/wire-protocol/generated/refdata/protocol/calendar_name_protocol';
 import { subjects as conventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/convention_protocol';
 import { subjects as conventionKindSubjects } from '@ores/wire-protocol/generated/refdata/protocol/convention_kind_protocol';
+import { subjects as conventionKindTermSubjects } from '@ores/wire-protocol/generated/refdata/protocol/convention_kind_term_protocol';
+import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_protocol';
+import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_protocol';
+import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_value_protocol';
+import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_catalogue_protocol';
+import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_setting_value_set_protocol';
 import { subjects as tenorBasisSwapConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_basis_swap_convention_protocol';
 import { subjects as dayCountSubjects } from '@ores/wire-protocol/generated/refdata/protocol/day_count_fraction_type_protocol';
 import { subjects as floatingIndexSubjects } from '@ores/wire-protocol/generated/refdata/protocol/floating_index_type_protocol';
@@ -33,7 +39,16 @@ import { CONVENTION_FAMILY_ENTRIES } from '@ores/wire-protocol/generated/refdata
 import { subjects as paymentFrequencySubjects } from '@ores/wire-protocol/generated/refdata/protocol/payment_frequency_protocol';
 import { subjects as subPeriodSubjects } from '@ores/wire-protocol/generated/refdata/protocol/sub_periods_coupon_type_protocol';
 import { invalidRequest, notFound } from './errors.js';
-import { NO_ORDER, idSchema, input, intentSchema, readAll, resultSchema } from './refdata-calls.js';
+import {
+    NO_ORDER,
+    idSchema,
+    input,
+    intentSchema,
+    readAll,
+    resultSchema,
+    text,
+} from './refdata-calls.js';
+import { readValueSets } from './ore-value-sets.js';
 import type { LiveSession } from './sessions.js';
 
 /**
@@ -165,6 +180,122 @@ function zipParts(
         merged = { ...merged, ...terms };
     }
     return merged;
+}
+
+/** The text form a term's value takes on the wire: null when the row holds none. */
+function valueText(value: unknown): string | null {
+    if (value === null || value === undefined || value === '') return null;
+    if (typeof value === 'boolean' || typeof value === 'number') return String(value);
+    return typeof value === 'string' ? value : JSON.stringify(value);
+}
+
+/** One convention of a family by its key, the composite's parts laid over its central row. */
+async function readConvention(
+    session: LiveSession,
+    family: ConventionFamily,
+    id: string,
+): Promise<Readonly<Record<string, unknown>> | undefined> {
+    const composite = COMPOSITE_FAMILIES[family.key];
+    if (composite === undefined) {
+        const reply = await session.client.callAuthenticated(
+            `refdata.v1.${family.prefix}.list`,
+            { offset: 0, limit: 1, order: NO_ORDER, filter: { id_one_of: [id] }, as_of: null },
+            z.looseObject({ result: resultSchema }),
+        );
+        if (reply.result.outcome !== 'ok') {
+            throw invalidRequest(reply.result.message);
+        }
+        return z.array(z.looseObject({})).default([]).parse(reply[family.prefix])[0];
+    }
+    const reply = await session.client.callAuthenticated(
+        conventionSubjects.list_conventions_request,
+        {
+            offset: 0,
+            limit: 1,
+            order: NO_ORDER,
+            filter: { kind_code: composite.kindCode, kind_code_one_of: null, id_one_of: [id] },
+            as_of: null,
+        },
+        z.looseObject({ result: resultSchema, conventions: z.array(centralRow).default([]) }),
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw invalidRequest(reply.result.message);
+    }
+    const central = reply.conventions[0];
+    if (central === undefined) {
+        return undefined;
+    }
+    const parts = await session.client.callAuthenticated(
+        composite.getManySubject,
+        { keys: [{ id: central.id }] },
+        z.looseObject({ result: resultSchema, items: z.array(compositeItem).default([]) }),
+    );
+    if (parts.result.outcome !== 'ok') {
+        throw invalidRequest(parts.result.message);
+    }
+    const item = parts.items[0];
+    return item === undefined ? central : zipParts(central, item);
+}
+
+/**
+ * The terms of one convention as a screen of ORE leaves draws them: each term's
+ * value, the documentation entry its schema and XPath name in the ORE parameter
+ * contract, and the value set that entry links. A term the contract holds no
+ * entry for is still a term, marked undocumented, so the gap shows.
+ */
+async function termsOf(
+    session: LiveSession,
+    kindCode: string,
+    row: Readonly<Record<string, unknown>>,
+): Promise<readonly Readonly<Record<string, unknown>>[]> {
+    const rows = (subject: string, key: string) =>
+        readAll(session, subject, key, { filter: null, as_of: null });
+    const [terms, parameters, sets, values, catalogues, links] = await Promise.all([
+        rows(conventionKindTermSubjects.list_convention_kind_terms_request, 'terms'),
+        rows(parameterSubjects.list_ore_parameters_request, 'parameters'),
+        rows(valueSetSubjects.list_ore_parameter_value_sets_request, 'sets'),
+        rows(valueSetValueSubjects.list_ore_parameter_value_set_values_request, 'values'),
+        rows(
+            valueSetCatalogueSubjects.list_ore_parameter_value_set_catalogues_request,
+            'catalogues',
+        ),
+        rows(
+            settingValueSetSubjects.list_ore_parameter_setting_value_sets_request,
+            'setting_value_sets',
+        ),
+    ]);
+    const entryOf = new Map(
+        parameters.map((entry) => [`${text(entry['schema_name'])}|${text(entry['xpath'])}`, entry]),
+    );
+    const valueSetOf = await readValueSets(session, { sets, values, catalogues, links });
+    return terms
+        .filter((term) => text(term['kind_code']) === kindCode)
+        .sort((left, right) => Number(left['position'] ?? 0) - Number(right['position'] ?? 0))
+        .map((term) => {
+            const xpath = text(term['xpath']);
+            const entry = entryOf.get(`${text(term['schema_name'])}|${xpath}`);
+            const steps = xpath.split('/').filter((step) => step !== '');
+            const scope = entry === undefined ? (steps[1] ?? '') : text(entry['scope']);
+            const name =
+                entry === undefined ? (steps[steps.length - 1] ?? '') : text(entry['name']);
+            return {
+                entity: text(term['entity_name']),
+                column: text(term['column_name']),
+                ore: name,
+                xpath,
+                value: valueText(row[text(term['column_name'])]),
+                documented: entry !== undefined,
+                required: entry?.['is_required'] === true,
+                label: text(entry?.['label']),
+                help: text(entry?.['help']),
+                description: text(entry?.['description']),
+                defaultText: text(entry?.['default_text']),
+                format: text(entry?.['format']),
+                introducedIn: text(entry?.['introduced_in']),
+                removedIn: text(entry?.['removed_in']),
+                ...valueSetOf(scope, name),
+            };
+        });
 }
 
 const MAX_ROWS = 500;
@@ -301,6 +432,43 @@ export function registerConventionRoutes(
             });
         }
         return { families };
+    });
+
+    server.get('/api/conventions/:family/documents/:id', async (request) => {
+        const session = requireSession(request);
+        const family = familyOf(request);
+        const { id } = request.params as { id: string };
+        const row = await readConvention(session, family, id);
+        if (row === undefined) {
+            throw notFound(`There is no ${family.key} convention ${id}.`);
+        }
+        const code = kindCodeOf(family.key);
+        const kinds = await readAll(
+            session,
+            conventionKindSubjects.list_convention_kinds_request,
+            'kinds',
+            {
+                filter: null,
+                as_of: null,
+            },
+        );
+        const kind = kinds.find((candidate) => text(candidate['code']) === code);
+        return {
+            family: family.key,
+            id,
+            shared: family.shared,
+            kind: {
+                code,
+                name: text(kind?.['name']),
+                description: text(kind?.['description']),
+                assetClass: text(kind?.['asset_class']) || null,
+                oreElement: text(kind?.['ore_element']) || null,
+            },
+            version: row['version'] ?? null,
+            modifiedBy: text(row['modified_by']),
+            recordedAt: text(row['recorded_at']),
+            terms: await termsOf(session, code, row),
+        };
     });
 
     server.get('/api/conventions/pick-lists', async (request) => {

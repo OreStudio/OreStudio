@@ -424,6 +424,7 @@ function GlobalParametersTab({
                         onNumbers={() => setNumbersOnly((before) => !before)}
                         shown={shown.length}
                         total={globals.length}
+                        noun={t('oreParameter.nouns.parameters')}
                     />
                     <ul className="divide-y divide-line-subtle">
                         {shown.map((parameter) =>
@@ -1042,6 +1043,7 @@ function RoleCard({
                             onNumbers={() => setNumbersOnly((before) => !before)}
                             shown={shown.length}
                             total={parameters.length}
+                            noun={t('oreParameter.nouns.parameters')}
                         />
                     </div>
                 )}

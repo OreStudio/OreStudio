@@ -100,6 +100,7 @@ import { CalendarPage, CalendarsPage } from './refdata/calendars.js';
 import { TenorResolutionPage } from './refdata/TenorResolutionPage.js';
 import { CurrencyPairPage, CurrencyPairsPage } from './refdata/currencyPairs.js';
 import { ConventionDocumentsPage, ConventionKindsPage } from './refdata/conventions.js';
+import { ConventionRecordPage } from './refdata/ConventionRecordPage.js';
 import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
 import { FxFeedPage } from './marketdata/synthetic/fxFeeds.js';
@@ -1326,6 +1327,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <ConventionDocumentsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.conventions}/:family/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ConventionRecordPage />
                     ),
                     'workspace',
                 )}

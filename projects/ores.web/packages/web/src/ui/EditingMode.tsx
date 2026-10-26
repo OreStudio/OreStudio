@@ -63,19 +63,28 @@ export function useEditingMode(): readonly [EditingMode, (mode: EditingMode) => 
     return [mode, choose];
 }
 
-/** The Simple and Advanced switch, drawn the same on every screen that offers it. */
+/**
+ * The Simple and Advanced switch, drawn the same on every screen that offers it.
+ *
+ * The choice is one, but what it does is the screen's: on a feed it changes how
+ * a person edits, and on a screen of ORE leaves it changes how much of a leaf's
+ * documentation shows. `words` names which, so the switch says what it does.
+ */
 export function EditingModeToggle({
     mode,
     onChange,
+    words = 'feed',
 }: {
     readonly mode: EditingMode;
     readonly onChange: (mode: EditingMode) => void;
+    readonly words?: 'feed' | 'leaves';
 }): ReactNode {
     const { t } = useTranslation();
+    const prefix = words === 'leaves' ? 'oreParameter.mode' : 'editingMode';
     return (
         <div
             role="radiogroup"
-            aria-label={t('editingMode.label')}
+            aria-label={t(`${prefix}.label`)}
             className="inline-flex overflow-hidden rounded-md border border-line text-sm"
         >
             {(['simple', 'advanced'] as const).map((candidate) => (
@@ -84,7 +93,7 @@ export function EditingModeToggle({
                     type="button"
                     role="radio"
                     aria-checked={mode === candidate}
-                    title={t(`editingMode.${candidate}Help`)}
+                    title={t(`${prefix}.${candidate}Help`)}
                     className={cx(
                         'px-3 py-1',
                         mode === candidate

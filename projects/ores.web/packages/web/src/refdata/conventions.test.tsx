@@ -227,7 +227,7 @@ describe('the documents of one kind', () => {
         expect(html).not.toContain('type="search"');
     });
 
-    it('does not open a row, because no record page exists yet', () => {
+    it('opens a row on the record page of that convention', () => {
         const html = render('/refdata/conventions/swap', (client) => {
             client.setQueryData(pageKey({ key: 'conventions:swap' }, FIRST_PAGE), {
                 rows: [{ id: 'AED-EIBOR-6M-SWAP', version: 2 }],
@@ -235,7 +235,7 @@ describe('the documents of one kind', () => {
             });
         });
 
-        expect(html).not.toContain('tabindex="0"');
+        expect(html).toContain('tabindex="0"');
     });
 
     it('warns on a shared kind that every party reads it', () => {

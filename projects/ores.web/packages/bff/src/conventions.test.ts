@@ -206,6 +206,167 @@ describe('the families and their kinds', () => {
 });
 
 describe('convention routes', () => {
+    it('answers one convention with its kind and its terms, each documented from the contract', async () => {
+        const replies: Record<string, unknown> = {
+            'refdata.v1.swap_conventions.list': {
+                result: ok,
+                swap_conventions: [
+                    {
+                        id: 'EUR-6M-SWAP',
+                        version: 3,
+                        fixed_calendar: 'TARGET',
+                        fixed_frequency: 'A',
+                        index: 'EUR-EURIBOR-6M',
+                    },
+                ],
+            },
+            'refdata.v1.convention_kinds.list': {
+                result: ok,
+                kinds: [
+                    {
+                        code: 'SWAP',
+                        name: 'Swap',
+                        description: 'Vanilla swap',
+                        asset_class: 'interest-rates',
+                        ore_element: 'Swap',
+                    },
+                ],
+            },
+            'refdata.v1.convention_kind_terms.list': {
+                result: ok,
+                terms: [
+                    {
+                        kind_code: 'SWAP',
+                        entity_name: 'swap_convention',
+                        column_name: 'fixed_frequency',
+                        schema_name: 'conventions.xsd',
+                        xpath: '/Conventions/Swap/FixedFrequency',
+                        position: 1,
+                    },
+                    {
+                        kind_code: 'SWAP',
+                        entity_name: 'swap_convention',
+                        column_name: 'fixed_calendar',
+                        schema_name: 'conventions.xsd',
+                        xpath: '/Conventions/Swap/FixedCalendar',
+                        position: 0,
+                    },
+                    {
+                        kind_code: 'OIS',
+                        entity_name: 'ois_convention',
+                        column_name: 'index',
+                        schema_name: 'conventions.xsd',
+                        xpath: '/Conventions/OIS/Index',
+                        position: 0,
+                    },
+                ],
+            },
+            'reporting.v1.ore_parameters.list': {
+                result: ok,
+                parameters: [
+                    {
+                        schema_name: 'conventions.xsd',
+                        xpath: '/Conventions/Swap/FixedFrequency',
+                        scope: 'Swap',
+                        name: 'FixedFrequency',
+                        label: 'Fixed frequency',
+                        help: 'The frequency of payments on the fixed leg.',
+                        description: 'The frequency of payments on the fixed leg.',
+                        default_text: 'None: the convention must give it.',
+                        format: 'A frequency, such as Annual or Quarterly.',
+                        introduced_in: '1.8.0.7 or earlier',
+                        removed_in: '',
+                        is_required: true,
+                    },
+                ],
+            },
+            'reporting.v1.ore_parameter_value_sets.list': {
+                result: ok,
+                sets: [{ code: 'convention.frequency', source_kind: 'enumerated' }],
+            },
+            'reporting.v1.ore_parameter_value_set_values.list': {
+                result: ok,
+                values: [
+                    {
+                        value_set_code: 'convention.frequency',
+                        value: 'A',
+                        label: 'Annual',
+                        display_order: 0,
+                    },
+                    {
+                        value_set_code: 'convention.frequency',
+                        value: 'Q',
+                        label: 'Quarterly',
+                        display_order: 1,
+                    },
+                ],
+            },
+            'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+            'reporting.v1.ore_parameter_setting_value_sets.list': {
+                result: ok,
+                setting_value_sets: [
+                    {
+                        scope: 'Swap',
+                        name: 'FixedFrequency',
+                        value_set_code: 'convention.frequency',
+                    },
+                ],
+            },
+        };
+        const { server, sessionId } = buildTestServer(replies);
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/conventions/swap/documents/EUR-6M-SWAP',
+        );
+        expect(response.statusCode).toBe(200);
+        const body = response.json();
+        expect(body.kind).toMatchObject({
+            code: 'SWAP',
+            assetClass: 'interest-rates',
+            oreElement: 'Swap',
+        });
+        expect(body.version).toBe(3);
+        // The kind's own terms only, in the position order the data states.
+        expect(body.terms.map((term: { column: string }) => term.column)).toEqual([
+            'fixed_calendar',
+            'fixed_frequency',
+        ]);
+        const [calendar, frequency] = body.terms;
+        // A term the contract holds no entry for is still drawn, marked undocumented.
+        expect(calendar).toMatchObject({
+            value: 'TARGET',
+            documented: false,
+            ore: 'FixedCalendar',
+            choices: [],
+        });
+        expect(frequency).toMatchObject({
+            value: 'A',
+            documented: true,
+            required: true,
+            label: 'Fixed frequency',
+            sourceKind: 'enumerated',
+            choices: [
+                { value: 'A', label: 'Annual' },
+                { value: 'Q', label: 'Quarterly' },
+            ],
+        });
+    });
+
+    it('answers 404 for a convention the family does not hold', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.swap_conventions.list': { result: ok, swap_conventions: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/conventions/swap/documents/NOPE',
+        );
+        expect(response.statusCode).toBe(404);
+    });
+
     it("takes each family's asset class from its kind and its holder from the registry", async () => {
         const replies: Record<string, unknown> = {};
         for (const family of CONVENTION_FAMILIES) {

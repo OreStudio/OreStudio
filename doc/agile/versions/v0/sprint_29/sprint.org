@@ -130,7 +130,7 @@ of the application join as their own stories under this heading.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:FDD5FC75-1A53-4F6C-8FC5-1BACDC9E9290][Seed the commodity permissions the handler needs]] | DONE | 2026-10-25 | 2026-10-25 | The commodity handler checks refdata::commodities read, write and delete, and the permission seed does not define them, so two codegen tests fail on main and redden the tooling gate. |
-| [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] | BACKLOG | | | A product parameter, an engine run setting and a convention term are leaves of ORE documents and read the same on every screen: one Simple and Advanced switch, the documentation under the leaf, the value in force, the control and the gaps, with the exact words. State it once as a standard and an Allium spec, and apply it first to conventions. |
+| [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] | DONE | 2026-10-25 | 2026-10-26 | A product parameter, an engine run setting and a convention term are leaves of ORE documents and read the same on every screen: one Simple and Advanced switch, the documentation under the leaf, the value in force, the control and the gaps, with the exact words. State it once as a standard and an Allium spec, and apply it first to conventions. |
 | [[id:CDEFF0DE-44BC-49B5-967F-C81C03465572][Hotfix: The fleet runs the machine out of memory]] | DONE | 2026-10-26 | 2026-10-26 | The machine went down on 2026-10-26: the NATS client kept every message it received and the shared Hawkes heat ran ticks at about 300 times their configured rate. |
 
 * Achievements

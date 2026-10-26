@@ -26,11 +26,11 @@ Change a convention's terms in place on its record page, as the ORE element and 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] |
-| Now          | The plan is written; the BFF route is next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
@@ -65,9 +65,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web workspace tests | 2118 passed, 169 files | =npm test= in =projects/ores.web= | d0c4b0d327 |
+| BFF convention route tests | 24 passed | =npx vitest run src/conventions.test.ts= in =packages/bff= | d0c4b0d327 |
+| Live writes as HK, through the BFF | refused on =fixed_frequency=; saved; stale version a conflict | the probe in the session scratchpad, against Acme | d0c4b0d327 |
+| Live write from the Acme login party | false version conflict | the same probe; see the first note | d0c4b0d327 |
 
 * Notes
+
+- *The service's version check reads a row of another party.* The generated =prepare_change= of a refdata service reads the current row by id alone, so a session that sees several parties compares the claimed version with whichever party's row comes first. Acme's login party sees its subsidiaries, and every party holds the same convention ids, so from that party a convention edit gets a false version conflict. From a party that sees only itself (HK), the edit works end to end: a bad value is refused on its term, a good one is saved, and a stale version is a conflict. Measured live on 2026-10-26. The owner chose a separate hotfix for the codegen service template on 2026-10-26.
+- *The service writes under the acting party.* A put of another party's row was written as a change to the acting party's row of the same id, so the route refuses a row of a party the session does not act in, and the page offers no edit there.
 
 * Test Scenarios
 
@@ -93,3 +99,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- A person who holds the entity's write permission edits a convention's terms on its record page, gives a reason and saves against the version read; the page reads the new version.
+- Each term's control is the shared =ParameterControl= from its value set, with *Default (X)* first; the help is under the control; focus opens the documentation; a changed term shows *changed* and the foot counts the changes.
+- =PUT /api/conventions/:family/documents/:id/terms= lays the changed term columns over the row it reads, typed by their sets. It refuses a column that is not a term, a row of another party and a composite. A refusal of the value set check comes back on its term, in the database's sentence.
+- The edit words of a leaf are under =oreParameter=; =shortDefault= moved beside the shared control, and engine settings imports it from there.
+- The conformance table's conventions column now records the edit rules.
+- Not met: from a party that sees other parties, the service's version check reads another party's row, so the save is a false conflict. The owner chose a separate hotfix.

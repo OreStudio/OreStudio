@@ -72,10 +72,10 @@ ir_curve_feed::ir_curve_feed(
     , role_(std::move(role))
     , process_(std::move(process))
     , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(arrival))
-    , clock_(*arrivals_,
-             ores::analytics::quant::domain::with_mean_rate(link, arrival.ticks_per_hour))
+    , clock_(*arrivals_, link)
     , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
     , intensity_(link.intensity)
+    , enrolment_(ores::analytics::quant::domain::enrol(link, arrival.ticks_per_hour))
     , arrival_(arrival)
     , link_(link)
     , scheduler_(scheduler)
@@ -129,10 +129,7 @@ void ir_curve_feed::start() {
     // A scheduler, when the run has one, decides when this feed ticks: it holds
     // every series' next gap, so registering is all start() does.
     if (scheduler_ != nullptr) {
-        handle_ = scheduler_->add(
-            *arrivals_,
-            ores::analytics::quant::domain::with_mean_rate(link_, arrival_.ticks_per_hour),
-            body);
+        handle_ = scheduler_->add(*arrivals_, link_, body);
         return;
     }
 

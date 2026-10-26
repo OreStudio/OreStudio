@@ -185,8 +185,10 @@ TEST_CASE("the heat stays bounded however many series share it", "[shared_intens
     shared_intensity heat(0.5, 20.0);
     constexpr int series = 60;
     constexpr double mean_rate = 1.0;
-    const auto link = ores::analytics::quant::domain::with_mean_rate(
-        market_link{.intensity = &heat}, mean_rate * 3600.0);
+    std::vector<shared_intensity::enrolment> enrolled;
+    for (int i = 0; i < series; ++i)
+        enrolled.push_back(heat.enrol(mean_rate));
+    const market_link link{.intensity = &heat};
 
     const double bound = 2.0 * heat.stationary_mean(series * mean_rate);
     constexpr double step = 0.001;
@@ -199,4 +201,22 @@ TEST_CASE("the heat stays bounded however many series share it", "[shared_intens
     }
 
     CHECK(heat.value() < bound);
+}
+
+TEST_CASE("the population rate follows the series that are enrolled", "[shared_intensity]") {
+    shared_intensity heat(0.5, 20.0);
+    CHECK(heat.rate_share() == 0.0);
+    {
+        auto one = heat.enrol(2.0);
+        auto two = heat.enrol(3.0);
+        CHECK(heat.population_rate() == Catch::Approx(5.0));
+
+        auto moved = std::move(one);
+        CHECK(heat.population_rate() == Catch::Approx(5.0));
+
+        heat.record_event();
+        CHECK(heat.rate_share() == Catch::Approx(0.5 / 5.0));
+    }
+    CHECK(heat.population_rate() == Catch::Approx(0.0).margin(1e-12));
+    CHECK_THROWS_AS(heat.enrol(0.0), std::invalid_argument);
 }

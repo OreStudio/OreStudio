@@ -19,7 +19,7 @@
  *
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { api, type MarketRegime } from '../../api/client.js';
 import { multiplierText } from './marketRaster.js';
 
@@ -30,24 +30,29 @@ export const REGIME_EVERY_MS = 2_000;
 export const REGIME_KEY = ['market-regime'] as const;
 
 /**
- * The market-wide arrival factor in force.
+ * The market-wide arrival factor, as a query.
  *
  * One read under one key, so the market tab that sets it and a feed's Arrivals
- * tab that reads it cannot disagree, and a switch that lands updates both.
+ * tab that reads it cannot disagree, and a switch that lands updates both. The
+ * tab that switches reads the query so it can show why a read failed; a view
+ * that only reads takes the data.
  */
-export function useMarketRegime(): MarketRegime | undefined {
+export function useMarketRegimeQuery(): UseQueryResult<MarketRegime> {
     return useQuery({
         queryKey: REGIME_KEY,
         queryFn: () => api.marketRegime(),
         refetchInterval: REGIME_EVERY_MS,
-    }).data;
+    });
 }
 
-/** The state's name as a person reads it, or the service's word when it is one we do not know. */
-export function stateName(state: string, t: (key: string) => string): string {
-    return state === 'calm' || state === 'active'
-        ? t(`marketdata.marketRegime.states.${state}`)
-        : state;
+/** The market-wide arrival factor in force, or undefined until it is read. */
+export function useMarketRegime(): MarketRegime | undefined {
+    return useMarketRegimeQuery().data;
+}
+
+/** The state's name as a person reads it. */
+export function stateName(state: MarketRegime['state'], t: (key: string) => string): string {
+    return t(`marketdata.marketRegime.states.${state}`);
 }
 
 /** The state and the multiplier as a sentence fragment, for a screen that only reads it. */

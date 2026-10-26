@@ -20,7 +20,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from '../../i18n/Provider.js';
-import { api, type RecordRow } from '../../api/client.js';
+import { api, type MarketRegime, type RecordRow } from '../../api/client.js';
 import { show } from '../../refdata/records.js';
 import { Notice } from '../../ui/Primitives.js';
 import { regimeLabel, useMarketRegime } from './useMarketRegime.js';
@@ -48,8 +48,8 @@ export function ArrivalsPanel({
     save,
 }: {
     readonly feed: RecordRow;
-    /** The market state and multiplier as the run reports them, or undefined while they are not read. */
-    readonly market: string | undefined;
+    /** The market in force, or undefined while it is not read. The panel states it and cannot set it. */
+    readonly market: MarketRegime | undefined;
     readonly mayWriteFeed: boolean;
     readonly save: (
         model: Model,
@@ -138,7 +138,10 @@ export function ArrivalsPanel({
             {/* Read only, and the only global fact on this tab. */}
             <p className="text-sm text-ink-muted">
                 {t('marketdata.arrivals.market', {
-                    state: market ?? t('marketdata.arrivals.marketUnknown'),
+                    state:
+                        market === undefined
+                            ? t('marketdata.arrivals.marketUnknown')
+                            : regimeLabel(market, t),
                 })}
             </p>
 
@@ -186,12 +189,10 @@ export function ArrivalsTab({
         intent: { readonly reasonCode: string; readonly commentary: string },
     ) => Promise<void>;
 }): ReactNode {
-    const { t } = useTranslation();
-    const regime = useMarketRegime();
     return (
         <ArrivalsPanel
             feed={feed}
-            market={regime === undefined ? undefined : regimeLabel(regime, t)}
+            market={useMarketRegime()}
             mayWriteFeed={mayWriteFeed}
             save={save}
         />

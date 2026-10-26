@@ -31,6 +31,13 @@ import { ProviderTab } from './ProviderTab.js';
 
 const TABS = ['dashboard', 'provider', 'regime'] as const;
 
+/** The pane each tab shows. A tab with no pane of its own shows the dashboard. */
+const PANES: Readonly<Record<string, () => ReactNode>> = {
+    dashboard: DashboardTab,
+    provider: ProviderTab,
+    regime: MarketRegimeTab,
+};
+
 /**
  * Synthetic: the feeds the platform generates rather than receives, on one screen
  * with three tabs. The dashboard says what runs by provider; the Provider screen
@@ -46,6 +53,7 @@ export function SyntheticScreen(): ReactNode {
         tabs: TABS,
         titleOf: (one) => t(`marketdata.synthetic.tabs.${one}`),
     });
+    const Pane = PANES[tab] ?? DashboardTab;
     return (
         <RecordStoreProvider store={syntheticStore}>
             <div className="space-y-6">
@@ -57,13 +65,7 @@ export function SyntheticScreen(): ReactNode {
                     />
                 </div>
                 {bar}
-                {tab === 'regime' ? (
-                    <MarketRegimeTab />
-                ) : tab === 'provider' ? (
-                    <ProviderTab />
-                ) : (
-                    <DashboardTab />
-                )}
+                <Pane />
             </div>
         </RecordStoreProvider>
     );

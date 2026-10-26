@@ -4648,11 +4648,14 @@ const fr: SourceCatalogue = {
             pinned: 'Une personne, et il tient jusqu’à ce qu’on le rende',
             chain: 'La chaîne, qui tourne seule',
             force: 'Forcer l’état',
+            forced: 'forcé',
             set: { auto: 'Auto', calm: 'Calme', active: 'Actif' },
             raster: {
                 title: 'Ticks de chaque flux en cours · {seconds} dernières secondes',
                 label: 'Arrivées de ticks de chaque flux en cours',
                 none: 'Aucun flux ne tourne, donc il n’y a pas de lignes. Un flux dessine une ligne dès que son générateur tourne.',
+                warming:
+                    'Une ligne se remplit à chaque tick du flux : la liste commence à l’ouverture de cet onglet.',
             },
         },
         fxFeeds: {

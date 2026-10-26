@@ -399,17 +399,22 @@ const feedFolderSchema = z.object({
 /** A folder of the feed hierarchy, with how many feeds of each kind it holds. */
 export type FeedFolder = z.infer<typeof feedFolderSchema>;
 
+/** The states the market chain has. A state the screen does not know is a reply it does not read. */
+const marketStateSchema = z.enum(['calm', 'active']);
+
 /** The market-wide arrival factor in force: what a screen shows and a switch forces. */
 const marketRegimeSchema = z.object({
-    state: z.string(),
+    state: marketStateSchema,
     multiplier: z.number(),
     pinned: z.boolean(),
 });
 
 export type MarketRegime = z.infer<typeof marketRegimeSchema>;
+export type MarketState = z.infer<typeof marketStateSchema>;
 
 /** What the market switch may force: a state, or control handed back to the chain. */
-export type RegimeMode = 'auto' | 'calm' | 'active';
+export const REGIME_MODES = ['auto', 'calm', 'active'] as const;
+export type RegimeMode = (typeof REGIME_MODES)[number];
 
 /** The times one running feed's ticks arrived, and the window they were read over. */
 const feedRasterSchema = z.object({

@@ -21,15 +21,24 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { api, type FeedRaster, type MarketRegime, type RegimeMode } from '../../api/client.js';
+import {
+    api,
+    REGIME_MODES,
+    type FeedRaster,
+    type MarketRegime,
+    type RegimeMode,
+} from '../../api/client.js';
 import { useTranslation } from '../../i18n/Provider.js';
 import { Button, Fact, Notice, Tag } from '../../ui/Primitives.js';
 import { arrivalPositions, multiplierText, RASTER_SECONDS } from './marketRaster.js';
-import { REGIME_EVERY_MS, REGIME_KEY, stateName } from './useMarketRegime.js';
+import { REGIME_KEY, stateName, useMarketRegimeQuery } from './useMarketRegime.js';
+
+/** How often the raster is read again, in milliseconds. Slower than the state:
+ * it carries a row for every running feed, and a mark that arrives two seconds
+ * late still falls where it belongs in the window. */
+const RASTER_EVERY_MS = 4_000;
 
 const RASTER_KEY = ['market-regime-raster'] as const;
-
-const MODES: readonly RegimeMode[] = ['auto', 'calm', 'active'];
 
 /** A lane's height in pixels: a row of the raster, and the room a mark takes. */
 const LANE_HEIGHT = 18;
@@ -46,15 +55,11 @@ const LANE_HEIGHT = 18;
 export function MarketRegimeTab(): ReactNode {
     const { t } = useTranslation();
     const queries = useQueryClient();
-    const regime = useQuery({
-        queryKey: REGIME_KEY,
-        queryFn: () => api.marketRegime(),
-        refetchInterval: REGIME_EVERY_MS,
-    });
+    const regime = useMarketRegimeQuery();
     const raster = useQuery({
         queryKey: RASTER_KEY,
         queryFn: () => api.feedRaster({ seconds: RASTER_SECONDS }),
-        refetchInterval: REGIME_EVERY_MS,
+        refetchInterval: RASTER_EVERY_MS,
     });
     const pin = useMutation({
         mutationFn: (mode: RegimeMode) => api.pinMarketRegime(mode),
@@ -104,15 +109,28 @@ export function MarketRegimePanel({
 }): ReactNode {
     const { t } = useTranslation();
     const forced = regime.pinned ? regime.state : 'auto';
+    // A row is empty until its feed ticks after the tab opened, so a picture with
+    // no mark at all says why rather than reading as a market at a standstill.
+    const warming =
+        raster !== undefined &&
+        raster.feeds.length > 0 &&
+        raster.feeds.every((feed) => feed.ticks.length === 0);
     return (
         <section className="space-y-5" aria-label={t('marketdata.marketRegime.title')}>
             <p className="text-sm text-ink-muted">{t('marketdata.marketRegime.lead')}</p>
 
             <dl className="grid gap-4 sm:grid-cols-3">
                 <Fact label={t('marketdata.marketRegime.state')}>
-                    <Tag tone={regime.state === 'active' ? 'accent' : 'neutral'}>
-                        {stateName(regime.state, t)}
-                    </Tag>
+                    <span className="flex flex-wrap items-center gap-2">
+                        <Tag tone={regime.state === 'active' ? 'accent' : 'neutral'}>
+                            {stateName(regime.state, t)}
+                        </Tag>
+                        {regime.pinned ? (
+                            <Tag tone="warn" small>
+                                {t('marketdata.marketRegime.forced')}
+                            </Tag>
+                        ) : null}
+                    </span>
                 </Fact>
                 <Fact
                     label={t('marketdata.marketRegime.multiplier')}
@@ -134,7 +152,7 @@ export function MarketRegimePanel({
                 <span className="text-xs uppercase tracking-wide text-ink-faint">
                     {t('marketdata.marketRegime.force')}
                 </span>
-                {MODES.map((mode) => (
+                {REGIME_MODES.map((mode) => (
                     <Button
                         key={mode}
                         variant={forced === mode ? 'primary' : 'secondary'}
@@ -160,6 +178,11 @@ export function MarketRegimePanel({
                     seconds={raster?.seconds ?? RASTER_SECONDS}
                     now={now}
                 />
+                {warming ? (
+                    <p className="text-xs text-ink-faint">
+                        {t('marketdata.marketRegime.raster.warming')}
+                    </p>
+                ) : null}
             </div>
         </section>
     );

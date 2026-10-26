@@ -43,11 +43,13 @@ describe('a raster of tick arrivals', () => {
     });
 
     it('drops a tick stamped after the clock the picture is drawn at', () => {
-        expect(arrivalPositions([at(-5), at(10)], 60, NOW)).toHaveLength(1);
+        expect(arrivalPositions([at(-5), at(10)], 60, NOW)).toEqual([expect.closeTo(5 / 6, 5)]);
     });
 
     it('drops a tick whose time cannot be read', () => {
-        expect(arrivalPositions(['not a time', at(10)], 60, NOW)).toHaveLength(1);
+        expect(arrivalPositions(['not a time', at(10)], 60, NOW)).toEqual([
+            expect.closeTo(5 / 6, 5),
+        ]);
     });
 
     it('draws nothing for a window of no width', () => {

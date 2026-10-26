@@ -77,11 +77,16 @@ describe('the market regime tab', () => {
         expect(html).toContain('The chain, turning on its own');
     });
 
-    it('says a person holds the state when it is pinned', () => {
+    it('says a person holds the state when it is pinned, and marks it forced', () => {
         const html = render(regime({ state: 'active', multiplier: 2, pinned: true }));
         expect(html).toContain('Active');
         expect(html).toContain('×2');
         expect(html).toContain('A person, and it holds until it is handed back');
+        expect(html).toContain('forced');
+    });
+
+    it('does not call a state the chain chose forced', () => {
+        expect(render(regime())).not.toContain('forced');
     });
 
     it('marks auto as the switch in force while the chain holds the state', () => {
@@ -100,6 +105,18 @@ describe('the market regime tab', () => {
         const html = render(regime());
         expect(html).toContain('live.eurusd');
         expect(html).toContain('live.usdsofr');
+    });
+
+    it('says a picture that has not filled yet starts when the tab opens', () => {
+        const html = render(regime(), {
+            seconds: 120,
+            feeds: [{ sourceName: 'live.eurusd', ticks: [] }],
+        });
+        expect(html).toContain('A row fills as its feed ticks');
+    });
+
+    it('does not explain a picture that has marks', () => {
+        expect(render(regime())).not.toContain('A row fills as its feed ticks');
     });
 
     it('says there are no rows when no feed is running', () => {

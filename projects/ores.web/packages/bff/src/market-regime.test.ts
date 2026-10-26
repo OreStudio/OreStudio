@@ -22,7 +22,7 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import type { OresClient } from '@ores/wire-protocol';
+import { ServerError, type OresClient } from '@ores/wire-protocol';
 import type { Config } from './config.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
@@ -78,7 +78,11 @@ function buildTestServer(replies: Readonly<Record<string, unknown>>): {
             if (!(subject in replies)) {
                 throw new Error(`No canned reply for ${subject}`);
             }
-            return schema.parse(replies[subject]);
+            const canned = replies[subject];
+            if (canned instanceof Error) {
+                throw canned;
+            }
+            return schema.parse(canned);
         },
         async close(): Promise<void> {
             return undefined;
@@ -152,6 +156,18 @@ describe('the market regime', () => {
 
         expect(response.statusCode).toBe(502);
         expect(response.json().message).toBe('the regime is not running');
+    });
+
+    it('reports a refused pin as forbidden rather than as the service being down', async () => {
+        const { server, sessionId } = buildTestServer({
+            [PIN_SUBJECT]: new ServerError('forbidden'),
+        });
+
+        const response = await send(server, sessionId, 'POST', '/api/synthetic/market-regime', {
+            mode: 'active',
+        });
+
+        expect(response.statusCode).toBe(403);
     });
 
     it('needs a session, because the read is attributable', async () => {
@@ -246,6 +262,39 @@ describe('the market regime', () => {
         });
     });
 
+    it('stops listening to a feed the run no longer carries', async () => {
+        const replies: Record<string, unknown> = {
+            'synthetic.v1.feed_configs.list': {
+                success: true,
+                running_source_names: ['live.eurusd'],
+            },
+        };
+        const { server, sessionId, publish } = buildTestServer(replies);
+        await send(server, sessionId, 'GET', '/api/synthetic/feed-raster');
+        publish('synthetic.v1.ops.feed_tick.live.eurusd', {
+            value: '1.1',
+            observation_time: new Date().toISOString(),
+        });
+
+        replies['synthetic.v1.feed_configs.list'] = {
+            success: true,
+            running_source_names: ['live.gbpusd'],
+        };
+        await send(server, sessionId, 'GET', '/api/synthetic/feed-raster');
+        // The listener for the stopped feed is gone, so a publish for it is not
+        // heard; the new feed's listener answers on the next read.
+        publish('synthetic.v1.ops.feed_tick.live.eurusd', {
+            value: '1.2',
+            observation_time: new Date().toISOString(),
+        });
+        const response = await send(server, sessionId, 'GET', '/api/synthetic/feed-raster');
+
+        expect(response.json()).toEqual({
+            seconds: 120,
+            feeds: [{ sourceName: 'live.gbpusd', ticks: [] }],
+        });
+    });
+
     it('draws no row for a feed that is not running', async () => {
         const replies: Record<string, unknown> = {
             'synthetic.v1.feed_configs.list': {
@@ -263,6 +312,6 @@ describe('the market regime', () => {
         replies['synthetic.v1.feed_configs.list'] = { success: true, running_source_names: [] };
         const response = await send(server, sessionId, 'GET', '/api/synthetic/feed-raster');
 
-        expect(response.json()).toEqual({ seconds: 60, feeds: [] });
+        expect(response.json()).toEqual({ seconds: 120, feeds: [] });
     });
 });

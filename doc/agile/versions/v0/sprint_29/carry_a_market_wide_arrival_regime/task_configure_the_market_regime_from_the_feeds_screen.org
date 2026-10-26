@@ -78,20 +78,24 @@ task and name that file in the Command column.
 | Every unit of the environment carries the memory cap the outage fix added (8G, swap 1G, no high) | 25 of 25 | =compass systemd generate=, =compass systemd deploy=, then =busctl --user get-property= for each unit | =dd4af2b9ca= |
 | BFF suite | 1008 tests, 79 files, all pass | =npm test --workspace @ores/bff= | =dd4af2b9ca= |
 | Web suite | 2076 tests, 167 files, all pass | =npm test --workspace @ores/web= | =dd4af2b9ca= |
-| Harness, the regime tab | 5 checks, all pass | =npx playwright test tests/market-regime.spec.ts= | =dd4af2b9ca= |
+| Harness, the regime tab | 3 checks, plus the 2 setup steps, all pass | =npx playwright test tests/market-regime.spec.ts= | =dd4af2b9ca= |
+| Ticks stored in a minute, market pinned calm | about 2,370 | =select count(*)= on =ores_marketdata_ticks_tbl= over the minute, after =POST /api/synthetic/market-regime= with ={"mode":"calm"}= | =dd4af2b9ca= |
+| Ticks stored in a minute, market pinned active | about 8,575, or 3.6 times the calm minute | same, with ={"mode":"active"}= | =dd4af2b9ca= |
 | Raster rows on a demo environment | 46 running feeds, 26 of them with a tick in the window | =GET /api/synthetic/feed-raster?seconds=120= | =dd4af2b9ca= |
 
 * Notes
 
 - The tab is =?tab=regime= on the synthetic screen, beside Dashboard and
   Provider.
-- The raster draws the feeds the service names as running, in the order the
-  service names them, and stops at 120 rows. It draws times, not prices, because
-  what a shared factor changes is when ticks arrive.
-- A row is empty for two different reasons, and the screen does not tell them
-  apart yet: a feed too slow to tick inside the window, and a curve feed that
-  serves an adapter and so publishes no display tick at all. The second is a
-  defect, captured for the backlog.
+- The raster draws the feeds the service names as running, sorted by source
+  name, and stops at 120 rows. The service names sources and not tree paths, so
+  the tree order the prototype asked for is not available to this read; the
+  sorted order is at least the same on every poll. It draws times, not prices,
+  because what a shared factor changes is when ticks arrive.
+- A row is empty for three different reasons: a feed too slow to tick inside the
+  window, a curve feed that serves an adapter and so publishes no display tick
+  at all — a defect, captured for the backlog — and a tab that has just opened,
+  whose rows fill as each feed ticks. The third is stated on the screen.
 - The state names and the multiplier are the screen's only claim about the
   market; who pinned it and why is in the change record, not in this reply.
 - =compass smoke ticks= fails on this environment with 20 of 86 demanded ids
@@ -121,9 +125,33 @@ via its "Verifies task" field.
 
 * Review
 
+Two axes, run before the first review round: the standards the TypeScript clean
+standard asks for, and the spec the task and story ask for. Every point below is
+answered in =baa7889e1d= or in the commit that follows it.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The wire shape is spelled twice, in the BFF and in the browser | =market-regime.ts=, =client.ts= | Decline | They are two deployables and the true source is the hand-written C++. A shared module for three fields would couple them; both ends parse the state as a union instead. |
+| 2 | =RegimeMode= is declared three times | =client.ts=, =MarketRegimeTab.tsx= | Accept | The client exports =REGIME_MODES= and the tab uses it. The BFF keeps its own copy because no module is shared across the two packages. |
+| 3 | =operationReplySchema=, =runningSourceNames= and =upstreamFailure= are duplicated | =synthetic.ts= | Accept | Exported from =synthetic.ts= and reused; the new module keeps no copy. |
+| 4 | Defaults hide a malformed successful reply | =market-regime.ts= | Accept | The reply is a union: success states all three facts strictly, a refusal states its message alone. |
+| 5 | The state is a bare string, re-tested by hand in two places | =market-regime.ts=, =client.ts=, =useMarketRegime.ts= | Accept | =z.enum(['calm','active'])= at both boundaries; the hand tests are gone. |
+| 6 | The new =ArrivalsPanel= test is vacuous | =ArrivalsPanel.test.tsx= | Accept | The panel takes the regime and formats it, so the test drives =regimeLabel=; a new test covers both formatters. |
+| 7 | =useMarketRegime= and =ArrivalsTab= have no test | =useMarketRegime.test.ts= | Partly | The formatters are tested; =ArrivalsTab= is a hook call and a prop, and the harness drives the Arrivals tab in a browser. |
+| 8 | The mark count asserts on a test-only attribute | =MarketRegimeTab.test.tsx= | Decline | =data-mark= names what the element is, a tick's mark; the alternative is asserting on a style class. |
+| 9 | Wall clock in the BFF test | =market-regime.test.ts= | Decline | The route's window is relative to now by contract; a clock seam would test a different function. |
+| 10 | The =lanes= parameter has no caller | =market-regime.ts= | Accept | Removed; the bound is a module constant. |
+| 11 | The raster read subscribes to up to 120 subjects and never releases them | =feed-ticks.ts= | Accept | =keepOnly= stops every source the run no longer names, with a test. |
+| 12 | The docstrings claim the service's order, but the read sorts | =market-regime.ts=, =MarketRegimeTab.tsx=, task page | Accept | The rows are sorted by source name; the words now say so, and say why tree order is not available. |
+| 13 | A forbidden pin is reported as 502 | =market-regime.ts= | Partly | A refusal the service states in the body is a failed read. A forbidden call arrives as a server error, and a test now proves it is a 403. |
+| 14 | "Forced" is never rendered | =MarketRegimeTab.tsx= | Accept | A warn tag stands beside the state while a person holds it. |
+| 15 | "Takes effect on the next tick" is claimed but unproven | Measurements | Accept | Calm and active are each measured over a minute of stored ticks: 2,370 against 8,575. |
+| 16 | A just-opened tab draws empty rows and does not say why | =MarketRegimeTab.tsx=, Notes | Accept | The raster says a row fills as its feed ticks, and the Notes name the third cause. |
+| 17 | The measurement claims 5 harness checks | task page | Accept | 3 checks plus the 2 setup steps. |
+| 18 | The tab is chosen by a ternary cascade | =SyntheticScreen.tsx= | Accept | A tab-to-pane record. |
+| 19 | A query hook module also holds presentation formatters | =useMarketRegime.ts= | Decline | One module for the market as the web sees it: the read, and the two formatters that read it. Splitting adds a file for two functions. |
+| 20 | The save key change is unrelated | =ArrivalsPanel.tsx= | Decline | =common.save= is not in the catalogue, so the button read "common.save" on this very tab. It is a defect in scope, and visible in the screenshot. |
+| 21 | Prettier reflowed three help strings | locales | Decline | Prettier is the gate; the file is formatted by it. |
 
 * Result
 

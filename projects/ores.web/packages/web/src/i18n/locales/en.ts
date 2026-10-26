@@ -4584,11 +4584,13 @@ export const en: SourceCatalogue = {
             pinned: 'A person, and it holds until it is handed back',
             chain: 'The chain, turning on its own',
             force: 'Force the state',
+            forced: 'forced',
             set: { auto: 'Auto', calm: 'Calm', active: 'Active' },
             raster: {
                 title: 'Every running feed’s ticks · last {seconds} seconds',
                 label: 'Tick arrivals of every running feed',
                 none: 'No feed is running, so there are no rows. A feed draws a row once its generator runs.',
+                warming: 'A row fills as its feed ticks: the list starts when this tab opens.',
             },
         },
         fxFeeds: {

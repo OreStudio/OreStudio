@@ -20,7 +20,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { RecordRow } from '../../api/client.js';
+import type { MarketRegime, RecordRow } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import { ArrivalsPanel } from './ArrivalsPanel.js';
 
@@ -38,7 +38,7 @@ function feed(over: Record<string, unknown> = {}): RecordRow {
     } as unknown as RecordRow;
 }
 
-function render(row: RecordRow, mayWrite = true, market?: string): string {
+function render(row: RecordRow, mayWrite = true, market?: MarketRegime): string {
     return renderToStaticMarkup(
         <TranslationProvider>
             <ArrivalsPanel feed={row} market={market} mayWriteFeed={mayWrite} save={noSave} />
@@ -79,7 +79,9 @@ describe('a feed’s arrivals tab', () => {
     });
 
     it('reads the market state the run reports, and says when it cannot be read', () => {
-        expect(render(feed(), true, 'Calm ×0.5')).toContain('Market now: Calm ×0.5.');
+        expect(render(feed(), true, { state: 'calm', multiplier: 0.5, pinned: false })).toContain(
+            'Market now: Calm ×0.5.',
+        );
         expect(render(feed())).toContain('the market state is not readable right now');
     });
 

@@ -21,17 +21,10 @@
 
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
-import { subjects as feedSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_config_protocol';
-import { HttpFailure } from './errors.js';
-import { TICK_CAPACITY, type FeedTickBuffers } from './feed-ticks.js';
 import { input } from './refdata-calls.js';
+import { runningSourceNames, upstreamFailure } from './synthetic.js';
 import type { LiveSession } from './sessions.js';
-
-/** What every operation reply says: whether the service did what was asked, and why not. */
-const operationReplySchema = z.object({
-    success: z.boolean(),
-    message: z.string().default(''),
-});
+import type { FeedTickBuffers } from './feed-ticks.js';
 
 /**
  * The market-wide arrival factor: the state that scales every feed's rate, and
@@ -49,18 +42,25 @@ const pinSubject = 'synthetic.v1.ops.pin_market_regime';
 export const REGIME_MODES = ['auto', 'calm', 'active'] as const;
 export type RegimeMode = (typeof REGIME_MODES)[number];
 
-/**
- * What the service says about the factor. The three facts default rather than
- * being required, because a refusal carries the message and nothing else: the
- * refusal is read for its reason, not for a state it never had.
- */
-const regimeSchema = z.object({
-    success: z.boolean(),
+/** The states the chain has. A state the screen does not know is a reply it does not read. */
+const stateSchema = z.enum(['calm', 'active']);
+
+/** The factor the service reports: all three facts, because the request was answered. */
+const answeredRegime = z.object({
+    success: z.literal(true),
     message: z.string().default(''),
-    state: z.string().default(''),
-    multiplier: z.number().default(1),
-    pinned: z.boolean().default(false),
+    state: stateSchema,
+    multiplier: z.number(),
+    pinned: z.boolean(),
 });
+
+/** A request the service would not carry out. It says why, and nothing else. */
+const refusedRegime = z.object({
+    success: z.literal(false),
+    message: z.string().default(''),
+});
+
+const regimeReply = z.union([answeredRegime, refusedRegime]);
 
 /**
  * The most feed rows a raster draws. A raster is a picture of what a market-wide
@@ -70,23 +70,22 @@ const regimeSchema = z.object({
  */
 export const RASTER_LANES = 120;
 
-/**
- * A factor the service would not answer for is the service failing, not a
- * request the caller got wrong, so the browser can tell the two apart.
- */
-function unavailable(message: string): HttpFailure {
-    return new HttpFailure(502, {
-        code: 'upstream-unavailable',
-        message: message.length > 0 ? message : 'The synthetic service did not answer.',
-    });
-}
-
-/** The regime as the browser reads it: what is in force, and whether it was forced. */
-function regimeOf(reply: z.infer<typeof regimeSchema>): {
-    readonly state: string;
+/** The regime in force, as the screen reads it. */
+interface Regime {
+    readonly state: z.infer<typeof stateSchema>;
     readonly multiplier: number;
     readonly pinned: boolean;
-} {
+}
+
+/**
+ * A factor the service would not answer for, or would not change, is the service
+ * failing rather than a request the caller got wrong: the message is what it
+ * said, so the screen shows it instead of an empty state.
+ */
+function answered(reply: z.infer<typeof regimeReply>): Regime {
+    if (!reply.success) {
+        throw upstreamFailure(reply.message || 'The synthetic service refused the regime read.');
+    }
     return { state: reply.state, multiplier: reply.multiplier, pinned: reply.pinned };
 }
 
@@ -98,11 +97,7 @@ export function registerMarketRegimeRoutes(
     /** The market state in force, the multiplier every feed is scaled by, and who holds it. */
     server.get('/api/synthetic/market-regime', async (request) => {
         const session = requireSession(request);
-        const reply = await session.client.callAuthenticated(getSubject, {}, regimeSchema);
-        if (!reply.success) {
-            throw unavailable(reply.message);
-        }
-        return regimeOf(reply);
+        return answered(await session.client.callAuthenticated(getSubject, {}, regimeReply));
     });
 
     /**
@@ -116,15 +111,9 @@ export function registerMarketRegimeRoutes(
             z.object({ mode: z.enum(REGIME_MODES) }).strict(),
             request.body === undefined || request.body === null ? {} : request.body,
         );
-        const reply = await session.client.callAuthenticated(
-            pinSubject,
-            { mode: body.mode },
-            regimeSchema,
+        return answered(
+            await session.client.callAuthenticated(pinSubject, { mode: body.mode }, regimeReply),
         );
-        if (!reply.success) {
-            throw unavailable(reply.message);
-        }
-        return regimeOf(reply);
     });
 
     /**
@@ -135,33 +124,29 @@ export function registerMarketRegimeRoutes(
      * and the picture follows the run rather than a list on the screen. A row
      * carries times and not prices: the raster shows when ticks arrived, which is
      * what a shared arrival factor changes.
+     *
+     * The read names the sources it wants and drops the ones it no longer wants,
+     * so the BFF listens to the feeds that run and not to every feed that ever
+     * did.
      */
     server.get('/api/synthetic/feed-raster', async (request) => {
         const session = requireSession(request);
         const query = input(
             z
                 .object({
-                    seconds: z.coerce.number().int().min(1).max(600).default(60),
-                    lanes: z.coerce.number().int().min(1).max(RASTER_LANES).default(RASTER_LANES),
+                    seconds: z.coerce.number().int().min(1).max(600).default(120),
                 })
                 .strict(),
             request.query,
         );
-        const reply = await session.client.callAuthenticated(
-            feedSubjects.list_feeds_request,
-            {},
-            operationReplySchema.extend({ running_source_names: z.array(z.string()).default([]) }),
-        );
-        if (!reply.success) {
-            throw unavailable(reply.message);
-        }
-        const sources = [...new Set(reply.running_source_names)].sort().slice(0, query.lanes);
+        const running = [...(await runningSourceNames(session))].sort().slice(0, RASTER_LANES);
+        ticks.keepOnly(running);
         const since = Date.now() - query.seconds * 1000;
         return {
             seconds: query.seconds,
-            feeds: sources.map((sourceName) => {
+            feeds: running.map((sourceName) => {
                 ticks.watch(sourceName);
-                return { sourceName, ticks: ticks.arrivalTimes(sourceName, since, TICK_CAPACITY) };
+                return { sourceName, ticks: ticks.arrivalTimes(sourceName, since) };
             }),
         };
     });

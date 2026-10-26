@@ -4615,11 +4615,14 @@ const pt: SourceCatalogue = {
             pinned: 'Uma pessoa, e mantém-se até ser devolvido',
             chain: 'A cadeia, a girar sozinha',
             force: 'Forçar o estado',
+            forced: 'forçado',
             set: { auto: 'Auto', calm: 'Calmo', active: 'Ativo' },
             raster: {
                 title: 'Ticks de cada fluxo em execução · últimos {seconds} segundos',
                 label: 'Chegadas de ticks de cada fluxo em execução',
                 none: 'Nenhum fluxo está a correr, por isso não há linhas. Um fluxo desenha uma linha quando o seu gerador corre.',
+                warming:
+                    'Uma linha enche-se à medida que o fluxo marca ticks: a lista começa quando este separador abre.',
             },
         },
         fxFeeds: {

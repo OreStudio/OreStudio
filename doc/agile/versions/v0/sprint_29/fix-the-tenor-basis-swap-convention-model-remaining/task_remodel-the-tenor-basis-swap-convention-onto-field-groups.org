@@ -140,6 +140,43 @@ Three ways forward, and the choice is the owner's:
 3. Group only where a member is not part of a family, which does not apply to
    this convention.
 
+** 2026-10-26: the family service now writes grouped members
+
+The three ways forward recorded above were put to the owner, who chose the
+first: teach the family service to build and read grouped domain objects.
+That is done, and the remodel is applied.
+
+- The family view resolves a member's domain groups before it is built and
+  gives every column the prefix of the member that carries it, so the key,
+  the party, the version and the commentary are named by their path. The
+  generator, the repository mapper, the history field mapper and the table
+  display were the templates that still wrote a flat path.
+- The central row is grouped into identity, payload and the
+  =ores.dq.audit_record= tail. Each part is grouped into the identity it
+  shares with its sibling, its legs, its coupon treatment and the same tail.
+  Every group holds at most five members.
+- The tables, the columns and the seventeen =TENOR_BASIS_SWAP= term rows are
+  unchanged. The write records and the wire shape stayed flat: only the
+  domain struct nests, so the contract still names a real column.
+- =ores.dq.api= is now a public dependency of =ores.refdata.api=, declared in
+  the component's own =component_overview.org= rather than in the generated
+  CMakeLists, because the generated headers include the audit record.
+
+Measured on this branch:
+
+| What | Result | Command |
+|------+--------+---------|
+| Members per struct | 5 central, 5 and 4 per part | read from the generated headers |
+| Codegen suite | 1624 passed | =pytest projects/ores.codegen/tests= |
+| Drift sweep | clean | =check_component_drift.py --sweep --dry-run= |
+| SQL | unchanged | =git status projects/ores.sql= |
+| Build | refdata api, core, service, tests and ores.ore core | =compass build ...= |
+
+The database-backed suites did not run: the environment's PostgreSQL cannot
+load =timescaledb-2.30.1= (2.30.2 is installed), so no test process gets past
+=ORES_TEST_DB_USER=. That is a machine state left by the restart, not this
+change.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :decide_whether_codegen_replaces_sqlgen_and_reflect_cpp:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decide-whether-codegen-replaces-sqlgen-and-reflect-cpp
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,22 +26,32 @@ A yes or no, with evidence, for each data path requirement libpqxx 8 must meet, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
 
--
+- Each requirement has a yes or a no, from the headers or from a probe run
+  against the worktree database.
+- The gaps that a thin layer of our own must fill are named.
+- The probes are in =evidence/= so that a reviewer can run them again.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Install libpqxx 8.0.2 from the vcpkg tree of the repository into a scratch
+root, in classic mode, so that the project manifest does not change. Read the
+headers for each requirement. Then write two probes and run each three times
+against the worktree database. The probes write only to a temporary table.
+
+- =evidence/libpqxx_probe.cpp= measures prepared statements, COPY through
+  =stream_to=, the libpqxx =pipeline= class and a streamed read, and maps two
+  server errors to exception classes.
+- =evidence/libpq_pipeline_probe.cpp= measures libpq pipeline mode on raw libpq
+  with the same prepared statements, for comparison.
 
 * Measurements
 
@@ -53,11 +63,64 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
+All times are on localhost with PostgreSQL 18.6, three runs each, and are
+the range of the three runs. A network between the service and the server makes
+every round trip longer, so the gap between one round trip per statement and
+pipeline mode grows on a real deployment.
+
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| 10,000 prepared inserts, one round trip each | 567–666 ms (about 60 µs each) | =evidence/libpqxx_probe.cpp= | 6b80472c6b |
+| 10,000 prepared point reads, one round trip each | 542–631 ms | =evidence/libpqxx_probe.cpp= | 6b80472c6b |
+| 10,000 point reads through =pqxx::pipeline= | 342–404 ms (about 36 µs each) | =evidence/libpqxx_probe.cpp= | 6b80472c6b |
+| 100,000 rows written through =stream_to= (COPY) | 120–146 ms (about 1.3 µs each) | =evidence/libpqxx_probe.cpp= | 6b80472c6b |
+| 110,000 rows read through =query<>= into tuples | 48–57 ms | =evidence/libpqxx_probe.cpp= | 6b80472c6b |
+| 10,000 prepared inserts in libpq pipeline mode | 64–104 ms (6–10 µs each) | =evidence/libpq_pipeline_probe.cpp= | 6b80472c6b |
+| 10,000 prepared point reads in libpq pipeline mode | 56–72 ms | =evidence/libpq_pipeline_probe.cpp= | 6b80472c6b |
 
 * Notes
+
+** Requirements
+
+| Requirement | libpqxx 8.0.2 | Evidence |
+|-------------+---------------+----------|
+| Prepared statements | Yes. =connection::prepare= and =exec(prepped{...}, params{...})=. | Probe. |
+| Binary parameters | Only for =bytea=. All other types go as text: =params= stores each value as text or as bytes. | =params.hxx=, the =entry= variant. |
+| Binary results | No. Every result comes back in text format, and =field= parses the text. No call asks for binary results. | =result.hxx=, =field.hxx=; the probe reads type 23 with text ='1'=. |
+| libpq pipeline mode | No. =pqxx::pipeline= is libpqxx's own batching of text queries. The header has a TODO to replace it with libpq pipeline mode. | =pipeline.hxx=, line 29. |
+| COPY | Yes, in text format only: =stream_to= and =stream_from=. No binary COPY. | =stream_to.hxx=; probe. |
+| Transactions | Yes. =work=, =nontransaction=, =subtransaction=, =robusttransaction= and isolation levels. | Headers. |
+| SQLSTATE error classes | Yes. A duplicate key throws =unique_violation= (23505) and a division by zero throws =data_exception= (22012). Each exception has =sqlstate()=. | Probe. |
+| LISTEN and NOTIFY | Yes. =connection::listen= and =await_notification=; =sock()= gives the descriptor for our own event loop. | =connection.hxx=. |
+| Access to the libpq connection | Yes. =release_raw_connection()= gives up the =PGconn=, and =seize_raw_connection()= takes it back. | =connection.hxx=, lines 1268 and 1282. |
+
+** The ABI mismatch with our toolchain
+
+The project builds every vcpkg package with the default =x64-linux= triplet,
+which uses GCC 16, and compiles our own code with clang 21. libpqxx 8 uses C++20
+constrained templates in its headers. clang 21 and GCC 16 mangle a constrained
+template parameter in different ways, so the probe failed to link:
+=pqxx::internal::to_string_float<double>= has a =TkSt14floating_point= tag in
+clang's name and none in the library. =-fclang-abi-compat=17= removes the
+mismatch, but that flag changes the ABI of the whole project. The correct fix
+is a triplet that builds libpqxx with clang. sqlgen and reflect-cpp do not have
+this problem, because they are header-only.
+
+** What the numbers mean
+
+The one-round-trip cost (about 60 µs on localhost) controls every path that
+sends one statement at a time. libpqxx's =pipeline= saves about 40% of it.
+libpq pipeline mode saves 85–90%, because the server receives the next
+prepared statement while it executes the current one. Bulk writes go through
+COPY at about 1.3 µs per row, so COPY stays the path for tick ingest.
+
+** The gaps a thin layer of our own fills
+
+- Pipeline mode: release the =PGconn=, run =PQenterPipelineMode= with prepared
+  statements, and seize it back. Or build the layer on libpq directly.
+- Binary results and binary parameters for hot paths, if the repository
+  comparison shows that text parsing costs enough to matter.
+- Binary COPY, if the text format becomes the limit for tick ingest.
 
 * Test Scenarios
 
@@ -83,3 +146,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+libpqxx 8 meets the data path's needs for prepared statements, transactions,
+text COPY, LISTEN and NOTIFY, and SQLSTATE error classes. It does not support
+libpq pipeline mode, binary results, or binary parameters other than =bytea=.
+Pipeline mode is the gap that matters. On localhost it is 6–9 times faster than
+one round trip per statement, and libpqxx's own =pipeline= does not come near
+it. Adopting libpqxx also needs a clang triplet, because of the ABI mismatch.
+The repository comparison decides whether libpqxx plus a thin pipeline layer,
+or a thin layer on libpq alone, is the better base.

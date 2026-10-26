@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
@@ -145,3 +145,7 @@ it measures.
 
 The bivariate Hawkes is out of scope and stays captured: its 2x2 kernel replaces
 the scalar stability test with a spectral radius, which is a model of its own.
+
+The three tasks the note scopes are raised on the story, in its order: sampling
+before time, the loading with its calibration, and the tails. The bivariate Hawkes
+stays captured.

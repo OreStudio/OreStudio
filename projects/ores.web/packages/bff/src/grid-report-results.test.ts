@@ -634,8 +634,9 @@ describe('withPortfolioTree', () => {
         expect(rows[0]?.totals).toEqual([{ currency: 'GBP', total: '250.00' }]);
         expect(rows[0]?.trades).toBe(3);
         expect(rows[2]?.is_group).toBe(true);
-        // The parent holds no book of its own, so its figure is its child's.
-        expect(rows[0]?.trades).toBe(rows[2]?.trades);
+        // The parent holds one book of its own besides its child's two.
+        expect(rows[0]?.trades).toBe(3);
+        expect(rows[2]?.trades).toBe(2);
     });
 
     it('leaves a book in no portfolio at the top', () => {

@@ -93,10 +93,13 @@ task and name that file in the Command column.
   is the axis, the dots take their colour from the asset class, and the count at
   the end of the row says how many arrivals the window held: times, not prices,
   because what a shared factor changes is when ticks arrive.
-- The multiplier this tab saw is drawn above the rows as a step, with a line at
-  the moment a switch landed, so the arrivals sit under the factor that moved
-  them. The service reports the value in force and not its history, so the trace
-  begins when the tab opens and the legend says so.
+- Above the rows sits the rate each asset class ticked at, in ticks a second per
+  feed, binned over the window: the shape of the market rather than its switch,
+  because the rate is the variable a shared factor moves. The state is the band
+  the arrivals sit on, a line marks the moment a switch landed, and the legend
+  names all three.
+- The state band begins when the tab opens, because the service reports the state
+  in force and not its history; the rate curve fills as the BFF's buffers fill.
 - The tree order the prototype asked for is not available: the service lists
   sources, not tree paths. The feeds that run come first and the label order
   holds inside each group.

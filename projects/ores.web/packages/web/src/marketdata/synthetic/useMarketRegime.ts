@@ -22,7 +22,7 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { api, type MarketRegime } from '../../api/client.js';
-import { multiplierText, RASTER_SECONDS, type FactorSample } from './marketRaster.js';
+import { multiplierText, RASTER_SECONDS, type StateSample } from './marketRaster.js';
 
 /** How often the market state is read again, in milliseconds. */
 export const REGIME_EVERY_MS = 2_000;
@@ -62,26 +62,26 @@ export function regimeLabel(regime: MarketRegime, t: (key: string) => string): s
 }
 
 /**
- * The multiplier this screen saw, once per read, trimmed to the raster's window.
+ * The state this screen saw, once per read, trimmed to the raster's window.
  *
- * The service reports the value in force and not its history, so the shape of a
- * change is the reader's own observation: the trace begins when the tab opens,
- * and the legend says so rather than implying a record that is not kept.
+ * The service reports the state in force and not its history, so the stretch a
+ * state held is the reader's own observation: the band begins when the tab
+ * opens, rather than implying a record that is not kept.
  */
-export function useFactorTrace(
+export function useStateTrace(
     dataUpdatedAt: number,
-    multiplier: number | undefined,
-): readonly FactorSample[] {
-    const [trace, setTrace] = useState<readonly FactorSample[]>([]);
+    state: MarketRegime['state'] | undefined,
+): readonly StateSample[] {
+    const [trace, setTrace] = useState<readonly StateSample[]>([]);
     useEffect(() => {
-        if (multiplier === undefined) {
+        if (state === undefined) {
             return;
         }
         const at = Date.now();
         setTrace((seen) => [
             ...seen.filter((sample) => at - sample.at <= RASTER_SECONDS * 1000),
-            { at, multiplier },
+            { at, state },
         ]);
-    }, [dataUpdatedAt, multiplier]);
+    }, [dataUpdatedAt, state]);
     return trace;
 }

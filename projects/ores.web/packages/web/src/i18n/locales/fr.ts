@@ -4651,8 +4651,9 @@ const fr: SourceCatalogue = {
             forced: 'forcé',
             set: { auto: 'Auto', calm: 'Calme', active: 'Actif' },
             raster: {
+                rate: 'ticks par seconde, par flux',
+                band: 'un marché actif',
                 stoppedFeeds: '{count} flux qui ne tournent pas',
-                factor: 'le facteur de marché',
                 marked: 'la ligne est le moment où l’état a été fixé : {state}',
                 stopped: 'arrêté',
                 fx: 'FX',

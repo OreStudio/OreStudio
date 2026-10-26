@@ -33,12 +33,14 @@ import { useTranslation } from '../../i18n/Provider.js';
 import { Button, Fact, Notice, Tag } from '../../ui/Primitives.js';
 import {
     arrivalPositions,
-    factorPath,
+    curvePath,
     multiplierText,
+    rateCurves,
     RASTER_SECONDS,
-    type FactorSample,
+    stateBands,
+    type StateSample,
 } from './marketRaster.js';
-import { REGIME_KEY, stateName, useFactorTrace, useMarketRegimeQuery } from './useMarketRegime.js';
+import { REGIME_KEY, stateName, useMarketRegimeQuery, useStateTrace } from './useMarketRegime.js';
 
 /** How often the raster is read again, in milliseconds. Slower than the state:
  * it carries a row for every running feed, and a mark that arrives two seconds
@@ -50,6 +52,9 @@ const RASTER_KEY = ['market-regime-raster'] as const;
 /** A lane's height in pixels: a row of the raster, and the room a mark takes. */
 const LANE_HEIGHT = 18;
 
+/** The room the rate curves take above the rows. */
+const RATE_HEIGHT = 48;
+
 /**
  * The dot colour of a feed's class. A class this screen does not know is drawn
  * in the accent, so a new asset class appears at once rather than not at all.
@@ -59,6 +64,11 @@ function colourOf(assetClass: string): string {
         return 'bg-ir';
     }
     return 'bg-fx';
+}
+
+/** The same colour, for a line rather than a dot. */
+function colourTextOf(assetClass: string): string {
+    return colourOf(assetClass).replace('bg-', 'text-');
 }
 
 /**
@@ -78,7 +88,7 @@ export function MarketRegimeTab(): ReactNode {
         readonly state: MarketState;
     } | null>(null);
     const regime = useMarketRegimeQuery();
-    const factor = useFactorTrace(regime.dataUpdatedAt, regime.data?.multiplier);
+    const states = useStateTrace(regime.dataUpdatedAt, regime.data?.state);
     const raster = useQuery({
         queryKey: RASTER_KEY,
         queryFn: () => api.feedRaster({ seconds: RASTER_SECONDS }),
@@ -108,7 +118,7 @@ export function MarketRegimeTab(): ReactNode {
             pending={pin.isPending ? pin.variables : undefined}
             error={pin.error === null ? null : pin.error.message}
             marked={marked}
-            factor={factor}
+            states={states}
             onPin={(mode) => pin.mutate(mode)}
         />
     );
@@ -126,7 +136,7 @@ export function MarketRegimePanel({
     pending,
     error,
     marked,
-    factor,
+    states,
     onPin,
 }: {
     readonly regime: MarketRegime;
@@ -136,8 +146,8 @@ export function MarketRegimePanel({
     readonly error: string | null;
     /** Where a switch landed, so the marks before and after it are told apart. */
     readonly marked: { readonly at: number; readonly state: MarketState } | null;
-    /** The multiplier this tab saw, so the arrivals sit under the factor that moved them. */
-    readonly factor: readonly FactorSample[];
+    /** The state over the window, so the arrivals sit under the market that produced them. */
+    readonly states: readonly StateSample[];
     readonly onPin: (mode: RegimeMode) => void;
 }): ReactNode {
     const { t } = useTranslation();
@@ -211,7 +221,7 @@ export function MarketRegimePanel({
                     seconds={raster?.seconds ?? RASTER_SECONDS}
                     now={now}
                     marked={marked}
-                    factor={factor}
+                    states={states}
                 />
                 {warming ? (
                     <p className="text-xs text-ink-faint">
@@ -254,15 +264,15 @@ export function MarketRaster({
     seconds,
     now,
     marked,
-    factor,
+    states,
 }: {
     readonly feeds: FeedRaster['feeds'];
     /** The window the rows were read over, which is what the marks are placed in. */
     readonly seconds: number;
     readonly now: number;
     readonly marked: { readonly at: number; readonly state: MarketState } | null;
-    /** The multiplier over the window, drawn above the arrivals it scaled. */
-    readonly factor: readonly FactorSample[];
+    /** The state over the window, drawn as the band the arrivals sit on. */
+    readonly states: readonly StateSample[];
 }): ReactNode {
     const { t } = useTranslation();
     if (feeds.length === 0) {
@@ -272,8 +282,8 @@ export function MarketRaster({
         marked === null
             ? undefined
             : arrivalPositions([new Date(marked.at).toISOString()], seconds, now)[0];
-    const trace = factorPath(factor, seconds, now);
-    const current = factor.at(-1)?.multiplier;
+    const bands = stateBands(states, seconds, now);
+    const rates = rateCurves(feeds, seconds, now);
     const running = feeds.filter((feed) => feed.running);
     const stopped = feeds.filter((feed) => !feed.running);
     return (
@@ -282,27 +292,31 @@ export function MarketRaster({
             aria-label={t('marketdata.marketRegime.raster.label')}
             className="rounded-md border border-line bg-surface-base py-2"
         >
-            {trace === '' ? null : (
-                <div className="flex items-center gap-3 px-3 pb-1" style={{ height: LANE_HEIGHT }}>
-                    <span className="w-44 shrink-0 truncate text-[11px] text-ink-muted">
-                        {t('marketdata.marketRegime.raster.factor')}
+            {rates.curves.length === 0 ? null : (
+                <div className="flex items-stretch gap-3 px-3 pb-1" style={{ height: RATE_HEIGHT }}>
+                    <span className="w-44 shrink-0 self-end pb-1 text-[10px] text-ink-faint">
+                        {t('marketdata.marketRegime.raster.rate')}
                     </span>
                     <svg
                         aria-hidden
-                        className="h-3.5 flex-1 text-flow"
+                        className="flex-1"
                         viewBox="0 0 100 1"
                         preserveAspectRatio="none"
                     >
-                        <path
-                            d={trace}
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            vectorEffect="non-scaling-stroke"
-                        />
+                        {rates.curves.map((curve) => (
+                            <path
+                                key={curve.assetClass}
+                                d={curvePath(curve.points, rates.peak)}
+                                className={colourTextOf(curve.assetClass)}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                                vectorEffect="non-scaling-stroke"
+                            />
+                        ))}
                     </svg>
-                    <span className="w-12 shrink-0 text-right font-mono text-[10px] tabular-nums text-ink-faint">
-                        {current === undefined ? '' : multiplierText(current)}
+                    <span className="w-12 shrink-0 self-end pb-1 text-right font-mono text-[10px] tabular-nums text-ink-faint">
+                        {`${rates.peak.toFixed(1)}/s`}
                     </span>
                 </div>
             )}
@@ -313,6 +327,7 @@ export function MarketRaster({
                     seconds={seconds}
                     now={now}
                     markAt={markAt}
+                    bands={bands}
                 />
             ))}
             {stopped.length === 0 ? null : (
@@ -329,6 +344,7 @@ export function MarketRaster({
                             seconds={seconds}
                             now={now}
                             markAt={markAt}
+                            bands={bands}
                         />
                     ))}
                 </details>
@@ -336,9 +352,9 @@ export function MarketRaster({
             <div className="flex items-center gap-3 px-3 pt-1">
                 <span className="w-44 shrink-0" />
                 <span className="flex flex-1 justify-between font-mono text-[10px] text-ink-faint">
-                    <span>{`−${String(seconds)}s`}</span>
-                    <span>{`−${String(Math.round((seconds * 2) / 3))}s`}</span>
-                    <span>{`−${String(Math.round(seconds / 3))}s`}</span>
+                    <span>{`\u2212${String(seconds)}s`}</span>
+                    <span>{`\u2212${String(Math.round((seconds * 2) / 3))}s`}</span>
+                    <span>{`\u2212${String(Math.round(seconds / 3))}s`}</span>
                     <span>{t('marketdata.marketRegime.raster.now')}</span>
                 </span>
                 <span className="w-12 shrink-0" />
@@ -351,6 +367,10 @@ export function MarketRaster({
                 <span className="flex items-center gap-1">
                     <span className="size-1.5 rounded-full bg-ir" />
                     {t('marketdata.marketRegime.raster.ir')}
+                </span>
+                <span className="flex items-center gap-1">
+                    <span className="h-2 w-3 rounded-sm bg-ink/10" />
+                    {t('marketdata.marketRegime.raster.band')}
                 </span>
                 {marked === null ? null : (
                     <span className="flex items-center gap-1">
@@ -371,11 +391,17 @@ function RasterRow({
     seconds,
     now,
     markAt,
+    bands,
 }: {
     readonly feed: FeedRaster['feeds'][number];
     readonly seconds: number;
     readonly now: number;
     readonly markAt: number | undefined;
+    readonly bands: readonly {
+        readonly from: number;
+        readonly to: number;
+        readonly state: MarketState;
+    }[];
 }): ReactNode {
     const { t } = useTranslation();
     const positions = arrivalPositions(feed.ticks, seconds, now);
@@ -393,6 +419,18 @@ function RasterRow({
                 {feed.label}
             </span>
             <span className="relative h-2 flex-1">
+                {bands.map((band, bandAt) =>
+                    band.state === 'active' ? (
+                        <span
+                            key={bandAt}
+                            className="absolute inset-y-0 bg-ink/10"
+                            style={{
+                                left: `${String(band.from)}%`,
+                                width: `${String(band.to - band.from)}%`,
+                            }}
+                        />
+                    ) : null,
+                )}
                 {positions.map((position, index) => (
                     <span
                         key={index}

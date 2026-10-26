@@ -22,7 +22,7 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { FeedRaster, MarketRegime, MarketState, RegimeMode } from '../../api/client.js';
-import type { FactorSample } from './marketRaster.js';
+import type { StateSample } from './marketRaster.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import { MarketRegimePanel } from './MarketRegimeTab.js';
 
@@ -61,7 +61,7 @@ function render(
     pending?: RegimeMode,
     onPin: (mode: RegimeMode) => void = () => undefined,
     marked: { readonly at: number; readonly state: MarketState } | null = null,
-    factor: readonly FactorSample[] = [],
+    states: readonly StateSample[] = [],
 ): string {
     return renderToStaticMarkup(
         <TranslationProvider>
@@ -72,7 +72,7 @@ function render(
                 pending={pending}
                 error={null}
                 marked={marked}
-                factor={factor}
+                states={states}
                 onPin={onPin}
             />
         </TranslationProvider>,
@@ -152,18 +152,20 @@ describe('the market regime tab', () => {
         expect(html.match(/data-mark/g)).toHaveLength(2);
     });
 
-    it('draws the factor the market ran at above the arrivals', () => {
-        const html = render(regime(), raster(), undefined, undefined, null, [
-            { at: NOW - 50_000, multiplier: 0.5 },
-            { at: NOW - 10_000, multiplier: 2 },
-        ]);
-        expect(html).toContain('the market factor');
-        expect(html).toContain('×2');
+    it('draws how fast each class ticked above the arrivals', () => {
+        const html = render(regime());
+        expect(html).toContain('ticks a second, per feed');
         expect(html).toContain('<path');
+        expect(html).toContain('text-fx');
     });
 
-    it('draws no factor line before the tab has seen one', () => {
-        expect(render(regime(), raster())).not.toContain('the market factor');
+    it('draws the state as the band the arrivals sit on', () => {
+        const html = render(regime(), raster(), undefined, undefined, null, [
+            { at: NOW - 50_000, state: 'calm' },
+            { at: NOW - 10_000, state: 'active' },
+        ]);
+        expect(html).toContain('an active market');
+        expect(html).toContain('bg-ink/10');
     });
 
     it('marks where a switch landed', () => {

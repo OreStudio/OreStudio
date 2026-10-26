@@ -20,7 +20,13 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { arrivalPositions, factorPath, multiplierText } from './marketRaster.js';
+import {
+    arrivalPositions,
+    curvePath,
+    multiplierText,
+    rateCurves,
+    stateBands,
+} from './marketRaster.js';
 
 const NOW = Date.parse('2026-10-26T12:00:00Z');
 
@@ -71,40 +77,84 @@ describe('the multiplier as a screen writes it', () => {
     });
 });
 
-describe('the factor a market ran at', () => {
-    it('draws a step, not a slope, between two readings', () => {
-        // Calm at 0.5 from the left edge to halfway, then active at 2 from there.
-        const path = factorPath(
-            [
-                { at: NOW - 60_000, multiplier: 0.5 },
-                { at: NOW - 30_000, multiplier: 2 },
-            ],
-            60,
-            NOW,
-        );
-
-        // Calm sits at the foot and active at the top, because a larger factor is higher on the picture.
-        expect(path).toBe('M 0.00 1.000 H 50.00 V 0.000 H 100');
-    });
-
-    it('draws a flat line through the middle for a factor that never moved', () => {
+describe('the stretch a market held a state', () => {
+    it('draws a band from the left edge to the first reading, then a band per reading', () => {
         expect(
-            factorPath(
+            stateBands(
                 [
-                    { at: NOW - 60_000, multiplier: 2 },
-                    { at: NOW - 10_000, multiplier: 2 },
+                    { at: NOW - 60_000, state: 'calm' },
+                    { at: NOW - 30_000, state: 'active' },
                 ],
                 60,
                 NOW,
             ),
-        ).toBe('M 0.00 0.500 H 83.33 H 100');
+        ).toEqual([
+            { from: 0, to: 0, state: 'calm' },
+            { from: 0, to: 50, state: 'calm' },
+            { from: 50, to: 100, state: 'active' },
+        ]);
     });
 
-    it('draws nothing for a read older than the window', () => {
-        expect(factorPath([{ at: NOW - 120_000, multiplier: 2 }], 60, NOW)).toBe('');
+    it('draws nothing before the tab has seen a state', () => {
+        expect(stateBands([], 60, NOW)).toEqual([]);
     });
 
-    it('draws nothing before the first read', () => {
-        expect(factorPath([], 60, NOW)).toBe('');
+    it('draws nothing for a reading older than the window', () => {
+        expect(stateBands([{ at: NOW - 120_000, state: 'active' }], 60, NOW)).toEqual([]);
+    });
+});
+
+describe('how fast the market ticked', () => {
+    /** One feed a class, ticking once a second for a window of ten seconds. */
+    function everySecond(
+        assetClass: string,
+        running = true,
+    ): {
+        assetClass: string;
+        running: boolean;
+        ticks: string[];
+    } {
+        return {
+            assetClass,
+            running,
+            ticks: Array.from({ length: 10 }, (_, second) => at(10 - second)),
+        };
+    }
+
+    it('reads a feed that ticks once a second as one tick a second', () => {
+        const chart = rateCurves([everySecond('fx')], 10, NOW, 10);
+        expect(chart.curves).toEqual([{ assetClass: 'fx', points: new Array(10).fill(1) }]);
+        expect(chart.peak).toBe(1);
+    });
+
+    it('averages a class over the feeds that run, so a bigger class is not busier', () => {
+        const chart = rateCurves([everySecond('fx'), everySecond('fx')], 10, NOW, 10);
+        expect(chart.peak).toBe(1);
+    });
+
+    it('draws no curve for a class whose feeds are all stopped', () => {
+        expect(rateCurves([everySecond('fx', false)], 10, NOW, 10).curves).toEqual([]);
+    });
+
+    it('keeps a curve per asset class', () => {
+        const chart = rateCurves([everySecond('fx'), everySecond('interest_rates')], 10, NOW, 10);
+        expect(chart.curves.map((curve) => curve.assetClass).sort()).toEqual([
+            'fx',
+            'interest_rates',
+        ]);
+    });
+});
+
+describe('a rate curve as a path', () => {
+    it('draws a flat line at the foot for a curve with no rate', () => {
+        expect(curvePath([0, 0], 0)).toBe('M 25.00 1.000 L 75.00 1.000');
+    });
+
+    it('puts the peak at the top of the box', () => {
+        expect(curvePath([0, 2], 2)).toBe('M 25.00 1.000 L 75.00 0.000');
+    });
+
+    it('draws nothing for no points', () => {
+        expect(curvePath([], 1)).toBe('');
     });
 });

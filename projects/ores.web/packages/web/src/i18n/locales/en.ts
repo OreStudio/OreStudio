@@ -4587,8 +4587,9 @@ export const en: SourceCatalogue = {
             forced: 'forced',
             set: { auto: 'Auto', calm: 'Calm', active: 'Active' },
             raster: {
+                rate: 'ticks a second, per feed',
+                band: 'an active market',
                 stoppedFeeds: '{count} feeds that do not run',
-                factor: 'the market factor',
                 marked: 'the line is when the state was set: {state}',
                 stopped: 'stopped',
                 title: 'Every feed’s tick arrivals · last {seconds} seconds',

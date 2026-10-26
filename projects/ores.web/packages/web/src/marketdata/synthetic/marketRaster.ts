@@ -67,52 +67,142 @@ export function multiplierText(multiplier: number): string {
     return `×${multiplier.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 }
 
-/** The factor the feeds were scaled by, as one read of it saw it. */
-export interface FactorSample {
+/** The state the market was in, as one read of it saw it. */
+export interface StateSample {
     /** When the read landed. */
     readonly at: number;
-    /** The multiplier every feed's rate was scaled by then. */
-    readonly multiplier: number;
+    /** What the chain, or a person, held the market at then. */
+    readonly state: 'calm' | 'active';
+}
+
+/** One stretch of the window the market spent in a state, in the raster's units. */
+export interface StateBand {
+    readonly from: number;
+    readonly to: number;
+    readonly state: 'calm' | 'active';
 }
 
 /**
- * The path the factor traced over the window, as a step line, in the raster's
- * own units: 0 to 100 across and 0 to 1 up from the baseline.
+ * The stretches a market held each state over the window, in the raster's own
+ * units: 0 at the oldest edge and 100 at now.
  *
- * A step, because the factor holds a value and then changes it: a diagonal
- * between two readings would claim a value the market never had. The two ends of
- * the range are put at the top and the foot, so the shape of the change reads
- * even when a market only ever visits two values.
+ * A band, because the state holds and then changes: drawing it as a line would
+ * claim a value between the two that the chain never had. It is the background
+ * the arrivals sit on, so a reader sees what the market was doing while it
+ * ticked.
  */
-export function factorPath(samples: readonly FactorSample[], seconds: number, now: number): string {
+export function stateBands(
+    samples: readonly StateSample[],
+    seconds: number,
+    now: number,
+): readonly StateBand[] {
     const span = seconds * 1000;
-    if (span <= 0) {
-        return '';
+    if (span <= 0 || samples.length === 0) {
+        return [];
     }
     const placed = samples
         .filter((sample) => now - sample.at <= span)
-        .map((sample) => ({
-            x: 100 * (1 - (now - sample.at) / span),
-            value: sample.multiplier,
-        }))
+        .map((sample) => ({ x: 100 * (1 - (now - sample.at) / span), state: sample.state }))
         .sort((left, right) => left.x - right.x);
+    if (placed.length === 0) {
+        return [];
+    }
+    const bands: StateBand[] = [];
     const first = placed[0];
     if (first === undefined) {
+        return [];
+    }
+    bands.push({ from: 0, to: first.x, state: first.state });
+    for (let i = 0; i < placed.length; i += 1) {
+        const here = placed[i];
+        const next = placed[i + 1];
+        if (here === undefined) {
+            continue;
+        }
+        bands.push({ from: here.x, to: next === undefined ? 100 : next.x, state: here.state });
+    }
+    return bands;
+}
+
+/** One asset class's arrival rate over the window, in ticks a second per feed. */
+export interface RateCurve {
+    readonly assetClass: string;
+    /** The rate at the middle of each bin, oldest first. */
+    readonly points: readonly number[];
+}
+
+/** What the rate curves show: a line for each asset class, and the peak they reach. */
+export interface RateChart {
+    readonly curves: readonly RateCurve[];
+    readonly peak: number;
+}
+
+/**
+ * How fast each asset class's feeds ticked, bin by bin, in ticks a second per
+ * feed.
+ *
+ * A rate, because that is the variable a market-wide factor moves: the dot rows
+ * below say when each tick happened, and this says how fast they came. The mean
+ * is per feed, so a class with more feeds does not look busier than one with
+ * fewer.
+ */
+export function rateCurves(
+    feeds: readonly {
+        readonly assetClass: string;
+        readonly running: boolean;
+        readonly ticks: readonly string[];
+    }[],
+    seconds: number,
+    now: number,
+    bins = 48,
+): RateChart {
+    const span = seconds * 1000;
+    if (span <= 0 || bins <= 0) {
+        return { curves: [], peak: 0 };
+    }
+    const start = now - span;
+    const binMs = span / bins;
+    const byClass = new Map<string, { running: number; counts: number[] }>();
+    for (const feed of feeds) {
+        if (!feed.running) {
+            continue;
+        }
+        const held = byClass.get(feed.assetClass) ?? {
+            running: 0,
+            counts: new Array<number>(bins).fill(0),
+        };
+        held.running += 1;
+        for (const tick of feed.ticks) {
+            const at = Date.parse(tick);
+            if (!Number.isFinite(at) || at < start || at > now) {
+                continue;
+            }
+            const bin = Math.min(bins - 1, Math.floor((at - start) / binMs));
+            held.counts[bin] = (held.counts[bin] ?? 0) + 1;
+        }
+        byClass.set(feed.assetClass, held);
+    }
+    const curves: RateCurve[] = [];
+    let peak = 0;
+    for (const [assetClass, held] of byClass) {
+        const points = held.counts.map((count) => count / held.running / (binMs / 1000));
+        peak = Math.max(peak, ...points);
+        curves.push({ assetClass, points });
+    }
+    return { curves, peak };
+}
+
+/** The path a curve draws in the raster's own units: 0 to 100 across, 0 to 1 up. */
+export function curvePath(points: readonly number[], peak: number): string {
+    if (points.length === 0) {
         return '';
     }
-    const values = placed.map((point) => point.value);
-    const low = Math.min(...values);
-    const high = Math.max(...values);
-    // Up the box is a larger factor, and the drawing's y runs down.
-    const y = (value: number): number => (high === low ? 0.5 : 1 - (value - low) / (high - low));
-    let path = `M ${first.x.toFixed(2)} ${y(first.value).toFixed(3)}`;
-    let previous = first.value;
-    for (const point of placed.slice(1)) {
-        path += ` H ${point.x.toFixed(2)}`;
-        if (point.value !== previous) {
-            path += ` V ${y(point.value).toFixed(3)}`;
-            previous = point.value;
-        }
-    }
-    return `${path} H 100`;
+    const scale = peak <= 0 ? 0 : 1 / peak;
+    return points
+        .map((value, index) => {
+            const x = ((index + 0.5) / points.length) * 100;
+            const y = 1 - value * scale;
+            return `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(3)}`;
+        })
+        .join(' ');
 }

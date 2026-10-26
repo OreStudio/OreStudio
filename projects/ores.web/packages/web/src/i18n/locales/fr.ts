@@ -4634,9 +4634,45 @@ const fr: SourceCatalogue = {
             decayHelp:
                 'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, en unités de un sur une seconde.',
             market: 'Marché maintenant : {state}. Il se lit ici et se règle dans l’onglet Régime de marché.',
-            marketUnknown: 'l’onglet Régime de marché n’est pas encore branché',
+            marketUnknown: 'l’état du marché n’est pas lisible pour le moment',
             unsaved: 'Modifications non enregistrées',
             reasonCode: 'system.update',
+        },
+        marketRegime: {
+            title: 'Régime de marché',
+            lead: 'L’état par lequel le rythme de chaque flux est mis à l’échelle. Il appartient au run, donc il se règle ici et non sur un flux : le regroupement propre à un flux se règle dans son onglet Arrivées.',
+            state: 'État',
+            states: { calm: 'Calme', active: 'Actif' },
+            multiplier: 'Multiplicateur',
+            heldBy: 'Défini par',
+            pinned: 'Une personne, et il tient jusqu’à ce qu’on le rende',
+            chain: 'La chaîne, qui tourne seule',
+            force: 'Forcer l’état',
+            forced: 'forcé',
+            set: { auto: 'Auto', calm: 'Calme', active: 'Actif' },
+            charts: {
+                title: 'Le facteur sur la fenêtre',
+            },
+            raster: {
+                seen: 'vus',
+                asked: 'demandé',
+                heat: 'la chaleur partagée',
+                rate: 'ticks par seconde, par flux',
+                band: 'un marché actif',
+                heatParams:
+                    'un événement ajoute {jump} de chaleur, qui s’estompe à {decay} par seconde',
+                stoppedFeeds: '{count} flux qui ne tournent pas',
+                marked: 'la ligne est le moment où l’état a été fixé : {state}',
+                stopped: 'arrêté',
+                fx: 'FX',
+                ir: 'Taux d’intérêt',
+                now: 'maintenant',
+                title: 'Arrivées de ticks de chaque flux · {seconds} dernières secondes',
+                label: 'Arrivées de ticks de chaque flux, les flux en cours d’abord',
+                none: 'Il n’y a aucun flux à dessiner. Un flux dessine une ligne dès qu’il existe, et la ligne dit s’il tourne.',
+                warming:
+                    'Une ligne se remplit à chaque tick du flux : la liste commence à l’ouverture de cet onglet.',
+            },
         },
         fxFeeds: {
             add: 'Ajouter',
@@ -4666,7 +4702,11 @@ const fr: SourceCatalogue = {
         synthetic: {
             title: 'Synthétique',
             lead: "Les données de marché que la plateforme génère au lieu de les recevoir : ce qui tourne par fournisseur, et les flux d'un fournisseur.",
-            tabs: { dashboard: 'Tableau de bord', provider: 'Fournisseur' },
+            tabs: {
+                dashboard: 'Tableau de bord',
+                provider: 'Fournisseur',
+                regime: 'Régime de marché',
+            },
             state: { serving: 'En service', running: 'En cours', stopped: 'Arrêté' },
             dashboard: {
                 none: "Il n'y a pas encore de flux. Un jeu de données de flux synthétiques publié pour votre partie remplit cet écran.",

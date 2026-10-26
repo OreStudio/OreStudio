@@ -29,6 +29,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
+#include "ores.synthetic.api/feeds/feed_seed.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include "ores.synthetic.api/feeds/vintage_lookup.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -71,7 +72,8 @@ ir_curve_feed::ir_curve_feed(
     , currency_code_(std::move(currency_code))
     , role_(std::move(role))
     , process_(std::move(process))
-    , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(arrival))
+    , arrivals_(ores::analytics::quant::service::process_factory::make_arrival_process(
+          arrival, ores::synthetic::feed::arrival_seed_for(source_name_)))
     , clock_(*arrivals_, link)
     , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
     , intensity_(link.intensity)
@@ -168,6 +170,23 @@ std::string ir_curve_feed::tick(double elapsed_seconds) {
         const auto& e = entries_[i];
         const auto value = std::format("{}", price_ir_curve_entry(*process_, e));
 
+        // Each market tick names one pillar: the datum built at construction from the entry's own
+        // dates and the index tenor, so the series it lands in carries the instrument's identity
+        // rather than the pipeline's vocabulary. It goes out before the adapter branch, as a spot
+        // feed's does, because a screen reads this copy: a pillar served by an adapter is still a
+        // pillar the feed published, and dropping its market tick left the feed silent on every
+        // screen while its ticks were stored.
+        {
+            ores::marketdata::messaging::market_tick shown;
+            shown.oresmd_uri = datum_uris_[i];
+            shown.value = value;
+            shown.observation_time = now;
+            shown.source = source_name_;
+
+            const auto shown_encoded = ores::nats::default_wire_codec().encode(shown);
+            nats_.publish(display_subject_, shown_encoded);
+        }
+
         // A pillar that serves an adapter publishes the adapter's own tick under the pillar's
         // vendor id, as an adapter of a live provider does. The service maps the id to its datum
         // and finds the parties, so the tick names neither.
@@ -190,18 +209,14 @@ std::string ir_curve_feed::tick(double elapsed_seconds) {
             continue;
         }
 
-        // Each market tick names one pillar: the datum built at construction from the entry's own
-        // dates and the index tenor, so the series it lands in carries the instrument's identity
-        // rather than the pipeline's vocabulary.
+        // A pillar no adapter serves still goes to the market as a tick of its own.
         ores::marketdata::messaging::market_tick tick;
         tick.oresmd_uri = datum_uris_[i];
         tick.value = value;
         tick.observation_time = now;
         tick.source = source_name_;
 
-        const auto encoded = ores::nats::default_wire_codec().encode(tick);
-        nats_.publish(nats_subject_, encoded);
-        nats_.publish(display_subject_, encoded);
+        nats_.publish(nats_subject_, ores::nats::default_wire_codec().encode(tick));
     }
     return std::to_string(entries_.size());
 }

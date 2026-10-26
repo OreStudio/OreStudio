@@ -399,6 +399,52 @@ const feedFolderSchema = z.object({
 /** A folder of the feed hierarchy, with how many feeds of each kind it holds. */
 export type FeedFolder = z.infer<typeof feedFolderSchema>;
 
+/** The states the market chain has. A state the screen does not know is a reply it does not read. */
+const marketStateSchema = z.enum(['calm', 'active']);
+
+/** One reading of the shared heat, as the service took it. */
+const heatSampleSchema = z.object({
+    at: z.string(),
+    heat: z.number(),
+});
+
+/** The market-wide arrival factor in force: what a screen shows and a switch forces. */
+const marketRegimeSchema = z.object({
+    state: marketStateSchema,
+    multiplier: z.number(),
+    pinned: z.boolean(),
+    /** The endogenous half: the heat now, the two numbers that move it, and its readings. */
+    heat: z.number(),
+    jump: z.number(),
+    decay: z.number(),
+    samples: z.array(heatSampleSchema),
+});
+
+export type MarketRegime = z.infer<typeof marketRegimeSchema>;
+export type MarketState = z.infer<typeof marketStateSchema>;
+
+/** What the market switch may force: a state, or control handed back to the chain. */
+export const REGIME_MODES = ['auto', 'calm', 'active'] as const;
+export type RegimeMode = (typeof REGIME_MODES)[number];
+
+/** One row of the raster: a feed, whether it runs, and when its ticks arrived. */
+const feedRasterSchema = z.object({
+    seconds: z.number(),
+    feeds: z.array(
+        z.object({
+            sourceName: z.string(),
+            label: z.string(),
+            assetClass: z.string(),
+            running: z.boolean(),
+            ticks: z.array(z.string()),
+            /** The rate the feed's own configuration asks for, in ticks a second. */
+            expectedPerSecond: z.number(),
+        }),
+    ),
+});
+
+export type FeedRaster = z.infer<typeof feedRasterSchema>;
+
 const folderFeedSchema = z.object({
     id: z.string(),
     kind: z.string(),
@@ -2162,6 +2208,45 @@ export const api = {
                     { method: 'GET' },
                 ),
             );
+    },
+
+    /**
+     * The market-wide arrival factor in force. The factor belongs to the run, so
+     * this is one read for the whole screen and not a value of any feed.
+     */
+    async marketRegime(): Promise<MarketRegime> {
+        return marketRegimeSchema.parse(
+            await request('/api/synthetic/market-regime', { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Forces the market state, or hands it back to the chain. The answer is the
+     * regime the service says is in force after the request, not what was asked.
+     */
+    async pinMarketRegime(mode: RegimeMode): Promise<MarketRegime> {
+        return marketRegimeSchema.parse(
+            await request('/api/synthetic/market-regime', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ mode }),
+            }),
+        );
+    },
+
+    /**
+     * When the ticks of every running feed arrived in the last window, one row
+     * per feed, oldest first. The rows are the feeds the service says run.
+     */
+    async feedRaster(input: { readonly seconds: number }): Promise<FeedRaster> {
+        return feedRasterSchema.parse(
+            await request(
+                `/api/synthetic/feed-raster?${new URLSearchParams({
+                    seconds: String(input.seconds),
+                }).toString()}`,
+                { method: 'GET' },
+            ),
+        );
     },
 
     /** The materialised days of one calendar in one year. */

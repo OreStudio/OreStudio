@@ -84,12 +84,32 @@ using ores::analytics::quant::service::periodic_arrival_process;
 using ores::analytics::quant::service::poisson_arrival_process;
 
 TEST_CASE("the periodic process returns the gap its mean rate asks for", tags) {
-    periodic_arrival_process per_second(4.0);
+    periodic_arrival_process per_second(4.0, 1);
+    const auto first = per_second.next_gap();
+    CHECK(first > 0.0);
+    CHECK(first <= Catch::Approx(0.25));
     CHECK(per_second.next_gap() == Catch::Approx(0.25));
     CHECK(per_second.next_gap() == Catch::Approx(0.25));
 
-    periodic_arrival_process every_two_seconds(0.5);
+    periodic_arrival_process every_two_seconds(0.5, 2);
+    CHECK(every_two_seconds.next_gap() <= Catch::Approx(2.0));
     CHECK(every_two_seconds.next_gap() == Catch::Approx(2.0));
+}
+
+TEST_CASE("two periodic processes of one rate do not start in step", tags) {
+    // The first gap is a draw, so feeds of one rate spread over their own gap
+    // instead of firing on one step of the shared clock.
+    periodic_arrival_process one(60.0, 11);
+    periodic_arrival_process other(60.0, 12);
+
+    CHECK(one.next_gap() != Catch::Approx(other.next_gap()));
+}
+
+TEST_CASE("a periodic process keeps its mean rate after its phase is drawn", tags) {
+    periodic_arrival_process process(1000.0, 7);
+    // 200k gaps put the sample mean within a fraction of a percent: the one
+    // drawn gap is a phase, not a change of rate.
+    CHECK(mean_gap(process, 200000) == Catch::Approx(0.001).epsilon(0.02));
 }
 
 TEST_CASE("the poisson process draws gaps at its mean rate", tags) {
@@ -193,10 +213,12 @@ TEST_CASE("the arrival rules refuse what cannot work", tags) {
 TEST_CASE("the factory converts ticks per hour to the process unit and refuses a bad mode", tags) {
     const auto hourly =
         ores::analytics::quant::service::process_factory::make_arrival_process("periodic", 3600.0);
+    CHECK(hourly->next_gap() <= Catch::Approx(1.0));
     CHECK(hourly->next_gap() == Catch::Approx(1.0));
 
     const auto half_hourly =
         ores::analytics::quant::service::process_factory::make_arrival_process("periodic", 7200.0);
+    CHECK(half_hourly->next_gap() <= Catch::Approx(0.5));
     CHECK(half_hourly->next_gap() == Catch::Approx(0.5));
 
     CHECK_THROWS_AS(
@@ -213,6 +235,7 @@ TEST_CASE("the factory builds what a spec names", tags) {
 
     const auto periodic = process_factory::make_arrival_process(
         arrival_spec{.mode = "periodic", .ticks_per_hour = 3600.0});
+    CHECK(periodic->next_gap() <= Catch::Approx(1.0));
     CHECK(periodic->next_gap() == Catch::Approx(1.0));
 
     const auto hawkes = process_factory::make_arrival_process(arrival_spec{
@@ -233,8 +256,8 @@ TEST_CASE("a market-wide factor scales the baseline of every process", tags) {
 
     // The periodic gap is the reciprocal of the rate, so twice the rate is half
     // the gap.
-    periodic_arrival_process periodic(2.0);
-    REQUIRE(periodic.next_gap() == Catch::Approx(0.5));
+    periodic_arrival_process periodic(2.0, 3);
+    REQUIRE(periodic.next_gap() <= Catch::Approx(0.5));
     periodic.set_baseline_multiplier(2.0);
     CHECK(periodic.next_gap() == Catch::Approx(0.25));
     periodic.set_baseline_multiplier(1.0);

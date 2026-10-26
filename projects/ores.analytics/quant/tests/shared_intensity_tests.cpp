@@ -23,6 +23,7 @@
 #include <atomic>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <cmath>
 #include <random>
 #include <stdexcept>
@@ -87,6 +88,40 @@ TEST_CASE("shared_intensity keeps every event under concurrency", "[shared_inten
     owner.join();
 
     CHECK(heat.excess() == Catch::Approx(static_cast<double>(threads * per_thread)).epsilon(1e-9));
+}
+
+TEST_CASE("shared_intensity keeps a reading of what it faded", "[shared_intensity]") {
+    shared_intensity heat(0.5, 20.0);
+    REQUIRE(heat.reading_count() == 0);
+
+    heat.record_event();
+    heat.fade(0.1);
+
+    REQUIRE(heat.reading_count() == 1);
+    const auto readings = heat.readings_since(std::chrono::system_clock::time_point{});
+    REQUIRE(readings.size() == 1);
+    CHECK(readings.front().heat == Catch::Approx(0.5 * std::exp(-2.0)).epsilon(1e-9));
+}
+
+TEST_CASE("shared_intensity reads no faster than its period", "[shared_intensity]") {
+    shared_intensity heat(0.5, 20.0);
+
+    heat.fade(0.01);
+    heat.fade(0.01);
+
+    // Two fades inside one period are one reading: the history is a picture of
+    // the heat, not a copy of every fade.
+    CHECK(heat.reading_count() == 1);
+}
+
+TEST_CASE("shared_intensity reports the readings from an instant on", "[shared_intensity]") {
+    shared_intensity heat(0.5, 20.0);
+    heat.record_event();
+    heat.fade(0.1);
+
+    const auto now = std::chrono::system_clock::now();
+    CHECK(heat.readings_since(now).empty());
+    CHECK(heat.readings_since(now - std::chrono::minutes(1)).size() == 1);
 }
 
 TEST_CASE("shared_intensity refuses parameters that cannot describe heat", "[shared_intensity]") {

@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 9FCC8373-00BD-4235-ADEE-9BF25345487A
+:END:
+#+title: A curve feed that serves an adapter publishes no display tick
+#+description: The market regime raster draws a row for every running feed and reads each feed's ticks from its display subject. An IR curve feed whose pillars are all served by an adapter publishes nothing there: its tick loop publishes the adapter's tick and continues before the display publish, so the feed's row is empty on the raster and its Ticks tab shows nothing, while the ticks are stored.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+An IR curve feed publishes one display tick for each pillar it prices, and skips
+that publish for any pillar an adapter serves: the loop sends the adapter's own
+tick and then continues to the next pillar. A curve whose pillars are all served
+by an adapter therefore publishes nothing on its display subject at all, while
+its ticks are stored and its adapter is served. An FX feed publishes its display
+tick before the adapter branch and is not affected.
+
+* Why
+
+Screens that tail a feed's display subject show such a feed as silent while it
+is running and storing ticks. The market regime raster gives every running feed
+a row, and 20 of the 24 IR curve rows on a demo environment are empty for this
+reason. The Ticks tab of a curve feed has the same gap, and has had it since the
+tab was written, so the defect predates the raster.
+
+The tick loop is in
+=projects/ores.synthetic/api/src/feeds/ir_curve_feed.cpp=. The display subject
+is =feed_display_subject_for(source_name)= in
+=ores.marketdata.api/domain/tick_subjects.hpp=.
+
+* References
+
+- Measured on =prime_origin=, 2026-10-26, at =dd4af2b9ca=: 20 ticks in four
+  minutes for each =oresmd://ir/...= series in
+  =ores_marketdata_ticks_tbl=, and no marks on those rows of the raster.
+- The log of =ores.web.service= holds no message that failed to parse, so the
+  ticks are not arriving unreadable; they are not sent.
+
+* See also
+
+- [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]]

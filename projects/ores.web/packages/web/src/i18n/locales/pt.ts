@@ -4601,9 +4601,45 @@ const pt: SourceCatalogue = {
             decayHelp:
                 'Apenas Hawkes: com que rapidez uma rajada desaparece, em unidades de um por segundo.',
             market: 'Mercado agora: {state}. Lê-se aqui e define-se no separador Regime de mercado.',
-            marketUnknown: 'o separador Regime de mercado ainda não está ligado',
+            marketUnknown: 'o estado do mercado não está legível agora',
             unsaved: 'Alterações por guardar',
             reasonCode: 'system.update',
+        },
+        marketRegime: {
+            title: 'Regime de mercado',
+            lead: 'O estado pelo qual a taxa de cada fluxo é escalada. Pertence à execução, por isso define-se aqui e não num fluxo: o agrupamento próprio de um fluxo está no seu separador Chegadas.',
+            state: 'Estado',
+            states: { calm: 'Calmo', active: 'Ativo' },
+            multiplier: 'Multiplicador',
+            heldBy: 'Definido por',
+            pinned: 'Uma pessoa, e mantém-se até ser devolvido',
+            chain: 'A cadeia, a girar sozinha',
+            force: 'Forçar o estado',
+            forced: 'forçado',
+            set: { auto: 'Auto', calm: 'Calmo', active: 'Ativo' },
+            charts: {
+                title: 'O fator ao longo da janela',
+            },
+            raster: {
+                seen: 'vistos',
+                asked: 'pedido',
+                heat: 'o calor partilhado',
+                rate: 'ticks por segundo, por fluxo',
+                band: 'um mercado ativo',
+                heatParams:
+                    'um evento acrescenta {jump} de calor, que se desvanece a {decay} por segundo',
+                stoppedFeeds: '{count} fluxos que não correm',
+                marked: 'a linha é o momento em que o estado foi definido: {state}',
+                stopped: 'parado',
+                fx: 'FX',
+                ir: 'Taxa de juro',
+                now: 'agora',
+                title: 'Chegadas de ticks de cada fluxo · últimos {seconds} segundos',
+                label: 'Chegadas de ticks de cada fluxo, os fluxos em execução primeiro',
+                none: 'Não há fluxos para desenhar. Um fluxo desenha uma linha quando existe, e a linha diz se corre.',
+                warming:
+                    'Uma linha enche-se à medida que o fluxo marca ticks: a lista começa quando este separador abre.',
+            },
         },
         fxFeeds: {
             add: 'Adicionar',
@@ -4632,7 +4668,7 @@ const pt: SourceCatalogue = {
         synthetic: {
             title: 'Sintético',
             lead: 'Os dados de mercado que a plataforma gera em vez de receber: o que corre por fornecedor, e os feeds de um fornecedor.',
-            tabs: { dashboard: 'Painel', provider: 'Fornecedor' },
+            tabs: { dashboard: 'Painel', provider: 'Fornecedor', regime: 'Regime de mercado' },
             state: { serving: 'A servir', running: 'A correr', stopped: 'Parado' },
             dashboard: {
                 none: 'Ainda não há feeds. Um conjunto de dados de feeds sintéticos publicado para a sua parte preenche este ecrã.',

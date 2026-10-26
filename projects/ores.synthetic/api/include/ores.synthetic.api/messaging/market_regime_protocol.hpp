@@ -19,8 +19,10 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_MARKET_REGIME_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_MARKET_REGIME_PROTOCOL_HPP
 
+#include <chrono>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::synthetic::messaging {
 
@@ -35,7 +37,23 @@ struct get_market_regime_request {
 };
 
 /**
+ * @brief One reading of the endogenous half of the factor: the shared heat.
+ */
+struct market_regime_sample {
+    /** @brief When the service took the reading. */
+    std::chrono::system_clock::time_point at;
+    /** @brief The shared heat then, in units of a rate: what any event adds and decay fades. */
+    double heat = 0.0;
+};
+
+/**
  * @brief The factor in force: its state, its multiplier and whether a scenario pinned it.
+ *
+ * The heat is the endogenous half, and it is the internal state jump and decay
+ * act on: a screen that wants to show the process rather than its outcome reads
+ * these readings, which the service takes a few times a second as it fades the
+ * heat. The jump and the decay are carried beside them, so a reader can say what
+ * the curve means without knowing the configuration.
  */
 struct get_market_regime_response {
     bool success = false;
@@ -46,6 +64,14 @@ struct get_market_regime_response {
     double multiplier = 1.0;
     /** @brief Whether a scenario pinned the state rather than the chain choosing it. */
     bool pinned = false;
+    /** @brief The heat in force now. */
+    double heat = 0.0;
+    /** @brief The heat one event adds, in units of a rate. */
+    double jump = 0.0;
+    /** @brief How fast the heat fades, in units of one over a second. */
+    double decay = 0.0;
+    /** @brief The heat's readings, oldest first, over the window the service keeps. */
+    std::vector<market_regime_sample> samples;
 };
 
 /**

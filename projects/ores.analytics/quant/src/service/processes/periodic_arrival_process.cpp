@@ -20,6 +20,7 @@
 // doc/knowledge/external/tick.org.
 #include "ores.analytics.quant/service/processes/periodic_arrival_process.hpp"
 #include <cmath>
+#include <random>
 #include <stdexcept>
 
 namespace ores::analytics::quant::service {
@@ -37,11 +38,21 @@ double checked_rate(double mean_rate) {
 
 }
 
-periodic_arrival_process::periodic_arrival_process(double mean_rate)
+periodic_arrival_process::periodic_arrival_process(double mean_rate, std::uint32_t seed)
     : mean_rate_(checked_rate(mean_rate))
-    , gap_(1.0 / mean_rate_) {}
+    , gap_(1.0 / mean_rate_) {
+    // A quarter turn would still leave four feeds in step; the phase is drawn, so
+    // two feeds of one rate are as likely to be a whole gap apart as a hair.
+    std::mt19937 rng(seed);
+    std::uniform_real_distribution<double> uniform(0.0, 1.0);
+    phase_ = uniform(rng);
+}
 
 double periodic_arrival_process::next_gap() {
+    if (first_) {
+        first_ = false;
+        return gap_ * phase_;
+    }
     return gap_;
 }
 

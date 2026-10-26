@@ -159,6 +159,8 @@ private:
     /// The heat this feed adds to when it ticks, or null for a run with no
     /// endogenous factor.
     ores::analytics::quant::domain::shared_intensity* intensity_;
+    /// This feed's rate in the population the heat is shared over, while the feed lives.
+    ores::analytics::quant::domain::shared_intensity::enrolment enrolment_;
     /// The row's rate, which a scheduler needs to re-arm this series.
     ores::analytics::quant::domain::arrival_spec arrival_;
     /// The factors this feed follows.

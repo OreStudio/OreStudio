@@ -23,6 +23,7 @@
 #include <cmath>
 #include <cstdint>
 #include <stdexcept>
+#include <utility>
 
 namespace ores::analytics::quant::domain {
 
@@ -38,6 +39,14 @@ namespace ores::analytics::quant::domain {
  * That is what makes a panic spread rather than be switched on: a cluster in one
  * series raises every other series' rate, which produces more events, which
  * raises it further, until the decay wins.
+ *
+ * *The heat is shared out, not handed to everyone.* C is an excess event rate for
+ * the whole market. Each series enrols its mean rate while it runs, and takes the
+ * share of C its rate is of the enrolled total R, so the market's event rate is
+ * its base rate plus C whatever the number of series. The loop gain is then
+ * jump/decay, and the heat settles while that is below one. Handing every series
+ * the whole of C would multiply the gain by the number of series, and the heat
+ * would run away once that number passed decay/jump.
  *
  * *Reads are one atomic load.* A feed asks for the value on every tick, so the
  * heat is a single relaxed atomic and readers do nothing else. The decay is
@@ -71,6 +80,79 @@ public:
     /// @brief The intensity in force now. One atomic load, the tick-path read.
     [[nodiscard]] double value() const {
         return excess_.load(std::memory_order_relaxed);
+    }
+
+    /**
+     * @brief A series' place in the population the heat is shared over.
+     *
+     * Holds the series' mean rate in the enrolled total for as long as it lives,
+     * so the total follows the series that are running.
+     */
+    class enrolment final {
+    public:
+        enrolment() = default;
+
+        enrolment(enrolment&& other) noexcept
+            : owner_(std::exchange(other.owner_, nullptr))
+            , mean_rate_(other.mean_rate_) {}
+
+        enrolment& operator=(enrolment&& other) noexcept {
+            if (this != &other) {
+                release();
+                owner_ = std::exchange(other.owner_, nullptr);
+                mean_rate_ = other.mean_rate_;
+            }
+            return *this;
+        }
+
+        enrolment(const enrolment&) = delete;
+        enrolment& operator=(const enrolment&) = delete;
+
+        ~enrolment() {
+            release();
+        }
+
+    private:
+        friend class shared_intensity;
+
+        enrolment(shared_intensity& owner, double mean_rate)
+            : owner_(&owner)
+            , mean_rate_(mean_rate) {
+            owner_->add_rate(mean_rate_);
+        }
+
+        void release() noexcept {
+            if (owner_ != nullptr)
+                owner_->add_rate(-mean_rate_);
+            owner_ = nullptr;
+        }
+
+        shared_intensity* owner_ = nullptr;
+        double mean_rate_ = 0.0;
+    };
+
+    /**
+     * @brief Enrol a series that runs at @p mean_rate arrivals a second.
+     */
+    [[nodiscard]] enrolment enrol(double mean_rate) {
+        if (!std::isfinite(mean_rate) || mean_rate <= 0.0)
+            throw std::invalid_argument(
+                "shared_intensity: mean_rate must be finite and strictly positive");
+        return enrolment(*this, mean_rate);
+    }
+
+    /// @brief The summed mean rate of the enrolled series, per second.
+    [[nodiscard]] double population_rate() const {
+        return population_rate_.load(std::memory_order_relaxed);
+    }
+
+    /**
+     * @brief What the heat adds to every enrolled series' multiplier: the heat over
+     * the enrolled total, so each series takes the share its rate is of it.
+     */
+    [[nodiscard]] double rate_share() const {
+        const double rate = population_rate();
+        return rate > 0.0 ? value() / rate : 0.0;
     }
 
     /// @brief The heat one event adds.
@@ -126,9 +208,14 @@ public:
     }
 
 private:
+    void add_rate(double delta) {
+        population_rate_.fetch_add(delta, std::memory_order_relaxed);
+    }
+
     const double jump_;
     const double decay_;
     std::atomic<double> excess_{0.0};
+    std::atomic<double> population_rate_{0.0};
 };
 
 }

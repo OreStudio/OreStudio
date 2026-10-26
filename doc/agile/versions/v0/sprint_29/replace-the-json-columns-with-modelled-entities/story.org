@@ -8,7 +8,7 @@
 #+filetags: :sprint_29:v0:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Eight columns in the trading models hold JSON blobs where the domain should hold
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -36,7 +36,7 @@ Eight columns in the trading models hold JSON blobs where the domain should hold
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:67FD016B-EFFD-4DCC-AEDD-0061435AA735][Model the basket constituents]] | BACKLOG | | | Four trading entities hold their baskets, prices, barriers and levels as JSON blobs. This replaces the basket blob with constituent rows that say what kind each constituent is and which vocabulary it belongs to, so a mixed basket is representable and a constituent can be checked against the catalogue it names. |
+| [[id:67FD016B-EFFD-4DCC-AEDD-0061435AA735][Model the basket constituents]] | STARTED | 2026-10-26 | | Four trading entities hold their baskets, prices, barriers and levels as JSON blobs. This replaces the basket blob with constituent rows that say what kind each constituent is and which vocabulary it belongs to, so a mixed basket is representable and a constituent can be checked against the catalogue it names. |
 
 * Decisions
 

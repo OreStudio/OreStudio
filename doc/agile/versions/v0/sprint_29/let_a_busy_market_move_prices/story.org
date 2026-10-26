@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: DD8CBFD8-F241-43A3-92B7-226FC9D3328E
+:END:
+#+title: Story: Let a busy market move prices, not only the clock
+#+description: The market-wide arrival factor speeds up ticks today and leaves the price law alone: a panic arrives as more observations rather than as more variance, fatter tails or a gap. Carry the same shared factor into the price processes, with a volatility loading per feed, and settle whether a rate change moves time at all.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A busy market moves prices, not only the clock. When the shared factor rises, a
+series' returns grow wider, its tails fatten and its path can gap, and when it
+falls the series quietens — so a panic pinned for a demonstration looks like a
+panic and not like the same random walk sampled faster.
+
+The factor is the one the arrival work already carries. This story decides what
+of it reaches a price law, and settles one question the arrival work left open:
+whether a higher tick rate changes how much time the price process covers.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Scoped by the discussion that closed the arrival regime story. |
+| Waiting on    | The design note, so the tasks are scoped from it rather than from a conversation. |
+| Next          | Document the market's volatility channel, then raise the three tasks it names. |
+| Last touched  | 2026-10-26                               |
+
+* Acceptance
+
+- A change in the tick rate changes how often a series is observed and not how
+  much time its process covers: variance per wall-clock second is invariant under
+  the rate factor, measured on a long run.
+- A series' volatility follows the shared factor through its own loading, and the
+  long-run sigma of a run is the sigma its configuration states unless a state is
+  pinned.
+- A pinned active market raises the sigma a series realizes, and calm lowers it,
+  by the loading the feed carries.
+- The factor reaches the tails: the kurtosis of returns rises with activity while
+  the mean and the long-run sigma stay calibrated.
+- The control plane is the one that exists: the same switch, the same tab, and
+  one number per feed beside its sensitivity. No new verb and no new service.
+- Each part states the test that proves it, and the note says which of the two
+  meanings of volatility a test measures: the process's own sigma, or the sigma a
+  client computes from the ticks published.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FE158821-22B9-4FDB-9E77-256BA2CF3D4E][Document the market's volatility channel]] | BACKLOG | | | Write the design note the volatility work is built from: what the factor does to a price law, business time against sampling, the volatility loading and its normalisation, the tail channel through the mixture, and the bivariate Hawkes whose one coordinate is today's heat. State the control plane, the tests each part must pass, and what is deliberately out of scope. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Notes
+
+The three pieces the note has to scope, in the order they should land:
+
+1. *A rate change changes sampling, not time.* Today a process that takes one
+   nominal step per tick gains variance per wall-clock second when the rate
+   rises, because more steps fit in the second. A process with a time-scaled law
+   does not, because it takes the gap. That inconsistency is a defect, and the
+   volatility work would otherwise be built on it.
+2. *A volatility loading on the same factor.* The pieces are small and already
+   have their shape: a setter on the price process mirroring the arrival
+   process's =set_baseline_multiplier=, a =volatility_sensitivity= beside
+   =sensitivity= on the link and on both generation-config kinds, and one line in
+   each feed. The cost is calibration, not plumbing.
+3. *The tails.* An FX feed's law is a Gaussian mixture, so activity can reweight
+   the wide components: a panic should fatten tails, not only speed a random
+   walk.
+
+Out of scope, and captured rather than scoped: activity and volatility as two
+mutually exciting coordinates — a bivariate Hawkes whose one coordinate is
+today's heat — with the 2x2 kernel and the spectral-radius stability condition
+that replaces the rank-one test.
+
+See [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]]
+for the factor this builds on.

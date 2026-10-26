@@ -20,8 +20,8 @@
 #ifndef ORES_SYNTHETIC_SERVICE_REGISTRAR_HPP
 #define ORES_SYNTHETIC_SERVICE_REGISTRAR_HPP
 
-#include "feed_controller.hpp"
 #include "feed_kind_registry.hpp"
+#include "generator_fleet.hpp"
 #include "ores.analytics.quant/domain/market_regime.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.database/domain/context.hpp"
@@ -40,9 +40,10 @@ namespace ores::synthetic::service {
  * @brief Registers NATS handlers for the synthetic feed control plane.
  *
  * Wires:
- *   synthetic.v1.ops.start_feed  — starts a feed by config_id, any registered kind (auth + RBAC)
+ *   synthetic.v1.ops.start_feed  — starts a feed by config_id as a manual run, any kind (auth +
+ * RBAC)
  *   synthetic.v1.ops.stop_feed   — stops a running feed by config_id or source_name
- *   synthetic.v1.feed_configs.list   — lists running feed source_names, every kind
+ *   synthetic.v1.feed_configs.list   — lists the source names of every feed that runs
  *   synthetic.v1.ops.set_faults  — replaces the faults the simulator injects (system tenant; auth +
  * RBAC) one <kind>.simulate subject per registered kind — batch dry-run sample paths (auth + RBAC)
  *   synthetic.v1.ops.preview_ir_curve_shape  — stateless curve-shape preview (IR only; auth + RBAC)
@@ -52,7 +53,7 @@ public:
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
                       ores::nats::service::nats_client& auth_nats,
-                      std::shared_ptr<feed_controller> ctrl,
+                      generator_fleet& generators,
                       std::shared_ptr<ores::synthetic::feed::fault_state> faults,
                       ores::database::context ctx,
                       std::optional<ores::security::jwt::jwt_authenticator> verifier,

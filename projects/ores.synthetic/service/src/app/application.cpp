@@ -18,8 +18,8 @@
  *
  */
 #include "ores.synthetic.service/app/application.hpp"
-#include "../feed_controller.hpp"
 #include "../feed_kind_registry.hpp"
+#include "../generator_fleet.hpp"
 #include "../generator_runner.hpp"
 #include "../registrar.hpp"
 #include "../simulator_adapter.hpp"
@@ -79,6 +79,7 @@ std::vector<simulated_adapter>
 make_adapters(const std::vector<ores::marketdata::domain::market_data_source>& sources,
               const ores::database::context& db_ctx,
               ores::nats::service::client& nats,
+              generator_fleet& generators,
               const feed_kind_registry& registry,
               const ores::synthetic::feed::feed_build_context& build,
               const std::shared_ptr<ores::synthetic::feed::fault_state>& faults) {
@@ -87,14 +88,16 @@ make_adapters(const std::vector<ores::marketdata::domain::market_data_source>& s
         if (source.kind != "simulated")
             continue;
         simulated_adapter one;
-        one.runner = std::make_unique<generator_runner>([&registry,
-                                                         &build,
-                                                         ctx = db_ctx,
-                                                         faults,
-                                                         name = source.name,
-                                                         provider = source.provider_code] {
-            return system_generator_offers(registry, ctx, build, name, provider, faults);
-        });
+        one.runner = std::make_unique<generator_runner>(
+            [&registry,
+             &build,
+             ctx = db_ctx,
+             faults,
+             name = source.name,
+             provider = source.provider_code] {
+                return system_generator_offers(registry, ctx, build, name, provider, faults);
+            },
+            &generators.running_names());
         one.adapter = std::make_unique<simulator_adapter>(nats,
                                                           *one.runner,
                                                           source.name,
@@ -120,12 +123,14 @@ public:
     adapter_fleet(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& svc_nats,
                   ores::database::context db_ctx,
+                  generator_fleet& generators,
                   const feed_kind_registry& registry,
                   const ores::synthetic::feed::feed_build_context& build,
                   std::shared_ptr<ores::synthetic::feed::fault_state> faults)
         : nats_(nats)
         , svc_nats_(svc_nats)
         , db_ctx_(std::move(db_ctx))
+        , generators_(generators)
         , registry_(registry)
         , build_(build)
         , faults_(std::move(faults))
@@ -136,6 +141,7 @@ public:
         if (worker_.joinable())
             worker_.join();
         for (auto& one : adapters_) {
+            generators_.detach(*one.runner);
             one.adapter->stop();
             one.runner->stop_all();
         }
@@ -144,7 +150,8 @@ public:
 private:
     // Builds and starts every adapter before any is kept, so a failed start leaves none running.
     void start_all(const std::vector<ores::marketdata::domain::market_data_source>& sources) {
-        auto built = make_adapters(sources, db_ctx_, nats_, registry_, build_, faults_);
+        auto built =
+            make_adapters(sources, db_ctx_, nats_, generators_, registry_, build_, faults_);
         std::size_t attempted = 0;
         try {
             for (auto& one : built) {
@@ -164,6 +171,8 @@ private:
             throw;
         }
         adapters_ = std::move(built);
+        for (auto& one : adapters_)
+            generators_.attach(*one.runner);
         if (adapters_.empty())
             BOOST_LOG_SEV(lg(), warn)
                 << "The catalogue holds no simulated source, so the simulator serves no adapter.";
@@ -202,6 +211,7 @@ private:
     ores::nats::service::client& nats_;
     ores::nats::service::nats_client& svc_nats_;
     ores::database::context db_ctx_;
+    generator_fleet& generators_;
     const feed_kind_registry& registry_;
     const ores::synthetic::feed::feed_build_context& build_;
     std::shared_ptr<ores::synthetic::feed::fault_state> faults_;
@@ -272,8 +282,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         throw;
     }
 
-    auto ctrl = std::make_shared<feed_controller>(nats);
-
     // The one per-kind registry: the config-plane dispatch table every
     // control-plane verb reads.
     const auto registry = make_default_feed_kind_registry();
@@ -323,18 +331,21 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                                   .intensity = &intensity,
                                                                   .scheduler = &scheduler};
     const auto faults = std::make_shared<ores::synthetic::feed::fault_state>();
-    adapter_fleet fleet(nats, svc_nats, db_ctx, registry, adapter_build, faults);
+    // Every runner of the service claims its feeds here, so one set answers what runs now and
+    // one stop reaches a feed whichever run holds it. It outlives the fleet that owns the runners.
+    generator_fleet generators;
+    adapter_fleet fleet(nats, svc_nats, db_ctx, generators, registry, adapter_build, faults);
 
     co_await ores::service::service::run(
         io_ctx,
         nats,
         std::move(db_ctx),
         "ores.synthetic.service",
-        [ctrl, faults, &svc_nats, &registry, &market, &intensity, &scheduler](
+        [&generators, faults, &svc_nats, &registry, &market, &intensity, &scheduler](
             auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
             auto market_subs = ores::synthetic::service::registrar::register_handlers(
-                n, svc_nats, ctrl, faults, c, v, registry, &market, &intensity, &scheduler);
+                n, svc_nats, generators, faults, c, v, registry, &market, &intensity, &scheduler);
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));
@@ -347,7 +358,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         });
 
     scheduler.stop();
-    ctrl->shutdown();
+    generators.stop_all();
     event_source.stop();
     co_return;
 }

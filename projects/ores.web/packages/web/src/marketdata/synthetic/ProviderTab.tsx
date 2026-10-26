@@ -28,7 +28,7 @@ import { useTranslation } from '../../i18n/Provider.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../../ui/Pager.js';
 import { Button, Notice, Select, Tag, cx } from '../../ui/Primitives.js';
 import { AddFeed, useMayAddFeed } from './AddFeed.js';
-import { servesFeeds, useSources } from './adapterStatus.js';
+import { useSources } from './adapterStatus.js';
 import { ServingTag, useProviderFacts } from './DashboardTab.js';
 
 /** The asset classes the synthetic feeds are authored in. */
@@ -63,8 +63,10 @@ function Underlying({ feed }: { readonly feed: FolderFeed }): ReactNode {
  * feed rather than under a folder tree. A provider combo chooses the provider,
  * a collection filter narrows it to one collection when it holds several, and
  * the group-by control chooses whether the grid gathers on asset class,
- * instrument or engine. Start and Stop in the header are the operator test
- * control: they act on every feed of the provider.
+ * instrument or engine. A row's state is that feed's own run, and the header
+ * tag is the state of the provider's source, which is a different fact. Start
+ * and Stop in the header are the operator test control: they act on every feed
+ * of the provider.
  */
 export function ProviderTab(): ReactNode {
     const { t } = useTranslation();
@@ -245,7 +247,6 @@ export function ProviderTab(): ReactNode {
                             </thead>
                             <tbody>
                                 {feeds.map((feed) => {
-                                    const serving = servesFeeds(sources?.get(feed.provider_code));
                                     const every = frequencyOf(feed.ticks_per_hour);
                                     return (
                                         <tr
@@ -282,9 +283,9 @@ export function ProviderTab(): ReactNode {
                                                 )}
                                             </td>
                                             <td className="px-3 py-2">
-                                                <Tag tone={serving ? 'up' : 'muted'}>
+                                                <Tag tone={feed.running ? 'up' : 'muted'}>
                                                     {t(
-                                                        serving
+                                                        feed.running
                                                             ? 'marketdata.synthetic.state.running'
                                                             : 'marketdata.synthetic.state.stopped',
                                                     )}

@@ -24,10 +24,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { AccountAccess } from '@ores/wire-protocol/browser';
-import type { AdapterStatus, RecordRow, SyntheticResourceView } from '../../api/client.js';
+import type { RecordRow, SyntheticResourceView } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import { MarketDataPage } from '../MarketDataPage.js';
-import { ADAPTERS_KEY } from './adapterStatus.js';
 import { completeFeed, feedWrite, FxFeedPage, syntheticSource } from './fxFeeds.js';
 import { SyntheticScreen } from './SyntheticScreen.js';
 
@@ -70,28 +69,8 @@ function access(codes: string[]): AccountAccess {
     };
 }
 
-/** The adapters of one provider: a source that serves the ids it was demanded, or one that does not. */
-function adapters(provider: string, state: string, demanded: number): readonly AdapterStatus[] {
-    return [
-        {
-            adapter_id: `${provider}-sim`,
-            provider_code: provider,
-            state,
-            last_heartbeat_at: '2026-10-25 15:00:00Z',
-            heartbeat_counter: 4,
-            served_count: 2,
-            unknown_count: 0,
-            demanded_count: demanded,
-            routes_seen: 1,
-            ticks_last_minute: 0,
-            last_tick_age_ms: -1,
-            accepted: [],
-            rejected: [],
-        },
-    ];
-}
-
 const feed: RecordRow = {
+    running: false,
     version: 3,
     id: FEED_ID,
     config_id: '88888888-8888-4888-8888-888888888888',
@@ -429,14 +408,16 @@ describe('the FX feed screens', () => {
         expect(html).toContain('The mixture needs at least one component.');
     });
 
-    it('offers Start and Stop as the test control whatever the source says', () => {
-        for (const [state, demanded, word] of [
-            ['serving', 1, '>Running<'],
-            ['ready', 0, '>Stopped<'],
+    it('reads the state of a feed from its own run and offers Start and Stop beside it', () => {
+        for (const [running, word] of [
+            [true, '>Running<'],
+            [false, '>Stopped<'],
         ] as const) {
             const html = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
-                client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
-                client.setQueryData(ADAPTERS_KEY, adapters('bloomberg', state, demanded));
+                client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], {
+                    ...feed,
+                    running,
+                });
                 client.setQueryData(['my-access'], access(['synthetic::*']));
             });
             expect(html).toContain(word);
@@ -447,8 +428,10 @@ describe('the FX feed screens', () => {
 
     it('plots the last ticks with the last price and the move over them', () => {
         const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=ticks`, (client) => {
-            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
-            client.setQueryData(ADAPTERS_KEY, adapters('bloomberg', 'serving', 1));
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], {
+                ...feed,
+                running: true,
+            });
             client.setQueryData(
                 ['records', 'gmm-components', FEED_ID],
                 [
@@ -492,7 +475,6 @@ describe('the FX feed screens', () => {
     it('says a stopped feed must be started to show ticks', () => {
         const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=ticks`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
-            client.setQueryData(ADAPTERS_KEY, adapters('bloomberg', 'ready', 0));
             client.setQueryData(['feed-ticks', FEED_ID, 200], {
                 sourceName: 'synthetic.eurusd',
                 ticks: [],

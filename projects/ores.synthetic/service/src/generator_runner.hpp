@@ -23,6 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
+#include "running_set.hpp"
 #include <algorithm>
 #include <exception>
 #include <functional>
@@ -65,7 +66,7 @@ struct demand_outcome final {
 };
 
 /**
- * @brief Runs one generator for each feed in the demand set.
+ * @brief Runs one generator for each feed in the demand set, and the feeds an operator starts.
  *
  * The demand set is the whole set and it replaces the last one: the runner starts the generators
  * that the set adds, keeps the ones it still names and stops the ones it drops. A feed has at most
@@ -75,8 +76,14 @@ struct demand_outcome final {
  * with no offer is rejected as @c unknown_id, and an id whose generator cannot be built is
  * rejected as @c generator_failed, as is every other id of the same feed.
  *
+ * A manual run is the operator's test control: @c start_manual runs one feed, keyed by the id of
+ * its config, and no demand names it, so the next demand set leaves it running. A demand that
+ * names its group takes it over, and reconciles it like every other demanded group from then on.
+ *
  * The runner knows nothing of NATS or of the database. The offers come from a function the caller
  * gives, and the runner reads it on each demand, so a changed config takes effect at the next set.
+ * The runner claims each feed's source name in the @c running_set it is given before it launches
+ * its generator, so a feed that another run already publishes starts no second generator.
  */
 class generator_runner final {
 private:
@@ -89,8 +96,9 @@ private:
 public:
     using offers_fn = std::function<std::vector<generator_offer>()>;
 
-    explicit generator_runner(offers_fn offers)
-        : offers_(std::move(offers)) {}
+    explicit generator_runner(offers_fn offers, running_set* names = nullptr)
+        : offers_(std::move(offers))
+        , names_(names) {}
 
     ~generator_runner() {
         stop_all();
@@ -123,6 +131,8 @@ public:
         std::set<std::string> wanted_feeds;
         // A feed that cannot be built is not built again for its other ids in this set.
         std::set<std::string> failed;
+        // A feed a manual run already publishes starts no second generator in this set.
+        std::set<std::string> served_elsewhere;
         for (const auto& id : demand) {
             const auto k = key_of(id);
             if (!wanted.insert(k).second)
@@ -135,6 +145,12 @@ public:
             const auto& feed = offer->second;
             wanted_feeds.insert(feed);
             if (running_.contains(feed)) {
+                // A demanded feed the operator started runs on until a demand stops naming it.
+                running_.at(feed).manual = false;
+                out.accepted.push_back(id);
+                continue;
+            }
+            if (served_elsewhere.contains(feed)) {
                 out.accepted.push_back(id);
                 continue;
             }
@@ -147,7 +163,25 @@ public:
                 auto generator = make();
                 if (!generator)
                     throw std::runtime_error("The generator is not built.");
-                running_.emplace(feed, launch(std::move(generator)));
+                const auto source_name = generator->source_name();
+                if (!claim(source_name)) {
+                    BOOST_LOG_SEV(lg(), ores::logging::info)
+                        << "The demand of " << id.external_id << " names the feed " << source_name
+                        << ", which a manual run already publishes. It runs once.";
+                    served_elsewhere.insert(feed);
+                    out.accepted.push_back(id);
+                    continue;
+                }
+                running_generator started;
+                started.feed = std::move(generator);
+                started.source_name = source_name;
+                try {
+                    started.thread = launch(started.feed.get());
+                } catch (...) {
+                    release(source_name);
+                    throw;
+                }
+                running_.emplace(feed, std::move(started));
                 out.accepted.push_back(id);
                 ++out.started;
             } catch (const std::exception& e) {
@@ -158,7 +192,7 @@ public:
             }
         }
         for (auto it = running_.begin(); it != running_.end();) {
-            if (wanted_feeds.contains(it->first)) {
+            if (wanted_feeds.contains(it->first) || it->second.manual) {
                 ++it;
                 continue;
             }
@@ -177,12 +211,72 @@ public:
         return out;
     }
 
-    /** Stops every generator. */
-    void stop_all() {
-        std::lock_guard lock(mu_);
-        for (auto& [_, g] : running_)
+    /**
+     * @brief Starts the feed an operator asked for, keyed by the id of its config.
+     *
+     * A manual run builds the feed as a producer, with no adapter target, and no demand names its
+     * group, so the next demand set leaves it running. Returns false, and starts nothing, when a
+     * run of the feed's source name is already publishing it, whichever run started it.
+     */
+    bool start_manual(std::string group, std::shared_ptr<ores::marketdata::domain::i_feed> feed) {
+        if (!feed)
+            throw std::invalid_argument("A manual run needs a feed to run.");
+        const auto source_name = feed->source_name();
+        running_generator started;
+        started.feed = std::move(feed);
+        started.source_name = source_name;
+        started.manual = true;
+        {
+            std::lock_guard lock(mu_);
+            if (running_.contains(group))
+                return false;
+            if (!claim(source_name))
+                return false;
+            try {
+                started.thread = launch(started.feed.get());
+            } catch (...) {
+                release(source_name);
+                throw;
+            }
+            running_.emplace(std::move(group), std::move(started));
+        }
+        BOOST_LOG_SEV(lg(), ores::logging::info) << "Manual start of " << source_name << "; "
+                                                 << running_count() << " generator(s) running";
+        return true;
+    }
+
+    /** Stops the run of the feed with this source name. Returns 1 when it found one. */
+    std::size_t stop_source(const std::string& source_name) {
+        running_generator stopped;
+        {
+            std::lock_guard lock(mu_);
+            const auto found = std::ranges::find_if(running_, [&](const auto& entry) {
+                return entry.second.source_name == source_name;
+            });
+            if (found == running_.end())
+                return 0;
+            stopped = std::move(found->second);
+            running_.erase(found);
+        }
+        halt(stopped);
+        BOOST_LOG_SEV(lg(), ores::logging::info)
+            << "Stopped " << source_name << "; " << running_count() << " generator(s) running";
+        return 1;
+    }
+
+    /** Stops every generator, and answers how many it stopped. */
+    std::size_t stop_all() {
+        std::vector<running_generator> stopped;
+        {
+            std::lock_guard lock(mu_);
+            stopped.reserve(running_.size());
+            for (auto& [_, g] : running_)
+                stopped.push_back(std::move(g));
+            running_.clear();
+        }
+        for (auto& g : stopped)
             halt(g);
-        running_.clear();
+        return stopped.size();
     }
 
     [[nodiscard]] std::size_t running_count() const {
@@ -195,6 +289,9 @@ private:
 
     struct running_generator {
         std::shared_ptr<ores::marketdata::domain::i_feed> feed;
+        std::string source_name;
+        /** An operator started it, and no demand has named its group since. */
+        bool manual = false;
         std::thread thread;
     };
 
@@ -243,11 +340,8 @@ private:
         return out;
     }
 
-    static running_generator launch(std::shared_ptr<ores::marketdata::domain::i_feed> feed) {
-        running_generator g;
-        auto* raw = feed.get();
-        g.feed = std::move(feed);
-        g.thread = std::thread([raw] {
+    static std::thread launch(ores::marketdata::domain::i_feed* raw) {
+        return std::thread([raw] {
             try {
                 raw->start();
             } catch (const std::exception& e) {
@@ -255,17 +349,29 @@ private:
                     << "The generator of " << raw->source_name() << " stopped: " << e.what();
             }
         });
-        return g;
     }
 
-    static void halt(running_generator& g) {
+    // The name is released only after the generator has stopped, so the set never names a
+    // generator that is already gone.
+    void halt(running_generator& g) {
         if (g.feed)
             g.feed->stop();
         if (g.thread.joinable())
             g.thread.join();
+        release(g.source_name);
+    }
+
+    bool claim(const std::string& source_name) {
+        return names_ == nullptr || names_->claim(source_name);
+    }
+
+    void release(const std::string& source_name) {
+        if (names_ != nullptr)
+            names_->release(source_name);
     }
 
     offers_fn offers_;
+    running_set* names_;
     mutable std::mutex mu_;
     /// The running generator of each feed, by the feed's own name.
     std::map<std::string, running_generator> running_;

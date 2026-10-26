@@ -21,12 +21,12 @@
 #include "ores.analytics.quant/domain/process_parameter_validation.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
-#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include "ores.synthetic.api/feeds/vintage_lookup.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -47,9 +47,9 @@ auto& lg() {
     return instance;
 }
 
-// Resolves the initial price from a real market_observation when cfg.price_source is "vintage",
-// mirroring the deleted feed_controller::vintage_data_available() -- the config's own series
-// (from its oresmd_uri), keyed on (source=vintage_source, its own datum URI, date=vintage_date).
+// Resolves the initial price from a real market_observation when cfg.price_source is "vintage":
+// the config's own series (from its oresmd_uri), keyed on (source=vintage_source, its own datum
+// URI, date=vintage_date).
 //
 // @throws vintage_data_missing_error if no matching observation is found.
 double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats,

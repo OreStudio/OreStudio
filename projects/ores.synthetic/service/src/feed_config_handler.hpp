@@ -21,8 +21,8 @@
 #define ORES_SYNTHETIC_SERVICE_FEED_CONFIG_HANDLER_HPP
 
 #include "client_message.hpp"
-#include "feed_controller.hpp"
 #include "feed_kind_registry.hpp"
+#include "generator_fleet.hpp"
 #include "ores.analytics.quant/domain/market_regime.hpp"
 #include "ores.analytics.quant/domain/shared_intensity.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
@@ -63,14 +63,15 @@ using namespace ores::logging;
  * Replaces the per-kind handlers (market_feed_config_handler and ir_curve_feed_config_handler):
  * the client sends only a config_id and the feed kind registry resolves the config — whichever
  * kind it is, its children, and the refdata context — checks the resolved kind's permission, and
- * starts the producer via the factory. Missing, disabled, and vintage-data-missing outcomes use
- * one message shape regardless of kind.
+ * builds the producer. The runner then runs it as a manual run, which no demand set reconciles
+ * away. Missing, disabled, and vintage-data-missing outcomes use one message shape regardless of
+ * kind, and a start of a feed that already runs answers the same success its kind does.
  */
 class feed_config_handler {
 public:
     feed_config_handler(ores::nats::service::client& nats,
                         ores::nats::service::nats_client& auth_nats,
-                        std::shared_ptr<feed_controller> ctrl,
+                        generator_fleet& generators,
                         ores::database::context ctx,
                         std::optional<ores::security::jwt::jwt_authenticator> verifier,
                         const feed_kind_registry& registry,
@@ -79,7 +80,7 @@ public:
                         ores::analytics::quant::service::tick_scheduler* scheduler = nullptr)
         : nats_(nats)
         , auth_nats_(auth_nats)
-        , ctrl_(std::move(ctrl))
+        , generators_(generators)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier))
         , registry_(registry)
@@ -147,7 +148,7 @@ public:
                 reply(nats_, msg, resp);
                 return;
             }
-            reply_start_outcome(msg, resp, std::move(attempt.feed));
+            reply_start_outcome(msg, resp, req->config_id, std::move(attempt.feed));
         } catch (const ores::synthetic::feed::vintage_data_missing_error& e) {
             resp.success = false;
             resp.message = e.what();
@@ -189,8 +190,8 @@ public:
             return;
         }
 
-        // The registry reads the configured feeds and the controller runs them,
-        // so either can throw. An exception leaving this handler reaches the
+        // The registry reads the configured feeds and the runners stop them, so
+        // either can throw. An exception leaving this handler reaches the
         // transport, which contains it but sends no reply, and the caller then
         // waits out its deadline for an answer this handler could have given.
         try {
@@ -236,7 +237,8 @@ public:
                 }
             }
 
-            const auto stopped = ctrl_->stop(source_name);
+            const auto stopped =
+                source_name.empty() ? generators_.stop_all() : generators_.stop_source(source_name);
             stop_feed_response resp;
             resp.success = true; // idempotent — 0 stopped means it was already stopped
             resp.message = std::to_string(stopped) + " feed(s) stopped";
@@ -272,8 +274,7 @@ public:
 
         try {
             list_feeds_response resp;
-            // The empty kind scopes to nothing: every running feed, every kind.
-            resp.running_source_names = ctrl_->list();
+            resp.running_source_names = generators_.running_source_names();
             resp.success = true;
             BOOST_LOG_SEV(feed_config_handler_lg(), info)
                 << msg.subject << " — " << resp.running_source_names.size() << " feed(s) running";
@@ -304,47 +305,24 @@ private:
         return std::optional<ores::database::context>(std::move(*ctx_expected));
     }
 
-    // One start-result switch for every kind: the message shapes (started,
-    // already running, conflict with the holding source_name) are uniform, so
-    // the dispatch needs no per-kind branching.
+    // One start outcome for every kind: a started feed and a feed that already runs
+    // are both a success, so the dispatch needs no per-kind branching.
     void reply_start_outcome(const ores::nats::message& msg,
                              ores::synthetic::messaging::start_feed_response& resp,
+                             const std::string& feed_config_id,
                              std::shared_ptr<ores::marketdata::domain::i_feed> feed) {
         const auto source_name = feed->source_name();
-        const auto series = feed->series_uris();
-        const auto result = ctrl_->start(std::move(feed));
-
-        switch (result) {
-            case feed_controller::start_result::started:
-                resp.success = true;
-                resp.message = "Feed started: " + source_name;
-                break;
-            case feed_controller::start_result::already_running:
-                resp.success = true;
-                resp.message = "Feed already running: " + source_name;
-                break;
-            case feed_controller::start_result::oresmd_conflict: {
-                const auto conflicting = ctrl_->running_source_name_for_series(series);
-                resp.success = false;
-                resp.message = "Already running as '" + conflicting.value_or("<unknown>") +
-                               "' — stop it first before starting '" + source_name + "'.";
-                break;
-            }
-            case feed_controller::start_result::vintage_data_missing:
-                // The builders resolve vintage at construction and throw
-                // vintage_data_missing_error; the on-demand start() itself
-                // never returns this result.
-                resp.success = false;
-                resp.message = "Vintage data missing for: " + source_name;
-                break;
-        }
+        const auto started = generators_.start_manual(feed_config_id, std::move(feed));
+        resp.success = true;
+        resp.message =
+            started ? "Feed started: " + source_name : "Feed already running: " + source_name;
         BOOST_LOG_SEV(feed_config_handler_lg(), info) << msg.subject << " — " << resp.message;
         reply(nats_, msg, resp);
     }
 
     ores::nats::service::client& nats_;
     ores::nats::service::nats_client& auth_nats_;
-    std::shared_ptr<feed_controller> ctrl_;
+    generator_fleet& generators_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     const feed_kind_registry& registry_;

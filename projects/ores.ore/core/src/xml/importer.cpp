@@ -103,8 +103,10 @@ auto project_currency(const xc::currency_definition& v) -> refdata::domain::curr
     refdata::domain::currency r;
     r.iso_code = v.iso_code;
     r.name = v.name;
+    // An ISO 4217 numeric code is three digits, and the document carries it as a
+    // number, so the leading zeros it loses on the way in are put back.
     r.numeric_code =
-        is_present(type, &v, "NumericCode") ? std::to_string(v.numeric_code) : std::string{};
+        is_present(type, &v, "NumericCode") ? std::format("{:03}", v.numeric_code) : std::string{};
     r.symbol = v.symbol;
     r.fraction_symbol = v.fraction_symbol;
     r.fractions_per_unit = static_cast<int>(v.fractions_per_unit);

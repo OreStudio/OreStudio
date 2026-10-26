@@ -42,9 +42,54 @@ tenor_basis_swap_convention is generated from field-group models: its identity a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Follow the ORE parameter contract the engine settings and conventions already share
+
+The work is one application of a standard that landed on main on 2026-10-25
+and 2026-10-26, not a modelling idea of its own.
+
+- Every value ORE reads from a document is a /leaf/, and every leaf has one
+  documentation entry in the ORE parameter contract
+  (=ores.reporting.ore_parameter=: schema, XPath, label, help, description,
+  default, format, value domain). A screen restates none of it.
+- The element type a leaf belongs to is data, not code.
+  =ores.reporting.engine_settings_group= with
+  =engine_settings_group_setting= is the engine settings' shape, and
+  =ores.refdata.convention_kind= with =convention_kind_term= is the
+  conventions' shape: the owner decided on 2026-10-25 that a convention kind
+  is modelled as the engine run settings model their groups.
+- A term names its leaf by schema and XPath. The row for the tenor basis swap
+  is already seeded: seventeen =TENOR_BASIS_SWAP= terms spanning
+  =convention.name=, =tenor_basis_swap_pay_receive.*= and
+  =tenor_basis_swap_long_short.*=, each with its position, in
+  =refdata_convention_kind_terms_populate.sql=.
+- Screens draw a leaf by =doc/knowledge/ui/ore_element_and_leaf_screen_standard.org=
+  (rules =OL-*=), applied first to conventions.
+
+** What this means for the field groups
+
+- The field groups are a *reflection-width* change, not a schema change. The
+  table names, the column names and the seventeen term rows stay as they are,
+  so the contract keeps matching the tree. Grouping must preserve every column
+  name and its entity.
+- The groups attach inside the entities main already has: the central
+  =convention= row (identity and audit), =tenor_basis_swap_pay_receive= and
+  =tenor_basis_swap_long_short= (each form's own members). Nothing is
+  restated in a codegen model that the contract already carries, so a group
+  contributes columns only: no label, help, default or value set.
+- The precedent in the tree is the bond family's field groups
+  (=ores.trading.bond_*=_field_group.org=), which is what the codegen support
+  this branch keeps was written for.
+
+** Order of work
+
+1. Group the central row's identity and audit, then each part's members, and
+   regenerate.
+2. Prove the contract still matches: every =convention_kind_term= row's
+   (entity, column) must still name a column that exists.
+3. Run the refdata and ORE convention suites, and the drift check.
+4. Leave the screen work to the story that owns it
+   ([[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]]),
+   which already draws a convention's terms with the shared leaf parts.
 
 * Measurements
 

@@ -131,8 +131,8 @@ function LinksTab({ record }: { readonly record: TradePageRecord }): ReactNode {
     const candidates = (others.data?.rows ?? []).filter(
         (row) => row.row_kind === 'trade' && row.id !== id,
     );
-    // The page's own size, not the candidates: one trade is always left out
-    // because it is the one being linked from.
+    // The page's size, not the candidates: the trade being linked from is
+    // always filtered out, so comparing with it would always look truncated.
     const truncated = (others.data?.total ?? 0) > (others.data?.rows.length ?? 0);
 
     return (

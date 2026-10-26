@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 9A5E2C71-4D83-4B06-A17E-35C8F9D2B4E0
+:END
+#+title: Copied activity types name system FSM transitions
+#+description: The tenant provisioner copies the activity types verbatim, and eleven of them name a transition row that belongs to the system tenant, which a tenant session cannot read.
+#+type: capture
+#+level: cross
+#+filetags: :trading:iam:seeding:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+The provisioner now copies the trading code lists into a tenant, and the review
+of that change asked whether =activity_types.fsm_transition_id= still points at
+something the tenant can see. It does not:
+
+#+begin_example
+select t.tenant_id, count(*)
+  from ores_trading_activity_types_tbl a
+  join ores_dq_fsm_transitions_tbl t on t.id = a.fsm_transition_id
+ where a.tenant_id = '<tenant>' and a.valid_to = ores_utility_infinity_timestamp_fn()
+ group by t.tenant_id;
+-- ffffffff-… | 11
+#+end_example
+
+Eleven of the thirty-three copied activity types name a transition owned by the
+system tenant. Nothing joins through it today, so the copies work; a tenant that
+resolves its activity types' transitions would find nothing there.
+
+The fix is the same shape as the one that exposed it: copy the FSM it names —
+machines, states and transitions — into the tenant as well, or make those rows
+shared reference data every tenant reads. Which one depends on whether a tenant
+may define its own workflow, and that is the same question the trading code
+lists were answered with: a tenant owns its copy.

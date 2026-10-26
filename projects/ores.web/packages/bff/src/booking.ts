@@ -209,21 +209,27 @@ export function registerBookingRoutes(
             'id_types',
             { filter: null, as_of: null },
         );
-        const schemes =
-            declared.length > 0
-                ? declared.map((row) => ({ code: String(row['code'] ?? '') }))
-                : (
-                      await readAll(
-                          session,
-                          identifierSubjects.list_trade_identifiers_request,
-                          'identifiers',
-                          { filter: null, as_of: null },
-                      )
-                  )
-                      .map((row) => String(row['id_type'] ?? ''))
-                      .filter((code, index, all) => code !== '' && all.indexOf(code) === index)
-                      .sort()
-                      .map((code) => ({ code }));
+        let schemes: readonly { readonly code: string }[];
+        if (declared.length > 0) {
+            schemes = declared
+                .map((row) => String(row['code'] ?? ''))
+                .filter((code) => code !== '')
+                .map((code) => ({ code }));
+        } else {
+            const used = await readAll(
+                session,
+                identifierSubjects.list_trade_identifiers_request,
+                'identifiers',
+                { filter: null, as_of: null },
+            );
+            const codes = new Set<string>();
+            for (const row of used) {
+                const code = String(row['id_type'] ?? '');
+                if (code !== '') codes.add(code);
+            }
+            schemes = [...codes].sort().map((code) => ({ code }));
+        }
+
         return { books, issues, idTypes: schemes };
     });
 

@@ -39,6 +39,13 @@ An option on an index and an option on a share are the same instrument type in
 the store, but a book that claimed to trade single names while holding only
 indices would misreport itself.
 
+Only underlyings a document states as =Equity= belong here. ORE states each
+underlying's kind beside its name, and one corpus trade proves the kind is not
+implied by the trade type: an =EquityWorstOfBasketSwap= in the examples carries
+two underlyings whose kind is =FX=, total return indices on currency pairs. A
+catalogue that took every name an equity typed trade mentions would file a
+currency pair as an equity.
+
 This model holds the vocabulary only. The prices and the volatility surfaces an
 equity prices on are market data, and they are not here.
 

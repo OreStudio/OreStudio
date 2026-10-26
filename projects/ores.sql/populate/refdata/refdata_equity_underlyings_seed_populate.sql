@@ -135,11 +135,7 @@ begin
         (v_dataset_id, v_tenant_id, 'AMZN.O', 0, 'Amazon.com Inc',
          'A US listed share, named in the corpus by its exchange suffixed ticker.', 'share', null, 'USD', 9),
         (v_dataset_id, v_tenant_id, 'CR.N', 0, 'Crane Company',
-         'A US listed share, named in the corpus by its exchange suffixed ticker.', 'share', null, 'USD', 10),
-        (v_dataset_id, v_tenant_id, 'TR20H-EUR-SEK', 0, 'Total Return 20H EUR/SEK',
-         'A total return index the corpus states only as a worst of basket constituent.', 'index', null, null, 11),
-        (v_dataset_id, v_tenant_id, 'TR20H-USD-CAD', 0, 'Total Return 20H USD/CAD',
-         'A total return index the corpus states only as a worst of basket constituent.', 'index', null, null, 12);
+         'A US listed share, named in the corpus by its exchange suffixed ticker.', 'share', null, 'USD', 10);
 
     get diagnostics v_count = row_count;
 

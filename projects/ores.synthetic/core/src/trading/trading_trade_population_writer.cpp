@@ -820,6 +820,19 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
             row.audit.change_reason_code = std::string(population_reason);
             row.audit.change_commentary = "Generated trade population.";
             book_req.instruments.fx_accumulator_instruments.push_back(row);
+            /*
+             * The document refuses an accumulator with no range bound, and the
+             * row is a child of the trade rather than a column on it. The range
+             * the fixings accrue inside runs from the strike to the barrier
+             * that knocks the accumulator out.
+             */
+            ores::trading::domain::range_bound bound;
+            bound.sequence_number = 1;
+            bound.start_date = fx->start_date;
+            bound.range_from = money(fx->strike.value_or(0.0));
+            bound.range_to = maybe_money(fx->knock_out_barrier);
+            bound.strike = money(fx->strike.value_or(0.0));
+            book_req.instruments.range_bounds.push_back(bound);
         } else {
             throw trade_population_write_error("The FX trade type " + type +
                                                " states no table this writer knows.");

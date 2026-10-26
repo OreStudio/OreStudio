@@ -558,7 +558,7 @@ async function providerOfFeed(
  * a feed when an adapter demands it or when an operator starts it, and the set names
  * every generator that runs.
  */
-async function runningSourceNames(session: LiveSession): Promise<ReadonlySet<string>> {
+export async function runningSourceNames(session: LiveSession): Promise<ReadonlySet<string>> {
     const reply = await session.client.callAuthenticated(
         feedSubjects.list_feeds_request,
         {},
@@ -647,7 +647,7 @@ function answer(result: z.infer<typeof resultSchema>): void {
  * input, a refused start or stop is a conflict with the feed's state, and a
  * refused read is the service failing.
  */
-function upstreamFailure(message: string): HttpFailure {
+export function upstreamFailure(message: string): HttpFailure {
     return new HttpFailure(502, { code: 'upstream-unavailable', message });
 }
 
@@ -699,7 +699,8 @@ const removeBodySchema = z.object({
         .max(PAGE),
 });
 
-const operationReplySchema = z.object({
+/** What every operation reply says: whether the service did what was asked, and why not. */
+export const operationReplySchema = z.object({
     success: z.boolean(),
     message: z.string().default(''),
 });

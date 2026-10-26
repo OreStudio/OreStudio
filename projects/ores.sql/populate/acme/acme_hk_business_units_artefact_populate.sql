@@ -62,5 +62,7 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd4191374-ae29-5672-afae-62f15a8d2ca1', 0, 'FX Rates Hong Kong', '87610f63-6cca-525a-b311-65b163df00ed', 'acme_hk.fx_rates', 'HKHK', 'DESK'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd75397e4-49f6-5a9b-8355-09170ae14a3b', 0, 'Treasury Hong Kong', null, 'acme_hk.treasury', 'HKHK', 'DIVISION'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '7a577348-efc7-52ca-ae73-2d56a9b09535', 0, 'Middle Office Hong Kong', null, 'acme_hk.middle_office', 'HKHK', 'COST_CENTRE'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'fe95e779-6356-5cab-bcfd-2ef6de13274f', 0, 'Market Risk Hong Kong', null, 'acme_hk.market_risk', 'HKHK', 'COST_CENTRE');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'fe95e779-6356-5cab-bcfd-2ef6de13274f', 0, 'Market Risk Hong Kong', null, 'acme_hk.market_risk', 'HKHK', 'COST_CENTRE'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '08d4b3ff-54a0-5971-9e5a-68a11ef3ab3c', 0, 'Financial Control Hong Kong', null, 'acme_hk.financial_control', 'HKHK', 'COST_CENTRE'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '49d86976-998d-542f-b95f-fab54a0cebce', 0, 'Finance Hong Kong', null, 'acme_hk.finance', 'HKHK', 'COST_CENTRE');
 end $$;

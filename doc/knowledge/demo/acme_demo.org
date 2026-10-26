@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: DB09267A-E589-4688-9773-9A7BF982247F
+:END:
+#+title: The Acme demonstration's market data and its approvals
+#+description: The structure note for the demonstration tenant: how market data reaches four parties, which rows the seed profile writes, who may decide an approval, and what the journeys still leave undecided.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:acme:demo:marketdata:approval:structure_note:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+startup: inlineimages
+
+* Summary
+
+The Acme tenant is the platform's fully populated demonstration: four legal
+entities, 73 staff, a market data subscription each, a trade population and the
+approval requests the trades raise. Two questions about it are hard to answer from
+the code, and this note orders the pages that answer them. First, where does an
+Acme party's market data come from, and who installs it. Second, who may decide
+the approvals the demonstration raises, and why the person who decides is never
+the person who asked.
+
+The cluster is six pages. They are read in the order below, because each one
+assumes the vocabulary of the one before it: the providers first, then the
+catalogue they belong to, then the two rows that tie a party to a provider, then
+the profile that writes those rows, and only then the two pages about people —
+the roles they hold and the decisions those roles let them take. A reader who
+wants only the approval side can start at section five.
+
+* Where the market data comes from
+
+Read these three to be able to say, for any value on an Acme screen, which
+provider produced it, which source delivered it, and which row tied the party to
+that source.
+
+1. [[id:AC31B4F2-B1D7-4CE6-BE84-9A548ACE6754][Each Acme party takes one provider, and a simulated source serves it]].
+   Seven providers, six sources, and which of them each of the four entities
+   takes. After this you can say why London reads =demo= and New York =lseg=.
+2. [[id:F6094D03-3914-4046-8E57-3FF4AA14764B][The Acme catalogue is installed by the bundle, and the feeds generate the
+   series]]. The 447 instruments, 447 mappings and 24 rate card components the
+   system bundle installs, the feed collections that then run, and the 341 series
+   they produce. After this you can say what a tenant may and may not write.
+3. [[id:9E8D00D3-5ADD-48E0-85AB-CC19693DEFFF][A subscription names the provider and the route names the source]]. The two
+   rows, the rights on them, the flow a demand follows to a tick, and who may
+   change them. This page carries the demand and subscription diagram. After this
+   you can trace a run's market data end to end.
+
+* How the demonstration is built
+
+Read this one to be able to rebuild the tenant or to change one of its choices
+without touching code.
+
+4. [[id:6014CFE1-D978-4ABA-BBA9-D87040FE44BA][The acme_demo profile is nine ordered steps, and the steps are
+   data]]. The nine steps in order, the dependency each order protects, and which
+   of the demonstration's facts a person can change by editing a value. After this
+   you can say what a variant of the demonstration would cost.
+
+* Who may decide
+
+Read these two to be able to answer "who can do this" for any operation in the
+tenant, and "who decides this request" for any approval.
+
+5. [[id:3F19F33A-161C-4E61-BD92-CB32953DA8F9][A persona may act because of its role, and no other
+   reason]]. The role each Acme persona holds, the permission matrix by role, and
+   the chain from account to role to permission. This page carries the role and
+   permission diagram. After this you can place any persona in the matrix.
+6. [[id:8B0D92BD-7D15-45B7-80EA-07D111F73EB3][An Acme approval is decided by a permitted person who did not raise
+   it]]. The four kinds, the four parts, their decide permissions, the personas
+   that now hold them, the requester-not-decider rule, and the five places the
+   journeys and the seeds disagree. This page carries the approval diagram. After
+   this you can say who decides any request the demonstration raises, and what it
+   still cannot decide.
+
+* What this cluster does not cover
+
+The general subject is not here. The market data service, its adapters and its
+pipeline are [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]];
+the approval record, its queue and its lifecycle are
+[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]]; the role model is
+[[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]. These
+pages are what an instance of all three looks like once a tenant is provisioned,
+and they link back to the general pages rather than restating them.
+
+The demonstration's business content is elsewhere too. The books and desks are
+[[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]]'s subject, the trades are
+[[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]]'s, and the screens a person
+uses are the [[id:D602E114-F896-42CA-893A-841AD6FC3221][user journeys]].
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index of all knowledge notes.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — completes: the general subject this cluster instantiates.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — completes: the record these decisions are written to.
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — completes: the model the matrix reads.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — exemplifies: the atomic-note method that shapes each page of this cluster.
+- [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data journeys]] — answers: the journeys a party's market data is managed through.
+- [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup journeys]] — answers: the journey that builds a tenant.

@@ -1,0 +1,116 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The Acme demonstration: how a persona comes to hold a decide permission
+
+skinparam classAttributeIconSize 0
+
+package "Who acts" {
+    class "An Acme persona\n(a staff account)" as account {
+        username : seen at sign-in
+        party : the entity it acts in
+    }
+}
+
+package "What the persona holds" {
+    class "account_role" as account_role
+    class "role" as role {
+        name : Trading, Operations,
+        name : Controller, Finance,
+        name : TenantAdmin, ...
+    }
+    class "role_permissions" as role_permissions
+    class "permission" as permission {
+        code : inbox::approvals:decide_operations
+        code : inbox::approvals:decide_market_risk
+        code : inbox::approvals:decide_controller
+        code : inbox::approvals:decide_finance
+        code : iam::roles:assign
+    }
+}
+
+package "What asks for a decision" {
+    class "approval_kind" as kind {
+        code : trading.operational_authorisation
+        code : refdata.book_change
+        code : refdata.counterparty_change
+        code : iam.role_grant
+        decide_permission_code
+        approvals_required
+    }
+    class "approval_part" as part {
+        code : controller, finance,
+        code : market_risk, operations
+        decide_permission_code
+        answer_order
+    }
+    class "approval_request" as request {
+        kind_code
+        state_code : waiting, held, approved,
+        state_code : refused, withdrawn, expired
+        requested_by
+    }
+    class "approval_decision" as decision {
+        decision_code
+        part_code
+        decided_by
+        comment
+    }
+}
+
+account "1" -- "*" account_role
+account_role "*" -- "1" role
+role "1" -- "*" role_permissions
+role_permissions "*" -- "1" permission
+
+kind "*" -- "1" permission : decide_permission_code
+part "*" -- "1" permission : decide_permission_code
+request "*" -- "1" kind : kind_code
+request "1" -- "*" decision
+
+note right of role
+  The persona is given one job role, and
+  every person also holds Member. A decide
+  permission therefore reaches a person only
+  through the role a member of staff was
+  given: the demonstration gives Trading to
+  the desks and Operations to the middle
+  office, the risk function and the office
+  heads.
+end note
+
+note bottom of decision
+  The requester-not-decider rule: the
+  decisions trigger refuses a decision whose
+  decided_by is the request's requested_by,
+  and one person approves a request once
+  whatever the part. Requested_by is not
+  drawn as a link because the rule is a
+  refusal in the database, not a missing row.
+end note
+
+note bottom of part
+  A part decider holds no kind's decide code.
+  The queue filters by kind, so a Controller
+  learns of a request from the notice the
+  raise sends to the holder of the part's
+  permission, and opens it to answer.
+end note
+
+@enduml

@@ -67,6 +67,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.synthetic.api/domain/trade_population_plan.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
@@ -88,10 +89,12 @@
 #include <algorithm>
 #include <chrono>
 #include <functional>
+#include <map>
 #include <memory>
 #include <optional>
 #include <ranges>
 #include <rfl/json.hpp>
+#include <set>
 #include <stdexcept>
 #include <thread>
 #include <unordered_map>
@@ -1230,10 +1233,17 @@ private:
             provision_step_result{.kind = command.kind, .parties = parties, .images = images}));
     }
 
-    /// Gives every party the tenant holds a subscription to the provider the step
-    /// names and a route to the source it names. The generators belong to the system,
-    /// so the tenant publishes none and starts none: the parties take the shared
-    /// simulated stream through their subscriptions and routes.
+    /// Gives each party the tenant holds a subscription to a provider and a route to
+    /// one of its sources: the step's own, or the one the step names for that party.
+    ///
+    /// A demonstration's legal entities are meant to take their market data from different vendors,
+    /// because each collection quotes the markets its own feeds serve, so the profile names a
+    /// provider and a source for each party it wants on another. A party the profile does not name
+    /// takes the step's own, and a party it names that the tenant does not hold is refused: a
+    /// subscription written for nobody would leave the tenant quietly on the wrong feed.
+    ///
+    /// The generators belong to the system, so the tenant publishes none and starts none: the
+    /// parties take the shared simulated stream through their subscriptions and routes.
     void
     subscribe_market_data_step(const ores::service::messaging::workflow_step_context& wf,
                                const ores::iam::workflow::provision_tenant_step_command& command,
@@ -1241,9 +1251,27 @@ private:
         const auto arguments = parse_market_data_arguments(command.arguments_json);
         auto discover =
             make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
-        const auto source_id = find_source_id(discover, arguments.provider, arguments.source);
+
+        // One lookup for each provider and source named, so a party on another feed costs no more
+        // reads than the parties on the step's own.
+        std::map<std::string, boost::uuids::uuid> sources;
+        const auto source_of = [&](const std::string& provider, const std::string& source) {
+            const auto key = provider + "/" + source;
+            const auto found = sources.find(key);
+            if (found != sources.end())
+                return found->second;
+            const auto id = find_source_id(discover, provider, source);
+            sources.emplace(key, id);
+            return id;
+        };
+        const auto default_source = source_of(arguments.provider, arguments.source);
+
+        std::map<std::string, market_data_party_assignment> named;
+        for (const auto& assignment : arguments.parties)
+            named.emplace(assignment.party, assignment);
 
         std::vector<std::string> subscribed;
+        std::set<std::string> matched;
         std::uint32_t offset = 0;
         constexpr std::uint32_t page_size = 1000;
         while (true) {
@@ -1252,15 +1280,36 @@ private:
             request.limit = page_size;
             const auto page = discover.request(request).parties;
             for (const auto& party : page) {
+                auto provider = arguments.provider;
+                auto source_id = default_source;
+                const auto id_text = boost::uuids::to_string(party.id);
+                for (const auto* key : {&id_text, &party.full_name}) {
+                    const auto found = named.find(*key);
+                    if (found == named.end())
+                        continue;
+                    matched.insert(found->first);
+                    if (!found->second.provider.empty())
+                        provider = found->second.provider;
+                    if (!found->second.source.empty())
+                        source_id = source_of(provider, found->second.source);
+                    else if (!found->second.provider.empty())
+                        source_id = source_of(provider, arguments.source);
+                    break;
+                }
                 auto party_client =
                     make_step_client(command.tenant_id, actor.account_id, party.id, actor.username);
-                subscribe_party(party_client, party.id, arguments.provider, source_id);
-                subscribed.push_back(boost::uuids::to_string(party.id));
+                subscribe_party(party_client, party.id, provider, source_id);
+                subscribed.push_back(id_text);
             }
             if (page.size() < page_size)
                 break;
             offset += page_size;
         }
+
+        for (const auto& assignment : arguments.parties)
+            if (!matched.contains(assignment.party))
+                throw std::runtime_error("The tenant holds no party the market data step names: '" +
+                                         assignment.party + "'.");
 
         wf.complete(
             rfl::json::write(provision_step_result{.kind = command.kind, .parties = subscribed}));
@@ -1286,6 +1335,40 @@ private:
                     *token =
                         impersonation_.mint_token(ctx_, tenant_id, account_id, party_id, username);
                 return *token;
+            });
+    }
+
+    /**
+     * @brief A client that books in the session of the person a slot names.
+     *
+     * The population is entered by the party's own traders and not by the run: a booking writes the
+     * person who entered it, and the authorisation request it raises belongs to that person. The
+     * token is minted for whoever @p acting holds at the moment of the request, and re-minted when
+     * the slot hands the run to another trader, so one client books a whole population in as many
+     * sessions as it has traders.
+     */
+    ores::nats::service::nats_client
+    make_trader_client(const std::string& tenant_id,
+                       const boost::uuids::uuid& party_id,
+                       std::shared_ptr<ores::synthetic::domain::trade_population_trader> acting) {
+        struct minted final {
+            boost::uuids::uuid account_id = {};
+            std::string username = {};
+            std::string token = {};
+        };
+        auto held = std::make_shared<minted>();
+        return ores::nats::service::nats_client(
+            nats_, [this, tenant_id, party_id, acting, held](bool force) {
+                const auto stale = force || held->token.empty() ||
+                                   held->account_id != acting->account_id ||
+                                   held->username != acting->username;
+                if (stale) {
+                    held->account_id = acting->account_id;
+                    held->username = acting->username;
+                    held->token = impersonation_.mint_token(
+                        ctx_, tenant_id, acting->account_id, party_id, acting->username);
+                }
+                return held->token;
             });
     }
 
@@ -1592,7 +1675,23 @@ private:
 
             auto generation_client = make_generation_client(
                 command.tenant_id, actor.account_id, party->id, actor.username);
-            ores::synthetic::service::trading_trade_population_writer writer(generation_client);
+
+            /*
+             * Each trade is booked by the person the slot names, which is one of the party's own
+             * traders: the trade states them as its author and the authorisation request it raises
+             * is theirs, so a person of the party finds the requests of the trades they entered.
+             */
+            auto acting = std::make_shared<ores::synthetic::domain::trade_population_trader>();
+            auto booker = std::make_shared<ores::nats::service::nats_client>(
+                make_trader_client(command.tenant_id, party->id, acting));
+            ores::synthetic::service::trading_trade_population_writer writer(
+                generation_client,
+                [booker, acting](const ores::synthetic::domain::trade_population_slot& slot)
+                    -> ores::nats::service::nats_client& {
+                    *acting = slot.trader;
+                    return *booker;
+                },
+                ores::synthetic::domain::trade_population_trader{actor.account_id, actor.username});
             ores::synthetic::service::trade_population_service service(writer);
             const auto run = service.run(config_id);
 

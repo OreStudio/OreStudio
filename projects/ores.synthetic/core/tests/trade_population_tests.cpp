@@ -83,6 +83,8 @@ const boost::uuids::uuid bank =
     boost::uuids::string_generator()("44444444-4444-4444-4444-444444444444");
 const boost::uuids::uuid second_bank =
     boost::uuids::string_generator()("55555555-5555-5555-5555-555555555555");
+const boost::uuids::uuid trader_account =
+    boost::uuids::string_generator()("66666666-6666-6666-6666-666666666666");
 
 /*
  * How many trades each book of the scene receives. The case states it rather
@@ -106,7 +108,7 @@ domain::trade_generation_scope bond_scope() {
     scope.book_ids = {bond_book, second_book};
     scope.counterparty_ids = {bank, second_bank};
     scope.issuer_ids = {bank, second_bank};
-    scope.trader_usernames = {"trader.one"};
+    scope.traders = {domain::trade_population_trader{trader_account, "trader.one"}};
     scope.currency_code = "EUR";
     return scope;
 }
@@ -334,7 +336,7 @@ TEST_CASE("a_scope_naming_no_book_counterparty_or_trader_is_refused", tags) {
     CHECK_THROWS_AS(plan_of(no_issuer), trade_population_error);
 
     auto no_trader = bond_scope();
-    no_trader.trader_usernames.clear();
+    no_trader.traders.clear();
     CHECK_THROWS_AS(plan_of(no_trader), trade_population_error);
 }
 
@@ -358,7 +360,7 @@ std::string render_envelope(const domain::trade_population_plan& plan) {
           << boost::uuids::to_string(slot.book_id) << ' '
           << boost::uuids::to_string(slot.counterparty_id) << ' '
           << (slot.netting_set_id ? boost::uuids::to_string(*slot.netting_set_id) : "-") << ' '
-          << slot.trader_username << ' ' << slot.trade_type_code << ' ' << slot.internal_identifier
+          << slot.trader.username << ' ' << slot.trade_type_code << ' ' << slot.internal_identifier
           << ' ' << slot.trade_date << ' ' << slot.notional << ' ' << slot.currency << '\n';
     }
     return s.str();

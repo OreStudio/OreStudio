@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 6644C73A-ADB5-4379-AF80-78B79B6C15A6
+:END:
+#+title: Task: Roll a run's counterparties up to their groups
+#+description: The counterparty level states each group's rolled-up figure above its members, so a group can be checked against the parts beneath it.
+#+type: task
+#+level: s1
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr: 3887
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A credit reader sees a counterparty group's aggregate above the names that make it up, and can check the two against each other.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- A counterparty with a parent carries its group's name.
+- A group row states the sum of its members' trades, NPV and notional.
+- Members sit under their group, indented, ordered largest first.
+- A counterparty with no parent stands on its own, and its Show the trades still works.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3887][#3887]] | [web] Roll a run's counterparties up to their groups |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The counterparty level states each group above its members.
+
+A counterparty that names a parent carries the parent's name, and a group row
+sits above the members that share it. The group's trades, NPV and notional are
+the sums of its members, so the two can be checked against each other. Members
+are indented under their group and ordered largest first, groups are ordered by
+their own figure, and a counterparty with no parent stands on its own.
+
+The run that shows it is =71d08bde-2fd9-4ce5-b455-86766722fc99=, on the NPV
+definition of ACME Corporation HK Ltd. Its counterparty level draws fourteen
+rows: seven groups and their members, among them *株式会社三菱ＵＦＪフィナンシャル・グループ*
+with two members adding to =4,788,523.77= HKD, and *DBS GROUP HOLDINGS LTD* above
+*DBS BANK LTD.* at =2,606,275.49= HKD.
+
+Show the trades stays on members, because the filter reads one counterparty's
+trades; a group's trades are its members' and are read one by one.
+
+The group names come from the tenant's whole counterparty list rather than from
+the trades, because a parent need not trade in the run and would otherwise be
+unnamed.
+
+The review found the case where a parent does trade: its own row has no parent,
+so it was left standing beside a group with the same key, and the group's figure
+left its trades out. The parent is now one of its own group's members, so its
+trades are counted once and its row sits under the group it leads; group and
+member rows take distinct React keys. A parent whose name was not read is left
+standing, because grouping under a blank name hides the grouping the reader came
+for. The two summing helpers are one, and the comment that had drifted sits above
+the function it describes again.

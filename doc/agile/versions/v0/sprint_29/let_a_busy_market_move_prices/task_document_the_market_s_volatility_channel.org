@@ -1,0 +1,191 @@
+:PROPERTIES:
+:ID: FE158821-22B9-4FDB-9E77-256BA2CF3D4E
+:END:
+#+title: Task: Document the market's volatility channel
+#+description: Write the design note the volatility work is built from: what the factor does to a price law, business time against sampling, the volatility loading and its normalisation, the tail channel through the mixture, and the bivariate Hawkes whose one coordinate is today's heat. State the control plane, the tests each part must pass, and what is deliberately out of scope.
+#+type: task
+#+level: s1
+#+filetags: :let_a_busy_market_move_prices:sprint_29:v0:
+#+owner: marco
+#+branch: feature/document-the-market-s-volatility-channel
+#+pr: 3892
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One note under =doc/knowledge/domain/= that the volatility work is scoped from, so
+the next three tasks are raised against a design rather than against a
+conversation: what the market factor does to a price law, what it must not do, the
+prior art it rests on, the limitations it accepts, and the evidence for each claim.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- The note says what the existing stochastic processes already carry, and names
+  the three pieces of plumbing that are missing rather than proposing
+  infrastructure.
+- The note separates sampling from time: a rate change changes how often a series
+  is observed, and a process that steps once per tick currently gains variance
+  per wall-clock second. It says which processes behave which way and what the
+  fix is.
+- The note states the volatility loading: the same factor, its own per-feed
+  loading, and the normalisation that keeps a run's long-run sigma at the sigma
+  its configuration states.
+- The note states the tail channel through the FX mixture, and why a diffusion
+  scale alone cannot fatten a panic's tails.
+- The note states the control plane: the existing switch, the existing tab and
+  one new number per feed. No new verb and no new service.
+- The note states, for each part, the test that proves it, and which of the two
+  meanings of volatility that test measures.
+- The note says what is out of scope, and that the bivariate Hawkes is a capture
+  rather than a task.
+- The note cites the prior art the approach rests on, grouped by the part that
+  leans on each paper, and names the models it deliberately does not adopt.
+- The note states its own limitations: what is assumed rather than estimated, what
+  its tests cannot see, and where the cited work does not carry over to this
+  design.
+- The three tasks the note scopes are raised, in the order it recommends.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The note's sections, which are also the outline of the work:
+
+1. *What the factor is today.* One shared state and one shared heat, read by the
+   arrival processes as a rate multiplier. The arrival work, and what it left
+   open.
+2. *Sampling against time.* Business time, integrated activity, and why a
+   diffusion's variance follows elapsed time and not the number of observations.
+   The processes that take the gap against the ones that step once per tick, and
+   the inconsistency between them.
+3. *The volatility loading.* The factor in the link, the loading per feed, the
+   setters, and the normalisation that keeps calibration. Two meanings of
+   volatility, and which one a test measures.
+4. *The tails.* The Gaussian mixture, reweighting toward the wide components as
+   activity rises, and why a diffusion scale cannot produce a panic's kurtosis.
+5. *The control plane.* What a person sees and sets, and what it costs: the same
+   switch, the same tab, one number per feed.
+6. *Out of scope.* The bivariate Hawkes, its 2x2 kernel and the spectral-radius
+   stability condition, captured rather than scoped.
+
+* Result
+
+The note is written at
+[[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]], and
+the arrival note links to it, so the pair reads both ways.
+
+It settles the four things the story asked for. A rate change must change
+sampling and not time, and the note names the fixed-step processes that get that
+wrong today. The volatility loading is three seams that mirror what the arrival
+work already built, with calibration — not plumbing — named as the cost. The
+tails come from reweighting the FX mixture the feed already carries, not from a
+new model. The control plane is the switch, the read and the tab that exist, plus
+one number per feed.
+
+It also states two traps the next tasks must not fall into: the heat's long-run
+mean is not one, so it has to be centred in the volatility margin or calibration
+drifts; and "volatility" means two different things — the process's sigma, and the
+sigma a client computes from the ticks published — so every test has to say which
+it measures.
+
+The bivariate Hawkes is out of scope and stays captured: its 2x2 kernel replaces
+the scalar stability test with a spectral radius, which is a model of its own.
+
+The three tasks the note scopes are raised on the story, in its order: sampling
+before time, the loading with its calibration, and the tails. The bivariate Hawkes
+stays captured.
+
+The note carries the prior art and the limitations as well as the design. The
+reading is grouped by the section that leans on it — Clark and the duration
+literature for activity driving volatility, Bochner and Ané and Geman for
+business time, Engle, Bollerslev, Hull and White and Heston for the stochastic
+volatility models deliberately not adopted, Hawkes and its multivariate stability,
+Merton and Barndorff-Nielsen and Shephard for the tails, Epps and Lo and MacKinlay
+for why cross-series correlation is interval-dependent, Andersen and Bollerslev
+and Baillie and colleagues for the seasonality and long memory the factor does not
+produce, and Zhang and colleagues for the two meanings of volatility.
+
+The limitations section is the part a reader should test the design against: no
+vol-of-vol or leverage effect, no jumps as events, two regimes, no intraday shape
+and no long memory, no explicit microstructure noise; a loading that is set rather
+than estimated; and three things our own tests cannot see — which volatility they
+measure, how the window moves a cross-series correlation, and the fact that a
+synthetic series can never validate the model against a market. It also states
+where the cited work does not carry over, including that the enrolment-and-share
+device which keeps the heat bounded is an engineering choice with no paper behind
+it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3892][#3892]] | [docs] State the market's volatility channel |
+| [[https://github.com/OreStudio/OreStudio/pull/3890][#3890]] | [agile] Scope the market's volatility channel |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Review of PR 3892
+
+| # | Comment | Decision | Notes |
+|---+---------+----------+-------|
+| 1 | The sigma law contradicts its own variance claim: with sigma proportional to A, variance is proportional to A squared | Accept | The loading is written as a multiplier, =M_vol = (sensitivity_vol * A)^gamma … =, and gamma names which quantity follows activity: 1/2 for variance, 1 for sigma. The default is 1/2, which is the one the literature supports. |
+| 2 | The square-root claim needs a qualifier, and the fixed-step processes should be named | Accept | It now says variance rises in proportion to the rate when each step's variance is constant, and names the three processes that take the gap. |
+| 3 | "Refused or converted" is ambiguous, and refusing would break today's feeds | Accept | Converted, not refused: the processes gain a time-scaled law. The first task's acceptance says so. |
+| 4 | The centring is under-specified: the floor, and whether the mean stays one | Accept | The margin, the floor and the tolerance are stated, and the heat's mean is tied to the arrival note's derivation. |
+| 5 | Reweighting the mixture raises its variance, so the calibration test could not hold | Accept | The reweighting is variance-preserving: the stdevs are rescaled, so the loading remains the only channel to sigma. |
+| 6 | The three new tasks are unfilled scaffolds | Accept | Each now carries its goal, its acceptance and its plan, taken from the note. |
+| 7 | The closed task still had a placeholder goal, and two notes and results | Accept | Filled and merged. |
+| 8 | The schema column is a fourth change; the bivariate capture had no link | Accept | The column is named as schema, migration and codegen, and the capture is filed and linked. |

@@ -161,6 +161,22 @@ OFFICES = [
 DESK_STAFF_ROLE = "Trading"
 SUPPORT_MANAGER_ROLE = "Operations"
 SUPPORT_ANALYST_ROLE = "Viewer"
+# The two functions every office kept no staff for. Both role names are the
+# seed's own, match verbatim against ores_iam_roles_tbl.name, and each has a
+# persona the demonstration exercises: the salesperson reads what the desk
+# may show a client, and the support engineer reads the tenant's
+# administrative state without changing it.
+SALES_ROLE = "Sales"
+CLIENT_SUPPORT_ROLE = "Support"
+
+# The two approval functions every office kept nobody for. The book-change
+# approval parts name a decider permission each, and no role held the
+# Controller or the Finance code, so both parts could only ever be answered by
+# a tenant administrator. The role names below are the seed's own and are
+# matched verbatim against ores_iam_roles_tbl.name, like every other role
+# here.
+CONTROLLER_ROLE = "Controller"
+FINANCE_ROLE = "Finance"
 
 
 def seniority_title(role_label, index, count):
@@ -282,6 +298,22 @@ SUPPORT_FUNCTIONS = [
      "reports_to_role": "risk"},
 ]
 
+# The approval functions an office needs a person for, beyond the heads it
+# already carries. The book-change parts ask the Controller first and then
+# Finance beside Market Risk and Operations, so each office holds one person
+# for each of the two parts it did not answer. `reports_to_role` picks the
+# independent line the person's head reports into: financial control is a
+# check, so it reports to the Country Head beside Risk, and finance is the
+# firm's own accounting, so it reports to the COO beside Middle Office.
+OFFICE_APPROVAL_FUNCTIONS = [
+    {"code": "financial_control", "name": "Financial Control",
+     "job_title": "Head of Financial Control", "role": CONTROLLER_ROLE,
+     "reports_to_role": "ceo"},
+    {"code": "finance", "name": "Finance",
+     "job_title": "Head of Finance", "role": FINANCE_ROLE,
+     "reports_to_role": "coo"},
+]
+
 HOLDING = {
     "code": "acme_group",
     "name": "Acme Corporation Plc",
@@ -377,14 +409,57 @@ def gen_person(office, faker, index, used_slugs):
 
 
 def build_group_accounts():
-    """The holding company's own staff -- just a Group CEO today, no
-    desks/business units of its own beyond Group Treasury (see
-    build_group_treasury() -- trading desks still live per-office). Every
-    office's Country Head reports to this account, so the org chart is one
-    real tree rather than three disconnected per-office roots. Fixed (not
-    Faker-generated): a single person doesn't need per-office locale/name
-    variety, and staying deterministic keeps it stable across regenerations."""
+    """The holding company's own staff: the Group CEO and the Group Treasurer, in
+    that order. No desks or business units of its own beyond Group Treasury (see
+    build_group_treasury() -- trading desks still live per-office), and the
+    Treasurer sits in that unit. Every office's Country Head reports to the CEO,
+    so the org chart is one real tree rather than three disconnected per-office
+    roots, and the Treasurer reports to the CEO.
+
+    The Treasurer carries the Trading role because the group carries trades of
+    its own -- intercompany loans and hedges in its treasury books -- and the
+    person who enters them must be somebody of the group who may book: the
+    population the demonstration generates states its author, and the
+    authorisation requests it raises belong to that author. The CEO keeps the
+    Operations role and books nothing.
+
+    The last two answer the group's own approval parts. The group carries books
+    of its own (its treasury), and a change to one asks the Controller and then
+    Finance, so the group needs a person for each of those two parts as every
+    office does. Neither is a Member of an office, so they sit at the holding
+    company with no business unit, the same as the CEO.
+
+    Fixed (not Faker-generated): four people don't need per-office locale/name
+    variety, and staying deterministic keeps it stable across regenerations.
+    The CEO must stay first, because main() names it from the first entry, and
+    the two office roles below are appended so the two people above keep the
+    identifiers and the pictures the demonstration knows them by."""
     username = "adrian.vance"
+    treasurer_username = "nadia.fischer"
+    controller_username = "fiona.ashdown"
+    finance_username = "graham.pierce"
+
+    def group_person(slug, full_name, gender, role, job_title, reports_to):
+        return {
+            "company_code": HOLDING["code"],
+            "id": new_uuid(f"account:{slug}"),
+            "username": slug,
+            "email": f"{slug}@acmecorp.com",
+            "full_name": full_name,
+            "gender": gender,
+            "password_hash": NO_STAGED_PASSWORD,
+            "account_type": "user",
+            "role": role,
+            "job_title": job_title,
+            "reports_to_username": reports_to,
+            "business_unit_code": None,
+            "street": HOLDING["street"],
+            "city": HOLDING["city"],
+            "state": None,
+            "country_code": HOLDING["country"],
+            "postal_code": HOLDING["postal_code"],
+            "phone": HOLDING["phone"],
+        }
     return [{
         "company_code": HOLDING["code"],
         "id": new_uuid(f"account:{username}"),
@@ -404,7 +479,30 @@ def build_group_accounts():
         "country_code": HOLDING["country"],
         "postal_code": HOLDING["postal_code"],
         "phone": HOLDING["phone"],
-    }]
+    }, {
+        "company_code": HOLDING["code"],
+        "id": new_uuid(f"account:{treasurer_username}"),
+        "username": treasurer_username,
+        "email": f"{treasurer_username}@acmecorp.com",
+        "full_name": "Nadia Fischer",
+        "gender": "female",
+        "password_hash": NO_STAGED_PASSWORD,
+        "account_type": "user",
+        "role": "Trading",
+        "job_title": "Group Treasurer",
+        "reports_to_username": username,
+        "business_unit_code": f"{HOLDING['code']}.treasury",
+        "street": HOLDING["street"],
+        "city": HOLDING["city"],
+        "state": None,
+        "country_code": HOLDING["country"],
+        "postal_code": HOLDING["postal_code"],
+        "phone": HOLDING["phone"],
+    },
+        group_person(controller_username, "Fiona Ashdown", "female", CONTROLLER_ROLE,
+                     "Group Financial Controller", username),
+        group_person(finance_username, "Graham Pierce", "male", FINANCE_ROLE,
+                     "Group Finance Director", username)]
 
 
 def build_group_treasury():
@@ -582,6 +680,40 @@ def build_office(office, faker, group_ceo_username=None):
             title = seniority_title("Analyst", i, func["analyst_count"])
             add_account(func_code, title, SUPPORT_ANALYST_ROLE,
                        reports_to_username=manager_username)
+
+    # The two seeded roles the offices carried nobody for: =Sales= and
+    # =Support=. A demonstration of either persona had no account to sign in
+    # as, so the screens those roles reach were exercised by nobody. Both are
+    # global-markets functions and report to the Country Head, like the other
+    # function heads. They are added last so the people above keep the names,
+    # the usernames and the photos the earlier demonstrations know.
+    add_account(global_markets_code, "Head of Sales", SALES_ROLE,
+                reports_to_username=ceo_username)
+    add_account(global_markets_code, "Head of Client Support", CLIENT_SUPPORT_ROLE,
+                reports_to_username=ceo_username)
+
+    # The two book-approval parts no office answered: the Controller, which
+    # answers a change first, and Finance, which answers beside Market Risk and
+    # Operations. Each office holds a book population of its own, so each office
+    # needs a person who may decide those parts of a change to one of its books.
+    # Both functions are added last, for the same reason Sales and Support are:
+    # the people above keep the names, the usernames and the photos the earlier
+    # demonstrations know.
+    for func in OFFICE_APPROVAL_FUNCTIONS:
+        func_code = f"{company_code}.{func['code']}"
+        business_units.append({
+            "company_code": company_code,
+            "id": new_uuid(f"business_unit:{func_code}"),
+            "unit_name": f"{func['name']} {office['city']}",
+            "unit_code": func_code,
+            "parent_business_unit_code": None,
+            "business_centre_code": office["business_centre_code"],
+            "unit_type_code": "COST_CENTRE",
+        })
+        func_head_reports_to = (
+            ceo_username if func["reports_to_role"] == "ceo" else coo_username)
+        add_account(func_code, func["job_title"], func["role"],
+                    reports_to_username=func_head_reports_to)
 
     return lei, lei_entity, business_units, portfolios, books, accounts
 

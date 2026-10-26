@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 8357A343-807A-467E-9725-7FF56BF9EF63
+:END:
+#+title: Task: Add the demo approvers and document the market data setup
+#+description: Every approval function needs a persona that can decide, and the Acme market data setup needs Zettelkasten documentation with UML flows.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/approvers-and-demo-docs
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each approval kind has an Acme decider persona, and the demo's market data, permissions and authorisation model are documented with diagrams.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- A persona per approval function, able to decide the party's requests, with the requester different from the decider.
+- Zettelkasten notes describing the market data setup, permissions and authorisation model, with UML diagrams of the flows.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Measurements
+
+| What | Value |
+|------+-------|
+| Decide permissions in the seed | 5, covering 5 kinds and 4 parts |
+| Roles with a decide permission | Operations, Controller, Finance, TenantAdmin |
+| New Acme personas | 8, staff 65 to 73 |
+| Party deciders per kind | 17 (book, counterparty, operational authorisation) |
+| Party deciders per part | controller 5, finance 5, market_risk 17, operations 17 |
+| A decide | operational authorisation approved, version 1 to 2 |
+| Four eyes | a requester deciding their own request refused |
+| Documentation | hub and 6 notes, 3 PlantUML diagrams with PNGs |
+| Docs checks | green, site build succeeded |
+
+* Result
+
+Every approval function has an Acme persona that can decide, and the demo's
+market data, permissions and authorisation model are documented.
+
+- The seed's five decide permissions are now held by roles: Operations gains
+  decide_operations, and Controller and Finance roles are added for their parts.
+  The tenant administrator keeps iam::roles:assign.
+- Eight personas join Acme, a controller and a finance person in the group and
+  in each office, so every party has a decider for its book parts.
+- Verified on a recreated database: a Head of Middle Office approves an
+  operational authorisation; a requester deciding his own request is refused
+  with four_eyes; the controller, finance and market risk personas each approve
+  their part; a trader holds no decide code.
+- The documentation is a Zettelkasten cluster under doc/knowledge/demo: the
+  providers and sources, the catalogue and feeds, the subscriptions and routes,
+  the seed profile, the permission matrix and the approval model, with three
+  UML flows and the site index updated.
+
+Open, recorded in the approval note: a part decider reads an empty queue because
+the queue filters by kind; no policy emits the controller part; no market-data
+approval kind exists; the journeys do not say which party's Market Risk decides
+a tenant-wide change; and a hold has no reason lookup.

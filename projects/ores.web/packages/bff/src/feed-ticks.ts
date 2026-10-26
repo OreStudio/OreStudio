@@ -90,6 +90,40 @@ export class FeedTickBuffers {
         return ticks.slice(Math.max(0, ticks.length - limit));
     }
 
+    /**
+     * When the ticks of a feed's current run arrived, from an instant on, at most
+     * `limit` of them, in the order they were heard.
+     *
+     * A raster draws when ticks arrived and nothing else, so it reads times
+     * rather than prices: the value of a tick says nothing about the market-wide
+     * factor, and a row of prices is a chart the feed's own page already draws.
+     */
+    arrivalTimes(sourceName: string, since: number, limit = this.#capacity): readonly string[] {
+        const ticks = this.#runs.get(sourceName)?.ticks ?? [];
+        return ticks
+            .filter((tick) => Date.parse(tick.at) >= since)
+            .slice(-limit)
+            .map((tick) => tick.at);
+    }
+
+    /**
+     * Stops listening to every source the caller no longer names.
+     *
+     * A read that watches what a run carries and nothing else keeps the BFF's
+     * subscriptions at the size of the run: a source that stopped is a subject
+     * nobody reads, and left watching it grows for as long as feeds come and go.
+     */
+    keepOnly(sourceNames: readonly string[]): void {
+        const keep = new Set(sourceNames);
+        for (const [sourceName, run] of this.#runs) {
+            if (keep.has(sourceName)) {
+                continue;
+            }
+            run.stop();
+            this.#runs.delete(sourceName);
+        }
+    }
+
     /** How many runs are heard from, which is what a test asserts on. */
     get size(): number {
         return this.#runs.size;

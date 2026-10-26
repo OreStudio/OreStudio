@@ -76,5 +76,9 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '4612411b-966e-5331-a66f-8ed3a6d2a7a5', 0, 'chi.wing.lau', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'chi.wing.lau@acmecorp.hk', null),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '3421bbbe-92a3-5471-af25-0ad287abaa82', 0, 'man.yee.tang', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'man.yee.tang@acmecorp.hk', null),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'c5cfea9d-f562-5175-a8b2-2d965f2c4c97', 0, 'tsz.ching.lam', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'tsz.ching.lam@acmecorp.hk', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '7f630633-73e6-5cb0-838c-5416115943ee', 0, 'ho.yin.yip', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'ho.yin.yip@acmecorp.hk', null);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '7f630633-73e6-5cb0-838c-5416115943ee', 0, 'ho.yin.yip', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'ho.yin.yip@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '66d92393-d393-5cac-93a8-b75131bb6a79', 0, 'ying.ying.ho', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'ying.ying.ho@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f8578835-d957-51b2-9795-0b84bd7b41cb', 0, 'kwok.wing.chan', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'kwok.wing.chan@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a02bc799-ec16-5466-a187-6a48660c809c', 0, 'suet.ying.wong', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'suet.ying.wong@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e68ace37-1320-5ca2-8b9b-410efb2d24cb', 0, 'hoi.yan.lee', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'hoi.yan.lee@acmecorp.hk', null);
 end $$;

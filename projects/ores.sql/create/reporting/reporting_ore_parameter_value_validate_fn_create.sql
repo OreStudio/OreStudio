@@ -29,40 +29,35 @@
  * built-in pair. A setting with no set is free text and passes.
  */
 
-create or replace function ores_reporting_validate_parameter_value_fn()
-returns trigger
+/**
+ * Whether a value lies in a value set: the one rule of every check of an ORE
+ * leaf's value, so a parameter and a convention term get the same answer from
+ * the same set. A set code the tables do not hold admits every value.
+ */
+create or replace function ores_reporting_value_in_set_fn(p_set_code text, p_value text)
+returns boolean
 security definer
 set search_path = public, pg_temp
+stable
 as $$
 declare
-    v_scope text;
-    v_set_code text;
+    v_set_code text := p_set_code;
     v_kind text;
     v_relation text;
     v_ok boolean := false;
     v_part text;
 begin
-    v_scope := case NEW.parameter_scope
-        when 'model' then 'ModelParameters'
-        when 'engine' then 'EngineParameters'
-        when 'global' then 'GlobalParameters'
-        else NEW.parameter_scope
-    end;
-
-    select l.value_set_code, s.source_kind, c.relation
-      into v_set_code, v_kind, v_relation
-      from ores_reporting_ore_parameter_setting_value_sets_tbl l
-      join ores_reporting_ore_parameter_value_sets_tbl s
-        on s.code = l.value_set_code
-       and s.valid_to = ores_utility_infinity_timestamp_fn()
+    select s.source_kind, c.relation
+      into v_kind, v_relation
+      from ores_reporting_ore_parameter_value_sets_tbl s
       left join ores_reporting_ore_parameter_value_set_catalogues_tbl c
         on c.code = s.catalogue_code
        and c.valid_to = ores_utility_infinity_timestamp_fn()
-     where l.code = v_scope || ':' || NEW.parameter_name
-       and l.valid_to = ores_utility_infinity_timestamp_fn();
+     where s.code = p_set_code
+       and s.valid_to = ores_utility_infinity_timestamp_fn();
 
     if not found then
-        return NEW;
+        return true;
     end if;
 
     if v_kind = 'enumerated' then
@@ -70,7 +65,7 @@ begin
             select 1
               from ores_reporting_ore_parameter_value_set_values_tbl v
              where v.value_set_code = v_set_code
-               and v.value = NEW.parameter_value
+               and v.value = p_value
                and v.is_active
                and v.valid_to = ores_utility_infinity_timestamp_fn())
           into v_ok;
@@ -83,11 +78,11 @@ begin
          * because normalising it would change the document an export writes
          * back and break a roundtrip that is meant to be lossless.
          */
-        v_ok := lower(NEW.parameter_value) in ('true', 'false', 'y', 'n');
+        v_ok := lower(p_value) in ('true', 'false', 'y', 'n');
     elsif v_kind = 'range' then
         begin
-            select NEW.parameter_value::numeric >= coalesce(s.minimum, '-Infinity'::numeric)
-               and NEW.parameter_value::numeric <= coalesce(s.maximum, 'Infinity'::numeric)
+            select p_value::numeric >= coalesce(s.minimum, '-Infinity'::numeric)
+               and p_value::numeric <= coalesce(s.maximum, 'Infinity'::numeric)
               into v_ok
               from ores_reporting_ore_parameter_value_sets_tbl s
              where s.code = v_set_code
@@ -96,7 +91,7 @@ begin
             v_ok := false;
         end;
     elsif v_kind = 'regex' then
-        select NEW.parameter_value ~ s.pattern
+        select p_value ~ s.pattern
           into v_ok
           from ores_reporting_ore_parameter_value_sets_tbl s
          where s.code = v_set_code
@@ -109,7 +104,7 @@ begin
          * as guarded as a single value rather than waved through.
          */
         v_ok := true;
-        foreach v_part in array string_to_array(NEW.parameter_value, ',') loop
+        foreach v_part in array string_to_array(p_value, ',') loop
             if v_part is null or btrim(v_part) = '' then
                 v_ok := false;
             elsif v_kind = 'integer' then
@@ -132,10 +127,43 @@ begin
         end if;
         execute format(
             'select exists (select 1 from %I where value = $1 and is_active)', v_relation)
-          into v_ok using NEW.parameter_value;
+          into v_ok using p_value;
     end if;
 
-    if not coalesce(v_ok, false) then
+    return coalesce(v_ok, false);
+end;
+$$ language plpgsql;
+
+create or replace function ores_reporting_validate_parameter_value_fn()
+returns trigger
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+    v_scope text;
+    v_set_code text;
+begin
+    v_scope := case NEW.parameter_scope
+        when 'model' then 'ModelParameters'
+        when 'engine' then 'EngineParameters'
+        when 'global' then 'GlobalParameters'
+        else NEW.parameter_scope
+    end;
+
+    select l.value_set_code
+      into v_set_code
+      from ores_reporting_ore_parameter_setting_value_sets_tbl l
+      join ores_reporting_ore_parameter_value_sets_tbl s
+        on s.code = l.value_set_code
+       and s.valid_to = ores_utility_infinity_timestamp_fn()
+     where l.code = v_scope || ':' || NEW.parameter_name
+       and l.valid_to = ores_utility_infinity_timestamp_fn();
+
+    if not found then
+        return NEW;
+    end if;
+
+    if not ores_reporting_value_in_set_fn(v_set_code, NEW.parameter_value) then
         raise exception 'Invalid value % for %.%: the value is not in set %.',
             NEW.parameter_value, v_scope, NEW.parameter_name, v_set_code;
     end if;

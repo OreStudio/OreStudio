@@ -66,6 +66,20 @@
   --color-down: #f85149;
   --color-warn: #d29922;
 
+  /* The asset classes a series belongs to, as a colour. A screen that draws a
+     class draws it in its class's colour, so a hue says what the row is before
+     the name is read; the hues are their own tokens rather than the accent and
+     the semantic pair, because a series is neither a control nor a fault. The
+     scheme is defined once, in marketdata/assetClassColour.ts, and seven classes
+     are distinguished: blue, amber, violet, pink, orange, teal and green. */
+  --color-class-fx: #58a6ff;
+  --color-class-interest-rates: #d29922;
+  --color-class-equity: #a371f7;
+  --color-class-credit: #db61a2;
+  --color-class-commodity: #ffa657;
+  --color-class-bond: #2dd4bf;
+  --color-class-inflation: #3fb950;
+
   /* News: something the screen shows changed on the server. Gold, as ores.qt
      draws it, and used for nothing else, so it never means an error, a warning
      or an action. */

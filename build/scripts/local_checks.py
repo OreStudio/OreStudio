@@ -618,6 +618,9 @@ CATALOGUE: tuple[Check, ...] = (
         paths=(
             "projects/ores.sql/populate/refdata/refdata_convention_kind_terms_populate.sql",
             "projects/ores.sql/populate/refdata/refdata_convention_kinds_populate.sql",
+            "projects/ores.sql/create/refdata/refdata_convention_terms_validate_create.sql",
+            "projects/ores.sql/drop/refdata/refdata_drop.sql",
+            "projects/ores.sql/drop/refdata/refdata_convention_terms_validate_drop.sql",
             "projects/ores.sql/utility/generate_convention_kind_terms.py",
             "projects/ores.sql/utility/convention_terms.json",
             "projects/ores.ore/core/src/domain/conventions_family_*.cpp",

@@ -171,7 +171,7 @@ void validate_scope(const domain::trade_generation_scope& scope) {
     if (scope.counterparty_ids.empty())
         throw trade_population_error("The config states no counterparty, so the population faces "
                                      "nobody.");
-    if (scope.trader_usernames.empty())
+    if (scope.traders.empty())
         throw trade_population_error("The party holds no account that may trade, so no trade can "
                                      "name the person who entered it.");
     if (scope.max_notional < scope.min_notional)
@@ -222,7 +222,7 @@ domain::trade_population_slot common_slot(const domain::trade_generation_scope& 
     entry.slot = slot;
     entry.book_id = scope.book_ids[slot % scope.book_ids.size()];
     entry.counterparty_id = scope.counterparty_ids[slot % scope.counterparty_ids.size()];
-    entry.trader_username = scope.trader_usernames[slot % scope.trader_usernames.size()];
+    entry.trader = scope.traders[slot % scope.traders.size()];
     entry.trade_id = trade_id_for(scope, slot);
     entry.internal_identifier = internal_identifier_for(scope, slot);
     entry.trade_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));

@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 9E8D00D3-5ADD-48E0-85AB-CC19693DEFFF
+:END:
+#+title: A subscription names the provider and the route names the source
+#+description: The two rows that entitle an Acme party to market data, what the provisioning step writes for each party, and the flow a demand follows from a report to a tick the party receives.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:marketdata:acme:demo:subscriptions:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+startup: inlineimages
+
+* Summary
+
+Two rows tie an Acme party to market data, and they answer two different
+questions. The subscription says which providers the party may take and with
+which rights; it never names a source. The route says which source serves each
+of those providers for this party, and there is exactly one. The demonstration
+writes both for every party of the tenant in one provisioning step, so a party
+that lands in the tenant later is subscribed the same way. Rights are display,
+non-display and derived and all three are true, which is what lets a curve be
+bootstrapped from other series and used in a report as well as drawn on a screen.
+
+* Detail
+
+** The two rows
+
+#+ATTR_HTML: :class hug-leading
+| The row | Its key | Answers |
+|---------+---------+---------|
+| =subscription= | party, provider | may this party take this provider, and for which rights |
+| =route= | party, provider | which of the provider's sources serves this party |
+
+The separation is the design, not a normalisation accident. A subscription names
+a provider and never a source, because the licence is with the provider and
+because the same instrument must map the same way whichever source serves it;
+[[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds
+through a subscription]] states it. A route names one source per provider for the
+party, because two sources for one provider would deliver the same series twice;
+[[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source
+for each provider]] states it. The rights are
+[[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][display, non-display and
+derived]], modelled on the subscription.
+
+** What the demonstration writes
+
+#+ATTR_HTML: :class hug-leading
+| Party | Subscription (provider) | display | non-display | derived | Route (source) |
+|-------+-------------------------+---------+-------------+---------+----------------|
+| Acme Corporation Plc | =bloomberg= | yes | yes | yes | =bloomberg-a= |
+| ACME Corporation UK plc | =demo= | yes | yes | yes | =demo-a= |
+| ACME Corporation US Inc | =lseg= | yes | yes | yes | =lseg-a= |
+| ACME Corporation HK Ltd | =bloomberg= | yes | yes | yes | =bloomberg-a= |
+| System Party | =bloomberg= | yes | yes | yes | =bloomberg-a= |
+
+The step is =subscribe_market_data=, the eighth step of the profile, and its own
+arguments name one provider and one source as the default and then the parties
+that differ from it. In the shipped profile the default is =bloomberg= through
+=bloomberg-a=, which is exactly what the group, Hong Kong and the system party
+take, and London and New York are the two rows that differ. A party the step does
+not name takes the default, so a fifth entity added to the tenant is subscribed
+without the profile changing. The step's arguments are
+[[id:6014CFE1-D978-4ABA-BBA9-D87040FE44BA][its own]].
+
+** The step runs for every party, not only for the named ones
+
+The step pages the tenant's parties, matches each against the rows it names by id
+or by full name, and writes the two rows for every party on the page. Three
+consequences follow.
+
+- A party the step names twice, or names by a name the tenant does not hold, is a
+  failure: the step refuses rather than subscribing three of four parties.
+- The rows are written idempotently. Re-running the profile looks for a
+  subscription of that party and provider, and a route of that party and provider,
+  and writes only what is missing, so a second run changes nothing.
+- A subscription the party administrator later narrows is not widened by a second
+  run of the profile, because the read finds the row. Whether the whole profile
+  should overwrite a party's choices is a question the profile and the journey
+  answer differently; see /What the journeys leave undecided/.
+
+** The flow a demand follows
+
+#+caption: The Acme demonstration: the provisioning step writes the two rows, a run registers demand, the service resolves the party's route, and the routed source's ticks are stored for that party.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/demo/acme_market_data_demand_and_subscription.png]]
+
+Source: [[./acme_market_data_demand_and_subscription.puml][=acme_market_data_demand_and_subscription.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/demo/acme_market_data_demand_and_subscription.puml=.
+
+A run does not ask a party for its data. It names an item and an as-of, and the
+service resolves the rest: the provider that carries the item, the party's route
+to a source of that provider, the vendor id the source announces, and then the
+generator that produces it. The tick comes back on the party's own stream, stored
+under the party, and the delivery is counted against the party, the provider and
+the item so that the bill follows the use. A simulated source carries a rate card
+of the same shape as a live one, so the demonstration shows the bill the same use
+would cost on a live source;
+[[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns
+usage into a bill the platform shares]] states the general case.
+
+** Who may change them
+
+#+ATTR_HTML: :class hug-leading
+| Act | Permission | Role holding it in Acme |
+|-----+------------+-------------------------|
+| Read the party's subscriptions and routes | =marketdata::subscriptions:read= and =marketdata::routes:read= | Trading, Sales, Support, Viewer and Operations |
+| Add or change a subscription or a route | =marketdata::subscriptions:write= | Operations |
+| Remove one | =marketdata::subscriptions:delete= | Operations |
+| Read the sources the routes point at | =marketdata::market_data_sources:read= | the same five roles |
+
+The journey names the party administrator as the actor who changes a
+subscription, and no seeded role is called that: the write sits with Operations,
+which is the function that maintains the sources and the routes in this
+deployment. [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data
+subscriptions]] is the journey, and
+[[id:3F19F33A-161C-4E61-BD92-CB32953DA8F9][the permission matrix]] holds the
+whole table by role.
+
+* What this note does not cover
+
+The catalogue the providers and sources come from is
+[[id:F6094D03-3914-4046-8E57-3FF4AA14764B][the catalogue the bundle installs and
+the feeds generate]]. Which provider each party chose, and why the offices
+differ, is
+[[id:AC31B4F2-B1D7-4CE6-BE84-9A548ACE6754][the provider and the source]].
+
+* See also
+
+- [[id:DB09267A-E589-4688-9773-9A7BF982247F][The Acme demonstration's market data and its approvals]] — the structure note that orders this cluster.
+- [[id:31BCA3F8-31AD-49C2-9B6B-F2312EE7DECB][A party takes a provider's feeds through a subscription]] — completes: the row this page writes four of.
+- [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]] — completes: the second row, and the one-source rule.
+- [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived rights are modelled on the subscription]] — completes: the three rights all true in the demonstration.
+- [[id:6014CFE1-D978-4ABA-BBA9-D87040FE44BA][The acme_demo seed profile]] — answers: which step writes these rows, and in what order.
+- [[id:1B8A3DB7-006A-4E14-AC11-57FA3741222D][A rate card on the source turns usage into a bill the platform shares]] — exemplifies: the bill the demonstration's usage would cost.
+- [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data subscriptions]] — answers: the journey a person follows to change a row.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index of every knowledge hub.

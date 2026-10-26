@@ -64,6 +64,8 @@ public:
         using ores::service::messaging::reply;
         using namespace ores::logging;
 
+        BOOST_LOG_SEV(market_regime_handler_lg(), info)
+            << "market_regime get: a request arrived on subject '" << msg.subject << "'.";
         auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx) {
             BOOST_LOG_SEV(market_regime_handler_lg(), warn)
@@ -75,7 +77,16 @@ public:
         messaging::get_market_regime_response response;
         response.success = true;
         fill(response);
-        reply(nats_, msg, response);
+        BOOST_LOG_SEV(market_regime_handler_lg(), info)
+            << "market_regime get: replying to '" << msg.reply_subject << "' with state '"
+            << response.state << "'.";
+        try {
+            reply(nats_, msg, response);
+        } catch (const std::exception& ex) {
+            BOOST_LOG_SEV(market_regime_handler_lg(), error)
+                << "market_regime get: the reply failed: " << ex.what();
+            throw;
+        }
     }
 
     void pin(ores::nats::message msg) {

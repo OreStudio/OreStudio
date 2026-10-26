@@ -37,6 +37,13 @@
 
 namespace ores::synthetic::service {
 
+namespace {
+inline auto& registrar_lg() {
+    static auto instance = ores::logging::make_logger("ores.synthetic.service.registrar");
+    return instance;
+}
+} // namespace
+
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
                              ores::nats::service::nats_client& auth_nats,
@@ -85,6 +92,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
         }));
 
     // The market-wide arrival factor: one read and one pin, both for the run.
+    BOOST_LOG_SEV(registrar_lg(), ores::logging::info)
+        << "SUBSCRIBE: " << nats.make_subject(
+               std::string(messaging::get_market_regime_request::nats_subject))
+        << " and "
+        << nats.make_subject(std::string(messaging::pin_market_regime_request::nats_subject))
+        << " for the market regime.";
     subs.push_back(
         nats.queue_subscribe(std::string(messaging::get_market_regime_request::nats_subject),
                              queue,
@@ -230,6 +243,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
             ir_parameter_conversion_handler h(nats, ctx, verifier, registry);
             h.convert(std::move(msg));
         }));
+
+    BOOST_LOG_SEV(registrar_lg(), ores::logging::info)
+        << "SUBSCRIBED " << subs.size() << " subject(s) in total.";
 
     return subs;
 }

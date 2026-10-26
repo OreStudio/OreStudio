@@ -3993,6 +3993,8 @@ const fr: SourceCatalogue = {
             exportNote:
                 "Le serveur écrit le document ; votre navigateur l'enregistre. Rien ne change ici.",
             exported: '{file} enregistré, {count} enregistrements.',
+            recordExportLead: 'Écrit {file} avec {what}.',
+            recordSaved: '{file} enregistré, avec {what}.',
             importTitle: 'Importer les {plural}',
             importLead:
                 "Apporter un document ORE. Le serveur le lit, vous relisez la différence, et rien n'est écrit avant la dernière étape.",
@@ -4628,9 +4630,11 @@ const fr: SourceCatalogue = {
             sensitivity: 'Sensibilité au marché',
             sensitivityHelp: 'À quel point ce flux suit le marché, où un représente le flux moyen.',
             ratio: 'Rapport de branchement',
-            ratioHelp: 'Hawkes uniquement : combien de ticks supplémentaires un tick provoque, en dessous de un.',
+            ratioHelp:
+                'Hawkes uniquement : combien de ticks supplémentaires un tick provoque, en dessous de un.',
             decay: 'Décroissance, par seconde',
-            decayHelp: 'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, en unités de un sur une seconde.',
+            decayHelp:
+                'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, en unités de un sur une seconde.',
             market: 'Marché maintenant : {state}. Il se lit ici et se règle dans l’onglet Régime de marché.',
             marketUnknown: 'l’onglet Régime de marché n’est pas encore branché',
             unsaved: 'Modifications non enregistrées',
@@ -5287,6 +5291,7 @@ const fr: SourceCatalogue = {
     // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
+        productCount: '{count} produits',
         author: {
             next: 'Suivant',
             steps: {

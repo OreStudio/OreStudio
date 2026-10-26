@@ -53,6 +53,7 @@ import { useLoadState } from '../events/useLoadState.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Timeline } from '../timeline/Timeline.js';
 import { orderTimeline } from '@ores/wire-protocol/browser';
+import { OreRecordExport } from '../ore/OreExchange.js';
 import { RecordHeader } from '../refdata/records.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
@@ -106,6 +107,14 @@ export const VOCABULARY_KEY = ['pricing-engine-vocabulary'] as const;
 /** The five sections of the configuration page, in the order the standard fixes. */
 const TABS = ['details', 'globals', 'products', 'reports', 'history'] as const;
 
+/**
+ * The name the reporting file types table gives a pricing engine configuration's
+ * document, under the configuration type `pricing_engines` and the direction ORE
+ * Studio reads. The dialog states it before the press; the server states the
+ * name it writes, and the file is saved under that one.
+ */
+export const ORE_DOCUMENT_FILE = 'pricingengine.xml';
+
 /** The eight characters a person reads to tell one identifier from another. */
 function shortId(id: string): string {
     return id.slice(0, 8);
@@ -133,6 +142,7 @@ export function PricingEnginePage(): ReactNode {
     const queries = useQueryClient();
     const navigate = useNavigate();
     const area = useAreaRoot('reporting');
+    const mayRead = holds(PERMISSION.pricingEnginesRead);
     const mayWrite = holds(PERMISSION.pricingEnginesWrite);
     const mayDelete = holds(PERMISSION.pricingEnginesDelete);
     const [selected, setSelected] = useState<string | null>(null);
@@ -226,6 +236,18 @@ export function PricingEnginePage(): ReactNode {
                     <div className="flex items-center gap-2">
                         <EditingModeToggle mode={mode} onChange={setMode} />
                         <RefreshButton onClick={reload} load={load} news={news} />
+                        {mayRead && (
+                            <OreRecordExport
+                                document={{
+                                    fileName: ORE_DOCUMENT_FILE,
+                                    what: t('pricingEngines.productCount', {
+                                        count: products.length,
+                                    }),
+                                    write: () =>
+                                        pricingEngines.oreDocument(document.id, ORE_DOCUMENT_FILE),
+                                }}
+                            />
+                        )}
                     </div>
                 }
                 onEdit={mayWrite ? () => setDialog({ kind: 'details' }) : undefined}

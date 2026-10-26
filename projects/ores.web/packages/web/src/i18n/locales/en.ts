@@ -3938,6 +3938,8 @@ export const en: SourceCatalogue = {
             exportNote:
                 'The server writes the document; your browser saves it. Nothing changes here.',
             exported: 'Saved {file}, {count} records.',
+            recordExportLead: 'Writes {file} with {what}.',
+            recordSaved: 'Saved {file}, with {what}.',
             importTitle: 'Import {plural}',
             importLead:
                 'Bring an ORE document in. The server reads it, you review the difference, and nothing is written before the last step.',
@@ -4563,7 +4565,8 @@ export const en: SourceCatalogue = {
             'model.poisson': 'Poisson — exponential gaps',
             'model.hawkes': 'Hawkes — bursts of ticks',
             sensitivity: 'Sensitivity to the market',
-            sensitivityHelp: 'How hard this feed follows the market, where one is the average series.',
+            sensitivityHelp:
+                'How hard this feed follows the market, where one is the average series.',
             ratio: 'Branching ratio',
             ratioHelp: 'Hawkes only: how many further ticks one tick causes, below one.',
             decay: 'Decay, per second',
@@ -5211,6 +5214,7 @@ export const en: SourceCatalogue = {
     // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
+        productCount: '{count} products',
         author: {
             next: 'Next',
             steps: {

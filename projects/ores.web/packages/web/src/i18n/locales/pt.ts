@@ -3966,6 +3966,8 @@ const pt: SourceCatalogue = {
                 'Escreve {file}, o documento ORE, com as {plural} do tenant tal como estão agora.',
             exportNote: 'O servidor escreve o documento; o seu navegador guarda-o. Nada muda aqui.',
             exported: '{file} guardado, {count} registos.',
+            recordExportLead: 'Escreve {file} com {what}.',
+            recordSaved: '{file} guardado, com {what}.',
             importTitle: 'Importar {plural}',
             importLead:
                 'Trazer um documento ORE. O servidor lê-o, você revê a diferença, e nada é escrito antes do último passo.',
@@ -4598,7 +4600,8 @@ const pt: SourceCatalogue = {
             ratio: 'Rácio de ramificação',
             ratioHelp: 'Apenas Hawkes: quantos ticks adicionais um tick provoca, abaixo de um.',
             decay: 'Decaimento, por segundo',
-            decayHelp: 'Apenas Hawkes: com que rapidez uma rajada desaparece, em unidades de um por segundo.',
+            decayHelp:
+                'Apenas Hawkes: com que rapidez uma rajada desaparece, em unidades de um por segundo.',
             market: 'Mercado agora: {state}. Lê-se aqui e define-se no separador Regime de mercado.',
             marketUnknown: 'o separador Regime de mercado ainda não está ligado',
             unsaved: 'Alterações por guardar',
@@ -5251,6 +5254,7 @@ const pt: SourceCatalogue = {
     // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
+        productCount: '{count} produtos',
         author: {
             next: 'Seguinte',
             steps: {

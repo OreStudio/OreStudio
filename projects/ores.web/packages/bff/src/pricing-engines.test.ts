@@ -953,8 +953,8 @@ describe('pricing engine routes', () => {
         ).toEqual({ configuration_id: HEADER_ID });
     });
 
-describe('the pricing engines document of one configuration', () => {
-    const DOCUMENT = `<?xml version="1.0"?>
+    describe('the pricing engines document of one configuration', () => {
+        const DOCUMENT = `<?xml version="1.0"?>
 <PricingEngines>
   <Product type="BermudanSwaption">
     <Model>LGM</Model>
@@ -968,88 +968,88 @@ describe('the pricing engines document of one configuration', () => {
 </PricingEngines>
 `;
 
-    const exported = {
-        ...reads,
-        'ore.v1.ops.export_pricing_engines': {
-            success: true,
-            message: 'Exported 1 products.',
-            count: 1,
-            files: [{ name: 'pricingengine.xml', content: DOCUMENT }],
-            problems: [],
-        },
-    };
-
-    it('answers the document as a file the server names', async () => {
-        const { server, sessionId } = buildTestServer(exported);
-        const response = await send(
-            server,
-            sessionId,
-            'GET',
-            `/api/reporting/pricing-engines/${CONFIG_ID}/ore-document`,
-        );
-        expect(response.statusCode).toBe(200);
-        expect(response.headers['content-type']).toContain('application/xml');
-        expect(response.headers['content-disposition']).toBe(
-            'attachment; filename="pricingengine.xml"',
-        );
-        expect(response.body).toBe(DOCUMENT);
-    });
-
-    it('reads the document by the reporting configuration the record fills', async () => {
-        const { server, sessionId, calls } = buildTestServer(exported);
-        await send(
-            server,
-            sessionId,
-            'GET',
-            `/api/reporting/pricing-engines/${CONFIG_ID}/ore-document`,
-        );
-        expect(
-            calls.find((call) => call.subject === 'ore.v1.ops.export_pricing_engines')?.body,
-        ).toEqual({ configuration_id: HEADER_ID });
-    });
-
-    it('refuses in the service words when the document cannot be written', async () => {
-        const { server, sessionId } = buildTestServer({
+        const exported = {
             ...reads,
             'ore.v1.ops.export_pricing_engines': {
-                success: false,
-                message: 'No file type names the pricing_engines document.',
-                count: 0,
-                files: [],
-                problems: [{ code: 'file_name_missing', message: 'no row' }],
+                success: true,
+                message: 'Exported 1 products.',
+                count: 1,
+                files: [{ name: 'pricingengine.xml', content: DOCUMENT }],
+                problems: [],
             },
-        });
-        const response = await send(
-            server,
-            sessionId,
-            'GET',
-            `/api/reporting/pricing-engines/${CONFIG_ID}/ore-document`,
-        );
-        expect(response.statusCode).toBe(400);
-        expect(response.json().message).toBe(
-            'No file type names the pricing_engines document.',
-        );
-    });
+        };
 
-    it('refuses a configuration that does not exist', async () => {
-        const { server, sessionId } = buildTestServer({
-            ...reads,
-            'analytics.v1.pricing_model_configs.list': { result: ok, configs: [] },
+        it('answers the document as a file the server names', async () => {
+            const { server, sessionId } = buildTestServer(exported);
+            const response = await send(
+                server,
+                sessionId,
+                'GET',
+                `/api/reporting/pricing-engines/${CONFIG_ID}/ore-document`,
+            );
+            expect(response.statusCode).toBe(200);
+            expect(response.headers['content-type']).toContain('application/xml');
+            expect(response.headers['content-disposition']).toBe(
+                'attachment; filename="pricingengine.xml"',
+            );
+            expect(response.body).toBe(DOCUMENT);
         });
-        const response = await send(
-            server,
-            sessionId,
-            'GET',
-            `/api/reporting/pricing-engines/${CONFIG_ID}/ore-document`,
-        );
-        expect(response.statusCode).toBe(404);
-    });
 
-    it('names a file safely, whatever the service called it', () => {
-        expect(attachmentOf('pricingengine.xml')).toBe(
-            'attachment; filename="pricingengine.xml"',
-        );
-        expect(attachmentOf('a"b\r\nc.xml')).toBe('attachment; filename="abc.xml"');
+        it('reads the document by the reporting configuration the record fills', async () => {
+            const { server, sessionId, calls } = buildTestServer(exported);
+            await send(
+                server,
+                sessionId,
+                'GET',
+                `/api/reporting/pricing-engines/${CONFIG_ID}/ore-document`,
+            );
+            expect(
+                calls.find((call) => call.subject === 'ore.v1.ops.export_pricing_engines')?.body,
+            ).toEqual({ configuration_id: HEADER_ID });
+        });
+
+        it('refuses in the service words when the document cannot be written', async () => {
+            const { server, sessionId } = buildTestServer({
+                ...reads,
+                'ore.v1.ops.export_pricing_engines': {
+                    success: false,
+                    message: 'No file type names the pricing_engines document.',
+                    count: 0,
+                    files: [],
+                    problems: [{ code: 'file_name_missing', message: 'no row' }],
+                },
+            });
+            const response = await send(
+                server,
+                sessionId,
+                'GET',
+                `/api/reporting/pricing-engines/${CONFIG_ID}/ore-document`,
+            );
+            expect(response.statusCode).toBe(400);
+            expect(response.json().message).toBe(
+                'No file type names the pricing_engines document.',
+            );
+        });
+
+        it('refuses a configuration that does not exist', async () => {
+            const { server, sessionId } = buildTestServer({
+                ...reads,
+                'analytics.v1.pricing_model_configs.list': { result: ok, configs: [] },
+            });
+            const response = await send(
+                server,
+                sessionId,
+                'GET',
+                `/api/reporting/pricing-engines/${CONFIG_ID}/ore-document`,
+            );
+            expect(response.statusCode).toBe(404);
+        });
+
+        it('names a file safely, whatever the service called it', () => {
+            expect(attachmentOf('pricingengine.xml')).toBe(
+                'attachment; filename="pricingengine.xml"',
+            );
+            expect(attachmentOf('a"b\r\nc.xml')).toBe('attachment; filename="abc.xml"');
+        });
     });
-});
 });

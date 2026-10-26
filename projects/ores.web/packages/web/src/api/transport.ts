@@ -137,3 +137,63 @@ export async function request(path: string, init: RequestInit): Promise<unknown>
     }
     return payload;
 }
+
+/** A file the server wrote, as the browser saves it: its name and its text. */
+export interface ServedFile {
+    readonly name: string;
+    readonly content: string;
+}
+
+/**
+ * The name a response offers its file under, or an empty string when it offers
+ * none.
+ *
+ * The value is the one the server stated, so a screen saves the file under the
+ * name the tables gave it rather than a name of its own. Only the simple form of
+ * the header is read: the RFC 5987 form carries the same name escaped, and no
+ * route here sends it alone.
+ */
+export function fileNameOf(disposition: string | null): string {
+    if (disposition === null) {
+        return '';
+    }
+    const match = /filename="([^"]*)"/.exec(disposition);
+    return match?.[1] ?? '';
+}
+
+/**
+ * Sends a request whose answer is a file rather than JSON.
+ *
+ * A refusal is stated the way every other refusal is, in the error contract, so
+ * the caller sees the server's words and not an XML document that happens to be
+ * an error page.
+ */
+export async function requestFile(path: string, init: RequestInit): Promise<ServedFile> {
+    const operation = operationOf(path, init);
+    let response: Response;
+    try {
+        response = await fetch(path, { credentials: 'same-origin', ...init });
+    } catch {
+        const failure = new ApiFailure(
+            0,
+            { code: 'upstream-unavailable', message: 'Cannot reach the server.' },
+            { operation, requestId: '' },
+        );
+        recordFailure(failure);
+        throw failure;
+    }
+    const text = await response.text();
+    if (!response.ok) {
+        const parsed = apiErrorSchema.safeParse(text.length === 0 ? null : parseJson(text));
+        const failure = new ApiFailure(
+            response.status,
+            parsed.success
+                ? parsed.data
+                : { code: 'internal', message: `Request failed with status ${response.status}` },
+            { operation, requestId: response.headers.get('x-request-id') ?? '' },
+        );
+        recordFailure(failure);
+        throw failure;
+    }
+    return { name: fileNameOf(response.headers.get('content-disposition')), content: text };
+}

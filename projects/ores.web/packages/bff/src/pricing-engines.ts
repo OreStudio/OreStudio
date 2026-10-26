@@ -899,9 +899,7 @@ export function registerPricingEngineRoutes(
         if (others.length > 0) {
             return { ...exported };
         }
-        void reply
-            .header('content-disposition', attachmentOf(file.name))
-            .type('application/xml');
+        void reply.header('content-disposition', attachmentOf(file.name)).type('application/xml');
         return file.content;
     });
 

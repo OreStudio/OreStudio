@@ -77,7 +77,7 @@
             summary: 'Pre-configured sandbox',
             bullets: [
                 '4 legal entities, books and desks',
-                '45 staff to sign in as',
+                '73 staff to sign in as',
                 'Live synthetic market data'
             ],
             audience: 'For demos and testing',

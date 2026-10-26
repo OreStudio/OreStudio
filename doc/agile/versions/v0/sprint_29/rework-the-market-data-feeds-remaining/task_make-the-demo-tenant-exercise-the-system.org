@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/populate-the-demo-tenant
-#+pr:
+#+pr: 3880
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3880][#3880]] | [iam] Grant the screens' permissions to the roles the journeys name |
 
 * Review
 

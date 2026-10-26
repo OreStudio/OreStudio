@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :decide_whether_codegen_replaces_sqlgen_and_reflect_cpp:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decide-whether-codegen-replaces-sqlgen-and-reflect-cpp
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-26
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Numbers for the translation-unit cost of reflect-cpp and sqlgen, and how much of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,7 +35,12 @@ Numbers for the translation-unit cost of reflect-cpp and sqlgen, and how much of
 
 * Acceptance
 
--
+- Compile time and peak memory of the slowest translation units, and the share of
+  each spent in reflect-cpp and sqlgen, from clang's time trace.
+- For one component built without ccache: total compile CPU and file count today,
+  and with generated codecs, in each layout for message codecs: one =.cpp= for each
+  protocol header, and one for each component.
+- The same for reflect-cpp confined to one =.cpp= for each type by =extern template=.
 
 * Plan
 
@@ -58,6 +63,13 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- Entities already have one =_json_io.cpp= each (466), so their generated codecs
+  add no translation units. Messages have 516 protocol headers and no =.cpp=;
+  their encoding is instantiated in each of the 424 files that call the wire
+  codec. Generated message codecs add files (about 516 for one each, about 40 for
+  one for each component) but remove the repeated instantiation, so the total
+  compile CPU of a full build is the number that decides, not the file count.
 
 * Test Scenarios
 

@@ -28,11 +28,11 @@ must provide to replace each one.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
@@ -127,3 +127,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The surface is almost all generated. Of the SQL use, 3,647 of 3,692 reads, 862
+of 864 deletes and 38 of 45 inserts are generated; of the JSON use, 5,577 of
+5,857 calls are. The hand-written remainder is small: 45 reads, 7 inserts, 2
+deletes and 280 JSON calls, plus 106 uses of reflect-cpp's dynamic JSON, which
+would move to yyjson directly. Twelve types have a custom wire encoding that
+generated codecs must reproduce, and the deprecated polymorphic payload means
+tagged unions need no support. The table in the notes names the replacement
+for each feature.

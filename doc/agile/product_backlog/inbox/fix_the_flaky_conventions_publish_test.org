@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 907B5B32-0B4F-4F16-8353-34B3799CCC4F
+:END:
+#+title: Fix the flaky conventions publish pgTAP test
+#+description: refdata_conventions_publish_test.sql fails in about 1 run of 8 on main: the repeat publish inserts a convention row at version 1 that already exists, so a live row was closed or not seen between the two publishes.
+#+type: capture
+#+level: cross
+#+filetags: :sql:pgtap:flaky:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Find and fix the cause of the intermittent failure in =projects/ores.sql/test/refdata_conventions_publish_test.sql=. The repeat publish (test 5, line 138) fails with a duplicate key on a =*_conventions_version_uniq_idx= index. The kind and the row change from run to run: =AED-ZERO-TENOR-BASED= (zero), =EUR-RON-XCCY-FIX-FLOAT-CONVENTIONS= (cross currency fix-float) and =BECPIHL= (zero inflation index) were seen. The publish's =not exists= filter did not see a live row, and the version trigger then wrote version 1, which already exists. So between the two publishes a live row was closed, or a row was written with a =valid_from= or =valid_to= that the filter does not match. The version trigger closes with =valid_from < clock_timestamp()=, which is a candidate.
+
+* Why
+
+The test fails the pgTAP gate at random, so a branch can fail for a reason it did not cause. Measured on 2026-10-26 in clever_dijkstra, with =run_tests.sh= and the test alone, on a fresh database: 1 failure in 8 runs with no convention term triggers; 1 in 8 with insert-only triggers; 3 in 16 with =insert or update of= triggers. The rates do not differ beyond the noise of these samples.
+
+* References
+
+- =projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql=, =ores_refdata_publish_conventions_from_dq_fn=
+- PR #3875, which added the convention term triggers
+
+* See also
+
+-

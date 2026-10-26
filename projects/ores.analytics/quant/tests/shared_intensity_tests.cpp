@@ -20,10 +20,10 @@
 #include "ores.analytics.quant/domain/shared_intensity.hpp"
 #include <algorithm>
 #include <array>
-#include <chrono>
 #include <atomic>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <cmath>
 #include <random>
 #include <stdexcept>

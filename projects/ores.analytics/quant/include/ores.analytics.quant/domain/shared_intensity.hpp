@@ -261,7 +261,8 @@ private:
         std::lock_guard lock(history_mu_);
         if (!history_.empty() && now - history_.back().at < sample_period)
             return;
-        history_.push_back(heat_reading{.at = now, .heat = excess_.load(std::memory_order_relaxed)});
+        history_.push_back(
+            heat_reading{.at = now, .heat = excess_.load(std::memory_order_relaxed)});
         while (history_.size() > history_capacity)
             history_.pop_front();
     }

@@ -8,7 +8,7 @@
 #+filetags: :draw_every_ore_leaf_the_same_way:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-the-convention-kind-metadata-into-data
-#+pr:
+#+pr: 3848
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3848][#3848]] | [refdata] Model the convention kind metadata and the kind terms |
 
 * Review
 

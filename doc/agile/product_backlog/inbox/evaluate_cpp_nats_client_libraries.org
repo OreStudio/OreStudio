@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: A544CD5D-FC1B-4F41-828D-8004D89318F1
+:END:
+#+title: Evaluate C++ NATS client libraries
+#+description: Assess antlad/nats_asio, dancasimiro/nats.cpp and ishbir/cppnats as a replacement for, or reference for, the ores.nats wrapper over cnats.
+#+type: capture
+#+level: cross
+#+filetags: :nats:dependencies:research:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Evaluate three community C++ NATS clients against the =ores.nats= wrapper we
+maintain over =cnats=: =antlad/nats_asio=, =dancasimiro/nats.cpp= and
+=ishbir/cppnats=. For each, record whether it supports JetStream (durable
+consumers, explicit ack, nak and term, stream and consumer administration),
+TLS with client certificates, headers, request and reply, and drain. Also
+record its licence, its maintenance activity, whether it builds with our
+C++23 and Boost.Asio toolchain, and what packaging it would need. None of
+the three is in the vcpkg registry (checked 2026-10-26 at vcpkg
+=0c2a9ace19=), so adopting one means writing and keeping an overlay port.
+The outcome is one of three choices. Replace the wrapper, borrow its
+ownership model for =ores.nats=, or keep =cnats= as it is.
+
+* Why
+
+=ores.nats= wraps the C client by hand, and every cnats object must be
+freed by a matching destroy call. A missing =natsMsg_Destroy= on the normal
+delivery path made every service keep every message it received. Under the
+synthetic feed it grew =ores.marketdata.service= by about 195 MiB a minute
+and took the machine down on 2026-10-26. The fix added =nats_handle=, a
+unique_ptr owner for each cnats object type, and =ensure_result= for status
+checks. A native C++ client could make that whole class of defect
+impossible, if one is mature enough and covers the JetStream features the
+fleet depends on. The official NATS project ships no C++ client.
+
+* References
+
+- https://github.com/antlad/nats_asio
+- https://github.com/dancasimiro/nats.cpp
+- https://github.com/ishbir/cppnats
+- https://github.com/nats-io/nats.c (the =cnats= port, 3.14.0 in vcpkg)
+
+* See also
+
+- =projects/ores.nats/src/service/nats_handle.hpp= and
+  =projects/ores.nats/src/service/nats_result.hpp=, the ownership and
+  status helpers the evaluation compares against.

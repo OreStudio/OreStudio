@@ -24,6 +24,7 @@
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.core/repository/live_tenant_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_source_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
@@ -33,6 +34,7 @@
 #include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"
 #include "ores.marketdata.core/repository/tick_coords_repository.hpp"
 #include "ores.marketdata.service/app/batch_size.hpp"
+#include "ores.marketdata.service/app/live_tenants.hpp"
 #include "ores.marketdata.service/app/tick_plan.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -181,7 +183,8 @@ void feed_ingest_loop::refresh() {
     auto instruments =
         repository::market_data_vendor_instrument_repository{}.read_latest(system_ctx);
     auto mappings = repository::market_data_mapping_repository{}.read_latest(system_ctx);
-    const auto routes = repository::route_repository{}.read_latest_all_tenants(ctx_);
+    auto routes = repository::route_repository{}.read_latest_all_tenants(ctx_);
+    keep_live_tenants(routes, repository::live_tenant_repository{}.read(ctx_));
     std::size_t routed = 0;
     for (const auto& route : routes) {
         const auto source =

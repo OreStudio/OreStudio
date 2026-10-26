@@ -21,12 +21,14 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include "ores.marketdata.api/domain/provider.hpp"
+#include "ores.marketdata.core/repository/live_tenant_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_source_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
 #include "ores.marketdata.core/repository/provider_repository.hpp"
 #include "ores.marketdata.core/repository/route_repository.hpp"
 #include "ores.marketdata.core/repository/subscription_repository.hpp"
+#include "ores.marketdata.service/app/live_tenants.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -97,6 +99,9 @@ void adapter_supervisor::refresh() {
     next->catalogue.routes = repository::route_repository{}.read_latest_all_tenants(ctx_);
     next->catalogue.subscriptions =
         repository::subscription_repository{}.read_latest_all_tenants(ctx_);
+    const auto live = repository::live_tenant_repository{}.read(ctx_);
+    keep_live_tenants(next->catalogue.routes, live);
+    keep_live_tenants(next->catalogue.subscriptions, live);
 
     std::map<boost::uuids::uuid, std::string> source_names;
     for (const auto& source : next->catalogue.sources)

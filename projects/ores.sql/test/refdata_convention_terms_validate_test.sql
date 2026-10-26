@@ -26,9 +26,23 @@
 
 begin;
 
-select plan(4);
+select plan(6);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
+
+-- The trigger reads the parameter contract, which the system provisioning step
+-- publishes; a fresh database has not run it, so the test publishes it here.
+select * from ores_reporting_publish_ore_parameter_value_domains_from_dq_fn(
+    (select id from ores_dq_datasets_tbl
+      where code = 'ore.parameter_value_domains'
+        and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb);
+
+select * from ores_reporting_publish_ore_parameters_from_dq_fn(
+    (select id from ores_dq_datasets_tbl
+      where code = 'ore.parameters'
+        and valid_to = ores_utility_infinity_timestamp_fn()),
+    ores_utility_system_tenant_id_fn(), 'upsert', '{}'::jsonb);
 
 insert into ores_refdata_parties_tbl (
     id, tenant_id, version, full_name, short_code, party_category, party_type,
@@ -75,6 +89,22 @@ select throws_like(
     $$select pg_temp.swap('PGTAP-BAD-DAY-COUNTER', 'Annual', 'ModifiedFollowing', 'ACT/999', null)$$,
     '%Invalid value ACT/999 for Swap.FixedDayCounter%',
     'a day counter outside the catalogue is refused');
+
+select throws_like(
+    $$update ores_refdata_swap_conventions_tbl
+         set fixed_frequency = 'Fortnightly'
+       where id = 'PGTAP-GOOD-SWAP'$$,
+    '%Invalid value Fortnightly for Swap.FixedFrequency%',
+    'an update of a term column is checked as an insert is');
+
+select ok(
+    (select count(*) > 0
+            and count(*) filter (where not exists (
+                select 1 from pg_trigger t
+                 where t.tgname = 'ores_refdata_' || k.entity_name || 's_terms_trg'
+                   and t.tgrelid = ('ores_refdata_' || k.entity_name || 's_tbl')::regclass)) = 0
+       from (select distinct entity_name from ores_refdata_convention_kind_terms_tbl) k),
+    'every entity that holds a term has its trigger');
 
 select * from finish();
 

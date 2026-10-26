@@ -328,9 +328,14 @@ $$ language plpgsql;
 
 def render_triggers(all_rows):
     entities = sorted({r["entity"] for r in all_rows})
+    # Closing a version updates only valid_to, so the update clause names the
+    # term columns: an old row is not checked again against a set that changed.
+    columns = {e: sorted({r["column"] for r in all_rows if r["entity"] == e})
+               for e in entities}
     triggers = "".join(
         f"\ncreate or replace trigger ores_refdata_{e}s_terms_trg\n"
-        f"before insert on ores_refdata_{e}s_tbl\n"
+        f"before insert or update of {', '.join(columns[e])}\n"
+        f"on ores_refdata_{e}s_tbl\n"
         f"for each row execute function ores_refdata_validate_convention_terms_fn('{e}');\n"
         for e in entities)
     create = (LICENCE + """

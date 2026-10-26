@@ -106,15 +106,15 @@ to_domain(const messaging::tenor_basis_swap_pay_receive_write& write) {
     domain::tenor_basis_swap_pay_receive v;
     v.identity.id = write.id;
     v.identity.convention_id = write.convention_id;
-    v.legs.pay_index = write.pay_index;
-    v.legs.pay_frequency = write.pay_frequency;
-    v.legs.receive_index = write.receive_index;
-    v.legs.receive_frequency = write.receive_frequency;
+    v.pay_leg.pay_index = write.pay_index;
+    v.pay_leg.pay_frequency = write.pay_frequency;
+    v.rec_leg.receive_index = write.receive_index;
+    v.rec_leg.receive_frequency = write.receive_frequency;
     v.coupon.spread_on_rec = write.spread_on_rec;
     v.coupon.include_spread = write.include_spread;
     v.coupon.sub_periods_coupon_type = write.sub_periods_coupon_type;
-    v.legs.pay_is_averaged = write.pay_is_averaged;
-    v.legs.rec_is_averaged = write.rec_is_averaged;
+    v.pay_leg.pay_is_averaged = write.pay_is_averaged;
+    v.rec_leg.rec_is_averaged = write.rec_is_averaged;
     return v;
 }
 

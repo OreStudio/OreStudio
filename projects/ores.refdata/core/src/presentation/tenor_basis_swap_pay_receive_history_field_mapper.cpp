@@ -42,13 +42,13 @@ render_tenor_basis_swap_pay_receive_fields(const domain::tenor_basis_swap_pay_re
     fields.push_back(
         {.name = "Convention ID", .value = boost::uuids::to_string(v.identity.convention_id)});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
-    fields.push_back({.name = "Pay Index", .value = v.legs.pay_index.value_or(std::string{})});
+    fields.push_back({.name = "Pay Index", .value = v.pay_leg.pay_index.value_or(std::string{})});
     fields.push_back(
-        {.name = "Pay Frequency", .value = v.legs.pay_frequency.value_or(std::string{})});
+        {.name = "Pay Frequency", .value = v.pay_leg.pay_frequency.value_or(std::string{})});
     fields.push_back(
-        {.name = "Receive Index", .value = v.legs.receive_index.value_or(std::string{})});
-    fields.push_back(
-        {.name = "Receive Frequency", .value = v.legs.receive_frequency.value_or(std::string{})});
+        {.name = "Receive Index", .value = v.rec_leg.receive_index.value_or(std::string{})});
+    fields.push_back({.name = "Receive Frequency",
+                      .value = v.rec_leg.receive_frequency.value_or(std::string{})});
     fields.push_back({.name = "Spread On Rec",
                       .value = v.coupon.spread_on_rec ?
                                    (*v.coupon.spread_on_rec ? "true" : "false") :
@@ -60,12 +60,12 @@ render_tenor_basis_swap_pay_receive_fields(const domain::tenor_basis_swap_pay_re
     fields.push_back({.name = "Sub Periods Coupon Type",
                       .value = v.coupon.sub_periods_coupon_type.value_or(std::string{})});
     fields.push_back({.name = "Pay Is Averaged",
-                      .value = v.legs.pay_is_averaged ?
-                                   (*v.legs.pay_is_averaged ? "true" : "false") :
+                      .value = v.pay_leg.pay_is_averaged ?
+                                   (*v.pay_leg.pay_is_averaged ? "true" : "false") :
                                    std::string{}});
     fields.push_back({.name = "Rec Is Averaged",
-                      .value = v.legs.rec_is_averaged ?
-                                   (*v.legs.rec_is_averaged ? "true" : "false") :
+                      .value = v.rec_leg.rec_is_averaged ?
+                                   (*v.rec_leg.rec_is_averaged ? "true" : "false") :
                                    std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

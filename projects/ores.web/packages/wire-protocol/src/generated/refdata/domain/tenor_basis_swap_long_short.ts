@@ -23,7 +23,8 @@
  * To modify, update the template and regenerate.
  */
 import type { TenorBasisSwapPartIdentity } from './tenor_basis_swap_part_identity.js';
-import type { TenorBasisSwapLongShortLegs } from './tenor_basis_swap_long_short_legs.js';
+import type { TenorBasisSwapLongLeg } from './tenor_basis_swap_long_leg.js';
+import type { TenorBasisSwapShortLeg } from './tenor_basis_swap_short_leg.js';
 import type { TenorBasisSwapLongShortCoupon } from './tenor_basis_swap_long_short_coupon.js';
 import type { AuditRecord } from '../../dq/domain/audit_record.js';
 
@@ -37,7 +38,8 @@ import type { AuditRecord } from '../../dq/domain/audit_record.js';
  */
 export interface TenorBasisSwapLongShort {
     identity: TenorBasisSwapPartIdentity;
-    legs: TenorBasisSwapLongShortLegs;
+    long_leg: TenorBasisSwapLongLeg;
+    short_leg: TenorBasisSwapShortLeg;
     coupon: TenorBasisSwapLongShortCoupon;
     audit: AuditRecord;
 }

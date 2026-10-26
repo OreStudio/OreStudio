@@ -153,8 +153,10 @@ That is done, and the remodel is applied.
   display were the templates that still wrote a flat path.
 - The central row is grouped into identity, payload and the
   =ores.dq.audit_record= tail. Each part is grouped into the identity it
-  shares with its sibling, its legs, its coupon treatment and the same tail.
-  Every group holds at most five members.
+  shares with its sibling, one group per leg, its coupon treatment and the
+  same tail. Every group holds at most five members: identity five, the
+  paying and receiving legs three each, the long leg two, the short leg
+  three, the coupon groups three and two, the audit tail five.
 - The tables, the columns and the seventeen =TENOR_BASIS_SWAP= term rows are
   unchanged. The write records and the wire shape stayed flat: only the
   domain struct nests, so the contract still names a real column.
@@ -166,7 +168,8 @@ Measured on this branch:
 
 | What | Result | Command |
 |------+--------+---------|
-| Members per struct | 5 central, 5 and 4 per part | read from the generated headers |
+| Members per group | 2 to 5 | read from the generated headers |
+| Groups per struct | 3 for the central row, 5 for each part | read from the generated headers |
 | Codegen suite | 1624 passed | =pytest projects/ores.codegen/tests= |
 | Drift sweep | clean | =check_component_drift.py --sweep --dry-run= |
 | SQL | unchanged | =git status projects/ores.sql= |

@@ -26,9 +26,10 @@
 #define ORES_REFDATA_API_DOMAIN_TENOR_BASIS_SWAP_LONG_SHORT_HPP
 
 #include "ores.dq.api/domain/audit_record.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_long_leg.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_long_short_coupon.hpp"
-#include "ores.refdata.api/domain/tenor_basis_swap_long_short_legs.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_part_identity.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_short_leg.hpp"
 #include <chrono>
 #include <span>
 #include <string_view>
@@ -49,7 +50,8 @@ namespace ores::refdata::domain {
  */
 struct tenor_basis_swap_long_short final {
     tenor_basis_swap_part_identity identity;
-    tenor_basis_swap_long_short_legs legs;
+    tenor_basis_swap_long_leg long_leg;
+    tenor_basis_swap_short_leg short_leg;
     tenor_basis_swap_long_short_coupon coupon;
     ores::dq::domain::audit_record audit;
     /**

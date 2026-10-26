@@ -42,15 +42,17 @@ render_tenor_basis_swap_long_short_fields(const domain::tenor_basis_swap_long_sh
     fields.push_back(
         {.name = "Convention ID", .value = boost::uuids::to_string(v.identity.convention_id)});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.identity.party_id)});
-    fields.push_back({.name = "Long Index", .value = v.legs.long_index.value_or(std::string{})});
     fields.push_back(
-        {.name = "Long Pay Tenor", .value = v.legs.long_pay_tenor.value_or(std::string{})});
-    fields.push_back({.name = "Short Index", .value = v.legs.short_index.value_or(std::string{})});
+        {.name = "Long Index", .value = v.long_leg.long_index.value_or(std::string{})});
     fields.push_back(
-        {.name = "Short Pay Tenor", .value = v.legs.short_pay_tenor.value_or(std::string{})});
+        {.name = "Long Pay Tenor", .value = v.long_leg.long_pay_tenor.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Short Index", .value = v.short_leg.short_index.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Short Pay Tenor", .value = v.short_leg.short_pay_tenor.value_or(std::string{})});
     fields.push_back({.name = "Spread On Short",
-                      .value = v.legs.spread_on_short ?
-                                   (*v.legs.spread_on_short ? "true" : "false") :
+                      .value = v.short_leg.spread_on_short ?
+                                   (*v.short_leg.spread_on_short ? "true" : "false") :
                                    std::string{}});
     fields.push_back({.name = "Include Spread",
                       .value = v.coupon.include_spread ?

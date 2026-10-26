@@ -47,11 +47,11 @@ generate_synthetic_tenor_basis_swap_long_short(utility::generation::generation_c
     r.identity.id = ctx.generate_uuid();
     r.identity.convention_id = ctx.generate_uuid();
     r.identity.party_id = ctx.generate_uuid();
-    r.legs.long_index = std::nullopt;
-    r.legs.long_pay_tenor = std::nullopt;
-    r.legs.short_index = std::nullopt;
-    r.legs.short_pay_tenor = std::nullopt;
-    r.legs.spread_on_short = std::nullopt;
+    r.long_leg.long_index = std::nullopt;
+    r.long_leg.long_pay_tenor = std::nullopt;
+    r.short_leg.short_index = std::nullopt;
+    r.short_leg.short_pay_tenor = std::nullopt;
+    r.short_leg.spread_on_short = std::nullopt;
     r.coupon.include_spread = std::nullopt;
     r.coupon.sub_periods_coupon_type = std::nullopt;
     r.audit.modified_by = modified_by;

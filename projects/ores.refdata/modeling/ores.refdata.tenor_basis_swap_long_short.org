@@ -277,14 +277,15 @@ table must carry the same payload.
 
 ** Domain groups
 
-The struct carries four concerns at once, so it is its member list rather
-than one flat block: the identity of the part, its two legs, the coupon
-treatment, and the change audit that =ores.dq= owns.
+The struct carries five concerns at once, so it is its member list rather
+than one flat block: the identity of the part, the long leg, the short leg,
+the coupon treatment, and the change audit that =ores.dq= owns.
 
 | member   | field_group                                         |
 |----------+-----------------------------------------------------|
 | identity | ores.refdata.tenor_basis_swap_part_identity         |
-| legs     | ores.refdata.tenor_basis_swap_long_short_legs       |
+| long_leg | ores.refdata.tenor_basis_swap_long_leg              |
+| short_leg | ores.refdata.tenor_basis_swap_short_leg            |
 | coupon   | ores.refdata.tenor_basis_swap_long_short_coupon     |
 | audit    | ores.dq.audit_record                                |
 

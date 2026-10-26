@@ -70,15 +70,15 @@ conventions_mapper::map_tenor_basis_swap(const record_reader& v) {
         refdata::domain::tenor_basis_swap_pay_receive p;
         p.identity.id = provisional_uuid();
         p.identity.convention_id = central.identity.id;
-        assign(p.legs.pay_index, opt_text(v, "PayIndex"));
-        assign(p.legs.pay_frequency, opt_text(v, "PayFrequency"));
-        assign(p.legs.receive_index, opt_text(v, "ReceiveIndex"));
-        assign(p.legs.receive_frequency, opt_text(v, "ReceiveFrequency"));
+        assign(p.pay_leg.pay_index, opt_text(v, "PayIndex"));
+        assign(p.pay_leg.pay_frequency, opt_text(v, "PayFrequency"));
+        assign(p.rec_leg.receive_index, opt_text(v, "ReceiveIndex"));
+        assign(p.rec_leg.receive_frequency, opt_text(v, "ReceiveFrequency"));
         assign(p.coupon.spread_on_rec, opt_flag(v, "SpreadOnRec"));
         assign(p.coupon.include_spread, opt_flag(v, "IncludeSpread"));
         assign(p.coupon.sub_periods_coupon_type, opt_spelling(v, "SubPeriodsCouponType"));
-        assign(p.legs.pay_is_averaged, opt_flag(v, "PayIsAveraged"));
-        assign(p.legs.rec_is_averaged, opt_flag(v, "RecIsAveraged"));
+        assign(p.pay_leg.pay_is_averaged, opt_flag(v, "PayIsAveraged"));
+        assign(p.rec_leg.rec_is_averaged, opt_flag(v, "RecIsAveraged"));
         set_audit(p);
         r.pay_receive.push_back(std::move(p));
         return r;
@@ -87,11 +87,11 @@ conventions_mapper::map_tenor_basis_swap(const record_reader& v) {
     refdata::domain::tenor_basis_swap_long_short l;
     l.identity.id = provisional_uuid();
     l.identity.convention_id = central.identity.id;
-    assign(l.legs.long_index, opt_text(v, "LongIndex"));
-    assign(l.legs.long_pay_tenor, opt_text(v, "LongPayTenor"));
-    assign(l.legs.short_index, opt_text(v, "ShortIndex"));
-    assign(l.legs.short_pay_tenor, opt_text(v, "ShortPayTenor"));
-    assign(l.legs.spread_on_short, opt_flag(v, "SpreadOnShort"));
+    assign(l.long_leg.long_index, opt_text(v, "LongIndex"));
+    assign(l.long_leg.long_pay_tenor, opt_text(v, "LongPayTenor"));
+    assign(l.short_leg.short_index, opt_text(v, "ShortIndex"));
+    assign(l.short_leg.short_pay_tenor, opt_text(v, "ShortPayTenor"));
+    assign(l.short_leg.spread_on_short, opt_flag(v, "SpreadOnShort"));
     assign(l.coupon.include_spread, opt_flag(v, "IncludeSpread"));
     assign(l.coupon.sub_periods_coupon_type, opt_spelling(v, "SubPeriodsCouponType"));
     set_audit(l);
@@ -105,24 +105,24 @@ void conventions_mapper::reverse_tenor_basis_swap(
         w.set_text("Id", v.convention->payload.name);
     if (!v.pay_receive.empty()) {
         const auto& p = v.pay_receive.front();
-        w.set_optional_text("PayIndex", p.legs.pay_index);
-        w.set_optional_text("PayFrequency", p.legs.pay_frequency);
-        w.set_optional_text("ReceiveIndex", p.legs.receive_index);
-        w.set_optional_text("ReceiveFrequency", p.legs.receive_frequency);
+        w.set_optional_text("PayIndex", p.pay_leg.pay_index);
+        w.set_optional_text("PayFrequency", p.pay_leg.pay_frequency);
+        w.set_optional_text("ReceiveIndex", p.rec_leg.receive_index);
+        w.set_optional_text("ReceiveFrequency", p.rec_leg.receive_frequency);
         w.set_optional_flag("SpreadOnRec", p.coupon.spread_on_rec);
         w.set_optional_flag("IncludeSpread", p.coupon.include_spread);
         put_enum(w, "SubPeriodsCouponType", p.coupon.sub_periods_coupon_type, "sub-periods coupon type");
-        w.set_optional_flag("PayIsAveraged", p.legs.pay_is_averaged);
-        w.set_optional_flag("RecIsAveraged", p.legs.rec_is_averaged);
+        w.set_optional_flag("PayIsAveraged", p.pay_leg.pay_is_averaged);
+        w.set_optional_flag("RecIsAveraged", p.rec_leg.rec_is_averaged);
         return;
     }
     if (!v.long_short.empty()) {
         const auto& l = v.long_short.front();
-        w.set_optional_text("LongIndex", l.legs.long_index);
-        w.set_optional_text("LongPayTenor", l.legs.long_pay_tenor);
-        w.set_optional_text("ShortIndex", l.legs.short_index);
-        w.set_optional_text("ShortPayTenor", l.legs.short_pay_tenor);
-        w.set_optional_flag("SpreadOnShort", l.legs.spread_on_short);
+        w.set_optional_text("LongIndex", l.long_leg.long_index);
+        w.set_optional_text("LongPayTenor", l.long_leg.long_pay_tenor);
+        w.set_optional_text("ShortIndex", l.short_leg.short_index);
+        w.set_optional_text("ShortPayTenor", l.short_leg.short_pay_tenor);
+        w.set_optional_flag("SpreadOnShort", l.short_leg.spread_on_short);
         w.set_optional_flag("IncludeSpread", l.coupon.include_spread);
         put_enum(w, "SubPeriodsCouponType", l.coupon.sub_periods_coupon_type, "sub-periods coupon type");
     }

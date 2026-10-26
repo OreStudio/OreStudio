@@ -113,15 +113,15 @@ to_domain_pay_receive(const messaging::tenor_basis_swap_pay_receive_write& write
     domain::tenor_basis_swap_pay_receive v;
     v.identity.id = write.id;
     v.identity.convention_id = write.convention_id;
-    v.legs.pay_index = write.pay_index;
-    v.legs.pay_frequency = write.pay_frequency;
-    v.legs.receive_index = write.receive_index;
-    v.legs.receive_frequency = write.receive_frequency;
+    v.pay_leg.pay_index = write.pay_index;
+    v.pay_leg.pay_frequency = write.pay_frequency;
+    v.rec_leg.receive_index = write.receive_index;
+    v.rec_leg.receive_frequency = write.receive_frequency;
     v.coupon.spread_on_rec = write.spread_on_rec;
     v.coupon.include_spread = write.include_spread;
     v.coupon.sub_periods_coupon_type = write.sub_periods_coupon_type;
-    v.legs.pay_is_averaged = write.pay_is_averaged;
-    v.legs.rec_is_averaged = write.rec_is_averaged;
+    v.pay_leg.pay_is_averaged = write.pay_is_averaged;
+    v.rec_leg.rec_is_averaged = write.rec_is_averaged;
     return v;
 }
 
@@ -158,11 +158,11 @@ to_domain_long_short(const messaging::tenor_basis_swap_long_short_write& write) 
     domain::tenor_basis_swap_long_short v;
     v.identity.id = write.id;
     v.identity.convention_id = write.convention_id;
-    v.legs.long_index = write.long_index;
-    v.legs.long_pay_tenor = write.long_pay_tenor;
-    v.legs.short_index = write.short_index;
-    v.legs.short_pay_tenor = write.short_pay_tenor;
-    v.legs.spread_on_short = write.spread_on_short;
+    v.long_leg.long_index = write.long_index;
+    v.long_leg.long_pay_tenor = write.long_pay_tenor;
+    v.short_leg.short_index = write.short_index;
+    v.short_leg.short_pay_tenor = write.short_pay_tenor;
+    v.short_leg.spread_on_short = write.spread_on_short;
     v.coupon.include_spread = write.include_spread;
     v.coupon.sub_periods_coupon_type = write.sub_periods_coupon_type;
     return v;

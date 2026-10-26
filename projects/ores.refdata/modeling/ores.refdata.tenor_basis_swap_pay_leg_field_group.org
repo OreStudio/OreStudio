@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: b0f6d2b0-d0cf-40f7-bd70-867b4dfc05ee
+:END:
+#+title: ores.refdata.tenor_basis_swap_pay_leg
+#+description: Codegen field-group model for ores::refdata::domain::tenor_basis_swap_pay_leg.
+#+type: ores.codegen.field_group
+#+component: refdata
+#+subcomponent: api
+#+product: ores
+#+entity_singular: tenor_basis_swap_pay_leg
+#+namespace: ores::refdata::domain
+#+brief: The paying leg of the paying and receiving form of a tenor basis swap.
+#+filetags: :model:field_group:refdata:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+The paying leg: the index it references, the frequency it pays at, and
+whether its coupons are averaged. The receiving leg lives in its own group,
+because a reader of one leg does not want the other beside it.
+
+Extracted as a plain nested sub-struct so that
+rfl::internal::no_duplicate_field_names never instantiates a Literal
+wider than 5 fields for this block. See the decomposition section of
+doc/knowledge/architecture/data_oriented_design.org.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** pay_index
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Index the paying leg references, in the paying and receiving form.
+
+** pay_frequency
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Payment frequency of the paying leg, as ORE's period code.
+
+** pay_is_averaged
+:PROPERTIES:
+:cpp_type: std::optional<bool>
+:END:
+
+Whether the paying leg's coupons are averaged rather than compounded.
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

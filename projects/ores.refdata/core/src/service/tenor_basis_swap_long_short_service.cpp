@@ -105,11 +105,11 @@ to_domain(const messaging::tenor_basis_swap_long_short_write& write) {
     domain::tenor_basis_swap_long_short v;
     v.identity.id = write.id;
     v.identity.convention_id = write.convention_id;
-    v.legs.long_index = write.long_index;
-    v.legs.long_pay_tenor = write.long_pay_tenor;
-    v.legs.short_index = write.short_index;
-    v.legs.short_pay_tenor = write.short_pay_tenor;
-    v.legs.spread_on_short = write.spread_on_short;
+    v.long_leg.long_index = write.long_index;
+    v.long_leg.long_pay_tenor = write.long_pay_tenor;
+    v.short_leg.short_index = write.short_index;
+    v.short_leg.short_pay_tenor = write.short_pay_tenor;
+    v.short_leg.spread_on_short = write.spread_on_short;
     v.coupon.include_spread = write.include_spread;
     v.coupon.sub_periods_coupon_type = write.sub_periods_coupon_type;
     return v;

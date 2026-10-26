@@ -23,7 +23,8 @@
  * To modify, update the template and regenerate.
  */
 import type { TenorBasisSwapPartIdentity } from './tenor_basis_swap_part_identity.js';
-import type { TenorBasisSwapPayReceiveLegs } from './tenor_basis_swap_pay_receive_legs.js';
+import type { TenorBasisSwapPayLeg } from './tenor_basis_swap_pay_leg.js';
+import type { TenorBasisSwapReceiveLeg } from './tenor_basis_swap_receive_leg.js';
 import type { TenorBasisSwapPayReceiveCoupon } from './tenor_basis_swap_pay_receive_coupon.js';
 import type { AuditRecord } from '../../dq/domain/audit_record.js';
 
@@ -37,7 +38,8 @@ import type { AuditRecord } from '../../dq/domain/audit_record.js';
  */
 export interface TenorBasisSwapPayReceive {
     identity: TenorBasisSwapPartIdentity;
-    legs: TenorBasisSwapPayReceiveLegs;
+    pay_leg: TenorBasisSwapPayLeg;
+    rec_leg: TenorBasisSwapReceiveLeg;
     coupon: TenorBasisSwapPayReceiveCoupon;
     audit: AuditRecord;
 }

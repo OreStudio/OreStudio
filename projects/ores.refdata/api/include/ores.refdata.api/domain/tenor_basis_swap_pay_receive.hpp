@@ -27,8 +27,9 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_part_identity.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_leg.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive_coupon.hpp"
-#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive_legs.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_receive_leg.hpp"
 #include <chrono>
 #include <span>
 #include <string_view>
@@ -47,7 +48,8 @@ namespace ores::refdata::domain {
  */
 struct tenor_basis_swap_pay_receive final {
     tenor_basis_swap_part_identity identity;
-    tenor_basis_swap_pay_receive_legs legs;
+    tenor_basis_swap_pay_leg pay_leg;
+    tenor_basis_swap_receive_leg rec_leg;
     tenor_basis_swap_pay_receive_coupon coupon;
     ores::dq::domain::audit_record audit;
     /**

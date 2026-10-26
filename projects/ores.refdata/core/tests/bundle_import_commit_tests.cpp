@@ -86,8 +86,8 @@ TEST_CASE("a part staged before its central row still commits into one row each"
 
     ores::refdata::domain::tenor_basis_swap_pay_receive part;
     part.identity.convention_id = central.identity.id;
-    part.legs.pay_index = std::string("GBP-LIBOR-6M");
-    part.legs.receive_index = std::string("GBP-LIBOR-3M");
+    part.pay_leg.pay_index = std::string("GBP-LIBOR-6M");
+    part.rec_leg.receive_index = std::string("GBP-LIBOR-3M");
     part.audit.change_reason_code = "system.test";
 
     // The part is staged first on purpose. The apply writes the central family

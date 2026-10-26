@@ -26,11 +26,11 @@ Operations shows the market data sources board, and Market data shows subscripti
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
@@ -83,4 +83,39 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Measurements
+
+| What | Value | Command |
+|------+-------+---------|
+| JS suite | 3340 tests, 269 files | =npm test= in projects/ores.web |
+| New BFF tests | 14 | =src/subscriptions.test.ts= |
+| New board tests | 12 | =operations/marketDataSources.test.tsx= |
+| New screen tests | 11 | =marketdata/subscriptionsScreen.test.tsx= |
+| Typecheck | clean, six workspaces | =npm run typecheck= |
+| Live subscriptions | 2 | GET /api/marketdata/subscriptions |
+| Live routes | 2 | GET /api/marketdata/routes |
+| Adapters | 23 statuses, matched the shell | GET /api/marketdata/adapters |
+
 * Result
+
+Operations now has the market data sources board, and Market data has the
+subscriptions and routes screen.
+
+- The board reads the adapter status once and draws the tiles, the alert, the
+  table and the detail panel. Four prototype fields are stated as gaps because
+  the status does not carry them: the source kind, the quality drops, the routed
+  parties and the state history.
+- The subscriptions screen reads the party's rights and its routes through the
+  BFF, and creates and removes them through the service's put and delete.
+  Creating needs the session's party; deleting states the version and asks for
+  the reason.
+- Two BFF reads were added: subscriptions and routes, plus a catalogue read for
+  the providers and sources a route names. No service operation was added.
+
+Open. The party administrator role has no marketdata subscriptions or routes
+read in the seed, so a human party account sees nothing until the role is
+granted. The running web service serves the new bundle after a build and a
+restart. The usage and cost screen has no price read.
+
+Deferred: the usage and cost screen, and the versions history, which has no BFF
+read.

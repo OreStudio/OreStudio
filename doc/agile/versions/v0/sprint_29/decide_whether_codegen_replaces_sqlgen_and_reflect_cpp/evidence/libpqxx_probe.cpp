@@ -1,5 +1,5 @@
 #include <chrono>
-#include <cstdlib>
+#include "ores.platform/environment/environment.hpp"
 #include <iostream>
 #include <pqxx/pqxx>
 
@@ -10,7 +10,7 @@ static double ms_since(clk::time_point t) {
 }
 
 int main() {
-    pqxx::connection c{std::getenv("PQXX_PROBE_CONN")};
+    pqxx::connection c{ores::platform::environment::environment::get_value_or_throw("PQXX_PROBE_CONN").c_str()};
     std::cout << "libpqxx " << PQXX_VERSION << ", server " << c.server_version() << "\n";
 
     pqxx::nontransaction setup{c};

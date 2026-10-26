@@ -1,6 +1,7 @@
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
+#include "ores.platform/environment/environment.hpp"
 #include <string>
 #include <libpq-fe.h>
 
@@ -20,7 +21,7 @@ static void must(PGresult* r, const char* what) {
 }
 
 int main() {
-    PGconn* c = PQconnectdb(std::getenv("PQXX_PROBE_CONN"));
+    PGconn* c = PQconnectdb(ores::platform::environment::environment::get_value_or_throw("PQXX_PROBE_CONN").c_str());
     must(PQexec(c, "create temp table probe (id bigint primary key, code text not null, px double precision)"), "create");
     must(PQprepare(c, "ins", "insert into probe values ($1::bigint, $2, $3::float8)", 3, nullptr), "prepare ins");
     must(PQprepare(c, "rd", "select px from probe where id = $1::bigint", 1, nullptr), "prepare rd");

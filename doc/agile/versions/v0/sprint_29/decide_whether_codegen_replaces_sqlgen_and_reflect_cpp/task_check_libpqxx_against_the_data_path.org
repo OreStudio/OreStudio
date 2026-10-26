@@ -67,6 +67,10 @@ All times are on localhost with PostgreSQL 18.6, three runs each, and are
 the range of the three runs. A network between the service and the server makes
 every round trip longer, so the gap between one round trip per statement and
 pipeline mode grows on a real deployment.
+A 3-job unity build ran on the same machine during the runs. That can make the
+absolute times high. The ratios between the methods are what the decision uses.
+The probes read the connection string from =PQXX_PROBE_CONN= through
+=ores.platform='s =environment=, and link =libores.platform=.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|

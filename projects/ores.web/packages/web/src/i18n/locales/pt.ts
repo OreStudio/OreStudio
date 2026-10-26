@@ -5213,6 +5213,10 @@ const pt: SourceCatalogue = {
             errors: 'Ler os erros desta execução',
         },
         results: {
+            selectedTrade: 'A transação aberta',
+            tradeErrors: 'O que a execução registou sobre esta transação',
+            noTradeError: 'A execução não registou erros sobre esta transação.',
+            error: 'erro',
             title: 'Resultados',
             trades: 'Transações',
             total: 'VAL total',

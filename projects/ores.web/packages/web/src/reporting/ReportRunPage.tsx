@@ -74,6 +74,7 @@ export function ReportRunPage(): ReactNode {
                 <>
                     {tab === 'results' ? (
                         <RunResultsPanel
+                            runId={id}
                             queryKey={['reporting-run-results', id]}
                             load={() => api.reportRunResults(id)}
                         />

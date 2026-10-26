@@ -23,7 +23,8 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { gunzipSync } from 'node:zlib';
 import { z } from 'zod';
 import { invalidRequest, notFound } from './errors.js';
-import { resultSchema, row, text } from './refdata-calls.js';
+import { readAll, resultSchema, row, text } from './refdata-calls.js';
+import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
 import { fetchStored } from './grid-downloads.js';
 import { readRun, readRunStates } from './grid-report-runs.js';
 import type { LiveSession } from './sessions.js';
@@ -49,6 +50,7 @@ export interface RunResultRow {
     readonly npv_base: string;
     readonly notional: string;
     readonly counterparty: string;
+    readonly counterparty_name: string;
 }
 
 /**
@@ -178,6 +180,7 @@ export function rowsOf(rawCsv: string): readonly RunResultRow[] | null {
                 npv_base: at(COLUMNS.npv_base),
                 notional: at(COLUMNS.notional),
                 counterparty: at(COLUMNS.counterparty),
+                counterparty_name: '',
             };
         })
         .filter((row) => row.trade_id !== '');
@@ -200,7 +203,40 @@ async function resultsOfKey(session: LiveSession, key: string): Promise<ResultsA
     if (rows === null) {
         return { rows: [], reason: 'no-figures' };
     }
-    return { rows, reason: '' };
+    return { rows: await namedCounterparties(session, rows), reason: '' };
+}
+
+/**
+ * The rows with each counterparty's name beside its id.
+ *
+ * The engine writes the party's id, and a screen never shows an identifier where
+ * a name would do. A name that cannot be read leaves the cell empty rather than
+ * failing the figures.
+ */
+async function namedCounterparties(
+    session: LiveSession,
+    rows: readonly RunResultRow[],
+): Promise<readonly RunResultRow[]> {
+    try {
+        const counterparties = await readAll(
+            session,
+            counterpartySubjects.list_counterparties_request,
+            'counterparties',
+            { filter: null, as_of: null },
+        );
+        const names = new Map(
+            counterparties.map((counterparty) => [
+                text(counterparty['id']),
+                text(counterparty['full_name']),
+            ]),
+        );
+        return rows.map((row) => ({
+            ...row,
+            counterparty_name: names.get(row.counterparty) ?? '',
+        }));
+    } catch {
+        return rows;
+    }
 }
 
 export function registerGridReportResultsRoutes(

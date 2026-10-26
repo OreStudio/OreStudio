@@ -5248,6 +5248,10 @@ const fr: SourceCatalogue = {
             errors: 'Lire les erreurs de cette exécution',
         },
         results: {
+            selectedTrade: 'La transaction ouverte',
+            tradeErrors: "Ce que l'exécution a enregistré sur cette transaction",
+            noTradeError: "L'exécution n'a enregistré aucune erreur sur cette transaction.",
+            error: 'erreur',
             title: 'Résultats',
             trades: 'Transactions',
             total: 'VAN totale',

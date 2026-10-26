@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 1E27811E-5193-48BF-A4F2-0C5F6C0F2EA3
+:END:
+#+title: Task: Read a trade from a run's results
+#+description: Each result row names its trade and its counterparty, links to both, and opens onto that trade's figures and the error the run recorded against it.
+#+type: task
+#+level: s1
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person reads a run's per-trade rows, recognises the trade and the counterparty by name, opens either, and sees what the run recorded against that trade.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- The trade id is shown in full and leads to the trade.
+- The counterparty is shown by name and leads to the counterparty.
+- Opening a row states that trade's figures and the error the run recorded against it, or says there is none.
+- A trade the run recorded an error against carries an error tag.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A run's rows now name the trade and the counterparty the way a person knows
+them, and open onto the trade.
+
+The table shows the trade id in full, as a link to the trade, and the
+counterparty by its name, as a link to the counterparty. The engine writes the
+counterparty's id into =npv.csv=, so the BFF resolves it against the tenant's
+counterparties and leaves the cell empty rather than guessing when the name
+cannot be read.
+
+Opening a row states that trade's figures below the table: its id, its type, its
+NPV, its base NPV, its notional and its counterparty, each id leading to its
+record. It also states what the run recorded about that trade, or that the run
+recorded no error against it. A row whose trade the run recorded an error
+against carries an =error= tag.
+
+The run that shows it is =9ff0e92e-f21d-4137-bb24-ad4956fa99f0=: eight bond
+trades whose counterparties read =OCBC Bank (Hong Kong) Limited=, =DBS BANK
+LTD.=, =The Bank of East Asia, Limited= and others, and no error against any of
+them, because the run completed.

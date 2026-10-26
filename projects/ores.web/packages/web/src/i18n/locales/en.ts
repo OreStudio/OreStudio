@@ -5172,6 +5172,10 @@ export const en: SourceCatalogue = {
             errors: "Read this run's errors",
         },
         results: {
+            selectedTrade: 'The trade you opened',
+            tradeErrors: 'What the run recorded about this trade',
+            noTradeError: 'The run recorded no error against this trade.',
+            error: 'error',
             title: 'Results',
             trades: 'Trades',
             total: 'Total NPV',

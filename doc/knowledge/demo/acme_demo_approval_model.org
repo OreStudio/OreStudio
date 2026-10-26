@@ -1,0 +1,177 @@
+:PROPERTIES:
+:ID: 8B0D92BD-7D15-45B7-80EA-07D111F73EB3
+:END:
+#+title: An Acme approval is decided by a permitted person who did not raise it
+#+description: The four approval kinds and four parts the platform seeds, the decide permission each names, the Acme persona that holds it, and the requester-not-decider rule that makes the decision four eyes.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:approval:four-eyes:acme:demo:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+startup: inlineimages
+
+* Summary
+
+An approval request names a kind, and a kind names one permission that its
+decider must hold. A request may also name parts — Controller, Finance, Market
+Risk, Operations — and each part names a permission of its own, with an answer
+order. The demonstration populates each of those five permissions with at least
+one Acme persona, and separates the two people the control exists for: the desks
+raise, and Operations, Market Risk, the Controller or Finance decides. A person
+who raised a request can never decide it, whatever they hold. That single rule is
+what turns a permission into four eyes.
+
+* Detail
+
+** The four kinds
+
+#+ATTR_HTML: :class hug-leading
+| Kind | Decides what | =decide_permission_code= | Holder in Acme | Approvals | Hold | Comment on approve | Expires |
+|------+--------------+--------------------------+----------------+-----------+------+--------------------+---------|
+| =trading.operational_authorisation= | a booked trade waiting to be released | =inbox::approvals:decide_operations= | Operations | 1 | yes | yes | never |
+| =refdata.book_change= | a proposed change to books | =inbox::approvals:decide_operations= | Operations | 1 | no | no | 14 days |
+| =refdata.counterparty_change= | a proposed change to counterparties, their identifiers and the parties that may trade with them | =inbox::approvals:decide_operations= | Operations | 1 | no | no | 14 days |
+| =iam.role_grant= | a person asking to be given a role | =iam::roles:assign= | TenantAdmin | 1 | no | no | 14 days |
+
+An operational authorisation does not expire and requires a comment on
+approval, because an unreleased trade is a risk a timeout must not hide and the
+decision has to be readable afterwards. A role request carries a review window,
+because an administrator who never answers asks the member to wait forever.
+
+** The four parts
+
+A part is what a kind asks for when one function's sign-off does not imply
+another's. A request that names parts is decided by part instead of by count.
+
+#+ATTR_HTML: :class hug-leading
+| Part | Answers | =decide_permission_code= | Answer order | Holder in Acme |
+|------+---------+--------------------------+--------------+----------------|
+| =controller= | the first independent check on a new book | =inbox::approvals:decide_controller= | 1, before the rest | Controller: 4 personas |
+| =finance= | the accounting identity, the ledger feed, closing a book | =inbox::approvals:decide_finance= | 2, in parallel | Finance: 4 personas |
+| =market_risk= | classification, capital treatment, agreements, conventions | =inbox::approvals:decide_market_risk= | 2, in parallel | Operations: 16 personas, of whom the heads of market risk |
+| =operations= | access, memberships, links, allowed currencies and products | =inbox::approvals:decide_operations= | 2, in parallel | Operations: 16 personas |
+
+The controller answers first because a desk must not be able to authorise its own
+new book; the other three answer together, because each approves its own
+contribution and no one function's sign-off implies another's.
+[[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on
+each]] is where those four answers come from. The platform seeds the routing as
+policies keyed by the field a change touches, and the policies follow the same
+division: a book's functional currency, GL account reference, cost centre, owner
+unit and ledger feed go to Finance, its regulatory type, purpose, rates centre and
+sweepable flag to Market Risk, and its status, portfolios and memberships to
+Operations.
+
+** Who is who in the demonstration
+
+The demonstration needed two functions the role catalogue had nobody for. The
+partition of the four parts named a Controller and a Finance decider, and no role
+held either code, so a book change could only be answered by a tenant
+administrator. Both roles now exist and both are staffed, at the group and in each
+office.
+
+#+ATTR_HTML: :class hug-leading
+| Function | Persona | Role | Decide permission |
+|----------+---------+------+-------------------|
+| the group's controller | Fiona Ashdown, Group Financial Controller | Controller | =decide_controller= |
+| London's controller | Terry Freeman, Head of Financial Control | Controller | =decide_controller= |
+| New York's controller | William Carson, Head of Financial Control | Controller | =decide_controller= |
+| Hong Kong's controller | Suet Ying Wong, Head of Financial Control | Controller | =decide_controller= |
+| the group's finance | Graham Pierce, Group Finance Director | Finance | =decide_finance= |
+| London's finance | Beth Clark, Head of Finance | Finance | =decide_finance= |
+| New York's finance | Rachel Byrd, Head of Finance | Finance | =decide_finance= |
+| Hong Kong's finance | Hoi Yan Lee, Head of Finance | Finance | =decide_finance= |
+| each office's operations | the head of middle office, and the office heads | Operations | =decide_operations= |
+| each office's market risk | the head of market risk | Operations | =decide_market_risk= |
+| a role request | Tenant Admin, the account provisioning creates | TenantAdmin | =iam::roles:assign= |
+
+The controller and finance roles report into the independent lines and not into
+the business they check: financial control reports to the country head beside
+risk, and finance reports to the COO beside the middle office.
+
+** The requester-not-decider rule
+
+#+caption: The Acme demonstration: a desk raises through the owning component's operation, the decider reads a queue filtered by the kind's permission, and the decision is refused when the person who asked is the person answering.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/demo/acme_approval_request_and_decide.png]]
+
+Source: [[./acme_approval_request_and_decide.puml][=acme_approval_request_and_decide.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/demo/acme_approval_request_and_decide.puml=.
+
+The rule is enforced three times, at three levels, and each is worth knowing.
+
+1. *The queue.* The list of requests a person may decide is filtered by the
+   permission each kind names, and the person's own requests are cut from the page
+   before it is paged. A person does not see their own request in their queue at
+   all.
+2. *The decision.* The decisions table refuses a decision whose decider is the
+   request's raiser, and the service answers =four_eyes= with the words "You asked
+   for this request, so someone else decides it."
+3. *One decision per person.* A request that needs several approvals, or several
+   parts, takes one decision from each person, so a person holding two of the
+   deciding roles still answers once.
+
+What the demonstration showed, on a database recreated and provisioned from the
+seed alone:
+
+#+ATTR_HTML: :class hug-leading
+| Who | What they tried | What happened |
+|-----+-----------------+---------------|
+| a junior trader, who raised four authorisations | read the queue | 0 requests: the role holds no decide code |
+| the same trader | approve a request of their own | refused, =not_a_decider= |
+| the head of middle office | read the queue | 60 waiting authorisations |
+| the head of middle office | approve an authorisation raised by the group treasurer | approved; the request moved to =approved= and the kind's apply ran |
+| the head of middle office | approve a book change the same person had raised | refused, =four_eyes=: "You asked for this request, so someone else decides it." |
+| the head of financial control | open a book change from the notice, then approve the controller part | approved; the request stays waiting for the other parts |
+| the group finance director | approve the finance part | approved |
+| the head of market risk | approve the market risk part | approved |
+| the tenant administrator | read the queue | 63 waiting requests, including the role request a member raised |
+
+** What a person still cannot do, and what that leaves undecided
+
+The journeys and the seeds disagree in five places, and this page records the
+disagreement rather than resolving it.
+
+- *A part decider reads an empty queue.* The queue filters by the kind's decide
+  code, and a Controller or Finance persona holds no kind's code, only a part's.
+  Such a person therefore learns of a request from the notice the raise sends and
+  must open it by identifier; the queue shows nothing. Whether the queue should
+  also list the requests whose parts a person may answer is an open question.
+- *No policy names the controller part.* The approval policies route a changed
+  field to Finance, Market Risk or Operations, and the controller answers only an
+  opening. No seeded policy row produces a controller part, so today no request
+  the platform raises asks a controller to answer. A Controller persona can decide
+  the part, as the run above shows, but only a request raised with that part asks
+  for it.
+- *No market-data approval kind exists.* *Decide a publish* describes an approver
+  waiting on a curve publish, and the kind it would filter the queue by is not
+  seeded, so the market data part of the demonstration has no approval to decide.
+  [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] carries the gap.
+- *Which market risk decides a tenant-wide change.* *Decide a convention change*
+  names Market Risk as the decider of a tenant kind and does not say which
+  party's Market Risk answers for the whole tenant. This demonstration answers
+  the question by accident rather than by design: the queue is tenant-wide, so
+  any office's head of market risk sees the request. That the queue is not
+  party-scoped is a property the journeys do not state.
+- *No kind carries a hold reason list.* An operational authorisation allows a
+  hold and has no reason lookup, so a hold takes the free-text comment alone.
+
+* What this note does not cover
+
+The permissions the roles bundle, and which persona holds which role, are
+[[id:3F19F33A-161C-4E61-BD92-CB32953DA8F9][the permission matrix]]. The record
+itself, its fields and its lifecycle belong to
+[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]].
+
+* See also
+
+- [[id:DB09267A-E589-4688-9773-9A7BF982247F][The Acme demonstration's market data and its approvals]] — the structure note that orders this cluster.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — completes: the record, the queue and the four-eyes rule in general.
+- [[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]] — answers: why four functions answer a book change, and in that order.
+- [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] — completes: why an unreleased trade is a control, and why the decision is metadata.
+- [[id:785C68A0-DD94-404A-BF16-57814554DA12][Operational Authorisation Queue]] — exemplifies: the screen the operations decision belongs on.
+- [[id:3F19F33A-161C-4E61-BD92-CB32953DA8F9][A persona may act because of its role, and no other reason]] — completes: where each decide permission reaches a person.
+- [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — exemplifies: the role request whose decider is the administrator.
+- [[id:7D36D29C-426D-4E7E-9D16-F46364B9818E][Decide a convention change]] — answers: the market-risk decision this demonstration uses for the third part.
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — contradicts: a journey that waits on a kind the platform does not seed.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index of every knowledge hub.

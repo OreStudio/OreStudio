@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: 3F19F33A-161C-4E61-BD92-CB32953DA8F9
+:END:
+#+title: A persona may act because of its role, and no other reason
+#+description: The role each Acme persona holds, the permission matrix by role for market data and approvals, and how a decide permission reaches a person through the role a member of staff was given.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:iam:rbac:acme:demo:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+startup: inlineimages
+
+* Summary
+
+An Acme person holds two roles: =Member=, which every account holds, and the one
+job role the seeder gave the account when it loaded the staff. Everything the
+person may do follows from those two rows and from the permissions they bundle.
+No account is granted a permission directly, so the question "can this persona
+decide a book change" has one answer: does its job role carry the code. That is
+why adding a persona to the demonstration is two decisions and not one, and why
+the seeder's =role= field is the only place a persona's authority is stated.
+
+* Detail
+
+** How the authority composes
+
+#+caption: The Acme demonstration: a persona holds one job role and Member, a role bundles permissions, and the kinds and parts of an approval name the permission their decider must hold.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/demo/acme_role_and_permission_model.png]]
+
+Source: [[./acme_role_and_permission_model.puml][=acme_role_and_permission_model.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/demo/acme_role_and_permission_model.puml=.
+
+An account holds roles, a role bundles permissions, and an operation checks the
+code it names. The chain has no shortcut, and the two exceptions are both
+deliberate. =TenantAdmin= holds the single permission =*=, which satisfies every
+check in the tenant, and a service account holds its component's wildcard, which
+is why a service can write what no person may.
+[[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]
+states the model, and
+[[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] orders the pages
+that carry it.
+
+** The roles the demonstration gives people
+
+#+ATTR_HTML: :class hug-leading
+| Role | Acme personas | What the role is for |
+|------+---------------+----------------------|
+| =Trading= | 31 | the desks, the desk heads and the group treasurer; the people who book |
+| =Operations= | 16 | the country heads, the COOs, the heads of risk, the middle office and market risk |
+| =Controller= | 4 | the group financial controller and one head of financial control in each office |
+| =Finance= | 4 | the group finance director and one head of finance in each office |
+| =Viewer= | 12 | the analysts |
+| =Sales= | 3 | the head of sales in each office |
+| =Support= | 3 | the head of client support in each office |
+| =Member= | 74 | every account, including the tenant administrator |
+| =TenantAdmin= | 1 | the tenant administrator the provisioning creates |
+
+Seven job roles across 73 staff, and one administrator account the profile
+creates outside the staff datasets. A persona holds exactly one job role, so the
+matrix below has one row per persona.
+
+** The matrix
+
+#+ATTR_HTML: :class hug-leading
+| Permission | Trading | Operations | Controller | Finance | Viewer | Sales | Support | Member |
+|------------+---------+------------+------------+---------+--------+-------+---------+--------|
+| =inbox::approvals:decide_operations= | | yes | | | | | | |
+| =inbox::approvals:decide_market_risk= | | yes | | | | | | |
+| =inbox::approvals:decide_controller= | | | yes | | | | | |
+| =inbox::approvals:decide_finance= | | | | yes | | | | |
+| =inbox::approval_requests:read= | | yes | yes | yes | | | | |
+| =inbox::approval_requests:write= | | yes | | | | | | |
+| =inbox::approval_decisions:read= | | | yes | yes | | | | |
+| =marketdata::subscriptions:read= | yes | yes | | | yes | yes | yes | |
+| =marketdata::subscriptions:write= | | yes | | | | | | |
+| =marketdata::subscriptions:delete= | | yes | | | | | | |
+| =marketdata::routes:read= | yes | yes | | | yes | yes | yes | |
+| =marketdata::market_data_sources:read= | yes | yes | | | yes | yes | yes | |
+| =marketdata::providers:read= | yes | yes | | | yes | yes | yes | |
+| =iam::roles:assign= | | | | | | | | |
+
+The empty cells are the point of the table, and three of them carry a decision.
+
+- =Member= holds none of the inbox codes, so the approvals queue is not a screen
+  every person sees. It is a screen for the functions that decide, and a member
+  with no decide role reads an empty queue.
+- The =Controller= and =Finance= roles hold no =marketdata= code. Deciding a book
+  change does not require reading the party's market data feeds, and the
+  demonstration keeps the two apart.
+- The row for =iam::roles:assign= is empty for every job role. The only holder is
+  =TenantAdmin=, through its =*=, so the decision on a role request stays with
+  the administrator. [[id:2BA72C77-99DC-4538-8937-52A572CF6F53][Role requests]]
+  states why that write is administrative.
+
+** The two rules that make the matrix matter
+
+A permission is necessary and not sufficient. Two further rules sit above the
+codes, and both are enforced in the database rather than in a screen.
+
+- *Four eyes.* A person never decides a request they raised. The decisions table
+  refuses the row, and the queue cuts the person's own requests out of the page
+  before it is paged, so the refusal is rarely reached.
+- *One decision per person.* A request that needs two approvals, or several
+  parts, takes one decision from each person whatever part they answered for, so
+  two roles held by one account do not let it approve twice.
+
+[[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] states both, and
+[[id:8B0D92BD-7D15-45B7-80EA-07D111F73EB3][the approval model]] applies them to
+the kinds the demonstration seeds.
+
+** What a persona cannot do by holding a role
+
+Three limits are worth stating because a reader will ask.
+
+- A job role is per tenant. A person of the Acme tenant holds an Acme role and
+  reads nothing of another tenant, whatever the role's name.
+- A role does not select a party. The demonstration gives each person a default
+  party, and a read that is party-scoped sees that party and its children, so a
+  controller in London decides a London book for the same reason a London trader
+  books into it.
+- A role cannot change itself. Adding a permission to a role is an IAM write,
+  held by the administrator, and granting a role to a person is the same write.
+
+* What this note does not cover
+
+Which persona decides which approval is
+[[id:8B0D92BD-7D15-45B7-80EA-07D111F73EB3][the approval model]]. Who may change
+a market data subscription is
+[[id:9E8D00D3-5ADD-48E0-85AB-CC19693DEFFF][the subscription and the route]].
+
+* See also
+
+- [[id:DB09267A-E589-4688-9773-9A7BF982247F][The Acme demonstration's market data and its approvals]] — the structure note that orders this cluster.
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — completes: the model this page reads as a table of one tenant's people.
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — completes: where each layer of the chain is enforced.
+- [[id:2BA72C77-99DC-4538-8937-52A572CF6F53][Role requests]] — answers: why the role-grant decision stays with the administrator.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — completes: the four-eyes and one-decision rules the matrix is read with.
+- [[id:3CA48F40-B601-497B-BA78-9822DBEBA8E5][Know what I may do]] — exemplifies: the screen a persona reads this matrix through.
+- [[id:08169F5D-29B0-4758-968A-3C1875203A8A][Shape the role catalogue]] — answers: how a role's bundle of permissions is changed.
+- [[id:6014CFE1-D978-4ABA-BBA9-D87040FE44BA][The acme_demo seed profile]] — completes: the step that gives these roles to these people.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index of every knowledge hub.

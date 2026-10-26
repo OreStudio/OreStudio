@@ -1,0 +1,78 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The Acme demonstration: market data demand and subscription
+
+participant "Acme party\n(its reports and curves)" as party
+participant "ores.marketdata" as md
+database "The catalogue\n(provider, source, vendor id,\nmapping, rate card)" as cat
+database "The party's rows\n(subscription, route)" as rows
+participant "The routed adapter\n(bloomberg-a, lseg-a, demo-a)" as adapter
+participant "ores.marketdata.synthetic\n(the feed generators)" as sim
+
+== The demonstration creates the party's two rows ==
+
+party -> md : the acme_demo profile's\nsubscribe_market_data step
+note right of md
+  The step runs for every party of the
+  tenant. A party the step names takes
+  its own provider and source; a party
+  it does not name takes the step's.
+end note
+md -> rows : put_subscription (party, provider,\ndisplay, non display, derived)
+md -> rows : put_route (party, provider, source)
+rows --> md : one subscription and one route\nfor each provider the party takes
+
+== A run needs market data, so the party registers demand ==
+
+party -> md : demand for an item\n(curve, spot, surface) at an as-of
+md -> cat : which provider carries the item?
+cat --> md : the provider and its vendor ids
+md -> rows : which source serves this party\nfor that provider?
+rows --> md : the route's source, and no other
+md -> adapter : does this source serve the id?
+adapter --> md : yes, it is in my announced universe
+note right of md
+  An id in the catalogue that an
+  adapter does not announce cannot be
+  demanded: the source screen says so
+  rather than the run failing late.
+end note
+md -> sim : start the generator for the id
+sim --> md : the generator runs
+
+== The adapter publishes, and the service stores for this party ==
+
+adapter -> md : marketdata.v1.ingress\n(one tick, in the vendor's own id)
+md -> md : map the vendor id to the item,\nthen run the quality checks
+md -> md : store one tick for this party
+md --> party : the party's stream\n(marketdata tick)
+
+== The bill follows the demand, not the price ==
+
+md -> md : count the delivery against\n(the party, provider, item)
+note right of md
+  A simulated source carries a rate
+  card of the same shape as a live one,
+  so the demonstration shows the bill
+  the same use would cost on a live
+  source.
+end note
+
+@enduml

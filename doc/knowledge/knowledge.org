@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:index:
 #+created: 2024-06-15
-#+updated: 2026-10-17
+#+updated: 2026-10-26
 
 Durable, cross-cutting knowledge that outlives any sprint. Each page is
 a single topic — a definition, a convention, an explanation of how some
@@ -161,6 +161,16 @@ features. Each component's own page carries its script inventory.
 - [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the atomic-note method that motivates the graph
   structure and the id-link discipline every page follows. It orders the
   org-roam and Emacs pages.
+
+* Demonstrations
+
+The working examples. Each is an instance of several clusters at once, so it
+holds one structure note that orders the pages about it rather than a page per
+subject.
+
+- [[id:DB09267A-E589-4688-9773-9A7BF982247F][The Acme demonstration's market data and its approvals]] — how the
+  fully populated demonstration tenant gets its market data, which rows the seed
+  profile writes, and who may decide the approvals it raises.
 
 * External reference
 

@@ -54,8 +54,8 @@ const RASTER_KEY = ['market-regime-raster'] as const;
 /** A lane's height in pixels: a row of the raster, and the room a mark takes. */
 const LANE_HEIGHT = 18;
 
-/** The room the rate curves take above the rows. */
-const RATE_HEIGHT = 48;
+/** The room each of the two factor charts takes, in pixels: big enough to read a decay. */
+const CHART_HEIGHT = 84;
 
 /**
  * The market-wide arrival factor: the state every feed's rate is scaled by, the
@@ -196,6 +196,13 @@ export function MarketRegimePanel({
                 ))}
             </div>
 
+            <FactorCharts
+                feeds={raster?.feeds ?? []}
+                seconds={raster?.seconds ?? RASTER_SECONDS}
+                now={now}
+                regime={regime}
+            />
+
             <div className="space-y-2">
                 <h3 className="text-xs uppercase tracking-wide text-ink-faint">
                     {t('marketdata.marketRegime.raster.title', {
@@ -208,7 +215,6 @@ export function MarketRegimePanel({
                     now={now}
                     marked={marked}
                     states={states}
-                    regime={regime}
                 />
                 {warming ? (
                     <p className="text-xs text-ink-faint">
@@ -246,46 +252,44 @@ export function MarketRegimePanel({
  * thousand dots is not one a person reads on a canvas: the name stays text, so
  * it is legible and can be selected.
  */
-export function MarketRaster({
+/**
+ * The two halves of the factor, over the window, in one section above the
+ * arrivals they moved.
+ *
+ * The heat is what jump and decay act on, so the spikes and the falls are the
+ * process at work; the rate is what the arrivals came at, per asset class. Both
+ * share the raster's time axis and its label column, so the three pictures read
+ * as one.
+ */
+export function FactorCharts({
     feeds,
     seconds,
     now,
-    marked,
-    states,
     regime,
 }: {
     readonly feeds: FeedRaster['feeds'];
-    /** The window the rows were read over, which is what the marks are placed in. */
     readonly seconds: number;
     readonly now: number;
-    readonly marked: { readonly at: number; readonly state: MarketState } | null;
-    /** The state over the window, drawn as the band the arrivals sit on. */
-    readonly states: readonly StateSample[];
     /** The factor in force, which carries the heat the service sampled. */
     readonly regime: MarketRegime;
 }): ReactNode {
     const { t } = useTranslation();
-    if (feeds.length === 0) {
-        return <Notice tone="info">{t('marketdata.marketRegime.raster.none')}</Notice>;
-    }
-    const markAt =
-        marked === null
-            ? undefined
-            : arrivalPositions([new Date(marked.at).toISOString()], seconds, now)[0];
-    const bands = stateBands(states, seconds, now);
     const rates = rateCurves(feeds, seconds, now);
     const heat = heatSeries(regime.samples, seconds, now);
     const heatPeak = heat.reduce((high, value) => Math.max(high, value), 0);
-    const running = feeds.filter((feed) => feed.running);
-    const stopped = feeds.filter((feed) => !feed.running);
+    if (heat.length < 2 && rates.curves.length === 0) {
+        return null;
+    }
     return (
-        <div
-            role="img"
-            aria-label={t('marketdata.marketRegime.raster.label')}
-            className="rounded-md border border-line bg-surface-base py-2"
+        <section
+            aria-label={t('marketdata.marketRegime.charts.title')}
+            className="space-y-2 rounded-md border border-line bg-surface-base p-3"
         >
+            <h3 className="text-xs uppercase tracking-wide text-ink-faint">
+                {t('marketdata.marketRegime.charts.title')}
+            </h3>
             {heat.length < 2 ? null : (
-                <div className="flex items-stretch gap-3 px-3 pb-1" style={{ height: RATE_HEIGHT }}>
+                <div className="flex items-stretch gap-3" style={{ height: CHART_HEIGHT }}>
                     <span className="w-44 shrink-0 self-end pb-1 text-[10px] text-ink-faint">
                         {t('marketdata.marketRegime.raster.heat')}
                     </span>
@@ -299,7 +303,7 @@ export function MarketRaster({
                             d={curvePath(heat, heatPeak)}
                             fill="none"
                             stroke="currentColor"
-                            strokeWidth="1.5"
+                            strokeWidth="2"
                             vectorEffect="non-scaling-stroke"
                         />
                     </svg>
@@ -309,7 +313,7 @@ export function MarketRaster({
                 </div>
             )}
             {rates.curves.length === 0 ? null : (
-                <div className="flex items-stretch gap-3 px-3 pb-1" style={{ height: RATE_HEIGHT }}>
+                <div className="flex items-stretch gap-3" style={{ height: CHART_HEIGHT }}>
                     <span className="w-44 shrink-0 self-end pb-1 text-[10px] text-ink-faint">
                         {t('marketdata.marketRegime.raster.rate')}
                     </span>
@@ -326,7 +330,7 @@ export function MarketRaster({
                                 className={assetClassColour(curve.assetClass).text}
                                 fill="none"
                                 stroke="currentColor"
-                                strokeWidth="1.5"
+                                strokeWidth="2"
                                 vectorEffect="non-scaling-stroke"
                             />
                         ))}
@@ -336,6 +340,65 @@ export function MarketRaster({
                     </span>
                 </div>
             )}
+            <div className="flex items-center gap-3">
+                <span className="w-44 shrink-0" />
+                <span className="flex flex-1 justify-between font-mono text-[10px] text-ink-faint">
+                    <span>{`\u2212${String(seconds)}s`}</span>
+                    <span>{`\u2212${String(Math.round((seconds * 2) / 3))}s`}</span>
+                    <span>{`\u2212${String(Math.round(seconds / 3))}s`}</span>
+                    <span>{t('marketdata.marketRegime.raster.now')}</span>
+                </span>
+                <span className="w-12 shrink-0" />
+            </div>
+            <p className="text-[10px] text-ink-faint">
+                {t('marketdata.marketRegime.raster.heatParams', {
+                    jump: regime.jump,
+                    decay: regime.decay,
+                })}
+            </p>
+        </section>
+    );
+}
+
+/**
+ * One row for each feed, and a dot for each tick it published.
+ *
+ * The feeds that run are drawn first, because the picture opens on the market;
+ * a stopped feed keeps its row, opened by the reader, in the count that says so.
+ * A row is a name in its class's colour, a track of dots, and a count.
+ */
+export function MarketRaster({
+    feeds,
+    seconds,
+    now,
+    marked,
+    states,
+}: {
+    readonly feeds: FeedRaster['feeds'];
+    /** The window the rows were read over, which is what the marks are placed in. */
+    readonly seconds: number;
+    readonly now: number;
+    readonly marked: { readonly at: number; readonly state: MarketState } | null;
+    /** The state over the window, drawn as the band the arrivals sit on. */
+    readonly states: readonly StateSample[];
+}): ReactNode {
+    const { t } = useTranslation();
+    if (feeds.length === 0) {
+        return <Notice tone="info">{t('marketdata.marketRegime.raster.none')}</Notice>;
+    }
+    const markAt =
+        marked === null
+            ? undefined
+            : arrivalPositions([new Date(marked.at).toISOString()], seconds, now)[0];
+    const bands = stateBands(states, seconds, now);
+    const running = feeds.filter((feed) => feed.running);
+    const stopped = feeds.filter((feed) => !feed.running);
+    return (
+        <div
+            role="img"
+            aria-label={t('marketdata.marketRegime.raster.label')}
+            className="rounded-md border border-line bg-surface-base py-2"
+        >
             {running.map((feed) => (
                 <RasterRow
                     key={feed.sourceName}
@@ -388,12 +451,6 @@ export function MarketRaster({
                     <span className="h-2 w-3 rounded-sm bg-ink/10" />
                     {t('marketdata.marketRegime.raster.band')}
                 </span>
-                <span>
-                    {t('marketdata.marketRegime.raster.heatParams', {
-                        jump: regime.jump,
-                        decay: regime.decay,
-                    })}
-                </span>
                 {marked === null ? null : (
                     <span className="flex items-center gap-1">
                         <span className="h-2 w-px bg-ink/50" />
@@ -434,8 +491,8 @@ function RasterRow({
             title={feed.sourceName}
         >
             <span
-                className={`w-44 shrink-0 truncate text-[11px] ${
-                    feed.running ? 'text-ink' : 'text-ink-faint'
+                className={`w-44 shrink-0 truncate text-[11px] ${assetClassColour(feed.assetClass).text} ${
+                    feed.running ? '' : 'opacity-50'
                 }`}
             >
                 {feed.label}

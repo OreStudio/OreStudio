@@ -4586,6 +4586,9 @@ export const en: SourceCatalogue = {
             force: 'Force the state',
             forced: 'forced',
             set: { auto: 'Auto', calm: 'Calm', active: 'Active' },
+            charts: {
+                title: 'The factor over the window',
+            },
             raster: {
                 heat: 'the shared heat',
                 rate: 'ticks a second, per feed',

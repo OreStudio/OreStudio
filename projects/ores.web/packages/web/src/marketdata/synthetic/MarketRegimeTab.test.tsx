@@ -169,6 +169,17 @@ describe('the market regime tab', () => {
         expect(html.match(/data-mark/g)).toHaveLength(2);
     });
 
+    it('draws the factor in its own section above the arrivals', () => {
+        const html = render(regime({ samples: heatReadings() }));
+        expect(html).toContain('The factor over the window');
+    });
+
+    it('writes a feed’s name in its asset class colour', () => {
+        const html = render(regime());
+        expect(html).toContain('text-class-fx');
+        expect(html).toContain('text-class-interest-rates');
+    });
+
     it('draws the shared heat the service sampled, and the numbers that move it', () => {
         const html = render(regime({ samples: heatReadings() }));
         expect(html).toContain('the shared heat');

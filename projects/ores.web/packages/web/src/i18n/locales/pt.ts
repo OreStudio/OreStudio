@@ -4617,6 +4617,9 @@ const pt: SourceCatalogue = {
             force: 'Forçar o estado',
             forced: 'forçado',
             set: { auto: 'Auto', calm: 'Calmo', active: 'Ativo' },
+            charts: {
+                title: 'O fator ao longo da janela',
+            },
             raster: {
                 heat: 'o calor partilhado',
                 rate: 'ticks por segundo, por fluxo',

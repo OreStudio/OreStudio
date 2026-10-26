@@ -4650,6 +4650,9 @@ const fr: SourceCatalogue = {
             force: 'Forcer l’état',
             forced: 'forcé',
             set: { auto: 'Auto', calm: 'Calme', active: 'Actif' },
+            charts: {
+                title: 'Le facteur sur la fenêtre',
+            },
             raster: {
                 heat: 'la chaleur partagée',
                 rate: 'ticks par seconde, par flux',

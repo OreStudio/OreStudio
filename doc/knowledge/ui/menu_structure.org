@@ -311,11 +311,13 @@ the first step of every trail.
 | Roles | Organisation | A role is held by a person |
 | Rescue access | Organisation | It acts on one person's account: it unlocks it. Sign-ins only reads sessions, so the two are not the same kind of screen and do not share an area |
 | Sign-ins | Operations | It reads sessions and failed sign-ins. It is the Audit of how the installation is used |
+| Market data sources | Operations | It reads the adapter state of every source the market data service runs, which is how the installation is running and not what a party takes |
 | Reports | Reporting | A report definition is owned by the party that runs it, and Reporting is the topic a person looks in for what the party ran and how each run went |
 | Tests, Board, Backlog | Development | They are the work a team does on the product, not how an installation runs |
 | Versions and the database | Operations | They state the build and the store |
 | Requests | Requests | It is the one place for every kind of request |
 | Synthetic, Watch a curve evolve | Market data | A feed generates the prices that market data holds, and a curve is one of them |
+| Subscriptions | Market data | A subscription says what a party takes and a route says which source serves it, so it belongs with the data the party reads |
 | Bindings | Market data | A binding says which producers a party consumes, so it belongs with the data it carries and not with the feeds that produce it |
 | Trades, Book a trade, Import a portfolio from ORE, Export a portfolio to ORE | Trades | A trade is held by the tenant and is not a shared list |
 | Structures and packages, Group trades | Trades | A structure is the tree of a deal made of trades |
@@ -340,6 +342,7 @@ the same thing. A screen has one address.
 | Roles | =/organisation/roles= |
 | Rescue access | =/organisation/rescue= |
 | Sign-ins | =/operations/sign-ins= |
+| Market data sources | =/operations/market-data-sources= |
 | Reporting, the area page | =/reporting= |
 | Reports | =/reporting/reports= |
 | A report definition's page | =/reporting/reports/:id= |
@@ -356,6 +359,7 @@ the same thing. A screen has one address.
 | Structures and packages | =/trades/structures= |
 | A structure's or package's page | =/trades/structures/:id= |
 | Group trades | =/trades/structures/new= |
+| Subscriptions | =/market-data/subscriptions= |
 | Synthetic, the Dashboard tab | =/market-data/synthetic= |
 | Synthetic, the Feed tree tab | =/market-data/synthetic?tab=tree= |
 | An FX price feed's page | =/market-data/synthetic/fx/:id= |

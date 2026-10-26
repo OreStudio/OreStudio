@@ -41,15 +41,18 @@ struct nats_deleter {
  * scope, on every path, including a throw.
  *
  * Take ownership the moment cnats hands an object over, and pass @c get() to
- * calls that only borrow it. A raw pointer with a destroy call written beside
- * it is how a message came to be freed only on the error path.
+ * calls that only borrow it. A raw pointer with destroy calls written beside it
+ * leaks on every path that misses one.
  */
 template <typename T, void (*Destroy)(T*)>
 using nats_handle = std::unique_ptr<T, nats_deleter<T, Destroy>>;
 
+using options_handle = nats_handle<natsOptions, &natsOptions_Destroy>;
 using msg_handle = nats_handle<natsMsg, &natsMsg_Destroy>;
 using pub_ack_handle = nats_handle<jsPubAck, &jsPubAck_Destroy>;
-
+using stream_info_handle = nats_handle<jsStreamInfo, &jsStreamInfo_Destroy>;
+using consumer_info_handle = nats_handle<jsConsumerInfo, &jsConsumerInfo_Destroy>;
+using consumer_names_handle = nats_handle<jsConsumerNamesList, &jsConsumerNamesList_Destroy>;
 }
 
 #endif

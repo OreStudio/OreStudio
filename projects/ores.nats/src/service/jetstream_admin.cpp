@@ -18,6 +18,7 @@
  *
  */
 #include "ores.nats/service/jetstream_admin.hpp"
+#include "nats_handle.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <cstdint>
 #include <nats/nats.h>
@@ -78,8 +79,9 @@ void jetstream_admin::ensure_stream(std::string_view name,
         retention == stream_retention::interest ? js_InterestPolicy : js_LimitsPolicy;
 
     // Check whether the stream already exists.
-    jsStreamInfo* info = nullptr;
-    natsStatus s = js_GetStreamInfo(&info, js, name_str.c_str(), &opts, &jerr);
+    jsStreamInfo* read = nullptr;
+    natsStatus s = js_GetStreamInfo(&read, js, name_str.c_str(), &opts, &jerr);
+    const stream_info_handle info(read);
 
     if (s == NATS_OK) {
         // The subject filter is the contract that decides which publishes the
@@ -92,10 +94,8 @@ void jetstream_admin::ensure_stream(std::string_view name,
         const bool current = info->Config != nullptr && same_subjects(info->Config, subjects) &&
                              info->Config->Retention == wanted_retention &&
                              info->Config->MaxAge == max_age_ns;
-        if (current) {
-            jsStreamInfo_Destroy(info);
+        if (current)
             return;
-        }
 
         std::vector<const char*> updated_ptrs;
         updated_ptrs.reserve(subjects.size());
@@ -113,9 +113,7 @@ void jetstream_admin::ensure_stream(std::string_view name,
         jsStreamInfo* updated = nullptr;
         jerr = jsErrCode(0);
         s = js_UpdateStream(&updated, js, &cfg, &opts, &jerr);
-        if (updated)
-            jsStreamInfo_Destroy(updated);
-        jsStreamInfo_Destroy(info);
+        const stream_info_handle updated_info(updated);
 
         if (s != NATS_OK)
             throw std::runtime_error(std::string("ensure_stream '") + name_str +
@@ -123,9 +121,6 @@ void jetstream_admin::ensure_stream(std::string_view name,
                                      " (js err " + std::to_string(static_cast<int>(jerr)) + ")");
         return;
     }
-
-    if (info)
-        jsStreamInfo_Destroy(info);
 
     if (s != NATS_NOT_FOUND && jerr != JSStreamNotFoundErr)
         throw std::runtime_error(std::string("ensure_stream '") + name_str +
@@ -146,11 +141,10 @@ void jetstream_admin::ensure_stream(std::string_view name,
     cfg.MaxAge = max_age_ns;
     cfg.Retention = wanted_retention;
 
-    info = nullptr;
+    jsStreamInfo* added = nullptr;
     jerr = jsErrCode(0);
-    s = js_AddStream(&info, js, &cfg, &opts, &jerr);
-    if (info)
-        jsStreamInfo_Destroy(info);
+    s = js_AddStream(&added, js, &cfg, &opts, &jerr);
+    const stream_info_handle added_info(added);
 
     if (s == NATS_OK)
         return; // created
@@ -173,11 +167,10 @@ void jetstream_admin::prune_consumers(std::string_view name, std::string_view ke
     jsOptions_Init(&opts);
     auto jerr = jsErrCode(0);
 
-    jsConsumerNamesList* list = nullptr;
-    const natsStatus s = js_ConsumerNames(&list, js, name_str.c_str(), &opts, &jerr);
+    jsConsumerNamesList* read = nullptr;
+    const natsStatus s = js_ConsumerNames(&read, js, name_str.c_str(), &opts, &jerr);
+    const consumer_names_handle list(read);
     if (s != NATS_OK) {
-        if (list)
-            jsConsumerNamesList_Destroy(list);
         // Not fatal: the consumer that serves this stream is not among the ones
         // this call would have deleted.
         BOOST_LOG_SEV(lg(), warn) << "Could not list the consumers of '" << name_str
@@ -192,7 +185,6 @@ void jetstream_admin::prune_consumers(std::string_view name, std::string_view ke
             if (consumer != nullptr && keep_str != consumer)
                 stale.emplace_back(consumer);
         }
-        jsConsumerNamesList_Destroy(list);
     }
 
     int pruned = 0;
@@ -225,12 +217,11 @@ std::optional<consumer_status> jetstream_admin::consumer_state(std::string_view 
     jsOptions_Init(&opts);
     auto jerr = jsErrCode(0);
 
-    jsConsumerInfo* info = nullptr;
+    jsConsumerInfo* read = nullptr;
     const natsStatus s =
-        js_GetConsumerInfo(&info, js, stream_str.c_str(), consumer_str.c_str(), &opts, &jerr);
+        js_GetConsumerInfo(&read, js, stream_str.c_str(), consumer_str.c_str(), &opts, &jerr);
+    const consumer_info_handle info(read);
     if (s != NATS_OK || info == nullptr) {
-        if (info != nullptr)
-            jsConsumerInfo_Destroy(info);
         if (s == NATS_NOT_FOUND || jerr == JSConsumerNotFoundErr)
             return std::nullopt;
         throw std::runtime_error("Could not read consumer '" + consumer_str + "' on '" +
@@ -249,7 +240,6 @@ std::optional<consumer_status> jetstream_admin::consumer_state(std::string_view 
         status.max_deliver = info->Config->MaxDeliver;
         status.ack_wait_ns = info->Config->AckWait;
     }
-    jsConsumerInfo_Destroy(info);
     return status;
 }
 

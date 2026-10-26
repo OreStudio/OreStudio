@@ -121,6 +121,24 @@ twenty feeds.
 /Against:/ it puts the choice away from the row it belongs to, and adds a
 second place a rate is edited.
 
+* Decided: B, rebuilt
+
+The panel is the chosen shape, and the first build of it was wrong twice over.
+
+**It ignored the Simple and Advanced convention.** The screen standard already
+sets how a screen shows an ORE element's settings: one switch, Simple for the
+value in force and Advanced for the raw entries behind it. The panel follows it
+— Simple gives the state, the multiplier, who pinned it and the raster; Advanced
+opens the chain's own rates and the shared heat's jump and decay, which are the
+raw entries behind the same fact.
+
+**A per-feed sparkline cannot show a market-wide factor.** Every argument for the
+endogenous half of the factor is about *several* feeds at once: a burst in one
+row raising the others, and the rows densifying together when the market turns.
+A neuron-spiking raster is the figure that says that — one row per feed, time
+across, a tick as a mark — and it makes the pin visible as a vertical mark with a
+denser, more correlated field to its right.
+
 * Recommendation
 
 B for the run, A for the row, and the table from C as the *panel's* lower half
@@ -134,7 +152,12 @@ the clustering is one feed's, so it is not the panel's.
 
 * What to prototype next
 
-The panel (B) as a throwaway page in this folder: the tree on the left, the
-market panel on the right, the switch, and the by-sensitivity list, with the
-counts of two feeds before and after a pin (J3) drawn as the place a tester
-would actually read them.
+Built. The page carries the three shapes, and B is the one that now shows the
+market: the tree on the left, the market in the middle with its Simple and
+Advanced switch and the raster of every feed's ticks, and the by-sensitivity list
+on the right.
+
+The raster is drawn from the same model the service uses — a shared heat that
+every event feeds and that fades, each feed's rate scaled by the state and by its
+own sensitivity — so the picture after the pin is not decoration: it is what the
+numbers in the fields produce.

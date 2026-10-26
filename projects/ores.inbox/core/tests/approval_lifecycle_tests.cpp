@@ -58,6 +58,7 @@ ores::database::context sweeping(ores::testing::scoped_database_helper& h) {
 }
 
 using ores::inbox::service::approval_lifecycle;
+using ores::inbox::service::decidable_scope;
 
 TEST_CASE("a_raised_request_waits_and_a_second_person_approves_it", tags) {
     ores::testing::scoped_database_helper h;
@@ -183,11 +184,85 @@ TEST_CASE("the_queue_shows_a_decider_others_requests_and_not_their_own", tags) {
         return std::ranges::any_of(page.requests, [&](const auto& r) { return r.id == raised.id; });
     };
 
-    CHECK(in(lifecycle.queue({"iam.role_grant"}, decider.id, 0, 500)));
-    CHECK_FALSE(in(lifecycle.queue({"iam.role_grant"}, asker.id, 0, 500)));
+    CHECK(in(lifecycle.queue({.kind_codes = {"iam.role_grant"}}, decider.id, 0, 500)));
+    CHECK_FALSE(in(lifecycle.queue({.kind_codes = {"iam.role_grant"}}, asker.id, 0, 500)));
     CHECK_FALSE(in(lifecycle.queue({}, decider.id, 0, 500)));
     CHECK(in(lifecycle.raised_by(asker.id, 0, 100)));
     CHECK_FALSE(in(lifecycle.raised_by(decider.id, 0, 100)));
+}
+
+TEST_CASE("the_queue_shows_a_request_to_the_decider_of_its_open_part", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto controller = seed_account(h);
+    const auto finance = seed_account(h);
+    const auto trader = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+
+    const auto raised = lifecycle.raise(*lifecycle.kind("refdata.book_change"),
+                                        "A book moves to the banking book",
+                                        asker.id,
+                                        {"controller", "finance"});
+    const auto id = boost::uuids::to_string(raised.id);
+    const auto listed = [&](const decidable_scope& scope,
+                            const boost::uuids::uuid& account) {
+        const auto page = lifecycle.queue(scope, account, 0, 500);
+        return std::ranges::any_of(page.requests, [&](const auto& r) { return r.id == raised.id; });
+    };
+    const auto answered = [&](const decidable_scope& scope,
+                              const boost::uuids::uuid& account) {
+        const auto tail = lifecycle.recently_answered(scope, account, std::chrono::hours(1));
+        return std::ranges::any_of(tail, [&](const auto& r) { return r.id == raised.id; });
+    };
+
+    const decidable_scope as_controller{.part_codes = {"controller"}};
+    const decidable_scope as_finance{.part_codes = {"finance"}};
+    const decidable_scope as_book_change_kind{.kind_codes = {"refdata.book_change"}};
+
+    CHECK(lifecycle.queue(as_controller, controller.id, 0, 500).total == 1);
+    CHECK(listed(as_controller, controller.id));
+    CHECK_FALSE(listed(as_finance, finance.id));
+    CHECK_FALSE(listed(decidable_scope{}, trader.id));
+    CHECK_FALSE(listed(as_controller, asker.id));
+
+    // A request decided by part is not the kind's decider's until their part's
+    // turn comes, so the kind's own code reaches nobody.
+    CHECK_FALSE(listed(as_book_change_kind, finance.id));
+
+    const auto first =
+        lifecycle.decide(id, raised.version, "approve", controller.id, "Checked", "controller");
+    REQUIRE(first.outcome == "ok");
+
+    // The controller answered, so the request is out of their open queue and in
+    // the tail the screen reads afterwards.
+    CHECK_FALSE(listed(as_controller, controller.id));
+    CHECK(answered(as_controller, controller.id));
+    CHECK(listed(as_finance, finance.id));
+    CHECK(lifecycle.queue(as_finance, finance.id, 0, 500).total == 1);
+    CHECK_FALSE(answered(as_finance, finance.id));
+}
+
+TEST_CASE("the_queue_pages_what_it_counts_when_a_part_decides", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    const auto controller = seed_account(h);
+    approval_lifecycle lifecycle(acting(h));
+    const auto kind = lifecycle.kind("refdata.book_change");
+    REQUIRE(kind);
+
+    const auto older = lifecycle.raise(*kind, "One book moves", asker.id, {"controller"});
+    const auto later = lifecycle.raise(*kind, "Another book moves", asker.id, {"controller"});
+    const decidable_scope as_controller{.part_codes = {"controller"}};
+
+    const auto first = lifecycle.queue(as_controller, controller.id, 0, 1);
+    const auto second = lifecycle.queue(as_controller, controller.id, 1, 1);
+    CHECK(first.total == 2);
+    CHECK(second.total == 2);
+    REQUIRE(first.requests.size() == 1);
+    REQUIRE(second.requests.size() == 1);
+    CHECK(first.requests.front().id == older.id);
+    CHECK(second.requests.front().id == later.id);
+    CHECK(lifecycle.queue(as_controller, controller.id, 2, 1).requests.empty());
 }
 
 TEST_CASE("a_part_cannot_answer_before_the_parts_ahead_of_it_approve", tags) {

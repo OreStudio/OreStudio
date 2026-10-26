@@ -215,6 +215,11 @@ std::optional<domain::approval_part> approval_lifecycle::part(const std::string&
     return found.front();
 }
 
+std::vector<domain::approval_part> approval_lifecycle::parts() {
+    repository::approval_part_repository repo;
+    return repo.read_latest(ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor()));
+}
+
 std::vector<domain::approval_part> approval_lifecycle::parts_of(const std::string& request_id) {
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
@@ -332,10 +337,11 @@ decision_result approval_lifecycle::fail_apply(const std::string& request_id,
                            .version = row[3] ? std::stoi(*row[3]) : 0};
 }
 
-request_page approval_lifecycle::queue(const std::vector<std::string>& kind_codes,
+request_page approval_lifecycle::queue(const decidable_scope& scope,
                                        const boost::uuids::uuid& excluding,
                                        int offset,
                                        int limit) {
+    const auto& kind_codes = scope.kind_codes;
     if (kind_codes.empty())
         return {};
 
@@ -372,9 +378,10 @@ request_page approval_lifecycle::queue(const std::vector<std::string>& kind_code
 }
 
 std::vector<domain::approval_request>
-approval_lifecycle::recently_answered(const std::vector<std::string>& kind_codes,
+approval_lifecycle::recently_answered(const decidable_scope& scope,
                                       const boost::uuids::uuid& excluding,
                                       std::chrono::seconds window) {
+    const auto& kind_codes = scope.kind_codes;
     if (kind_codes.empty() || window <= std::chrono::seconds::zero())
         return {};
 

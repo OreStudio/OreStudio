@@ -434,8 +434,14 @@ public:
             for (const auto& k : lifecycle.kinds())
                 if (has_permission(*ctx, k.decide_permission_code))
                     decidable.push_back(k.code);
-            auto page = lifecycle.queue(decidable, *me, req->offset, req->limit);
-            auto answered = lifecycle.recently_answered(decidable, *me, answered_window_);
+            auto page = lifecycle.queue(service::decidable_scope{.kind_codes = decidable},
+                                        *me,
+                                        req->offset,
+                                        req->limit);
+            auto answered =
+                lifecycle.recently_answered(service::decidable_scope{.kind_codes = decidable},
+                                            *me,
+                                            answered_window_);
             reply(nats_,
                   msg,
                   list_approval_queue_response{.result = approval_result(outcome::ok, "", ""),

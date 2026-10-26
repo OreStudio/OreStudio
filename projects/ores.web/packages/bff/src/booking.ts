@@ -15,6 +15,7 @@ import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/tr
 import { subjects as instrumentSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_instrument_protocol';
 import { subjects as operationsSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_operations_protocol';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
+import { subjects as idTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_id_type_protocol';
 import { subjects as linkSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_link_protocol';
 import { subjects as linkTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_link_type_protocol';
 import { subjects as stateSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_state_protocol';
@@ -196,23 +197,33 @@ export function registerBookingRoutes(
             { filter: null, as_of: null },
         );
         /*
-         * The identifier schemes come from the trades the tenant already has.
-         *
-         * The scheme table itself is system-tenant reference data, which a tenant
-         * session cannot see, so listing it answers nothing. What the desk
-         * actually uses is on its own identifiers, and that is the list worth
-         * offering: a scheme the tenant has never booked with would be refused.
+         * The identifier schemes are the tenant's own list, copied from the
+         * system tenant when the tenant was provisioned. A tenant provisioned
+         * before that copy existed has none, so the schemes its trades already
+         * use stand in: that is worse than the list, and better than an empty
+         * picker that cannot book at all.
          */
-        const identifiers = await readAll(
+        const declared = await readAll(
             session,
-            identifierSubjects.list_trade_identifiers_request,
-            'identifiers',
+            idTypeSubjects.list_trade_id_types_request,
+            'id_types',
             { filter: null, as_of: null },
         );
-        const schemes = [...new Set(identifiers.map((row) => String(row['id_type'] ?? '')))]
-            .filter((code) => code !== '')
-            .sort()
-            .map((code) => ({ code }));
+        const schemes =
+            declared.length > 0
+                ? declared.map((row) => ({ code: String(row['code'] ?? '') }))
+                : (
+                      await readAll(
+                          session,
+                          identifierSubjects.list_trade_identifiers_request,
+                          'identifiers',
+                          { filter: null, as_of: null },
+                      )
+                  )
+                      .map((row) => String(row['id_type'] ?? ''))
+                      .filter((code, index, all) => code !== '' && all.indexOf(code) === index)
+                      .sort()
+                      .map((code) => ({ code }));
         return { books, issues, idTypes: schemes };
     });
 

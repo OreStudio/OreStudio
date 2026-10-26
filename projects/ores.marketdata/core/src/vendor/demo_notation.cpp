@@ -50,6 +50,28 @@ demo_notation::read(const messaging::vendor_id& id) const {
         return fail(notation_error::kind::wrong_scheme,
                     "Demo ids use the scheme demo_key, not '" + id.id_scheme + "'.");
 
+    // A pillar of a curve: the currency, the index family, the instrument, the tenor it starts at
+    // and the tenor it ends at, each its own slash separated word. A pillar has five words where a
+    // pair has two, so the pair reader below never sees a pillar.
+    {
+        ir_curve_pillar pillar;
+        const auto curve_key =
+            detail::currency_code[detail::assign_to(pillar.currency)] >> x3::lit('/') >>
+            detail::index_family[detail::assign_to(pillar.index_family)] >> x3::lit('/') >>
+            detail::instrument_code[detail::assign_to(pillar.instrument_code)] >> x3::lit('/') >>
+            detail::start_tenor[detail::assign_to(pillar.start_tenor)] >> x3::lit('/') >>
+            detail::period_tenor[detail::assign_to(pillar.end_tenor)];
+        if (detail::parse_all(id.external_id, curve_key)) {
+            if (id.field != only_field)
+                return fail(notation_error::kind::wrong_field,
+                            "The only Demo field is 'value', not '" + id.field + "'.");
+            if (pillar.start_tenor == pillar.end_tenor)
+                return fail(notation_error::kind::malformed,
+                            "A pillar ends after it starts: '" + id.external_id + "'.");
+            return quote_description{pillar};
+        }
+    }
+
     std::string base;
     std::string quote;
     const auto pair = detail::currency_code[detail::assign_to(base)] >> x3::lit('/') >>
@@ -68,6 +90,15 @@ demo_notation::read(const messaging::vendor_id& id) const {
 std::expected<messaging::vendor_id, notation_error>
 demo_notation::write(const quote_description& description) const {
     using detail::fail;
+    if (const auto* pillar = std::get_if<ir_curve_pillar>(&description)) {
+        if (const auto ok = detail::check_pillar(*pillar); !ok)
+            return std::unexpected(ok.error());
+        return messaging::vendor_id{.id_scheme = std::string(scheme),
+                                    .external_id = pillar->currency + "/" + pillar->index_family +
+                                                   "/" + pillar->instrument_code + "/" +
+                                                   pillar->start_tenor + "/" + pillar->end_tenor,
+                                    .field = std::string(only_field)};
+    }
     const auto fx = detail::fx_spot_of(description);
     if (!fx)
         return std::unexpected(fx.error());

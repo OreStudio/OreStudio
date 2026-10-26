@@ -101,6 +101,15 @@ struct ir_curve_feed_build_input final {
     std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value> values;
     std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition> definitions;
     ir_curve_refdata_context refctx;
+    /**
+     * @brief The adapter id each pillar quotes, or empty when the generator runs without an
+     * adapter.
+     *
+     * One curve is one generator for every pillar, so the targets travel as a set and each names
+     * the pillar it belongs to. A set that leaves a pillar without a target is refused when the
+     * generator is built, since a pillar with no id has nowhere to publish.
+     */
+    std::vector<ir_pillar_quote_target> adapter_targets;
 };
 
 /**

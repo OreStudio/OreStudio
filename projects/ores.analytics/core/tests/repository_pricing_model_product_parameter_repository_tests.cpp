@@ -70,6 +70,21 @@ write_prerequisites(scoped_database_helper& h, ores::utility::generation::genera
 
 }
 
+namespace {
+
+/**
+ * A second value the parameter can hold.
+ *
+ * The generator states Reversion, a real, so the second version moves the
+ * number. Appending a suffix would state a value ORE cannot parse, and the
+ * write path refuses it.
+ */
+std::string second_valid_value(const std::string& value) {
+    return std::to_string(std::stod(value) + 0.01);
+}
+
+}
+
 TEST_CASE("write_single_pricing_model_product_parameter", tags) {
     auto lg(make_logger(test_suite));
 
@@ -203,7 +218,7 @@ TEST_CASE("read_all_pricing_model_product_parameter_history", tags) {
     pricing_model_product_parameter_repository repo;
     repo.write(h.context(), p);
 
-    p.parameter_value = p.parameter_value + "_v2";
+    p.parameter_value = second_valid_value(p.parameter_value);
     repo.write(h.context(), p);
 
     auto history = repo.read_all(h.context(), param_id_str);

@@ -188,3 +188,22 @@ bbg_ticker,EURUSD Curncy,px_last,error wrong_field
 bbg_ticker,EURUSD Curncy,,error wrong_field
 ric,EURUSD Curncy,PX_LAST,error wrong_scheme
 ,EURUSD Curncy,PX_LAST,error wrong_scheme
+
+# The pillars of an interest rate curve.
+bbg_ticker,USD SOFR DEPO SPOT 3M Curncy,PX_LAST,pillar USD sofr DEPO SPOT 3M
+bbg_ticker,USD SOFR FRA 3M 6M Curncy,PX_LAST,pillar USD sofr FRA 3M 6M
+bbg_ticker,USD SOFR IRS SPOT 2Y Curncy,PX_LAST,pillar USD sofr IRS SPOT 2Y
+bbg_ticker,EUR ESTR IRS SPOT 10Y Curncy,PX_LAST,pillar EUR estr IRS SPOT 10Y
+bbg_ticker,GBP SONIA DEPO SPOT 1D Curncy,PX_LAST,pillar GBP sonia DEPO SPOT 1D
+bbg_ticker,JPY TONA IRS SPOT 30Y Curncy,PX_LAST,pillar JPY tona IRS SPOT 30Y
+bbg_ticker,CHF SARON FRA 6M 12M Curncy,PX_LAST,pillar CHF saron FRA 6M 12M
+
+# Pillars that must be refused.
+bbg_ticker,USD SOFR DEPO SPOT 3M Curncy,PX_BID,error wrong_field
+bbg_ticker,USD SOFR DEPO SPOT 3M Curncy,,error wrong_field
+bbg_ticker,USD SOFR FRA 3M 3M Curncy,PX_LAST,error malformed
+bbg_ticker,USD SOFR DEPO SPOT 3Q Curncy,PX_LAST,error unsupported
+bbg_ticker,USD SOFR DEPO SPOT Curncy,PX_LAST,error unsupported
+bbg_ticker,USD SOFR DEPO SPOT 3M Govt,PX_LAST,error unsupported
+bbg_ticker,USD SOFR depo SPOT 3M Curncy,PX_LAST,error malformed
+bbg_ticker,US SOFR DEPO SPOT 3M Curncy,PX_LAST,error unsupported

@@ -22,6 +22,14 @@
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.trading.api/domain/fx_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
+#include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
@@ -505,6 +513,199 @@ TEST_CASE("a_forward_rate_agreement_exports_the_index_its_fact_row_states", tags
 
     CHECK(xml.contains("<ForwardRateAgreementData>"));
     CHECK(xml.contains("GBP-SONIA"));
+}
+
+/*
+ * An FX trade and the batch that holds it, so a case states only the shape it
+ * is about. The anchor comes from a document the engine reads, because an
+ * export writes the trade around the instrument it is given.
+ */
+struct fx_export final {
+    trade_export_item item;
+    ores::trading::domain::instrument_batch instruments;
+    boost::uuids::uuid trade_id;
+    boost::uuids::uuid activity_id;
+
+    explicit fx_export(const std::string& trade_type) {
+        const auto imported = importer::import_portfolio_with_context(example_path("IR_Swap_Vanilla.xml"));
+        REQUIRE(!imported.empty());
+        trade_id = boost::uuids::random_generator{}();
+        activity_id = boost::uuids::random_generator{}();
+        item.anchor = imported.front().anchor;
+        item.anchor.id = trade_id;
+        item.anchor.trade_type = trade_type;
+        item.ore_id = imported.front().ore_id;
+    }
+};
+
+TEST_CASE("a_forward_exports_its_two_currencies", tags) {
+    auto lg(make_logger(test_suite));
+    fx_export f("FxForward");
+    ores::trading::domain::fx_forward_instrument row;
+    row.identity.trade_id = f.trade_id;
+    row.identity.trade_activity_id = f.activity_id;
+    row.bought_currency = "EUR";
+    row.sold_currency = "GBP";
+    row.bought_amount = ores::utility::decimal::decimal::from_double(1000000.0).value();
+    row.sold_amount = ores::utility::decimal::decimal::from_double(850000.0).value();
+    row.value_date = std::chrono::year{2026} / std::chrono::month{7} / std::chrono::day{15};
+    row.settlement = "Cash";
+    f.instruments.fx_forward_instruments.push_back(row);
+
+    const auto xml = exporter::export_portfolio({f.item}, f.instruments);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    CHECK(xml.contains("<FxForwardData>"));
+    CHECK(xml.contains("EUR"));
+    CHECK(xml.contains("GBP"));
+}
+
+TEST_CASE("a_vanilla_option_exports_its_expiry_and_style", tags) {
+    auto lg(make_logger(test_suite));
+    fx_export f("FxOption");
+    ores::trading::domain::fx_vanilla_option_instrument row;
+    row.identity.trade_id = f.trade_id;
+    row.identity.trade_activity_id = f.activity_id;
+    row.bought_currency = "EUR";
+    row.sold_currency = "GBP";
+    row.bought_amount = ores::utility::decimal::decimal::from_double(1000000.0).value();
+    row.sold_amount = ores::utility::decimal::decimal::from_double(850000.0).value();
+    row.option_type = "Call";
+    row.expiry_date = std::chrono::year{2026} / std::chrono::month{7} / std::chrono::day{15};
+    row.exercise_style = "European";
+    row.settlement = "Cash";
+    f.instruments.fx_vanilla_option_instruments.push_back(row);
+
+    const auto xml = exporter::export_portfolio({f.item}, f.instruments);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    CHECK(xml.contains("<FxOptionData>"));
+    // ORE implies European exercise on an FxOption, so the document states no
+    // style and the expiry is what says when the option ends.
+    CHECK(xml.contains("2026-07-15"));
+}
+
+TEST_CASE("a_barrier_option_exports_its_barrier", tags) {
+    auto lg(make_logger(test_suite));
+    fx_export f("FxBarrierOption");
+    ores::trading::domain::fx_barrier_option_instrument row;
+    row.identity.trade_id = f.trade_id;
+    row.identity.trade_activity_id = f.activity_id;
+    row.bought_currency = "EUR";
+    row.sold_currency = "GBP";
+    row.bought_amount = ores::utility::decimal::decimal::from_double(1000000.0).value();
+    row.sold_amount = ores::utility::decimal::decimal::from_double(850000.0).value();
+    row.option_type = "Call";
+    row.expiry_date = std::chrono::year{2026} / std::chrono::month{7} / std::chrono::day{15};
+    row.settlement = "Cash";
+    row.barrier_type = "KnockOut";
+    row.upper_barrier = ores::utility::decimal::decimal::from_double(0.95).value();
+    row.underlying_code = "EUR/GBP";
+    f.instruments.fx_barrier_option_instruments.push_back(row);
+
+    const auto xml = exporter::export_portfolio({f.item}, f.instruments);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    CHECK(xml.contains("<FxBarrierOptionData>"));
+    // The pair is implicit in the two currencies, so a plain barrier states no
+    // underlying; the barrier itself is what the element adds.
+    CHECK(xml.contains("KnockOut"));
+}
+
+TEST_CASE("a_digital_exports_its_payoff", tags) {
+    auto lg(make_logger(test_suite));
+    fx_export f("FxDigitalOption");
+    ores::trading::domain::fx_digital_option_instrument row;
+    row.identity.trade_id = f.trade_id;
+    row.identity.trade_activity_id = f.activity_id;
+    row.foreign_currency = "EUR";
+    row.domestic_currency = "GBP";
+    row.payoff_currency = "GBP";
+    row.payoff_amount = ores::utility::decimal::decimal::from_double(100000.0).value();
+    row.option_type = "Call";
+    row.expiry_date = std::chrono::year{2026} / std::chrono::month{7} / std::chrono::day{15};
+    row.long_short = "Long";
+    row.strike = ores::utility::decimal::decimal::from_double(0.9).value();
+    f.instruments.fx_digital_option_instruments.push_back(row);
+
+    const auto xml = exporter::export_portfolio({f.item}, f.instruments);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    CHECK(xml.contains("<FxDigitalOptionData>"));
+    CHECK(xml.contains("GBP"));
+}
+
+TEST_CASE("an_average_forward_exports_its_index", tags) {
+    auto lg(make_logger(test_suite));
+    fx_export f("FxAverageForward");
+    ores::trading::domain::fx_asian_forward_instrument row;
+    row.identity.trade_id = f.trade_id;
+    row.identity.trade_activity_id = f.activity_id;
+    row.fx_index = "EUR/GBP";
+    row.reference_currency = "EUR";
+    row.reference_notional = ores::utility::decimal::decimal::from_double(1000000.0).value();
+    row.settlement_currency = "GBP";
+    row.settlement_notional = ores::utility::decimal::decimal::from_double(850000.0).value();
+    row.long_short = "Long";
+    row.currency = "GBP";
+    row.fixing_amount = ores::utility::decimal::decimal::from_double(1000000.0).value();
+    row.target_amount = ores::utility::decimal::decimal::from_double(2000000.0).value();
+    row.strike = ores::utility::decimal::decimal::from_double(0.85).value();
+    f.instruments.fx_asian_forward_instruments.push_back(row);
+
+    const auto xml = exporter::export_portfolio({f.item}, f.instruments);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    CHECK(xml.contains("<FxAverageForwardData>"));
+    CHECK(xml.contains("EUR/GBP"));
+}
+
+TEST_CASE("a_variance_swap_exports_its_strike", tags) {
+    auto lg(make_logger(test_suite));
+    fx_export f("FxVarianceSwap");
+    ores::trading::domain::fx_variance_swap_instrument row;
+    row.identity.trade_id = f.trade_id;
+    row.identity.trade_activity_id = f.activity_id;
+    row.start_date = std::chrono::year{2026} / std::chrono::month{1} / std::chrono::day{15};
+    row.end_date = std::chrono::year{2027} / std::chrono::month{1} / std::chrono::day{15};
+    row.currency = "GBP";
+    row.underlying_code = "EUR/GBP";
+    row.long_short = "Long";
+    row.notional = ores::utility::decimal::decimal::from_double(1000000.0).value();
+    row.moment_type = "Variance";
+    row.strike = 0.09;
+    f.instruments.fx_variance_swap_instruments.push_back(row);
+
+    const auto xml = exporter::export_portfolio({f.item}, f.instruments);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    CHECK(xml.contains("<FxVarianceSwapData>"));
+    CHECK(xml.contains("0.09"));
+}
+
+TEST_CASE("an_accumulator_exports_its_knock_out", tags) {
+    auto lg(make_logger(test_suite));
+    fx_export f("FxAccumulator");
+    ores::trading::domain::fx_accumulator_instrument row;
+    row.identity.trade_id = f.trade_id;
+    row.identity.trade_activity_id = f.activity_id;
+    row.currency = "GBP";
+    row.fixing_amount = ores::utility::decimal::decimal::from_double(1000000.0).value();
+    row.underlying_code = "EUR/GBP";
+    row.long_short = "Long";
+    row.start_date = std::chrono::year{2026} / std::chrono::month{1} / std::chrono::day{15};
+    row.strike = ores::utility::decimal::decimal::from_double(0.85).value();
+    row.knock_out_barrier = ores::utility::decimal::decimal::from_double(0.95).value();
+    f.instruments.fx_accumulator_instruments.push_back(row);
+
+    ores::trading::domain::range_bound bound;
+    bound.trade_id = f.trade_id;
+    bound.trade_activity_id = f.activity_id;
+    bound.sequence_number = 1;
+    bound.start_date = row.start_date;
+    bound.range_from = row.strike;
+    bound.range_to = row.knock_out_barrier;
+    bound.strike = row.strike;
+    f.instruments.range_bounds.push_back(bound);
+
+    const auto xml = exporter::export_portfolio({f.item}, f.instruments);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+    CHECK(xml.contains("<FxAccumulatorData>"));
+    CHECK(xml.contains("EUR/GBP"));
 }
 
 TEST_CASE("export_portfolio_keeps_a_cross_currency_swap_apart_from_a_swap", tags) {

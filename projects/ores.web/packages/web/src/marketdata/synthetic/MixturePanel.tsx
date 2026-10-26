@@ -422,6 +422,11 @@ function MixtureEditor({
                 {panelView !== undefined && draft.length === 0 && (
                     <p className="text-sm text-ink-muted">{t('marketdata.mixture.none')}</p>
                 )}
+                {mode === 'simple' && panelView === undefined && reading.reason !== '' && (
+                    <Notice tone="info">
+                        {t('marketdata.fxSimple.byHand', { reason: reading.reason })}
+                    </Notice>
+                )}
                 {panelView !== undefined ? (
                     <FxSimplePanel
                         view={panelView}
@@ -436,8 +441,16 @@ function MixtureEditor({
                         <table className="w-full text-left text-sm">
                             <thead>
                                 <tr className="border-b border-line text-xs text-ink-muted">
-                                    <th className="px-4 py-2 font-medium">#</th>
-                                    <th className="px-4 py-2 font-medium">
+                                    <th
+                                        className="px-4 py-2 font-medium"
+                                        title={t('marketdata.process.indexHelp')}
+                                    >
+                                        #
+                                    </th>
+                                    <th
+                                        className="px-4 py-2 font-medium"
+                                        title={t('marketdata.process.descriptionHelp')}
+                                    >
                                         {t('refdata.fields.description')}
                                     </th>
                                     <th
@@ -906,6 +919,10 @@ function Preview({
                     </p>
                 </div>
             </div>
+            <p className="text-xs text-ink-faint">
+                <span aria-hidden="true">ⓘ </span>
+                {t(`marketdata.process.about.${processType}`)}
+            </p>
         </section>
     );
 }

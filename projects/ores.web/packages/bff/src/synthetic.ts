@@ -535,6 +535,22 @@ async function readByKey(
     return found;
 }
 
+/**
+ * The provider the collection a feed sits under stands for. The feed's own
+ * record names no provider, so a read of one feed takes it from its collection.
+ */
+async function providerOfFeed(
+    session: LiveSession,
+    feed: Record<string, unknown>,
+): Promise<string> {
+    const collections = SYNTHETIC_RECORDS.find((candidate) => candidate.key === 'collections');
+    if (collections === undefined) {
+        throw new Error('The synthetic resources have no collections.');
+    }
+    const collection = await readByKey(session, collections, z.string().parse(feed['config_id']));
+    return z.string().parse(collection['provider_code']);
+}
+
 /** Why this session cannot write the resource, or undefined when it can. */
 function readOnlyFor(resource: SyntheticResource, session: LiveSession): string | undefined {
     if (resource.writes === undefined) {
@@ -871,7 +887,8 @@ export function registerSyntheticRoutes(
 
     /**
      * The children of one folder, or the roots, with the feeds under each at any
-     * depth and how many run. The service counts, so no screen reads the feeds.
+     * depth and how many of each kind. The service counts, so no screen reads
+     * the feeds.
      */
     server.get('/api/synthetic/feed-folders', async (request) => {
         const session = requireSession(request);
@@ -893,8 +910,6 @@ export function registerSyntheticRoutes(
                             provider_code: z.string(),
                             fx_feeds: z.int(),
                             ir_feeds: z.int(),
-                            running_feeds: z.int(),
-                            idle_auto_feeds: z.int(),
                             has_children: z.boolean(),
                         }),
                     )
@@ -946,7 +961,6 @@ export function registerSyntheticRoutes(
                             engine: z.string(),
                             ticks_per_hour: z.int(),
                             auto_start: z.boolean(),
-                            running: z.boolean(),
                         }),
                     )
                     .default([]),
@@ -993,31 +1007,12 @@ export function registerSyntheticRoutes(
         return { message: reply.message, stopped: reply.stopped };
     });
 
-    /** The source names of the feeds running now, of every kind the caller may see. */
-    server.get('/api/synthetic/running', async (request) => {
-        const session = requireSession(request);
-        const reply = await session.client.callAuthenticated(
-            feedSubjects.list_feeds_request,
-            {},
-            z.object({
-                success: z.boolean(),
-                running_source_names: z.array(z.string()).default([]),
-            }),
-        );
-        refuseUnless(
-            { success: reply.success, message: 'The running feeds could not be read.' },
-            upstreamFailure,
-        );
-        ticks.running(reply.running_source_names);
-        return { sourceNames: reply.running_source_names };
-    });
-
     /**
      * The newest ticks of one feed's current run, oldest first. The page says
      * which kind of feed it reads, so the feed is read through that kind's
      * resource alone. The feed is read as the session first, so a feed the
-     * session cannot see has no ticks to show. Reading starts no listening:
-     * what runs is learnt from the running read, which every feed screen makes.
+     * session cannot see has no ticks to show. The read states the set of feeds
+     * the service publishes, so a buffer lasts one run.
      */
     server.get('/api/synthetic/feeds/:id/ticks', async (request) => {
         const session = requireSession(request);
@@ -1034,6 +1029,7 @@ export function registerSyntheticRoutes(
         }
         const feed = await readByKey(session, feeds, paramId(request));
         const sourceName = z.string().parse(feed['source_name']);
+        ticks.watch(sourceName);
         return { sourceName, ticks: ticks.ticks(sourceName, limit) };
     });
 
@@ -1119,11 +1115,20 @@ export function registerSyntheticRoutes(
         };
     });
 
+    /**
+     * One row by its key. A feed's record carries no provider, so a read of one
+     * feed names the provider of the collection it sits under, as the feed table
+     * names a feed's provider.
+     */
     server.get('/api/synthetic/:resource/key/:key', async (request) => {
         const session = requireSession(request);
         const resource = resourceFor(request);
         const key = input(keySchema(resource), (request.params as { key: string }).key);
-        return { row: await readByKey(session, resource, key) };
+        const found = await readByKey(session, resource, key);
+        if (!FEED_RESOURCES.has(resource.key)) {
+            return { row: found };
+        }
+        return { row: { ...found, provider_code: await providerOfFeed(session, found) } };
     });
 
     /** Writes one or many rows in one call, and answers with the rows as written. */

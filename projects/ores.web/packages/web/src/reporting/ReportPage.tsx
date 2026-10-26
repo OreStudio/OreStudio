@@ -52,8 +52,9 @@ import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
 import { Crumbs } from '../refdata/shared.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
+import { useTabs } from '../ui/Tabs.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
-import { PATHS, gridReportRunPath, reportPath } from '../shell/paths.js';
+import { PATHS, reportPath, reportRunPath } from '../shell/paths.js';
 import { AccessMark } from '../ui/AccessMark.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { Detail, Notice, Tag } from '../ui/Primitives.js';
@@ -231,6 +232,11 @@ function ReportBody(): ReactNode {
     const trail = [...area, { label: t('reporting.title'), to: PATHS.reports }];
     const title = isId(id) ? shortId(id) : id;
 
+    const { tab, bar } = useTabs({
+        label: title,
+        tabs: REPORT_TABS,
+        titleOf: (candidate) => t(`reporting.tabs.${candidate}`),
+    });
     if (open.isPending) {
         return (
             <ScreenFrame
@@ -297,40 +303,46 @@ function ReportBody(): ReactNode {
                 access={null}
                 own={<RefreshButton onClick={reload} load={load} news={news} />}
             />
-            <div className="space-y-4">
-                <RecordDetails
-                    specs={DEFINITION_FIELDS}
-                    row={definition}
-                    heading={{
-                        title: t('reporting.detail.record'),
-                        onEdit: mayEdit ? () => setEditing(true) : undefined,
-                    }}
-                    extra={[
-                        [
-                            t('reporting.detail.party'),
-                            <PartyDetail detail={open.data.detail} />,
-                            t('reporting.detail.partyHint'),
-                        ],
-                        [
-                            t('reporting.detail.health'),
-                            <HealthTag
-                                health={report.health}
-                                stateName={report.stateName}
-                                hasRun={report.latestRun !== null}
-                            />,
-                            t('reporting.detail.healthHint'),
-                        ],
-                    ]}
-                />
-                <section className="card space-y-4 p-4">
-                    <header className="flex flex-wrap items-baseline justify-between gap-2">
-                        <h2 className="text-sm font-medium">{t('reporting.detail.latestRun')}</h2>
-                        <AccessMark canWrite={false} />
-                    </header>
-                    <LatestRun detail={open.data.detail} unread={unread} />
-                </section>
-                <ReportConfigurations definitionId={definition.id} />
-            </div>
+            {bar}
+            {tab === 'runs' && <ReportRuns definitionId={definition.id} />}
+            {tab === 'definition' && (
+                <div className="space-y-4">
+                    <RecordDetails
+                        specs={DEFINITION_FIELDS}
+                        row={definition}
+                        heading={{
+                            title: t('reporting.detail.record'),
+                            onEdit: mayEdit ? () => setEditing(true) : undefined,
+                        }}
+                        extra={[
+                            [
+                                t('reporting.detail.party'),
+                                <PartyDetail detail={open.data.detail} />,
+                                t('reporting.detail.partyHint'),
+                            ],
+                            [
+                                t('reporting.detail.health'),
+                                <HealthTag
+                                    health={report.health}
+                                    stateName={report.stateName}
+                                    hasRun={report.latestRun !== null}
+                                />,
+                                t('reporting.detail.healthHint'),
+                            ],
+                        ]}
+                    />
+                    <section className="card space-y-4 p-4">
+                        <header className="flex flex-wrap items-baseline justify-between gap-2">
+                            <h2 className="text-sm font-medium">
+                                {t('reporting.detail.latestRun')}
+                            </h2>
+                            <AccessMark canWrite={false} />
+                        </header>
+                        <LatestRun detail={open.data.detail} unread={unread} />
+                    </section>
+                    <ReportConfigurations definitionId={definition.id} />
+                </div>
+            )}
             {editing && (
                 <RecordDialog
                     title={t('refdata.records.editTitle', { code: definition.name })}
@@ -342,6 +354,89 @@ function ReportBody(): ReactNode {
                 />
             )}
         </div>
+    );
+}
+
+/** The tabs of a report: the definition, its runs, and the results of its latest run. */
+const REPORT_TABS = ['definition', 'runs'] as const;
+
+/**
+ * The runs of one report, newest first, each with what the run reached and the
+ * two things a person does next: read the run, or read the results it produced.
+ */
+function ReportRuns({ definitionId }: { readonly definitionId: string }): ReactNode {
+    const { t } = useTranslation();
+    const runs = useQuery({
+        queryKey: ['report-runs', definitionId],
+        queryFn: () => api.reportRuns(definitionId),
+        meta: { quiet: true },
+    });
+    if (runs.isPending) {
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    }
+    if (runs.isError) {
+        return <Notice tone="error">{runs.error.message}</Notice>;
+    }
+    const rows = (runs.data ?? []) as readonly Record<string, unknown>[];
+    const text = (value: unknown): string => (typeof value === 'string' ? value : '');
+    if (rows.length === 0) {
+        return <p className="text-sm text-ink-muted">{t('reporting.runs.empty')}</p>;
+    }
+    return (
+        <section className="card space-y-3 p-4">
+            <h2 className="text-sm font-medium">{t('reporting.runs.title')}</h2>
+            <table className="w-full text-left text-sm">
+                <thead>
+                    <tr className="text-xs uppercase tracking-wide text-ink-faint">
+                        <th className="px-2 py-1">{t('reporting.runs.name')}</th>
+                        <th className="px-2 py-1">{t('reporting.runs.state')}</th>
+                        <th className="px-2 py-1">{t('reporting.runs.started')}</th>
+                        <th className="px-2 py-1">{t('reporting.runs.completed')}</th>
+                        <th className="px-2 py-1">{t('reporting.runs.pricedAt')}</th>
+                        <th className="px-2 py-1">{t('reporting.runs.actions')}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows.map((row) => {
+                        const id = text(row['id']);
+                        const started = text(row['started_at']);
+                        const completed = text(row['completed_at']);
+                        const priced = text(row['priced_at']);
+                        return (
+                            <tr key={id} className="border-t border-line-subtle">
+                                <td className="px-2 py-1">{text(row['name']) || id.slice(0, 8)}</td>
+                                <td className="px-2 py-1">{text(row['state_name']) || '—'}</td>
+                                <td className="px-2 py-1">
+                                    {started === '' ? '—' : <RelativeTime at={started} />}
+                                </td>
+                                <td className="px-2 py-1">
+                                    {completed === '' ? '—' : <RelativeTime at={completed} />}
+                                </td>
+                                <td className="px-2 py-1 font-mono text-xs">
+                                    {priced === '' ? '—' : priced.slice(0, 10)}
+                                </td>
+                                <td className="px-2 py-1">
+                                    <span className="flex gap-3">
+                                        <Link
+                                            to={`${reportRunPath(id)}?tab=run`}
+                                            className="text-accent hover:text-accent-bright"
+                                        >
+                                            {t('reporting.runs.details')}
+                                        </Link>
+                                        <Link
+                                            to={`${reportRunPath(id)}?tab=results`}
+                                            className="text-accent hover:text-accent-bright"
+                                        >
+                                            {t('reporting.runs.results')}
+                                        </Link>
+                                    </span>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+        </section>
     );
 }
 
@@ -463,7 +558,7 @@ function LatestRun({
                 />
             </dl>
             <Link
-                to={gridReportRunPath(report.latestRun.id)}
+                to={reportRunPath(report.latestRun.id)}
                 className="text-sm text-accent hover:text-accent-bright"
             >
                 {t('reporting.detail.openRun')}

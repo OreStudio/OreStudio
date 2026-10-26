@@ -41,7 +41,7 @@ Synthetic is one screen with two tabs. The FX and IR list screens are gone.
 
 * Plan
 
-The shape is the [[id:17E6CB2C-E1C9-4911-81AC-591D88AC5B89][Browse the feed tree prototype]].
+The shape is the [[id:4F8C2A1D-6B3E-49F7-8A52-1C9E7D0B3A64][Browse the feed tree prototype]].
 
 - =marketdata/synthetic/= holds the screen, the feed pages and their panels. =SyntheticScreen= has the two tabs through =useTabs=, inside the synthetic record store.
 - The dashboard lists the providers with what each simulates and a banner for the feeds that should run. The feed tree has the providers and their folders, and a table that pages with the standard pager and filters by state, asset class and words, all in the address.

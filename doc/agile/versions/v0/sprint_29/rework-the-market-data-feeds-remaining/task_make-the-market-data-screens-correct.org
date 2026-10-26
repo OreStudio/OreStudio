@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: 52CA4F5E-5B0F-4C34-A946-1209AB8DDEA2
+:END:
+#+title: Task: Make the existing market data screens correct
+#+description: The screens still read the old run model and some names no longer match the service. Make the names and the behaviour correct before adding anything.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/make-the-market-data-screens-correct
+#+pr: 3850
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The dashboard, the feed tree and the feed page read the demand state, start and stop work as the operator test control, and the process tab edits the process as the standard draws it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-25                               |
+
+* Acceptance
+
+- The dashboard status and the banner come from the demand state, not auto-start.
+- Start and Stop work as the operator test control and are named so.
+- The process tab edits the stochastic process and its parameters as the standard specifies.
+
+* Plan
+
+No backwards compatibility. The old run names are deleted, not kept beside the
+new ones.
+
+1. Remove the controller's run surface. =/api/synthetic/running=,
+   =runningFeeds()=, =useRunningFeeds()=, the folder fields =running_feeds=,
+   =idle_auto_feeds= and =running=, and the totals that sum them. The feed page
+   reads the adapter status, as the two tabs do.
+2. The feed page needs its provider. Expose the provider on the feed read in
+   the BFF, from the collection the feed sits under, and use the same
+   provider-level source rule: serving and demanded. The feed status, Start and
+   Stop, the Ticks tab and the process tab's running note follow it.
+3. Names follow the service and the standard. Source and adapter for the market
+   data side, provider for the vendor, demand for what makes a feed run, feed,
+   process and engine for the record. Start and Stop are the operator test
+   control. Delete every "should run", "running feeds" and "auto-start" used to
+   mean demand.
+4. The process tab's recorded gaps: render the engine-change notice that exists
+   in the catalogue, add the missing column tooltips and the engine note, and
+   show the simple-mode reason instead of falling back silently.
+5. Run the BFF, web typecheck and web tests, then the gate. No screen, route or
+   word beyond these.
+
+* UX revision, agreed after the live check
+
+The counters do not reconcile because two rules feed the same tree. The
+provider roll uses the source rule (serving and demanded), while the asset
+class and folder rolls still use the service's controller counts. One rule
+must drive every level.
+
+- Every feed has one state: serving when its provider's source serves and is
+  demanded at least one id. Every roll, every tag and every tile counts that
+  state, and no other count is added beside it.
+- The Synthetic screen becomes a dashboard, in the dashboard language: total
+  providers, feeds serving, feeds stopped, ids demanded and ticks, then the
+  provider list. The banner stays only for the demanded feeds that are not
+  serving.
+- The provider's screen gets a tab called Provider, not Feed tree. A provider
+  combo at the top chooses the provider, a tree on the left shows only that
+  provider, and the grid on the right lists its feeds.
+- The grid loses the oresmd URI column, which breaks its width. The series is
+  reached from the feed page as it already is.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3850][#3850]] | [web] Rework the market data screens and run IR curves through the adapter |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| BFF suite | 962 passed | =npx vitest run= in packages/bff | 37d0b8710e |
+| Web typecheck | clean | =npx tsc --build= in packages/web | 37d0b8710e |
+| Synthetic suite | 145 passed | =npx vitest run src/marketdata/synthetic= | 37d0b8710e |
+| Process tab files | 37 passed | =npx vitest run fxFeeds.test.tsx irFeeds.test.tsx= | 37d0b8710e |
+| Full web suite | 2008 of 2009 | =npx vitest run= in packages/web | 37d0b8710e |
+| Old run names | none remain | grep for the six deleted names in web and BFF src | 37d0b8710e |
+
+The one full-suite failure is =pricingEngines/screens.test.tsx=, which fails
+the same way with these changes stashed.
+
+Open. The live check waits on the schema, which bearings reports out of sync.
+=should_run= and =state=started|stopped= still mean demand and carry the old
+words; they are service wire fields, so the rename needs a service change. The
+provider a feed page reads is derived on the read from its collection.
+
+* Result
+
+* Prototype for sign-off
+
+Build one prototype with the whole screen set, then delete the legacy ones.
+
+- Screens: the dashboard with its tiles and the provider list; the Provider
+  tab with the combo and the provider-only tree and the grid without the oresmd
+  URI; the feed page with Details, Price behaviour or Process, Ticks and
+  History; the sources board as it stands; subscriptions.
+- Legacy to delete: browse-the-feed-tree, synthetic-market-simulator and the
+  market data group rows and notes that describe the start and stop world. The
+  FX and IR authoring prototypes stay; authoring did not change.
+- Paperwork: one design note with the links table, the screens, the states,
+  what is fake, where the code lives and the verdict; one group row; counts and
+  the inventory check; the related journeys checked and updated where they
+  name a deleted prototype.

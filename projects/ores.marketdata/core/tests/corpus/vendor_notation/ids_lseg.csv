@@ -133,3 +133,22 @@ ric,EUR=,MID,error wrong_field
 ric,EUR=,,error wrong_field
 bbg_ticker,EUR=,BID,error wrong_scheme
 ,EUR=,BID,error wrong_scheme
+
+# The pillars of an interest rate curve.
+ric,USDSOFR.DEPO.SPOT.3M=,BID,pillar USD sofr DEPO SPOT 3M
+ric,USDSOFR.FRA.3M.6M=,BID,pillar USD sofr FRA 3M 6M
+ric,USDSOFR.IRS.SPOT.2Y=,BID,pillar USD sofr IRS SPOT 2Y
+ric,EURESTR.IRS.SPOT.10Y=,BID,pillar EUR estr IRS SPOT 10Y
+ric,GBPSONIA.DEPO.SPOT.1D=,BID,pillar GBP sonia DEPO SPOT 1D
+ric,JPYTONA.IRS.SPOT.30Y=,BID,pillar JPY tona IRS SPOT 30Y
+ric,CHFSARON.FRA.6M.12M=,BID,pillar CHF saron FRA 6M 12M
+
+# Pillars that must be refused.
+ric,USDSOFR.DEPO.SPOT.3M=,ASK,error wrong_field
+ric,USDSOFR.DEPO.SPOT.3M=,TRDPRC_1,error wrong_field
+ric,USDSOFR.FRA.3M.3M=,BID,error malformed
+ric,USDSOFR.DEPO.SPOT.3M,BID,error malformed
+ric,USDSOFR.DEPOSPOT.3M=,BID,error malformed
+ric,USDSOFR.DEPO.SPOT.3Q=,BID,error malformed
+ric,usdsofr.DEPO.SPOT.3M=,BID,error malformed
+ric,USD.DEPO.SPOT.3M=,BID,error malformed

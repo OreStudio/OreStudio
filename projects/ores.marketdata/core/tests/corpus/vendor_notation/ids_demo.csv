@@ -52,3 +52,22 @@ demo_key,,value,error malformed
 demo_key,EUR/USD,PX_LAST,error wrong_field
 demo_key,EUR/USD,,error wrong_field
 ric,EUR/USD,value,error wrong_scheme
+
+# The pillars of an interest rate curve.
+demo_key,USD/sofr/DEPO/SPOT/3M,value,pillar USD sofr DEPO SPOT 3M
+demo_key,USD/sofr/FRA/3M/6M,value,pillar USD sofr FRA 3M 6M
+demo_key,USD/sofr/IRS/SPOT/2Y,value,pillar USD sofr IRS SPOT 2Y
+demo_key,EUR/estr/IRS/SPOT/10Y,value,pillar EUR estr IRS SPOT 10Y
+demo_key,GBP/sonia/DEPO/SPOT/1D,value,pillar GBP sonia DEPO SPOT 1D
+demo_key,JPY/tona/IRS/SPOT/30Y,value,pillar JPY tona IRS SPOT 30Y
+demo_key,CHF/saron/FRA/6M/12M,value,pillar CHF saron FRA 6M 12M
+
+# Pillars that must be refused.
+demo_key,USD/sofr/DEPO/SPOT/3M,PX_LAST,error wrong_field
+demo_key,USD/SOFR/DEPO/SPOT/3M,value,error malformed
+demo_key,USD/sofr/depo/SPOT/3M,value,error malformed
+demo_key,USD/sofr/FRA/3M/3M,value,error malformed
+demo_key,USD/sofr/DEPO/SPOT,value,error malformed
+demo_key,USD/sofr/DEPO/3Q/6M,value,error malformed
+demo_key,U/sofr/DEPO/SPOT/3M,value,error malformed
+demo_key,USD/sofr/DEPO/SPOT/3M/x,value,error malformed

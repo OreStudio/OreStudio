@@ -24,14 +24,18 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { AccountAccess } from '@ores/wire-protocol/browser';
-import type { CurveSeriesList, OresmdParseResult } from '@ores/contracts';
-import type { FeedFolder, FolderFeed, SyntheticResourceView } from '../../api/client.js';
-import { parseManyKey } from '../../oresmd/queries.js';
-import { SCHEMA } from '../../oresmd/testSchema.js';
+import type {
+    AdapterStatus,
+    FeedFolder,
+    FolderFeed,
+    SyntheticResourceView,
+} from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
+import { ADAPTERS_KEY } from './adapterStatus.js';
 import { FEEDS_KEY } from './selectionRuns.js';
 import { SyntheticScreen } from './SyntheticScreen.js';
 import { FOLDERS_KEY } from './useCollections.js';
+import { HELD_KEY } from './useProviderFeeds.js';
 
 vi.mock('../../session/SessionProvider.js', () => ({ useActingPartyId: () => 'party-1' }));
 
@@ -80,8 +84,6 @@ const ROOT: FeedFolder = {
     provider_code: '',
     fx_feeds: 26,
     ir_feeds: 4,
-    running_feeds: 13,
-    idle_auto_feeds: 17,
     has_children: true,
 };
 
@@ -91,8 +93,6 @@ function collection(
     provider: string,
     fx: number,
     ir: number,
-    running: number,
-    idle: number,
 ): FeedFolder {
     return {
         id,
@@ -102,14 +102,35 @@ function collection(
         provider_code: provider,
         fx_feeds: fx,
         ir_feeds: ir,
-        running_feeds: running,
-        idle_auto_feeds: idle,
         has_children: true,
     };
 }
 
-const BLOOMBERG = collection('b', 'Bloomberg', 'bloomberg', 13, 0, 13, 0);
-const ORE = collection('o', '2016 ORE Samples', 'ore', 13, 4, 0, 17);
+const BLOOMBERG = collection('b', 'Bloomberg', 'bloomberg', 13, 0);
+const ORE = collection('o', '2016 ORE Samples', 'ore', 13, 4);
+const BLOOMBERG_EXTRA = collection('b2', 'Bloomberg Extra', 'bloomberg', 0, 0);
+
+/** One adapter of the market data service, as it reports itself. */
+function adapter(provider: string, state: string, demanded: number): AdapterStatus {
+    return {
+        adapter_id: `${provider}-sim`,
+        provider_code: provider,
+        state,
+        last_heartbeat_at: '2026-10-25 15:00:00Z',
+        heartbeat_counter: 42,
+        served_count: 26,
+        unknown_count: 0,
+        demanded_count: demanded,
+        routes_seen: 3,
+        ticks_last_minute: 60,
+        last_tick_age_ms: 200,
+        accepted: [],
+        rejected: [],
+    };
+}
+
+/** Bloomberg's source serves its feeds, and the ORE source is demanded 17 ids it does not serve. */
+const ADAPTERS = [adapter('bloomberg', 'serving', 13), adapter('ore', 'ready', 17)];
 
 const PROVIDERS = [
     {
@@ -128,6 +149,12 @@ const PROVIDERS = [
     },
 ];
 
+/** The feeds each provider holds, counted from the feeds themselves. */
+const HELD = new Map([
+    ['bloomberg', { fx: 13, ir: 0 }],
+    ['ore', { fx: 13, ir: 4 }],
+]);
+
 function feed(
     id: string,
     kind: 'fx_spot' | 'ir_curve',
@@ -141,7 +168,7 @@ function feed(
         label,
         source_name: `synthetic.${id}`,
         oresmd_uri: '',
-        folder_id: 'f',
+        folder_id: 'b',
         enabled: true,
         provider_code: 'bloomberg',
         asset_class_code: kind === 'fx_spot' ? 'fx' : 'interest_rates',
@@ -149,9 +176,20 @@ function feed(
         engine: kind === 'fx_spot' ? 'geometric' : 'VASICEK',
         ticks_per_hour: kind === 'fx_spot' ? 1800 : 60,
         auto_start: true,
-        running: false,
         ...patch,
     };
+}
+
+const EURUSD = feed('eurusd', 'fx_spot', 'EUR/USD', 'EUR/USD');
+const GBPUSD = feed('gbpusd', 'fx_spot', 'GBP/USD', 'GBP/USD');
+const SOFR = feed('usdsofr', 'ir_curve', 'USD SOFR', 'USD', { enabled: false });
+
+/** The words of the page, with the markup taken out, so a figure sits beside its label. */
+function textOf(html: string): string {
+    return html
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 }
 
 function render(path: string, seed: (client: QueryClient) => void): string {
@@ -159,6 +197,8 @@ function render(path: string, seed: (client: QueryClient) => void): string {
     client.setQueryData(['registry', 'synthetic'], REGISTRY);
     client.setQueryData([...FOLDERS_KEY, 'roots'], [ROOT]);
     client.setQueryData([...FOLDERS_KEY, 'collections', ['r']], [BLOOMBERG, ORE]);
+    client.setQueryData(ADAPTERS_KEY, ADAPTERS);
+    client.setQueryData([...HELD_KEY, ['bloomberg', 'ore']], HELD);
     client.setQueryData(['records', 'providers'], PROVIDERS);
     seed(client);
     return renderToStaticMarkup(
@@ -175,39 +215,90 @@ function render(path: string, seed: (client: QueryClient) => void): string {
 }
 
 describe('the Synthetic dashboard', () => {
-    it('lists each provider with what it simulates and what runs', () => {
+    it('names the two tabs and lists each provider with what it simulates', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(html).toContain('>Dashboard<');
-        expect(html).toContain('>Feeds<');
+        expect(html).toContain('>Provider<');
         expect(html).toContain('Bloomberg');
         expect(html).toContain('Simulates Bloomberg composite quotes.');
         expect(html).toContain('Simulates the ORE examples.');
         expect(html).toContain('13 FX · 0 IR');
-        expect(html).toContain('>Running<');
+        expect(html).toContain('>Serving<');
         expect(html).not.toContain('(synthetic)');
         expect(html).not.toContain('Generic');
     });
 
-    it('counts the feeds that should run and do not, and offers to start them', () => {
+    it('counts the five figures by the one rule, from the feeds each provider holds', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
-        expect(html).toContain('17 feeds should be running and are stopped.');
-        expect(html).toContain('Start them');
-        expect(html).toContain('href="/market-data/synthetic?tab=tree&amp;shouldRun=true"');
+        const text = textOf(html);
+        expect(text).toContain('Providers 2');
+        expect(text).toContain('Feeds running 13');
+        expect(text).toContain('Feeds stopped 17');
+        expect(text).toContain('Ids demanded 30');
+        expect(text).toContain('Ticks per minute 120');
     });
 
-    it('says nothing of idle feeds when none is idle', () => {
+    it('counts no feed as serving for a provider whose source was demanded nothing', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
-            client.setQueryData(
-                [...FOLDERS_KEY, 'collections', ['r']],
-                [{ ...BLOOMBERG }, { ...ORE, idle_auto_feeds: 0 }],
-            );
+            client.setQueryData(ADAPTERS_KEY, [
+                adapter('bloomberg', 'serving', 13),
+                adapter('ore', 'serving', 0),
+            ]);
+            client.setQueryData([...HELD_KEY, ['bloomberg', 'ore']], HELD);
         });
-        expect(html).not.toContain('should be running');
+        const text = textOf(html);
+        expect(text).toContain('Feeds running 13');
+        expect(text).toContain('Feeds stopped 17');
+        expect(html).toContain('>Stopped<');
+        expect(html).not.toContain('demanded ids are not being served');
+    });
+
+    it('counts every feed as stopped while its provider does not serve', () => {
+        const html = render('/market-data/synthetic', (client) => {
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+            client.setQueryData(ADAPTERS_KEY, [
+                adapter('bloomberg', 'ready', 13),
+                adapter('ore', 'ready', 17),
+            ]);
+        });
+        const text = textOf(html);
+        expect(text).toContain('Feeds running 0');
+        expect(text).toContain('Feeds stopped 30');
+        expect(text).toContain('30 demanded ids are not being served.');
+    });
+
+    it('counts every feed as serving while every source serves', () => {
+        const html = render('/market-data/synthetic', (client) => {
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+            client.setQueryData(ADAPTERS_KEY, [
+                adapter('bloomberg', 'serving', 13),
+                adapter('ore', 'serving', 17),
+            ]);
+        });
+        const text = textOf(html);
+        expect(text).toContain('Feeds running 30');
+        expect(text).toContain('Feeds stopped 0');
+        expect(html).not.toContain('demanded ids are not being served');
+    });
+
+    it('alerts only for demanded ids that are not being served', () => {
+        const html = render('/market-data/synthetic', (client) => {
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain('17 demanded ids are not being served.');
+        expect(html).not.toContain('13 demanded ids are not being served.');
+    });
+
+    it('opens the Provider screen on the provider of a row', () => {
+        const html = render('/market-data/synthetic', (client) => {
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain('href="/market-data/synthetic?tab=provider&amp;provider=bloomberg"');
     });
 
     it('offers no start or stop to a person who may write the feeds but not run them', () => {
@@ -222,10 +313,10 @@ describe('the Synthetic dashboard', () => {
         });
         expect(html).toContain('Bloomberg');
         expect(html).not.toContain('>Start<');
-        expect(html).not.toContain('Start them');
+        expect(html).not.toContain('>Stop<');
     });
 
-    it('offers start and stop to a person who holds the run permission', () => {
+    it('offers start and stop, in their words, to a person who holds the run permission', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(
                 ['my-access'],
@@ -233,35 +324,30 @@ describe('the Synthetic dashboard', () => {
             );
         });
         expect(html).toContain('>Start<');
-        expect(html).toContain('Start them');
-    });
-
-    it('offers a reader the figures but no start or stop', () => {
-        const html = render('/market-data/synthetic', (client) => {
-            client.setQueryData(
-                ['my-access'],
-                access(['synthetic::fx_spot_generation_configs:read']),
-            );
-        });
-        expect(html).toContain('Bloomberg');
-        expect(html).not.toContain('>Start<');
-        expect(html).not.toContain('Start them');
+        expect(html).toContain('>Stop<');
     });
 });
 
-describe('the Synthetic feed tree', () => {
-    const FX = feed('eurusd', 'fx_spot', 'EUR/USD', 'EUR/USD', { running: true });
-    const IR = feed('usdsofr', 'ir_curve', 'USD SOFR', 'USD', { enabled: false });
-
+describe('the Synthetic Provider screen', () => {
     function seeded(client: QueryClient, codes: string[]): void {
         client.setQueryData(['my-access'], access(codes));
-        client.setQueryData([...FEEDS_KEY, '{}', 0, 15], { total: 2, feeds: [FX, IR] });
+        client.setQueryData([...FEEDS_KEY, '{"provider":"bloomberg"}', 0, 15], {
+            total: 3,
+            feeds: [EURUSD, GBPUSD, SOFR],
+        });
     }
 
-    it('lists the feeds with the pair, the engine and the frequency', () => {
-        const html = render('/market-data/synthetic?tab=tree', (client) =>
+    it('lists the feeds of a provider with the columns the prototype signs off', () => {
+        const html = render('/market-data/synthetic?tab=provider', (client) =>
             seeded(client, ['synthetic::*']),
         );
+        expect(html).toContain('>State<');
+        expect(html).toContain('>Enabled<');
+        expect(html).toContain('>Name<');
+        expect(html).toContain('>Asset class<');
+        expect(html).toContain('>Underlying<');
+        expect(html).toContain('>Engine<');
+        expect(html).toContain('>Frequency<');
         expect(html).toContain('EUR/USD');
         expect(html).toContain('USD SOFR');
         expect(html).toContain('>Geometric<');
@@ -269,162 +355,98 @@ describe('the Synthetic feed tree', () => {
         expect(html).toContain('Every 2 s');
         expect(html).toContain('Every 1 min');
         expect(html).toContain('>Interest rate<');
-        expect(html).toContain('>Running<');
-        expect(html).toContain('>Stopped<');
         expect(html).toContain('>Enabled<');
         expect(html).toContain('>Disabled<');
         expect(html).toContain('href="/market-data/synthetic/fx/eurusd"');
         expect(html).toContain('href="/market-data/synthetic/ir/usdsofr"');
     });
 
-    it('shows every provider in the tree and filters by state and asset class', () => {
-        const html = render('/market-data/synthetic?tab=tree', (client) =>
+    it('has no oresmd URI column, no search and no folder tree', () => {
+        const html = render('/market-data/synthetic?tab=provider', (client) =>
             seeded(client, ['synthetic::*']),
         );
-        expect(html).toContain('>Started<');
-        expect(html).toContain('>Stopped<');
+        expect(html).not.toContain('oresmd URI');
+        expect(html).not.toContain('Search every provider');
+        expect(html).not.toContain('role="tree"');
+        expect(html).not.toContain('All providers');
+    });
+
+    it('offers the whole list or one asset class', () => {
+        const html = render('/market-data/synthetic?tab=provider', (client) =>
+            seeded(client, ['synthetic::*']),
+        );
+        expect(html).toContain('Asset class');
         expect(html).toContain('All asset classes');
-        expect(html).toContain('>Interest rate<');
-        expect(html).toContain('Search every provider');
-        expect(html).not.toContain('Running only');
+        expect(html).not.toContain('Group by');
     });
 
-    it('offers a writer a pick for each row and Add feed, and no button on the rows', () => {
-        const html = render('/market-data/synthetic?tab=tree', (client) =>
+    it('lists the underlying first and no asset class separators', () => {
+        const html = render('/market-data/synthetic?tab=provider', (client) =>
             seeded(client, ['synthetic::*']),
         );
-        expect(html).toContain('aria-label="Select EUR/USD"');
-        expect(html).toContain('aria-label="Select this page"');
-        expect(html).toContain('Add feed');
-        expect(html).not.toContain('>Open<');
+        const header = html.slice(html.indexOf('<thead>'), html.indexOf('<tbody>'));
+        expect(header.indexOf('Underlying')).toBeLessThan(header.indexOf('State'));
+        expect(html).not.toContain('FX · 2');
     });
 
-    it('offers a reader the rows and no pick or Add feed', () => {
-        const html = render('/market-data/synthetic?tab=tree', (client) =>
+    it('shows the collection filter only for a provider that holds several collections', () => {
+        const one = render('/market-data/synthetic?tab=provider', (client) =>
+            seeded(client, ['synthetic::*']),
+        );
+        expect(one).not.toContain('All collections');
+        const two = render('/market-data/synthetic?tab=provider', (client) => {
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+            client.setQueryData(
+                [...FOLDERS_KEY, 'collections', ['r']],
+                [BLOOMBERG, BLOOMBERG_EXTRA, ORE],
+            );
+            client.setQueryData([...FEEDS_KEY, '{"provider":"bloomberg"}', 0, 15], {
+                total: 3,
+                feeds: [EURUSD, GBPUSD, SOFR],
+            });
+        });
+        expect(two).toContain('All collections');
+        expect(two).toContain('Bloomberg Extra');
+    });
+
+    it('reads each feed as running from its provider source', () => {
+        const serving = render('/market-data/synthetic?tab=provider', (client) =>
+            seeded(client, ['synthetic::*']),
+        );
+        expect(serving).toContain('>Running<');
+        expect(serving).toContain('>Serving<');
+        const stopped = render('/market-data/synthetic?tab=provider', (client) => {
+            seeded(client, ['synthetic::*']);
+            client.setQueryData(ADAPTERS_KEY, [adapter('bloomberg', 'ready', 13)]);
+        });
+        expect(stopped).toContain('>Stopped<');
+        expect(stopped).not.toContain('>Running<');
+        expect(stopped).not.toContain('>Serving<');
+    });
+
+    it('offers start and stop in the header to a person who holds the run permission', () => {
+        const html = render('/market-data/synthetic?tab=provider', (client) =>
+            seeded(client, ['synthetic::*']),
+        );
+        expect(html).toContain('>Start<');
+        expect(html).toContain('>Stop<');
+    });
+
+    it('offers a reader the rows and no start or stop', () => {
+        const html = render('/market-data/synthetic?tab=provider', (client) =>
             seeded(client, ['synthetic::fx_spot_generation_configs:read']),
         );
         expect(html).toContain('EUR/USD');
-        expect(html).not.toContain('aria-label="Select EUR/USD"');
+        expect(html).not.toContain('>Start<');
         expect(html).not.toContain('Add feed');
     });
 
     it('pages with the standard pager', () => {
-        const html = render('/market-data/synthetic?tab=tree', (client) =>
+        const html = render('/market-data/synthetic?tab=provider', (client) =>
             seeded(client, ['synthetic::*']),
         );
-        expect(html).toContain('1 to 2 of 2');
+        expect(html).toContain('1 to 3 of 3');
         expect(html).toContain('>Previous<');
         expect(html).toContain('>Next<');
-    });
-
-    it('names the filter that shows the feeds that should run', () => {
-        const filter = JSON.stringify({ state: 'stopped', shouldRun: true });
-        const html = render(
-            '/market-data/synthetic?tab=tree&shouldRun=true&state=stopped',
-            (client) => {
-                client.setQueryData(['my-access'], access(['synthetic::*']));
-                client.setQueryData([...FEEDS_KEY, filter, 0, 15], { total: 1, feeds: [IR] });
-            },
-        );
-        expect(html).toContain('Should run and does not');
-        expect(html).toContain('USD SOFR');
-    });
-});
-
-describe('the oresmd URI column of the feed tree', () => {
-    const FX_URI = 'oresmd://ir/EUR?type=quote&instrument=capfloor&quote=rate&cap_floor=Cap';
-    const SERIES_URI = 'oresmd://ir/GBP?type=quote&instrument=capfloor&quote=rate&cap_floor=Cap';
-    const FX = feed('eurusd', 'fx_spot', 'EUR/USD', 'EUR/USD', { oresmd_uri: FX_URI });
-    const IR = feed('usdsofr', 'ir_curve', 'USD SOFR', 'USD', { oresmd_uri: SERIES_URI });
-
-    /** A URI as the markup carries it, which escapes the separators of a query. */
-    const escaped = (uri: string): string => uri.replaceAll('&', '&amp;');
-
-    const parts = (subject: string): OresmdParseResult => ({
-        success: true,
-        message: '',
-        kind: 'quote',
-        instrument: 'capfloor',
-        quote: 'rate',
-        asset: 'ir',
-        subject,
-        fields: [{ name: 'cap_floor', text: 'Cap' }],
-    });
-
-    /** The party's series: the EUR one declares an axis, the GBP one does not. */
-    const LIST: CurveSeriesList = {
-        truncated: false,
-        series: [
-            {
-                series_id: 'eur',
-                axes: ['term'],
-                identity: {
-                    asset: 'ir',
-                    instrument_type: 'capfloor',
-                    quote_type: 'rate',
-                    scope: 'EUR',
-                    party_id: 'party-1',
-                    fields: [{ name: 'cap_floor', text: 'Cap' }],
-                },
-            },
-            {
-                series_id: 'gbp',
-                axes: [],
-                identity: {
-                    asset: 'ir',
-                    instrument_type: 'capfloor',
-                    quote_type: 'rate',
-                    scope: 'GBP',
-                    party_id: 'party-1',
-                    fields: [{ name: 'cap_floor', text: 'Cap' }],
-                },
-            },
-        ],
-    };
-
-    /**
-     * The page as the app reads it: one answer about both URIs, in the order the
-     * read asks them, and one series list. No answer is seeded a row, so a column
-     * that asked about a URI a row would draw plain text and fail the test.
-     */
-    function seeded(client: QueryClient): void {
-        client.setQueryData(['my-access'], access(['synthetic::*']));
-        client.setQueryData([...FEEDS_KEY, '{}', 0, 15], { total: 2, feeds: [FX, IR] });
-        client.setQueryData(['oresmd-schema'], SCHEMA);
-        client.setQueryData(parseManyKey([FX_URI, SERIES_URI]), [parts('EUR'), parts('GBP')]);
-        client.setQueryData(['market-series-list', 'party-1'], LIST);
-    }
-
-    it('names the column after the field the record page shows', () => {
-        const html = render('/market-data/synthetic?tab=tree', seeded);
-        expect(html).toContain('oresmd URI');
-        expect(html).toContain(escaped(FX_URI));
-        expect(html).toContain(escaped(SERIES_URI));
-    });
-
-    it('links each row to the page that opens its series, and its series alone', () => {
-        const html = render('/market-data/synthetic?tab=tree', seeded);
-        expect(html).toContain(`href="/market-data/evolution?uri=${encodeURIComponent(FX_URI)}"`);
-        expect(html).toContain(`href="/market-data/series?uri=${encodeURIComponent(SERIES_URI)}"`);
-    });
-
-    it('offers Inspect on a row, as the record page does', () => {
-        const html = render('/market-data/synthetic?tab=tree', seeded);
-        expect(html).toContain('>Inspect<');
-    });
-
-    it('draws plain text for a row whose series the party does not have', () => {
-        const html = render('/market-data/synthetic?tab=tree', (client) => {
-            client.setQueryData(['my-access'], access(['synthetic::*']));
-            client.setQueryData([...FEEDS_KEY, '{}', 0, 15], { total: 2, feeds: [FX, IR] });
-            client.setQueryData(['oresmd-schema'], SCHEMA);
-            client.setQueryData(parseManyKey([FX_URI, SERIES_URI]), [parts('EUR'), parts('GBP')]);
-            client.setQueryData(['market-series-list', 'party-1'], {
-                truncated: false,
-                series: [],
-            });
-        });
-        expect(html).toContain(escaped(FX_URI));
-        expect(html).not.toContain('/market-data/evolution?uri=');
     });
 });

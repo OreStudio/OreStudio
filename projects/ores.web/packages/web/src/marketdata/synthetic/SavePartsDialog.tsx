@@ -26,7 +26,7 @@ import { useTranslation } from '../../i18n/Provider.js';
 import { NEW_RECORD_REASON } from '../../refdata/records.js';
 import { ReasonFields, useReason } from '../../refdata/shared.js';
 import { Button, Dialog, Notice } from '../../ui/Primitives.js';
-import { RUNNING_KEY } from './feedRuns.js';
+import { ADAPTERS_KEY } from './adapterStatus.js';
 import type { savePlan } from './mixture.js';
 
 /** What the save writes, counted as a person reads it. */
@@ -115,7 +115,7 @@ export function SavePartsDialog({
         onSuccess: async () => {
             await queries.invalidateQueries({ queryKey: ['records'] });
             await queries.invalidateQueries({ queryKey: ['history'] });
-            await queries.invalidateQueries({ queryKey: RUNNING_KEY });
+            await queries.invalidateQueries({ queryKey: ADAPTERS_KEY });
             onClose();
         },
     });

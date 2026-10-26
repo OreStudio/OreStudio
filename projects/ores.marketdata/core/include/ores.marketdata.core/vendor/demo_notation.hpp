@@ -32,6 +32,12 @@ namespace ores::marketdata::vendor {
  * "EUR/USD", and the field "value". It has one price per pair, which the notation reads as the last
  * price. It exists for exercises and demonstrations.
  *
+ * Demo writes one pillar of an interest rate curve as the currency, the index family, the
+ * instrument, the tenor the pillar starts at and the tenor it ends at, each its own slash separated
+ * word, such as "USD/sofr/DEPO/SPOT/3M" or "USD/sofr/FRA/3M/6M", and the field "value". The index
+ * family is the refdata catalogue's own lower case, as the Demo configs spell it, so the id keeps
+ * the case the catalogue holds.
+ *
  * The reader is a Boost.Spirit.X3 grammar, and the notation follows the contract of
  * @c provider_notation: it reads what it writes and writes what it reads.
  */

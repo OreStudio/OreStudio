@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control how a market ticks — two views</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:150px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 14px}
+.tabs button[aria-selected="true"]{background:var(--accent);color:#0d1117;border-color:var(--accent);font-weight:600}
+.split{display:grid;grid-template-columns:190px 1fr;gap:12px}
+.tree{font-size:.86rem;display:grid;gap:2px}
+.tree .node{padding:3px 6px;border-radius:5px}.tree .node.sel{background:var(--panel-2);outline:1px solid var(--line)}
+.tree .node .state{float:right;color:var(--ok);font-size:.8em}
+.raster{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;width:100%}
+#rasterA{height:64px}#rasterB{height:150px}
+.tabs.feed button[disabled]{opacity:.5;cursor:default}
+.mode{display:flex;gap:6px;align-items:center}.mode .tag{order:-1}
+tr.sel td{background:var(--panel-2)}
+.for{display:grid;gap:4px;font-size:.84rem}.for b{color:var(--ok);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+.against b{color:var(--bad)}
+.boundary b{color:var(--warn)}
+
+.sw{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px}
+h3.of{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>Control how a market ticks</h1>
+    <span class="tag">prototype · throwaway · <a href="../../../../knowledge/ui/synthetic_data_generation_screens.org">screens standard</a></span>
+  </div>
+  <p class="muted">Two views, and the split is the point. A feed's arrival regime is edited and judged in its own editor: one row, that feed's ticks. The market is judged on the run: every feed's row at once, with the state and the pin that move them.</p>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true"  data-v="A">Local · the feed's Arrivals tab</button>
+    <button role="tab" aria-selected="false" data-v="B">Global · the Market regime tab</button>
+  </div>
+
+  <!-- A ------------------------------------------------------------------ -->
+  <section id="vA" class="panel">
+    <h2>Author FX rate · EUR/USD</h2>
+    <div class="tabs feed"><button disabled>Instrument</button><button disabled>Price behaviour</button><button aria-selected="true">Arrivals</button><button disabled>Provenance</button></div>
+    <div class="row">
+      <div class="field"><label>Rate, ticks/hour</label><input value="3600"></div>
+      <div class="field"><label>Tick arrival model</label>
+        <select id="mA"><option>periodic</option><option>poisson</option><option selected>hawkes</option></select>
+        <span class="faint" style="font-size:.72rem">one model per feed</span></div>
+      <div class="field"><label>Branching ratio</label><input id="nA" value="0.6"></div>
+      <div class="field"><label>Decay, per second</label><input id="dA" value="20"></div>
+      <div class="field"><label>Sensitivity</label><input id="sensA" value="1.3"></div>
+    </div>
+    <h3 class="of">This feed's ticks</h3>
+    <canvas class="raster" id="rasterA" height="64"></canvas>
+    <div class="row">
+      <div class="field"><label>Intensity now</label><div class="value mono" id="rateA">—</div></div>
+      <div class="field"><label>Fano factor of gaps</label><div class="value mono" id="fanoA">—</div></div>
+      <div class="field"><label>Market now</label><div class="value"><span class="tag" id="mAstate">active</span> ×<span id="mAmp">2.0</span> <span class="faint">read only</span></div></div>
+    </div>
+    <p class="faint" style="font-size:.8rem">One row: this feed's ticks, its own clustering, at the market's current state. The market is not edited here — it is read, and B is where it is set.</p>
+    <div class="for"><b>Local</b> the consequence sits beside the choice, and a person learns what 0.6 means by looking.</div>
+    <div class="for boundary"><b>Boundary</b> nothing on this screen changes the market, and nothing on it shows another feed.</div>
+  </section>
+
+  <!-- B ------------------------------------------------------------------ -->
+  <section id="vB" class="panel" hidden>
+    <h2>Market Simulator · the Market regime tab</h2>
+    <div class="split">
+      <div class="tree">
+        <div class="node">Demo collection <span class="state">8 of 12</span></div>
+        <div class="node">FX</div>
+        <div class="node">EUR/USD <span class="state">running</span></div>
+        <div class="node">GBP/USD <span class="state">running</span></div>
+        <div class="node">USD/JPY <span class="state">stopped</span></div>
+        <div class="node">IR</div>
+        <div class="node">USD SOFR <span class="state">running</span></div>
+        <div class="node">EUR ESTR <span class="state">1 of 3 running</span></div>
+      </div>
+      <div class="panel" style="background:var(--bg)">
+        <div class="mode"><button class="btn primary" data-mode-tab="simple">Simple</button><button class="btn" data-mode-tab="advanced">Advanced</button><span class="faint" style="font-size:.78rem;margin-left:auto">how much detail the panel shows</span></div>
+        <h2>The market</h2>
+        <div class="row">
+          <div class="field"><label>State</label><div class="value"><span class="tag" id="stateB">active</span> <span class="muted" id="pinB">pinned</span></div></div>
+          <div class="field"><label>Multiplier</label><div class="value mono" id="multB">2.0</div></div>
+          <div class="field"><label>Set by</label><div class="value" id="byB">marco · 14:02 · stress run</div></div>
+        </div>
+        <div class="row">
+          <button class="btn" data-mode="auto">Auto</button>
+          <button class="btn" data-mode="calm">Calm</button>
+          <button class="btn primary" data-mode="active">Active</button>
+        </div>
+        <h3 class="of">Every live feed's ticks</h3>
+        <canvas class="raster" id="rasterB"></canvas>
+        <div class="legend"><span><i class="sw" style="background:#58a6ff"></i>FX</span><span><i class="sw" style="background:#d29922"></i>IR</span><span class="faint">a pinned market starts at the mark</span></div>
+        <h3 class="of">The chain that drives it</h3>
+        <table><tbody>
+            <tr><td>Calm → active</td><td class="num mono">1 / 600 s</td><td>one turn every ten minutes</td></tr>
+            <tr><td>Active → calm</td><td class="num mono">1 / 300 s</td><td>active a third of the time</td></tr>
+            <tr><td>Active multiplier</td><td class="num mono">2.0</td><td>calm 0.5 keeps the mean at one</td></tr>
+          </tbody></table>
+        <div class="adv" hidden>
+          <table><tbody>
+            <tr><td>Shared jump · decay</td><td class="num mono">0.5 · 20/s</td><td>heat settles at a quarter of a rate</td></tr>
+            <tr><td>Market state</td><td class="num mono">ores.synthetic.market_regime.state</td><td>the ORE XML path, Advanced only</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+    <div class="for"><b>Global</b> the raster is the only figure that shows what a market-wide factor means: rows densify together, and a burst in one row lifts the others.</div>
+    <div class="for boundary"><b>Boundary</b> it sets the market and reads the feeds; it edits no feed's clustering, so the two views never do the same job.</div>
+  </section>
+
+  <p class="faint" style="font-size:.8rem">Both rasters are drawn from the same model the service computes, with a fixed seed: a shared heat every event feeds and that fades, each feed's intensity scaled by the market state and by its own sensitivity, and its own Hawkes excess on top. Local shows one row; global shows them all.</p>
+</div>
+
+<script>
+// One market for both views: the Market tab sets it and the feed's row reads it.
+const market={S:2.0,label:'active',pinned:true,by:'marco',at:'14:02',why:'stress run'};
+
+// A linear congruential generator, so a reload redraws the same picture.
+function rng(seed){let s=seed>>>0;return()=>((s=(s*1664525+1013904223)>>>0)/4294967296);}
+function drawFeedRaster(id, mode, ratio, decay, sens){
+  const c=document.getElementById(id); if(!c) return;
+  const dpr=window.devicePixelRatio||1; c.width=c.clientWidth*dpr; c.height=c.clientHeight*dpr;
+  const g=c.getContext('2d'); g.scale(dpr,dpr);
+  const w=c.clientWidth,h=c.clientHeight;
+  g.fillStyle='#26262b';g.fillRect(0,0,w,h);
+  const seconds=20, mean=1.0;
+  // This one feed, at the market's state now: sensitivity * (mean * S) plus its own
+  // Hawkes excess when the mode says it clusters.
+  let heat=0, excess=0; const r=rng(7); const marks=[];
+  const S=market.S;
+  for(let s=0;s<seconds;s+=0.01){
+    heat*=Math.exp(-20*0.01);
+    excess*=Math.exp(-decay*0.01);
+    const rate=Math.max(0.02, sens*(mean*S+heat)) + excess;
+    if(r()<rate*0.01){
+      marks.push(s);
+      if(mode==='hawkes') excess+=ratio*mean*2;
+      if(mode==='poisson') excess=0;
+    }
+  }
+  const y=h/2;
+  g.fillStyle='#3d444d';g.font='10px ui-monospace,monospace';
+  g.fillText('EUR/USD', 6, y-8);
+  g.fillStyle='#58a6ff';
+  marks.forEach(t=>{const x=78+(t/seconds)*(w-90); g.fillRect(x,y-4,2,8);});
+  g.fillStyle='#71717a';g.font='10px ui-monospace,monospace';
+  g.fillText(mode+' · '+marks.length+' ticks in 20 s', 78, h-6);
+}
+function drawRaster(id){
+  const c=document.getElementById(id); if(!c) return;
+  const dpr=window.devicePixelRatio||1; c.width=c.clientWidth*dpr; c.height=c.clientHeight*dpr;
+  const g=c.getContext('2d'); g.scale(dpr,dpr);
+  const w=c.clientWidth,h=c.clientHeight; g.fillStyle='#26262b';g.fillRect(0,0,w,h);
+
+  // The eight feeds the tree says are live, each with what its own row means:
+  // a mean rate, its branching ratio and decay, and its sensitivity to the market.
+  const feeds=[
+    {name:'EUR/USD', mean:1.0, n:0.6, decay:20, sens:1.3, colour:'#58a6ff'},
+    {name:'GBP/USD', mean:1.0, n:0.5, decay:10, sens:1.1, colour:'#58a6ff'},
+    {name:'AUD/USD', mean:0.8, n:0.3, decay:8,  sens:1.0, colour:'#58a6ff'},
+    {name:'USD/CHF', mean:0.8, n:0.0, decay:1,  sens:0.8, colour:'#58a6ff'},
+    {name:'USD/CAD', mean:0.8, n:0.4, decay:12, sens:1.0, colour:'#58a6ff'},
+    {name:'USD SOFR', mean:0.4, n:0.0, decay:1, sens:0.4, colour:'#d29922'},
+    {name:'EUR ESTR', mean:0.4, n:0.0, decay:1, sens:0.4, colour:'#d29922'}
+  ];
+  const seconds=30, pin=12, rowH=(h-22)/feeds.length, r=rng(11);
+
+  // The chain before the pin, so the market is not flat before it: a third of the
+  // time active, which the calibration fixes.
+  function stateAt(s){
+    if(market.pinned && s>=pin) return market.S; // held where the switch put it
+    return (Math.floor(s/3)%3===0) ? 0.5 : 2.0;  // the chain turning on its own
+  }
+
+  // What the service computes: a shared heat any event feeds and that fades, and
+  // each feed's rate = sensitivity * (mean * S + heat), with its own Hawkes excess
+  // on top, which is the branching ratio's job.
+  let heat=0;
+  const excess=feeds.map(()=>0);
+  const events=feeds.map(()=>[]);
+  for(let s=0;s<seconds;s+=0.01){
+    const S=stateAt(s);
+    heat*=Math.exp(-20*0.01);
+    feeds.forEach((f,i)=>{
+      excess[i]*=Math.exp(-f.decay*0.01);
+      const rate=Math.max(0.02, f.sens*(f.mean*S + heat)) + excess[i];
+      if(r() < rate*0.01){
+        events[i].push(s);
+        excess[i]+=f.n*f.mean*2;
+        heat+=0.5;
+      }
+    });
+  }
+
+  feeds.forEach((f,i)=>{
+    const y=12+i*rowH+rowH/2;
+    g.fillStyle='#3d444d'; g.font='10px ui-monospace,monospace';
+    g.fillText(f.name, 6, y-5);
+    g.fillStyle=f.colour;
+    events[i].forEach(s=>{ const x=78+(s/seconds)*(w-90); g.fillRect(x, y-3, 2, 6); });
+  });
+  g.strokeStyle='#f85149'; g.setLineDash([3,3]);
+  g.beginPath(); g.moveTo(78+(pin/seconds)*(w-90), 6); g.lineTo(78+(pin/seconds)*(w-90), h-8); g.stroke();
+  g.setLineDash([]);
+  g.fillStyle='#71717a'; g.font='10px ui-monospace,monospace';
+  g.fillText('pinned active', 78+(pin/seconds)*(w-90)+4, 14);
+}
+function redraw(){
+  const sens = parseFloat(document.getElementById('sensA').value)||1.0;
+  const ratio = parseFloat(document.getElementById('nA').value)||0;
+  drawFeedRaster('rasterA', document.getElementById('mA').value, ratio,
+                 parseFloat(document.getElementById('dA').value)||1, sens);
+  const rate = sens * (1.0 * market.S + 0.25);
+  document.getElementById('rateA').textContent = rate.toFixed(2) + ' / s';
+  document.getElementById('fanoA').textContent =
+    document.getElementById('mA').value === 'hawkes' ? (1 + 4*ratio).toFixed(2) : '1.00';
+  document.getElementById('mAstate').textContent = market.label;
+  document.getElementById('mAmp').textContent = market.S.toFixed(1);
+  drawRaster('rasterB');
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tabs button').forEach(o=>o.setAttribute('aria-selected',String(o===b)));
+  ['A','B'].forEach(v=>document.getElementById('v'+v).hidden = ('v'+v)!==('v'+b.dataset.v));
+  redraw();
+}));
+document.querySelectorAll('[data-jump]').forEach(a=>a.addEventListener('click',e=>{
+  e.preventDefault();
+  document.querySelector('.tabs button[data-v="'+a.dataset.jump+'"]').click();
+}));
+document.querySelectorAll('[data-mode-tab]').forEach(b=>b.addEventListener('click',()=>{
+  const advanced = b.dataset.modeTab === 'advanced';
+  const panel = b.closest('.panel');
+  panel.querySelector('.adv').hidden = !advanced;
+  panel.querySelector('[data-mode-tab="simple"]').classList.toggle('primary', !advanced);
+  panel.querySelector('[data-mode-tab="advanced"]').classList.toggle('primary', advanced);
+}));
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{
+  const mode=b.dataset.mode;
+  const state = mode==='auto' ? 'calm (chain)' : mode;
+  market.pinned = mode !== 'auto';
+  market.S = mode==='active' ? 2.0 : (mode==='calm' ? 0.5 : 2.0);
+  market.label = state;
+  document.getElementById('stateB').textContent = state;
+  document.getElementById('multB').textContent = market.S.toFixed(1);
+  document.getElementById('pinB').textContent = market.pinned ? 'pinned' : 'chain';
+  document.getElementById('byB').textContent =
+    market.pinned ? 'you · now · pinned here' : 'the chain, unpinned';
+  document.querySelectorAll('[data-mode]').forEach(o=>o.classList.toggle('primary', o===b));
+  redraw();
+}));
+['mA','nA','dA','sensA'].forEach(id=>document.getElementById(id).addEventListener('input',redraw));
+window.addEventListener('resize',redraw);
+redraw();
+</script>
+</body>
+</html>

@@ -16,10 +16,9 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- *
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import type { HistoryVersion } from '@ores/wire-protocol/browser';
@@ -27,37 +26,39 @@ import { api, type RecordRow } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
-import { Button, Dialog, Notice } from '../ui/Primitives.js';
+import { Notice } from '../ui/Primitives.js';
 import { FlaggedCode } from '../images/flags.js';
+import { useEntityChanges } from '../events/useEntityChanges.js';
+import { useLoadState } from '../events/useLoadState.js';
 import { currencyPath } from './currencies.js';
-import { HistoryPanel } from './HistoryPanel.js';
 import { RecordList, useRecordSource } from './RecordList.js';
+import { RecordTimeline } from './RecordTimeline.js';
 import {
     ClassifiedValue,
-    FieldInput,
-    LeavingFooter,
     LinkPanel,
     NEW_RECORD_REASON,
     RecordDetails,
+    RecordDialog,
     RecordGate,
     RecordHeader,
     RemoveRecordDialog,
     RevertDialog,
-    invalidFields,
-    useCloseGuard,
+    show,
+    useRecord,
     useRecordPermissions,
     useRecordTabs,
-    show,
     useRecords,
+    useRegistry,
     valuesOf,
     writeOf,
     type FieldSpec,
-    type FieldValues,
 } from './records.js';
-import { ReasonFields, useReason } from './shared.js';
 
 const PAIRS = 'currency-pairs';
 const CONVENTIONS = 'currency-pair-conventions';
+const CALENDARS = 'pair-calendars';
+const ENTITY = 'ores.refdata.currency_pair';
+const CONVENTION_ENTITY = 'ores.refdata.currency_pair_convention';
 
 const PAIR_FIELDS: readonly FieldSpec[] = [
     {
@@ -66,6 +67,7 @@ const PAIR_FIELDS: readonly FieldSpec[] = [
         kind: { kind: 'record', resource: 'currencies', value: 'iso_code', label: 'name' },
         fixed: true,
         flag: 'currency',
+        group: 'refdata.pairs.pairGroup',
     },
     {
         field: 'quote_currency',
@@ -73,15 +75,17 @@ const PAIR_FIELDS: readonly FieldSpec[] = [
         kind: { kind: 'record', resource: 'currencies', value: 'iso_code', label: 'name' },
         fixed: true,
         flag: 'currency',
+        group: 'refdata.pairs.pairGroup',
     },
     {
         field: 'classification',
         history: 'Classification',
         kind: { kind: 'classification', list: 'currency-pair-classification' },
+        group: 'refdata.pairs.pairGroup',
     },
 ];
 
-const CONVENTION_FIELDS: readonly FieldSpec[] = [
+const CONVENTION_TABLE: readonly FieldSpec[] = [
     { field: 'pip_factor', history: 'Pip Factor', kind: { kind: 'decimal' } },
     { field: 'tick_size', history: 'Tick Size', kind: { kind: 'decimal' } },
     { field: 'decimal_places', history: 'Decimal Places', kind: { kind: 'int' } },
@@ -94,6 +98,13 @@ const CONVENTION_FIELDS: readonly FieldSpec[] = [
     { field: 'spot_relative', history: 'Spot Relative', kind: { kind: 'bool' }, optional: true },
     { field: 'end_of_month', history: 'End Of Month', kind: { kind: 'bool' }, optional: true },
 ];
+const CONVENTION_FIELDS: readonly FieldSpec[] = CONVENTION_TABLE.map((spec) => ({
+    ...spec,
+    group: 'refdata.pairs.convention',
+}));
+
+/** The one form of the pair and its convention: two groups, in the field table's order (RS-WRITE-09). */
+const PAIR_FORM: readonly FieldSpec[] = [...PAIR_FIELDS, ...CONVENTION_FIELDS];
 
 export function pairPath(code?: string): string {
     return code === undefined
@@ -174,148 +185,92 @@ export function CurrencyPairsPage(): ReactNode {
 }
 
 /**
- * Adds a pair or corrects one, with its convention, in one form with one save.
- *
- * The convention refers to the pair, so the pair is written first. The two
- * are separate writes; if the second fails, the form says so and stays open,
- * and a pair found later without its convention says so on its page.
+ * The shared record dialog over the pair and its convention: one form of two
+ * groups, the pair code derived from the two legs and never asked for
+ * (RS-WRITE-07), two equal legs refused before the save (RS-WRITE-08), and the
+ * sample rate as a line under the fields (RS-WRITE-12). The convention refers
+ * to the pair, so the pair is written first; if the second write fails the
+ * dialog says so and stays open, and a pair found without its convention says
+ * so on its page.
  */
 function PairDialog({
     pair,
     convention,
+    loadedAt,
     onClose,
     onSaved,
 }: {
     readonly pair: RecordRow | undefined;
     readonly convention: RecordRow | undefined;
+    readonly loadedAt?: number | undefined;
     readonly onClose: () => void;
     readonly onSaved?: (code: string) => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const queries = useQueryClient();
-    const editing = pair !== undefined;
-    const initial: FieldValues = {
-        ...valuesOf(PAIR_FIELDS, pair),
-        ...valuesOf(CONVENTION_FIELDS, convention),
-    };
-    const [values, setValues] = useState<FieldValues>(initial);
-    const [commentary, setCommentary] = useState('');
-    const changed = JSON.stringify(values) !== JSON.stringify(initial);
-    const reason = useReason('amend', changed);
-    const guard = useCloseGuard(changed || commentary.trim() !== '', onClose);
-    const base = values['base_currency'] ?? '';
-    const quote = values['quote_currency'] ?? '';
-    const code = editing ? show(pair['pair_code']) : `${base}/${quote}`;
-    const sameLegs = !editing && base !== '' && base === quote;
-    const invalid = [
-        ...invalidFields(PAIR_FIELDS, values),
-        ...invalidFields(CONVENTION_FIELDS, values),
-    ];
-    const missing = editing && reason.needsCommentary && commentary.trim() === '';
-    const save = useMutation({
-        mutationFn: async () => {
-            const intent = editing
-                ? { reasonCode: reason.code, commentary: commentary.trim() }
-                : { reasonCode: NEW_RECORD_REASON, commentary: '' };
-            await api.saveRecord(PAIRS, {
-                write: { pair_code: code, ...writeOf(PAIR_FIELDS, values) },
-                version: pair?.version ?? null,
-                ...intent,
-            });
-            await api.saveRecord(CONVENTIONS, {
-                write: {
-                    pair_code: code,
-                    oresmd_uri: convention?.['oresmd_uri'] ?? null,
-                    ...writeOf(CONVENTION_FIELDS, values),
-                },
-                version: convention?.version ?? null,
-                ...(convention === undefined
-                    ? { reasonCode: NEW_RECORD_REASON, commentary: '' }
-                    : intent),
-            });
-        },
-        onSettled: async () => {
-            await queries.invalidateQueries({ queryKey: ['records'] });
-            await queries.invalidateQueries({ queryKey: ['history'] });
-            await queries.invalidateQueries({ queryKey: ['timeline'] });
-        },
-        onSuccess: () => {
-            onSaved?.(code);
-            onClose();
-        },
-    });
-    const field = (spec: FieldSpec) => (
-        <FieldInput
-            key={spec.field}
-            spec={spec}
-            value={values[spec.field] ?? ''}
-            disabled={editing && spec.fixed === true}
-            onChange={(value) => setValues({ ...values, [spec.field]: value })}
-        />
-    );
-
+    const codeOf = (values: Readonly<Record<string, unknown>>): string =>
+        pair === undefined
+            ? `${show(values['base_currency'])}/${show(values['quote_currency'])}`
+            : show(pair['pair_code']);
     return (
-        <Dialog
-            title={editing ? t('refdata.records.editTitle', { code }) : t('refdata.pairs.addTitle')}
-            onClose={guard.close}
-            wide
-            footer={
-                guard.leaving ? (
-                    <LeavingFooter onStay={guard.stay} onLeave={onClose} />
-                ) : (
-                    <>
-                        <Button variant="ghost" icon="cancel" onClick={guard.close}>
-                            {t('refdata.records.cancel')}
-                        </Button>
-                        <Button
-                            variant="primary"
-                            icon={editing ? 'save' : 'add'}
-                            pending={save.isPending}
-                            disabled={
-                                invalid.length > 0 ||
-                                sameLegs ||
-                                missing ||
-                                (editing && reason.code === '')
-                            }
-                            onClick={() => save.mutate()}
-                        >
-                            {editing ? t('refdata.records.save') : t('refdata.records.add')}
-                        </Button>
-                    </>
-                )
+        <RecordDialog
+            title={
+                pair === undefined
+                    ? t('refdata.pairs.addTitle')
+                    : t('refdata.records.editTitle', { code: show(pair['pair_code']) })
             }
-        >
-            <div className="space-y-3">
-                <div className="grid gap-3 sm:grid-cols-3">{PAIR_FIELDS.map(field)}</div>
+            resource={PAIRS}
+            specs={PAIR_FORM}
+            row={pair}
+            {...(loadedAt !== undefined ? { loadedAt } : {})}
+            initial={valuesOf(CONVENTION_FIELDS, convention)}
+            complete={(typed) => ({
+                pair_code: codeOf(typed),
+                ...writeOf(
+                    PAIR_FIELDS,
+                    Object.fromEntries(
+                        Object.entries(typed).map(([field, value]) => [field, show(value)]),
+                    ),
+                ),
+            })}
+            check={(values) =>
+                values['base_currency'] !== '' &&
+                values['base_currency'] === values['quote_currency']
+                    ? [t('refdata.pairs.sameLegs')]
+                    : []
+            }
+            note={(values) => (
                 <p className="text-sm text-ink-muted">
                     {t('refdata.pairs.codeLine', {
-                        code: base === '' || quote === '' ? '—' : code,
+                        code:
+                            values['base_currency'] === '' || values['quote_currency'] === ''
+                                ? '—'
+                                : codeOf(values),
                     })}
-                </p>
-                {sameLegs && <Notice tone="warn">{t('refdata.pairs.sameLegs')}</Notice>}
-                <h3 className="pt-2 text-sm font-medium">{t('refdata.pairs.convention')}</h3>
-                <div className="grid gap-3 sm:grid-cols-3">{CONVENTION_FIELDS.map(field)}</div>
-                <p className="text-sm text-ink-muted">
+                    {' · '}
                     {t('refdata.pairs.sample', {
                         rate: sampleRate(values['decimal_places'] ?? '') || '—',
                     })}
                 </p>
-                {editing ? (
-                    <ReasonFields
-                        reason={reason}
-                        commentary={commentary}
-                        onCommentary={setCommentary}
-                        missing={missing}
-                    />
-                ) : (
-                    <p className="text-xs text-ink-faint">
-                        {t('refdata.classifications.newRecordNote')}
-                    </p>
-                )}
-                {guard.leaving && <Notice tone="warn">{t('refdata.records.unsaved')}</Notice>}
-                {save.isError && <Notice tone="error">{save.error.message}</Notice>}
-            </div>
-        </Dialog>
+            )}
+            after={async (write, intent, typed) => {
+                const conventionWrite = Object.fromEntries(
+                    CONVENTION_FIELDS.map((spec) => [spec.field, typed[spec.field]]),
+                );
+                await api.saveRecord(CONVENTIONS, {
+                    write: {
+                        pair_code: show(write['pair_code']),
+                        oresmd_uri: convention?.['oresmd_uri'] ?? null,
+                        ...conventionWrite,
+                    },
+                    version: convention?.version ?? null,
+                    ...(convention === undefined
+                        ? { reasonCode: NEW_RECORD_REASON, commentary: '' }
+                        : intent),
+                });
+            }}
+            onClose={onClose}
+            onSaved={(write) => onSaved?.(show(write['pair_code']))}
+        />
     );
 }
 
@@ -324,7 +279,7 @@ export function CurrencyPairPage(): ReactNode {
     const { code } = useParams();
     return (
         <RecordGate resource={PAIRS} recordKey={code ?? ''} listPath={pairPath()}>
-            {(pair) => <PairWithConvention pair={pair} />}
+            {(pair) => <PairWithConvention key={show(pair['pair_code'])} pair={pair} />}
         </RecordGate>
     );
 }
@@ -364,19 +319,37 @@ function PairBody({
 }): ReactNode {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const queries = useQueryClient();
+    const registry = useRegistry();
     const code = show(pair['pair_code']);
     const may = useRecordPermissions(PAIRS);
     const { tab, bar } = useRecordTabs({
         label: code,
         tabs: ['details', 'calendars', 'history'],
     });
+    const record = useRecord(PAIRS, code);
     const calendars = useRecords('calendars');
     const [editing, setEditing] = useState(false);
     const [removing, setRemoving] = useState(false);
-    const [reverting, setReverting] = useState<{
-        readonly kind: 'pair' | 'convention';
-        readonly version: HistoryVersion;
-    } | null>(null);
+    const [reverting, setReverting] = useState<HistoryVersion | null>(null);
+    // The page never reloads by itself: a change the server tells of turns Refresh gold (ES-REFRESH-15).
+    const pageKeys = [
+        ['records', PAIRS, 'key', code],
+        ['records', CONVENTIONS, 'key', code],
+        ['records', CALENDARS],
+        ['history', ENTITY, code],
+        ['history', CONVENTION_ENTITY, code],
+    ];
+    const load = useLoadState(pageKeys);
+    const watches = (registry.data ?? [])
+        .filter((entry) => [PAIRS, CONVENTIONS, CALENDARS].includes(entry.key))
+        .flatMap((entry) => (entry.events === undefined ? [] : [entry.events]));
+    const news = useEntityChanges(watches, load);
+    const refresh = (): void => {
+        for (const key of pageKeys) {
+            void queries.invalidateQueries({ queryKey: key });
+        }
+    };
 
     return (
         <div className="space-y-4">
@@ -390,6 +363,7 @@ function PairBody({
                 recordKey={code}
                 version={pair.version}
                 flag="pair"
+                refresh={{ onClick: refresh, load, news }}
                 onEdit={may.write ? () => setEditing(true) : undefined}
                 onDelete={may.remove ? () => setRemoving(true) : undefined}
             />
@@ -409,6 +383,7 @@ function PairBody({
                             </Link>,
                         ])}
                     />
+                    <h3 className="text-sm font-medium">{t('refdata.pairs.convention')}</h3>
                     {convention === undefined ? (
                         <Notice tone="warn">{t('refdata.pairs.noConvention')}</Notice>
                     ) : (
@@ -418,7 +393,7 @@ function PairBody({
                             extra={[
                                 [
                                     t('refdata.pairs.sampleRate'),
-                                    sampleRate(show(convention?.['decimal_places'])),
+                                    sampleRate(show(convention['decimal_places'])),
                                 ],
                             ]}
                         />
@@ -428,7 +403,7 @@ function PairBody({
             {tab === 'calendars' && (
                 <LinkPanel
                     title={t('refdata.pairs.calendars')}
-                    junction="pair-calendars"
+                    junction={CALENDARS}
                     parentField="pair_code"
                     parentValue={code}
                     childField="calendar_code"
@@ -440,41 +415,27 @@ function PairBody({
                 />
             )}
             {tab === 'history' && (
-                <div className="space-y-6">
-                    <section className="space-y-2">
-                        <h3 className="text-sm font-medium">{t('refdata.pairs.pairHistory')}</h3>
-                        <HistoryPanel
-                            entityType="ores.refdata.currency_pair"
-                            entityId={code}
-                            {...(may.write
-                                ? {
-                                      onRevert: (version: HistoryVersion) =>
-                                          setReverting({ kind: 'pair', version }),
-                                  }
-                                : {})}
-                        />
-                    </section>
-                    {convention !== undefined && (
-                        <section className="space-y-2">
-                            <h3 className="text-sm font-medium">
-                                {t('refdata.pairs.conventionHistory')}
-                            </h3>
-                            <HistoryPanel
-                                entityType="ores.refdata.currency_pair_convention"
-                                entityId={code}
-                                {...(may.write
-                                    ? {
-                                          onRevert: (version: HistoryVersion) =>
-                                              setReverting({ kind: 'convention', version }),
-                                      }
-                                    : {})}
-                            />
-                        </section>
-                    )}
-                </div>
+                <RecordTimeline
+                    entityType={ENTITY}
+                    entityId={code}
+                    parts={[
+                        {
+                            entityType: CONVENTION_ENTITY,
+                            rows: convention === undefined ? [] : [convention],
+                            id: (row) => show(row['pair_code']),
+                            name: () => t('refdata.pairs.conventionHistory'),
+                        },
+                    ]}
+                    {...(may.write ? { onRevert: setReverting } : {})}
+                />
             )}
             {editing && (
-                <PairDialog pair={pair} convention={convention} onClose={() => setEditing(false)} />
+                <PairDialog
+                    pair={pair}
+                    convention={convention}
+                    loadedAt={record.dataUpdatedAt}
+                    onClose={() => setEditing(false)}
+                />
             )}
             {removing && (
                 <RemoveRecordDialog
@@ -495,26 +456,16 @@ function PairBody({
                     onRemoved={() => void navigate(pairPath())}
                 />
             )}
-            {reverting !== null &&
-                (reverting.kind === 'pair' ? (
-                    <RevertDialog
-                        resource={PAIRS}
-                        specs={PAIR_FIELDS}
-                        row={pair}
-                        version={reverting.version}
-                        keep={['pair_code']}
-                        onClose={() => setReverting(null)}
-                    />
-                ) : convention !== undefined ? (
-                    <RevertDialog
-                        resource={CONVENTIONS}
-                        specs={CONVENTION_FIELDS}
-                        row={convention}
-                        version={reverting.version}
-                        keep={['pair_code']}
-                        onClose={() => setReverting(null)}
-                    />
-                ) : null)}
+            {reverting !== null && (
+                <RevertDialog
+                    resource={PAIRS}
+                    specs={PAIR_FIELDS}
+                    row={pair}
+                    version={reverting}
+                    keep={['pair_code']}
+                    onClose={() => setReverting(null)}
+                />
+            )}
         </div>
     );
 }

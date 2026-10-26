@@ -43,30 +43,33 @@ function subscriber(): {
 }
 
 describe('the tick buffers', () => {
-    it('hold no more runs than the feeds running, and close every subscription of a stopped run', () => {
+    it('opens one subscription for each source it is asked about', () => {
         const bus = subscriber();
         const buffers = new FeedTickBuffers(bus.subscribe);
-        buffers.running(['a', 'b', 'c']);
-        expect(buffers.size).toBe(3);
-        buffers.running(['b']);
-        expect(buffers.size).toBe(1);
-        expect(bus.open()).toEqual(['synthetic.v1.ops.tick.b']);
+        buffers.watch('a');
+        buffers.watch('b');
+        buffers.watch('a');
+        expect(buffers.size).toBe(2);
+        expect(bus.open()).toEqual([
+            'synthetic.v1.ops.feed_tick.a',
+            'synthetic.v1.ops.feed_tick.b',
+        ]);
     });
 
     it('keeps the newest ticks up to its capacity', () => {
         const bus = subscriber();
         const buffers = new FeedTickBuffers(bus.subscribe, 2);
-        buffers.running(['a']);
-        for (const value of ['1', '2', '3']) bus.publish('synthetic.v1.ops.tick.a', value);
+        buffers.watch('a');
+        for (const value of ['1', '2', '3']) bus.publish('synthetic.v1.ops.feed_tick.a', value);
         expect(buffers.ticks('a', 10).map((tick) => tick.value)).toEqual([2, 3]);
     });
 
-    it('keeps the runs every session states, since the service answers what runs for the whole process', () => {
+    it('keeps the ticks it has heard when a read asks for the source again', () => {
         const bus = subscriber();
         const buffers = new FeedTickBuffers(bus.subscribe);
-        buffers.running(['a', 'b']);
-        bus.publish('synthetic.v1.ops.tick.a', '1');
-        buffers.running(['a', 'b']);
+        buffers.watch('a');
+        bus.publish('synthetic.v1.ops.feed_tick.a', '1');
+        buffers.watch('a');
         expect(buffers.ticks('a', 10).map((tick) => tick.value)).toEqual([1]);
     });
 });

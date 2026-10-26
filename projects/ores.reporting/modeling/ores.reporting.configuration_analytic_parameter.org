@@ -94,6 +94,7 @@ The order the document wrote the parameter in.
 :tablename: ores_reporting_configuration_analytic_parameters_tbl
 :rls_tenant_isolation: true
 :rls_party_isolation: true
+:rls_account_party_isolation: true
 :END:
 
 * Artefact columns

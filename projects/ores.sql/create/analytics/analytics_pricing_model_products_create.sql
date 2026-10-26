@@ -172,6 +172,11 @@ with check (
 -- party set admits. The visible_party_ids-is-null passthrough applies
 -- for sessions with no party restriction (tenant admins, service
 -- contexts).
+--
+-- This table's rows belong to the account, not to one act of the session:
+-- an account that works in several parties sees every party's rows in one
+-- list. The actor's party set is what ores_iam_actor_party_ids_fn answers,
+-- which is the account's own parties and nothing else.
 drop policy if exists pricing_model_products_tbl_party_isolation_policy
     on ores_analytics_pricing_model_products_tbl;
 
@@ -181,8 +186,10 @@ as restrictive
 for all using (
     ores_iam_visible_party_ids_fn() is null
     or party_id = ANY(ores_iam_visible_party_ids_fn())
+    or party_id = ANY(ores_iam_actor_party_ids_fn())
 )
 with check (
     ores_iam_visible_party_ids_fn() is null
     or party_id = ANY(ores_iam_visible_party_ids_fn())
+    or party_id = ANY(ores_iam_actor_party_ids_fn())
 );

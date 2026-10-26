@@ -132,6 +132,7 @@ false
 
 ** Flags
 :PROPERTIES:
+:rls_tenant_isolation: true
 :tablename: ores_reporting_ore_parameter_value_sets_tbl
 :END:
 

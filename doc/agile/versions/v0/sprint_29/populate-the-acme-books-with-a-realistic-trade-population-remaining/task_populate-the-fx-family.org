@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-24
 #+updated: 2026-10-24
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ ACME's books hold foreign exchange trades: forwards, swaps, vanilla, barrier and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 
 * Acceptance
@@ -43,9 +43,71 @@ ACME's books hold foreign exchange trades: forwards, swaps, vanilla, barrier and
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** What the tree already holds
+
+- *The routing.* Sixteen types reach seven tables: =fx_forward_instrument=
+  (FxForward, FxSwap), =fx_vanilla_option_instrument= (FxOption),
+  =fx_digital_option_instrument= (FxDigitalOption, FxTouchOption,
+  FxDoubleTouchOption, FxDigitalBarrierOption),
+  =fx_asian_forward_instrument= (FxAverageForward, FxTaRF),
+  =fx_barrier_option_instrument= (FxBarrierOption, FxDoubleBarrierOption,
+  FxEuropeanBarrierOption, FxGenericBarrierOption, FxKIKOBarrierOption),
+  =fx_variance_swap_instrument= (FxVarianceSwap) and
+  =fx_accumulator_instrument= (FxAccumulator).
+- *The writer, service side.* =write_instrument_batch= writes every one of those
+  arrays, so no trading service change is needed.
+- *The vocabulary.* The currency set is seeded and holds 179 currency pairs,
+  each with its convention calendars.
+
+** How FX differs from rates, and why that matters
+
+A rate trade was one header plus one fact row plus legs, and the store rebuilt
+it from the pair. An FX row is the whole instrument: the routed table carries
+the trade, the parties, the currencies and the economics in one row, so there is
+no fact row to forget. The lesson the rate family learned the hard way does not
+repeat here, and the writer is simpler for it.
+
+That simplicity costs variety instead. The sixteen types fall into three
+idioms, and a payload has to state all three:
+
+| Idiom | Types | What it states |
+|-------+-------+----------------|
+| bought and sold | FxForward, FxSwap, FxOption, the five barrier options | a bought currency and amount against a sold one, a date, and for the options a type and an exercise style |
+| digital | FxDigitalOption, the touch options, the digital barrier | a foreign and a domestic currency, a payoff currency and amount, a strike, a side, and barriers where the type has them |
+| index and notional | FxAverageForward, FxTaRF, FxVarianceSwap, FxAccumulator | an underlying index, a reference notional, a fixing or strike, a side, and the barrier an accumulator knocks out on |
+
+** Decisions
+
+- *D1 — one payload, three idioms.* =fx_terms= carries the union of the fields
+  the seven tables state, most of them optional, in the way =commodity_terms=
+  already does for its eight shapes. The writer dispatches on the trade type to
+  the table the router names and fills that table's fields. Splitting the
+  payload into three variants would put the routing decision in the type system
+  and then repeat it in the writer anyway.
+- *D2 — the pair comes from the catalogue.* A pair is the tenant's reference
+  data, not this configuration's, so the scope carries the pairs the tenant
+  holds and the planner draws from them. It prefers the pairs that name the
+  book's own currency, because a desk books what it quotes; a tenant holding
+  none of those falls back to the whole set rather than refusing.
+- *D3 — every shape gets an export case.* The rate family shipped one export
+  test against its simplest product and two of its products exported wrong
+  data. Here the seven tables get seven cases, and the review of this task does
+  not begin until they exist.
+
+** Steps
+
+1. *The payload.* =fx_terms= and its variant entry, plus the pair list on the
+   scope.
+2. *The planner.* =fx_trade_planner= registered under =fx=, cycling the sixteen
+   routed types, drawing the pair, the dates and the economics that type needs.
+3. *The writer.* One arm per routed table, filling the fields the table states
+   and no others.
+4. *The profile.* A config for an entity whose books quote FX, so a provisioning
+   run produces the family.
+5. *The proof.* Seven export cases, one per table, each asserting the document
+   names the instrument and its economics; then a population run measuring the
+   type coverage and the share.
+6. *The record.* Measurements, Result, and the gaps this task cannot close.
 
 * Measurements
 
@@ -60,6 +122,21 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 |      |       |         |        |
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The build | exit 0 | =compass build= | d81a25f361 |
+| The codegen gate | no drift | =check_component_drift.py --all= | d81a25f361 |
+| The cmake list gate | exit 0 | =regenerate_cmake_component_files.py --all --check= | d81a25f361 |
+| The provisioning run | 9 of 9 steps | =compass shell -l ...acme...ores= | d81a25f361 |
+| FX trades booked | 16, one per routed type | =select count(*) from ores_trading_trades_tbl where trade_type like 'Fx%'= | d81a25f361 |
+| Distinct FX types | 16 | =select count(distinct trade_type) ...= | d81a25f361 |
+| Range bounds | 1, for the accumulator | =select count(*) from ores_trading_range_bounds_tbl= | d81a25f361 |
+| The ORE suite | 475,472 assertions in 393 cases | =ores.ore.core.tests= | d81a25f361 |
+| The synthetic suite | 1640 assertions in 74 cases | =ores.synthetic.core.tests= | d81a25f361 |
+| The export cases | 7, one per routed table | =ores.ore.core.tests [ore][xml][exporter]= | d81a25f361 |
 
 * Notes
 
@@ -87,3 +164,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The FX family books. A provisioning run completes all nine steps and writes
+sixteen FX trades, one of every type the router sends to an FX table: a forward,
+a swap, a vanilla option, the five barrier products, the four digitals, an
+average forward, a target redemption forward, a variance swap and an
+accumulator. Each states the pair the tenant's catalogue holds, preferring the
+pairs that name the book's own currency, which for a GBP book means GBP crosses.
+
+A trade states one of three idioms, and the payload carries all three with the
+fields a type does not use left empty: a bought currency against a sold one, a
+digital payoff struck against a foreign and a domestic, and an index written on
+a reference notional. An FX row is the whole instrument, so there is no fact row
+to forget — the defect that cost the rate family a review cycle cannot repeat
+here.
+
+Seven export cases, one per routed table, prove the document carries the
+instrument and its economics. Two of them assert what ORE does *not* carry, and
+that is the finding: an FxOption states no exercise style because ORE implies
+European, and a plain barrier states no underlying because the pair is implicit
+in its two currencies. A third found a real gap: the document refuses an
+accumulator with no range bound, and the bound is a child row rather than a
+column, so the writer now states one.
+
+What this does not claim: the class share is a story level check and is not met
+while only bonds, rates and FX are populated; and the whole portfolio the ORE
+service gathers for a run is still unproven, as it is for every family so far.
+

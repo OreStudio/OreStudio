@@ -46,22 +46,27 @@ struct pillar_quote_key final {
  * @brief Builds the key above from the currency the curve is quoted in, the tenor
  * of its index and the pillar's own dates.
  *
- * ORE reads a swap's start and end as two periods or two dates. The pillar that
- * starts at spot -- which the config spells by setting its start tenor code to
- * SPOT -- holds 0D in the start slot. Every other pillar holds its start date.
- * The index tenor is =1D= for an overnight index such as SOFR, which is what every
- * dated OIS quote in the corpus carries, and a period such as =6M= for a term
- * index. It is the =tenor= identity field of the series, so curves of two index
- * tenors are two series.
+ * ORE reads a swap's start and end as two periods or two dates. A pillar the
+ * template names both ends of is two periods: a pillar that starts at spot -- which
+ * the config spells by setting its start tenor code to SPOT -- holds 0D in the start
+ * slot, and one that starts at a period holds that period, so a 3M to 6M pillar is
+ * =IR_SWAP/RATE/USD/3M/1D/6M=. The index tenor is =1D= for an overnight index such as
+ * SOFR, which is what every dated OIS quote in the corpus carries, and a period such
+ * as =6M= for a term index. It is the =tenor= identity field of the series, so curves
+ * of two index tenors are two series.
  *
  * @p point_tenor_code is the tenor the pillar matures at, named the way the curve
  * template names it, and it decides the point. A pillar whose template names one
  * takes that tenor: a 1M pillar ends at =1M=, so its quote is
  * =IR_SWAP/RATE/GBP/0D/1D/1M= and not =IR_SWAP/RATE/GBP/0D/1D/31D=. A curve
  * configuration names its pillars by those same tenors, so the quote a reader asks
- * for is the quote the writer published. A pillar whose template names none instead
- * takes the days its end date lies after @p start_date -- 50D -- or, when it starts
- * on a meeting rather than at spot, its end date as a date.
+ * for is the quote the writer published, and the same quote on every day it is read.
+ *
+ * A pillar the template does not name a period end for is two dates instead, and its
+ * start slot holds its start date: this is the meeting-dated pillar, whose start is
+ * an event such as =1F= and whose end is whatever the meeting leaves. A spot pillar
+ * whose template names no end takes the days its end date lies after @p start_date,
+ * 50D, which is the one case a spot pillar is not a period to a period.
  *
  * Both the feed that publishes the pillar and the bootstrap that reads it call this,
  * so the series one writes is the series the other looks for.

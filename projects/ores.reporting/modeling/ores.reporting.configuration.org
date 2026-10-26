@@ -91,6 +91,7 @@ analytics or refdata. Reporting references it rather than copying it.
 :tablename: ores_reporting_configurations_tbl
 :rls_tenant_isolation: true
 :rls_party_isolation: true
+:rls_account_party_isolation: true
 :END:
 
 * Foreign keys

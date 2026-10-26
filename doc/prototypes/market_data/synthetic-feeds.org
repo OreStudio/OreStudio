@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 4F8C2A1D-6B3E-49F7-8A52-1C9E7D0B3A64
+:END:
+#+title: Synthetic feeds prototype
+#+description: The synthetic feeds screen set for sign-off: the dashboard totals, a Provider tab with a combo and its own tree, the feed page with its process tab, the sources board and subscriptions, on mock data.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:synthetic:
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+| Item          | Where                                    |
+|---------------+------------------------------------------|
+| Prototype     | [[file:synthetic-feeds/][the prototype]] |
+| Gemini review | none                                     |
+| Group         | [[file:index.org][Market data prototypes]]   |
+
+* Summary
+
+The synthetic feeds, as one screen set after demand replaced start and stop.
+The dashboard opens with the totals and then the providers. The Provider screen
+chooses one provider, shows its tree and its feeds. A feed keeps its record
+page and its process tab. The sources board and subscriptions are reached from
+the same tree.
+
+Every number counts one state: a feed serves when its provider's source serves
+and is demanded at least one id. The old tree and the old Market Simulator are
+gone with their prototypes.
+
+* Screens
+
+=screen=dashboard|provider|feed|sources|subscriptions=, with =provider=, =feed=
+and =tab= for the detail.
+
+- Dashboard. Five tiles, then the provider list. A demanded provider that does
+  not serve is the only alert.
+- Provider. A combo at the top, then a collection filter and an asset class
+  combo, All or one class, then one plain list. No folder tree, no grouping and
+  no separator rows. The underlying leads, then state, enabled, name, engine and
+  frequency. Start and Stop are the operator test control.
+- Feed. The record page and its tabs: Details, Price behaviour or Process,
+  Ticks, History. The demand line says who makes it run.
+- Sources. The operations board as it stands.
+- Subscriptions. A party's rights and the source its route picks.
+
+The Synthetic screen has two tabs, Dashboard and Provider. A feed is a
+drill-down page, not a tab. The sources board is Operations, market data
+sources. Subscriptions is Market data, Subscriptions. The prototype's bottom
+bar switches between the screens for sign-off; it is not the product's tab
+strip.
+
+* States
+
+A provider is serving or stopped. A feed is serving or stopped by the same
+rule. Quiet and stale sources appear on the sources board. The mock covers
+serving, stopped, no demand and stale.
+
+* What is fake
+
+Mock data. No service, no session, no build step. The numbers follow the live
+provisioned tenant.
+
+* Where the code lives
+
+[[file:synthetic-feeds/index.html][The prototype]] is one plain HTML file.
+
+* Verdict
+
+Signed off on 2026-10-25 for the dashboard totals, the Provider screen with its
+grouping, the sources board and subscriptions.
+
+The feed page is excluded from this prototype. The product keeps the existing
+detailed feed screen: the record page and its tabs, the Price behaviour and
+Process tabs with their parameter list, previews, unsaved marks and dialogs, as
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and
+[[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][the feed screen standard]] draw it,
+and as the [[file:author-an-fx-price-feed.org][FX]] and
+[[file:author-an-ir-curve-feed.org][IR]] authoring prototypes show it. The feed
+screen in this prototype is a stand-in and not the design to build.

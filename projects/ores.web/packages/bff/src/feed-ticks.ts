@@ -45,9 +45,9 @@ export type TickSubscriber = (
     onTick: (tick: z.infer<typeof marketTickSchema>) => void,
 ) => () => void;
 
-/** The subject a synthetic feed publishes its ticks on, as the C++ tick_subjects names it. */
+/** The subject a synthetic feed publishes its ticks on for a screen to tail. */
 export function tickSubjectFor(sourceName: string): string {
-    return `synthetic.v1.ops.tick.${sourceName}`;
+    return `synthetic.v1.ops.feed_tick.${sourceName}`;
 }
 
 /** How many ticks a feed's buffer keeps, the newest last. */
@@ -56,18 +56,10 @@ export const TICK_CAPACITY = 500;
 /**
  * The recent ticks of every feed that is running, shared by every session.
  *
- * A feed's ticks are published, not stored where a read can reach them without
- * the feed's series identity, so the BFF listens and keeps the newest ones, as
- * the Qt market simulator does. The synthetic service answers what runs for
- * the whole process, so every session states the same set: listening starts
- * when a feed appears in it and ends when the feed leaves it.
- *
- * A buffer holds one run and goes when the run ends. A source name is unique
- * only within a tenant, and the service lets one feed run under a name at a
- * time, so a buffer kept past its run could later be read through another
- * tenant's feed of the same name. Ending with the run closes that, and bounds
- * the buffers by the feeds running. A caller reads a buffer only after the
- * server has shown it the feed.
+ * A feed publishes its ticks on a subject a screen can tail, and the BFF keeps
+ * the newest ones for each source that a read has asked about. A buffer holds
+ * ticks, not a run's state, so a read of a feed that is not running finds
+ * whatever was heard while it ran.
  */
 export class FeedTickBuffers {
     readonly #subscribe: TickSubscriber;
@@ -79,26 +71,17 @@ export class FeedTickBuffers {
         this.#capacity = capacity;
     }
 
-    /** States every feed running now: a new one is heard from, and one that left is forgotten. */
-    running(sourceNames: readonly string[]): void {
-        const now = new Set(sourceNames);
-        for (const [name, run] of this.#runs) {
-            if (!now.has(name)) {
-                run.stop();
-                this.#runs.delete(name);
-            }
-        }
-        for (const name of now) {
-            if (this.#runs.has(name)) continue;
-            const ticks: FeedTick[] = [];
-            const stop = this.#subscribe(tickSubjectFor(name), (tick) => {
-                const value = Number(tick.value);
-                if (!Number.isFinite(value)) return;
-                ticks.push({ at: tick.observation_time, value, uri: tick.oresmd_uri });
-                if (ticks.length > this.#capacity) ticks.splice(0, ticks.length - this.#capacity);
-            });
-            this.#runs.set(name, { ticks, stop });
-        }
+    /** Starts listening to one source the first time a read asks for it. */
+    watch(sourceName: string): void {
+        if (this.#runs.has(sourceName)) return;
+        const ticks: FeedTick[] = [];
+        const stop = this.#subscribe(tickSubjectFor(sourceName), (tick) => {
+            const value = Number(tick.value);
+            if (!Number.isFinite(value)) return;
+            ticks.push({ at: tick.observation_time, value, uri: tick.oresmd_uri });
+            if (ticks.length > this.#capacity) ticks.splice(0, ticks.length - this.#capacity);
+        });
+        this.#runs.set(sourceName, { ticks, stop });
     }
 
     /** The newest ticks of a feed's current run, at most `limit`, oldest first. */

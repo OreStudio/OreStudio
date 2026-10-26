@@ -53,7 +53,7 @@ it reports the local binding collision check. The summary ends with the count
 of items that pass or do not need validation.
 
 The prototype is at
-[[file:../../prototypes/market_data/synthetic-market-simulator/][synthetic market simulator]].
+[[file:../../prototypes/market_data/synthetic-feeds/][synthetic feeds]].
 
 * The cascade rule
 

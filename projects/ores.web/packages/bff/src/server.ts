@@ -41,6 +41,7 @@ import { registerPricingEngineRoutes } from './pricing-engines.js';
 import { FeedTickBuffers, marketTickSchema } from './feed-ticks.js';
 import { registerSyntheticRoutes } from './synthetic.js';
 import { registerCurveRoutes } from './curves.js';
+import { registerAdapterRoutes } from './adapters.js';
 import { registerOresmdRoutes } from './oresmd.js';
 import { registerSeriesRoutes } from './series.js';
 import { registerTenorRoutes } from './tenors.js';
@@ -57,6 +58,7 @@ import type { ScenarioStore } from './scenarios/scenario-store.js';
 import { startHeartbeat } from './heartbeat.js';
 import { registerGridAppVersionRoutes } from './grid-app-versions.js';
 import { registerGridReportRunRoutes } from './grid-report-runs.js';
+import { registerGridReportResultsRoutes } from './grid-report-results.js';
 import { registerGridDownloadRoutes } from './grid-downloads.js';
 import { registerGridJobsRoutes } from './grid-jobs.js';
 import { registerOperationsRoutes } from './operations.js';
@@ -2672,6 +2674,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerPricingEngineRoutes(server, requireSession);
     registerEngineSettingsRoutes(server, requireSession);
     registerCurveRoutes(server, requireSession);
+    registerAdapterRoutes(server, requireSession);
     registerOresmdRoutes(server, requireSession);
     registerSeriesRoutes(server, requireSession);
     registerTenorRoutes(server, requireSession);
@@ -2700,6 +2703,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerGridJobsRoutes(server, requireSession);
     registerGridAppVersionRoutes(server, requireSession);
     registerGridReportRunRoutes(server, requireSession);
+    registerGridReportResultsRoutes(server, requireSession);
     registerGridDownloadRoutes(server, requireSession);
 
     /**

@@ -89,7 +89,7 @@ export function AddFeed({
     }
     return (
         <Dialog
-            title={t('marketdata.synthetic.tree.addTitle')}
+            title={t('marketdata.synthetic.provider.addTitle')}
             onClose={onClose}
             footer={
                 <Button variant="ghost" onClick={onClose}>
@@ -97,7 +97,9 @@ export function AddFeed({
                 </Button>
             }
         >
-            <p className="mb-3 text-sm text-ink-muted">{t('marketdata.synthetic.tree.addBody')}</p>
+            <p className="mb-3 text-sm text-ink-muted">
+                {t('marketdata.synthetic.provider.addBody')}
+            </p>
             <div className="flex flex-wrap gap-2">
                 {KINDS.map((one) => (
                     <Button key={one.words} variant="primary" onClick={() => setKind(one)}>

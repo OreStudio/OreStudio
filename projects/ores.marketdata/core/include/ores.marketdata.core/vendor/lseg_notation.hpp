@@ -36,6 +36,13 @@ namespace ores::marketdata::vendor {
  * names the side: BID, ASK or TRDPRC_1 for the last trade. A mid price has no field here. The rows
  * are the documented examples, and a person with a login confirms them.
  *
+ * LSEG writes one pillar of an interest rate curve as the currency and the index family together,
+ * then the instrument, the tenor the pillar starts at and the tenor it ends at, each of the last
+ * three its own dot separated word, with the RIC's equals sign at the end: "USDSOFR.DEPO.SPOT.3M="
+ * or "USDSOFR.FRA.3M.6M=". A curve pillar carries one price and LSEG quotes it at the bid, so its
+ * field is BID. The index family is written in upper case and read back in the lower case the
+ * refdata catalogue spells it in.
+ *
  * The reader is a Boost.Spirit.X3 grammar, and the notation follows the contract of
  * @c provider_notation: it reads what it writes and writes what it reads.
  */

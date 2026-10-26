@@ -35,10 +35,13 @@
 #include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
 #include "ores.synthetic.api/export.hpp"
+#include "ores.synthetic.api/feeds/adapter_target.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <functional>
+#include <map>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -99,7 +102,8 @@ public:
                   const ores::analytics::quant::domain::arrival_spec& arrival,
                   std::vector<ir_curve_resolved_entry> entries,
                   ores::analytics::quant::domain::market_link link = {},
-                  ores::analytics::quant::service::tick_scheduler* scheduler = nullptr);
+                  ores::analytics::quant::service::tick_scheduler* scheduler = nullptr,
+                  std::vector<ir_pillar_quote_target> adapter_targets = {});
 
     void start() override;
     /// One tick, as the scheduler or the feed's own clock drives it.
@@ -140,6 +144,8 @@ private:
     ores::nats::service::client& nats_;
     std::string source_name_;
     std::string nats_subject_;
+    /// The subject the screen tails this feed's ticks on, beside the ingest subject.
+    std::string display_subject_;
     std::string currency_code_;
     std::string role_;
     std::vector<std::string> series_uris_;
@@ -164,6 +170,12 @@ private:
     /// Ticks this feed has published, whichever clock drove them.
     std::atomic<std::uint64_t> published_{0};
     std::vector<ir_curve_resolved_entry> entries_;
+    /// The adapter id of each entry, in the same order, or nothing for an entry that publishes a
+    /// market tick. Empty for every entry when the feed serves no adapter.
+    std::vector<std::optional<ir_pillar_quote_target>> adapter_targets_;
+    /// The last adapter tick of each pillar, by its external id, so a repeated tick is the one the
+    /// pillar made before.
+    std::map<std::string, ores::marketdata::messaging::adapter_tick> previous_ticks_;
 };
 
 /**
@@ -206,7 +218,8 @@ ORES_SYNTHETIC_API_EXPORT std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     const ir_curve_refdata_context& refctx,
     const ores::marketdata::domain::market_clock* clock = nullptr,
     ores::analytics::quant::domain::market_link link = {},
-    ores::analytics::quant::service::tick_scheduler* scheduler = nullptr);
+    ores::analytics::quant::service::tick_scheduler* scheduler = nullptr,
+    std::vector<ir_pillar_quote_target> adapter_targets = {});
 
 /**
  * @brief Picks the vintage-lookup anchor entry from a resolved Curve Template: the DEPOSIT entry

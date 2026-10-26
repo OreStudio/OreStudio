@@ -35,6 +35,7 @@
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/adapter_faults.hpp"
+#include "ores.synthetic.api/feeds/adapter_target.hpp"
 #include <atomic>
 #include <memory>
 #include <optional>
@@ -43,20 +44,6 @@
 #include <vector>
 
 namespace ores::synthetic::feed {
-
-/**
- * @brief The vendor id a generator quotes and the subject it publishes the quote on.
- *
- * A generator with a target publishes an @c adapter_tick of that id on the subject. A
- * generator without one publishes the old @c market_tick on its producer subject.
- */
-struct adapter_target final {
-    ores::marketdata::messaging::vendor_id id;
-    std::string subject;
-    /// The faults in force. Empty means none is ever injected.
-    std::shared_ptr<const fault_state> faults;
-};
-
 
 /**
  * @brief The kind string this producer registers under in
@@ -158,6 +145,8 @@ private:
     /// endogenous factor.
     ores::analytics::quant::domain::shared_intensity* intensity_;
     std::string nats_subject_;
+    /// The subject the screen tails this feed's ticks on, beside the adapter ingress.
+    std::string display_subject_;
     std::optional<adapter_target> adapter_;
     std::optional<ores::marketdata::messaging::adapter_tick> previous_tick_;
 };

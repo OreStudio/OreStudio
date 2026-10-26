@@ -24,9 +24,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { AccountAccess } from '@ores/wire-protocol/browser';
-import type { RecordRow, SyntheticResourceView } from '../../api/client.js';
+import type { AdapterStatus, RecordRow, SyntheticResourceView } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import { MarketDataPage } from '../MarketDataPage.js';
+import { ADAPTERS_KEY } from './adapterStatus.js';
 import { completeFeed, feedWrite, FxFeedPage, syntheticSource } from './fxFeeds.js';
 import { SyntheticScreen } from './SyntheticScreen.js';
 
@@ -69,12 +70,34 @@ function access(codes: string[]): AccountAccess {
     };
 }
 
+/** The adapters of one provider: a source that serves the ids it was demanded, or one that does not. */
+function adapters(provider: string, state: string, demanded: number): readonly AdapterStatus[] {
+    return [
+        {
+            adapter_id: `${provider}-sim`,
+            provider_code: provider,
+            state,
+            last_heartbeat_at: '2026-10-25 15:00:00Z',
+            heartbeat_counter: 4,
+            served_count: 2,
+            unknown_count: 0,
+            demanded_count: demanded,
+            routes_seen: 1,
+            ticks_last_minute: 0,
+            last_tick_age_ms: -1,
+            accepted: [],
+            rejected: [],
+        },
+    ];
+}
+
 const feed: RecordRow = {
     version: 3,
     id: FEED_ID,
     config_id: '88888888-8888-4888-8888-888888888888',
     base_currency_code: 'EUR',
     quote_currency_code: 'USD',
+    provider_code: 'bloomberg',
     source_name: 'synthetic.eurusd',
     oresmd_uri: 'oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD',
     price_source: 'fixed',
@@ -190,12 +213,12 @@ describe('the market data area', () => {
         expect(html).toContain('href="/market-data/synthetic"');
     });
 
-    it('draws the Synthetic screen with its dashboard and its feed tree', () => {
+    it('draws the Synthetic screen with its dashboard and its provider screen', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         expect(html).toContain('>Dashboard<');
-        expect(html).toContain('>Feeds<');
+        expect(html).toContain('>Provider<');
         expect(html).not.toContain('FX price feeds');
     });
 
@@ -305,7 +328,75 @@ describe('the FX feed screens', () => {
         expect(html).not.toContain('>Add</button>');
     });
 
-    it('runs the trail of a feed through the feed tree, down to the folder that holds it', () => {
+    it('says why a mixture has no simple form, and leaves the table in place', () => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=behaviour`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(
+                ['records', 'gmm-components', FEED_ID],
+                [component(0, 0.5), component(1, 0.5)],
+            );
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+            client.setQueryData(
+                [
+                    'fx-reading',
+                    {
+                        process_type: 'geometric',
+                        to_simple: true,
+                        initial_price: 1.08,
+                        ticks_per_hour: 3600,
+                        gmm_means: [0, 0],
+                        gmm_stdevs: [0.01, 0.02],
+                        gmm_weights: [0.5, 0.5],
+                    },
+                ],
+                {
+                    has_simple_form: false,
+                    message: 'A reversion speed of zero has no simple form.',
+                    trend_pct_per_hour: 0,
+                    volatility_pct_per_hour: 0,
+                    jump_share_pct: 0,
+                    half_life_minutes: 0,
+                    gmm_means: [],
+                    gmm_stdevs: [],
+                    gmm_weights: [],
+                },
+            );
+        });
+        expect(html).toContain(
+            'These components have no simple form, so only Advanced can show them. A reversion speed of zero has no simple form.',
+        );
+        expect(html).toContain('>Share</th>');
+    });
+
+    it('explains each column of the mixture table in the engine’s terms', () => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=behaviour`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['records', 'gmm-components', FEED_ID], [component(0, 1)]);
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain(
+            'title="The position the engine reads the component in. A mixture draws every component in turn; the mean reverting engine reads the first one only."',
+        );
+        expect(html).toContain(
+            'title="The name and the note a person gave this component. The engine reads the numbers beside it, not this line."',
+        );
+        expect(html).toContain('>#</th>');
+        expect(html).toContain('>Description</th>');
+    });
+
+    it('says under the previews what the engine does with the numbers', () => {
+        const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=behaviour`, (client) => {
+            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+            client.setQueryData(['records', 'gmm-components', FEED_ID], [component(0, 1)]);
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+        });
+        expect(html).toContain(
+            '<span aria-hidden="true">ⓘ </span>Geometric: each update draws a log-return from the mixture, so the price stays positive.',
+        );
+        expect(html.lastIndexOf('ⓘ </span>')).toBeGreaterThan(html.indexOf('Sample paths'));
+    });
+
+    it('runs the trail of a feed down to the provider that holds it', () => {
         const html = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], {
                 ...feed,
@@ -322,9 +413,9 @@ describe('the FX feed screens', () => {
             );
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
-        expect(html).toContain('href="/market-data/synthetic?tab=tree"');
-        expect(html).toContain('href="/market-data/synthetic?tab=tree&amp;node=folder%3Ab"');
-        expect(html).toContain('href="/market-data/synthetic?tab=tree&amp;node=folder%3Ai"');
+        expect(html).toContain('href="/market-data/synthetic?tab=provider"');
+        expect(html).toContain('Bloomberg');
+        expect(html).not.toContain('tab=tree');
         expect(html.indexOf('>Bloomberg<')).toBeLessThan(html.indexOf('>Spot<'));
     });
 
@@ -338,28 +429,26 @@ describe('the FX feed screens', () => {
         expect(html).toContain('The mixture needs at least one component.');
     });
 
-    it('offers Stop on a running feed and Start on a stopped one', () => {
-        const running = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
-            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
-            client.setQueryData(['synthetic-running'], ['synthetic.eurusd']);
-            client.setQueryData(['my-access'], access(['synthetic::*']));
-        });
-        expect(running).toContain('>Running<');
-        expect(running).toContain('>Stop<');
-        expect(running).toContain('EUR/USD · version 3 · Geometric');
-        const stopped = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
-            client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
-            client.setQueryData(['synthetic-running'], []);
-            client.setQueryData(['my-access'], access(['synthetic::*']));
-        });
-        expect(stopped).toContain('>Stopped<');
-        expect(stopped).toContain('>Start<');
+    it('offers Start and Stop as the test control whatever the source says', () => {
+        for (const [state, demanded, word] of [
+            ['serving', 1, '>Running<'],
+            ['ready', 0, '>Stopped<'],
+        ] as const) {
+            const html = render(`/market-data/synthetic/fx/${FEED_ID}`, (client) => {
+                client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
+                client.setQueryData(ADAPTERS_KEY, adapters('bloomberg', state, demanded));
+                client.setQueryData(['my-access'], access(['synthetic::*']));
+            });
+            expect(html).toContain(word);
+            expect(html).not.toMatch(/<button[^>]*disabled=""[^>]*>Start<\/button>/);
+            expect(html).not.toMatch(/<button[^>]*disabled=""[^>]*>Stop<\/button>/);
+        }
     });
 
     it('plots the last ticks with the last price and the move over them', () => {
         const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=ticks`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
-            client.setQueryData(['synthetic-running'], ['synthetic.eurusd']);
+            client.setQueryData(ADAPTERS_KEY, adapters('bloomberg', 'serving', 1));
             client.setQueryData(
                 ['records', 'gmm-components', FEED_ID],
                 [
@@ -403,7 +492,7 @@ describe('the FX feed screens', () => {
     it('says a stopped feed must be started to show ticks', () => {
         const html = render(`/market-data/synthetic/fx/${FEED_ID}?tab=ticks`, (client) => {
             client.setQueryData(['records', 'fx-feeds', 'key', FEED_ID], feed);
-            client.setQueryData(['synthetic-running'], []);
+            client.setQueryData(ADAPTERS_KEY, adapters('bloomberg', 'ready', 0));
             client.setQueryData(['feed-ticks', FEED_ID, 200], {
                 sourceName: 'synthetic.eurusd',
                 ticks: [],

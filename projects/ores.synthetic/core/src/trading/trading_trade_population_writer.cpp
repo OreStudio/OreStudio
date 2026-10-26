@@ -27,6 +27,7 @@
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/commodity_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.refdata.api/messaging/netting_set_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
@@ -36,6 +37,13 @@
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
 #include "ores.trading.api/domain/flexi_swap_instrument.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
+#include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
+#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/domain/swaption_instrument.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
@@ -213,6 +221,17 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     index_req.limit = page;
     for (const auto& index : read(index_req).types)
         scope.floating_index_codes.push_back(index.code);
+
+    /*
+     * A currency pair is the tenant's own reference data too, and an FX trade
+     * names one. As with commodities and indices, an empty set is the planner's
+     * to refuse, because a pair the store does not hold cannot be resolved.
+     */
+    ores::refdata::messaging::list_currency_pairs_request pair_req;
+    pair_req.limit = page;
+    for (const auto& pair : read(pair_req).pairs)
+        scope.currency_pairs.push_back(domain::currency_pair_reference{
+            .base = pair.base_currency, .quote = pair.quote_currency});
 
     ores::refdata::messaging::list_counterparties_request cp_req;
     cp_req.limit = page;
@@ -671,6 +690,152 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
         } else {
             throw trade_population_write_error("The rate trade type " + type +
                                                " states no fact row this writer knows.");
+        }
+    } else if (const auto* fx = std::get_if<domain::fx_terms>(&slot.terms)) {
+        const auto money = [](double value) {
+            return ores::utility::decimal::decimal::from_double(value).value();
+        };
+        const auto maybe_money = [&money](std::optional<double> value)
+            -> std::optional<ores::utility::decimal::decimal> {
+            if (!value.has_value())
+                return std::nullopt;
+            return money(*value);
+        };
+        const auto& type = slot.trade_type_code;
+
+        /*
+         * One routed table per shape. An FX row is the whole instrument, so
+         * there is no fact row beside it and nothing to forget: the fields the
+         * table states are the fields the row carries.
+         */
+        if (type == "FxForward" || type == "FxSwap") {
+            ores::trading::domain::fx_forward_instrument row;
+            row.bought_currency = fx->bought_currency;
+            row.bought_amount = money(fx->bought_amount);
+            row.sold_currency = fx->sold_currency;
+            row.sold_amount = money(fx->sold_amount);
+            row.value_date = fx->value_date;
+            row.settlement = fx->settlement;
+            row.description = "Generated FX trade.";
+            row.audit.change_reason_code = std::string(population_reason);
+            row.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.fx_forward_instruments.push_back(row);
+        } else if (type == "FxOption") {
+            ores::trading::domain::fx_vanilla_option_instrument row;
+            row.bought_currency = fx->bought_currency;
+            row.bought_amount = money(fx->bought_amount);
+            row.sold_currency = fx->sold_currency;
+            row.sold_amount = money(fx->sold_amount);
+            row.option_type = fx->option_type;
+            row.expiry_date = fx->expiry_date;
+            row.exercise_style = fx->exercise_style;
+            row.settlement = fx->settlement;
+            row.description = "Generated FX trade.";
+            row.audit.change_reason_code = std::string(population_reason);
+            row.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.fx_vanilla_option_instruments.push_back(row);
+        } else if (type.starts_with("FxBarrier") || type == "FxDoubleBarrierOption" ||
+                   type == "FxEuropeanBarrierOption" || type == "FxGenericBarrierOption" ||
+                   type == "FxKIKOBarrierOption") {
+            ores::trading::domain::fx_barrier_option_instrument row;
+            row.bought_currency = fx->bought_currency;
+            row.bought_amount = money(fx->bought_amount);
+            row.sold_currency = fx->sold_currency;
+            row.sold_amount = money(fx->sold_amount);
+            row.option_type = fx->option_type;
+            row.expiry_date = fx->expiry_date;
+            row.settlement = fx->settlement;
+            row.barrier_type = fx->barrier_type;
+            row.lower_barrier = maybe_money(fx->lower_barrier);
+            row.upper_barrier = maybe_money(fx->upper_barrier);
+            row.underlying_code = fx->underlying_code;
+            row.description = "Generated FX trade.";
+            row.audit.change_reason_code = std::string(population_reason);
+            row.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.fx_barrier_option_instruments.push_back(row);
+        } else if (type == "FxDigitalOption" || type == "FxTouchOption" ||
+                   type == "FxDoubleTouchOption" || type == "FxDigitalBarrierOption") {
+            ores::trading::domain::fx_digital_option_instrument row;
+            row.foreign_currency = fx->foreign_currency;
+            row.domestic_currency = fx->domestic_currency;
+            row.payoff_currency = fx->payoff_currency;
+            row.payoff_amount = money(fx->payoff_amount.value_or(0.0));
+            row.option_type = fx->option_type;
+            row.expiry_date = fx->expiry_date;
+            row.long_short = fx->long_short;
+            row.strike = maybe_money(fx->strike);
+            row.barrier_type = fx->barrier_type;
+            row.lower_barrier = maybe_money(fx->lower_barrier);
+            row.upper_barrier = maybe_money(fx->upper_barrier);
+            row.description = "Generated FX trade.";
+            row.audit.change_reason_code = std::string(population_reason);
+            row.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.fx_digital_option_instruments.push_back(row);
+        } else if (type == "FxAverageForward" || type == "FxTaRF") {
+            ores::trading::domain::fx_asian_forward_instrument row;
+            row.fx_index = fx->fx_index;
+            row.reference_currency = fx->reference_currency;
+            row.reference_notional = maybe_money(fx->reference_notional);
+            row.settlement_currency = fx->settlement_currency;
+            row.settlement_notional = maybe_money(fx->settlement_notional);
+            row.payment_date = fx->payment_date;
+            row.long_short = fx->long_short;
+            row.currency = fx->currency;
+            row.fixing_amount = maybe_money(fx->fixing_amount);
+            row.target_amount = maybe_money(fx->target_amount);
+            row.strike = maybe_money(fx->strike);
+            row.description = "Generated FX trade.";
+            row.audit.change_reason_code = std::string(population_reason);
+            row.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.fx_asian_forward_instruments.push_back(row);
+        } else if (type == "FxVarianceSwap") {
+            ores::trading::domain::fx_variance_swap_instrument row;
+            row.start_date = fx->start_date;
+            row.end_date = fx->end_date;
+            row.currency = fx->currency;
+            row.underlying_code = fx->underlying_code;
+            row.long_short = fx->long_short;
+            row.notional = money(fx->reference_notional);
+            row.moment_type = fx->moment_type;
+            /*
+             * The store refuses a variance swap whose strike is absent or not
+             * positive: the strike is the level the swap pays out against, so a
+             * variance swap without one pays nothing.
+             */
+            row.strike = fx->strike.value_or(0.0);
+            row.description = "Generated FX trade.";
+            row.audit.change_reason_code = std::string(population_reason);
+            row.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.fx_variance_swap_instruments.push_back(row);
+        } else if (type == "FxAccumulator") {
+            ores::trading::domain::fx_accumulator_instrument row;
+            row.currency = fx->currency;
+            row.fixing_amount = money(fx->fixing_amount);
+            row.underlying_code = fx->underlying_code;
+            row.long_short = fx->long_short;
+            row.start_date = fx->start_date;
+            row.strike = money(fx->strike.value_or(0.0));
+            row.knock_out_barrier = maybe_money(fx->knock_out_barrier);
+            row.description = "Generated FX trade.";
+            row.audit.change_reason_code = std::string(population_reason);
+            row.audit.change_commentary = "Generated trade population.";
+            book_req.instruments.fx_accumulator_instruments.push_back(row);
+            /*
+             * The document refuses an accumulator with no range bound, and the
+             * row is a child of the trade rather than a column on it. The range
+             * the fixings accrue inside runs from the strike to the barrier
+             * that knocks the accumulator out.
+             */
+            ores::trading::domain::range_bound bound;
+            bound.sequence_number = 1;
+            bound.start_date = fx->start_date;
+            bound.range_from = money(fx->strike.value_or(0.0));
+            bound.range_to = maybe_money(fx->knock_out_barrier);
+            bound.strike = money(fx->strike.value_or(0.0));
+            book_req.instruments.range_bounds.push_back(bound);
+        } else {
+            throw trade_population_write_error("The FX trade type " + type +
+                                               " states no table this writer knows.");
         }
     } else {
         throw trade_population_write_error(

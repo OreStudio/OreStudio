@@ -115,6 +115,11 @@ export function gridNodePath(hostId: string): string {
  * sees several definitions of one name. The id is the primary key, so the
  * address names one record exactly.
  */
+/** The reporting area's page for one run. */
+export function reportRunPath(reportInstanceId: string): string {
+    return `/reporting/runs/${encodeURIComponent(reportInstanceId)}`;
+}
+
 export function reportPath(id: string): string {
     return `${PATHS.reports}/${encodeURIComponent(id)}`;
 }

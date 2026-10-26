@@ -186,7 +186,7 @@ void validate_scope(const domain::trade_generation_scope& scope) {
 }
 
 std::vector<std::string_view> planned_asset_classes() {
-    static const std::vector<std::string_view> codes{"bond", "commodity", "interest_rates"};
+    static const std::vector<std::string_view> codes{"bond", "commodity", "fx", "interest_rates"};
     return codes;
 }
 
@@ -194,8 +194,10 @@ const trade_planner& planner_for(const std::string& asset_class_code) {
     static const bond_trade_planner bond;
     static const commodity_trade_planner commodity;
     static const rate_trade_planner rates;
+    static const fx_trade_planner fx;
     static const std::map<std::string, const trade_planner*> planners{{"bond", &bond},
                                                                      {"commodity", &commodity},
+                                                                     {"fx", &fx},
                                                                      {"interest_rates", &rates}};
 
     const auto entry = planners.find(asset_class_code);
@@ -711,6 +713,178 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         entry.notional = terms.notional;
         entry.terms = terms;
 
+        plan.slots.push_back(std::move(entry));
+    }
+
+    return plan;
+}
+
+}
+
+namespace ores::synthetic::service {
+
+namespace {
+
+/*
+ * The sixteen trade types the routing table sends to an FX table, in the order
+ * the router states them. The list is stated rather than read from the table,
+ * because a planner is pure and has no database.
+ */
+constexpr std::string_view fx_types[] = {"FxForward",
+                                         "FxSwap",
+                                         "FxOption",
+                                         "FxDigitalOption",
+                                         "FxAverageForward",
+                                         "FxBarrierOption",
+                                         "FxDoubleBarrierOption",
+                                         "FxEuropeanBarrierOption",
+                                         "FxGenericBarrierOption",
+                                         "FxKIKOBarrierOption",
+                                         "FxTouchOption",
+                                         "FxDoubleTouchOption",
+                                         "FxDigitalBarrierOption",
+                                         "FxVarianceSwap",
+                                         "FxAccumulator",
+                                         "FxTaRF"};
+constexpr std::size_t fx_type_count = sizeof(fx_types) / sizeof(fx_types[0]);
+
+/*
+ * The pair a slot trades. A desk books what it quotes, so the pairs that name
+ * the book's own currency come first; a tenant holding none of those trades the
+ * whole catalogue rather than refusing, because a pair in another currency is
+ * still a pair it holds.
+ */
+const domain::currency_pair_reference&
+pair_for(const domain::trade_generation_scope& scope, std::uint32_t slot) {
+    const auto& own = scope.currency_code;
+    std::vector<const domain::currency_pair_reference*> matching;
+    for (const auto& pair : scope.currency_pairs) {
+        if (pair.base == own || pair.quote == own)
+            matching.push_back(&pair);
+    }
+    if (!matching.empty())
+        return *matching[slot % matching.size()];
+    return scope.currency_pairs[slot % scope.currency_pairs.size()];
+}
+
+std::string pair_name(const domain::currency_pair_reference& pair) {
+    return pair.base + "/" + pair.quote;
+}
+
+}
+
+std::string_view fx_trade_planner::asset_class_code() const { return "fx"; }
+
+domain::trade_population_plan
+fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {
+    validate_scope(scope);
+
+    if (scope.currency_pairs.empty())
+        throw trade_population_error(
+            "The tenant holds no currency pair, so no FX trade can name one. Publish the "
+            "currency pair catalogue first.");
+
+    const auto min_years = tenor_years_of(scope.min_tenor_code);
+    const auto max_years = tenor_years_of(scope.max_tenor_code);
+
+    domain::trade_population_plan plan;
+    plan.config_id = scope.config_id;
+    plan.party_id = scope.party_id;
+    plan.as_of_date = scope.as_of_date;
+
+    for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
+        const auto name = slot_name(scope, slot);
+        const auto& type = fx_types[slot % fx_type_count];
+        const auto& pair = pair_for(scope, slot);
+
+        const auto span = max_years - min_years + 1;
+        const auto drawn =
+            min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
+        const auto tenor_years = std::clamp(drawn, min_years, max_years);
+        const auto start = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
+        const auto end = add_years(start, static_cast<int>(tenor_years));
+        const auto notional =
+            price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
+        const auto rate = std::round((0.5 + draw(name, 2)) * 10000.0) / 10000.0;
+
+        domain::fx_terms terms;
+        terms.settlement = "Cash";
+        terms.value_date = end;
+        terms.expiry_date = end;
+        terms.start_date = start;
+        terms.end_date = end;
+
+        /*
+         * The three idioms. A bought-and-sold trade states the two currencies
+         * and their amounts; a digital states a payoff struck against a
+         * foreign and a domestic; an index trade states the index and the
+         * reference notional it is written on.
+         */
+        if (type == "FxForward" || type == "FxSwap" || type == "FxOption" ||
+            type.starts_with("FxBarrier") || type == "FxDoubleBarrierOption" ||
+            type == "FxEuropeanBarrierOption" || type == "FxGenericBarrierOption" ||
+            type == "FxKIKOBarrierOption") {
+            terms.bought_currency = pair.base;
+            terms.sold_currency = pair.quote;
+            terms.sold_amount = notional;
+            terms.bought_amount = std::round(notional * rate * 100.0) / 100.0;
+        } else if (type == "FxDigitalOption" || type == "FxTouchOption" ||
+                   type == "FxDoubleTouchOption" || type == "FxDigitalBarrierOption") {
+            terms.foreign_currency = pair.base;
+            terms.domestic_currency = pair.quote;
+            terms.payoff_currency = pair.quote;
+            terms.payoff_amount = notional;
+            terms.strike = rate;
+        } else {
+            terms.fx_index = pair_name(pair);
+            terms.reference_currency = pair.base;
+            terms.reference_notional = notional;
+            terms.settlement_currency = pair.quote;
+            terms.settlement_notional = std::round(notional * rate * 100.0) / 100.0;
+            terms.currency = pair.quote;
+            terms.fixing_amount = notional;
+            terms.strike = rate;
+            terms.payment_date = end;
+        }
+
+        if (type.ends_with("Option") || type.starts_with("FxBarrier") ||
+            type.starts_with("FxKIKO") || type.starts_with("FxTouch") ||
+            type.starts_with("FxDouble") || type.starts_with("FxEuropean") ||
+            type.starts_with("FxGeneric") || type.starts_with("FxDigital")) {
+            terms.option_type = (draw(name, 3) < 0.5) ? "Call" : "Put";
+            terms.exercise_style = "European";
+            terms.long_short = (draw(name, 4) < 0.5) ? "Long" : "Short";
+        }
+
+        if (type.find("Barrier") != std::string::npos || type.starts_with("FxKIKO") ||
+            type.starts_with("FxTouch") || type.starts_with("FxDouble")) {
+            terms.barrier_type = type.starts_with("FxKIKO") ? "KnockIn" : "KnockOut";
+            terms.lower_barrier = std::round(rate * 0.9 * 10000.0) / 10000.0;
+            terms.upper_barrier = std::round(rate * 1.1 * 10000.0) / 10000.0;
+            terms.underlying_code = pair_name(pair);
+        }
+
+        if (type == "FxVarianceSwap") {
+            terms.moment_type = "Variance";
+            terms.long_short = (draw(name, 5) < 0.5) ? "Long" : "Short";
+            terms.underlying_code = pair_name(pair);
+        }
+
+        if (type == "FxAccumulator") {
+            terms.knock_out_barrier = std::round(rate * 1.1 * 10000.0) / 10000.0;
+            terms.underlying_code = pair_name(pair);
+            terms.long_short = "Long";
+        }
+
+        if (type == "FxTaRF" || type == "FxAverageForward") {
+            terms.target_amount = std::round(notional * 2.0 * 100.0) / 100.0;
+            terms.long_short = "Long";
+        }
+
+        auto entry = common_slot(scope, slot);
+        entry.trade_type_code = std::string(type);
+        entry.notional = notional;
+        entry.terms = terms;
         plan.slots.push_back(std::move(entry));
     }
 

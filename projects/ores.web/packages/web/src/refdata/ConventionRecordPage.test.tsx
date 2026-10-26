@@ -94,6 +94,12 @@ const DOCUMENT: ConventionDocument = {
             xpath: '/Conventions/Swap/FixedCalendar',
             value: 'TARGET',
         },
+        {
+            ...BLANK,
+            column: 'overnight_lockout_days',
+            ore: 'OvernightLockouDays',
+            xpath: '/Conventions/BMABasisSwap/OvernightLockouDays',
+        },
     ],
 };
 
@@ -144,11 +150,19 @@ describe('the record page of a convention', () => {
         expect(html).toContain('TARGET');
     });
 
+    it('shows a dash, not an invented default, for an undocumented term the convention leaves out', () => {
+        const html = render();
+        const row = html.slice(html.indexOf('OvernightLockouDays'));
+
+        expect(row).toContain('—');
+        expect(row.slice(0, row.indexOf('</li>'))).not.toContain('Default:');
+    });
+
     it('names the switch for a screen of leaves and counts the terms with their noun', () => {
         const html = render();
 
         expect(html).toContain('aria-label="How much to show"');
-        expect(html).toContain('3 of 3 terms shown');
+        expect(html).toContain('4 of 4 terms shown');
         expect(html).toContain('Show all documentation');
         // The data cannot say which terms change the numbers, so that filter is not drawn.
         expect(html).not.toContain('Changes the numbers');

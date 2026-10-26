@@ -157,13 +157,16 @@ function TermsCard({
     const [setOnly, setSetOnly] = useState(false);
     const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
     const noun = t('oreParameter.nouns.terms');
+    // A composite lays its parts over its central row, so a column name alone may
+    // name a term of two entities; the entity and the column together name one.
+    const keyOf = (term: ConventionTerm): string => `${term.entity}.${term.column}`;
     const visible = terms.filter((term) => !setOnly || term.value !== null);
-    const allOpen = visible.length > 0 && visible.every((term) => opened.has(term.column));
-    const toggle = (column: string): void =>
+    const allOpen = visible.length > 0 && visible.every((term) => opened.has(keyOf(term)));
+    const toggle = (key: string): void =>
         setOpened((before) => {
             const next = new Set(before);
-            if (!next.delete(column)) {
-                next.add(column);
+            if (!next.delete(key)) {
+                next.add(key);
             }
             return next;
         });
@@ -187,9 +190,7 @@ function TermsCard({
                 <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() =>
-                        setOpened(allOpen ? new Set() : new Set(visible.map((term) => term.column)))
-                    }
+                    onClick={() => setOpened(allOpen ? new Set() : new Set(visible.map(keyOf)))}
                 >
                     {allOpen
                         ? t('oreParameter.hideAllDocumentation')
@@ -202,11 +203,11 @@ function TermsCard({
                 <ul className="divide-y divide-line-subtle">
                     {visible.map((term) => (
                         <TermRow
-                            key={`${term.entity}.${term.column}`}
+                            key={keyOf(term)}
                             term={term}
                             mode={mode}
-                            open={opened.has(term.column)}
-                            onToggle={() => toggle(term.column)}
+                            open={opened.has(keyOf(term))}
+                            onToggle={() => toggle(keyOf(term))}
                         />
                     ))}
                 </ul>

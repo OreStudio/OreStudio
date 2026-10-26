@@ -189,7 +189,6 @@ function valueText(value: unknown): string | null {
     return typeof value === 'string' ? value : JSON.stringify(value);
 }
 
-/** One convention of a family by its key, the composite's parts laid over its central row. */
 /**
  * The one row a key names. A convention is named by its id within a party, and a
  * session may read the rows of several parties, so the party picks the row; with
@@ -208,9 +207,11 @@ function oneOf<Row extends Readonly<Record<string, unknown>>>(
     return rows[0];
 }
 
-/** The rows of one key that a read may return: one for each party that holds it. */
-const PARTIES_PER_KEY = 100;
-
+/**
+ * One convention of a family by its key, the composite's parts laid over its
+ * central row. Every row of the key is read, a page at a time, so the party
+ * asked for is found however many parties hold the id.
+ */
 async function readConvention(
     session: LiveSession,
     family: ConventionFamily,
@@ -219,37 +220,23 @@ async function readConvention(
 ): Promise<Readonly<Record<string, unknown>> | undefined> {
     const composite = COMPOSITE_FAMILIES[family.key];
     if (composite === undefined) {
-        const reply = await session.client.callAuthenticated(
-            `refdata.v1.${family.prefix}.list`,
-            {
-                offset: 0,
-                limit: PARTIES_PER_KEY,
-                order: NO_ORDER,
-                filter: { id_one_of: [id] },
-                as_of: null,
-            },
-            z.looseObject({ result: resultSchema }),
-        );
-        if (reply.result.outcome !== 'ok') {
-            throw invalidRequest(reply.result.message);
-        }
-        return oneOf(z.array(z.looseObject({})).default([]).parse(reply[family.prefix]), party);
+        const rows = await readAll(session, `refdata.v1.${family.prefix}.list`, family.prefix, {
+            filter: { id_one_of: [id] },
+            as_of: null,
+        });
+        return oneOf(rows, party);
     }
-    const reply = await session.client.callAuthenticated(
+    const rows = await readAll(
+        session,
         conventionSubjects.list_conventions_request,
+        'conventions',
         {
-            offset: 0,
-            limit: PARTIES_PER_KEY,
-            order: NO_ORDER,
             filter: { kind_code: composite.kindCode, kind_code_one_of: null, id_one_of: [id] },
             as_of: null,
         },
-        z.looseObject({ result: resultSchema, conventions: z.array(centralRow).default([]) }),
     );
-    if (reply.result.outcome !== 'ok') {
-        throw invalidRequest(reply.result.message);
-    }
-    const central = oneOf(reply.conventions, party);
+    const found = oneOf(rows, party);
+    const central = found === undefined ? undefined : centralRow.parse(found);
     if (central === undefined) {
         return undefined;
     }

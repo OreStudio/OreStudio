@@ -402,6 +402,72 @@ describe('convention routes', () => {
         expect(unnamed.statusCode).toBe(400);
     });
 
+    it('answers a composite convention with its parts laid over its central row', async () => {
+        const replies: Record<string, unknown> = {
+            'refdata.v1.conventions.list': {
+                result: ok,
+                conventions: [
+                    {
+                        id: '33333333-3333-4333-8333-333333333333',
+                        version: 2,
+                        name: 'GBP-6M-12M-BASIS',
+                    },
+                ],
+            },
+            'refdata.v1.tenor_basis_swap_conventions.get_many': {
+                result: ok,
+                items: [
+                    {
+                        key: { id: '33333333-3333-4333-8333-333333333333' },
+                        long_short: [
+                            {
+                                id: 'part',
+                                convention_id: '33333333-3333-4333-8333-333333333333',
+                                long_index: 'GBP-LIBOR-12M',
+                            },
+                        ],
+                    },
+                ],
+            },
+            'refdata.v1.convention_kinds.list': { result: ok, kinds: [] },
+            'refdata.v1.convention_kind_terms.list': {
+                result: ok,
+                terms: [
+                    {
+                        kind_code: 'TENOR_BASIS_SWAP',
+                        entity_name: 'tenor_basis_swap_long_short',
+                        column_name: 'long_index',
+                        schema_name: 'conventions.xsd',
+                        xpath: '/Conventions/TenorBasisSwap/LongIndex',
+                        position: 0,
+                    },
+                ],
+            },
+            'reporting.v1.ore_parameters.list': { result: ok, parameters: [] },
+            'reporting.v1.ore_parameter_value_sets.list': { result: ok, sets: [] },
+            'reporting.v1.ore_parameter_value_set_values.list': { result: ok, values: [] },
+            'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+            'reporting.v1.ore_parameter_setting_value_sets.list': {
+                result: ok,
+                setting_value_sets: [],
+            },
+        };
+        const { server, sessionId } = buildTestServer(replies);
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/conventions/tenor-basis-swap/documents/33333333-3333-4333-8333-333333333333',
+        );
+        expect(response.statusCode).toBe(200);
+        const body = response.json();
+        expect(body.version).toBe(2);
+        // The part's term reaches the page; the part's own key and link to the centre do not.
+        expect(body.terms).toMatchObject([
+            { column: 'long_index', value: 'GBP-LIBOR-12M', documented: false },
+        ]);
+    });
+
     it('answers 404 for a convention the family does not hold', async () => {
         const { server, sessionId } = buildTestServer({
             'refdata.v1.swap_conventions.list': { result: ok, swap_conventions: [] },

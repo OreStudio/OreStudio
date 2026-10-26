@@ -83,7 +83,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A stray doc comment sits above oneOf | bff/src/conventions.ts | Accept | It describes readConvention and now stands above it. |
+| 2 | The open state is keyed by column only | ConventionRecordPage.tsx | Accept | It is keyed by entity and column, as the row is, so two parts' same-named columns open apart. |
+| 3 | Six whole tables are read on every record view | bff/src/conventions.ts | Decline | The terms list filters by code only, so a kind filter needs a codegen change; the engine run settings route reads the contract the same way. A cache is worth its own task when the cost shows. |
+| 4 | A structured value would show as JSON | bff/src/conventions.ts | No change | No term holds a structure, because the term generator gives a structured column no term; the branch guards a value that is not scalar. |
+| 5 | Check the tests cover the composite, the refusal and the dash | conventions.test.ts, ConventionRecordPage.test.tsx | Accept | A BFF test answers a composite with its part's term and not the part's key; the refusal test exists; a page test shows a dash and no default for an undocumented term the convention leaves out. |
+| 6 | help is returned and not drawn | bff/src/conventions.ts | No change | The standard draws the help under the control in edit, which the edit task brings. |
+| 7 | 100 rows truncate the parties of one id | bff/src/conventions.ts | Accept | The key's rows are read through readAll, a page at a time, so no party is missed; the limit is gone. |
 
 * Result
 

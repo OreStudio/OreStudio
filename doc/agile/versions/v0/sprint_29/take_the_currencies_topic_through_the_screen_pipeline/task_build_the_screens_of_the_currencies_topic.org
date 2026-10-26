@@ -31,11 +31,11 @@ operations.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]] |
-| Now          | Steps 1 and 2 are built and proven on the running web: the three screens on the shared timeline, and the Import and Export pair on the currencies with its three server operations. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 3: the two classification lists and the strings' review; then the test task. |
+| Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 
 * Acceptance
@@ -62,9 +62,12 @@ task:
    messages with the exporter and the import planner =ores.ore.core= has; the
    three BFF routes; the shared =OreExchange= with the two buttons, the Export
    dialog and the Import steps; the two icons registered.
-3. /The lists and the checks./ The =day-basis= and =ore-currency-type=
-   classification lists the prototype's selects need; the harness checks for
-   RS-ORE-02 to RS-ORE-04; the strings in French and Portuguese.
+3. /The pickers and the groups./ Day basis picks from the day counters the
+   server already holds, and ORE currency type from ORE's own three values as
+   a choice, so no list is added; the sixteen fields stand in three groups,
+   Identity, Display and Market, with the flag in Identity as the prototype
+   draws it; the harness checks for RS-ORE-02 and RS-ORE-04 landed with step
+   2; the strings in French and Portuguese.
 
 * Measurements
 
@@ -84,6 +87,8 @@ task and name that file in the Command column.
 | Round trip of the currency configuration | 167 in the file, 167 already held, 0 changed, 1 not in the file after GBP is cut; a changed symbol is 1 changed and bumps EUR to version 6 with Symbol in its history | =node evidence/drive_currency_import_export.mjs= on the fresh database | 56ad1f1ed9 |
 | ORE core XML tests | 202 cases, 40517 assertions, all passed | =ores.ore.core.tests "[ore][xml]"= with the environment sourced | 56ad1f1ed9 |
 | Harness on the currencies list | RS-LIST-03, RS-ORE-02 and RS-ORE-04 green; 5 checks | =npx playwright test --grep "record currencies.*RS-ORE"= | d32a540785 |
+| Round trip with a new currency | 168 in the file, 166 held, 1 changed, 1 new, 1 not in the file; the import adds 1 and changes 1; a second pass offers the new one as removed and deletes it on the choice | =node evidence/drive_currency_import_export.mjs= | a23433fb9a |
+| The currency form | Day basis and ORE currency type are selects; the headings are Identity, Display, Market | a Playwright read of the EUR Edit dialog | f1f55cca61 |
 
 * Notes
 
@@ -162,11 +167,20 @@ via its "Verifies task" field.
 
 * Result
 
-Step 1 is built and merged: the currencies, desk groups and currency pairs
-screens draw History on the shared timeline, the pair's story carrying its
-convention; each page has Refresh with its load time; Edit and Delete are
-titled by the record's name; the pair dialog is the shared record dialog with
-two groups and a derived code. Proven by the unit tests, the harness on four
-screens and screenshots of the running web. Steps 2 and 3, the Import and
-Export pair's server side and screen, the two classification lists and the
-harness checks, follow on this task.
+The three screens draw what the signed off prototype draws. Step 1, PR
+3845: the currencies, desk groups and currency pairs screens draw History on
+the shared timeline, the pair's story carrying its convention; each page has
+Refresh with its load time; Edit and Delete are titled by the record's name;
+the pair dialog is the shared record dialog with two groups and a derived
+code. Step 2, PR 3856: the first triple of the Import and Export pair in the
+ORE service, the three BFF routes, the shared =OreExchange= with the Export
+dialog and the Import steps at their own address, the two icons, the words in
+three languages, and the harness checks for RS-ORE-02 and RS-ORE-04; the
+importer keeps a numeric code's leading zeros, and the import reads the
+difference on the document's fields alone. Step 3: Day basis picks from the
+day counters, ORE currency type from ORE's three values, and the currency
+form stands in three groups. Proven by the unit tests, the ORE core XML
+tests, the harness on the four screens, and the drive script in =evidence/=,
+which exports, refuses a wrong file, imports a changed file with a new
+currency and deletes it on a second pass. The pair classification still shows
+its code, for the test step to look at.

@@ -89,7 +89,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Nothing checks that every seeded kind has an asset class | generate_convention_kind_terms.py | Accept | The generator reads the kinds seed: a kind whose class is not one of the six, or a kind with terms and no ORE element, fails the convention-kind-terms gate, which now watches the kinds seed. Proved by blanking SWAP's class. |
+| 2 | A failed kinds read is hidden | bff/src/conventions.ts | Accept | The catch logs a warning with the error. |
+| 3 | kindCodeOf ties families to the code spelling | bff/src/conventions.test.ts | Accept | A test reads the kinds seed and fails when any family's kind code is not seeded. |
+| 4 | A mapper read in a new style is skipped silently | generate_convention_kind_terms.py | Accept | A read whose entity or path the generator cannot resolve fails it, unless NOT_A_COLUMN names it with a reason; one read is named, the FX projection's spot days. |
+| 5 | Open a follow-up for the lockout spelling | inbox capture | Accept | Filed [[id:4C172E73-A3A1-4287-A612-0BD13B2CA74A][Export the BMA basis swap lockout under the name ORE reads]]. |
+| 6 | The hard-coded shared flags could disagree with the registry | bff/src/conventions.test.ts | Accept | A test fails when a hard-coded family is also a registry family. |
+| 7 | Confirm the failing checks on main | none | Accept | The same failures stand in the Testing sections of PR #3828 and PR #3830, raised before this branch existed, and no file they read changes here. |
+| 8 | Another tenant-copy path may list the old columns | iam_tenant_provisioner_create.sql | No change | The provisioner is the only SQL that names the kinds table outside its own scripts. |
+| 9 | A re-run of the seed does not change an existing database | none | No change | The kinds seed updates on conflict; the terms seed does nothing on conflict, as the engine settings seed does, so a changed term reaches a database by its recreate. |
 
 * Result
 

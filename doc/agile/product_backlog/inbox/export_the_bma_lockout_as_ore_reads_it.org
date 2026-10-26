@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 4C172E73-A3A1-4287-A612-0BD13B2CA74A
+:END:
+#+title: Export the BMA basis swap lockout under the name ORE reads
+#+description: ORE's BMABasisSwapConvention::fromXML reads OvernightLockouDays and its toXML writes OvernightLockoutDays. The ores.ore mapper reads and writes OvernightLockoutDays, so a conventions document ORE Studio exports carries a lockout ORE never reads, and a document written with the parser's spelling imports without it. Write the spelling ORE reads, read both, or report it upstream.
+#+type: capture
+#+level: cross
+#+filetags: :ore:conventions:import_export:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+ORE's =BMABasisSwapConvention::fromXML= reads the lockout as
+=OvernightLockouDays= (=OREData/ored/configuration/conventions.cpp:921= at ORE
+=3d75a6908=), and its =toXML= writes =OvernightLockoutDays= (line 951). The
+=ores.ore= mapper reads and writes =OvernightLockoutDays=
+(=projects/ores.ore/core/src/domain/conventions_family_bma_basis_swap.cpp=).
+
+So a conventions document ORE Studio exports carries a lockout that ORE does not
+read, and the BMA basis swap runs with no lockout. A document written with the
+parser's spelling imports without its lockout. Write the spelling ORE reads, read
+both on import, or report the misspelling to ORE.
+
+* Why
+
+The lockout changes the numbers a BMA basis swap curve is built with, and the
+loss is silent in both directions. Found building the convention kind terms, where
+the term records the spelling ORE reads as a stated exception.
+
+* References
+
+- =projects/ores.sql/utility/generate_convention_kind_terms.py= — =SPELLED_OTHERWISE=.
+
+* See also
+
+- [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way, starting with conventions]] — the story that found it.

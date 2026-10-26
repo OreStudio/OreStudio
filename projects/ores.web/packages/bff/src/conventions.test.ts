@@ -25,7 +25,8 @@ import { describe, expect, it } from 'vitest';
 import type { OresClient } from '@ores/wire-protocol';
 import { CONVENTION_FAMILY_ENTRIES } from '@ores/wire-protocol/generated/refdata/domain/convention_family_registry';
 import type { Config } from './config.js';
-import { ABSORBED_REGISTRY_KEYS, CONVENTION_FAMILIES } from './conventions.js';
+import { readFileSync } from 'node:fs';
+import { ABSORBED_REGISTRY_KEYS, CONVENTION_FAMILIES, kindCodeOf } from './conventions.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
@@ -168,6 +169,39 @@ describe('the family list', () => {
     it('names each family once', () => {
         const keys = CONVENTION_FAMILIES.map((family) => family.key);
         expect(new Set(keys).size).toBe(keys.length);
+    });
+});
+
+describe('the families and their kinds', () => {
+    // The kinds the database seeds, read from the populate script the families route reads them from.
+    const seeded = new Set(
+        [
+            ...readFileSync(
+                resolve(
+                    dirname(fileURLToPath(import.meta.url)),
+                    '../../../../ores.sql/populate/refdata/refdata_convention_kinds_populate.sql',
+                ),
+                'utf-8',
+            ).matchAll(/\(ores_utility_system_tenant_id_fn\(\), '([A-Z_]+)', 0,/g),
+        ].map((match) => match[1]),
+    );
+
+    it('names a seeded kind for every family, so every card can take its class', () => {
+        expect(seeded.size).toBeGreaterThan(0);
+        expect(
+            CONVENTION_FAMILIES.map((family) => kindCodeOf(family.key)).filter(
+                (code) => !seeded.has(code),
+            ),
+        ).toEqual([]);
+    });
+
+    it('states a family as shared only where the registry does not, so the two cannot disagree', () => {
+        const registry = new Set(
+            CONVENTION_FAMILY_ENTRIES.map((entry) => entry.key.replaceAll('_', '-')),
+        );
+        expect(
+            ['tenor', 'currency-pair', 'tenor-basis-swap'].filter((key) => registry.has(key)),
+        ).toEqual([]);
     });
 });
 

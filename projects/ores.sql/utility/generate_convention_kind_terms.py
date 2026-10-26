@@ -46,6 +46,17 @@ MAPPERS = os.path.join(ROOT, "projects", "ores.ore", "core", "src", "domain")
 TERMS = os.path.join(HERE, "convention_terms.json")
 OUT = os.path.join(ROOT, "projects", "ores.sql", "populate", "refdata",
                    "refdata_convention_kind_terms_populate.sql")
+KINDS = os.path.join(ROOT, "projects", "ores.sql", "populate", "refdata",
+                     "refdata_convention_kinds_populate.sql")
+
+# The asset classes a kind may serve; a screen draws its kinds under them.
+ASSET_CLASSES = ("interest-rates", "fx", "inflation", "credit", "commodity", "bond")
+
+# A mapper read whose target is not a column of a convention entity, with why.
+NOT_A_COLUMN = {
+    ("CURRENCY_PAIR", "r", "spot_days"):
+        "the FX projection's spot days, which the projection carries and no entity stores",
+}
 
 SCHEMA_NAME = "conventions.xsd"
 
@@ -127,7 +138,7 @@ def mapper_terms():
     it stands under.
     """
     elements = dict(ELEMENT_OF)
-    found = []
+    found, unread = [], []
     paths = sorted(glob.glob(os.path.join(MAPPERS, "conventions_family_*.cpp"))) + \
         [os.path.join(MAPPERS, name) for name in FILE_KIND]
     for path in paths:
@@ -157,9 +168,14 @@ def mapper_terms():
                 groups = read.groups()
                 var, column, reader, element = groups[:4] if groups[0] else groups[4:]
                 below = path_of(reader, read.start())
-                if var in types and below is not None:
-                    found.append((kind, types[var], column, below + [element]))
-    return found, elements
+                if (kind, var, column) in NOT_A_COLUMN:
+                    continue
+                if var not in types or below is None:
+                    unread.append(f"{os.path.basename(path)}: {var}.{column} reads {element}, "
+                                  "and the generator cannot say which entity or path it is")
+                    continue
+                found.append((kind, types[var], column, below + [element]))
+    return found, elements, unread
 
 
 def xpaths(elements):
@@ -177,10 +193,26 @@ def xpaths(elements):
     return out
 
 
+def kind_problems(kinds_with_terms):
+    """A kind the seed gives no asset class, or a kind with terms and no ORE element."""
+    text = open(KINDS, encoding="utf-8").read()
+    problems = []
+    rows = re.findall(r"\(ores_utility_system_tenant_id_fn\(\), '([A-Z_]+)', 0, '[^']*',\n"
+                      r"\s+'[^']*',\n\s+'([^']*)', (null|'[^']*'),", text)
+    for code, asset_class, element in rows:
+        if asset_class not in ASSET_CLASSES:
+            problems.append(f"{code}: asset class '{asset_class}' is not one of {ASSET_CLASSES}")
+        if code in kinds_with_terms and element == "null":
+            problems.append(f"{code}: has terms and no ORE element")
+    if not rows:
+        problems.append(f"{KINDS}: no kind rows read")
+    return problems
+
+
 def rows():
-    found, elements = mapper_terms()
+    found, elements, unread = mapper_terms()
     known = xpaths(elements)
-    out, problems, seen = [], [], set()
+    out, problems, seen = [], list(unread), set()
     position = {}
     for kind, entity, column, below in found:
         code = f"{kind}:{entity}.{column}"
@@ -198,6 +230,7 @@ def rows():
         out.append({"code": code, "kind": kind, "entity": entity, "column": column,
                     "xpath": xpath, "position": position.setdefault(kind, 0)})
         position[kind] += 1
+    problems += kind_problems({r["kind"] for r in out})
     return out, problems
 
 

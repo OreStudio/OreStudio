@@ -253,8 +253,9 @@ export function registerConventionRoutes(
             for (const kind of kinds) {
                 assetClassOf.set(String(kind['code']), String(kind['asset_class'] ?? ''));
             }
-        } catch {
-            // No asset class is known; the cards still list every family.
+        } catch (error) {
+            // No asset class is known; the cards still list every family, under Other.
+            request.log.warn({ err: error }, 'the convention kinds could not be read');
         }
         const families = [];
         for (const family of CONVENTION_FAMILIES) {

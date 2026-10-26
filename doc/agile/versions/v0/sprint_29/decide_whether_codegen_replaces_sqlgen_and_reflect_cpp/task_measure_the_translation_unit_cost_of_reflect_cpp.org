@@ -35,12 +35,18 @@ Numbers for the translation-unit cost of reflect-cpp and sqlgen, and how much of
 
 * Acceptance
 
-- Compile time and peak memory of the slowest translation units, and the share of
-  each spent in reflect-cpp and sqlgen, from clang's time trace.
-- For one component built without ccache: total compile CPU and file count today,
-  and with generated codecs, in each layout for message codecs: one =.cpp= for each
-  protocol header, and one for each component.
-- The same for reflect-cpp confined to one =.cpp= for each type by =extern template=.
+The measure of success is the total build time of the whole system.
+
+- Baseline: total compile CPU and wall time of a full build without ccache, at the
+  build slot's job count, and the peak memory of each file.
+- reflect-cpp's share of the total, extrapolated from the time traces of a random
+  sample of files, with the sampling error stated.
+- The total build time and peak memory after each option: one-time codecs for the
+  common types (=decimal=, =tenant_id=, UUID, =audit_record=, time points),
+  generated codecs in the per-concern layout, and reflect-cpp confined by =extern
+  template=.
+- For each option, the job count its peak memory allows within the build slot, and
+  the wall time at that job count.
 
 * Plan
 
@@ -75,6 +81,14 @@ task and name that file in the Command column.
   codec. Generated message codecs add files (about 516 for one each, about 40 for
   one for each component) but remove the repeated instantiation, so the total
   compile CPU of a full build is the number that decides, not the file count.
+- In =report_package_handler.cpp= reflect-cpp's time is spread across small types
+  used everywhere: =decimal= 6.0 s, =audit_record= 3.3 s, =tenant_id= 3.2 s, and
+  7.7 s in reflect-cpp's own templates, against 2.6 s for the largest instrument.
+  Those types are instantiated again in almost every file, so a one-time codec for
+  them is the cheapest lever on total build time.
+- Peak memory per file (up to 3.72 GiB) is what holds the build slot to three
+  jobs on eight cores, so lower peak memory shortens wall time beyond the CPU it
+  saves.
 - Layout to prototype and measure: one file pair for each concern of each type.
   The type's header holds the plain struct. =_json_io.hpp=, =_msgpack.hpp= and the
   repository's header only declare; their =.cpp= files define the codec or the

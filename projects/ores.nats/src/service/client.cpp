@@ -568,8 +568,10 @@ void client::connect() {
         impl_->closed_latch.closed = false;
     }
 
-    natsOptions* opts = nullptr;
-    natsOptions_Create(&opts);
+    natsOptions* created = nullptr;
+    natsOptions_Create(&created);
+    const options_handle owned_opts(created);
+    natsOptions* opts = owned_opts.get();
     natsOptions_SetURL(opts, impl_->opts.url.c_str());
     natsOptions_SetErrorHandler(opts, on_conn_error, nullptr);
     natsOptions_SetDisconnectedCB(opts, on_conn_disconnected, nullptr);
@@ -591,7 +593,6 @@ void client::connect() {
         const natsStatus ca_status =
             natsOptions_LoadCATrustedCertificates(opts, impl_->opts.tls_ca_cert.c_str());
         if (ca_status != NATS_OK) {
-            natsOptions_Destroy(opts);
             throw nats_connect_error(nats_error_kind::tls_error,
                                      std::string("Failed to load NATS CA certificate (") +
                                          impl_->opts.tls_ca_cert +
@@ -605,7 +606,6 @@ void client::connect() {
         const natsStatus chain_status = natsOptions_LoadCertificatesChain(
             opts, impl_->opts.tls_client_cert.c_str(), impl_->opts.tls_client_key.c_str());
         if (chain_status != NATS_OK) {
-            natsOptions_Destroy(opts);
             throw nats_connect_error(nats_error_kind::tls_error,
                                      std::string("Failed to load NATS client certificate/key (") +
                                          impl_->opts.tls_client_cert + ", " +
@@ -622,7 +622,6 @@ void client::connect() {
     }
 
     natsStatus s = natsConnection_Connect(&impl_->conn, opts);
-    natsOptions_Destroy(opts);
     if (s != NATS_OK) {
         nats_error_kind kind;
         switch (s) {
@@ -990,28 +989,26 @@ void ensure_durable_consumer(jsCtx* js,
     jsOptions opts;
     jsOptions_Init(&opts);
 
-    auto read_consumer = [&]() -> jsConsumerInfo* {
-        jsConsumerInfo* info = nullptr;
+    auto read_consumer = [&]() -> consumer_info_handle {
+        jsConsumerInfo* read = nullptr;
         auto jerr = jsErrCode(0);
         const natsStatus s =
-            js_GetConsumerInfo(&info, js, stream.c_str(), durable.c_str(), &opts, &jerr);
+            js_GetConsumerInfo(&read, js, stream.c_str(), durable.c_str(), &opts, &jerr);
+        consumer_info_handle info(read);
         if (s == NATS_NOT_FOUND)
             return nullptr;
         // Any other failure is not "the consumer is absent": a permission or
         // connection problem read as absent would silently try to create a
         // consumer that already exists, and report the create's refusal.
-        if (s != NATS_OK) {
-            if (info != nullptr)
-                jsConsumerInfo_Destroy(info);
+        if (s != NATS_OK)
             throw std::runtime_error("js_GetConsumerInfo failed for '" + durable +
                                      "': " + natsStatus_GetText(s));
-        }
         return info;
     };
 
     // Named `existing`, not `info`: `info` is a severity enumerator in this
     // logging facade, and a local of that name shadows it inside BOOST_LOG_SEV.
-    jsConsumerInfo* existing = read_consumer();
+    consumer_info_handle existing = read_consumer();
 
     if (existing == nullptr) {
         jsConsumerConfig config;
@@ -1032,8 +1029,7 @@ void ensure_durable_consumer(jsCtx* js,
         jsConsumerInfo* created = nullptr;
         auto jerr = jsErrCode(0);
         const natsStatus cs = js_AddConsumer(&created, js, stream.c_str(), &config, &opts, &jerr);
-        if (created != nullptr)
-            jsConsumerInfo_Destroy(created);
+        const consumer_info_handle created_info(created);
         if (cs == NATS_OK) {
             BOOST_LOG_SEV(lg(), info) << "NATS durable '" << durable << "' on '" << stream
                                       << "' created for delivery to '" << deliver_subject << "'";
@@ -1050,13 +1046,11 @@ void ensure_durable_consumer(jsCtx* js,
 
     jsConsumerConfig* config = existing->Config;
     if (config == nullptr) {
-        jsConsumerInfo_Destroy(existing);
         throw std::runtime_error("NATS durable '" + durable + "' on '" + stream +
                                  "' has no configuration");
     }
 
-    // All copied before the destroy: these fields are owned by the consumer
-    // info, so the log line below would otherwise read freed memory.
+    // Copied, because these fields are owned by the consumer info.
     std::vector<std::string> stored(stored_filters(*config));
     const jsAckPolicy stored_ack = config->AckPolicy;
     const int64_t stored_bound = config->MaxDeliver;
@@ -1072,15 +1066,13 @@ void ensure_durable_consumer(jsCtx* js,
                        stored_bound != static_cast<int64_t>(max_deliver) ||
                        stored_ack_wait != want_ack_wait || stored_deliver != deliver_subject ||
                        stored_group != deliver_group;
-    if (!stale) {
-        jsConsumerInfo_Destroy(existing);
+    if (!stale)
         return;
-    }
 
     // The update reads these pointers during the call, so they outlive it here.
     // The stored configuration is copied rather than edited: its string fields
-    // are owned by `existing`, and overwriting them would leave the destroy
-    // below freeing pointers this function had put there.
+    // are owned by `existing`, and overwriting them would leave its handle
+    // freeing pointers this function had put there.
     jsConsumerConfig updated_config = *config;
     std::vector<const char*> raw;
     set_filters(updated_config, filters, raw);
@@ -1095,9 +1087,7 @@ void ensure_durable_consumer(jsCtx* js,
     auto jerr = jsErrCode(0);
     const natsStatus us =
         js_UpdateConsumer(&updated, js, stream.c_str(), &updated_config, &opts, &jerr);
-    if (updated != nullptr)
-        jsConsumerInfo_Destroy(updated);
-    jsConsumerInfo_Destroy(existing);
+    const consumer_info_handle updated_info(updated);
 
     if (us != NATS_OK)
         throw std::runtime_error("NATS durable '" + durable + "' on '" + stream +

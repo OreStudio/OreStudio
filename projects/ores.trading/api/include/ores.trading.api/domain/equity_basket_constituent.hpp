@@ -101,6 +101,17 @@ struct equity_basket_constituent final {
     std::optional<double> weight;
 
     /**
+     * @brief The price the constituent opened at, when the document states one.
+     *
+     * ORE states InitialPrices as a list that runs beside the basket, one entry per underlying, so
+     * the price is a fact about the constituent and not about the trade. It was held as JSON text
+     * on the facts until the basket became rows.
+     *
+     * A price is a continuous quantity, so it is a binary float as the weight is.
+     */
+    std::optional<double> initial_price;
+
+    /**
      * @brief Username of the person who last modified this equity basket constituent.
      */
     std::string modified_by;

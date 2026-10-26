@@ -50,6 +50,7 @@
 #include "ores.trading.api/domain/equity_position_instrument.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument.hpp"
+#include "ores.trading.api/domain/equity_swap_period.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/flexi_swap_instrument.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
@@ -237,6 +238,10 @@ struct instrument_batch {
      * @brief The equity_basket_constituent rows, keyed by trade id.
      */
     std::vector<equity_basket_constituent> equity_basket_constituents;
+    /**
+     * @brief The equity_swap_period rows, keyed by trade id.
+     */
+    std::vector<equity_swap_period> equity_swap_periods;
     /**
      * @brief The equity_position_option_underlying rows, keyed by trade id.
      */
@@ -590,6 +595,13 @@ inline void append(instrument_batch& batch, credit_linked_swap_instrument v) {
  */
 inline void append(instrument_batch& batch, equity_basket_constituent v) {
     batch.equity_basket_constituents.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one equity_swap_period to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, equity_swap_period v) {
+    batch.equity_swap_periods.push_back(std::move(v));
 }
 
 /**

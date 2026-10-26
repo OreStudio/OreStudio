@@ -67,7 +67,6 @@ equity_accumulator_instrument_mapper::map(const equity_accumulator_instrument_en
             std::optional(
                 ores::utility::decimal::decimal::from_string(*v.knock_out_level).value()) :
             std::nullopt;
-    r.range_bounds_json = v.range_bounds_json.value_or("");
     r.target_amount =
         v.target_amount.has_value() ?
             std::optional(ores::utility::decimal::decimal::from_string(*v.target_amount).value()) :
@@ -107,8 +106,6 @@ equity_accumulator_instrument_mapper::map(const domain::equity_accumulator_instr
     r.knock_out_level = v.knock_out_level.has_value() ?
                             std::optional(v.knock_out_level->to_string()) :
                             std::nullopt;
-    r.range_bounds_json =
-        v.range_bounds_json.empty() ? std::nullopt : std::optional(v.range_bounds_json);
     r.target_amount =
         v.target_amount.has_value() ? std::optional(v.target_amount->to_string()) : std::nullopt;
     r.target_type = v.target_type.empty() ? std::nullopt : std::optional(v.target_type);

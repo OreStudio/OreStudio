@@ -110,6 +110,7 @@ equity_basket_constituent_to_domain(const messaging::equity_basket_constituent_w
     v.trade_activity_id = write.trade_activity_id;
     v.underlying_name = write.underlying_name;
     v.weight = write.weight;
+    v.initial_price = write.initial_price;
     return v;
 }
 

@@ -1,0 +1,171 @@
+:PROPERTIES:
+:ID: cd7bbd2d-6591-40f4-820e-4237ec32cfde
+:END:
+#+title: ores.trading.equity_swap_period
+#+description: Codegen entity model for the trading equity_swap_period table. One determination period of an equity worst-of basket swap, with the knock-out and fixed trigger levels that date states.
+#+type: ores.codegen.entity
+#+component: trading
+#+entity_singular: equity_swap_period
+#+entity_plural: equity_swap_periods
+#+entity_title: Equity Swap Period
+#+brief: One determination period of an equity worst-of basket swap, with the levels it states.
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+One row per determination period of an equity worst-of basket swap, keyed to
+the trade and the period's ordinal within the document.
+
+The levels are a list. A list is rows of a child table rather than an encoded
+string, so the periods live here and not in the =knock_out_levels_json= and
+=fixed_trigger_levels_json= columns that used to hold them. Both columns are
+retired with this table.
+
+The ORE document states =KnockOutLevels= and =FixedTriggerLevels= as two
+unbounded lists that run beside the determination schedule, one entry per
+date. They are therefore per period and not per constituent, which is why
+they are not rows of =equity_basket_constituent=: a basket of two underlyings
+over four dates states two names and four levels.
+
+The trade is the key. A period is reached through the trade that owns it and
+by nothing else, so the pair of =trade_id= and =sequence_number= is the
+primary key.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Natural keys
+
+| column          |
+|-----------------|
+| sequence_number |
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:           uuid
+:cpp_type:       boost::uuids::uuid
+:nullable:       false
+:primary_key:    true
+:economic:       false
+:END:
+
+The trade the period belongs to.
+
+** trade_activity_id
+:PROPERTIES:
+:type:           uuid
+:cpp_type:       boost::uuids::uuid
+:nullable:       false
+:primary_key:    true
+:economic:       false
+:END:
+
+The activity that wrote this version.
+
+** sequence_number
+:PROPERTIES:
+:type:           integer
+:cpp_type:       int
+:nullable:       false
+:primary_key:    true
+:economic:       false
+:END:
+
+The period's 1-based ordinal in the document's order.
+
+A level list and a date list are two lists that run in step, so the ordinal is
+what pairs a level with the date it belongs to.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** period_date
+:PROPERTIES:
+:type:           date
+:cpp_type:       std::optional<std::chrono::year_month_day>
+:nullable:       true
+:economic:       true
+:END:
+
+The determination date the period's levels are observed on, when the document
+states a schedule.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** knock_out_level
+:PROPERTIES:
+:type:           double precision
+:cpp_type:       std::optional<double>
+:nullable:       true
+:economic:       true
+:END:
+
+The knock-out level observed on the period, when the document states one.
+
+A level is a continuous quantity and not money, so it is a binary float, as
+the constituent's weight is.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** fixed_trigger_level
+:PROPERTIES:
+:type:           double precision
+:cpp_type:       std::optional<double>
+:nullable:       true
+:economic:       true
+:END:
+
+The fixed trigger level observed on the period, when the document states one.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_equity_swap_periods_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression             |
+|------------------------|
+| "sequence_number" > 0  |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: equity_swap_period
+:entity_plural_short:   equity_swap_periods
+:entity_singular_words: equity swap period
+:entity_plural_words:   equity swap periods
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#+end_src

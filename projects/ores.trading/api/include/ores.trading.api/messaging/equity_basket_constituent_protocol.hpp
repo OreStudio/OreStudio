@@ -46,6 +46,7 @@ struct equity_basket_constituent_write {
     boost::uuids::uuid trade_activity_id;
     std::string underlying_name;
     std::optional<double> weight;
+    std::optional<double> initial_price;
 };
 
 struct equity_basket_constituent_change {

@@ -101,6 +101,25 @@ that names its members without weighting them is a valid basket, and an
 absent weight must stay null rather than become a zero the document never
 wrote.
 
+** initial_price
+:PROPERTIES:
+:type:           double precision
+:cpp_type:       std::optional<double>
+:nullable:       true
+:END:
+
+The price the constituent opened at, when the document states one.
+
+ORE states =InitialPrices= as a list that runs beside the basket, one entry per
+underlying, so the price is a fact about the constituent and not about the
+trade. It was held as JSON text on the facts until the basket became rows.
+
+A price is a continuous quantity, so it is a binary float as the weight is.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags

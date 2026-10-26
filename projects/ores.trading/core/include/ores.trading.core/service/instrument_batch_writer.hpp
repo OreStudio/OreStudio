@@ -53,6 +53,7 @@
 #include "ores.trading.core/repository/equity_position_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
 #include "ores.trading.core/repository/equity_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_swap_period_repository.hpp"
 #include "ores.trading.core/repository/equity_variance_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/flexi_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/flexi_swap_lower_notional_repository.hpp"
@@ -254,6 +255,8 @@ void write_instrument_batch(ores::database::context ctx,
         ctx, batch.credit_linked_swap_instruments, keys, stamp, claim);
     write_rows<repository::equity_basket_constituent_repository>(
         ctx, batch.equity_basket_constituents, keys, stamp, claim);
+    write_rows<repository::equity_swap_period_repository>(
+        ctx, batch.equity_swap_periods, keys, stamp, claim);
     write_rows<repository::equity_position_option_underlying_repository>(
         ctx, batch.equity_position_option_underlyings, keys, stamp, claim);
     write_rows<repository::flexi_swap_instrument_repository>(
@@ -428,6 +431,8 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("credit_linked_swap_instruments");
     if (!batch.equity_basket_constituents.empty())
         names.emplace_back("equity_basket_constituents");
+    if (!batch.equity_swap_periods.empty())
+        names.emplace_back("equity_swap_periods");
     if (!batch.equity_position_option_underlyings.empty())
         names.emplace_back("equity_position_option_underlyings");
     if (!batch.flexi_swap_instruments.empty())

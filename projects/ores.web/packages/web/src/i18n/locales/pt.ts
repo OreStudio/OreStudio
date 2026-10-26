@@ -1558,6 +1558,91 @@ const pt: SourceCatalogue = {
         },
     },
     operations: {
+        sources: {
+            title: 'Fontes de dados de mercado',
+            description:
+                'Cada fonte que o serviço de dados de mercado executa: o estado do seu adaptador, os identificadores aceites e recusados, e há quanto tempo deu o último tick.',
+            updated: 'Lido às {at}',
+            tag: {
+                lead: 'Uma fonte está silenciosa quando serve, o serviço lhe pede identificadores e nada deu tick nos últimos cinco minutos.',
+                noDemand: '{count} sem procura',
+                stale: '{count} obsoletas',
+                quiet: '{count} silenciosas',
+            },
+            alert: '{count} identificadores pedidos não estão a ser servidos. Leia os identificadores recusados sob a fonte, ou verifique se uma parte lhe está encaminhada.',
+            tiles: {
+                sources: 'Fontes',
+                serving: 'A servir',
+                routes: 'Rotas',
+                ticks: 'Ticks por minuto',
+                quiet: 'Silenciosas',
+            },
+            table: {
+                title: 'Fontes',
+                lead: 'A fonte que deu o último tick há mais tempo aparece primeiro.',
+                empty: 'O serviço de dados de mercado ainda não segue nenhuma fonte.',
+                note: 'A tendência desenha as leituras do próprio ecrã enquanto está aberto, uma a cada cinco segundos. O serviço não guarda histórico de ticks por minuto, e a leitura não traz o tipo da fonte.',
+            },
+            columns: {
+                source: 'Fonte',
+                provider: 'Fornecedor',
+                kind: 'Tipo',
+                state: 'Estado',
+                heartbeat: 'Batimento',
+                routes: 'Rotas',
+                demanded: 'Pedidos',
+                accepted: 'Aceites',
+                rejected: 'Recusados',
+                ticks: 'Ticks / min',
+                trend: 'Tendência',
+                lastTick: 'Último tick',
+            },
+            state: {
+                announced: 'anunciada',
+                ready: 'pronta',
+                serving: 'a servir',
+                stale: 'obsoleta',
+                rejected: 'recusada',
+            },
+            detail: {
+                title: 'Fonte · {source}',
+                heartbeatCounter: 'Contador de batimentos',
+                notServed: 'Pedidos, não servidos',
+                served: 'Identificadores no catálogo',
+                unknown: 'Identificadores fora do catálogo',
+            },
+            rejected: {
+                title: 'Identificadores recusados',
+                none: 'O adaptador não recusou nenhum identificador na última procura.',
+                id: 'Identificador',
+                reason: 'Motivo',
+            },
+            age: {
+                never: 'nunca',
+                millis: '{millis} ms',
+                seconds: '{seconds} s',
+                minutes: '{minutes} min',
+                hours: '{hours} h',
+            },
+            gap: {
+                kind: {
+                    title: 'O tipo de uma fonte',
+                    body: 'O estado do adaptador diz o estado de uma fonte e não o seu tipo. O tipo é do catálogo, e este quadro lê uma só fonte de verdade.',
+                },
+                drops: {
+                    title: 'As perdas de qualidade',
+                    body: 'O serviço conta os ticks que descarta por motivo, e o estado do adaptador não traz contagens.',
+                },
+                parties: {
+                    title: 'As partes encaminhadas para uma fonte',
+                    body: 'O estado diz quantas rotas uma fonte tem, e não que partes as detêm.',
+                },
+                history: {
+                    title: 'O histórico do estado de uma fonte',
+                    body: 'Nada registra quando um adaptador ficou obsoleto, a servir ou recusado, por isso não há histórico para ler.',
+                },
+            },
+        },
         instance: {
             olderBuild: 'versão mais antiga',
             state: {
@@ -1589,6 +1674,9 @@ const pt: SourceCatalogue = {
             },
         },
         screens: {
+            sources: 'Fontes de dados de mercado',
+            sourcesBody:
+                'Cada fonte que o serviço de dados de mercado executa, o estado do seu adaptador, e o que serve e recusa.',
             signIns: 'Entradas',
             signInsBody:
                 'Quem está ligado agora, as entradas que falharam e os eventos por trás delas.',
@@ -2333,6 +2421,7 @@ const pt: SourceCatalogue = {
             notBuilt: 'Ainda não construído',
         },
         journeys: {
+            sources: 'Manter as fontes de dados de mercado a funcionar',
             services: 'Ver os serviços em execução',
             logs: 'Ler os registos de telemetria',
             grid: 'Vigiar a grelha de cálculo',
@@ -4403,6 +4492,70 @@ const pt: SourceCatalogue = {
     },
 
     marketdata: {
+        subscriptions: {
+            title: 'Subscrições',
+            description:
+                'Os fornecedores que a parte recebe e os direitos que detém, e a única fonte que serve cada fornecedor.',
+            add: 'Adicionar',
+            addTitle: 'Adicionar uma subscrição',
+            addRoute: 'Adicionar uma rota',
+            addRouteTitle: 'Adicionar uma rota',
+            remove: 'Eliminar',
+            removeTitle: 'Eliminar a subscrição de {provider}?',
+            removeSubscriptionWhat:
+                'A entrega deste fornecedor termina para a parte. As séries e o histórico mantêm-se.',
+            removeRouteWhat:
+                'A parte mantém a subscrição e perde a fonte que a serve. O histórico mantém-se.',
+            cancel: 'Cancelar',
+            newRecord:
+                'A nova linha é escrita com o motivo system.new_record. Nenhum outro motivo se aplica a um novo registo.',
+            sourceHint: 'Uma parte tem uma rota por fornecedor. A rota nomeia a fonte que a serve.',
+            right: {
+                display: 'exibição',
+                displayMeans: 'Uma pessoa da parte pode mostrar estes dados num ecrã.',
+                non_display: 'não-exibição',
+                non_displayMeans:
+                    'Um sistema da parte pode usar estes dados sem os mostrar, como um motor de precificação.',
+                derived: 'derivado',
+                derivedMeans:
+                    'A parte pode calcular novos valores a partir destes dados, como um preço combinado.',
+            },
+            columns: {
+                party: 'Parte',
+                provider: 'Fornecedor',
+                rights: 'Direitos',
+                source: 'Fonte',
+            },
+            subscriptions: {
+                title: 'Subscrições',
+                lead: 'Uma subscrição nomeia um fornecedor e os seus direitos, nunca uma fonte.',
+                empty: 'A parte ainda não tem subscrições.',
+                note: 'O serviço retira a parte da sessão, por isso Eliminar aparece apenas nas linhas da parte em que age.',
+            },
+            routes: {
+                title: 'Rotas',
+                lead: 'Uma rota escolhe a fonte que serve a parte para um fornecedor.',
+                empty: 'A parte ainda não tem rotas.',
+                note: 'Uma mudança de fonte é uma rota e nada mais. As séries e os consumidores ficam como estão.',
+            },
+            gap: {
+                suspend: {
+                    title: 'Suspender uma subscrição',
+                    body: 'O percurso suspende a entrega ao limpar Enabled. A subscrição tem os três direitos e nenhum indicador Enabled, por isso o ecrã oferece Eliminar.',
+                },
+                history: {
+                    title: 'O histórico de uma subscrição',
+                    body: 'O serviço guarda as versões de uma subscrição e de uma rota. Ainda nenhuma rota do BFF as lê, por isso não há separador Histórico.',
+                },
+                usage: {
+                    title: 'O uso e o custo',
+                    body: 'O serviço registra a procura e a entrega. Ainda nenhuma leitura lhes atribui preço, por isso o ecrã não mostra uso nem fatura.',
+                },
+            },
+        },
+        journeys: {
+            subscriptions: 'Gerir as subscrições de dados de mercado',
+        },
         feeds: {
             targetUri:
                 'A série em que este feed escreve. Cada tick do feed é guardado como uma observação da série que este URI nomeia.',
@@ -4411,6 +4564,9 @@ const pt: SourceCatalogue = {
             title: 'Dados de mercado',
             lead: 'Os preços e as curvas que a plataforma recebe ou gera.',
             screens: {
+                subscriptions: 'Subscrições',
+                subscriptionsBody:
+                    'Os fornecedores que uma parte recebe, com os direitos que detém, e a fonte que serve cada um.',
                 synthetic: 'Sintético',
                 syntheticBody:
                     'Os feeds que a plataforma gera: o que corre por fornecedor, e cada feed para iniciar e parar.',

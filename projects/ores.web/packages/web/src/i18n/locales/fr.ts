@@ -1567,6 +1567,91 @@ const fr: SourceCatalogue = {
         },
     },
     operations: {
+        sources: {
+            title: 'Sources de données de marché',
+            description:
+                "Chaque source que le service de données de marché exécute : l'état de son adaptateur, les identifiants acceptés et refusés, et l'âge de son dernier tick.",
+            updated: 'Lu à {at}',
+            tag: {
+                lead: "Une source est silencieuse quand elle sert, que le service lui demande des identifiants, et qu'aucun tick n'est arrivé depuis cinq minutes.",
+                noDemand: '{count} sans demande',
+                stale: '{count} périmées',
+                quiet: '{count} silencieuses',
+            },
+            alert: '{count} identifiants demandés ne sont pas servis. Lisez les identifiants refusés sous la source, ou vérifiez qu’une partie y est routée.',
+            tiles: {
+                sources: 'Sources',
+                serving: 'En service',
+                routes: 'Routes',
+                ticks: 'Ticks par minute',
+                quiet: 'Silencieuses',
+            },
+            table: {
+                title: 'Sources',
+                lead: 'La source dont le dernier tick est le plus ancien vient en premier.',
+                empty: 'Le service de données de marché ne suit aucune source pour le moment.',
+                note: 'La tendance dessine les relevés de l’écran pendant qu’il est ouvert, un toutes les cinq secondes. Le service ne garde aucun historique des ticks par minute, et la lecture ne porte pas le type de la source.',
+            },
+            columns: {
+                source: 'Source',
+                provider: 'Fournisseur',
+                kind: 'Type',
+                state: 'État',
+                heartbeat: 'Battement',
+                routes: 'Routes',
+                demanded: 'Demandés',
+                accepted: 'Acceptés',
+                rejected: 'Refusés',
+                ticks: 'Ticks / min',
+                trend: 'Tendance',
+                lastTick: 'Dernier tick',
+            },
+            state: {
+                announced: 'annoncée',
+                ready: 'prête',
+                serving: 'en service',
+                stale: 'périmée',
+                rejected: 'rejetée',
+            },
+            detail: {
+                title: 'Source · {source}',
+                heartbeatCounter: 'Compteur de battements',
+                notServed: 'Demandés, non servis',
+                served: 'Identifiants connus du catalogue',
+                unknown: 'Identifiants qu’il ne connaît pas',
+            },
+            rejected: {
+                title: 'Identifiants refusés',
+                none: 'L’adaptateur n’a refusé aucun identifiant à sa dernière demande.',
+                id: 'Identifiant',
+                reason: 'Motif',
+            },
+            age: {
+                never: 'jamais',
+                millis: '{millis} ms',
+                seconds: '{seconds} s',
+                minutes: '{minutes} min',
+                hours: '{hours} h',
+            },
+            gap: {
+                kind: {
+                    title: 'Le type d’une source',
+                    body: 'L’état de l’adaptateur donne l’état d’une source et non son type. Le type appartient au catalogue, et ce tableau lit une seule source de vérité.',
+                },
+                drops: {
+                    title: 'Les rejets de qualité',
+                    body: 'Le service compte les ticks qu’il rejette par motif, et l’état de l’adaptateur ne porte aucun compte.',
+                },
+                parties: {
+                    title: 'Les parties routées vers une source',
+                    body: 'L’état indique combien de routes une source a, et non quelles parties les détiennent.',
+                },
+                history: {
+                    title: 'L’historique de l’état d’une source',
+                    body: 'Rien ne consigne le moment où un adaptateur devient périmé, en service ou rejeté, donc il n’y a pas d’historique à lire.',
+                },
+            },
+        },
         instance: {
             olderBuild: 'version plus ancienne',
             state: {
@@ -1598,6 +1683,9 @@ const fr: SourceCatalogue = {
             },
         },
         screens: {
+            sources: 'Sources de données de marché',
+            sourcesBody:
+                'Chaque source que le service de données de marché exécute, l’état de son adaptateur, et ce qu’elle sert et refuse.',
             signIns: 'Connexions',
             signInsBody:
                 'Qui est connecté, les connexions échouées et les événements qui les expliquent.',
@@ -2342,6 +2430,7 @@ const fr: SourceCatalogue = {
             notBuilt: 'Pas encore construit',
         },
         journeys: {
+            sources: 'Maintenir les sources de données de marché en service',
             services: 'Voir les services en cours',
             logs: 'Lire les journaux de télémétrie',
             grid: 'Surveiller la grille de calcul',
@@ -4434,6 +4523,71 @@ const fr: SourceCatalogue = {
     },
 
     marketdata: {
+        subscriptions: {
+            title: 'Souscriptions',
+            description:
+                'Les fournisseurs que la partie prend et les droits qu’elle détient, et l’unique source qui sert chaque fournisseur.',
+            add: 'Ajouter',
+            addTitle: 'Ajouter une souscription',
+            addRoute: 'Ajouter une route',
+            addRouteTitle: 'Ajouter une route',
+            remove: 'Supprimer',
+            removeTitle: 'Supprimer la souscription à {provider} ?',
+            removeSubscriptionWhat:
+                'La livraison de ce fournisseur s’arrête pour la partie. Les séries et l’historique restent.',
+            removeRouteWhat:
+                'La partie garde la souscription et perd la source qui la sert. L’historique reste.',
+            cancel: 'Annuler',
+            newRecord:
+                'La nouvelle ligne est écrite avec le motif system.new_record. Aucun autre motif ne s’applique à un nouvel enregistrement.',
+            sourceHint:
+                'Une partie a une route par fournisseur. La route nomme la source qui la sert.',
+            right: {
+                display: 'affichage',
+                displayMeans: 'Une personne de la partie peut montrer ces données sur un écran.',
+                non_display: 'non-affichage',
+                non_displayMeans:
+                    'Un système de la partie peut utiliser ces données sans les montrer, comme un moteur de valorisation.',
+                derived: 'dérivé',
+                derivedMeans:
+                    'La partie peut calculer de nouvelles valeurs à partir de ces données, comme un prix mixte.',
+            },
+            columns: {
+                party: 'Partie',
+                provider: 'Fournisseur',
+                rights: 'Droits',
+                source: 'Source',
+            },
+            subscriptions: {
+                title: 'Souscriptions',
+                lead: 'Une souscription nomme un fournisseur et ses droits, jamais une source.',
+                empty: 'La partie ne détient aucune souscription pour le moment.',
+                note: 'Le service déduit la partie de la session, donc Supprimer ne s’affiche que sur les lignes de la partie dans laquelle vous agissez.',
+            },
+            routes: {
+                title: 'Routes',
+                lead: 'Une route choisit la source qui sert la partie pour un fournisseur.',
+                empty: 'La partie n’a aucune route pour le moment.',
+                note: 'Un changement de source est une route et rien d’autre. Les séries et les consommateurs restent tels quels.',
+            },
+            gap: {
+                suspend: {
+                    title: 'Suspendre une souscription',
+                    body: 'Le parcours suspend la livraison en décochant Enabled. Une souscription porte les trois droits et aucun drapeau Enabled, donc l’écran propose Supprimer.',
+                },
+                history: {
+                    title: 'L’historique d’une souscription',
+                    body: 'Le service garde les versions d’une souscription et d’une route. Aucune route du BFF ne les lit encore, donc il n’y a pas d’onglet Historique.',
+                },
+                usage: {
+                    title: 'L’usage et le coût',
+                    body: 'Le service enregistre la demande et la livraison. Aucune lecture ne les valorise encore, donc l’écran n’affiche ni usage ni facture.',
+                },
+            },
+        },
+        journeys: {
+            subscriptions: 'Gérer les souscriptions de données de marché',
+        },
         feeds: {
             targetUri:
                 'La série dans laquelle ce flux écrit. Chaque tick du flux est stocké comme une observation de la série que nomme cette URI.',
@@ -4442,6 +4596,9 @@ const fr: SourceCatalogue = {
             title: 'Données de marché',
             lead: 'Les prix et les courbes que la plateforme reçoit ou génère.',
             screens: {
+                subscriptions: 'Souscriptions',
+                subscriptionsBody:
+                    'Les fournisseurs qu’une partie prend, avec les droits qu’elle détient, et la source qui sert chacun.',
                 synthetic: 'Synthétique',
                 syntheticBody:
                     'Les flux que la plateforme génère : ce qui tourne par fournisseur, et chaque flux à démarrer et à arrêter.',

@@ -68,6 +68,7 @@ import { GridJobPage } from './operations/GridJobPage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
 import { ServicesPage } from './operations/ServicesPage.js';
+import { MarketDataSourcesPage } from './operations/MarketDataSourcesPage.js';
 import { VersionsPage } from './operations/VersionsPage.js';
 import { RescuePage } from './pages/RescuePage.js';
 import { SecurityPage } from './pages/SecurityPage.js';
@@ -102,6 +103,7 @@ import { CurrencyPairPage, CurrencyPairsPage } from './refdata/currencyPairs.js'
 import { ConventionDocumentsPage, ConventionKindsPage } from './refdata/conventions.js';
 import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
+import { SubscriptionsPage } from './marketdata/SubscriptionsPage.js';
 import { FxFeedPage } from './marketdata/synthetic/fxFeeds.js';
 import { IrFeedPage } from './marketdata/synthetic/irFeeds.js';
 import { SyntheticScreen } from './marketdata/synthetic/SyntheticScreen.js';
@@ -564,6 +566,18 @@ export function AppRoutes({
                 )}
             />
             <Route
+                path={PATHS.marketDataSources}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <MarketDataSourcesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
                 path="/operations/grid"
                 element={signedIn(
                     gate.version,
@@ -643,6 +657,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <LogsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.subscriptions}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    (view) => (
+                        <SubscriptionsPage partyId={view.party.id} />
                     ),
                     'workspace',
                 )}

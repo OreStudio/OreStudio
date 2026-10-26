@@ -26,7 +26,7 @@ import { api, type AdapterStatus } from '../../api/client.js';
 export const ADAPTERS_KEY = ['marketdata-adapters'] as const;
 
 /** How often the screens ask again, since an adapter's state changes on its own. */
-const ADAPTERS_EVERY_MS = 5_000;
+export const ADAPTERS_EVERY_MS = 5_000;
 
 /**
  * The sources of one provider, as the market data service reports them.

@@ -433,6 +433,16 @@ export const feedRecordSchema = z.looseObject({
 export type FeedRecord = z.infer<typeof feedRecordSchema>;
 
 /**
+ * One value a provider publishes, in the vendor's own notation: an id scheme,
+ * an external id and a field.
+ */
+const vendorIdSchema = z.object({
+    id_scheme: z.string().default(''),
+    external_id: z.string().default(''),
+    field: z.string().default(''),
+});
+
+/**
  * The state of one adapter of the market data service. The state is announced,
  * ready, serving, stale or rejected, and the counts say how the universe and
  * the last demand compared.
@@ -449,11 +459,82 @@ const adapterStatusSchema = z.object({
     routes_seen: z.number(),
     ticks_last_minute: z.number(),
     last_tick_age_ms: z.number(),
-    accepted: z.array(z.unknown()),
-    rejected: z.array(z.unknown()),
+    accepted: z.array(vendorIdSchema).default([]),
+    rejected: z.array(z.object({ id: vendorIdSchema, reason: z.string().default('') })).default([]),
 });
 
 export type AdapterStatus = z.infer<typeof adapterStatusSchema>;
+
+/**
+ * A subscription: one party's entitlement to one provider's feeds, with the
+ * three rights the vendor licences name.
+ */
+const subscriptionRowSchema = z.object({
+    version: z.number(),
+    id: z.string(),
+    party_id: z.string(),
+    provider_code: z.string(),
+    display: z.boolean().default(false),
+    non_display: z.boolean().default(false),
+    derived: z.boolean().default(false),
+    modified_by: z.string().default(''),
+    performed_by: z.string().default(''),
+    change_reason_code: z.string().default(''),
+    change_commentary: z.string().default(''),
+    recorded_at: z.string().default(''),
+});
+
+export type SubscriptionRow = z.infer<typeof subscriptionRowSchema>;
+
+/**
+ * A route: the one source that serves a party for a provider. The source is
+ * named by its id, and its name and kind come from the catalogue.
+ */
+const routeRowSchema = z.object({
+    version: z.number(),
+    id: z.string(),
+    party_id: z.string(),
+    provider_code: z.string(),
+    source_id: z.string(),
+    modified_by: z.string().default(''),
+    performed_by: z.string().default(''),
+    change_reason_code: z.string().default(''),
+    change_commentary: z.string().default(''),
+    recorded_at: z.string().default(''),
+});
+
+export type RouteRow = z.infer<typeof routeRowSchema>;
+
+/** The providers and the sources a subscription and a route choose from. */
+const marketDataCatalogueSchema = z.object({
+    providers: z.array(
+        z.object({
+            code: z.string(),
+            name: z.string().default(''),
+            kind: z.string().default(''),
+            description: z.string().default(''),
+            display_order: z.number().default(0),
+        }),
+    ),
+    sources: z.array(
+        z.object({
+            id: z.string(),
+            name: z.string(),
+            provider_code: z.string(),
+            kind: z.string().default(''),
+            is_default: z.boolean().default(false),
+            description: z.string().default(''),
+        }),
+    ),
+});
+
+export type MarketDataCatalogue = z.infer<typeof marketDataCatalogueSchema>;
+
+/** One provider of the catalogue, as a selector names it. */
+export type MarketDataProvider = MarketDataCatalogue['providers'][number];
+
+/** One source of the catalogue, as a route names it. */
+export type MarketDataSource = MarketDataCatalogue['sources'][number];
 
 /** What narrows the feeds a screen lists; every part is optional. */
 export interface FeedFilter {
@@ -1881,6 +1962,93 @@ export const api = {
         return z
             .object({ adapters: z.array(adapterStatusSchema) })
             .parse(await request('/api/marketdata/adapters', { method: 'GET' })).adapters;
+    },
+
+    /** The subscriptions the session may read, each with the party that holds it. */
+    async marketDataSubscriptions(): Promise<readonly SubscriptionRow[]> {
+        return z
+            .object({ subscriptions: z.array(subscriptionRowSchema) })
+            .parse(await request('/api/marketdata/subscriptions', { method: 'GET' })).subscriptions;
+    },
+
+    /** The routes the session may read: the one source that serves each party and provider. */
+    async marketDataRoutes(): Promise<readonly RouteRow[]> {
+        return z
+            .object({ routes: z.array(routeRowSchema) })
+            .parse(await request('/api/marketdata/routes', { method: 'GET' })).routes;
+    },
+
+    /** The providers and the sources, which are what a subscription and a route choose from. */
+    async marketDataCatalogue(): Promise<MarketDataCatalogue> {
+        return marketDataCatalogueSchema.parse(
+            await request('/api/marketdata/catalogue', { method: 'GET' }),
+        );
+    },
+
+    /** Adds the session party's subscription to one provider, with the rights it holds. */
+    async addSubscription(input: {
+        readonly provider_code: string;
+        readonly display: boolean;
+        readonly non_display: boolean;
+        readonly derived: boolean;
+    }): Promise<void> {
+        await request('/api/marketdata/subscriptions', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
+    },
+
+    /** Removes the session party's subscription to a provider, at the version it was read at. */
+    async removeSubscription(
+        providerCode: string,
+        input: {
+            readonly version: number;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<void> {
+        await request(`/api/marketdata/subscriptions/${encodeURIComponent(providerCode)}`, {
+            method: 'DELETE',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({
+                version: input.version,
+                reason_code: input.reasonCode,
+                commentary: input.commentary,
+            }),
+        });
+    },
+
+    /** Adds the session party's route to one source, for one provider. */
+    async addRoute(input: {
+        readonly provider_code: string;
+        readonly source_id: string;
+    }): Promise<void> {
+        await request('/api/marketdata/routes', {
+            method: 'POST',
+            headers: JSON_HEADERS,
+            body: JSON.stringify(input),
+        });
+    },
+
+    /** Removes the session party's route for a provider, at the version it was read at. */
+    async removeRoute(
+        providerCode: string,
+        input: {
+            readonly version: number;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<void> {
+        await request(`/api/marketdata/routes/${encodeURIComponent(providerCode)}`, {
+            method: 'DELETE',
+            headers: JSON_HEADERS,
+            body: JSON.stringify({
+                version: input.version,
+                reason_code: input.reasonCode,
+                commentary: input.commentary,
+            }),
+        });
     },
 
     /**

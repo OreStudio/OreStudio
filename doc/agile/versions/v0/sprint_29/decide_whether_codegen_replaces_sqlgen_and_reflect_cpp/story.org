@@ -48,8 +48,16 @@ A decision, with measurements, on whether the generator emits raw SQL, MessagePa
 | [[id:974EC72D-5B19-4979-A9B4-3E96E732981A][Compare one repository on sqlgen, libpqxx and raw libpq]] | BACKLOG | | | Write one entity's repository three ways and measure reads, batch writes and allocations against the same database. |
 | [[id:830DD368-8670-4803-A8AA-CCEEF7820014][Compare generated JSON and MessagePack codecs with reflect-cpp]] | BACKLOG | | | Generate JSON and MessagePack codecs for a few types over yyjson and msgpack-c and compare speed and output, byte for byte, with reflect-cpp. |
 | [[id:937333B6-3A64-40A9-B53F-719CF81BB964][Write the decision and the order of the move]] | BACKLOG | | | Decide keep, replace or replace in part, from the measured results, and set out the order of the move. |
+| [[id:86F3D15C-D648-4C2D-B21F-4C5B6B19811C][Measure precompiled headers on one component]] | BACKLOG | | | Build one component without ccache with and without a precompiled header of its heaviest common headers, and compare total CPU, wall time and peak memory. |
+| [[id:B8AF1758-A400-44AA-8552-29D64A80E2E6][Measure a unity build on one component]] | BACKLOG | | | Build one component without ccache as a unity build at a few batch sizes, and compare total CPU, wall time and peak memory with the ordinary build. |
+| [[id:3017065B-2EA8-494C-823C-30387A61AA28][Measure the optimisation level of test and generated code]] | BACKLOG | | | Build one component's tests without ccache at the release level and at a lower one, and compare build time and test run time. |
 
 * Decisions
+
+- *Total build time is the measure.* The codec rewrite is weighed against
+  build-setting levers, precompiled headers, unity builds and the optimisation
+  level of tests, on the same measure, because the sample put reflect-cpp at about
+  a fifth of the total.
 
 * Out of scope
 

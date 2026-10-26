@@ -3724,6 +3724,9 @@ export const en: SourceCatalogue = {
             role: 'Role',
             party: 'Party',
             noRoles: 'No role was recorded with this trade.',
+            linkTypesFailed: 'The link types could not be read. {message}',
+            linkPickerTruncated:
+                'Showing {shown} of {total} trades; the rest wait for a search box.',
             linkTypesUnreadable:
                 'The link types cannot be read for this tenant yet, so no link can be recorded here.',
             addLink: 'Record a link',

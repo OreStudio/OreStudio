@@ -218,11 +218,18 @@ describe('the link routes', () => {
         });
     });
 
-    it('records a link against the activity the state names', async () => {
+    it('records a link against the newest state, whatever order the reply is in', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'trading.v1.trade_states.list': {
                 result: ok,
-                trade_states: [{ trade_id: TRADE, trade_activity_id: ACTIVITY, version: 2 }],
+                trade_states: [
+                    {
+                        trade_id: TRADE,
+                        trade_activity_id: '11111111-1111-4111-8111-111111111111',
+                        version: 9,
+                    },
+                    { trade_id: TRADE, trade_activity_id: ACTIVITY, version: 2 },
+                ],
             },
             'trading.v1.trade_links.put': { result: ok },
         });
@@ -239,7 +246,10 @@ describe('the link routes', () => {
         expect(written.change.write['from_trade_id']).toBe(TRADE);
         expect(written.change.write['to_trade_id']).toBe(OTHER);
         expect(written.change.write['link_type']).toBe('Hedge');
-        expect(written.change.write['trade_activity_id']).toBe(ACTIVITY);
+        // The higher version wins even though the reply lists it first.
+        expect(written.change.write['trade_activity_id']).toBe(
+            '11111111-1111-4111-8111-111111111111',
+        );
     });
 
     it('refuses a trade linked to itself', async () => {

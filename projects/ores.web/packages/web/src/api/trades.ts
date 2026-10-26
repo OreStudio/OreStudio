@@ -94,7 +94,7 @@ export interface TradeLink {
     readonly to_trade_id: string;
     readonly link_type: string;
     /** The identifier of the trade at the other end, or empty when it has none. */
-    readonly other_label?: string;
+    readonly other_label: string;
 }
 
 /** One version of the trade, newest first. */

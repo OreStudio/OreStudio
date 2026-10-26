@@ -261,7 +261,17 @@ export function registerBookingRoutes(
                 order: { field: 'version', descending: true },
             },
         );
-        const activityId = String(states[0]?.['trade_activity_id'] ?? '');
+        /*
+         * The newest state names the activity, and the newest is decided here
+         * rather than trusted to the reply's order: a read that ignores the
+         * order would otherwise record the link against an older activity, and
+         * nothing would say so.
+         */
+        const newest = states.reduce<Record<string, unknown> | undefined>((best, row) => {
+            if (best === undefined) return row;
+            return Number(row['version'] ?? 0) > Number(best['version'] ?? 0) ? row : best;
+        }, undefined);
+        const activityId = String(newest?.['trade_activity_id'] ?? '');
         if (activityId === '') {
             throw invalidRequest('The trade has no activity to record the link against.');
         }

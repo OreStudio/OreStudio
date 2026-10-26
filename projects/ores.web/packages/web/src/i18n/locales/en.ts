@@ -4081,6 +4081,7 @@ export const en: SourceCatalogue = {
             component_index: 'Index',
         },
         choices: {
+            ore_currency_type: { Major: 'Major', Metal: 'Metal', Crypto: 'Crypto' },
             report_type: { risk: 'Risk report' },
             regulatory_book_type: { Trading: 'Trading book', Banking: 'Banking book' },
             pre_processing: { execute: 'Execute', substitute: 'Substitute' },

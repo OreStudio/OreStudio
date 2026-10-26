@@ -63,6 +63,9 @@ const ORE_DOCUMENT: OreDocumentKind = {
     words: 'refdata.currencies',
 };
 
+/** The values ORE's currency configuration takes for a currency's type; the document's own enumeration, not a tenant list. */
+const ORE_CURRENCY_TYPES = ['Major', 'Metal', 'Crypto'] as const;
+
 /** The currency fields a person edits, in form order, with the names the history gives them. */
 export const CURRENCY_FIELDS: readonly FieldSpec[] = [
     {
@@ -97,11 +100,15 @@ export const CURRENCY_FIELDS: readonly FieldSpec[] = [
     {
         field: 'ore_currency_type',
         history: 'Ore Currency Type',
-        kind: { kind: 'text', max: 100 },
+        kind: { kind: 'choice', options: ORE_CURRENCY_TYPES },
         optional: true,
     },
     { field: 'spot_days', history: 'Spot Days', kind: { kind: 'int' } },
-    { field: 'day_basis', history: 'Day Basis', kind: { kind: 'text', max: 20 } },
+    {
+        field: 'day_basis',
+        history: 'Day Basis',
+        kind: { kind: 'classification', list: 'day-counter' },
+    },
     { field: 'base_precedence', history: 'Base Precedence', kind: { kind: 'int' } },
     { field: 'image_id', history: 'Image ID', kind: { kind: 'image' }, optional: true },
 ];

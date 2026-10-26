@@ -4138,6 +4138,7 @@ const fr: SourceCatalogue = {
             component_index: 'Indice',
         },
         choices: {
+            ore_currency_type: { Major: 'Majeure', Metal: 'Métal', Crypto: 'Crypto' },
             report_type: { risk: 'Rapport de risque' },
             regulatory_book_type: {
                 Trading: 'Portefeuille de négociation',

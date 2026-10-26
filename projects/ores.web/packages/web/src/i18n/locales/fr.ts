@@ -3770,6 +3770,13 @@ const fr: SourceCatalogue = {
             role: 'Rôle',
             party: 'Partie',
             noRoles: 'Aucun rôle enregistré avec cette transaction.',
+            linkTypesFailed: 'Les types de lien n’ont pas pu être lus. {message}',
+            linkPickerTruncated:
+                'Affichage de {shown} transactions sur {total} ; les autres attendent un champ de recherche.',
+            linkTypesUnreadable:
+                'Les types de lien ne sont pas encore lisibles pour ce locataire, donc aucun lien ne peut être enregistré ici.',
+            addLink: 'Enregistrer un lien',
+            addLinkSubmit: 'Enregistrer le lien',
             linksFrom: 'Liens depuis cette transaction',
             linksTo: 'Liens vers cette transaction',
             linkType: 'Lien',

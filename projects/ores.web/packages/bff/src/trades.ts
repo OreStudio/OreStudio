@@ -312,6 +312,42 @@ function registerTradePageRoute(
             }),
         ]);
 
+        /*
+         * Each link names its other end by id, and an id is not a name a person
+         * reads. The identifiers of those trades are read in one go and travel
+         * with the link, so the page shows what the desk calls them.
+         */
+        const otherIds = [
+            ...new Set(
+                [...fromLinks, ...toLinks].map((row) =>
+                    text(row['from_trade_id']) === id
+                        ? text(row['to_trade_id'])
+                        : text(row['from_trade_id']),
+                ),
+            ),
+        ].filter((other) => other !== '');
+        const labels = new Map<string, string>();
+        if (otherIds.length > 0) {
+            const found = await readAll(
+                session,
+                identifierSubjects.list_trade_identifiers_request,
+                'identifiers',
+                { filter: { trade_id_one_of: otherIds } },
+            );
+            for (const row of found) {
+                const tradeId = text(row['trade_id']);
+                const value = text(row['id_value']);
+                if (tradeId !== '' && value !== '' && !labels.has(tradeId)) {
+                    labels.set(tradeId, value);
+                }
+            }
+        }
+        const labelled = (
+            rows: readonly Record<string, unknown>[],
+            other: 'from_trade_id' | 'to_trade_id',
+        ): readonly Record<string, unknown>[] =>
+            rows.map((row) => ({ ...row, other_label: labels.get(text(row[other])) ?? '' }));
+
         const versions = await readAll(
             session,
             tradeSubjects.list_trade_versions_request,
@@ -325,7 +361,10 @@ function registerTradePageRoute(
             roles,
             booking: bookings[0] ?? null,
             ...(await readInstrument(session, text(summary['instrument_type']), id)),
-            links: { from: fromLinks, to: toLinks },
+            links: {
+                from: labelled(fromLinks, 'to_trade_id'),
+                to: labelled(toLinks, 'from_trade_id'),
+            },
             history: versions,
         };
     });

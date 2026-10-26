@@ -3751,6 +3751,13 @@ const pt: SourceCatalogue = {
             role: 'Papel',
             party: 'Parte',
             noRoles: 'Nenhum papel foi registado com esta transação.',
+            linkTypesFailed: 'Não foi possível ler os tipos de ligação. {message}',
+            linkPickerTruncated:
+                'A mostrar {shown} de {total} transações; as restantes aguardam um campo de pesquisa.',
+            linkTypesUnreadable:
+                'Os tipos de ligação ainda não são legíveis para este inquilino, por isso não é possível registar ligações aqui.',
+            addLink: 'Registar uma ligação',
+            addLinkSubmit: 'Registar a ligação',
             linksFrom: 'Ligações a partir desta transação',
             linksTo: 'Ligações para esta transação',
             linkType: 'Ligação',

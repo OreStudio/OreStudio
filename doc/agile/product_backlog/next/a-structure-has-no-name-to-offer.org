@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 2F81C4D9-6B37-4A05-8E12-97D3B5A6C048
+:END
+#+title: A structure has no name to offer
+#+description: The structure table holds a kind and a template code but no name, so a screen that asks a person to choose a structure can only show a uuid.
+#+type: capture
+#+level: cross
+#+filetags: :trading:booking:modeling:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+Booking a trade as a leg of a structure needs a structure to name, and the
+structure is chosen by a person. It cannot be:
+
+#+begin_example
+select id, kind, template_code, party_id from ores_trading_structures_tbl
+ where valid_to = ores_utility_infinity_timestamp_fn();
+-- 01a17539-… | Package | (empty) | 01a17539-…
+#+end_example
+
+There is a kind, an optional template code, and the party. No name, no
+reference. The trade list settles for the word *Structure* and a count of the
+trades it holds; a picker cannot.
+
+The member row is fine: =structure_members= carries =trade_id=,
+=structure_id=, =role= and =sequence_number=, and the role in use today is
+=leg=. The write is =trading.v1.structure_members.put=.
+
+Two ways to give a structure something to be called, and the first is smaller:
+derive one from its members and kind, such as *Package of 3* plus the first
+member's identifier, which the screen can compute without a model change; or
+give the table a name or a reference of its own, which is the model change the
+prototype's structure page probably assumed.
+
+Until one is chosen, the trade-leg acceptance criterion of *Build Book a trade*
+cannot be met by a screen, only by the shell.

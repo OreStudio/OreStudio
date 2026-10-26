@@ -15,6 +15,9 @@ import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/tr
 import { subjects as instrumentSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_instrument_protocol';
 import { subjects as operationsSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_operations_protocol';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
+import { subjects as linkSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_link_protocol';
+import { subjects as linkTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_link_type_protocol';
+import { subjects as stateSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_state_protocol';
 import { subjects as bondIssueSubjects } from '@ores/wire-protocol/generated/trading/protocol/bond_issue_protocol';
 import { invalidRequest, notPermitted } from './errors.js';
 import { HttpFailure } from './errors.js';
@@ -29,6 +32,14 @@ const bookingReason = 'system.new_record';
 
 /** The system tenant: the service stamps the caller's own over it. */
 const statedByTheService = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+
+/** The link a person records between two trades. */
+const linkBodySchema = z.object({
+    linkType: z.string().min(1).max(80),
+    otherTradeId: z.uuid(),
+});
+
+const linkParamsSchema = z.object({ id: z.uuid() });
 
 const bookingBodySchema = z.object({
     bookId: z.uuid(),
@@ -203,6 +214,87 @@ export function registerBookingRoutes(
             .sort()
             .map((code) => ({ code }));
         return { books, issues, idTypes: schemes };
+    });
+
+    /** The link types a person can record, each with the words that describe it. */
+    server.get('/api/trade-link-types', async (request) => {
+        const session = requireSession(request);
+        const rows = await readAll(
+            session,
+            linkTypeSubjects.list_trade_link_types_request,
+            'link_types',
+            { filter: null, as_of: null },
+        );
+        return {
+            rows: rows.map((row) => ({
+                code: String(row['code'] ?? ''),
+                description: String(row['description'] ?? ''),
+            })),
+        };
+    });
+
+    /**
+     * Records a link from one trade to another.
+     *
+     * A link is made by an activity, and the activity is the one that last
+     * moved the trade: the state names it, so the client does not have to know
+     * which write came last. The link type is the caller's, because whether a
+     * relationship is a hedge or a close-out is a fact about the deal.
+     */
+    server.post('/api/trades/:id/links', async (request) => {
+        const session = requireSession(request);
+        const parsed = linkParamsSchema.safeParse(request.params);
+        if (!parsed.success) {
+            throw invalidRequest('The address does not name a trade.');
+        }
+        const body = input(linkBodySchema, request.body);
+        const id = parsed.data.id;
+        if (id === body.otherTradeId) {
+            throw invalidRequest('A trade cannot be linked to itself.');
+        }
+        const states = await readAll(
+            session,
+            stateSubjects.list_trade_states_request,
+            'trade_states',
+            {
+                filter: { trade_id_one_of: [id] },
+                order: { field: 'version', descending: true },
+            },
+        );
+        /*
+         * The newest state names the activity, and the newest is decided here
+         * rather than trusted to the reply's order: a read that ignores the
+         * order would otherwise record the link against an older activity, and
+         * nothing would say so.
+         */
+        const newest = states.reduce<Record<string, unknown> | undefined>((best, row) => {
+            if (best === undefined) return row;
+            return Number(row['version'] ?? 0) > Number(best['version'] ?? 0) ? row : best;
+        }, undefined);
+        const activityId = String(newest?.['trade_activity_id'] ?? '');
+        if (activityId === '') {
+            throw invalidRequest('The trade has no activity to record the link against.');
+        }
+        const written = await session.client.callAuthenticated(
+            linkSubjects.put_trade_link_request,
+            {
+                change: {
+                    write: {
+                        from_trade_id: id,
+                        to_trade_id: body.otherTradeId,
+                        link_type: body.linkType,
+                        trade_activity_id: activityId,
+                    },
+                    precondition: mustNotExist(),
+                },
+                intent: intent(),
+            },
+            z.looseObject({ result: resultSchema }),
+        );
+        if (written.result.outcome !== 'ok') {
+            throw refusalOfBooking(written.result);
+        }
+        return { from: id, to: body.otherTradeId, linkType: body.linkType };
     });
 
     server.post('/api/trades', async (request, reply) => {

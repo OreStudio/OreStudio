@@ -124,6 +124,9 @@ via its "Verifies task" field.
 | 6 | (@claude) A failed close no longer stops the open for the same key | =usage_recorder.cpp= | Accept | =write_plan= holds back a tenant's opens when its close fails. Test first. =99b288fafb=. |
 | 7 | (@claude) The usage log reports planned counts as written | =usage_recorder.cpp= | Accept | The log reports what =write_plan= wrote, refused and held. =99b288fafb=. |
 | 8 | (@claude) The free =enrol= takes ticks an hour, the member a rate a second | =market_link.hpp= | Accept | Renamed =enrol_hourly=. =99b288fafb=. |
+| 9 | (@claude, PR #3876) =add_rate= infers enrol or release from the sign of the delta | =shared_intensity.hpp= | Decline | Private, two callers in the class; =enrol= refuses a rate that is not strictly positive, so the sign cannot be wrong. |
+| 10 | (@claude) A terminated tenant's open intervals are never closed | =usage_recorder.cpp= | Capture | Not a regression: the store refuses writes for a terminated tenant. The close belongs to the termination flow. Inbox capture filed. |
+| 11 | (@claude) Callers must handle a throw from the live-tenant read | =adapter_supervisor.cpp=, =feed_ingest_loop.cpp= | No change | The read sits inside the same =refresh()= as the route reads, so a throw takes their path; the periodic refresh catches and logs it. |
 
 * Result
 

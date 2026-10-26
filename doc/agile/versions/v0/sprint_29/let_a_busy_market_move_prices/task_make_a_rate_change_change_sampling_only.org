@@ -8,9 +8,9 @@
 #+filetags: :let_a_busy_market_move_prices:sprint_29:v0:
 #+owner: marco
 #+branch: feature/make-a-rate-change-change-sampling-only
-#+pr:
-#+blocked_on: 5AEEAC8B-5435-46FD-B9C4-250F634682D3
-#+blocked_since: 2026-10-27
+#+pr: 3894
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-10-26
 #+updated: 2026-10-27
 #+environment: prime_origin
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3894][#3894]] | [agile] Record what the rate change actually moves |
 
 * Review
 

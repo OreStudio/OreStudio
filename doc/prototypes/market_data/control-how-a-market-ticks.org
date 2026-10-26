@@ -121,6 +121,33 @@ twenty feeds.
 /Against:/ it puts the choice away from the row it belongs to, and adds a
 second place a rate is edited.
 
+* Decided: two views, not three variants
+
+The first build conflated a feed's own view with the run's. They are different
+jobs and belong in different places.
+
+- *Local, one row, in the feed's own tab.* A feed's arrival regime is edited and
+  judged in a tab of its editor, beside the Instrument, Price behaviour and
+  Provenance tabs it already has: the four fields, and a raster of that feed's
+  ticks alone — one row, at the market's current state. Nothing here changes the
+  market and nothing here shows another feed.
+- The tab is called *Arrivals*, not *Hawkes*. Two of the three modes are not
+  Hawkes, and a person on a periodic feed would read a Hawkes tab as not theirs.
+- *Global, every row, in a Market tab.* The market is a property of the run, so it
+  gets its own tab: the state in force, the multiplier, the auto/calm/active
+  switch, who pinned it and why, and the raster of every live feed. The tab sets
+  the market and reads the feeds; it edits no feed's clustering.
+
+The two tabs share one state, so pressing Calm on the Market tab changes what the
+feed's own row is drawn under — one market, read twice, rather than two pictures
+that can disagree.
+
+The third variant, a whole screen of arrivals, is what the Market tab now is, so
+it is gone rather than left as a shape that duplicates it.
+
+The two views never do the same job, which is the test to hold them to: if a
+control can be moved from one to the other without loss, it is in the wrong one.
+
 * Decided: B, rebuilt
 
 The panel is the chosen shape, and the first build of it was wrong twice over.
@@ -152,7 +179,7 @@ the clustering is one feed's, so it is not the panel's.
 
 * What to prototype next
 
-Built. The page carries the three shapes, and B is the one that now shows the
+Built. The page carries the two views, and the second is the one that shows the
 market: the tree on the left, the market in the middle with its Simple and
 Advanced switch and the raster of every feed's ticks, and the by-sensitivity list
 on the right.

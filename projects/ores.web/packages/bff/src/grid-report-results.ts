@@ -500,7 +500,7 @@ export function comparedWith(
     return rows;
 }
 
-/** The sums of a set of rows, each currency apart, stated at a depth. */
+/** A group row summing its children, stated at a depth. */
 function nodeOf(
     key: string,
     name: string,
@@ -552,10 +552,14 @@ export function withPortfolioTree(
     for (const portfolio of [...booksUnder.keys()]) {
         let parent = portfolioParent.get(portfolio) ?? '';
         while (parent !== '' && !nodeIds.has(parent)) {
+            if ((portfolioName.get(parent) ?? '') === '') {
+                parent = '';
+                break;
+            }
             nodeIds.add(parent);
             parent = portfolioParent.get(parent) ?? '';
         }
-        if (parent !== '') {
+        if (parent !== '' && (portfolioName.get(parent) ?? '') !== '') {
             nodeIds.add(parent);
         }
     }
@@ -570,7 +574,9 @@ export function withPortfolioTree(
         const own = [...(booksUnder.get(id) ?? [])].sort(
             (left, right) => figureOf(right) - figureOf(left),
         );
-        const children = [...(childrenOf.get(id) ?? [])].map((child) => build(child, depth + 1));
+        const children = [...(childrenOf.get(id) ?? [])]
+            .map((child) => build(child, depth + 1))
+            .sort((left, right) => figureOf(right.node) - figureOf(left.node));
         const node = nodeOf(
             id,
             portfolioName.get(id) ?? id,

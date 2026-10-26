@@ -71,6 +71,26 @@ $$ language plpgsql
     security definer
     set search_path = public, pg_temp;
 
+-- The ids of the tenants a write may name: those ores_iam_validate_tenant_fn
+-- accepts, active or bootstrapping in their current version. A service that
+-- reads across tenants uses it to leave out the tenants whose writes would fail.
+--
+-- SECURITY DEFINER for the same reason as ores_iam_validate_tenant_fn: the
+-- calling service must not need SELECT on ores_iam_tenants_tbl.
+create or replace function ores_iam_live_tenant_ids_fn()
+returns table (id uuid) as $$
+begin
+    return query
+    select t.id
+    from ores_iam_tenants_tbl t
+    where t.status in ('active', 'bootstrapping')
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+end;
+$$ language plpgsql
+    stable
+    security definer
+    set search_path = public, pg_temp;
+
 -- Lookup tenant by hostname (used during login)
 -- SECURITY DEFINER required to bypass RLS when looking up tenants before login
 create or replace function ores_iam_tenant_by_hostname_fn(

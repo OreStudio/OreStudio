@@ -21,7 +21,9 @@
 #include "ores.marketdata.api/domain/delivery_count.hpp"
 #include "ores.marketdata.core/repository/delivery_count_repository.hpp"
 #include "ores.marketdata.core/repository/demand_interval_repository.hpp"
+#include "ores.marketdata.core/repository/live_tenant_repository.hpp"
 #include "ores.marketdata.core/repository/subscription_interval_repository.hpp"
+#include "ores.marketdata.service/app/live_tenants.hpp"
 #include "ores.marketdata.service/app/usage_planner.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <map>
@@ -37,16 +39,29 @@ constexpr auto service_name = "ores.marketdata.service";
 /// The number of waiting counts beyond which a store that is down is reported.
 constexpr std::size_t pending_warning_limit = 100000;
 
-template <typename Interval, typename Repo>
-void apply(const ores::database::context& ctx, const interval_plan<Interval>& plan) {
-    // A close is the next version of the row that was open, so it goes first and a failure to
-    // open does not leave the old interval open.
-    for (const auto& i : plan.to_close)
-        Repo{}.write(ctx.with_tenant(i.tenant_id, service_name), i);
-    for (const auto& i : plan.to_open)
-        Repo{}.write(ctx.with_tenant(i.tenant_id, service_name), i);
+template <typename Interval, typename Repo, typename Logger>
+void write_each(const ores::database::context& ctx,
+                const std::vector<Interval>& intervals,
+                Logger& log) {
+    // One interval that cannot be written leaves the others to be written. The next sync plans
+    // it again from what the store holds.
+    for (const auto& i : intervals) {
+        try {
+            Repo{}.write(ctx.with_tenant(i.tenant_id, service_name), i);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(log, error) << "Failed to record a usage interval of tenant "
+                                      << i.tenant_id << ": " << e.what();
+        }
+    }
 }
 
+template <typename Interval, typename Repo, typename Logger>
+void apply(const ores::database::context& ctx, const interval_plan<Interval>& plan, Logger& log) {
+    // A close is the next version of the row that was open, so it goes first and a failure to
+    // open does not leave the old interval open.
+    write_each<Interval, Repo>(ctx, plan.to_close, log);
+    write_each<Interval, Repo>(ctx, plan.to_open, log);
+}
 }
 
 usage_recorder::usage_recorder(ores::database::context ctx, std::shared_ptr<delivery_meter> meter)
@@ -72,20 +87,23 @@ void usage_recorder::sync(const demand_catalogue& catalogue,
                           std::chrono::system_clock::time_point now) {
     std::lock_guard lock(sync_mu_);
     try {
+        const auto live = repository::live_tenant_repository{}.read(ctx_);
         const auto open_subscriptions = [&] {
             auto rows =
                 repository::subscription_interval_repository{}.read_latest_all_tenants(ctx_);
             std::erase_if(rows, [](const auto& r) { return r.interval_to.has_value(); });
+            keep_live_tenants(rows, live);
             return rows;
         }();
         const auto subscription_plan = plan_subscription_intervals(
             subscription_states(catalogue), open_subscriptions, now, ctx_.service_account());
         apply<domain::subscription_interval, repository::subscription_interval_repository>(
-            ctx_, subscription_plan);
+            ctx_, subscription_plan, lg());
 
         const auto open_demand = [&] {
             auto rows = repository::demand_interval_repository{}.read_latest_all_tenants(ctx_);
             std::erase_if(rows, [](const auto& r) { return r.interval_to.has_value(); });
+            keep_live_tenants(rows, live);
             return rows;
         }();
         const auto demand_plan =
@@ -93,7 +111,8 @@ void usage_recorder::sync(const demand_catalogue& catalogue,
                                   open_demand,
                                   now,
                                   ctx_.service_account());
-        apply<domain::demand_interval, repository::demand_interval_repository>(ctx_, demand_plan);
+        apply<domain::demand_interval, repository::demand_interval_repository>(
+            ctx_, demand_plan, lg());
 
         BOOST_LOG_SEV(lg(), info) << "Usage intervals: " << subscription_plan.to_open.size()
                                   << " subscription opened, " << subscription_plan.to_close.size()

@@ -81,6 +81,24 @@
     "unit_type_code": "COST_CENTRE"
   },
   {
+    "company_code": "acme_uk",
+    "id": "1e75c5a6-8cfd-59ec-8f84-cead916284ae",
+    "unit_name": "Financial Control London",
+    "unit_code": "acme_uk.financial_control",
+    "parent_business_unit_code": null,
+    "business_centre_code": "GBLO",
+    "unit_type_code": "COST_CENTRE"
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "48ccb104-7200-5a6b-b018-682308e37f8a",
+    "unit_name": "Finance London",
+    "unit_code": "acme_uk.finance",
+    "parent_business_unit_code": null,
+    "business_centre_code": "GBLO",
+    "unit_type_code": "COST_CENTRE"
+  },
+  {
     "company_code": "acme_us",
     "id": "4951bc79-5e32-5677-ad77-77deea521a90",
     "unit_name": "Global Markets",
@@ -144,6 +162,24 @@
     "unit_type_code": "COST_CENTRE"
   },
   {
+    "company_code": "acme_us",
+    "id": "b98a9dfe-f2d1-5a1d-b75e-048c3f99353c",
+    "unit_name": "Financial Control New York",
+    "unit_code": "acme_us.financial_control",
+    "parent_business_unit_code": null,
+    "business_centre_code": "USNY",
+    "unit_type_code": "COST_CENTRE"
+  },
+  {
+    "company_code": "acme_us",
+    "id": "cdad5153-84d2-5489-b414-0a7dd8491914",
+    "unit_name": "Finance New York",
+    "unit_code": "acme_us.finance",
+    "parent_business_unit_code": null,
+    "business_centre_code": "USNY",
+    "unit_type_code": "COST_CENTRE"
+  },
+  {
     "company_code": "acme_hk",
     "id": "87610f63-6cca-525a-b311-65b163df00ed",
     "unit_name": "Global Markets",
@@ -202,6 +238,24 @@
     "id": "fe95e779-6356-5cab-bcfd-2ef6de13274f",
     "unit_name": "Market Risk Hong Kong",
     "unit_code": "acme_hk.market_risk",
+    "parent_business_unit_code": null,
+    "business_centre_code": "HKHK",
+    "unit_type_code": "COST_CENTRE"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "08d4b3ff-54a0-5971-9e5a-68a11ef3ab3c",
+    "unit_name": "Financial Control Hong Kong",
+    "unit_code": "acme_hk.financial_control",
+    "parent_business_unit_code": null,
+    "business_centre_code": "HKHK",
+    "unit_type_code": "COST_CENTRE"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "49d86976-998d-542f-b95f-fab54a0cebce",
+    "unit_name": "Finance Hong Kong",
+    "unit_code": "acme_hk.finance",
     "parent_business_unit_code": null,
     "business_centre_code": "HKHK",
     "unit_type_code": "COST_CENTRE"

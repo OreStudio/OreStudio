@@ -5478,6 +5478,13 @@ export const en: SourceCatalogue = {
             errors: "Read this run's errors",
         },
         results: {
+            was: 'Earlier run',
+            compareTo: 'Compare to',
+            noComparison: 'No comparison',
+            change: 'Change',
+            changePct: 'Change %',
+            changeAgainst: 'Change against that run',
+            gone: 'gone',
             runTagOne: '{count} trade · priced {date}',
             runTagMany: '{count} trades · priced {date}',
             oneRowPer: {

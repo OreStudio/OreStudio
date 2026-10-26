@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 1379A7DF-8755-4314-A564-B4771A4C1B5F
+:END:
+#+title: Task: Compare a run with an earlier one
+#+description: A run's aggregate levels can be stated against an earlier completed run of the same report, with each row's change and share.
+#+type: task
+#+level: s1
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr: 3889
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reader sees whether a book or a counterparty moved since the last run, and by how much.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-26                               |
+
+* Acceptance
+
+- A control offers the completed runs of the same report, and none by default.
+- The chosen run is in the address, so a refresh and a shared link keep it.
+- Each row states what it was and the change against it, with the share where the earlier figure was not zero.
+- A row only the earlier run had is kept and marked as gone.
+- The totals line states the change against the earlier run.
+- A run of another report is refused as a comparison.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3889][#3889]] | [web] Compare a run with an earlier one |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A run's book and counterparty levels can be stated against an earlier run of the
+same report.
+
+A *Compare to* control offers the report's completed runs and no comparison by
+default. The chosen run sits in the address as =?baseline=, so a refresh keeps it
+and a colleague can be sent the comparison. Each row then states the change and
+the change as a share of the earlier figure, the totals line states the change
+against the run, and a row only the earlier run had is kept and marked as gone
+rather than dropped.
+
+The comparison is refused when the run named is a run of another report, when it
+is the run itself, and when it has not completed; it is offered only at the
+aggregate levels, because a trade is read on its own. A row only the earlier run
+had stays beside its group rather than trailing the table, and carries a gone tag.
+The totals line states the earlier run's figure, the change and the share.
+
+The review asked for the last two: the page had the data but drew neither, so a
+gone row looked like a row that fell to zero.
+
+The two runs on record are =c2a86671= against =71d08bde=, on the NPV definition
+of ACME Corporation HK Ltd. Both priced the same data, so the book states
+=33,709,129.46= HKD either side of the comparison and a change of =0.00=: the
+control is proven, not the arithmetic.

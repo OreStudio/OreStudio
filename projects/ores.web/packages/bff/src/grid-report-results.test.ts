@@ -20,7 +20,13 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { aggregateRows, entriesOf, rowsOf, withCounterpartyGroups } from './grid-report-results.js';
+import {
+    aggregateRows,
+    comparedWith,
+    entriesOf,
+    rowsOf,
+    withCounterpartyGroups,
+} from './grid-report-results.js';
 import type { AggregateRow, RunResultRow } from './grid-report-results.js';
 
 /*
@@ -364,5 +370,178 @@ describe('withCounterpartyGroups, the group ordering', () => {
         );
 
         expect(rows.every((row) => !row.is_group)).toBe(true);
+    });
+});
+
+describe('comparedWith', () => {
+    const aggregate = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'b1',
+        name: 'Book One',
+        trades: 2,
+        totals: [{ currency: 'GBP', total: '150.00' }],
+        notional: [{ currency: 'GBP', total: '3000.00' }],
+        group: '',
+        is_group: false,
+        previous: [],
+        change: [],
+        change_pct: [],
+        is_removed: false,
+        ...over,
+    });
+
+    it('states each row against the earlier run, and a new row against nothing', () => {
+        const rows = comparedWith(
+            [
+                aggregate({ key: 'b1', totals: [{ currency: 'GBP', total: '150.00' }] }),
+                aggregate({ key: 'b2', name: 'New Book' }),
+            ],
+            [aggregate({ key: 'b1', totals: [{ currency: 'GBP', total: '100.00' }] })],
+        );
+
+        const book = rows.find((row) => row.key === 'b1');
+        expect(book?.previous).toEqual([{ currency: 'GBP', total: '100.00' }]);
+        expect(book?.change).toEqual([{ currency: 'GBP', total: '50.00' }]);
+        expect(book?.change_pct).toEqual([{ currency: 'GBP', total: '50.00' }]);
+
+        const fresh = rows.find((row) => row.key === 'b2');
+        expect(fresh?.previous).toEqual([]);
+        expect(fresh?.change_pct).toEqual([{ currency: 'GBP', total: '' }]);
+    });
+
+    it('keeps a row only the earlier run had, marked as gone', () => {
+        const rows = comparedWith(
+            [aggregate({ key: 'b1' })],
+            [
+                aggregate({ key: 'b1' }),
+                aggregate({
+                    key: 'b9',
+                    name: 'Closed Book',
+                    totals: [{ currency: 'GBP', total: '40.00' }],
+                }),
+            ],
+        );
+
+        const gone = rows.find((row) => row.key === 'b9');
+        expect(gone?.is_removed).toBe(true);
+        expect(gone?.trades).toBe(0);
+        expect(gone?.totals).toEqual([]);
+        expect(gone?.notional).toEqual([]);
+        expect(gone?.previous).toEqual([{ currency: 'GBP', total: '40.00' }]);
+        expect(gone?.change).toEqual([{ currency: 'GBP', total: '-40.00' }]);
+    });
+});
+
+describe('comparedWith, the rows only the earlier run had', () => {
+    const aggregate = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'c1',
+        name: 'First',
+        trades: 1,
+        totals: [{ currency: 'GBP', total: '100.00' }],
+        notional: [{ currency: 'GBP', total: '1000.00' }],
+        group: '',
+        is_group: false,
+        previous: [],
+        change: [],
+        change_pct: [],
+        is_removed: false,
+        ...over,
+    });
+
+    it('keeps a removed member beside its group rather than at the end', () => {
+        const rows = comparedWith(
+            [
+                aggregate({ key: 'p1', name: 'The Group', is_group: true }),
+                aggregate({ key: 'c1', name: 'First', group: 'The Group' }),
+                aggregate({ key: 'p2', name: 'Other Group', is_group: true }),
+                aggregate({ key: 'c2', name: 'Second', group: 'Other Group' }),
+            ],
+            [
+                aggregate({ key: 'p1', name: 'The Group', is_group: true }),
+                aggregate({ key: 'c1', name: 'First', group: 'The Group' }),
+                aggregate({ key: 'c3', name: 'Gone Member', group: 'The Group' }),
+                aggregate({ key: 'p2', name: 'Other Group', is_group: true }),
+                aggregate({ key: 'c2', name: 'Second', group: 'Other Group' }),
+            ],
+        );
+
+        const index = rows.findIndex((row) => row.key === 'c3');
+        expect(rows[index]?.is_removed).toBe(true);
+        expect(rows[index - 1]?.key).toBe('c1');
+        expect(rows[index + 1]?.key).toBe('p2');
+    });
+});
+
+describe('comparedWith, currencies in a different order', () => {
+    const aggregate = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'b1',
+        name: 'Book One',
+        trades: 1,
+        totals: [],
+        notional: [],
+        group: '',
+        is_group: false,
+        previous: [],
+        change: [],
+        change_pct: [],
+        is_removed: false,
+        ...over,
+    });
+
+    it('states each currency against its own earlier figure', () => {
+        const rows = comparedWith(
+            [
+                aggregate({
+                    totals: [
+                        { currency: 'USD', total: '200.00' },
+                        { currency: 'GBP', total: '150.00' },
+                    ],
+                }),
+            ],
+            [aggregate({ totals: [{ currency: 'GBP', total: '100.00' }] })],
+        );
+
+        const row = rows[0];
+        const changeFor = (currency: string): string | undefined =>
+            row?.change.find((money) => money.currency === currency)?.total;
+        expect(changeFor('GBP')).toBe('50.00');
+        expect(changeFor('USD')).toBe('200.00');
+        expect(row?.change_pct.find((money) => money.currency === 'GBP')?.total).toBe('50.00');
+    });
+});
+
+describe('comparedWith, a group that disappeared', () => {
+    const aggregate = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'c1',
+        name: 'First',
+        trades: 1,
+        totals: [{ currency: 'GBP', total: '100.00' }],
+        notional: [{ currency: 'GBP', total: '1000.00' }],
+        group: '',
+        is_group: false,
+        previous: [],
+        change: [],
+        change_pct: [],
+        is_removed: false,
+        ...over,
+    });
+
+    it('keeps a removed roll-up above the members it lost', () => {
+        const rows = comparedWith(
+            [
+                aggregate({ key: 'p2', name: 'Other Group', is_group: true }),
+                aggregate({ key: 'c2', name: 'Second', group: 'Other Group' }),
+            ],
+            [
+                aggregate({ key: 'p1', name: 'Gone Group', is_group: true }),
+                aggregate({ key: 'c1', name: 'First', group: 'Gone Group' }),
+                aggregate({ key: 'p2', name: 'Other Group', is_group: true }),
+                aggregate({ key: 'c2', name: 'Second', group: 'Other Group' }),
+            ],
+        );
+
+        const rollUp = rows.findIndex((row) => row.key === 'p1');
+        expect(rows[rollUp]?.is_removed).toBe(true);
+        expect(rows[rollUp + 1]?.key).toBe('c1');
+        expect(rows[rollUp + 1]?.is_removed).toBe(true);
     });
 });

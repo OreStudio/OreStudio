@@ -5521,6 +5521,13 @@ const pt: SourceCatalogue = {
             errors: 'Ler os erros desta execução',
         },
         results: {
+            was: 'Execução anterior',
+            compareTo: 'Comparar com',
+            noComparison: 'Sem comparação',
+            change: 'Variação',
+            changePct: 'Variação %',
+            changeAgainst: 'Variação face a essa execução',
+            gone: 'desaparecida',
             runTagOne: '{count} transação · avaliada em {date}',
             runTagMany: '{count} transações · avaliadas em {date}',
             oneRowPer: {

@@ -46,6 +46,7 @@ import type { LiveSession } from './sessions.js';
 const runParamsSchema = z.object({ id: z.uuid() });
 const resultsQuerySchema = z.object({
     by: z.enum(['trade', 'book', 'counterparty']).default('trade'),
+    baseline: z.uuid().optional(),
 });
 
 /** The levels a result can be read at. */
@@ -83,6 +84,14 @@ export interface AggregateRow {
     readonly group: string;
     /** Whether the row is a group's roll-up rather than a member of one. */
     readonly is_group: boolean;
+    /** What this row was in the run it is compared with. */
+    readonly previous: readonly Money[];
+    /** The change against that run, each currency apart. */
+    readonly change: readonly Money[];
+    /** The change as a share of the earlier figure, empty when it had none. */
+    readonly change_pct: readonly Money[];
+    /** Whether the row is only in the earlier run. */
+    readonly is_removed: boolean;
 }
 
 /** Why a report has no rows to show. */
@@ -102,6 +111,16 @@ interface AggregateAnswer {
     readonly totals: readonly Money[];
     readonly reason: ResultReason;
     readonly recordsComplete: boolean;
+    /** The run this answer is compared with, empty when it is compared with none. */
+    readonly baseline: BaselineSummary | null;
+}
+
+/** The run a comparison is against. */
+export interface BaselineSummary {
+    readonly id: string;
+    readonly totals: readonly Money[];
+    readonly change: readonly Money[];
+    readonly change_pct: readonly Money[];
 }
 
 export type ResultsAnswer = TradeAnswer | AggregateAnswer;
@@ -346,6 +365,91 @@ function totalsOf(
     }));
 }
 
+/** The change between two sets of figures, each currency apart. */
+function changeBetween(
+    current: readonly Money[],
+    previous: readonly Money[],
+): { change: readonly Money[]; pct: readonly Money[] } {
+    const currencies = [
+        ...new Set([
+            ...current.map((money) => money.currency),
+            ...previous.map((money) => money.currency),
+        ]),
+    ];
+    // A total that cannot be read counts as no figure, so a malformed row does
+    // not look like a figure that moved.
+    const figureIn = (money: readonly Money[], currency: string): number => {
+        const found = money.find((entry) => entry.currency === currency);
+        const figure = found === undefined ? Number.NaN : Number.parseFloat(found.total);
+        return Number.isFinite(figure) ? figure : 0;
+    };
+    const change: Money[] = [];
+    const pct: Money[] = [];
+    for (const currency of currencies) {
+        const now = figureIn(current, currency);
+        const before = figureIn(previous, currency);
+        change.push({ currency, total: (now - before).toFixed(2) });
+        pct.push({
+            currency,
+            total: before === 0 ? '' : (((now - before) / Math.abs(before)) * 100).toFixed(2),
+        });
+    }
+    return { change, pct };
+}
+
+/**
+ * The rows stated against an earlier run of the same report.
+ *
+ * A row the earlier run did not have carries no earlier figure, and a row only
+ * the earlier run had is kept and marked, so a book or a name that stopped
+ * appearing is read as gone rather than silently dropped.
+ */
+export function comparedWith(
+    current: readonly AggregateRow[],
+    earlier: readonly AggregateRow[],
+): readonly AggregateRow[] {
+    const before = new Map(earlier.map((row) => [row.key, row]));
+    const rows = current.map((row) => {
+        const was = before.get(row.key);
+        const previous = was?.totals ?? [];
+        const { change, pct } = changeBetween(row.totals, previous);
+        return { ...row, previous, change, change_pct: pct };
+    });
+    const keys = new Set(current.map((row) => row.key));
+    for (const row of earlier) {
+        if (keys.has(row.key)) {
+            continue;
+        }
+        const { change, pct } = changeBetween([], row.totals);
+        // A removed row states what it was, not figures that look current, so it
+        // cannot be read as a book that still holds trades.
+        const removed = {
+            ...row,
+            trades: 0,
+            totals: [],
+            notional: [],
+            previous: row.totals,
+            change,
+            change_pct: pct,
+            is_removed: true,
+        };
+        // A removed row stays with its group rather than trailing the table, so a
+        // group and the names under it keep reading together.
+        const anchor =
+            removed.group !== ''
+                ? rows.findLastIndex((entry) => entry.group === removed.group)
+                : removed.is_group
+                  ? rows.findLastIndex((entry) => entry.key === removed.key)
+                  : -1;
+        if (anchor === -1) {
+            rows.push(removed);
+        } else {
+            rows.splice(anchor + 1, 0, removed);
+        }
+    }
+    return rows;
+}
+
 /** One figure of a set of rows, each currency added apart. */
 function moneyOf(
     rows: readonly AggregateRow[],
@@ -409,6 +513,10 @@ export function withCounterpartyGroups(
                 notional: moneyOf(children, (row) => row.notional),
                 group: '',
                 is_group: true,
+                previous: [],
+                change: [],
+                change_pct: [],
+                is_removed: false,
             };
             return { group, ordered };
         })
@@ -440,6 +548,10 @@ export function aggregateRows(
             trades: members.length,
             group: '',
             is_group: false,
+            previous: [],
+            change: [],
+            change_pct: [],
+            is_removed: false,
             totals: totalsOf(members, (row) => ({
                 amount: row.npv,
                 currency: row.npv_currency,
@@ -554,6 +666,43 @@ async function resultsOfKey(
         totals,
         reason: read.reason,
         recordsComplete: read.recordsComplete,
+        baseline: null,
+    };
+}
+
+/**
+ * The answer for a level, stated against an earlier run of the same report.
+ *
+ * The two runs are read at the same level and compared row by row. A level that
+ * is not an aggregate is not compared, because a trade is read on its own.
+ */
+async function comparedOfKey(
+    session: LiveSession,
+    key: string,
+    baselineKey: string,
+    level: 'book' | 'counterparty',
+    baselineId: string,
+): Promise<AggregateAnswer> {
+    const [current, earlier] = await Promise.all([
+        resultsOfKey(session, key, level),
+        resultsOfKey(session, baselineKey, level),
+    ]);
+    if (current.level === 'trade' || earlier.level === 'trade') {
+        throw new Error('a trade level is not compared');
+    }
+    const { change, pct } = changeBetween(current.totals, earlier.totals);
+    return {
+        level,
+        rows: comparedWith(current.rows, earlier.rows),
+        totals: current.totals,
+        reason: current.reason,
+        recordsComplete: current.recordsComplete,
+        baseline: {
+            id: baselineId,
+            totals: earlier.totals,
+            change,
+            change_pct: pct,
+        },
     };
 }
 
@@ -608,7 +757,38 @@ export function registerGridReportResultsRoutes(
                 totals: [],
                 reason: 'no-run',
                 recordsComplete: true,
+                baseline: null,
             };
+        }
+        if (query.data.baseline !== undefined && query.data.by !== 'trade') {
+            if (query.data.baseline === parsed.data.id) {
+                throw invalidRequest('A run is not compared with itself.');
+            }
+            const earlierRun = await readRun(session, query.data.baseline);
+            if (earlierRun === null) {
+                throw invalidRequest('The run compared with does not exist.');
+            }
+            if (text(earlierRun['definition_id']) !== text(run['definition_id'])) {
+                throw invalidRequest('The run compared with is a run of another report.');
+            }
+            const earlierStates = await readStates(session, [query.data.baseline]);
+            if (earlierStates.get(query.data.baseline) !== 'completed') {
+                throw invalidRequest('The run compared with has not completed.');
+            }
+            const compared = await comparedOfKey(
+                session,
+                text(run['output_storage_key']),
+                text(earlierRun['output_storage_key']),
+                query.data.by,
+                query.data.baseline,
+            );
+            request.log.info(
+                'reporting results: run %s compared with %s at the %s level',
+                parsed.data.id,
+                query.data.baseline,
+                query.data.by,
+            );
+            return compared;
         }
         const answer = await resultsOfKey(session, text(run['output_storage_key']), query.data.by);
         if (!answer.recordsComplete) {

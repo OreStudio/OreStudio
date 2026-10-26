@@ -4411,6 +4411,18 @@ const pt: SourceCatalogue = {
             sharedWarningBody:
                 'Existem uma só vez para o inquilino, e uma alteração aplica-se a todas as partes.',
             sharedDocuments: 'Todas as partes leem estes documentos.',
+            record: {
+                kind: 'O que é este tipo',
+                code: 'Código',
+                oreElement: 'Elemento ORE',
+                noElement: 'Ausente do documento de convenções do ORE',
+                terms: 'Termos',
+                termsLead:
+                    'Os termos desta convenção: o valor de cada um, ou o valor por omissão que o ORE usa, e o que significa.',
+                notFound: 'Esta convenção não existe.',
+                readFailed: 'Não foi possível ler a convenção. {message}',
+                shared: 'Todas as partes leem esta convenção. É detida uma única vez para o inquilino.',
+            },
             search: 'Pesquisar tipos',
             assetClass: 'Classe de ativos',
             allClasses: 'Todas as classes de ativos',
@@ -5819,6 +5831,19 @@ const pt: SourceCatalogue = {
         cancel: 'Cancelar',
     },
     oreParameter: {
+        mode: {
+            label: 'Nível de detalhe',
+            simpleHelp: 'O rótulo, o valor e o seu significado.',
+            advancedHelp: 'Também o caminho XML ORE, o formato, as opções e as versões.',
+        },
+        showAllDocumentation: 'Mostrar toda a documentação',
+        hideAllDocumentation: 'Ocultar toda a documentação',
+        required: 'Obrigatório',
+        nouns: {
+            parameters: 'parâmetros',
+            settings: 'definições',
+            terms: 'termos',
+        },
         documentation: 'Documentação',
         hideDocumentation: 'Ocultar documentação',
         undocumented: 'Não há documentação para {name}.',
@@ -5833,6 +5858,7 @@ const pt: SourceCatalogue = {
             set: 'Definido nesta configuração',
             numbers: 'Altera os números',
             shown: '{shown} de {total} apresentados',
+            none: 'Nenhum elemento corresponde aos filtros.',
         },
     },
 };

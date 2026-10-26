@@ -28,7 +28,7 @@ import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { TERM_SPECS } from '../journeys/conventionsState.js';
-import { conventionPath, PATHS } from '../shell/paths.js';
+import { conventionDocumentPath, conventionPath, PATHS } from '../shell/paths.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { WorkflowMenu } from '../shell/WorkflowMenu.js';
 import { AccessMark } from '../ui/AccessMark.js';
@@ -483,6 +483,7 @@ export function ConventionDocumentsPage(): ReactNode {
             })}
             crumbs={crumbs}
             keyOf={(row) => row.id}
+            pathOf={(row) => conventionDocumentPath(family, row.id, String(row['party_id'] ?? ''))}
             notes={
                 card.shared
                     ? [

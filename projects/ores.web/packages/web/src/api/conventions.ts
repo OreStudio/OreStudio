@@ -121,6 +121,83 @@ const rowSchema = z.looseObject({
     version: z.int(),
 }) as unknown as z.ZodType<ConventionRow>;
 
+/** One term of a convention: its value and the documentation entry the contract holds for it. */
+export interface ConventionTerm {
+    readonly entity: string;
+    readonly column: string;
+    /** The element ORE reads the value from, such as FixedCalendar. */
+    readonly ore: string;
+    readonly xpath: string;
+    /** The value the convention holds; null when it leaves the term out. */
+    readonly value: string | null;
+    readonly documented: boolean;
+    readonly required: boolean;
+    readonly label: string;
+    readonly help: string;
+    readonly description: string;
+    readonly defaultText: string;
+    readonly format: string;
+    readonly introducedIn: string;
+    readonly removedIn: string;
+    /** How the term's value set states its values: enumerated, catalogue, boolean, a type or none. */
+    readonly sourceKind: string;
+    readonly choices: readonly { readonly value: string; readonly label: string }[];
+}
+
+/** One convention as its record page draws it: the kind it is, and its terms. */
+export interface ConventionDocument {
+    readonly family: string;
+    readonly id: string;
+    readonly shared: boolean;
+    readonly kind: {
+        readonly code: string;
+        readonly name: string;
+        readonly description: string;
+        readonly assetClass: string | null;
+        readonly oreElement: string | null;
+    };
+    readonly version: number | null;
+    readonly modifiedBy: string;
+    readonly recordedAt: string;
+    readonly terms: readonly ConventionTerm[];
+}
+
+const termSchema = z.object({
+    entity: z.string(),
+    column: z.string(),
+    ore: z.string(),
+    xpath: z.string(),
+    value: z.string().nullable(),
+    documented: z.boolean(),
+    required: z.boolean(),
+    label: z.string(),
+    help: z.string(),
+    description: z.string(),
+    defaultText: z.string(),
+    format: z.string(),
+    introducedIn: z.string(),
+    removedIn: z.string(),
+    sourceKind: z.string(),
+    choices: z.array(z.object({ value: z.string(), label: z.string() })),
+});
+
+const documentSchema = z.object({
+    family: z.string(),
+    id: z.string(),
+    shared: z.boolean(),
+    kind: z.object({
+        code: z.string(),
+        name: z.string(),
+        description: z.string(),
+        assetClass: z.string().nullable(),
+        oreElement: z.string().nullable(),
+    }),
+    version: z.int().nullable(),
+    modifiedBy: z.string(),
+    recordedAt: z.string(),
+    terms: z.array(termSchema),
+});
+
 function rowsOf<Row>(): z.ZodType<readonly Row[]> {
     return z.array(z.looseObject({})) as unknown as z.ZodType<readonly Row[]>;
 }
@@ -157,6 +234,17 @@ export const conventions = {
             await request(`/api/conventions/${encodeURIComponent(family)}${query}`, {
                 method: 'GET',
             }),
+        );
+    },
+
+    /** One convention with the kind it is and its terms, each documented from the contract. */
+    async document(family: string, id: string, party?: string): Promise<ConventionDocument> {
+        const query = party === undefined ? '' : `?party=${encodeURIComponent(party)}`;
+        return documentSchema.parse(
+            await request(
+                `/api/conventions/${encodeURIComponent(family)}/documents/${encodeURIComponent(id)}${query}`,
+                { method: 'GET' },
+            ),
         );
     },
 

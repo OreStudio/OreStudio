@@ -4440,6 +4440,18 @@ const fr: SourceCatalogue = {
             sharedWarningBody:
                 'Elles sont conservées une seule fois pour le locataire, et une modification s’applique à toutes les parties.',
             sharedDocuments: 'Toutes les parties lisent ces documents.',
+            record: {
+                kind: "Ce qu'est cette nature",
+                code: 'Code',
+                oreElement: 'Élément ORE',
+                noElement: "Absent du document des conventions d'ORE",
+                terms: 'Termes',
+                termsLead:
+                    "Les termes de cette convention : la valeur de chacun, ou la valeur par défaut qu'ORE utilise, et ce qu'il signifie.",
+                notFound: "Cette convention n'existe pas.",
+                readFailed: "La convention n'a pas pu être lue. {message}",
+                shared: 'Toutes les parties lisent cette convention. Elle est détenue une seule fois pour le locataire.',
+            },
             search: 'Rechercher un type',
             assetClass: 'Classe d’actifs',
             allClasses: 'Toutes les classes d’actifs',
@@ -5857,6 +5869,19 @@ const fr: SourceCatalogue = {
         cancel: 'Annuler',
     },
     oreParameter: {
+        mode: {
+            label: 'Niveau de détail',
+            simpleHelp: 'Le libellé, la valeur et sa signification.',
+            advancedHelp: 'Aussi le chemin XML ORE, le format, les options et les versions.',
+        },
+        showAllDocumentation: 'Afficher toute la documentation',
+        hideAllDocumentation: 'Masquer toute la documentation',
+        required: 'Obligatoire',
+        nouns: {
+            parameters: 'paramètres',
+            settings: 'réglages',
+            terms: 'termes',
+        },
         documentation: 'Documentation',
         hideDocumentation: 'Masquer la documentation',
         undocumented: "Aucune documentation n'est disponible pour {name}.",
@@ -5871,6 +5896,7 @@ const fr: SourceCatalogue = {
             set: 'Défini dans cette configuration',
             numbers: 'Modifie les nombres',
             shown: '{shown} sur {total} affichés',
+            none: 'Aucun élément ne correspond aux filtres.',
         },
     },
 };

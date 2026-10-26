@@ -68,6 +68,12 @@ export function conventionPath(family: string): string {
     return `${PATHS.conventions}/${encodeURIComponent(family)}`;
 }
 
+/** The address of one convention's record page: its id within its family, and the party that holds it. */
+export function conventionDocumentPath(family: string, id: string, party?: string): string {
+    const query = party === undefined || party === '' ? '' : `?party=${encodeURIComponent(party)}`;
+    return `${conventionPath(family)}/${encodeURIComponent(id)}${query}`;
+}
+
 /** The address of one person's page. */
 export function personPath(username: string): string {
     return `${PATHS.people}/${encodeURIComponent(username)}`;

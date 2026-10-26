@@ -87,13 +87,13 @@ translation namespace, =oreParameter=, and no screen keeps its own copy of them.
 |-----+---------+-------|
 | =oreParameter.mode.simple= | Simple | The switch |
 | =oreParameter.mode.advanced= | Advanced | The switch |
-| =oreParameter.mode.label= | How much to show | The switch's accessible name *(proposed)* |
-| =oreParameter.mode.simpleHelp= | The label, the value and what it means. | The tooltip on Simple *(proposed)* |
-| =oreParameter.mode.advancedHelp= | Also the ORE XML path, the format, the options and the releases. | The tooltip on Advanced *(proposed)* |
+| =oreParameter.mode.label= | How much to show | The switch's accessible name *(new)* |
+| =oreParameter.mode.simpleHelp= | The label, the value and what it means. | The tooltip on Simple *(new)* |
+| =oreParameter.mode.advancedHelp= | Also the ORE XML path, the format, the options and the releases. | The tooltip on Advanced *(new)* |
 | =oreParameter.documentation= | Documentation | The button under a closed leaf |
 | =oreParameter.hideDocumentation= | Hide documentation | The button under an open leaf |
-| =oreParameter.showAllDocumentation= | Show all documentation | The button over a section *(proposed)* |
-| =oreParameter.hideAllDocumentation= | Hide all documentation | The button over a section *(proposed)* |
+| =oreParameter.showAllDocumentation= | Show all documentation | The button over a section *(new)* |
+| =oreParameter.hideAllDocumentation= | Hide all documentation | The button over a section *(new)* |
 | =oreParameter.defaultIs= | Default: {value} | The line in the documentation, and beside a leaf that is not set |
 | =oreParameter.defaultOption= | Default ({value}) | The first option of a control |
 | =oreParameter.notSet= | not set | A group with no row |
@@ -118,13 +118,12 @@ translation namespace, =oreParameter=, and no screen keeps its own copy of them.
 | =oreParameter.source.ore_guide= | From the ORE guide | The source tag |
 | =oreParameter.source.ore_code= | From the ORE code | The source tag |
 | =oreParameter.source.authored= | Written for ORE Studio, to review | The source tag |
-| =oreParameter.source.seed= | Carried over from the old seed, to review | The source tag *(proposed)* |
+| =oreParameter.source.seed= | Carried over from the old seed, to review | The source tag *(new)* |
 | =oreParameter.source.unknown= | Source not stated | The source tag |
 
-- *OL-WORDS-04* A word marked *(proposed)* is not on any screen today and is not
-  final: it waits for the owner's decision in [[*Decisions to take][Decisions to take]],
-  and no screen adopts it before then. The others are already on at least one
-  screen; this table picks one where two screens differ.
+- *OL-WORDS-04* A word marked *(new)* was on no screen before this page; the owner
+  chose it on 2026-10-26, as [[*Decisions][Decisions]] records. The others are
+  already on at least one screen; this table picks one where two screens differ.
 - *OL-WORDS-05* A translation exists for every key in every language the web
   offers. A key with no translation is a gap, not a fallback to English.
 
@@ -324,47 +323,49 @@ an element type follow this page.
 
 ** Conformance today
 
-Measured on 2026-10-25 at =dd50a72032=, by reading
+Measured on 2026-10-25 at =dd50a72032= for engine run settings and product
+pricing, and on 2026-10-26 for conventions, by reading
 =engineSettings/EngineSettingsRecordPage.tsx=,
 =pricingEngines/PricingEnginePage.tsx=, =pricingEngines/parts.tsx=,
-=ui/OreParameter.tsx=, =ui/EditingMode.tsx= and =refdata/conventions.tsx= in
+=ui/OreParameter.tsx=, =ui/EditingMode.tsx=, =refdata/conventions.tsx= and
+=refdata/ConventionRecordPage.tsx= in
 =projects/ores.web/packages/web/src/=. This is the list of gaps to close. A
 screen not yet running against this page was read, not driven; the harness has
 not checked it.
 
 | Rule | Engine run settings | Product pricing | Conventions |
 |------+---------------------+-----------------+-------------|
-| OL-WORDS-01: one namespace | Gap: the buttons, the default, the marks and the filter count use copies under =engineSettings.*= | Meets for the documentation panel and the filters | Gap: no leaf is drawn |
-| OL-MODE-01: one switch per page | Gap: every group card draws its own | Meets: one on the toolbar | Gap: none |
-| OL-MODE-06: the switch's words | Gap: the tooltips are the feed's | Gap: the tooltips are the feed's | Gap |
-| OL-READ-01: help under the control in edit | Meets | Gap: the help is the control's hint, and the view has none | Gap |
-| OL-READ-02: one label, from the entry | Meets | Gap: in edit, and in the journey, the control carries a second label, the ORE name and scope | Gap: the labels are in the codegen model, not the contract |
-| OL-READ-03: the value in force | Meets | Meets for a parameter the document holds | Gap |
-| OL-READ-04: every leaf, set or not | Meets: every setting of the group is a row | Gap: only the parameters the document holds are rows; the defaults of the others cannot be read | Gap |
-| OL-READ-06: what a catalogue value names | N/A | Meets for a sensitivity template | Gap |
-| OL-READ-07: the mark on a leaf | Meets | Gap: the pricing data holds no *changes the numbers* flag | Gap |
-| OL-DOC-01: the leaf's documentation | Meets, with its own button | Meets | Gap: none |
-| OL-DOC-03: the section's documentation | Gap: the words are *Show documentation* and *Hide documentation* | Gap: no section button | Gap |
-| OL-DOC-04: one panel | Meets: the shared panel | Meets: the shared panel | Gap |
-| OL-DOC-05: no ORE text in the screen | Meets | Meets | Gap: the contract holds 238 of the 296 terms the ORE parser reads, and no screen reads them yet |
-| OL-DOC-07: focus opens the documentation | Meets | Gap | Gap |
+| OL-WORDS-01: one namespace | Gap: the buttons, the default, the marks and the filter count use copies under =engineSettings.*= | Meets for the documentation panel and the filters | Meets: the leaf words are =oreParameter=; the page words are =refdata.conventions.record= |
+| OL-MODE-01: one switch per page | Gap: every group card draws its own | Meets: one on the toolbar | Meets: one, in the page header |
+| OL-MODE-06: the switch's words | Gap: the tooltips are the feed's | Gap: the tooltips are the feed's | Meets: *How much to show* |
+| OL-READ-01: help under the control in edit | Meets | Gap: the help is the control's hint, and the view has none | N/A: the page does not edit yet |
+| OL-READ-02: one label, from the entry | Meets | Gap: in edit, and in the journey, the control carries a second label, the ORE name and scope | Meets |
+| OL-READ-03: the value in force | Meets | Meets for a parameter the document holds | Meets for a documented term; an undocumented term the convention leaves out shows a dash |
+| OL-READ-04: every leaf, set or not | Meets: every setting of the group is a row | Gap: only the parameters the document holds are rows; the defaults of the others cannot be read | Meets: every term of the kind is a row |
+| OL-READ-06: what a catalogue value names | N/A | Meets for a sensitivity template | Gap: a value from a closed list shows its words; a catalogue value shows no line under it |
+| OL-READ-07: the mark on a leaf | Meets | Gap: the pricing data holds no *changes the numbers* flag | Gap: the contract holds no *changes the numbers* flag for a term |
+| OL-DOC-01: the leaf's documentation | Meets, with its own button | Meets | Meets |
+| OL-DOC-03: the section's documentation | Gap: the words are *Show documentation* and *Hide documentation* | Gap: no section button | Meets: *Show all documentation* |
+| OL-DOC-04: one panel | Meets: the shared panel | Meets: the shared panel | Meets: the shared panel |
+| OL-DOC-05: no ORE text in the screen | Meets | Meets | Meets: 238 of the 301 terms the ORE parser reads are documented, and the rest show as undocumented |
+| OL-DOC-07: focus opens the documentation | Meets | Gap | N/A: the page does not edit yet |
 | OL-ELEMENT-04: metadata in data | Gap: the groups are a constant in code | Meets | Meets: the asset class and the ORE element are on the kind, its terms are =convention_kind_term= rows, and the holder comes from the registry |
-| OL-SOURCE-01: the source tag | Gap: none | Partial: a tag in the journey, a line of text on the page; no word for the seed | Gap |
-| OL-CONTROL-01: *Default (X)* first | Meets, for a select and as a number's placeholder | Gap: the select has no default option | Gap |
-| OL-CONTROL-02: no value outside the set | Meets | Gap: a value outside the set is added to the options | Gap |
-| OL-EDIT-02: the changed mark and the count | Meets | Gap: no mark on the leaf and no count in edit; the save dialog states the difference | Gap |
-| OL-FILTER-02: what *set* means | Meets: the document holds a value | Gap: a value equal to the default is hidden as if it were absent | Gap |
-| OL-FILTER-03: only a filter the data answers | Meets | Gap: *Changes the numbers* is drawn and filters nothing | Gap |
-| OL-FILTER-04: no hidden problem | Meets | N/A: no check by the leaf | Gap |
-| OL-FILTER-05: the noun | Meets | Gap: the shared count says /settings/ | Gap |
-| OL-STATE: the undocumented words | Meets, through the shared panel | Meets, through the shared panel | Gap |
+| OL-SOURCE-01: the source tag | Gap: none | Partial: a tag in the journey, a line of text on the page; no word for the seed | Gap: the contract holds no source per row, so no tag is drawn |
+| OL-CONTROL-01: *Default (X)* first | Meets, for a select and as a number's placeholder | Gap: the select has no default option | N/A: the page does not edit yet |
+| OL-CONTROL-02: no value outside the set | Meets | Gap: a value outside the set is added to the options | N/A: the page does not edit yet |
+| OL-EDIT-02: the changed mark and the count | Meets | Gap: no mark on the leaf and no count in edit; the save dialog states the difference | N/A: the page does not edit yet |
+| OL-FILTER-02: what *set* means | Meets: the document holds a value | Gap: a value equal to the default is hidden as if it were absent | Meets: the convention holds a value |
+| OL-FILTER-03: only a filter the data answers | Meets | Gap: *Changes the numbers* is drawn and filters nothing | Meets: *Changes the numbers* is not drawn |
+| OL-FILTER-04: no hidden problem | Meets | N/A: no check by the leaf | N/A: the page does not edit yet |
+| OL-FILTER-05: the noun | Meets | Meets: /parameters/ | Meets: /terms/ |
+| OL-STATE: the undocumented words | Meets, through the shared panel | Meets, through the shared panel | Meets, through the shared panel |
 
 Two unused keys hold other sentences for the undocumented state,
 =engineSettings.undocumented= and =pricingEngines.globals.noDocumentation=. They
 go when the words move into =oreParameter=.
 
-Conventions have no leaf on any screen today: a convention family is a read-only
-list with no record page, so every rule is a gap there.
+Conventions draw their terms on a record page that does not edit yet, so the
+rules of the edit are N/A there until the write check and the edit land.
 
 The engine run settings page is the closer of the two: it fails mostly on words
 and on its own copies of shared parts. The product pricing page shares the
@@ -388,19 +389,24 @@ were added because the product pricing page showed a gap the draft did not
 name: every leaf is a row, set or not (OL-READ-04), and a filter is drawn only
 where the data answers it (OL-FILTER-03).
 
-** Decisions to take
+** Decisions
 
-- *The noun for a convention leaf.* This page proposes /term/: the convention
-  lists and the tenor journey already speak of a convention's terms. The
-  alternative is /field/, which the record standard uses for any record.
-- *The section button.* This page proposes *Show all documentation* and *Hide
-  all documentation*, so the section button and the leaf button do not share
-  *Hide documentation*. The engine run settings page says *Show documentation*.
-- *The switch's name.* *How to edit* is right on a feed and wrong on a screen of
-  leaves, where the switch changes what shows. This page proposes *How much to
-  show* for those screens.
-- *The seed tag.* The curation has four sources and the screen has words for
-  three. This page proposes *Carried over from the old seed, to review*.
+Decided by the owner on 2026-10-26:
+
+- *A convention leaf is a /term/.* The convention lists and the tenor journey
+  already speak of a convention's terms; /field/ is the record standard's word for
+  any record and says nothing about ORE.
+- *The section button says Show all documentation and Hide all documentation.*
+  The section button and the leaf button never share *Hide documentation*. The
+  engine run settings page changes from *Show documentation*.
+- *The switch is named How much to show on a screen of leaves.* There it changes
+  what shows; on a feed it keeps *How to edit*, because there it changes how a
+  person edits.
+- *The fourth source tag says Carried over from the old seed, to review*, in the
+  warning tone, because no reviewer has confirmed it.
+
+Still open:
+
 - *The short help in view.* The configuration standard says Simple shows the
   short help. Neither built page does: the engine run settings page shows it
   under the control in edit, and this page follows it. If the owner keeps the

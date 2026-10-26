@@ -206,6 +206,281 @@ describe('the families and their kinds', () => {
 });
 
 describe('convention routes', () => {
+    it('answers one convention with its kind and its terms, each documented from the contract', async () => {
+        const replies: Record<string, unknown> = {
+            'refdata.v1.swap_conventions.list': {
+                result: ok,
+                swap_conventions: [
+                    {
+                        id: 'EUR-6M-SWAP',
+                        version: 3,
+                        fixed_calendar: 'TARGET',
+                        fixed_frequency: 'A',
+                        index: 'EUR-EURIBOR-6M',
+                    },
+                ],
+            },
+            'refdata.v1.convention_kinds.list': {
+                result: ok,
+                kinds: [
+                    {
+                        code: 'SWAP',
+                        name: 'Swap',
+                        description: 'Vanilla swap',
+                        asset_class: 'interest-rates',
+                        ore_element: 'Swap',
+                    },
+                ],
+            },
+            'refdata.v1.convention_kind_terms.list': {
+                result: ok,
+                terms: [
+                    {
+                        kind_code: 'SWAP',
+                        entity_name: 'swap_convention',
+                        column_name: 'fixed_frequency',
+                        schema_name: 'conventions.xsd',
+                        xpath: '/Conventions/Swap/FixedFrequency',
+                        position: 1,
+                    },
+                    {
+                        kind_code: 'SWAP',
+                        entity_name: 'swap_convention',
+                        column_name: 'fixed_calendar',
+                        schema_name: 'conventions.xsd',
+                        xpath: '/Conventions/Swap/FixedCalendar',
+                        position: 0,
+                    },
+                    {
+                        kind_code: 'OIS',
+                        entity_name: 'ois_convention',
+                        column_name: 'index',
+                        schema_name: 'conventions.xsd',
+                        xpath: '/Conventions/OIS/Index',
+                        position: 0,
+                    },
+                ],
+            },
+            'reporting.v1.ore_parameters.list': {
+                result: ok,
+                parameters: [
+                    {
+                        schema_name: 'conventions.xsd',
+                        xpath: '/Conventions/Swap/FixedFrequency',
+                        scope: 'Swap',
+                        name: 'FixedFrequency',
+                        label: 'Fixed frequency',
+                        help: 'The frequency of payments on the fixed leg.',
+                        description: 'The frequency of payments on the fixed leg.',
+                        default_text: 'None: the convention must give it.',
+                        format: 'A frequency, such as Annual or Quarterly.',
+                        introduced_in: '1.8.0.7 or earlier',
+                        removed_in: '',
+                        is_required: true,
+                    },
+                ],
+            },
+            'reporting.v1.ore_parameter_value_sets.list': {
+                result: ok,
+                sets: [{ code: 'convention.frequency', source_kind: 'enumerated' }],
+            },
+            'reporting.v1.ore_parameter_value_set_values.list': {
+                result: ok,
+                values: [
+                    {
+                        value_set_code: 'convention.frequency',
+                        value: 'A',
+                        label: 'Annual',
+                        display_order: 0,
+                    },
+                    {
+                        value_set_code: 'convention.frequency',
+                        value: 'Q',
+                        label: 'Quarterly',
+                        display_order: 1,
+                    },
+                ],
+            },
+            'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+            'reporting.v1.ore_parameter_setting_value_sets.list': {
+                result: ok,
+                setting_value_sets: [
+                    {
+                        scope: 'Swap',
+                        name: 'FixedFrequency',
+                        value_set_code: 'convention.frequency',
+                    },
+                ],
+            },
+        };
+        const { server, sessionId } = buildTestServer(replies);
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/conventions/swap/documents/EUR-6M-SWAP',
+        );
+        expect(response.statusCode).toBe(200);
+        const body = response.json();
+        expect(body.kind).toMatchObject({
+            code: 'SWAP',
+            assetClass: 'interest-rates',
+            oreElement: 'Swap',
+        });
+        expect(body.version).toBe(3);
+        // The kind's own terms only, in the position order the data states.
+        expect(body.terms.map((term: { column: string }) => term.column)).toEqual([
+            'fixed_calendar',
+            'fixed_frequency',
+        ]);
+        const [calendar, frequency] = body.terms;
+        // A term the contract holds no entry for is still drawn, marked undocumented.
+        expect(calendar).toMatchObject({
+            value: 'TARGET',
+            documented: false,
+            ore: 'FixedCalendar',
+            choices: [],
+        });
+        expect(frequency).toMatchObject({
+            value: 'A',
+            documented: true,
+            required: true,
+            label: 'Fixed frequency',
+            sourceKind: 'enumerated',
+            choices: [
+                { value: 'A', label: 'Annual' },
+                { value: 'Q', label: 'Quarterly' },
+            ],
+        });
+    });
+
+    it('reads the row of the party named when several parties hold the id, and refuses to guess', async () => {
+        const replies: Record<string, unknown> = {
+            'refdata.v1.swap_conventions.list': {
+                result: ok,
+                swap_conventions: [
+                    {
+                        id: 'EUR-6M-SWAP',
+                        version: 1,
+                        party_id: '11111111-1111-4111-8111-111111111111',
+                        index: 'EUR-EURIBOR-6M',
+                    },
+                    {
+                        id: 'EUR-6M-SWAP',
+                        version: 4,
+                        party_id: '22222222-2222-4222-8222-222222222222',
+                        index: 'EUR-EURIBOR-3M',
+                    },
+                ],
+            },
+            'refdata.v1.convention_kinds.list': { result: ok, kinds: [] },
+            'refdata.v1.convention_kind_terms.list': { result: ok, terms: [] },
+            'reporting.v1.ore_parameters.list': { result: ok, parameters: [] },
+            'reporting.v1.ore_parameter_value_sets.list': { result: ok, sets: [] },
+            'reporting.v1.ore_parameter_value_set_values.list': { result: ok, values: [] },
+            'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+            'reporting.v1.ore_parameter_setting_value_sets.list': {
+                result: ok,
+                setting_value_sets: [],
+            },
+        };
+        const { server, sessionId } = buildTestServer(replies);
+        const named = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/conventions/swap/documents/EUR-6M-SWAP?party=22222222-2222-4222-8222-222222222222',
+        );
+        expect(named.statusCode).toBe(200);
+        expect(named.json().version).toBe(4);
+        const unnamed = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/conventions/swap/documents/EUR-6M-SWAP',
+        );
+        expect(unnamed.statusCode).toBe(400);
+    });
+
+    it('answers a composite convention with its parts laid over its central row', async () => {
+        const replies: Record<string, unknown> = {
+            'refdata.v1.conventions.list': {
+                result: ok,
+                conventions: [
+                    {
+                        id: '33333333-3333-4333-8333-333333333333',
+                        version: 2,
+                        name: 'GBP-6M-12M-BASIS',
+                    },
+                ],
+            },
+            'refdata.v1.tenor_basis_swap_conventions.get_many': {
+                result: ok,
+                items: [
+                    {
+                        key: { id: '33333333-3333-4333-8333-333333333333' },
+                        long_short: [
+                            {
+                                id: 'part',
+                                convention_id: '33333333-3333-4333-8333-333333333333',
+                                long_index: 'GBP-LIBOR-12M',
+                            },
+                        ],
+                    },
+                ],
+            },
+            'refdata.v1.convention_kinds.list': { result: ok, kinds: [] },
+            'refdata.v1.convention_kind_terms.list': {
+                result: ok,
+                terms: [
+                    {
+                        kind_code: 'TENOR_BASIS_SWAP',
+                        entity_name: 'tenor_basis_swap_long_short',
+                        column_name: 'long_index',
+                        schema_name: 'conventions.xsd',
+                        xpath: '/Conventions/TenorBasisSwap/LongIndex',
+                        position: 0,
+                    },
+                ],
+            },
+            'reporting.v1.ore_parameters.list': { result: ok, parameters: [] },
+            'reporting.v1.ore_parameter_value_sets.list': { result: ok, sets: [] },
+            'reporting.v1.ore_parameter_value_set_values.list': { result: ok, values: [] },
+            'reporting.v1.ore_parameter_value_set_catalogues.list': { result: ok, catalogues: [] },
+            'reporting.v1.ore_parameter_setting_value_sets.list': {
+                result: ok,
+                setting_value_sets: [],
+            },
+        };
+        const { server, sessionId } = buildTestServer(replies);
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/conventions/tenor-basis-swap/documents/33333333-3333-4333-8333-333333333333',
+        );
+        expect(response.statusCode).toBe(200);
+        const body = response.json();
+        expect(body.version).toBe(2);
+        // The part's term reaches the page; the part's own key and link to the centre do not.
+        expect(body.terms).toMatchObject([
+            { column: 'long_index', value: 'GBP-LIBOR-12M', documented: false },
+        ]);
+    });
+
+    it('answers 404 for a convention the family does not hold', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.swap_conventions.list': { result: ok, swap_conventions: [] },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/conventions/swap/documents/NOPE',
+        );
+        expect(response.statusCode).toBe(404);
+    });
+
     it("takes each family's asset class from its kind and its holder from the registry", async () => {
         const replies: Record<string, unknown> = {};
         for (const family of CONVENTION_FAMILIES) {

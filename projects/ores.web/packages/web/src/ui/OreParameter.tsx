@@ -79,23 +79,33 @@ export function ParameterDocumentationPanel({
     );
 }
 
-/** The Documentation button under a parameter, and the panel it opens. */
+/**
+ * The Documentation button under a parameter, and the panel it opens.
+ *
+ * A screen whose section opens every leaf at once passes `open` and `onToggle`
+ * and owns the state; a screen that does not lets each leaf keep its own.
+ */
 export function ParameterDocuments({
     doc,
     mode,
+    open: controlled,
+    onToggle,
 }: {
     readonly doc: ParameterDocumentation;
     readonly mode: EditingMode;
+    readonly open?: boolean;
+    readonly onToggle?: () => void;
 }): ReactNode {
     const { t } = useTranslation();
-    const [open, setOpen] = useState(false);
+    const [own, setOwn] = useState(false);
+    const open = controlled ?? own;
     return (
         <>
             <button
                 type="button"
                 aria-expanded={open}
                 className="text-xs text-accent hover:text-accent-bright"
-                onClick={() => setOpen((before) => !before)}
+                onClick={() => (onToggle === undefined ? setOwn((before) => !before) : onToggle())}
             >
                 {open ? t('oreParameter.hideDocumentation') : t('oreParameter.documentation')}
             </button>
@@ -130,7 +140,11 @@ export function FilterChip({
     );
 }
 
-/** The filters a parameter list offers: only values set, and only those that change the numbers. */
+/**
+ * The filters a list of leaves offers: only the values the document holds, and
+ * only the leaves that change the numbers. The second is drawn only where the
+ * caller can answer it, and the count names the leaves with the kind's noun.
+ */
 export function ParameterFilters({
     set,
     numbers,
@@ -138,13 +152,15 @@ export function ParameterFilters({
     onNumbers,
     shown,
     total,
+    noun,
 }: {
     readonly set: boolean;
-    readonly numbers: boolean;
+    readonly numbers?: boolean;
     readonly onSet: () => void;
-    readonly onNumbers: () => void;
+    readonly onNumbers?: () => void;
     readonly shown: number;
     readonly total: number;
+    readonly noun: string;
 }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -152,13 +168,16 @@ export function ParameterFilters({
             <FilterChip pressed={set} onClick={onSet}>
                 {t('oreParameter.filters.set')}
             </FilterChip>
-            <FilterChip pressed={numbers} onClick={onNumbers}>
-                {t('oreParameter.filters.numbers')}
-            </FilterChip>
+            {onNumbers !== undefined && (
+                <FilterChip pressed={numbers === true} onClick={onNumbers}>
+                    {t('oreParameter.filters.numbers')}
+                </FilterChip>
+            )}
             <span className="text-xs text-ink-faint">
                 {t('oreParameter.filters.shown', {
                     shown: String(shown),
                     total: String(total),
+                    noun,
                 })}
             </span>
         </div>

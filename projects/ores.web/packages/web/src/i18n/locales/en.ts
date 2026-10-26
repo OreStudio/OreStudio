@@ -4378,6 +4378,18 @@ export const en: SourceCatalogue = {
             sharedWarningBody:
                 'They are held once for the tenant, and a change applies to all parties.',
             sharedDocuments: 'Every party reads these documents.',
+            record: {
+                kind: 'What this kind is',
+                code: 'Code',
+                oreElement: 'ORE element',
+                noElement: 'Not in the ORE conventions document',
+                terms: 'Terms',
+                termsLead:
+                    'The terms of this convention: the value each one holds, or the default ORE uses, and what it means.',
+                notFound: 'There is no such convention.',
+                readFailed: 'The convention could not be read. {message}',
+                shared: 'Every party reads this convention. It is held once for the tenant.',
+            },
             search: 'Search kinds',
             assetClass: 'Asset class',
             allClasses: 'All asset classes',
@@ -5778,6 +5790,19 @@ export const en: SourceCatalogue = {
         cancel: 'Cancel',
     },
     oreParameter: {
+        mode: {
+            label: 'How much to show',
+            simpleHelp: 'The label, the value and what it means.',
+            advancedHelp: 'Also the ORE XML path, the format, the options and the releases.',
+        },
+        showAllDocumentation: 'Show all documentation',
+        hideAllDocumentation: 'Hide all documentation',
+        required: 'Required',
+        nouns: {
+            parameters: 'parameters',
+            settings: 'settings',
+            terms: 'terms',
+        },
         documentation: 'Documentation',
         hideDocumentation: 'Hide documentation',
         undocumented: 'No documentation is held for {name}.',
@@ -5791,7 +5816,8 @@ export const en: SourceCatalogue = {
         filters: {
             set: 'Set in this configuration',
             numbers: 'Changes the numbers',
-            shown: '{shown} of {total} settings shown',
+            shown: '{shown} of {total} {noun} shown',
+            none: 'No {noun} matches the filters.',
         },
     },
 };

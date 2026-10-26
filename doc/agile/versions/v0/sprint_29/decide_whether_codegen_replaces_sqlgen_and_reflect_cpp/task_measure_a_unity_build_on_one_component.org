@@ -59,6 +59,10 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | =ores.dq.core= as a unity build of 16 | fails after 32 s: =redefinition of 'list_order'= in =methodology_repository.cpp= | =build_target.sh= (deletes the target's objects, builds =ores.dq.core.lib= under =systemd-run --wait=), with =UNITY_BUILD ON=, =UNITY_BUILD_BATCH_SIZE 16= | =ced6c2fc70=, release preset, 3 jobs, no ccache |
+| =ores.dq.core= baseline, for reference | 8 min 08 s wall, 23 min 18 s CPU, 1.8 GiB peak | =build_target.sh= on =ores.dq.core.lib=, 173 files | =ced6c2fc70=, release preset, 3 jobs, no ccache |
+| Unity build of 16, helpers renamed | 2 min 06 s wall (-74%), 5 min 54 s CPU (-75%), 4.0 GiB peak | =build_target.sh= on =ores.dq.core.lib=, 173 files; =unity_fix.py= renames the colliding file-local helpers first | =ced6c2fc70=, release preset, 3 jobs, no ccache |
+| Unity build of 32, helpers renamed | 2 min 23 s wall (-71%), 5 min 04 s CPU (-78%), 3.8 GiB peak | the same at batch size 32 | =ced6c2fc70=, release preset, 3 jobs, no ccache |
+| Unity build of 16 with the precompiled header | 1 min 53 s wall (-77%), 5 min 15 s CPU (-77%), 4.0 GiB peak | the same with =target_precompile_headers= | =ced6c2fc70=, release preset, 3 jobs, no ccache |
 
 * Notes
 
@@ -66,6 +70,15 @@ task and name that file in the Command column.
   namespace, so files merged into one unity source redefine them. A unity build
   needs the generator to put each file's helpers in a namespace of its own, which
   CMake supports with =UNITY_BUILD_UNIQUE_ID=. Measure after that change.
+- Only two names collided in =ores.dq.core=: =queue_group= in the 21 message
+  registrars and =list_order= in 20 repositories. =unity_fix.py= renamed them to
+  =<file stem>_<name>= to measure; the generator's registrar and repository
+  templates need the same change, which is two template edits.
+- Batch size 16 beats 32 on wall time: 173 files make about 6 batches of 32, too
+  few to keep three jobs busy. The precompiled header adds little on top of a unity
+  build, because each batch already parses its headers once.
+- Peak memory rises from 1.8 to 4.0 GiB across three jobs, because a job compiles
+  16 files at once. It stays within the build slot.
 
 * Test Scenarios
 

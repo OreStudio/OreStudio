@@ -33,6 +33,7 @@
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
 #include "ores.trading.api/domain/commodity_basket_constituent.hpp"
+#include "ores.trading.api/domain/equity_basket_constituent.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
@@ -216,6 +217,10 @@ struct instrument_batch {
      * @brief The commodity_basket_constituent rows, keyed by trade id.
      */
     std::vector<commodity_basket_constituent> commodity_basket_constituents;
+    /**
+     * @brief The equity_basket_constituent rows, keyed by trade id.
+     */
+    std::vector<equity_basket_constituent> equity_basket_constituents;
     /**
      * @brief The composite_leg rows, keyed by trade id.
      */
@@ -550,6 +555,13 @@ inline void append(instrument_batch& batch, cap_floor_instrument v) {
  */
 inline void append(instrument_batch& batch, commodity_basket_constituent v) {
     batch.commodity_basket_constituents.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one equity_basket_constituent to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, equity_basket_constituent v) {
+    batch.equity_basket_constituents.push_back(std::move(v));
 }
 
 /**

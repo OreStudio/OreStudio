@@ -36,6 +36,7 @@
 #include "ores.trading.core/repository/callable_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/cap_floor_instrument_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
+#include "ores.trading.core/repository/equity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/commodity_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_leg_repository.hpp"
@@ -244,6 +245,8 @@ void write_instrument_batch(ores::database::context ctx,
         ctx, batch.cap_floor_instruments, keys, stamp, claim);
     write_rows<repository::commodity_basket_constituent_repository>(
         ctx, batch.commodity_basket_constituents, keys, stamp, claim);
+    write_rows<repository::equity_basket_constituent_repository>(
+        ctx, batch.equity_basket_constituents, keys, stamp, claim);
     write_rows<repository::composite_leg_repository>(ctx, batch.composite_legs, keys, stamp, claim);
     write_rows<repository::credit_basket_constituent_repository>(
         ctx, batch.credit_basket_constituents, keys, stamp, claim);

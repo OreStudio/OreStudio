@@ -65,11 +65,19 @@ survived. The task is to finish it rather than to design it.
 
 1. *The batch.* An =equity_basket_constituents= array on =instrument_batch=, and
    the write for it in =write_instrument_batch=, so a booking can carry the rows.
-2. *The variant.* =equity_instrument= holds the constituents beside the facts, the
-   way =swap_instrument_data= holds its legs.
+2. *The variant.* *Not needed, and the plan was wrong to say so.*
+   =equity_instrument= is a flat header, not a variant: the equity family keeps
+   the header in one array and each product's facts in another, and the batch is
+   what carries the children. So the constituents are carried by
+   =equity_basket_constituents= on the batch, which step 1 added, exactly as the
+   commodity family carries its own.
 3. *The projection.* Import writes one constituent per =Underlying= element with
-   its ordinal; export reads the rows back in ordinal order. The round trip must
-   emit the constituents the document held, in the document's order.
+   its ordinal; export reads the rows back in ordinal order. The commodity family
+   is the template and already does both: its read builds a
+   =std::vector<commodity_basket_constituent>=, and its write takes the same
+   vector as a parameter rather than reading a column off the instrument. The
+   equity side has to thread that parameter through the same way, which is what
+   makes this more than a column swap.
 4. *The column.* =basket_json= leaves =equity_swap_instrument= once nothing reads
    it, which is what the existing docstring promises.
 5. *The tests.* =xml_portfolio_projection_tests= asserts =basket_json= today and

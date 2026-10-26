@@ -148,7 +148,9 @@ export function ArrivalsPanel({
                     {saving ? t('common.saving') : t('common.save')}
                 </button>
                 {changed ? (
-                    <span className="text-xs text-ink-muted">{t('marketdata.arrivals.unsaved')}</span>
+                    <span className="text-xs text-ink-muted">
+                        {t('marketdata.arrivals.unsaved')}
+                    </span>
                 ) : null}
             </div>
         </section>

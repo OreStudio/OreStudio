@@ -239,6 +239,38 @@ TEST_CASE("a market data step reads its provider", tags) {
     CHECK(arguments.source == "bloomberg-a");
 }
 
+TEST_CASE("a market data step reads the provider and source it names for each party", tags) {
+    // The demonstration's entities take their data from different vendors, so the step states one
+    // provider and source for each; a party it names in part takes the step's own for the rest.
+    const auto arguments = parse_market_data_arguments(R"({
+        "provider": "bloomberg", "source": "bloomberg-a",
+        "parties": [
+            {"party": "ACME Corporation UK plc", "provider": "demo", "source": "demo-a"},
+            {"party": "ACME Corporation US Inc", "provider": "lseg"}
+        ]})");
+
+    REQUIRE(arguments.parties.size() == 2);
+    CHECK(arguments.parties[0].party == "ACME Corporation UK plc");
+    CHECK(arguments.parties[0].provider == "demo");
+    CHECK(arguments.parties[0].source == "demo-a");
+    CHECK(arguments.parties[1].party == "ACME Corporation US Inc");
+    CHECK(arguments.parties[1].provider == "lseg");
+    CHECK(arguments.parties[1].source.empty());
+}
+
+TEST_CASE("a market data step that names no parties gives every party its own provider", tags) {
+    const auto arguments =
+        parse_market_data_arguments(R"({"provider": "bloomberg", "source": "bloomberg-a"})");
+
+    CHECK(arguments.parties.empty());
+}
+
+TEST_CASE("a market data step refuses a party entry that names no party", tags) {
+    CHECK_THROWS_WITH(parse_market_data_arguments(R"({"provider": "ore", "source": "ore-import",
+        "parties": [{"provider": "demo", "source": "demo-a"}]})"),
+                      "The step's 'parties' entry names no 'party' argument.");
+}
+
 TEST_CASE("a market data step that names no provider is refused", tags) {
     CHECK_THROWS_WITH(parse_market_data_arguments(R"({})"),
                       "The step names no 'provider' argument.");

@@ -48,6 +48,18 @@ const REASON_TEXT: Readonly<Record<Exclude<ResultReason, ''>, string>> = {
 
 const asText = (value: unknown): string => (typeof value === 'string' ? value : '');
 
+/** A figure with its thousands grouped and two decimals, or the text as written. */
+const asFigure = (text: string): string => {
+    const figure = Number.parseFloat(text);
+    if (!Number.isFinite(figure)) {
+        return text;
+    }
+    return new Intl.NumberFormat('en-GB', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(figure);
+};
+
 /** One error the run recorded, as the run states it. */
 type RunError = {
     readonly scope: string;
@@ -102,10 +114,12 @@ function totalsOf(rows: readonly RunResultRow[]): readonly { currency: string; t
  */
 export function RunResultsPanel({
     runId,
+    pricedAt,
     queryKey,
     load,
 }: {
     readonly runId: string;
+    readonly pricedAt: string;
     readonly queryKey: readonly unknown[];
     readonly load: () => Promise<{ rows: readonly unknown[]; reason: ResultReason }>;
 }): ReactNode {
@@ -141,9 +155,17 @@ export function RunResultsPanel({
     }
     const rows = (results.data?.rows ?? []).map(toRow);
     const reason = results.data?.reason ?? '';
+    const totals = totalsOf(rows);
     return (
-        <section className="card space-y-3 p-6">
-            <h2 className="text-lg font-medium">{t(`${field}.title`)}</h2>
+        <section className="card space-y-4 p-6">
+            <header className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="text-lg font-medium">{t(`${field}.oneRowPerTrade`)}</h2>
+                {rows.length > 0 && (
+                    <span className="rounded border border-line px-2 py-0.5 text-xs text-ink-muted">
+                        {t(`${field}.runTag`, { count: rows.length, date: pricedAt })}
+                    </span>
+                )}
+            </header>
             {rows.length === 0 ? (
                 <p className="text-sm text-ink-muted">
                     {reason === ''
@@ -152,32 +174,49 @@ export function RunResultsPanel({
                 </p>
             ) : (
                 <>
+                    <p className="rounded-md border border-line-subtle bg-surface-raised px-3 py-2 text-sm text-ink-muted">
+                        {t(`${field}.sourceNote`)}
+                    </p>
                     <dl className="flex flex-wrap gap-8">
                         <div>
                             <dt className="text-xs text-ink-faint">{t(`${field}.trades`)}</dt>
                             <dd className="font-mono text-sm">{rows.length}</dd>
                         </div>
-                        {totalsOf(rows).map((total) => (
+                        {totals.map((total) => (
                             <div key={total.currency}>
                                 <dt className="text-xs text-ink-faint">
                                     {total.currency === ''
                                         ? t(`${field}.total`)
                                         : t(`${field}.totalIn`, { currency: total.currency })}
                                 </dt>
-                                <dd className="font-mono text-sm">{total.total.toFixed(2)}</dd>
+                                <dd className="font-mono text-sm">
+                                    {asFigure(total.total.toFixed(2))}
+                                </dd>
                             </div>
                         ))}
                     </dl>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
                             <thead>
-                                <tr className="text-xs uppercase tracking-wide text-ink-faint">
-                                    <th className="px-2 py-1">{t(`${field}.trade`)}</th>
-                                    <th className="px-2 py-1">{t(`${field}.type`)}</th>
-                                    <th className="px-2 py-1">{t(`${field}.npv`)}</th>
-                                    <th className="px-2 py-1">{t(`${field}.npvBase`)}</th>
-                                    <th className="px-2 py-1">{t(`${field}.notional`)}</th>
-                                    <th className="px-2 py-1">{t(`${field}.counterparty`)}</th>
+                                <tr className="text-xs text-ink-faint">
+                                    <th className="px-2 py-1 font-normal">
+                                        {t(`${field}.tradeId`)}
+                                    </th>
+                                    <th className="px-2 py-1 font-normal">
+                                        {t(`${field}.tradeType`)}
+                                    </th>
+                                    <th className="px-2 py-1 text-right font-normal">
+                                        {t(`${field}.npv`)}
+                                    </th>
+                                    <th className="px-2 py-1 text-right font-normal">
+                                        {t(`${field}.npvBase`)}
+                                    </th>
+                                    <th className="px-2 py-1 text-right font-normal">
+                                        {t(`${field}.notional`)}
+                                    </th>
+                                    <th className="px-2 py-1 font-normal">
+                                        {t(`${field}.counterparty`)}
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -188,7 +227,7 @@ export function RunResultsPanel({
                                         <tr
                                             key={row.trade_id}
                                             onClick={() => setSelected(chosen ? '' : row.trade_id)}
-                                            className={`cursor-pointer border-t border-line-subtle ${
+                                            className={`cursor-pointer border-t border-line-subtle hover:bg-surface-raised ${
                                                 chosen ? 'bg-surface-raised' : ''
                                             }`}
                                         >
@@ -205,11 +244,19 @@ export function RunResultsPanel({
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="px-2 py-1">{row.trade_type}</td>
-                                            <td className="px-2 py-1 font-mono">{row.npv}</td>
-                                            <td className="px-2 py-1 font-mono">{row.npv_base}</td>
-                                            <td className="px-2 py-1 font-mono">{row.notional}</td>
-                                            <td className="px-2 py-1">
+                                            <td className="px-2 py-1 uppercase">
+                                                {row.trade_type}
+                                            </td>
+                                            <td className="px-2 py-1 text-right font-mono">
+                                                {asFigure(row.npv)}
+                                            </td>
+                                            <td className="px-2 py-1 text-right font-mono">
+                                                {asFigure(row.npv_base)}
+                                            </td>
+                                            <td className="px-2 py-1 text-right font-mono">
+                                                {asFigure(row.notional)}
+                                            </td>
+                                            <td className="px-2 py-1 uppercase">
                                                 {row.counterparty === '' ? (
                                                     '—'
                                                 ) : (
@@ -228,13 +275,14 @@ export function RunResultsPanel({
                                 })}
                             </tbody>
                         </table>
-                        {selected !== '' && (
-                            <TradeResult
-                                row={rows.find((row) => row.trade_id === selected)}
-                                errors={errorsOf.get(selected) ?? []}
-                            />
-                        )}
                     </div>
+                    <p className="text-sm text-ink-muted">{t(`${field}.selectHint`)}</p>
+                    {selected !== '' && (
+                        <TradeResult
+                            row={rows.find((row) => row.trade_id === selected)}
+                            errors={errorsOf.get(selected) ?? []}
+                        />
+                    )}
                 </>
             )}
         </section>
@@ -282,15 +330,15 @@ function TradeResult({
                 </div>
                 <div>
                     <dt className="text-xs text-ink-faint">{t(`${field}.npv`)}</dt>
-                    <dd className="font-mono">{row.npv}</dd>
+                    <dd className="font-mono">{asFigure(row.npv)}</dd>
                 </div>
                 <div>
                     <dt className="text-xs text-ink-faint">{t(`${field}.npvBase`)}</dt>
-                    <dd className="font-mono">{row.npv_base}</dd>
+                    <dd className="font-mono">{asFigure(row.npv_base)}</dd>
                 </div>
                 <div>
                     <dt className="text-xs text-ink-faint">{t(`${field}.notional`)}</dt>
-                    <dd className="font-mono">{row.notional}</dd>
+                    <dd className="font-mono">{asFigure(row.notional)}</dd>
                 </div>
                 <div>
                     <dt className="text-xs text-ink-faint">{t(`${field}.counterparty`)}</dt>

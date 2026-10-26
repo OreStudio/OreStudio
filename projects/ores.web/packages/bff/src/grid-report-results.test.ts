@@ -64,6 +64,7 @@ describe('rowsOf', () => {
             npv_base: '7076092.454615',
             notional: '7087413.92',
             counterparty: 'Northwind Capital, Ltd',
+            counterparty_name: '',
         });
         expect(rows?.[1]?.npv).toBe('1142973.707486');
     });

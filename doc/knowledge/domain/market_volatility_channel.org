@@ -61,40 +61,60 @@ differently under a rate change:
   fits into a shorter gap, so **variance per wall-clock second rises in proportion
   to the rate**, and sigma with its square root.
 
-*Which processes answer which* was measured before the task was started, and it
-narrows the problem considerably. The three processes that take a gap are the
-Gaussian mixture, the arithmetic mixture and the Ornstein–Uhlenbeck process —
-which is exactly the set the three FX engines build ("geometric" is the mixture,
-"arithmetic" the mixture variant, "ornstein_uhlenbeck" the mean-reverting one). So
-every **spot** feed is already time-scaled: a rate change there changes how often
-the series is sampled and not how much time it covers.
+** Three quantities, and the choice between them
 
-Every other price process answers false, and all of them are **curve** engines
-(Vasicek, CIR, Hull–White, Black–Karasinski, Black–Derman–Toy, HJM, LMM, the
-quadratic and two-factor Gaussians, the affine term structure). A curve feed steps
-its process one **simulated calendar day per tick** by design, so for a curve the
-rate is not a sampling rate at all: it is the speed of the simulated calendar. A
-rate of one a minute means one simulated day per minute.
+Every feed carries three numbers, tied together:
 
-That means the platform uses one word for two different quantities, and the note
-should say so rather than call the curve convention a defect:
+| Symbol | Meaning |
+|--------|---------|
+| =r= | ticks per wall second: how often the feed *publishes* |
+| =Delta= | simulated time per tick: how far the *law* steps |
+| =v= | simulated seconds per wall second: how fast the *simulated world* runs |
 
-- for a **spot** feed, the rate is a sampling rate, and time is wall time;
-- for a **curve** feed, the rate is a calendar speed, and a tick is a day.
+They satisfy =v = r * Delta=, so two of them are the design and the third follows.
+Which two are chosen is the whole question.
 
-The defect the first task was raised against is therefore not a defect for the
-feeds a volatility loading applies to. What remains is to decide whether curves
-should keep a calendar-speed rate (and say so in the config and the screen) or
-move to sampling like spot feeds, which is a design decision, not a bug.
+Measured before any code was written, the platform chooses them inconsistently:
 
-The second behaviour is a defect rather than a feature: an operator who doubles a
-feed's rate to get more ticks also doubles its realized volatility without asking.
-It must be fixed before a volatility loading is added, or the loading will be
-measured on top of an unintended one.
+- A *spot* feed takes the gap, so =Delta= is the wall gap and =v = 1=: the
+  simulated world runs at real speed.
+- A *curve* feed is built with =Delta= = one calendar day (the constant
+  =1 / 365= year, =ir_curve_feed_dt=), so at one tick a minute =v ≈ 1440=: the
+  simulated world runs fourteen hundred times faster than the spot feeds beside
+  it.
 
-The fix is to *convert*, not to refuse: a process that steps once per tick gains a
-time-scaled law, so the feed can hand it the gap. Refusing would break every feed
-that runs today, and the processes involved are the majority.
+So the market lives in two times at once, and nobody chose either. A rate change
+on a curve moves time; on a spot feed it does not. That is not a defect in either
+path but a missing decision.
+
+*The decision:* =v= belongs to the **market factor**, one number for the run,
+beside the state and the heat, and a feed's rate is pure sampling. A feed derives
+=Delta = v / r= and hands it to its process.
+
+- A higher rate therefore gives a *smaller* step, which is the safe direction for
+  every numerical scheme.
+- The default =v= is chosen so a curve at one tick a minute keeps the numbers it
+  produces today (=v = 1440=). Spot feeds deliberately speed up to the run's =v=,
+  because that is the inconsistency being removed.
+- =v= is visible where a person watches the market, on the dashboard and the
+  Market regime tab, because "how fast is this world running" is a question a
+  demonstration asks and no screen answered.
+
+** A step is a discretisation, not the model
+
+Nothing here changes a model's specification. =dr = kappa(theta - r) dt +
+sigma dW= says nothing about how often it is stepped. The processes that
+implement the *exact transition* of their law — the affine family, Vasicek,
+Hull–White, CIR, Ornstein–Uhlenbeck, and the Gaussian mixtures as exact normal
+increments — are the model for any =Delta=. The Euler and tree schemes
+(Black–Karasinski, Black–Derman–Toy, HJM, LMM) approximate it, and their error
+grows with the step.
+
+Each such process therefore declares the largest step its scheme can take, and a
+feed refuses a rate so low that the step would exceed it, rather than silently
+producing a biased path. A step is also *calendar* time: real curves step on
+business days and skip weekends and holidays, which this design does not do. That
+is a limitation to state, not to build now.
 
 The clean formulation is business time. Let
 

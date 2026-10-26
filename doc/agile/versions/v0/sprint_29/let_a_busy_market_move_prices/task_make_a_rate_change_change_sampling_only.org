@@ -133,3 +133,39 @@ spot feeds, which changes what a curve's configuration means and needs its own
 migration story for existing rows. Until that is decided, no code changes here,
 and the story's second task (the volatility loading) proceeds on its own because
 it applies to spot feeds.
+
+* Decision
+
+=v=, the simulated seconds per wall second, belongs to the **market factor**: one
+number for the run, beside the state and the heat, visible on the dashboard and on
+the Market regime tab. A feed's rate is pure sampling, and a feed derives
+=Delta = v / r= for its process.
+
+The default =v= is the one that keeps a curve at one tick a minute producing what
+it produces today (=v = 1440=). Spot feeds deliberately move to the run's =v=,
+which is the inconsistency the task exists to remove: today they run at real
+speed while the curves beside them run fourteen hundred times faster.
+
+* Acceptance, as decided
+
+- The market factor carries =v=, publishes it with the state and the multiplier,
+  and shows it on the dashboard and the Market regime tab.
+- Every feed derives =Delta = v / r= and hands it to its process; the
+  =1 / 365= constant is gone from the feed.
+- The default =v= reproduces today's curve values at one tick a minute, with a
+  test that pins the values.
+- Each process states the largest step its scheme can take, and a feed refuses a
+  rate whose step would exceed it, naming the bound.
+- The same seed at two rates gives the same path statistics per unit simulated
+  time.
+- The note states =r=, =Delta= and =v=, and records that a step is calendar time.
+
+* Plan, as decided
+
+1. Put =v= on the market factor beside state, multiplier and heat, and publish it.
+2. Derive =Delta= in each feed from =v= and its own rate, and pass it to the
+   process; delete the constant.
+3. Declare the step bound per process and refuse a rate that breaks it.
+4. Show =v= on the dashboard and the Market regime tab.
+5. The tests: values preserved at the default, statistics invariant across rates,
+   and the refusal.

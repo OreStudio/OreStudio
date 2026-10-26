@@ -84,13 +84,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The triggers fire on insert only; an update in place passes unchecked | refdata_convention_terms_validate_create.sql | Accepted | Fires on insert or update of the term columns, as pricing does; closing a version updates only valid_to, so an old row is not checked again. |
+| 2 | Each insert runs a three-table join | refdata_convention_terms_validate_create.sql | Declined | Provisioning of a tenant ran through it without a measurable cost; cache the terms only if a bulk load slows. |
+| 3 | Do the reporting drops run before the trigger drops? | drop.sql | Declined | They do, and it is harmless: a trigger depends on its own function, not on the functions its body calls, and no trigger fires during a drop. |
+| 4 | The test covers swap only | refdata_convention_terms_validate_test.sql | Accepted | The test now checks that every entity holding a term has its trigger, and that an update of a term column is refused. |
 
 * Result
 
-- A trigger on each of the 28 convention entities refuses a value outside its term's set. The message names the value, the term and the set: =Invalid value Fortnightly for Swap.FixedFrequency: the value is not in set ...=.
+- A trigger on each of the 28 convention entities refuses a value outside its term's set, on insert or on an update of a term column. The message names the value, the term and the set: =Invalid value Fortnightly for Swap.FixedFrequency: the value is not in set ...=.
 - =ores_reporting_value_in_set_fn= holds the rule. The pricing parameter trigger and the convention trigger both call it.
 - =generate_convention_kind_terms.py= writes the triggers and their drop from the same terms as the term seed. Its gate compares all three files.
 - The ISO currency seed now holds MXV and CLF, so every seeded convention meets its sets. The gate provisioned acme_corporation through the trigger without an error.
-- The pgTAP test =refdata_convention_terms_validate_test.sql= accepts a good swap and refuses a bad frequency, a bad business day convention and a bad day counter.
+- The pgTAP test =refdata_convention_terms_validate_test.sql= accepts a good swap and refuses a bad frequency, a bad business day convention, a bad day counter and an update to a bad frequency. It checks that every entity holding a term has its trigger, and it publishes the parameter contract itself, so it passes on a fresh database.
+- =refdata_conventions_publish_test.sql= is flaky on main: 1 failure in 8 runs without these triggers. The capture /Fix the flaky conventions publish pgTAP test/ records it.
 - The gate failed on ticks-smoke: the Bloomberg adapter rejected 20 of 86 demanded IDs. This branch changes no market data. Commit =b56a374918= on main added about 60 Bloomberg curve instruments the simulated adapter does not serve. The known failures from main stay: er-diagram, prototypes, the XPath pgTAP test and the trading suites.

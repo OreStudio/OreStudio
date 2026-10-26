@@ -8,7 +8,7 @@
 #+filetags: :trade-blotter-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/build-book-a-trade
-#+pr: 3840
+#+pr: 3843
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-21
@@ -147,12 +147,13 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:E45DD02C-CB73-4D63-8EAF-692A4C0F8CD3][Verify Book a trade]] | PENDING | The form, its two visible rules, and the page a booking opens. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3843][#3843]] | [web] Book a trade |
 | [[https://github.com/OreStudio/OreStudio/pull/3840][#3840]] | [agile] Capture the status command's bootstrap read |
 | [[https://github.com/OreStudio/OreStudio/pull/3838][#3838]] | [web] Give the browser cases one way to sign in |
 | [[https://github.com/OreStudio/OreStudio/pull/3837][#3837]] | [trading] Prove the booking rule over a real bus |

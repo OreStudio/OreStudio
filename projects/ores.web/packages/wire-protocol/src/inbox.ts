@@ -353,6 +353,19 @@ export const inboxRequestPartViewSchema = z.object({
  * username when the join could read it and the account's id when it could
  * not, because a plain member may not read the account list.
  */
+/**
+ * The record a request is about, when it is about one.
+ *
+ * A trading authorisation names a trade through the trading component's own
+ * join, so the request carries no id of its own; the label is the identifier a
+ * person recognises, and the id is what the link needs.
+ */
+export const inboxRequestSubjectSchema = z.object({
+    tradeId: z.uuid(),
+    tradeVersion: z.int().nonnegative().default(0),
+    label: z.string().default(''),
+});
+
 export const inboxRequestViewSchema = z.object({
     id: z.string().default(''),
     version: z.int().nonnegative().default(0),
@@ -366,6 +379,8 @@ export const inboxRequestViewSchema = z.object({
     decision: inboxRequestDecisionViewSchema.nullable().default(null),
     // The parts are read for one request, not for a page, so a list draws none.
     parts: z.array(inboxRequestPartViewSchema).default([]),
+    /** The trades this request asks about; empty for a kind that names none. */
+    subjects: z.array(inboxRequestSubjectSchema).default([]),
 });
 
 /**
@@ -755,6 +770,7 @@ function toRequestView(
         roles: join.rolesByRequest.get(wire.id) ?? [],
         decision: namedDecision(join.decisionByRequest.get(wire.id), join.usernameByAccount),
         parts: [],
+        subjects: [],
     };
 }
 

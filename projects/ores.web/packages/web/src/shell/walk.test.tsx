@@ -225,6 +225,8 @@ describe('the routes of the application', () => {
         '/profile',
         '/where-i-work',
         '/tenants/new',
+        // Opened from the trade list's own button, so no card leads to it.
+        '/trading/trades/new',
         '/development',
         PATHS.reporting,
         // Opened from an oresmd URL, so no card leads to it.

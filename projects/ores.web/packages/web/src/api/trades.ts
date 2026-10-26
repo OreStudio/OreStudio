@@ -71,7 +71,7 @@ export interface TradeIdentifier {
     readonly trade_id: string;
     readonly id_type: string;
     readonly id_value: string;
-    readonly issuing_party_id: string;
+    readonly issuing_party_id: string | null;
 }
 
 /** One party role the trade was written with. */
@@ -152,7 +152,8 @@ const tradePageRecordSchema = z.object({
             trade_id: z.string().default(''),
             id_type: z.string().default(''),
             id_value: z.string().default(''),
-            issuing_party_id: z.string().default(''),
+            // The domain allows an identifier no party issues, so the read answers null.
+            issuing_party_id: z.string().nullable().default(null),
         }),
     ),
     roles: z.array(
@@ -197,6 +198,25 @@ export const trades = {
         return parsed as TradePageRecord;
     },
 
+    /** The securities and identifier schemes the booking form offers. */
+    async bookingOptions(): Promise<BookingOptions> {
+        return bookingOptionsSchema.parse(
+            await request('/api/trades/new', { method: 'GET' }),
+        ) as BookingOptions;
+    },
+
+    /** Books a trade, and answers the one it made. */
+    async book(body: BookingRequest): Promise<string> {
+        const reply = bookedTradeSchema.parse(
+            await request('/api/trades', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            }),
+        );
+        return reply.id;
+    },
+
     /** One page of trades, searched, filtered and ordered on the server. */
     async page(query: TradePageQuery): Promise<TradePage> {
         const params = new URLSearchParams({
@@ -213,3 +233,39 @@ export const trades = {
             .parse(await request(`/api/trades?${params.toString()}`, { method: 'GET' }));
     },
 };
+
+/** A security a bond trade can name, as the booking form offers it. */
+export const bookableIssueSchema = z.looseObject({
+    issue_id: z.uuid().optional(),
+    security_id: z.string().default(''),
+    calendar: z.string().nullable().default(null),
+});
+
+/** An identifier scheme the tenant knows. */
+export const idTypeSchema = z.looseObject({
+    code: z.string().default(''),
+});
+
+/** What the booking form offers, read in one call. */
+export const bookingOptionsSchema = z.object({
+    books: z.array(z.looseObject({ id: z.uuid(), name: z.string().default('') })).default([]),
+    issues: z.array(bookableIssueSchema).default([]),
+    idTypes: z.array(idTypeSchema).default([]),
+});
+
+export type BookingOptions = z.infer<typeof bookingOptionsSchema>;
+export type BookableIssue = z.infer<typeof bookableIssueSchema>;
+
+/** What a person states when booking a trade. */
+export interface BookingRequest {
+    readonly bookId: string;
+    readonly counterpartyId: string;
+    readonly tradeDate: string;
+    readonly issueId: string;
+    readonly notional: string;
+    readonly identifierType: string;
+    readonly identifierValue: string;
+}
+
+/** The trade a booking made. */
+const bookedTradeSchema = z.object({ id: z.uuid() });

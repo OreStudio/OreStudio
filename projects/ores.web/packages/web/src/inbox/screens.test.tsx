@@ -65,6 +65,7 @@ function mine(overrides: Partial<InboxRequestView> = {}): InboxRequestView {
         roles: [],
         decision: null,
         parts: [],
+        subjects: [],
         ...overrides,
     } as unknown as InboxRequestView;
 }

@@ -22,7 +22,7 @@
 import { useMemo, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client.js';
-import { Link, useSearchParams } from 'react-router';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { trades, TRADE_SORTS, type TradeRow } from '../api/trades.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { RecordList, type ListSource } from '../refdata/RecordList.js';
@@ -92,9 +92,10 @@ export function TradesPage(): ReactNode {
                 choices: TYPES.map((type) => ({ value: type, label: type })),
             },
         ],
-        mayAdd: false,
+        mayAdd: true,
     };
 
+    const navigate = useNavigate();
     const [search] = useSearchParams();
     const tradeId = search.get('trade') ?? '';
     const version = Number(search.get('version') ?? '');
@@ -112,6 +113,10 @@ export function TradesPage(): ReactNode {
                 lead={t('trading.trades.lead')}
                 crumbs={useAreaParts('trading', t('trading.trades.title'))}
                 keyOf={(row) => row.id}
+                addLabel={t('trading.booking.open')}
+                onAdd={() => {
+                    void navigate(PATHS.newTrade);
+                }}
                 // A structure has no page of its own yet, so only a trade opens.
                 pathOf={(row) =>
                     row.row_kind === 'trade' ? `${PATHS.trades}/${row.id}` : undefined

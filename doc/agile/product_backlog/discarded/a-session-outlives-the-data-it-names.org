@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 7A3F9C28-1D56-4E90-B4C1-8F2E5A6D0917
+:END
+#+title: A session outlives the data it names (wrong)
+#+description: Discarded. The refusal was a book of another party, not an old session: the picker offered books the booking could not use.
+#+type: capture
+#+level: cross
+#+filetags: :web:iam:bug:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+A test of the booking form failed twice with:
+
+#+begin_example
+Repository error: Executing INSERT failed: ERROR: Invalid book_id: <uuid>.
+The book must belong to the trade's party.
+#+end_example
+
+The book was fine. The browser had been signed in since before the database was
+recreated, so its session still carried the party the login answered with — an
+id from the previous database — while the book it offered came from the new one.
+The identical request, sent through a session opened after the recreation,
+answered 201.
+
+So the fault is not in the booking: it is that a session is a snapshot of a
+world that can be replaced under it. Two things could say so:
+
+- *The BFF could refuse a session whose party is gone.* The login answered the
+  party, and the BFF can re-read it: a party that no longer exists means the
+  session is from another database, which is the truth a person needs.
+- *Or the refusal could name the session.* The booking's answer is a repository
+  error about a book; a person reading it goes looking at books. A code such as
+  =session_stale= would send them to the right place, and the screen could say
+  "sign in again" the way it already does for an ended session.
+
+The second is smaller and helps every write, not just a booking: the change
+belongs where the trading service already answers =invalid book_id=, and where
+any other service answers about a foreign key it can no longer see.
+
+
+* Why this was discarded
+
+I read the refusal as a stale session and wrote the capture from that reading.
+The ids in the error are not stale: they are books that exist now, and each
+belongs to a *different party* than the one the booking is stamped with.
+
+#+begin_example
+1c2248c6-… | G10 Americas Spot Forward | Active | f4f499b9-…
+04624bc9-… | HKD Vanilla Swaps          | Active | e52acd16-…
+d8d2dde9-… | GBP Vanilla Swaps          | Active | bcb5cf28-…
+#+end_example
+
+So the fault was the form's book picker, which offered every book the session
+could *see* rather than the books the session could *book into*. It is fixed:
+the picker is read in the booking's route, where the acting party is known, and
+filtered to that party's open books.
+
+* What remains true
+
+A session is still a snapshot of a world that can be replaced under it, and a
+stale one would still produce a confusing refusal. That is a real risk, but
+nothing in this test demonstrated it, and a capture that says otherwise would
+send the next person down the wrong path.

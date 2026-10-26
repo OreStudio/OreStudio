@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: CB2F97F2-5D7F-4986-A95F-2426FBECEA0E
+:END:
+#+title: The ticks hypertable grows without bound on the Apache edition
+#+description: TimescaleDB runs the Apache edition, which has no retention job, so the seven-day retention the ticks table declares is never set and the table keeps every row.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:database:timescaledb:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores_marketdata_ticks_tbl= declares a retention of seven days, but the create
+script sets the policy only on the Timescale licence. This machine runs
+TimescaleDB 2.30.2 under the Apache licence, which has no retention job, so the
+script reports the interval and the table keeps every row. The table is not
+compressed either, because row-level security does not work on compressed
+chunks. Something must drop old chunks: a scheduled =drop_chunks= call from a
+service or a cron job, since the extension will not.
+
+* Why
+
+At the runaway rate the table took about 41 million rows an hour. At the
+fixed rate it takes about 140 thousand rows an hour per environment, and ten
+environments share the instance.
+
+* References
+
+- =projects/ores.sql/create/marketdata/marketdata_ticks_create.sql=
+
+* See also
+
+- None.

@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 2D94BF13-5BB2-4522-AD1B-098C2376D947
+:END:
+#+title: Measure the tick flow as a funnel with balance checks
+#+description: Count ticks at every stage boundary from synthetic publish to marketdata store and republish, sample the counters into telemetry, and check that each interval balances.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:synthetic:telemetry:observability:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Count ticks at every stage boundary and check that the counts balance. The
+stages are synthetic =published= per feed, then marketdata =received=,
+=dropped= by reason (=unmapped=, =stale=, =overflow=, =no_route=),
+=stored_source_ticks=, =stored_rows= and =republished=. Each counter is
+monotonic. marketdata and synthetic publish a timestamped sample of them once a
+minute, and telemetry stores it as it stores =nats_samples=, so a minute costs a
+few rows and a long history is cheap. Rates come from the difference between
+two samples.
+
+Each interval must balance: =received= equals =dropped= plus =stored= plus the
+change in the queue, and =published= is about =received=. A stage that does not
+balance names where ticks go missing. An =ores.shell= command,
+=marketdata flow --since <duration>=, prints the funnel per minute, the balance
+of each interval and the stage that is off.
+
+* Why
+
+On 2026-10-26 the machine went down overnight. Two defects together caused it: the shared Hawkes heat ran the synthetic feeds at about 300 times their configured rate, and the NATS client kept every message it received. Finding both took ad hoc sampling of systemd and /proc, parsing marketdata's once-a-minute INGEST STATUS log line, NATS monitoring endpoints, Postgres row counts and a core dump. Most of that time went on two questions: is the volume what was
+configured, and where do the ticks go? A funnel answers both at a glance. The
+largest anomaly that night, about 6,400 unmapped ticks a second dropped before
+the store, never reached any table, so no query over stored data could have
+shown it.
+
+Today the counters exist only in marketdata's memory and in a log line, and
+synthetic logs its publish count every hundred ticks. Nothing is kept, so after
+the crash no record said what the tick rate had been.
+
+* References
+
+- =projects/ores.marketdata/service/src/app/feed_ingest_loop.cpp= (=log_status=, =feed_stats=)
+- =projects/ores.telemetry/modeling/ores.telemetry.nats_samples.org=, the sample shape to follow
+
+* See also
+
+- [[id:C8718994-0C82-450D-8B5B-C6092342DA5C][Compare the observed tick rate with the configured rate]]
+- [[id:9CABDED8-9181-4FFD-BB6A-D7E89B5DA796][Record market changes as events on the telemetry timeline]]
+- [[id:8C251770-BD8F-4CD6-9B7F-FE7004EC1A8E][Drill into stored ticks by series for a window]]
+- [[id:259C03EA-E8D2-44EF-ABE6-BA691312B701][Sample host resources onto the telemetry timeline]]

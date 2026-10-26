@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 8C251770-BD8F-4CD6-9B7F-FE7004EC1A8E
+:END:
+#+title: Drill into stored ticks by series for a window
+#+description: An ores.shell command that counts stored ticks by source, party and series over a window from the ticks hypertable, for the follow-up question once the funnel shows where a flow is off.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:shell:observability:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+An =ores.shell= command, =marketdata flow --by series --at <time>=, that counts
+the stored ticks of one window by source, party and series from
+=ores_marketdata_ticks_tbl=, with =time_bucket=. It answers the follow-up
+question once the funnel shows a stage that is off: which series.
+
+TimescaleDB runs the Apache edition here, which has no continuous aggregates,
+so each query scans raw rows. The command therefore reads one bounded window
+and is not the per-minute view; the funnel samples are.
+
+* Why
+
+On 2026-10-26 the machine went down overnight. Two defects together caused it: the shared Hawkes heat ran the synthetic feeds at about 300 times their configured rate, and the NATS client kept every message it received. Finding both took ad hoc sampling of systemd and /proc, parsing marketdata's once-a-minute INGEST STATUS log line, NATS monitoring endpoints, Postgres row counts and a core dump. The stored table is the ground truth for what was written, and it
+already carries the tenant, the party, the series and the source of each row.
+At the runaway rate it took about 41 million rows an hour, so a query must be
+narrow.
+
+* References
+
+- =projects/ores.sql/create/marketdata/marketdata_ticks_create.sql=
+
+* See also
+
+- [[id:2D94BF13-5BB2-4522-AD1B-098C2376D947][Measure the tick flow as a funnel with balance checks]]

@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 9F3C1D47-2B6A-4E85-9D71-5C8E2A4B7F03
+:END:
+#+title: Control how a market ticks, prototype
+#+description: Three ways to manage the arrival regime — a pair's own clustering and its sensitivity, and the run-wide market state — argued against the screen that exists today
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:synthetic:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+| Item      | Where                                        |
+|-----------+----------------------------------------------|
+| Prototype | [[file:control-how-a-market-ticks/][the prototype page]] |
+| Group     | [[file:index.org][Market data prototypes]]       |
+
+* Summary
+
+A feed's ticks used to be one number. They are now a regime: a mode (periodic,
+Poisson or Hawkes), a branching ratio and a decay that say how a cluster of
+ticks feeds itself, a sensitivity that says how hard the feed follows the
+market, and — one level up — a run-wide market state that a person can pin.
+
+The controls exist in three surfaces that do not know about each other. This
+prototype argues how they should be managed before a fourth is added.
+
+* What we have
+
+| Surface | What it offers | What it cannot say |
+|---------+----------------+--------------------|
+| Feed editor (=fxFeeds=, =irFeeds=) | the four columns as fields beside the rate | whether the numbers produce a burst, and what the market is doing to them |
+| Ticks panel, per feed | the process and its mixture, the rate as one line | anything about arrival: no mode, no clustering, no sensitivity |
+| Shell | =synthetic regime get= and =pin= | the same, but readable and drivable by a person who knows the verbs |
+| Prototype =synthetic-feeds= | the tree, hero, summary, chart | no arrival vocabulary at all |
+
+Three gaps follow.
+
+1. *A number without a consequence.* A branching ratio of 0.9 is a legal value
+   that produces almost no clustering, and one of 0.99 produces bursts that the
+   pipeline cannot keep up with. The editor shows neither.
+2. *Two levels, one place.* The market state is a property of the run and the
+   sensitivity is a property of the row, but the only place both are visible
+   together is a terminal.
+3. *The screen's own rule.* The screen standard says a node carries running,
+   stopped or partial, and the editors behind it author one feed. It has no
+   vocabulary for "this feed follows a market that is currently busy".
+
+* The journeys
+
+A journey is one screen organised around a goal, and its steps draw the views
+they need; the rail is data. Three journeys cover this work.
+
+** J1: "See what a feed's ticks will look like"
+
+Author opens a feed from the tree, and the editor's arrival section shows a
+sparkline of the gaps the current numbers produce — the same seeds the service
+would use — beside the fields. No state is committed to judge it.
+
+*** Steps
+1. *The feed*, its pair and its rate.
+2. *The regime*, four fields and the gap preview.
+3. *The market*, where this feed sits against the run's state: its sensitivity
+   and what the state does to it.
+
+** J2: "Set how the whole market behaves"
+
+Operator opens the Market Simulator with no feed selected. The right-hand side
+is the run: the state in force, the multiplier, and a switch of auto, calm and
+active, with the time the pin was set and by whom.
+
+*** Steps
+1. *The run*, its collections and how many feeds are live.
+2. *The state*, what is in force and whether a scenario pinned it.
+3. *The consequence*, the multiplier each feed is now scaled by, listed by
+   asset class so a curve at 0.4 and a pair at 1.3 read side by side.
+
+** J3: "Test a fast market without waiting for one"
+
+Tester pins the state, watches two feeds whose counts used to be independent
+move together, and releases the pin.
+
+*** Steps
+1. *Pin*, from the panel, with the reason recorded like any other change.
+2. *Observe*, the run's counts per feed over a window, against the same window
+   before the pin.
+3. *Release*, back to auto, with the same chart showing the fall back.
+
+* Three prototypes
+
+** A: inline, in the editor's arrival section
+
+The four fields sit in the feed editor, and under them a small "what this
+produces" panel: a gap sparkline, the long-run rate, and the Fano factor of the
+gaps. The market state appears as one read-only line — "market: active ×2" —
+with a link to the panel.
+
+/For:/ one screen per feed, nothing new to learn, the consequence is where the
+choice is.
+/Against:/ the run-wide state has no home; the same read-only line repeats in
+every editor.
+
+** B: a Market panel beside the tree
+
+The Market Simulator gains a docked panel on the right: state, multiplier, the
+auto/calm/active switch, and the list of feeds by sensitivity. The feed editor
+keeps its four fields and gains nothing else.
+
+/For:/ the two levels are finally adjacent, and the run's state has one home.
+/Against:/ a person editing one feed's clustering must look at two places to
+understand it.
+
+** C: one "Arrivals" journey screen
+
+A single screen with a rail: *the run* (state, pin, multiplier), *the feeds* (a
+table of every feed's mode, ratio, decay, sensitivity and live rate), *the
+preview* (pick one row, see its gaps). The editor's four fields become read-only
+with "open in Arrivals".
+
+/For:/ every control in one place, and a table is the only shape that compares
+twenty feeds.
+/Against:/ it puts the choice away from the row it belongs to, and adds a
+second place a rate is edited.
+
+* Recommendation
+
+B for the run, A for the row, and the table from C as the *panel's* lower half
+rather than a screen of its own: the Market panel lists feeds by sensitivity, so
+"who follows the market hardest" is one glance, and the feed's own editor keeps
+its four fields with the consequence preview under them.
+
+The argument is the standard's own: a node carries a state and the editors
+author one feed. The market is not a feed, so it is not the editor's business;
+the clustering is one feed's, so it is not the panel's.
+
+* What to prototype next
+
+The panel (B) as a throwaway page in this folder: the tree on the left, the
+market panel on the right, the switch, and the by-sensitivity list, with the
+counts of two feeds before and after a pin (J3) drawn as the place a tester
+would actually read them.

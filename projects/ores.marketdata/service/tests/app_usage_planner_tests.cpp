@@ -21,7 +21,9 @@
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -231,4 +233,44 @@ TEST_CASE("the_states_come_from_the_routes_that_hold_a_subscription_with_a_right
     CHECK(states.front().display);
     CHECK(states.front().derived);
     CHECK_FALSE(states.front().non_display);
+}
+
+TEST_CASE("a_tenant_whose_close_fails_opens_nothing_until_the_next_sync", tags) {
+    using ores::marketdata::domain::subscription_interval;
+    using ores::marketdata::service::app::interval_plan;
+    using ores::marketdata::service::app::write_plan;
+    using ores::utility::uuid::tenant_id;
+
+    boost::uuids::random_generator gen;
+    const auto failing = tenant_id::from_uuid(gen()).value();
+    const auto healthy = tenant_id::from_uuid(gen()).value();
+    auto interval_of = [&gen](const tenant_id& tenant) {
+        subscription_interval i;
+        i.id = gen();
+        i.tenant_id = tenant;
+        return i;
+    };
+
+    interval_plan<subscription_interval> plan;
+    plan.to_close = {interval_of(failing)};
+    plan.to_open = {interval_of(failing), interval_of(healthy)};
+
+    std::vector<boost::uuids::uuid> written;
+    std::size_t reported = 0;
+    const auto outcome = write_plan(
+        plan,
+        [&](const subscription_interval& i) {
+            if (i.id == plan.to_close.front().id)
+                throw std::runtime_error("the store refused the close");
+            written.push_back(i.id);
+        },
+        [&](const subscription_interval&, const std::exception&) { ++reported; });
+
+    REQUIRE(written.size() == 1);
+    CHECK(written.front() == plan.to_open.back().id);
+    CHECK(outcome.closed == 0);
+    CHECK(outcome.opened == 1);
+    CHECK(outcome.failed == 1);
+    CHECK(outcome.held == 1);
+    CHECK(reported == 1);
 }

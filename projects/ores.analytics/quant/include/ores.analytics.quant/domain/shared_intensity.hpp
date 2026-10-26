@@ -22,6 +22,7 @@
 #include <atomic>
 #include <cmath>
 #include <cstdint>
+#include <mutex>
 #include <stdexcept>
 #include <utility>
 
@@ -209,13 +210,24 @@ public:
 
 private:
     void add_rate(double delta) {
-        population_rate_.fetch_add(delta, std::memory_order_relaxed);
+        // A sum of doubles added and taken away drifts, and a few rounding errors left
+        // behind by series that have all gone would divide the heat by almost nothing.
+        // So the sum is reset to exactly zero when the last series leaves, and the
+        // count and the sum change together under the lock. Enrolment is rare; reads
+        // stay one atomic load.
+        std::lock_guard lock(enrol_mu_);
+        enrolled_ = delta > 0.0 ? enrolled_ + 1 : enrolled_ - 1;
+        const double next =
+            enrolled_ == 0 ? 0.0 : population_rate_.load(std::memory_order_relaxed) + delta;
+        population_rate_.store(next, std::memory_order_relaxed);
     }
 
     const double jump_;
     const double decay_;
     std::atomic<double> excess_{0.0};
     std::atomic<double> population_rate_{0.0};
+    std::mutex enrol_mu_;
+    std::uint64_t enrolled_ = 0;
 };
 
 }

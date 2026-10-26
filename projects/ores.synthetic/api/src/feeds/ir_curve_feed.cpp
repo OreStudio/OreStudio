@@ -75,7 +75,7 @@ ir_curve_feed::ir_curve_feed(
     , clock_(*arrivals_, link)
     , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
     , intensity_(link.intensity)
-    , enrolment_(ores::analytics::quant::domain::enrol(link, arrival.ticks_per_hour))
+    , enrolment_(ores::analytics::quant::domain::enrol_hourly(link, arrival.ticks_per_hour))
     , arrival_(arrival)
     , link_(link)
     , scheduler_(scheduler)

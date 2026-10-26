@@ -220,3 +220,20 @@ TEST_CASE("the population rate follows the series that are enrolled", "[shared_i
     CHECK(heat.population_rate() == Catch::Approx(0.0).margin(1e-12));
     CHECK_THROWS_AS(heat.enrol(0.0), std::invalid_argument);
 }
+
+TEST_CASE("the population rate returns to zero when every series leaves", "[shared_intensity]") {
+    shared_intensity heat(0.5, 20.0);
+    heat.record_event();
+    std::mt19937 rng(11);
+    std::uniform_real_distribution<double> rate(0.0001, 3.0);
+    std::vector<shared_intensity::enrolment> enrolled;
+    for (int round = 0; round < 50; ++round) {
+        for (int i = 0; i < 200; ++i)
+            enrolled.push_back(heat.enrol(rate(rng)));
+        enrolled.erase(enrolled.begin(), enrolled.begin() + 150);
+    }
+    enrolled.clear();
+
+    CHECK(heat.population_rate() == 0.0);
+    CHECK(heat.rate_share() == 0.0);
+}

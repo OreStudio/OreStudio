@@ -31,6 +31,9 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <cstddef>
+#include <exception>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -72,6 +75,59 @@ struct interval_plan {
     std::vector<Interval> to_open;
     std::vector<Interval> to_close;
 };
+
+/**
+ * @brief What writing an interval plan did.
+ */
+struct plan_outcome final {
+    /// Closes that were written.
+    std::size_t closed = 0;
+    /// Opens that were written.
+    std::size_t opened = 0;
+    /// Writes the store refused.
+    std::size_t failed = 0;
+    /// Opens held back because a close of the same tenant failed.
+    std::size_t held = 0;
+};
+
+/**
+ * @brief Writes @p plan through @p write, closes first, and reports each refused write to
+ * @p report.
+ *
+ * A close is the next version of the row that was open, so it goes first, and a tenant whose
+ * close fails opens nothing until the next sync: opening first would leave the old interval
+ * open beside the new one. Another tenant's writes go ahead, and the next sync plans what was
+ * not written again from what the store holds.
+ */
+template <typename Interval, typename Write, typename Report>
+plan_outcome write_plan(const interval_plan<Interval>& plan, Write&& write, Report&& report) {
+    plan_outcome out;
+    std::set<boost::uuids::uuid> held;
+    for (const auto& i : plan.to_close) {
+        try {
+            write(i);
+            ++out.closed;
+        } catch (const std::exception& e) {
+            ++out.failed;
+            held.insert(i.tenant_id.to_uuid());
+            report(i, e);
+        }
+    }
+    for (const auto& i : plan.to_open) {
+        if (held.contains(i.tenant_id.to_uuid())) {
+            ++out.held;
+            continue;
+        }
+        try {
+            write(i);
+            ++out.opened;
+        } catch (const std::exception& e) {
+            ++out.failed;
+            report(i, e);
+        }
+    }
+    return out;
+}
 
 /// The routes that hold a subscription with at least one right, with the rights of the
 /// subscription.

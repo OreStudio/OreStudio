@@ -180,7 +180,7 @@ fx_spot_feed::fx_spot_feed(
     , clock_(*arrivals_, link)
     , ticks_per_second_(arrival.ticks_per_hour / 3600.0)
     , intensity_(link.intensity)
-    , enrolment_(ores::analytics::quant::domain::enrol(link, arrival.ticks_per_hour))
+    , enrolment_(ores::analytics::quant::domain::enrol_hourly(link, arrival.ticks_per_hour))
     , nats_subject_(std::move(nats_subject))
     , display_subject_(ores::marketdata::domain::feed_display_subject_for(source_name_))
     , adapter_(std::move(adapter)) {

@@ -64,8 +64,8 @@ struct market_link final {
  * @brief Enrols a series that runs at @p ticks_per_hour with the heat @p link
  * feeds, or returns an empty enrolment when the run has no heat.
  */
-[[nodiscard]] inline shared_intensity::enrolment enrol(const market_link& link,
-                                                       double ticks_per_hour) {
+[[nodiscard]] inline shared_intensity::enrolment enrol_hourly(const market_link& link,
+                                                              double ticks_per_hour) {
     if (link.intensity == nullptr)
         return {};
     return link.intensity->enrol(ticks_per_hour / 3600.0);

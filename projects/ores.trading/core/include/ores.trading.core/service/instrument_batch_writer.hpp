@@ -36,7 +36,6 @@
 #include "ores.trading.core/repository/callable_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/cap_floor_instrument_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
-#include "ores.trading.core/repository/equity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/commodity_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_leg_repository.hpp"
@@ -47,6 +46,7 @@
 #include "ores.trading.core/repository/equity_accumulator_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_asian_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_barrier_option_instrument_repository.hpp"
+#include "ores.trading.core/repository/equity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/equity_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_forward_instrument_repository.hpp"
 #include "ores.trading.core/repository/equity_option_instrument_repository.hpp"
@@ -245,8 +245,6 @@ void write_instrument_batch(ores::database::context ctx,
         ctx, batch.cap_floor_instruments, keys, stamp, claim);
     write_rows<repository::commodity_basket_constituent_repository>(
         ctx, batch.commodity_basket_constituents, keys, stamp, claim);
-    write_rows<repository::equity_basket_constituent_repository>(
-        ctx, batch.equity_basket_constituents, keys, stamp, claim);
     write_rows<repository::composite_leg_repository>(ctx, batch.composite_legs, keys, stamp, claim);
     write_rows<repository::credit_basket_constituent_repository>(
         ctx, batch.credit_basket_constituents, keys, stamp, claim);
@@ -254,6 +252,8 @@ void write_instrument_batch(ores::database::context ctx,
         ctx, batch.credit_default_swap_instruments, keys, stamp, claim);
     write_rows<repository::credit_linked_swap_instrument_repository>(
         ctx, batch.credit_linked_swap_instruments, keys, stamp, claim);
+    write_rows<repository::equity_basket_constituent_repository>(
+        ctx, batch.equity_basket_constituents, keys, stamp, claim);
     write_rows<repository::equity_position_option_underlying_repository>(
         ctx, batch.equity_position_option_underlyings, keys, stamp, claim);
     write_rows<repository::flexi_swap_instrument_repository>(
@@ -426,6 +426,8 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("credit_default_swap_instruments");
     if (!batch.credit_linked_swap_instruments.empty())
         names.emplace_back("credit_linked_swap_instruments");
+    if (!batch.equity_basket_constituents.empty())
+        names.emplace_back("equity_basket_constituents");
     if (!batch.equity_position_option_underlyings.empty())
         names.emplace_back("equity_position_option_underlyings");
     if (!batch.flexi_swap_instruments.empty())

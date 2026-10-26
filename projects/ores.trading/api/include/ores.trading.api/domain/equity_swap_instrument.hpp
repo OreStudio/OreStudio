@@ -40,8 +40,8 @@ namespace ores::trading::domain {
  * @brief Equity Swap instrument.
  *
  * Routes ORE product types: EquitySwap, EquityWorstOfBasketSwap. For
- * basket swaps, underlying_name is NULL and basket_json holds the basket
- * definition; for single-name swaps, basket_json is NULL.
+ * basket swaps, underlying_name is NULL and the basket is the constituent rows
+ * that name the trade; for single-name swaps, the constituents are absent.
  */
 struct equity_swap_instrument final {
     instrument_identity identity;
@@ -52,17 +52,8 @@ struct equity_swap_instrument final {
     std::string underlying_name;
 
     /**
-     * @brief JSON array of underlyings for EquityWorstOfBasketSwap; empty for single-underlying.
-     *
-     * Empty generator value: the mapper maps empty strings to SQL NULL (see
-     * equity_swap_instrument_mapper.cpp), so the generated instrument keeps basket_json NULL and
-     * satisfies the SQL XOR check with trade_type_code = 'EquitySwap'.
-     */
-    std::string basket_json;
-
-    /**
      * @brief JSON array of numbers: the ORE InitialPrices for EquityWorstOfBasketSwap, in the same
-     * order as basket_json; empty when the document states none.
+     * order as the constituent rows; empty when the document states none.
      *
      * The entity has no child table for a per-underlying list, so the list lives as JSON text
      * beside basket_json. The ORE schema requires at least one InitialPrice, so an export that
@@ -161,7 +152,6 @@ struct equity_swap_instrument final {
  */
 inline constexpr std::string_view equity_swap_instrument_economic_fields[] = {
     "underlying_name",
-    "basket_json",
     "initial_prices_json",
     "knock_out_levels_json",
     "fixed_trigger_levels_json",

@@ -44,7 +44,6 @@ struct equity_swap_instrument_write {
     std::string trade_type_code;
     boost::uuids::uuid trade_activity_id;
     std::string underlying_name;
-    std::string basket_json;
     std::string initial_prices_json;
     std::string knock_out_levels_json;
     std::string fixed_trigger_levels_json;

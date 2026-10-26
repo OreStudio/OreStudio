@@ -600,6 +600,13 @@ inline void stamp_ids(equity_instrument_data& data,
                       boost::uuids::uuid trade_id,
                       boost::uuids::uuid activity_id = {}) {
     stamp_ids(data.instrument, trade_id, activity_id);
+    /*
+     * A basket constituent is a child of the trade like any other, so it states
+     * the trade it belongs to. A row left unstamped belongs to no trade and the
+     * export cannot find it by the key it looks up.
+     */
+    for (auto& constituent : data.basket_constituents)
+        stamp_ids(constituent, trade_id, activity_id);
     for (auto& underlying : data.underlyings) {
         underlying.trade_id = trade_id;
         underlying.trade_activity_id = activity_id;

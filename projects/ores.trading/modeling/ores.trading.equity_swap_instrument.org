@@ -16,8 +16,8 @@
 #+updated: 2026-08-08
 
 Routes ORE product types: EquitySwap, EquityWorstOfBasketSwap. For
-basket swaps, underlying_name is NULL and basket_json holds the basket
-definition; for single-name swaps, basket_json is NULL.
+basket swaps, underlying_name is NULL and the basket is the constituent rows
+that name the trade; for single-name swaps, the constituents are absent.
 
 * Flags
 :PROPERTIES:
@@ -99,25 +99,6 @@ Single underlying; empty for basket swaps.
 std::string("ACME Corp")
 #+end_src
 
-** basket_json
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:economic: true
-:END:
-
-JSON array of underlyings for EquityWorstOfBasketSwap; empty for single-underlying.
-
-Empty generator value: the mapper maps empty strings to SQL NULL
-(see equity_swap_instrument_mapper.cpp), so the generated instrument
-keeps basket_json NULL and satisfies the SQL XOR check with
-trade_type_code = 'EquitySwap'.
-
-#+begin_src cpp :name generator
-std::string("")
-#+end_src
-
 ** initial_prices_json
 :PROPERTIES:
 :type:     text
@@ -127,7 +108,8 @@ std::string("")
 :END:
 
 JSON array of numbers: the ORE =InitialPrices= for EquityWorstOfBasketSwap,
-in the same order as =basket_json=; empty when the document states none.
+in the same order as the constituent rows; empty when the document states
+none.
 
 The entity has no child table for a per-underlying list, so the list lives
 as JSON text beside =basket_json=. The ORE schema requires at least one
@@ -342,7 +324,7 @@ is immutable.
 
 | expression |
 |---|
-| ("trade_type_code" = 'EquityWorstOfBasketSwap' and "basket_json" is not null and "underlying_name" is null) or ("trade_type_code" = 'EquitySwap' and "underlying_name" is not null and "basket_json" is null) |
+| ("trade_type_code" = 'EquityWorstOfBasketSwap' and "underlying_name" is null) or ("trade_type_code" = 'EquitySwap' and "underlying_name" is not null) |
 | "notional" > 0 |
 | "currency" <> '' |
 | "return_type" in ('Total', 'Price') |

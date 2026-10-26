@@ -128,7 +128,8 @@ template <typename Leaf>
 equity_instrument_data
 as_equity(const instrument_batch& batch, const Leaf& leaf, boost::uuids::uuid trade_id) {
     return equity_instrument_data{equity_instrument_variant{leaf},
-                                  find_all(batch.equity_position_option_underlyings, trade_id)};
+                                  find_all(batch.equity_position_option_underlyings, trade_id),
+                                  find_all(batch.equity_basket_constituents, trade_id)};
 }
 
 /**

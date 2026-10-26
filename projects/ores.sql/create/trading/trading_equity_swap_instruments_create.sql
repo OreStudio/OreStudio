@@ -25,8 +25,8 @@
  * Equity Swap Instrument Table
  *
  * Routes ORE product types: EquitySwap, EquityWorstOfBasketSwap. For
- * basket swaps, underlying_name is NULL and basket_json holds the basket
- * definition; for single-name swaps, basket_json is NULL.
+ * basket swaps, underlying_name is NULL and the basket is the constituent rows
+ * that name the trade; for single-name swaps, the constituents are absent.
  */
 
 create table if not exists "ores_trading_equity_swap_instruments_tbl" (
@@ -37,7 +37,6 @@ create table if not exists "ores_trading_equity_swap_instruments_tbl" (
     "party_id" uuid not null,
     "trade_activity_id" uuid not null,
     "underlying_name" text null,
-    "basket_json" text null,
     "initial_prices_json" text null,
     "knock_out_levels_json" text null,
     "fixed_trigger_levels_json" text null,
@@ -64,7 +63,7 @@ create table if not exists "ores_trading_equity_swap_instruments_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("trade_type_code" in ('EquitySwap', 'EquityWorstOfBasketSwap')),
-    check (("trade_type_code" = 'EquityWorstOfBasketSwap' and "basket_json" is not null and "underlying_name" is null) or ("trade_type_code" = 'EquitySwap' and "underlying_name" is not null and "basket_json" is null)),
+    check (("trade_type_code" = 'EquityWorstOfBasketSwap' and "underlying_name" is null) or ("trade_type_code" = 'EquitySwap' and "underlying_name" is not null)),
     check ("notional" > 0),
     check ("currency" <> ''),
     check ("return_type" in ('Total', 'Price'))

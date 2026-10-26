@@ -3162,7 +3162,12 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     const auto* worst_of =
         std::get_if<ores::trading::domain::equity_swap_instrument>(&worst_of_data->instrument);
     REQUIRE(worst_of != nullptr);
-    CHECK(worst_of->basket_json == R"(["RIC:.SPX","RIC:.NDX"])");
+    // The basket is rows now, in the document's order, not an encoded string.
+    REQUIRE(worst_of_data->basket_constituents.size() == 2);
+    CHECK(worst_of_data->basket_constituents[0].underlying_name == "RIC:.SPX");
+    CHECK(worst_of_data->basket_constituents[1].underlying_name == "RIC:.NDX");
+    CHECK(worst_of_data->basket_constituents[0].sequence_number == 1);
+    CHECK(worst_of_data->basket_constituents[1].sequence_number == 2);
     CHECK(worst_of->initial_prices_json == "[3200,11500]");
     CHECK(worst_of->knock_out_levels_json == "[3500]");
     CHECK(worst_of->fixed_trigger_levels_json == "[3400]");
@@ -3174,7 +3179,9 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     const auto* worst_of_again = std::get_if<ores::trading::domain::equity_swap_instrument>(
         &worst_of_again_data->instrument);
     REQUIRE(worst_of_again != nullptr);
-    CHECK(worst_of_again->basket_json == worst_of->basket_json);
+    REQUIRE(worst_of_again_data->basket_constituents.size() == 2);
+    CHECK(worst_of_again_data->basket_constituents[0].underlying_name == "RIC:.SPX");
+    CHECK(worst_of_again_data->basket_constituents[1].underlying_name == "RIC:.NDX");
     CHECK(worst_of_again->initial_prices_json == worst_of->initial_prices_json);
     CHECK(worst_of_again->knock_out_levels_json == worst_of->knock_out_levels_json);
     CHECK(worst_of_again->fixed_trigger_levels_json == worst_of->fixed_trigger_levels_json);

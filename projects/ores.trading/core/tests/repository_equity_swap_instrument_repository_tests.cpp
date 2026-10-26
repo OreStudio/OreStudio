@@ -50,7 +50,6 @@ repository_equity_swap_instrument_repository_make_instrument(database_helper& h)
     r.identity.tenant_id = h.tenant_id();
     r.identity.trade_type_code = "EquitySwap";
     r.underlying_name = ".SPX";
-    r.basket_json = "";
     r.currency = "USD";
     r.notional = ores::utility::decimal::decimal::from_string("2000000").value();
     r.return_type = "Total";

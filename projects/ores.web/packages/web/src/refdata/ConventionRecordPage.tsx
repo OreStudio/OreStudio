@@ -223,6 +223,12 @@ function TermsCard({
             }
             return next;
         });
+    // The page has no live feed of convention changes, so the read is refetched
+    // after a save rather than only marked stale.
+    const reread = (): Promise<void> =>
+        queries.invalidateQueries({
+            queryKey: ['conventions', document.family, 'documents', document.id],
+        });
     const leave = (): void => {
         setEditing(null);
         setCommentary('');
@@ -244,6 +250,7 @@ function TermsCard({
                 return;
             }
             markStale(queries, [['conventions', document.family]]);
+            void reread();
             leave();
         },
     });
@@ -332,7 +339,7 @@ function TermsCard({
                                 size="sm"
                                 onClick={() => {
                                     leave();
-                                    markStale(queries, [['conventions', document.family]]);
+                                    void reread();
                                 }}
                             >
                                 {t('refdata.conventions.record.reload')}

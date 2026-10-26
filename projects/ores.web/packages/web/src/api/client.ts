@@ -413,6 +413,7 @@ const folderFeedSchema = z.object({
     engine: z.string(),
     ticks_per_hour: z.number(),
     auto_start: z.boolean(),
+    running: z.boolean(),
 });
 
 /** A feed as the feed table lists it: what names it, what it prices and how often it ticks. */
@@ -420,11 +421,13 @@ export type FolderFeed = z.infer<typeof folderFeedSchema>;
 
 /**
  * One feed as its page reads it: the record, with the provider of the collection
- * it sits under. The feed's own record names no provider.
+ * it sits under and whether its generator runs. The feed's own record names no
+ * provider and no run.
  */
 export const feedRecordSchema = z.looseObject({
     version: z.int().nonnegative(),
     provider_code: z.string(),
+    running: z.boolean(),
 });
 
 export type FeedRecord = z.infer<typeof feedRecordSchema>;

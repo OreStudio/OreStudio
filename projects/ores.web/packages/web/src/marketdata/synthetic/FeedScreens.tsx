@@ -40,7 +40,6 @@ import { RecordStoreProvider, syntheticStore } from '../../refdata/store.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
 import { PATHS } from '../../shell/paths.js';
 import { Button, Notice } from '../../ui/Primitives.js';
-import { servesFeeds, useSources } from './adapterStatus.js';
 import { FeedStatus, RunOutcomeText, useFeedRuns } from './feedRuns.js';
 import { FeedHistory, type FeedPart } from './FeedHistory.js';
 import type { FeedKind } from './feedKind.js';
@@ -124,9 +123,7 @@ function FeedBody({
         label: name,
         tabs: ['details', ...kind.tabs.map((one) => one.name), 'history'],
     });
-    const sources = useSources();
-    const running =
-        sources === undefined ? undefined : servesFeeds(sources.get(feed.provider_code));
+    const running = feed.running;
     const runs = useFeedRuns();
     const [editing, setEditing] = useState(false);
     const [removing, setRemoving] = useState(false);

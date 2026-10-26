@@ -19,9 +19,9 @@
  */
 #include "../src/client_message.hpp"
 #include "../src/feed_config_handler.hpp"
-#include "../src/feed_controller.hpp"
 #include "../src/feed_kind_registry.hpp"
 #include "../src/folder_feed_control_handler.hpp"
+#include "../src/generator_fleet.hpp"
 #include "../src/simulate_handler.hpp"
 #include "../src/vintage_validity_handler.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
@@ -308,7 +308,7 @@ ores::database::context make_test_context() {
                                                        .service_account = opts.user});
 }
 
-// The registry and the controllers every handler verb below is driven with.
+// The registry and the fleet every handler verb below is driven with.
 struct stub_fixture {
     ores::synthetic::feed::feed_factory factory = stub_factory();
     std::shared_ptr<ores::synthetic::service::feed_kind_registry> registry =
@@ -316,7 +316,7 @@ struct stub_fixture {
     ores::nats::service::client nats;
     ores::nats::service::nats_client auth_nats;
     ores::database::context ctx;
-    std::shared_ptr<ores::synthetic::service::feed_controller> ctrl;
+    ores::synthetic::service::generator_fleet fleet;
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
     std::string token =
         mint_token({stub_permission, std::string(ores::synthetic::service::run_permission)});
@@ -325,7 +325,6 @@ struct stub_fixture {
         : nats(ores::testing::make_nats_options())
         , auth_nats(nats, [](bool) { return std::string(); })
         , ctx(make_test_context()) {
-        ctrl = std::make_shared<ores::synthetic::service::feed_controller>(nats);
         verifier = ores::security::jwt::jwt_authenticator::create_hs256(
             test_secret, test_issuer, test_audience);
     }
@@ -502,47 +501,46 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", tags) {
     stub_fixture f;
 
     // start: the verb reaches the stub kind's candidates and build_input, and
-    // its producer goes through factory().make("stub", ...) into the
-    // controller.
+    // its producer goes through factory().make("stub", ...) into the fleet.
     stub_builds = 0;
     {
-        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier, *f.registry);
+        feed_config_handler h(f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry);
         h.start(request_message(start_feed_request{.config_id = stub_id}, f.token));
     }
     CHECK(stub_builds == 1);
-    CHECK(f.ctrl->running_count() == 1);
-    CHECK(f.ctrl->list() == std::vector<std::string>{stub_source});
+    CHECK(f.fleet.running_count() == 1);
+    CHECK(f.fleet.running_source_names() == std::vector<std::string>{stub_source});
 
     // A config id the stub kind does not claim starts nothing.
     {
-        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier, *f.registry);
+        feed_config_handler h(f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry);
         h.start(request_message(start_feed_request{.config_id = "not-a-config-id"}, f.token));
     }
-    CHECK(f.ctrl->running_count() == 1);
+    CHECK(f.fleet.running_count() == 1);
 
     // stop: the verb resolves the config id through the same registry.
     {
-        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier, *f.registry);
+        feed_config_handler h(f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry);
         h.stop(request_message(stop_feed_request{.config_id = stub_id}, f.token));
     }
-    CHECK(f.ctrl->running_count() == 0);
+    CHECK(f.fleet.running_count() == 0);
 
     // folder start: the cascade loops the registered kinds, filters by the
     // subtree the registry supplies, and tallies under the registered kind.
     {
-        folder_feed_control_handler h(f.nats, f.ctrl, f.auth_nats, f.ctx, f.verifier, *f.registry);
+        folder_feed_control_handler h(f.nats, f.fleet, f.auth_nats, f.ctx, f.verifier, *f.registry);
         h.start(
             request_message(start_feeds_under_folder_request{.folder_id = stub_folder}, f.token));
     }
-    CHECK(f.ctrl->running_count() == 1);
-    CHECK(f.ctrl->list() == std::vector<std::string>{stub_source});
+    CHECK(f.fleet.running_count() == 1);
+    CHECK(f.fleet.running_source_names() == std::vector<std::string>{stub_source});
 
     // folder stop: the same walk, over rows rather than targets.
     {
-        folder_feed_control_handler h(f.nats, f.ctrl, f.auth_nats, f.ctx, f.verifier, *f.registry);
+        folder_feed_control_handler h(f.nats, f.fleet, f.auth_nats, f.ctx, f.verifier, *f.registry);
         h.stop(request_message(stop_feeds_under_folder_request{.folder_id = stub_folder}, f.token));
     }
-    CHECK(f.ctrl->running_count() == 0);
+    CHECK(f.fleet.running_count() == 0);
 
     // vintage validity: the verb iterates the registered kinds and reads the
     // kind's own anchor coordinate. The anchor is applicable, and the lookup
@@ -591,38 +589,38 @@ TEST_CASE("client_message_tells_the_caller_its_own_mistake_and_nothing_else", ta
 TEST_CASE("a_system_feed_starts_and_stops_only_in_the_system_tenant", tags) {
     stub_fixture f;
     const auto start = [&] {
-        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier, *f.registry);
+        feed_config_handler h(f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry);
         h.start(request_message(start_feed_request{.config_id = stub_id}, f.token));
     };
     const auto stop = [&] {
-        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier, *f.registry);
+        feed_config_handler h(f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry);
         h.stop(request_message(stop_feed_request{.config_id = stub_id}, f.token));
     };
 
     // In a tenant's own collection the caller's tenant may start and stop the feed.
     start();
-    REQUIRE(f.ctrl->running_count() == 1);
+    REQUIRE(f.fleet.running_count() == 1);
 
     // Once the collection is a system collection, a tenant may no longer stop it ...
     set_stub_owner(true);
     stop();
-    CHECK(f.ctrl->running_count() == 1);
-    f.ctrl->stop();
-    CHECK(f.ctrl->running_count() == 0);
+    CHECK(f.fleet.running_count() == 1);
+    f.fleet.stop_all();
+    CHECK(f.fleet.running_count() == 0);
 
     // ... and may not start it.
     start();
-    CHECK(f.ctrl->running_count() == 0);
+    CHECK(f.fleet.running_count() == 0);
 
     // Naming no feed would stop every feed the service runs, so a tenant may not ask for it.
     set_stub_owner(false);
     start();
-    REQUIRE(f.ctrl->running_count() == 1);
+    REQUIRE(f.fleet.running_count() == 1);
     {
-        feed_config_handler h(f.nats, f.auth_nats, f.ctrl, f.ctx, f.verifier, *f.registry);
+        feed_config_handler h(f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry);
         h.stop(request_message(stop_feed_request{}, f.token));
     }
-    CHECK(f.ctrl->running_count() == 1);
+    CHECK(f.fleet.running_count() == 1);
 
     // The system tenant itself is not refused.
     CHECK(feed_kind_registry::is_system_caller(

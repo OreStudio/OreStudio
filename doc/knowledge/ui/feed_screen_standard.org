@@ -376,21 +376,27 @@ Synthetic (=marketdata/synthetic/SyntheticScreen.tsx=) is one screen with two ta
 Dashboard and Provider. Everything on it is synthetic, so no label says so. The
 [[id:4F8C2A1D-6B3E-49F7-8A52-1C9E7D0B3A64][Synthetic feeds prototype]] shows it.
 
-One rule drives every number. A feed serves when its provider's source serves
-and the source is demanded at least one id. A provider is serving when one of
-its sources serves. No other count is added beside it: the rolls, the tags, the
-tiles and the demand all derive from that state.
+Two facts drive every number, and they are not the same fact.
+
+- A feed runs when the synthetic service runs a generator for it. The service
+  names every feed it runs by source name, whichever started the feed: an
+  adapter's demand, or an operator's Start. A feed's state, and the tiles that
+  count feeds, come from that set alone.
+- A provider serves when one of its sources serves and the service demands that
+  source at least one id. The provider's own state and the demand count come
+  from that, and no feed's state derives from it.
 
 *** The dashboard
 
 The dashboard (=DashboardTab.tsx=) has five tiles and then one row for each
 provider.
 
-- The tiles count the providers, the feeds serving, the feeds stopped, the ids
-  demanded and the ticks per minute.
-- A provider row shows what it simulates, its FX and IR counts, its feeds, its
-  state, and the ids demanded of it that are not served. Demand starts a
-  generator; Start and Stop on the row are the operator's test control.
+- The tiles count the providers, the feeds running, the feeds stopped, the ids
+  demanded and the ticks per minute. The two feed tiles count feeds one by one:
+  a feed is in one of them and never in both.
+- A provider row shows what it simulates, its FX and IR counts, its feeds, the
+  state of its source, and the ids demanded of it that are not served. Demand
+  starts a generator; Start and Stop on the row are the operator's test control.
 - A banner counts the ids that are demanded and not served. /Show them in the
   feed tree/ is gone; the row opens the Provider tab on that provider.
 
@@ -404,9 +410,11 @@ The Provider tab (=ProviderTab.tsx=) is the feeds of one provider.
   collection.
 - An asset class combo: All, or one asset class. The grid is one plain list,
   with no group headers and no separator rows.
-- The grid columns are underlying, state, enabled, name, engine and frequency.
-  The underlying leads. A feed's state is Running or Stopped. The oresmd URI
-  column is gone; the series is reached from the feed's page.
+- The grid columns are underlying, enabled, name, engine, frequency and state.
+  The underlying leads. A feed's state is Running or Stopped, and it is the
+  feed's own run, not the state of its provider's source: the source can serve
+  while this feed's generator does not run. The oresmd URI column is gone; the
+  series is reached from the feed's page.
 - There is no folder tree, no pick bar and no oresmd URI column. The lower
   folders were derived containers for asset class and instrument, and the grid
   groups by the same properties.

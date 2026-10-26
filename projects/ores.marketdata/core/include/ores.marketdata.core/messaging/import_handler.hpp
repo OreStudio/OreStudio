@@ -79,8 +79,7 @@ public:
         }
         // Currency-pair reference data (for FX quote convention checking)
         // is tenant-scoped — the service's own long-lived token has no
-        // tenant context, so it must run delegated as the caller, exactly
-        // like feed_controller's market-data lookups.
+        // tenant context, so it must run delegated as the caller.
         auto delegated_nats = auth_nats_.with_delegation(ores::nats::service::extract_bearer(msg));
         service::import_service svc(ctx, delegated_nats);
         try {

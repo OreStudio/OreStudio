@@ -336,12 +336,15 @@ describe('synthetic resource routes', () => {
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.fx_spot_generation_configs.list': {
                 result: ok,
-                fx_spot_generation_configs: [{ id: ID, config_id: COLLECTION_ID }],
+                fx_spot_generation_configs: [
+                    { id: ID, config_id: COLLECTION_ID, source_name: 'synthetic.bloomberg.eurusd' },
+                ],
             },
             'synthetic.v1.market_data_generation_configs.list': {
                 result: ok,
                 market_data_generation_configs: [{ id: COLLECTION_ID, provider_code: 'bloomberg' }],
             },
+            'synthetic.v1.feed_configs.list': { success: true, running_source_names: [] },
         });
         const response = await send(server, sessionId, 'GET', `/api/synthetic/fx-feeds/key/${ID}`);
         expect(response.statusCode).toBe(200);
@@ -351,15 +354,21 @@ describe('synthetic resource routes', () => {
         });
     });
 
-    it('names the provider of the collection a feed sits under, which the feed record does not carry', async () => {
+    it('names the provider of the collection a feed sits under and how the feed runs', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.ir_curve_generation_configs.list': {
                 result: ok,
-                ir_curve_generation_configs: [{ id: ID, config_id: COLLECTION_ID }],
+                ir_curve_generation_configs: [
+                    { id: ID, config_id: COLLECTION_ID, source_name: 'live.usdsofr' },
+                ],
             },
             'synthetic.v1.market_data_generation_configs.list': {
                 result: ok,
                 market_data_generation_configs: [{ id: COLLECTION_ID, provider_code: 'lseg' }],
+            },
+            'synthetic.v1.feed_configs.list': {
+                success: true,
+                running_source_names: ['live.usdsofr'],
             },
         });
         const response = await send(
@@ -371,7 +380,9 @@ describe('synthetic resource routes', () => {
         expect(response.json().row).toEqual({
             id: ID,
             config_id: COLLECTION_ID,
+            source_name: 'live.usdsofr',
             provider_code: 'lseg',
+            running: true,
         });
         expect(calls[1]?.body).toMatchObject({ filter: { id_one_of: [COLLECTION_ID] } });
     });
@@ -1016,7 +1027,7 @@ describe('synthetic operations', () => {
         expect(calls).toEqual([]);
     });
 
-    it('reads a page of the feeds in a folder', async () => {
+    it('reads a page of the feeds in a folder, each row saying whether it runs', async () => {
         const feed = {
             id: 'x1',
             kind: 'fx_spot',
@@ -1032,12 +1043,17 @@ describe('synthetic operations', () => {
             ticks_per_hour: 1800,
             auto_start: true,
         };
+        const other = { ...feed, id: 'x2', source_name: 'synthetic.bloomberg.gbpusd' };
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.ops.list_folder_feeds': {
                 success: true,
                 message: '',
                 total: 26,
-                feeds: [feed],
+                feeds: [feed, other],
+            },
+            'synthetic.v1.feed_configs.list': {
+                success: true,
+                running_source_names: ['synthetic.bloomberg.eurusd'],
             },
         });
         const response = await send(
@@ -1047,7 +1063,13 @@ describe('synthetic operations', () => {
             '/api/synthetic/folder-feeds?folder=f1&provider=bloomberg&assetClass=fx&state=started&search=usd&offset=60&limit=30',
         );
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({ total: 26, feeds: [feed] });
+        expect(response.json()).toEqual({
+            total: 26,
+            feeds: [
+                { ...feed, running: true },
+                { ...other, running: false },
+            ],
+        });
         expect(calls[0]?.body).toEqual({
             folder_id: 'f1',
             provider_code: 'bloomberg',
@@ -1068,6 +1090,7 @@ describe('synthetic operations', () => {
                 total: 0,
                 feeds: [],
             },
+            'synthetic.v1.feed_configs.list': { success: true, running_source_names: [] },
         });
         const response = await send(
             server,
@@ -1087,6 +1110,7 @@ describe('synthetic operations', () => {
                 total: 0,
                 feeds: [],
             },
+            'synthetic.v1.feed_configs.list': { success: true, running_source_names: [] },
         });
         const response = await send(server, sessionId, 'GET', '/api/synthetic/folder-feeds');
         expect(response.statusCode).toBe(200);

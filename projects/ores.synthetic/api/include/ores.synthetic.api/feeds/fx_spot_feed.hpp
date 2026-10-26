@@ -163,8 +163,8 @@ private:
  * through @p auth_nats as the service itself, on the date the config names or, when it names none,
  * on the date of @p clock (the system clock when null), overriding the stored gmm_initial_price
  * (0 for vintage configs, per the gmm_initial_price check constraint). "fixed" uses the stored
- * value as-is. This mirrors resolve_vintage_initial_rate() for IR curves, replacing the vintage
- * lookup the deleted client-supplied-params path of feed_controller::start() used to perform.
+ * value as-is. This mirrors resolve_vintage_initial_rate() for IR curves: the vintage lookup is
+ * the builder's, so a feed reads it once, when it is built.
  *
  * @throws vintage_data_missing_error if price_source is "vintage" and no matching observation
  * is found, and std::invalid_argument if @p components is empty or cfg.ticks_per_hour is

@@ -29,10 +29,11 @@ export const HELD_KEY = ['provider-feeds-held'] as const;
 /** The asset classes a feed can have, by the code the feed carries. */
 export const ASSET_CLASSES = ['fx', 'interest_rates'] as const;
 
-/** How many feeds a provider holds, by asset class. */
+/** How many feeds a provider holds, by asset class, and how many of them run. */
 export interface FeedCounts {
     readonly fx: number;
     readonly ir: number;
+    readonly running: number;
 }
 
 /** The feeds of a provider in all. */
@@ -40,10 +41,16 @@ export function feedsHeld(counts: FeedCounts | undefined): number {
     return counts === undefined ? 0 : counts.fx + counts.ir;
 }
 
+/** The feeds of a provider whose generator runs now. */
+export function feedsRunning(counts: FeedCounts | undefined): number {
+    return counts === undefined ? 0 : counts.running;
+}
+
 /**
- * How many feeds each provider holds, counted from its feeds: the service counts
- * the feeds one asset class matches, so no folder's count stands beside them. A
- * provider the service answers nothing for holds none.
+ * How many feeds each provider holds and how many of them run, counted from its
+ * feeds: the service counts the feeds one asset class matches, and the feeds that
+ * run, so no folder's count stands beside them. A provider the service answers
+ * nothing for holds none.
  */
 export function useProviderFeedCounts(
     codes: readonly string[],
@@ -53,10 +60,13 @@ export function useProviderFeedCounts(
         queryFn: async () => {
             const held = await Promise.all(
                 codes.map(async (code): Promise<readonly [string, FeedCounts]> => {
-                    const of = async (assetClass: string): Promise<number> =>
+                    const of = async (narrowing: {
+                        readonly assetClass?: string;
+                        readonly state?: 'started';
+                    }): Promise<number> =>
                         (
                             await api.folderFeeds(
-                                { provider: code, assetClass },
+                                { provider: code, ...narrowing },
                                 {
                                     offset: 0,
                                     limit: 1,
@@ -65,7 +75,11 @@ export function useProviderFeedCounts(
                         ).total;
                     return [
                         code,
-                        { fx: await of(ASSET_CLASSES[0]), ir: await of(ASSET_CLASSES[1]) },
+                        {
+                            fx: await of({ assetClass: ASSET_CLASSES[0] }),
+                            ir: await of({ assetClass: ASSET_CLASSES[1] }),
+                            running: await of({ state: 'started' }),
+                        },
                     ];
                 }),
             );

@@ -20,9 +20,9 @@
 #ifndef ORES_SYNTHETIC_SERVICE_FEED_SELECTION_HANDLER_HPP
 #define ORES_SYNTHETIC_SERVICE_FEED_SELECTION_HANDLER_HPP
 
-#include "feed_controller.hpp"
 #include "feed_kind_registry.hpp"
 #include "feed_run_control.hpp"
+#include "generator_fleet.hpp"
 #include "ores.analytics.quant/domain/market_regime.hpp"
 #include "ores.analytics.quant/domain/shared_intensity.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
@@ -65,7 +65,7 @@ inline auto& feed_selection_handler_lg() {
 class feed_selection_handler {
 public:
     feed_selection_handler(ores::nats::service::client& nats,
-                           std::shared_ptr<feed_controller> ctrl,
+                           generator_fleet& generators,
                            ores::nats::service::nats_client& auth_nats,
                            ores::database::context ctx,
                            std::optional<ores::security::jwt::jwt_authenticator> verifier,
@@ -74,7 +74,7 @@ public:
                            ores::analytics::quant::domain::shared_intensity* intensity = nullptr,
                            ores::analytics::quant::service::tick_scheduler* scheduler = nullptr)
         : nats_(nats)
-        , ctrl_(std::move(ctrl))
+        , generators_(generators)
         , auth_nats_(auth_nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier))
@@ -147,7 +147,7 @@ private:
                                                                       .scheduler = scheduler_};
                 const auto outcome = start_feeds(
                     registry_,
-                    *ctrl_,
+                    generators_,
                     *ctx,
                     build,
                     [&](const feed_start_target& t) {
@@ -162,7 +162,7 @@ private:
                                std::to_string(resp.skipped) + " skipped";
             } else {
                 const auto outcome =
-                    stop_feeds(registry_, *ctrl_, *ctx, [&](const feed_kind_row& row) {
+                    stop_feeds(registry_, generators_, *ctx, [&](const feed_kind_row& row) {
                         return wanted.contains(row.candidate.feed_config_id);
                     });
                 resp.stopped = outcome.stopped;
@@ -185,7 +185,7 @@ private:
     std::unordered_set<std::string>
     matching_ids(const ores::database::context& ctx,
                  const ores::synthetic::feed::feed_filter& filter) const {
-        const auto running = ctrl_->list();
+        const auto running = generators_.running_source_names();
         const auto rows = ores::database::repository::execute_raw_multi_column_query(
             ctx,
             "select id from (" + ores::synthetic::feed::feeds_query() + ") f where " +
@@ -202,7 +202,7 @@ private:
     }
 
     ores::nats::service::client& nats_;
-    std::shared_ptr<feed_controller> ctrl_;
+    generator_fleet& generators_;
     ores::nats::service::nats_client& auth_nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;

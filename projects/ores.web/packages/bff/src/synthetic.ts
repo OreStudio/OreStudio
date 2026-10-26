@@ -551,6 +551,23 @@ async function providerOfFeed(
     return z.string().parse(collection['provider_code']);
 }
 
+/**
+ * The source names of the feeds the service runs now, demanded or manual.
+ *
+ * A feed row says whether it runs by this set alone: the service starts a generator for
+ * a feed when an adapter demands it or when an operator starts it, and the set names
+ * every generator that runs.
+ */
+async function runningSourceNames(session: LiveSession): Promise<ReadonlySet<string>> {
+    const reply = await session.client.callAuthenticated(
+        feedSubjects.list_feeds_request,
+        {},
+        operationReplySchema.extend({ running_source_names: z.array(z.string()).default([]) }),
+    );
+    refuseUnless(reply, upstreamFailure);
+    return new Set(reply.running_source_names);
+}
+
 /** Why this session cannot write the resource, or undefined when it can. */
 function readOnlyFor(resource: SyntheticResource, session: LiveSession): string | undefined {
     if (resource.writes === undefined) {
@@ -967,7 +984,14 @@ export function registerSyntheticRoutes(
             }),
         );
         refuseUnless(reply, invalidRequest);
-        return { total: reply.total, feeds: reply.feeds };
+        const running = await runningSourceNames(session);
+        return {
+            total: reply.total,
+            feeds: reply.feeds.map((feed) => ({
+                ...feed,
+                running: running.has(feed.source_name),
+            })),
+        };
     });
 
     /**
@@ -1128,7 +1152,15 @@ export function registerSyntheticRoutes(
         if (!FEED_RESOURCES.has(resource.key)) {
             return { row: found };
         }
-        return { row: { ...found, provider_code: await providerOfFeed(session, found) } };
+        const provider = await providerOfFeed(session, found);
+        const running = await runningSourceNames(session);
+        return {
+            row: {
+                ...found,
+                provider_code: provider,
+                running: running.has(z.string().parse(found['source_name'])),
+            },
+        };
     });
 
     /** Writes one or many rows in one call, and answers with the rows as written. */

@@ -18,7 +18,7 @@
  *
  */
 #include "../src/feed_config_handler.hpp"
-#include "../src/feed_controller.hpp"
+#include "../src/generator_fleet.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -147,13 +147,11 @@ struct seeded_configs {
     boost::uuids::uuid container_id;
     boost::uuids::uuid fx_enabled_id;
     boost::uuids::uuid fx_disabled_id;
-    boost::uuids::uuid fx_conflicting_id;
     boost::uuids::uuid fx_no_components_id;
     boost::uuids::uuid ir_enabled_id;
     boost::uuids::uuid ir_disabled_id;
     boost::uuids::uuid ir_no_entries_id;
     std::string fx_enabled_source;
-    std::string fx_conflicting_source;
     std::string ir_enabled_source;
 };
 
@@ -161,10 +159,8 @@ struct seeded_configs {
 // its GMM component) and an enabled IR curve config (USD/sofr, with its
 // template entry and VASICEK parameter values) sharing one container, plus
 // the negative-shape rows each test needs -- a disabled FX config and a
-// disabled IR config (same container, distinct identities), an FX config on
-// the same EUR/USD pair under its own container (the uniform conflict rule
-// lets only one run), an FX config with no components, and an IR config
-// with no template entries.
+// disabled IR config (same container, distinct identities), an FX config with
+// no components, and an IR config with no template entries.
 seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
                             const boost::uuids::uuid& test_party) {
     namespace dom = ores::synthetic::domain;
@@ -242,11 +238,9 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
     };
 
     const auto main_container = make_container("Feed Config Test Container");
-    const auto conflict_container = make_container("Feed Config Test Conflict Container");
     const auto no_components_container = make_container("Feed Config Test No-Components Container");
     const auto no_entries_container = make_container("Feed Config Test No-Entries Container");
     repo::market_data_generation_config_repository().write(party_ctx, main_container);
-    repo::market_data_generation_config_repository().write(party_ctx, conflict_container);
     repo::market_data_generation_config_repository().write(party_ctx, no_components_container);
     repo::market_data_generation_config_repository().write(party_ctx, no_entries_container);
 
@@ -285,14 +279,11 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         make_fx(main_container, "EUR", "USD", "synthetic.feed_config.test.fx.eur_usd", true);
     const auto fx_disabled =
         make_fx(main_container, "GBP", "USD", "synthetic.feed_config.test.fx.gbp_usd", false);
-    const auto fx_conflicting = make_fx(
-        conflict_container, "EUR", "USD", "synthetic.feed_config.test.fx.eur_usd_conflict", true);
     const auto fx_no_components = make_fx(
         no_components_container, "CHF", "USD", "synthetic.feed_config.test.fx.chf_usd", true);
 
     repo::fx_spot_generation_config_repository().write(party_ctx, fx_enabled);
     repo::fx_spot_generation_config_repository().write(party_ctx, fx_disabled);
-    repo::fx_spot_generation_config_repository().write(party_ctx, fx_conflicting);
     repo::fx_spot_generation_config_repository().write(party_ctx, fx_no_components);
 
     dom::gmm_component comp;
@@ -311,15 +302,6 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
     comp.change_commentary = "feed config test seed";
     comp.recorded_at = now;
     repo::gmm_component_repository().write(party_ctx, comp);
-
-    // The conflicting config is otherwise identical to the enabled one -- the
-    // handler must reach the controller's conflict check, so it needs its
-    // own component row.
-    dom::gmm_component conflict_comp = comp;
-    conflict_comp.id = uuid();
-    conflict_comp.fx_spot_config_id = fx_conflicting.id;
-    conflict_comp.description = "feed config test conflicting component";
-    repo::gmm_component_repository().write(party_ctx, conflict_comp);
 
     const auto make_ir = [&](const dom::market_data_generation_config& container,
                              const std::string& currency,
@@ -399,24 +381,22 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
     return {.container_id = main_container.id,
             .fx_enabled_id = fx_enabled.id,
             .fx_disabled_id = fx_disabled.id,
-            .fx_conflicting_id = fx_conflicting.id,
             .fx_no_components_id = fx_no_components.id,
             .ir_enabled_id = ir_enabled.id,
             .ir_disabled_id = ir_disabled.id,
             .ir_no_entries_id = ir_no_entries.id,
             .fx_enabled_source = fx_enabled.source_name,
-            .fx_conflicting_source = fx_conflicting.source_name,
             .ir_enabled_source = ir_enabled.source_name};
 }
 
 // The handler under test runs on the NATS worker thread, exactly as the
 // registrar runs it in the service: one instance per inbound message, with
-// the real controllers and the real database context.
+// the real fleet and the real database context.
 struct config_fixture {
     ores::testing::scoped_database_helper db;
     ores::nats::service::client nats;
     ores::nats::service::nats_client auth_nats;
-    std::shared_ptr<ores::synthetic::service::feed_controller> ctrl;
+    ores::synthetic::service::generator_fleet fleet;
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
     ores::synthetic::service::feed_kind_registry registry;
     std::optional<ores::nats::service::subscription> start_sub;
@@ -429,7 +409,6 @@ struct config_fixture {
         nats.connect();
         REQUIRE(nats.is_connected());
 
-        ctrl = std::make_shared<ores::synthetic::service::feed_controller>(nats);
         verifier = ores::security::jwt::jwt_authenticator::create_hs256(
             test_secret, test_issuer, test_audience);
         registry = ores::synthetic::service::make_default_feed_kind_registry();
@@ -437,19 +416,19 @@ struct config_fixture {
         start_sub = nats.queue_subscribe(
             test_start_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, ctrl, db.context(), verifier, registry);
+                    nats, auth_nats, fleet, db.context(), verifier, registry);
                 h.start(std::move(msg));
             });
         stop_sub = nats.queue_subscribe(
             test_stop_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, ctrl, db.context(), verifier, registry);
+                    nats, auth_nats, fleet, db.context(), verifier, registry);
                 h.stop(std::move(msg));
             });
         list_sub = nats.queue_subscribe(
             test_list_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, ctrl, db.context(), verifier, registry);
+                    nats, auth_nats, fleet, db.context(), verifier, registry);
                 h.list(std::move(msg));
             });
     }
@@ -478,7 +457,7 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id", tags) {
         start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_enabled_id)});
     REQUIRE(fx_start.success);
     CHECK(fx_start.message == "Feed started: " + seeds.fx_enabled_source);
-    CHECK(f.ctrl->running_count() == 1);
+    CHECK(f.fleet.running_count() == 1);
 
     // Repeat: already running is success with the uniform message.
     const auto fx_again = send_request<start_feed_request, start_feed_response>(
@@ -519,7 +498,7 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id", tags) {
         stop_feed_request{.config_id = boost::uuids::to_string(seeds.ir_enabled_id)});
     REQUIRE(ir_stop.success);
     CHECK(ir_stop.message == "1 feed(s) stopped");
-    CHECK(f.ctrl->running_count() == 1);
+    CHECK(f.fleet.running_count() == 1);
 
     // Stop the FX feed by source_name (the config_id-less path).
     const auto fx_stop = send_request<stop_feed_request, stop_feed_response>(
@@ -529,7 +508,7 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id", tags) {
         stop_feed_request{.source_name = seeds.fx_enabled_source});
     REQUIRE(fx_stop.success);
     CHECK(fx_stop.message == "1 feed(s) stopped");
-    CHECK(f.ctrl->running_count() == 0);
+    CHECK(f.fleet.running_count() == 0);
 }
 
 TEST_CASE("feed_config_reports_not_found_and_disabled_uniformly", tags) {
@@ -572,7 +551,7 @@ TEST_CASE("feed_config_reports_not_found_and_disabled_uniformly", tags) {
     CHECK(ir_disabled.message ==
           "Feed config is not enabled: " + boost::uuids::to_string(seeds.ir_disabled_id));
 
-    CHECK(f.ctrl->running_count() == 0);
+    CHECK(f.fleet.running_count() == 0);
 }
 
 TEST_CASE("feed_config_start_requires_the_resolved_kind_permission", tags) {
@@ -592,7 +571,7 @@ TEST_CASE("feed_config_start_requires_the_resolved_kind_permission", tags) {
                               std::string(ores::nats::headers::bearer_prefix) + fx_only_token}});
     REQUIRE(ir_reply.headers.contains(std::string(ores::nats::headers::x_error)));
     CHECK(ir_reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
-    CHECK(f.ctrl->running_count() == 0);
+    CHECK(f.fleet.running_count() == 0);
 
     // IR-only token: the FX start must be rejected the same way.
     const auto ir_only_token = mint_token(
@@ -605,7 +584,7 @@ TEST_CASE("feed_config_start_requires_the_resolved_kind_permission", tags) {
                               std::string(ores::nats::headers::bearer_prefix) + ir_only_token}});
     REQUIRE(fx_reply.headers.contains(std::string(ores::nats::headers::x_error)));
     CHECK(fx_reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
-    CHECK(f.ctrl->running_count() == 0);
+    CHECK(f.fleet.running_count() == 0);
 }
 
 TEST_CASE("feed_config_start_rejects_missing_children", tags) {
@@ -636,38 +615,7 @@ TEST_CASE("feed_config_start_rejects_missing_children", tags) {
     CHECK(ir_no_entries.message == "Feed config has no Curve Template entries: " +
                                        boost::uuids::to_string(seeds.ir_no_entries_id));
 
-    CHECK(f.ctrl->running_count() == 0);
-}
-
-TEST_CASE("feed_config_start_reports_oresmd_conflict", tags) {
-    config_fixture f;
-    const auto test_party = resolve_test_party(f.db);
-    const auto seeds = seed_configs(f.db, test_party);
-    const auto token = mint_token(f.db.tenant_id().to_string(),
-                                  test_party,
-                                  {"synthetic::fx_spot_generation_configs:read",
-                                   "synthetic::ir_curve_generation_configs:read",
-                                   "synthetic::feeds:run"});
-
-    const auto first = send_request<start_feed_request, start_feed_response>(
-        f.nats,
-        test_start_subject,
-        token,
-        start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_enabled_id)});
-    REQUIRE(first.success);
-
-    // A second FX config on the same EUR/USD pair: the uniform conflict
-    // rule lets only one run, reported with the holding source_name.
-    const auto second = send_request<start_feed_request, start_feed_response>(
-        f.nats,
-        test_start_subject,
-        token,
-        start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_conflicting_id)});
-    CHECK_FALSE(second.success);
-    CHECK(second.message == "Already running as '" + seeds.fx_enabled_source +
-                                "' — stop it first before starting '" +
-                                seeds.fx_conflicting_source + "'.");
-    CHECK(f.ctrl->running_count() == 1);
+    CHECK(f.fleet.running_count() == 0);
 }
 
 TEST_CASE("feed_config_list_requires_both_permissions", tags) {

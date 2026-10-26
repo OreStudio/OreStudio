@@ -149,10 +149,10 @@ const PROVIDERS = [
     },
 ];
 
-/** The feeds each provider holds, counted from the feeds themselves. */
+/** The feeds each provider holds, counted from the feeds themselves, and the ones that run. */
 const HELD = new Map([
-    ['bloomberg', { fx: 13, ir: 0 }],
-    ['ore', { fx: 13, ir: 4 }],
+    ['bloomberg', { fx: 13, ir: 0, running: 9 }],
+    ['ore', { fx: 13, ir: 4, running: 0 }],
 ]);
 
 function feed(
@@ -230,35 +230,34 @@ describe('the Synthetic dashboard', () => {
         expect(html).not.toContain('Generic');
     });
 
-    it('counts the five figures by the one rule, from the feeds each provider holds', () => {
+    it('counts the five figures, the feeds running one by one', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });
         const text = textOf(html);
         expect(text).toContain('Providers 2');
-        expect(text).toContain('Feeds running 13');
-        expect(text).toContain('Feeds stopped 17');
+        expect(text).toContain('Feeds running 9');
+        expect(text).toContain('Feeds stopped 21');
         expect(text).toContain('Ids demanded 30');
         expect(text).toContain('Ticks per minute 120');
     });
 
-    it('counts no feed as serving for a provider whose source was demanded nothing', () => {
+    it('counts a feed as running while the source of its provider serves nothing', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
             client.setQueryData(ADAPTERS_KEY, [
                 adapter('bloomberg', 'serving', 13),
                 adapter('ore', 'serving', 0),
             ]);
-            client.setQueryData([...HELD_KEY, ['bloomberg', 'ore']], HELD);
         });
         const text = textOf(html);
-        expect(text).toContain('Feeds running 13');
-        expect(text).toContain('Feeds stopped 17');
+        expect(text).toContain('Feeds running 9');
+        expect(text).toContain('Feeds stopped 21');
         expect(html).toContain('>Stopped<');
         expect(html).not.toContain('demanded ids are not being served');
     });
 
-    it('counts every feed as stopped while its provider does not serve', () => {
+    it('keeps the tiles on the feeds that run while no source serves', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
             client.setQueryData(ADAPTERS_KEY, [
@@ -267,23 +266,25 @@ describe('the Synthetic dashboard', () => {
             ]);
         });
         const text = textOf(html);
-        expect(text).toContain('Feeds running 0');
-        expect(text).toContain('Feeds stopped 30');
+        expect(text).toContain('Feeds running 9');
+        expect(text).toContain('Feeds stopped 21');
         expect(text).toContain('30 demanded ids are not being served.');
     });
 
-    it('counts every feed as serving while every source serves', () => {
+    it('counts no feed as stopped while every feed runs', () => {
         const html = render('/market-data/synthetic', (client) => {
             client.setQueryData(['my-access'], access(['synthetic::*']));
-            client.setQueryData(ADAPTERS_KEY, [
-                adapter('bloomberg', 'serving', 13),
-                adapter('ore', 'serving', 17),
-            ]);
+            client.setQueryData(
+                [...HELD_KEY, ['bloomberg', 'ore']],
+                new Map([
+                    ['bloomberg', { fx: 13, ir: 0, running: 13 }],
+                    ['ore', { fx: 13, ir: 4, running: 17 }],
+                ]),
+            );
         });
         const text = textOf(html);
         expect(text).toContain('Feeds running 30');
         expect(text).toContain('Feeds stopped 0');
-        expect(html).not.toContain('demanded ids are not being served');
     });
 
     it('alerts only for demanded ids that are not being served', () => {
@@ -333,7 +334,7 @@ describe('the Synthetic Provider screen', () => {
         client.setQueryData(['my-access'], access(codes));
         client.setQueryData([...FEEDS_KEY, '{"provider":"bloomberg"}', 0, 15], {
             total: 3,
-            feeds: [EURUSD, GBPUSD, SOFR],
+            feeds: [{ ...EURUSD, running: true }, { ...GBPUSD, running: false }, SOFR],
         });
     }
 
@@ -409,19 +410,32 @@ describe('the Synthetic Provider screen', () => {
         expect(two).toContain('Bloomberg Extra');
     });
 
-    it('reads each feed as running from its provider source', () => {
-        const serving = render('/market-data/synthetic?tab=provider', (client) =>
-            seeded(client, ['synthetic::*']),
-        );
-        expect(serving).toContain('>Running<');
-        expect(serving).toContain('>Serving<');
-        const stopped = render('/market-data/synthetic?tab=provider', (client) => {
+    it('reads each feed as running from its own run, not from its provider source', () => {
+        const running = render('/market-data/synthetic?tab=provider', (client) => {
             seeded(client, ['synthetic::*']);
-            client.setQueryData(ADAPTERS_KEY, [adapter('bloomberg', 'ready', 13)]);
+            client.setQueryData(ADAPTERS_KEY, [adapter('bloomberg', 'serving', 13)]);
+            client.setQueryData([...FEEDS_KEY, '{"provider":"bloomberg"}', 0, 15], {
+                total: 3,
+                feeds: [{ ...EURUSD, running: true }, { ...GBPUSD, running: false }, SOFR],
+            });
         });
-        expect(stopped).toContain('>Stopped<');
-        expect(stopped).not.toContain('>Running<');
-        expect(stopped).not.toContain('>Serving<');
+        expect(running).toContain('>Serving<');
+        expect(running).toContain('>Running<');
+        expect(running).toContain('>Stopped<');
+    });
+
+    it('reads a feed as stopped while the source of its provider serves', () => {
+        const html = render('/market-data/synthetic?tab=provider', (client) => {
+            seeded(client, ['synthetic::*']);
+            client.setQueryData(ADAPTERS_KEY, [adapter('bloomberg', 'serving', 13)]);
+            client.setQueryData([...FEEDS_KEY, '{"provider":"bloomberg"}', 0, 15], {
+                total: 1,
+                feeds: [{ ...EURUSD, running: false }],
+            });
+        });
+        expect(html).toContain('>Serving<');
+        expect(html).not.toContain('>Running<');
+        expect(html).toContain('>Stopped<');
     });
 
     it('offers start and stop in the header to a person who holds the run permission', () => {

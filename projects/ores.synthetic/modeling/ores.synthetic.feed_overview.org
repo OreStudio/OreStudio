@@ -11,12 +11,12 @@
 #+brief: A folder's children with the feeds and the running feeds under each, and a page of the feeds in a folder.
 #+filetags: :model:operation:synthetic:
 #+created: 2026-10-13
-#+updated: 2026-10-13
+#+updated: 2026-10-26
 
 The reads behind the feed overview and the feed tree. A screen asks for the children of
 one folder, or for the roots, and gets each child with the feeds under it, split into FX
 spots and IR curves, and how many of them run. The service counts in the database and
-takes the running feeds from the controller, so no screen reads the feeds to count them.
+takes the running feeds from the service's running set, so no screen reads the feeds to count them.
 Nothing is stored.
 
 * Includes
@@ -284,15 +284,6 @@ Nothing is stored.
 /** @brief Whether the feed starts on its own when the service starts. */
 #+end_src
 
-*** running
-:PROPERTIES:
-:cpp_type: bool
-:default: false
-:END:
-#+begin_src cpp :name comment
-/** @brief Whether the feed runs now. */
-#+end_src
-
 ** list_folder_feeds_request
 :PROPERTIES:
 :subject: synthetic.v1.ops.list_folder_feeds
@@ -408,70 +399,3 @@ Nothing is stored.
 #+end_src
 
 
-** series_owner
-#+begin_src cpp :name comment
-/**
- * @brief The feed that holds one series.
- */
-#+end_src
-
-*** series
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-#+begin_src cpp :name comment
-/** @brief The series, as the oresmd URI that names it. */
-#+end_src
-
-*** source_name
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-#+begin_src cpp :name comment
-/** @brief The source name of the running feed that holds the series; empty when no feed holds it. */
-#+end_src
-
-** resolve_series_owners_request
-:PROPERTIES:
-:subject: synthetic.v1.ops.resolve_series_owners
-:response: resolve_series_owners_response
-:END:
-#+begin_src cpp :name comment
-/**
- * @brief Ask which running feed holds each of a list of series.
- */
-#+end_src
-
-*** series
-:PROPERTIES:
-:cpp_type: std::vector<std::string>
-:END:
-#+begin_src cpp :name comment
-/** @brief The series to resolve, each as the oresmd URI that names it. */
-#+end_src
-
-** resolve_series_owners_response
-#+begin_src cpp :name comment
-/**
- * @brief The owner of each series asked about, in the order asked.
- */
-#+end_src
-
-*** success
-:PROPERTIES:
-:cpp_type: bool
-:default: false
-:END:
-
-*** message
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-*** owners
-:PROPERTIES:
-:cpp_type: std::vector<series_owner>
-:END:
-#+begin_src cpp :name comment
-/** @brief The owner of each series asked about, in the order asked. */
-#+end_src

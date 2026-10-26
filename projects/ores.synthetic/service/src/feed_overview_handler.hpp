@@ -20,8 +20,8 @@
 #ifndef ORES_SYNTHETIC_SERVICE_FEED_OVERVIEW_HANDLER_HPP
 #define ORES_SYNTHETIC_SERVICE_FEED_OVERVIEW_HANDLER_HPP
 
-#include "feed_controller.hpp"
 #include "feed_kind_registry.hpp"
+#include "generator_fleet.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -63,19 +63,19 @@ inline int number_of(const std::optional<std::string>& value) {
 /**
  * @brief Answers a screen's question "what is under this folder, and what runs".
  *
- * Counts in the database and takes the running feeds from the controller, so no
+ * Counts in the database and takes the running feeds from the running set, so no
  * caller reads the feeds to count them. A caller needs to read the feeds of at
  * least one kind. Nothing is stored.
  */
 class feed_overview_handler {
 public:
     feed_overview_handler(ores::nats::service::client& nats,
-                          std::shared_ptr<feed_controller> ctrl,
+                          generator_fleet& generators,
                           ores::database::context ctx,
                           std::optional<ores::security::jwt::jwt_authenticator> verifier,
                           const feed_kind_registry& registry)
         : nats_(nats)
-        , ctrl_(std::move(ctrl))
+        , generators_(generators)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier))
         , registry_(registry) {}
@@ -176,55 +176,6 @@ public:
         reply(nats_, msg, resp);
     }
 
-    void resolve_series_owners(ores::nats::message msg) {
-        using namespace ores::logging;
-        using namespace ores::synthetic::messaging;
-        using ores::service::messaging::decode;
-        using ores::service::messaging::error_reply;
-        using ores::service::messaging::has_permission;
-        using ores::service::messaging::reply;
-
-        auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx) {
-            error_reply(nats_, msg, ctx.error());
-            return;
-        }
-        const auto& kinds = registry_.all();
-        const bool may = std::ranges::any_of(
-            kinds, [&](const auto* k) { return has_permission(*ctx, k->config_permission); });
-        if (!may) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-
-        resolve_series_owners_response resp;
-        const auto req = decode<resolve_series_owners_request>(msg);
-        if (!req) {
-            resp.message = "Failed to decode the series request.";
-            BOOST_LOG_SEV(feed_overview_handler_lg(), warn)
-                << "resolve_series_owners refused: the request did not decode";
-            reply(nats_, msg, resp);
-            return;
-        }
-
-        try {
-            resp.owners.reserve(req->series.size());
-            for (const auto& series : req->series) {
-                series_owner owner;
-                owner.series = series;
-                if (const auto held = ctrl_->running_source_name_for_series({series}))
-                    owner.source_name = *held;
-                resp.owners.push_back(std::move(owner));
-            }
-            resp.success = true;
-        } catch (const std::exception& e) {
-            resp.message = "The request failed. The service log says why.";
-            BOOST_LOG_SEV(feed_overview_handler_lg(), error)
-                << "resolve_series_owners failed: " << e.what();
-        }
-        reply(nats_, msg, resp);
-    }
-
 private:
     using rows_t = std::vector<std::vector<std::optional<std::string>>>;
 
@@ -239,8 +190,7 @@ private:
                     int offset,
                     int limit,
                     ores::synthetic::messaging::list_folder_feeds_response& resp) const {
-        const auto running = ctrl_->list();
-        const std::unordered_set<std::string> running_names(running.begin(), running.end());
+        const auto running = generators_.running_source_names();
         const auto feeds = ores::synthetic::feed::feeds_query();
         const auto where = ores::synthetic::feed::where_clause(
             filter, running, feed_kind_registry::is_system_caller(ctx));
@@ -272,7 +222,6 @@ private:
             f.engine = text_of(r[10]);
             f.underlying = text_of(r[11]);
             f.provider_code = text_of(r[12]);
-            f.running = running_names.contains(f.source_name);
             resp.feeds.push_back(std::move(f));
         }
     }
@@ -314,10 +263,9 @@ private:
      * The feeds each folder holds itself, and how many of them run.
      *
      * The queries run in the request's context, so row-level security limits
-     * them to the folders and feeds the caller sees. The controller names every
-     * running feed by source name, and a source name is one running feed's, as
-     * the controller holds it, so a running name is matched to the rows of the
-     * caller that carry it.
+     * them to the folders and feeds the caller sees. The running set names every
+     * feed that runs by its source name, and a source name is one feed's, so a
+     * running name is matched to the rows of the caller that carry it.
      */
     std::vector<ores::synthetic::feed::folder_feed_count>
     direct_counts(const ores::database::context& ctx) const {
@@ -373,7 +321,7 @@ private:
                 tally::auto_start);
         }
 
-        const auto running = ctrl_->list();
+        const auto running = generators_.running_source_names();
         if (!running.empty()) {
             std::string names;
             for (const auto& name : running)
@@ -403,7 +351,7 @@ private:
     }
 
     ores::nats::service::client& nats_;
-    std::shared_ptr<feed_controller> ctrl_;
+    generator_fleet& generators_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     const feed_kind_registry& registry_;

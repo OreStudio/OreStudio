@@ -20,9 +20,9 @@
 #ifndef ORES_SYNTHETIC_SERVICE_FOLDER_FEED_CONTROL_HANDLER_HPP
 #define ORES_SYNTHETIC_SERVICE_FOLDER_FEED_CONTROL_HANDLER_HPP
 
-#include "feed_controller.hpp"
 #include "feed_kind_registry.hpp"
 #include "feed_run_control.hpp"
+#include "generator_fleet.hpp"
 #include "ores.analytics.quant/domain/market_regime.hpp"
 #include "ores.analytics.quant/domain/shared_intensity.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
@@ -63,7 +63,7 @@ using namespace ores::logging;
  * The single place that turns "start everything under this folder" into a
  * sequence of producer starts: it resolves the folder subtree once and
  * dispatches every config row beneath it — of every asset class — through
- * the feed kind registry's factory to the feed controller, so Qt,
+ * the feed kind registry's factory and starts it as a manual run, so Qt,
  * ores.shell, and a wt workflow step all get the same behaviour from one
  * request instead of each re-implementing the tree-walk-and-fan-out
  * themselves.
@@ -77,7 +77,7 @@ class folder_feed_control_handler {
 public:
     folder_feed_control_handler(
         ores::nats::service::client& nats,
-        std::shared_ptr<feed_controller> ctrl,
+        generator_fleet& generators,
         ores::nats::service::nats_client& auth_nats,
         ores::database::context ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier,
@@ -86,7 +86,7 @@ public:
         ores::analytics::quant::domain::shared_intensity* intensity = nullptr,
         ores::analytics::quant::service::tick_scheduler* scheduler = nullptr)
         : nats_(nats)
-        , ctrl_(std::move(ctrl))
+        , generators_(generators)
         , auth_nats_(auth_nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier))
@@ -129,7 +129,7 @@ public:
 
             const auto outcome = start_feeds(
                 registry_,
-                *ctrl_,
+                generators_,
                 ctx,
                 bctx,
                 [&](const feed_start_target& t) {
@@ -181,10 +181,11 @@ public:
         try {
             const auto folder_ids = registry_.folder_subtree(ctx, folder_id);
 
-            const auto outcome = stop_feeds(registry_, *ctrl_, ctx, [&](const feed_kind_row& row) {
-                const auto& c = row.candidate;
-                return c.folder_id && folder_ids.contains(*c.folder_id);
-            });
+            const auto outcome =
+                stop_feeds(registry_, generators_, ctx, [&](const feed_kind_row& row) {
+                    const auto& c = row.candidate;
+                    return c.folder_id && folder_ids.contains(*c.folder_id);
+                });
 
             stop_feeds_under_folder_response resp;
             resp.success = true;
@@ -240,7 +241,7 @@ private:
     }
 
     ores::nats::service::client& nats_;
-    std::shared_ptr<feed_controller> ctrl_;
+    generator_fleet& generators_;
     ores::nats::service::nats_client& auth_nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;

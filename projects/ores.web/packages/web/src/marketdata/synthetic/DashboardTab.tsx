@@ -35,7 +35,12 @@ import {
 import { providerName, providersOf, type ProviderEntry, type ProviderFacts } from './providers.js';
 import { useSelectionRuns } from './selectionRuns.js';
 import { useCollections } from './useCollections.js';
-import { feedsHeld, useProviderFeedCounts, type FeedCounts } from './useProviderFeeds.js';
+import {
+    feedsHeld,
+    feedsRunning,
+    useProviderFeedCounts,
+    type FeedCounts,
+} from './useProviderFeeds.js';
 
 /** The providers the catalogue names, with what each one says it simulates. */
 export function useProviderFacts(): ReadonlyMap<string, ProviderFacts> {
@@ -84,9 +89,12 @@ function Tile({
     );
 }
 
-/** The figures over the provider list, every one of them counted by the same rule. */
+/**
+ * The figures over the provider list: the feeds that run, counted one by one,
+ * and the demand and the ticks of the providers' sources.
+ */
 interface Figures {
-    readonly serving: number;
+    readonly running: number;
     readonly stopped: number;
     readonly demanded: number;
     readonly ticksPerMinute: number;
@@ -97,19 +105,17 @@ function figuresOf(
     counts: ReadonlyMap<string, FeedCounts>,
     sources: ReadonlyMap<string, Source>,
 ): Figures {
-    let serving = 0;
+    let running = 0;
     let stopped = 0;
     for (const entry of providers) {
         const held = feedsHeld(counts.get(entry.code));
-        if (servesFeeds(sources.get(entry.code))) {
-            serving += held;
-        } else {
-            stopped += held;
-        }
+        const runs = feedsRunning(counts.get(entry.code));
+        running += runs;
+        stopped += held - runs;
     }
     const every = [...sources.values()];
     return {
-        serving,
+        running,
         stopped,
         demanded: every.reduce((count, source) => count + source.demanded, 0),
         ticksPerMinute: every.reduce((count, source) => count + source.ticksPerMinute, 0),
@@ -118,10 +124,11 @@ function figuresOf(
 
 /**
  * The dashboard: what runs, by provider, and the figures that follow from it.
- * Each provider says what it simulates, how many feeds it holds and whether it
- * serves; a feed serves when its provider's source serves and the service
- * demands at least one id, so this screen counts nothing beside that state. The
- * alert is the demand that state does not serve. A provider's Start and Stop are
+ * Each provider says what it simulates, how many feeds it holds and whether the
+ * service runs them; a feed runs when the service runs a generator for it, and
+ * the tiles count the feeds that run and the ones that do not. A provider's
+ * state is its source's, which is a different fact from its feeds' runs. The
+ * alert is the demand the source does not serve. A provider's Start and Stop are
  * the operator test control, and act on every feed of the provider.
  */
 export function DashboardTab(): ReactNode {
@@ -173,7 +180,7 @@ export function DashboardTab(): ReactNode {
                         />
                         <Tile
                             label={t('marketdata.synthetic.dashboard.tiles.running')}
-                            value={figures.serving.toLocaleString()}
+                            value={figures.running.toLocaleString()}
                             tone="up"
                         />
                         <Tile

@@ -36,9 +36,9 @@ const ADAPTERS_EVERY_MS = 5_000;
  * sends the same set again, so `demanded` is what should be running and
  * `notRunning` is the part of it that is not.
  *
- * A feed names no source, so these counts are the truth of a provider and not
- * of one feed: telling which source serves one feed needs the vendor ids of the
- * generators, which the adapter status does not carry.
+ * A source is a provider's, so these counts are the truth of a provider and not
+ * of one feed: whether one feed's generator runs is the feed's own `running`,
+ * which the feed reads say and this status does not.
  */
 export interface Source {
     /** Whether at least one source of the provider publishes what it was asked for. */

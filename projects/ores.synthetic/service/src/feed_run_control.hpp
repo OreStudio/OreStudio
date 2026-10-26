@@ -20,8 +20,8 @@
 #ifndef ORES_SYNTHETIC_SERVICE_FEED_RUN_CONTROL_HPP
 #define ORES_SYNTHETIC_SERVICE_FEED_RUN_CONTROL_HPP
 
-#include "feed_controller.hpp"
 #include "feed_kind_registry.hpp"
+#include "generator_fleet.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -58,17 +58,16 @@ struct stop_outcome {
 /**
  * @brief Starts every feed the caller wants, and counts what happened.
  *
- * The one place that turns "start these feeds" into producer starts, so the folder
- * verbs and the verbs of the feed table behave the same: the same gate (the feed and
- * its collection are enabled), the same skips (a feed that cannot be built, or whose
- * series another running feed holds) and the same counts. Every registered kind is
- * present in the result, whether or not a feed of it was wanted.
+ * The one place that turns "start these feeds" into manual runs, so the folder verbs and
+ * the verbs of the feed table behave the same: the same gate (the feed and its collection
+ * are enabled), the same skips (a feed that cannot be built) and the same counts. Every
+ * registered kind is present in the result, whether or not a feed of it was wanted.
  *
  * @p build carries the clients every builder shares. The feeds run as this service, not as the
  * person who starts them.
  */
 inline start_outcome start_feeds(const feed_kind_registry& registry,
-                                 feed_controller& ctrl,
+                                 generator_fleet& generators,
                                  const ores::database::context& ctx,
                                  const ores::synthetic::feed::feed_build_context& build,
                                  const std::function<bool(const feed_start_target&)>& wanted,
@@ -99,15 +98,11 @@ inline start_outcome start_feeds(const feed_kind_registry& registry,
                 skip(attempt.failure);
                 continue;
             }
-            std::string conflicting_source_name;
-            if (ctrl.add(std::move(attempt.feed), &conflicting_source_name))
+            if (generators.start_manual(c.feed_config_id, std::move(attempt.feed)))
                 ++counts.started;
-            else if (conflicting_source_name.empty())
-                // A concurrent start of the same config landed between this loop's
-                // checks and the add.
-                ++counts.already_running;
             else
-                skip("already held by running feed '" + conflicting_source_name + "'.");
+                // A run of this feed, demanded or manual, already publishes it.
+                ++counts.already_running;
         } catch (const std::exception& e) {
             skip(std::string("failed to start: ") + e.what());
         }
@@ -120,9 +115,9 @@ inline start_outcome start_feeds(const feed_kind_registry& registry,
     return out;
 }
 
-/** Stops every running feed the caller wants. Stopping reads no collection, so it uses the rows. */
+/** Stops every running feed the caller wants, whichever run of the service holds it. */
 inline stop_outcome stop_feeds(const feed_kind_registry& registry,
-                               feed_controller& ctrl,
+                               generator_fleet& generators,
                                const ores::database::context& ctx,
                                const std::function<bool(const feed_kind_row&)>& wanted) {
     stop_outcome out;
@@ -137,7 +132,7 @@ inline stop_outcome stop_feeds(const feed_kind_registry& registry,
             ++out.refused;
             continue;
         }
-        const auto stopped = static_cast<int>(ctrl.stop(row.candidate.source_name));
+        const auto stopped = static_cast<int>(generators.stop_source(row.candidate.source_name));
         out.by_kind.at(row.kind->kind) += stopped;
         out.stopped += stopped;
     }

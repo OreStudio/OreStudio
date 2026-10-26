@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 705E51EB-4BF3-5EE5-968F-A4741E4DD791
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the equity_underlyings commands from the shell?
+#+description: Every command the equity_underlyings submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:equity_underlyings:
+
+This file documents the equity_underlyings resource at the shell, one section per command. Every command is a subcommand of =equity_underlyings=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 9C729B41-B1C2-5A01-A2DD-4A5169A49410
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_underlyings list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.equity_underlyings.list=.
+
+#+name: equity_underlyings-list
+#+begin_src ores-shell :tangle equity_underlyings-list.ores :exports none
+equity_underlyings list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 60E7B0B6-9A07-548E-99E0-15B70500BFD3
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_underlyings get <code>
+#+end_example
+
+It is addressed at =refdata.v1.equity_underlyings.get=.
+
+#+name: equity_underlyings-get
+#+begin_src ores-shell :tangle equity_underlyings-get.ores :exports none
+equity_underlyings get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: FA5C7FB3-B9D1-56EB-8835-A85117135D79
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_underlyings get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.equity_underlyings.get_many=.
+
+#+name: equity_underlyings-get-many
+#+begin_src ores-shell :tangle equity_underlyings-get-many.ores :exports none
+equity_underlyings get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: D761A0B7-AB66-571A-B404-37F8A39F1A25
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_underlyings add <code> <name> <description> <instrument_type> <resolves_to> <currency_code> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.equity_underlyings.put=.
+
+#+name: equity_underlyings-add
+#+begin_src ores-shell :tangle equity_underlyings-add.ores :exports none
+equity_underlyings add __none__ __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 88FFB590-EDCE-52F7-85CD-7A2BFC792869
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_underlyings set <code> <name> <description> <instrument_type> <resolves_to> <currency_code> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.equity_underlyings.put=.
+
+#+name: equity_underlyings-set
+#+begin_src ores-shell :tangle equity_underlyings-set.ores :exports none
+equity_underlyings set __none__ __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: B885A48C-A0FC-53E7-8346-A7AE5A377CE0
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_underlyings put-many --count <n> <code> <name> <description> <instrument_type> <resolves_to> <currency_code> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.equity_underlyings.put_many=.
+
+#+name: equity_underlyings-put-many
+#+begin_src ores-shell :tangle equity_underlyings-put-many.ores :exports none
+equity_underlyings put-many --count 1 __none__ __none__ __none__ __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 1F3D6700-0AF4-5FC1-8E1E-2AE9A24A705E
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_underlyings delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.equity_underlyings.delete=.
+
+#+name: equity_underlyings-delete
+#+begin_src ores-shell :tangle equity_underlyings-delete.ores :exports none
+equity_underlyings delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: A654A36D-E2E1-5B0E-8CC7-E8247EB79CD3
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_underlyings delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.equity_underlyings.delete_many=.
+
+#+name: equity_underlyings-delete-many
+#+begin_src ores-shell :tangle equity_underlyings-delete-many.ores :exports none
+equity_underlyings delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 3531F28F-3E62-5058-B55A-C093FBB54BF3
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_underlyings versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.equity_underlyings_versions.list=.
+
+#+name: equity_underlyings-versions
+#+begin_src ores-shell :tangle equity_underlyings-versions.ores :exports none
+equity_underlyings versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 9F30FDD9-7898-5008-972F-6BF61A5CFA9D
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+equity_underlyings version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.equity_underlyings_versions.get=.
+
+#+name: equity_underlyings-version
+#+begin_src ores-shell :tangle equity_underlyings-version.ores :exports none
+equity_underlyings version __none__ --version 1
+#+end_src
+

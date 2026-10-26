@@ -1,6 +1,6 @@
 :PROPERTIES:
 :ID: 6C1D7A90-2B58-4E13-A9F4-58B0C2E7D316
-:END
+:END:
 #+title: The bond's legs are not on the instrument tab
 #+description: The prototype draws a Legs card for a bond and the trade page shows none, so a coupon or amortising bond cannot be read from its page.
 #+type: capture

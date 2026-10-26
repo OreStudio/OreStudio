@@ -99,6 +99,10 @@ const toAggregate = (raw: unknown): AggregateRow => {
         notional: money(row['notional']),
         group: asText(row['group']),
         is_group: row['is_group'] === true,
+        previous: money(row['previous']),
+        change: money(row['change']),
+        change_pct: money(row['change_pct']),
+        is_removed: row['is_removed'] === true,
     };
 };
 
@@ -123,9 +127,11 @@ const toError = (raw: unknown): RunError => {
 
 export function RunResultsPanel({
     runId,
+    definitionId,
     pricedAt,
 }: {
     readonly runId: string;
+    readonly definitionId: string;
     readonly pricedAt: string;
 }): ReactNode {
     const { t } = useTranslation();
@@ -135,10 +141,16 @@ export function RunResultsPanel({
     const bookFilter = search.get('book') ?? '';
     const counterpartyFilter = search.get('counterparty') ?? '';
     const noBook = search.get('nobook') === '1';
+    const baseline = search.get('baseline') ?? '';
 
     const results = useQuery({
-        queryKey: ['reporting-run-results', runId, level],
-        queryFn: () => api.reportRunResults(runId, level),
+        queryKey: ['reporting-run-results', runId, level, baseline],
+        queryFn: () => api.reportRunResults(runId, level, baseline),
+        meta: { quiet: true },
+    });
+    const otherRuns = useQuery({
+        queryKey: ['report-runs', definitionId],
+        queryFn: () => api.reportRuns(definitionId),
         meta: { quiet: true },
     });
     const errors = useQuery({
@@ -158,6 +170,20 @@ export function RunResultsPanel({
     }, [errors.data]);
     const [selected, setSelected] = useState('');
 
+    const candidates = (otherRuns.data ?? [])
+        .map((entry) => entry as Record<string, unknown>)
+        .filter((entry) => asText(entry['state_name']) === 'completed')
+        .filter((entry) => asText(entry['id']) !== runId)
+        .map((entry) => ({ id: asText(entry['id']), name: asText(entry['name']) }));
+    const chooseBaseline = (next: string): void => {
+        const params = new URLSearchParams(search);
+        if (next === '') {
+            params.delete('baseline');
+        } else {
+            params.set('baseline', next);
+        }
+        setSearch(params, { replace: true });
+    };
     const chooseLevel = (next: ResultLevel): void => {
         const params = new URLSearchParams(search);
         params.set('by', next);
@@ -226,6 +252,24 @@ export function RunResultsPanel({
                     })}
                 </span>
             </header>
+            {level !== 'trade' && (
+                <label className="flex items-center gap-2 text-sm">
+                    <span className="text-ink-faint">{t(`${field}.compareTo`)}</span>
+                    <select
+                        aria-label={t(`${field}.compareTo`)}
+                        value={baseline}
+                        onChange={(event) => chooseBaseline(event.target.value)}
+                        className="rounded border border-line bg-surface px-2 py-1"
+                    >
+                        <option value="">{t(`${field}.noComparison`)}</option>
+                        {candidates.map((candidate) => (
+                            <option key={candidate.id} value={candidate.id}>
+                                {candidate.name === '' ? candidate.id.slice(0, 8) : candidate.name}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+            )}
             <label className="flex items-center gap-2 text-sm">
                 <span className="text-ink-faint">{t(`${field}.aggregateBy`)}</span>
                 <select
@@ -318,6 +362,7 @@ export function RunResultsPanel({
                                     level={level}
                                     rows={aggregates}
                                     onTrades={chooseFilter}
+                                    compared={baseline !== ''}
                                 />
                             )}
                             {level === 'trade' ? (
@@ -446,10 +491,12 @@ function AggregateTable({
     level,
     rows,
     onTrades,
+    compared,
 }: {
     readonly level: Exclude<ResultLevel, 'trade'>;
     readonly rows: readonly AggregateRow[];
     readonly onTrades: (key: string) => void;
+    readonly compared: boolean;
 }): ReactNode {
     const { t } = useTranslation();
     const field = 'reporting.results';
@@ -464,6 +511,16 @@ function AggregateTable({
                         <th className="px-2 py-1 text-right font-normal">
                             {t(`${field}.notional`)}
                         </th>
+                        {compared && (
+                            <>
+                                <th className="px-2 py-1 text-right font-normal">
+                                    {t(`${field}.change`)}
+                                </th>
+                                <th className="px-2 py-1 text-right font-normal">
+                                    {t(`${field}.changePct`)}
+                                </th>
+                            </>
+                        )}
                         <th className="px-2 py-1 font-normal">{t(`${field}.actions`)}</th>
                     </tr>
                 </thead>
@@ -515,6 +572,27 @@ function AggregateTable({
                                     </span>
                                 ))}
                             </td>
+                            {compared && (
+                                <>
+                                    <td
+                                        className={`px-2 py-1 text-right font-mono ${
+                                            (row.change[0]?.total ?? '').startsWith('-')
+                                                ? 'text-down'
+                                                : ''
+                                        }`}
+                                    >
+                                        {row.change[0] === undefined
+                                            ? ''
+                                            : asFigure(row.change[0].total)}
+                                    </td>
+                                    <td className="px-2 py-1 text-right font-mono text-ink-muted">
+                                        {row.change_pct[0] === undefined ||
+                                        row.change_pct[0].total === ''
+                                            ? '—'
+                                            : `${asFigure(row.change_pct[0].total)}%`}
+                                    </td>
+                                </>
+                            )}
                             <td className="px-2 py-1">
                                 {row.is_group ? (
                                     ''

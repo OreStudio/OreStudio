@@ -648,6 +648,18 @@ export interface AggregateRow {
     readonly notional: readonly Money[];
     readonly group: string;
     readonly is_group: boolean;
+    readonly previous: readonly Money[];
+    readonly change: readonly Money[];
+    readonly change_pct: readonly Money[];
+    readonly is_removed: boolean;
+}
+
+/** The run a comparison is against. */
+export interface BaselineSummary {
+    readonly id: string;
+    readonly totals: readonly Money[];
+    readonly change: readonly Money[];
+    readonly change_pct: readonly Money[];
 }
 
 /** A run's results, as the server answered them. */
@@ -657,6 +669,7 @@ export interface RunResults {
     readonly totals: readonly Money[];
     readonly reason: ResultReason;
     readonly recordsComplete: boolean;
+    readonly baseline: BaselineSummary | null;
 }
 
 /** One report run, as the reporting area reads it. */
@@ -2831,15 +2844,19 @@ export const api = {
     },
 
     /** The results of one run, at the level the reader asked for. */
-    async reportRunResults(id: string, by: ResultLevel): Promise<RunResults> {
-        const reply = (await request(
-            `/api/reporting/runs/${id}/results?by=${encodeURIComponent(by)}`,
-            { method: 'GET' },
-        )) as {
+    async reportRunResults(id: string, by: ResultLevel, baseline?: string): Promise<RunResults> {
+        const query = new URLSearchParams({ by });
+        if (baseline !== undefined && baseline !== '') {
+            query.set('baseline', baseline);
+        }
+        const reply = (await request(`/api/reporting/runs/${id}/results?${query.toString()}`, {
+            method: 'GET',
+        })) as {
             rows?: readonly unknown[];
             totals?: readonly Money[];
             reason?: string;
             recordsComplete?: boolean;
+            baseline?: BaselineSummary | null;
         };
         return {
             level: by,
@@ -2847,6 +2864,7 @@ export const api = {
             totals: reply.totals ?? [],
             reason: resultReasonOf(reply.reason),
             recordsComplete: reply.recordsComplete !== false,
+            baseline: reply.baseline ?? null,
         };
     },
 

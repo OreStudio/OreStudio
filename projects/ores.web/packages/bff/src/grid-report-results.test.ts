@@ -20,7 +20,13 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { aggregateRows, entriesOf, rowsOf, withCounterpartyGroups } from './grid-report-results.js';
+import {
+    aggregateRows,
+    comparedWith,
+    entriesOf,
+    rowsOf,
+    withCounterpartyGroups,
+} from './grid-report-results.js';
 import type { AggregateRow, RunResultRow } from './grid-report-results.js';
 
 /*
@@ -364,5 +370,59 @@ describe('withCounterpartyGroups, the group ordering', () => {
         );
 
         expect(rows.every((row) => !row.is_group)).toBe(true);
+    });
+});
+
+describe('comparedWith', () => {
+    const aggregate = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'b1',
+        name: 'Book One',
+        trades: 2,
+        totals: [{ currency: 'GBP', total: '150.00' }],
+        notional: [{ currency: 'GBP', total: '3000.00' }],
+        group: '',
+        is_group: false,
+        previous: [],
+        change: [],
+        change_pct: [],
+        is_removed: false,
+        ...over,
+    });
+
+    it('states each row against the earlier run, and a new row against nothing', () => {
+        const rows = comparedWith(
+            [
+                aggregate({ key: 'b1', totals: [{ currency: 'GBP', total: '150.00' }] }),
+                aggregate({ key: 'b2', name: 'New Book' }),
+            ],
+            [aggregate({ key: 'b1', totals: [{ currency: 'GBP', total: '100.00' }] })],
+        );
+
+        const book = rows.find((row) => row.key === 'b1');
+        expect(book?.previous).toEqual([{ currency: 'GBP', total: '100.00' }]);
+        expect(book?.change).toEqual([{ currency: 'GBP', total: '50.00' }]);
+        expect(book?.change_pct).toEqual([{ currency: 'GBP', total: '50.00' }]);
+
+        const fresh = rows.find((row) => row.key === 'b2');
+        expect(fresh?.previous).toEqual([]);
+        expect(fresh?.change_pct).toEqual([{ currency: 'GBP', total: '' }]);
+    });
+
+    it('keeps a row only the earlier run had, marked as gone', () => {
+        const rows = comparedWith(
+            [aggregate({ key: 'b1' })],
+            [
+                aggregate({ key: 'b1' }),
+                aggregate({
+                    key: 'b9',
+                    name: 'Closed Book',
+                    totals: [{ currency: 'GBP', total: '40.00' }],
+                }),
+            ],
+        );
+
+        const gone = rows.find((row) => row.key === 'b9');
+        expect(gone?.is_removed).toBe(true);
+        expect(gone?.change).toEqual([{ currency: 'GBP', total: '-40.00' }]);
     });
 });

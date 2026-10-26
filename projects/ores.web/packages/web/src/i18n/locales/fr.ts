@@ -5523,6 +5523,12 @@ const fr: SourceCatalogue = {
             errors: 'Lire les erreurs de cette exécution',
         },
         results: {
+            compareTo: 'Comparer à',
+            noComparison: 'Aucune comparaison',
+            change: 'Écart',
+            changePct: 'Écart %',
+            changeAgainst: 'Écart avec cette exécution',
+            gone: 'disparue',
             runTagOne: '{count} transaction · valorisée le {date}',
             runTagMany: '{count} transactions · valorisées le {date}',
             oneRowPer: {

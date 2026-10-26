@@ -253,6 +253,14 @@ export const CARDS = {
         permission: ['iam::sessions:read', 'iam::login_info:read'],
         screenTitleKey: 'auditSignIns.title',
     },
+    marketDataSources: {
+        titleKey: 'operations.screens.sources',
+        bodyKey: 'operations.screens.sourcesBody',
+        to: PATHS.marketDataSources,
+        icon: 'server',
+        permission: 'marketdata::market_data_sources:read',
+        screenTitleKey: 'operations.sources.title',
+    },
     versions: {
         titleKey: 'operations.screens.versions',
         bodyKey: 'operations.screens.versionsBody',
@@ -338,7 +346,7 @@ export const AREA_CARDS = {
     ],
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
     marketdata: ['synthetic', 'curveEvolution'],
-    operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
+    operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions', 'marketDataSources'],
     reporting: ['reports', 'pricingEngines', 'engineSettings'],
     tenants: ['tenants'],
     trading: ['trades'],

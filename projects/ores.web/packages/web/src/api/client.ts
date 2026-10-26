@@ -433,6 +433,16 @@ export const feedRecordSchema = z.looseObject({
 export type FeedRecord = z.infer<typeof feedRecordSchema>;
 
 /**
+ * One value a provider publishes, in the vendor's own notation: an id scheme,
+ * an external id and a field.
+ */
+const vendorIdSchema = z.object({
+    id_scheme: z.string().default(''),
+    external_id: z.string().default(''),
+    field: z.string().default(''),
+});
+
+/**
  * The state of one adapter of the market data service. The state is announced,
  * ready, serving, stale or rejected, and the counts say how the universe and
  * the last demand compared.
@@ -449,8 +459,8 @@ const adapterStatusSchema = z.object({
     routes_seen: z.number(),
     ticks_last_minute: z.number(),
     last_tick_age_ms: z.number(),
-    accepted: z.array(z.unknown()),
-    rejected: z.array(z.unknown()),
+    accepted: z.array(vendorIdSchema).default([]),
+    rejected: z.array(z.object({ id: vendorIdSchema, reason: z.string().default('') })).default([]),
 });
 
 export type AdapterStatus = z.infer<typeof adapterStatusSchema>;

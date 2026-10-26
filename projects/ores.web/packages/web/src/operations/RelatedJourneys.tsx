@@ -54,6 +54,8 @@ export const JOURNEY_IDS = [
     'EE26E58C-F389-4E82-BF96-EC5324F9F795',
     'C3D59907-9D6A-448C-9A61-9E750755BBFB',
     '22AC8DD8-A440-4330-9992-47A5E9985473',
+    '986CED57-341F-49DE-8F5D-F186771F10D8',
+    'D46E4DEF-7431-419B-BA88-476AA7B98D24',
 ] as const;
 export type JourneyId = (typeof JOURNEY_IDS)[number];
 
@@ -87,6 +89,16 @@ export const JOURNEY_TARGETS: Readonly<Record<JourneyId, JourneyTarget>> = {
     '22AC8DD8-A440-4330-9992-47A5E9985473': {
         titleKey: 'operations.journeys.audit',
         to: PATHS.signIns,
+    },
+    // Keep the market data sources running.
+    '986CED57-341F-49DE-8F5D-F186771F10D8': {
+        titleKey: 'operations.journeys.sources',
+        to: PATHS.marketDataSources,
+    },
+    // Manage market data subscriptions.
+    'D46E4DEF-7431-419B-BA88-476AA7B98D24': {
+        titleKey: 'marketdata.journeys.subscriptions',
+        to: PATHS.subscriptions,
     },
 };
 

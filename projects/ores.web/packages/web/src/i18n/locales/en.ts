@@ -1548,6 +1548,91 @@ export const en: SourceCatalogue = {
         },
     },
     operations: {
+        sources: {
+            title: 'Market data sources',
+            description:
+                'Every source the market data service runs: its adapter state, the ids it accepted and refused, and how long ago it last ticked.',
+            updated: 'Read {at}',
+            tag: {
+                lead: 'A source is quiet when it serves, the service demands ids of it, and nothing ticked in the last five minutes.',
+                noDemand: '{count} with no demand',
+                stale: '{count} stale',
+                quiet: '{count} quiet',
+            },
+            alert: '{count} demanded ids are not being served. Read the rejected ids under the source, or check that a party routes to it.',
+            tiles: {
+                sources: 'Sources',
+                serving: 'Serving',
+                routes: 'Routes',
+                ticks: 'Ticks per minute',
+                quiet: 'Quiet',
+            },
+            table: {
+                title: 'Sources',
+                lead: 'The source that ticked longest ago stands first.',
+                empty: 'The market data service tracks no source yet.',
+                note: 'The trend draws the board’s own readings while the screen is open, one every five seconds. The service keeps no history of ticks per minute, and the read carries no source kind.',
+            },
+            columns: {
+                source: 'Source',
+                provider: 'Provider',
+                kind: 'Kind',
+                state: 'State',
+                heartbeat: 'Heartbeat',
+                routes: 'Routes',
+                demanded: 'Demanded',
+                accepted: 'Accepted',
+                rejected: 'Rejected',
+                ticks: 'Ticks / min',
+                trend: 'Trend',
+                lastTick: 'Last tick',
+            },
+            state: {
+                announced: 'announced',
+                ready: 'ready',
+                serving: 'serving',
+                stale: 'stale',
+                rejected: 'rejected',
+            },
+            detail: {
+                title: 'Source · {source}',
+                heartbeatCounter: 'Heartbeat counter',
+                notServed: 'Demanded, not served',
+                served: 'Ids the catalogue holds',
+                unknown: 'Ids it does not hold',
+            },
+            rejected: {
+                title: 'Rejected ids',
+                none: 'The adapter refused no id in its last demand.',
+                id: 'Id',
+                reason: 'Reason',
+            },
+            age: {
+                never: 'never',
+                millis: '{millis} ms',
+                seconds: '{seconds} s',
+                minutes: '{minutes} m',
+                hours: '{hours} h',
+            },
+            gap: {
+                kind: {
+                    title: 'The kind of a source',
+                    body: 'The adapter status states the state of a source and not its kind. The kind is the catalogue’s, and this board reads one source of truth.',
+                },
+                drops: {
+                    title: 'The quality drops',
+                    body: 'The service counts the ticks it drops by reason, and the adapter status carries no count.',
+                },
+                parties: {
+                    title: 'The parties routed to a source',
+                    body: 'The status states how many routes a source has, and not which parties hold them.',
+                },
+                history: {
+                    title: 'The history of a source’s state',
+                    body: 'Nothing records when an adapter became stale, serving or rejected, so there is no history to read.',
+                },
+            },
+        },
         instance: {
             olderBuild: 'older build',
             state: {
@@ -1579,6 +1664,9 @@ export const en: SourceCatalogue = {
             },
         },
         screens: {
+            sources: 'Market data sources',
+            sourcesBody:
+                'Every source the market data service runs, the state of its adapter, and what it serves and refuses.',
             signIns: 'Sign-ins',
             signInsBody:
                 'Who is signed in now, the sign-ins that failed, and the events behind them.',
@@ -2318,6 +2406,7 @@ export const en: SourceCatalogue = {
             notBuilt: 'Not built yet',
         },
         journeys: {
+            sources: 'Keep the market data sources running',
             services: 'See the running services',
             logs: 'Read the telemetry logs',
             grid: 'Watch the compute grid',
@@ -4371,6 +4460,71 @@ export const en: SourceCatalogue = {
     },
 
     marketdata: {
+        subscriptions: {
+            title: 'Subscriptions',
+            description:
+                'The providers the party takes and the rights it holds, and the one source that serves each provider.',
+            add: 'Add',
+            addTitle: 'Add a subscription',
+            addRoute: 'Add a route',
+            addRouteTitle: 'Add a route',
+            remove: 'Delete',
+            removeTitle: 'Delete the subscription to {provider}?',
+            removeSubscriptionWhat:
+                'Delivery from this provider stops for the party. The series and the history stay.',
+            removeRouteWhat:
+                'The party keeps the subscription and loses the source that serves it. The history stays.',
+            cancel: 'Cancel',
+            newRecord:
+                'The new row is written with the reason system.new_record. No other reason applies to a new record.',
+            sourceHint:
+                'A party has one route for each provider. The route names the source that serves it.',
+            right: {
+                display: 'display',
+                displayMeans: 'A person of the party may show this data on a screen.',
+                non_display: 'non-display',
+                non_displayMeans:
+                    'A system of the party may use this data without showing it, such as a pricing engine.',
+                derived: 'derived',
+                derivedMeans:
+                    'The party may compute new values from this data, such as a blended price.',
+            },
+            columns: {
+                party: 'Party',
+                provider: 'Provider',
+                rights: 'Rights',
+                source: 'Source',
+            },
+            subscriptions: {
+                title: 'Subscriptions',
+                lead: 'A subscription names a provider and its rights, and never a source.',
+                empty: 'The party holds no subscription yet.',
+                note: 'The service states the party from the session, so Delete stands only on the rows of the party you act in.',
+            },
+            routes: {
+                title: 'Routes',
+                lead: 'A route picks the source that serves the party for one provider.',
+                empty: 'The party has no route yet.',
+                note: 'A source switch is one route and nothing else. The series and the consumers stay as they are.',
+            },
+            gap: {
+                suspend: {
+                    title: 'Suspending a subscription',
+                    body: 'The journey suspends delivery by clearing Enabled. A subscription carries the three rights and no Enabled flag, so the screen offers Delete instead.',
+                },
+                history: {
+                    title: 'The history of a subscription',
+                    body: 'The service keeps the versions of a subscription and of a route. No BFF route reads them yet, so there is no History tab.',
+                },
+                usage: {
+                    title: 'The usage and the cost',
+                    body: 'The service records demand and delivery. No read prices them yet, so the screen shows no usage and no bill.',
+                },
+            },
+        },
+        journeys: {
+            subscriptions: 'Manage market data subscriptions',
+        },
         feeds: {
             targetUri:
                 'The series this feed writes to. Each tick the feed makes is stored as an observation of the series that this URI names.',
@@ -4379,6 +4533,9 @@ export const en: SourceCatalogue = {
             title: 'Market data',
             lead: 'The prices and curves the platform receives or generates.',
             screens: {
+                subscriptions: 'Subscriptions',
+                subscriptionsBody:
+                    'The providers a party takes, with the rights it holds, and the source that serves each one.',
                 synthetic: 'Synthetic',
                 syntheticBody:
                     'The feeds the platform generates: what runs by provider, and every feed to start and stop.',

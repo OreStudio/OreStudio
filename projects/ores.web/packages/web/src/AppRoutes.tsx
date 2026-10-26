@@ -68,6 +68,7 @@ import { GridJobPage } from './operations/GridJobPage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
 import { ServicesPage } from './operations/ServicesPage.js';
+import { MarketDataSourcesPage } from './operations/MarketDataSourcesPage.js';
 import { VersionsPage } from './operations/VersionsPage.js';
 import { RescuePage } from './pages/RescuePage.js';
 import { SecurityPage } from './pages/SecurityPage.js';
@@ -559,6 +560,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <ServicesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.marketDataSources}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <MarketDataSourcesPage />
                     ),
                     'workspace',
                 )}

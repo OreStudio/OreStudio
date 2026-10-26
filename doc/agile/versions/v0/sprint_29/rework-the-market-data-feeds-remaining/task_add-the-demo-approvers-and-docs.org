@@ -26,11 +26,11 @@ Each approval kind has an Acme decider persona, and the demo's market data, perm
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
@@ -83,4 +83,40 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Measurements
+
+| What | Value |
+|------+-------|
+| Decide permissions in the seed | 5, covering 5 kinds and 4 parts |
+| Roles with a decide permission | Operations, Controller, Finance, TenantAdmin |
+| New Acme personas | 8, staff 65 to 73 |
+| Party deciders per kind | 17 (book, counterparty, operational authorisation) |
+| Party deciders per part | controller 5, finance 5, market_risk 17, operations 17 |
+| A decide | operational authorisation approved, version 1 to 2 |
+| Four eyes | a requester deciding their own request refused |
+| Documentation | hub and 6 notes, 3 PlantUML diagrams with PNGs |
+| Docs checks | green, site build succeeded |
+
 * Result
+
+Every approval function has an Acme persona that can decide, and the demo's
+market data, permissions and authorisation model are documented.
+
+- The seed's five decide permissions are now held by roles: Operations gains
+  decide_operations, and Controller and Finance roles are added for their parts.
+  The tenant administrator keeps iam::roles:assign.
+- Eight personas join Acme, a controller and a finance person in the group and
+  in each office, so every party has a decider for its book parts.
+- Verified on a recreated database: a Head of Middle Office approves an
+  operational authorisation; a requester deciding his own request is refused
+  with four_eyes; the controller, finance and market risk personas each approve
+  their part; a trader holds no decide code.
+- The documentation is a Zettelkasten cluster under doc/knowledge/demo: the
+  providers and sources, the catalogue and feeds, the subscriptions and routes,
+  the seed profile, the permission matrix and the approval model, with three
+  UML flows and the site index updated.
+
+Open, recorded in the approval note: a part decider reads an empty queue because
+the queue filters by kind; no policy emits the controller part; no market-data
+approval kind exists; the journeys do not say which party's Market Risk decides
+a tenant-wide change; and a hold has no reason lookup.

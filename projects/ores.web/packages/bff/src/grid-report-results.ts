@@ -89,6 +89,7 @@ interface TradeAnswer {
     readonly rows: readonly RunResultRow[];
     readonly totals: readonly Money[];
     readonly reason: ResultReason;
+    readonly recordsComplete: boolean;
 }
 
 interface AggregateAnswer {
@@ -96,6 +97,7 @@ interface AggregateAnswer {
     readonly rows: readonly AggregateRow[];
     readonly totals: readonly Money[];
     readonly reason: ResultReason;
+    readonly recordsComplete: boolean;
 }
 
 export type ResultsAnswer = TradeAnswer | AggregateAnswer;
@@ -227,9 +229,9 @@ export function rowsOf(rawCsv: string): readonly RunResultRow[] | null {
 /** What the records say about the trades in a run. */
 interface TradeRecords {
     readonly counterpartyName: ReadonlyMap<string, string>;
-    readonly counterpartyGroup: ReadonlyMap<string, string>;
     readonly bookOf: ReadonlyMap<string, string>;
     readonly bookName: ReadonlyMap<string, string>;
+    readonly complete: boolean;
 }
 
 /**
@@ -242,9 +244,9 @@ interface TradeRecords {
 async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Promise<TradeRecords> {
     const empty = {
         counterpartyName: new Map<string, string>(),
-        counterpartyGroup: new Map<string, string>(),
         bookOf: new Map<string, string>(),
         bookName: new Map<string, string>(),
+        complete: false,
     };
     try {
         const [counterparties, bookings, books] = await Promise.all([
@@ -263,25 +265,13 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
                 text(counterparty['full_name']),
             ]),
         );
-        const counterpartyGroup = new Map(
-            counterparties.map((counterparty) => [
-                text(counterparty['id']),
-                text(counterparty['parent_counterparty_id']),
-            ]),
-        );
-        const resolvedGroup = new Map<string, string>();
-        for (const [id, parent] of counterpartyGroup) {
-            if (parent !== '') {
-                resolvedGroup.set(id, counterpartyName.get(parent) ?? '');
-            }
-        }
         return {
             counterpartyName,
-            counterpartyGroup: resolvedGroup,
             bookOf: new Map(
                 bookings.map((booking) => [text(booking['trade_id']), text(booking['book_id'])]),
             ),
             bookName: new Map(books.map((book) => [text(book['id']), text(book['name'])])),
+            complete: true,
         };
     } catch {
         return empty;
@@ -292,12 +282,12 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
 async function withRecords(
     session: LiveSession,
     rows: readonly RunResultRow[],
-): Promise<readonly RunResultRow[]> {
+): Promise<{ rows: readonly RunResultRow[]; complete: boolean }> {
     const records = await recordsOf(
         session,
         rows.map((row) => row.trade_id),
     );
-    return rows.map((row) => {
+    const resolved = rows.map((row) => {
         const bookId = records.bookOf.get(row.trade_id) ?? '';
         return {
             ...row,
@@ -306,6 +296,7 @@ async function withRecords(
             book_name: records.bookName.get(bookId) ?? '',
         };
     });
+    return { rows: resolved, complete: records.complete };
 }
 
 /** The per-currency total of a figure the rows carry. */
@@ -329,10 +320,10 @@ function totalsOf(
 }
 
 /** The rows rolled up by the key they share. */
-function aggregateRows(
+export function aggregateRows(
     rows: readonly RunResultRow[],
     keyOf: (row: RunResultRow) => string,
-    detailsOf: (key: string) => { readonly name: string; readonly group: string },
+    names: ReadonlyMap<string, string>,
 ): readonly AggregateRow[] {
     const groups = new Map<string, RunResultRow[]>();
     for (const row of rows) {
@@ -342,7 +333,7 @@ function aggregateRows(
     return [...groups.entries()]
         .map(([key, members]) => ({
             key,
-            ...detailsOf(key),
+            name: names.get(key) ?? '',
             trades: members.length,
             totals: totalsOf(members, (row) => ({
                 amount: row.npv,
@@ -353,14 +344,14 @@ function aggregateRows(
                 currency: row.notional_currency,
             })),
         }))
-        .sort((left, right) => magnitudeOf(right) - magnitudeOf(left));
+        .sort((left, right) => figureOf(right) - figureOf(left));
 }
 
-/** A row's size, so the largest reads first. */
-function magnitudeOf(row: AggregateRow): number {
+/** A row's figure, so the largest reads first and a large loss does not. */
+function figureOf(row: AggregateRow): number {
     return row.totals.reduce((sum, total) => {
         const figure = Number.parseFloat(total.total);
-        return sum + (Number.isFinite(figure) ? Math.abs(figure) : 0);
+        return sum + (Number.isFinite(figure) ? figure : 0);
     }, 0);
 }
 
@@ -368,9 +359,9 @@ function magnitudeOf(row: AggregateRow): number {
 async function tradeRowsOfKey(
     session: LiveSession,
     key: string,
-): Promise<{ rows: readonly RunResultRow[]; reason: ResultReason }> {
+): Promise<{ rows: readonly RunResultRow[]; reason: ResultReason; recordsComplete: boolean }> {
     if (key === '') {
-        return { rows: [], reason: 'no-output' };
+        return { rows: [], reason: 'no-output', recordsComplete: true };
     }
     const archive = await fetchStored(session, key);
     const tar = archive[0] === 0x1f && archive[1] === 0x8b ? gunzipSync(archive) : archive;
@@ -378,13 +369,14 @@ async function tradeRowsOfKey(
         ([name]) => name.split('/').pop()?.toLowerCase() === 'npv.csv',
     );
     if (resultFile === undefined) {
-        return { rows: [], reason: 'no-result-file' };
+        return { rows: [], reason: 'no-result-file', recordsComplete: true };
     }
     const rows = rowsOf(resultFile[1].toString('utf8'));
     if (rows === null) {
-        return { rows: [], reason: 'no-figures' };
+        return { rows: [], reason: 'no-figures', recordsComplete: true };
     }
-    return { rows: await withRecords(session, rows), reason: '' };
+    const resolved = await withRecords(session, rows);
+    return { rows: resolved.rows, reason: '', recordsComplete: resolved.complete };
 }
 
 /** The answer for the level the reader asked for. */
@@ -399,35 +391,30 @@ async function resultsOfKey(
         currency: row.npv_currency,
     }));
     if (level === 'trade') {
-        return { level, rows: read.rows, totals, reason: read.reason };
-    }
-    if (level === 'book') {
         return {
             level,
-            rows: aggregateRows(
-                read.rows,
-                (row) => row.book_id,
-                (key) => ({
-                    name: read.rows.find((row) => row.book_id === key)?.book_name ?? '',
-                    group: '',
-                }),
-            ),
+            rows: read.rows,
             totals,
             reason: read.reason,
+            recordsComplete: read.recordsComplete,
         };
     }
+    const keyOf =
+        level === 'book'
+            ? (row: RunResultRow): string => row.book_id
+            : (row: RunResultRow): string => row.counterparty;
+    const names = new Map(
+        read.rows.map((row) => [
+            keyOf(row),
+            level === 'book' ? row.book_name : row.counterparty_name,
+        ]),
+    );
     return {
         level,
-        rows: aggregateRows(
-            read.rows,
-            (row) => row.counterparty,
-            (key) => ({
-                name: read.rows.find((row) => row.counterparty === key)?.counterparty_name ?? '',
-                group: '',
-            }),
-        ),
+        rows: aggregateRows(read.rows, keyOf, names),
         totals,
         reason: read.reason,
+        recordsComplete: read.recordsComplete,
     };
 }
 
@@ -476,9 +463,22 @@ export function registerGridReportResultsRoutes(
         }
         const run = await readRun(session, parsed.data.id);
         if (run === null) {
-            return { level: query.data.by, rows: [], totals: [], reason: 'no-run' };
+            return {
+                level: query.data.by,
+                rows: [],
+                totals: [],
+                reason: 'no-run',
+                recordsComplete: true,
+            };
         }
-        return resultsOfKey(session, text(run['output_storage_key']), query.data.by);
+        const answer = await resultsOfKey(session, text(run['output_storage_key']), query.data.by);
+        if (!answer.recordsComplete) {
+            request.log.warn(
+                'reporting results: the books or counterparties behind run %s were not read',
+                parsed.data.id,
+            );
+        }
+        return answer;
     });
 
     /** The output archive of one run, as the run stored it. */

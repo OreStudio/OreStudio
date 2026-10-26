@@ -5248,8 +5248,6 @@ const fr: SourceCatalogue = {
             errors: 'Lire les erreurs de cette exécution',
         },
         results: {
-            aggregateNote:
-                "Ces chiffres sont les transactions de l'exécution agrégées par {level}. L'exécution a valorisé au {date}.",
             oneRowPer: {
                 trade: 'Une ligne par transaction',
                 book: 'Une ligne par livre',
@@ -5261,33 +5259,34 @@ const fr: SourceCatalogue = {
                 book: 'Livre',
                 counterparty: 'Contrepartie',
             },
+            runTag_one: '{count} transaction · valorisée le {date}',
+            runTag_other: '{count} transactions · valorisées le {date}',
+            sourceNote:
+                "Ce tableau lit npv.csv dans l'archive de sortie de l'exécution. Chaque ligne est une transaction évaluée par le moteur ; une transaction qu'il n'a pas pu construire n'écrit aucune ligne.",
+            aggregateNote:
+                "Ces chiffres sont les transactions de l'exécution agrégées par {level}. L'exécution a valorisé au {date}.",
+            degraded:
+                "Les livres ou contreparties derrière ces chiffres n'ont pas pu être lus : un nom vide signifie que le nom n'a pas été lu, non qu'il n'en existe aucun.",
+            selectHint:
+                "Sélectionnez une ligne pour lire le résultat de cette transaction : sa VAN, sa VAN en devise de base, son notionnel, sa contrepartie et toute erreur enregistrée par l'exécution.",
             aggregateHint:
                 'Une ligne ouvre son enregistrement ; « Voir les transactions » lit les transactions en dessous.',
             showTrades: 'Voir les transactions',
-            filtered: 'Filtré',
+            filteredTo: '{name} · {count} transactions',
             clearFilter: 'Effacer le filtre',
+            trades: 'Transactions',
+            total: 'VAN totale',
+            totalIn: 'VAN totale ({currency})',
+            trade: 'Transaction',
+            type: 'Type',
             book: 'Livre',
             actions: 'Actions',
             unbooked: 'Non affectée',
             unassigned: 'Non indiquée',
-            tradeId: 'TradeId',
-            tradeType: 'TradeType',
             npv: 'VAN',
-            npvBase: 'VAN(Base)',
+            npvBase: 'VAN (base)',
             notional: 'Notionnel',
-            counterparty: 'ContrePartie',
-            trades: 'Transactions',
-            total: 'VAN totale',
-            totalIn: 'VAN totale ({currency})',
-            title: 'Résultats',
-            trade: 'Transaction',
-            type: 'Type',
-            oneRowPerTrade: 'Une ligne par transaction',
-            sourceNote:
-                "Ce tableau lit npv.csv dans l'archive de sortie de l'exécution. Chaque ligne est une transaction évaluée par le moteur ; une transaction qu'il n'a pas pu construire n'écrit aucune ligne.",
-            selectHint:
-                "Sélectionnez une ligne pour lire le résultat de cette transaction : sa VAN, sa VAN en devise de base, son notionnel, sa contrepartie et toute erreur enregistrée par l'exécution.",
-            runTag: '{count} lignes · évaluées le {date}',
+            counterparty: 'Contrepartie',
             noRun: "Ce rapport n'a aucune exécution à lire.",
             noOutput: "Cette exécution n'a produit aucune sortie.",
             noResultFile: 'La sortie de cette exécution ne contient pas de npv.csv.',

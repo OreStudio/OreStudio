@@ -20,7 +20,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { entriesOf, rowsOf } from './grid-report-results.js';
+import { aggregateRows, entriesOf, rowsOf } from './grid-report-results.js';
+import type { RunResultRow } from './grid-report-results.js';
 
 /*
  * The run result file: the engine's npv.csv, read by column name.
@@ -91,5 +92,76 @@ describe('entriesOf', () => {
 
         expect([...entries.keys()]).toEqual(['Output/npv.csv']);
         expect(entries.get('Output/npv.csv')?.toString('utf8')).toBe(CSV);
+    });
+});
+
+describe('aggregateRows', () => {
+    const row = (over: Partial<RunResultRow>): RunResultRow => ({
+        trade_id: 'a',
+        trade_type: 'Bond',
+        npv: '100',
+        npv_currency: 'GBP',
+        npv_base: '100',
+        notional: '1000',
+        notional_currency: 'GBP',
+        counterparty: 'c1',
+        counterparty_name: 'First',
+        book_id: 'b1',
+        book_name: 'Book One',
+        ...over,
+    });
+
+    it('sums each book and orders the largest figure first', () => {
+        const rows = aggregateRows(
+            [
+                row({ trade_id: 'a', npv: '100', notional: '1000' }),
+                row({ trade_id: 'b', npv: '250', notional: '2000' }),
+                row({
+                    trade_id: 'c',
+                    book_id: 'b2',
+                    book_name: 'Book Two',
+                    npv: '-500',
+                    notional: '500',
+                }),
+            ],
+            (entry) => entry.book_id,
+            new Map([
+                ['b1', 'Book One'],
+                ['b2', 'Book Two'],
+            ]),
+        );
+
+        expect(rows.map((entry) => entry.name)).toEqual(['Book One', 'Book Two']);
+        expect(rows[0]?.trades).toBe(2);
+        expect(rows[0]?.totals).toEqual([{ currency: 'GBP', total: '350.00' }]);
+        expect(rows[0]?.notional).toEqual([{ currency: 'GBP', total: '3000.00' }]);
+        expect(rows[1]?.totals).toEqual([{ currency: 'GBP', total: '-500.00' }]);
+    });
+
+    it('keeps a trade with no book as its own row rather than dropping it', () => {
+        const rows = aggregateRows(
+            [row({ trade_id: 'a' }), row({ trade_id: 'b', book_id: '', book_name: '' })],
+            (entry) => entry.book_id,
+            new Map([['b1', 'Book One']]),
+        );
+
+        expect(rows.map((entry) => entry.key).sort()).toEqual(['', 'b1']);
+        expect(rows.find((entry) => entry.key === '')?.trades).toBe(1);
+    });
+
+    it('totals each currency apart', () => {
+        const rows = aggregateRows(
+            [
+                row({ trade_id: 'a', npv: '100' }),
+                row({ trade_id: 'b', npv: '200', npv_currency: 'USD' }),
+            ],
+            (entry) => entry.book_id,
+            new Map([['b1', 'Book One']]),
+        );
+
+        expect(rows[0]?.totals).toEqual([
+            { currency: 'GBP', total: '100.00' },
+            { currency: 'USD', total: '200.00' },
+        ]);
     });
 });

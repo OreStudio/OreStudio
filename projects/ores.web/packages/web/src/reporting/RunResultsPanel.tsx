@@ -27,9 +27,11 @@ import {
     type AggregateRow,
     type Money,
     type ResultLevel,
+    type ResultReason,
     type RunResultRow,
 } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { bookPath, counterpartyPath, tradePath } from '../shell/paths.js';
 
 /**
  * What a run produced, read at the level the reader asks for.
@@ -42,7 +44,7 @@ import { useTranslation } from '../i18n/Provider.js';
 
 const LEVELS: readonly ResultLevel[] = ['trade', 'book', 'counterparty'];
 
-const REASON_TEXT: Readonly<Record<string, string>> = {
+const REASON_TEXT: Readonly<Record<Exclude<ResultReason, ''>, string>> = {
     'no-run': 'reporting.results.noRun',
     'no-output': 'reporting.results.noOutput',
     'no-result-file': 'reporting.results.noResultFile',
@@ -98,7 +100,6 @@ const toAggregate = (raw: unknown): AggregateRow => {
     };
 };
 
-/** One error the run recorded, as the run states it. */
 type RunError = {
     readonly scope: string;
     readonly severity: string;
@@ -131,6 +132,7 @@ export function RunResultsPanel({
     const level = LEVELS.find((candidate) => candidate === search.get('by')) ?? 'trade';
     const bookFilter = search.get('book') ?? '';
     const counterpartyFilter = search.get('counterparty') ?? '';
+    const noBook = search.get('nobook') === '1';
 
     const results = useQuery({
         queryKey: ['reporting-run-results', runId, level],
@@ -166,7 +168,10 @@ export function RunResultsPanel({
         params.set('by', 'trade');
         params.delete('book');
         params.delete('counterparty');
-        if (level === 'book') {
+        params.delete('nobook');
+        if (level === 'book' && key === '') {
+            params.set('nobook', '1');
+        } else if (level === 'book') {
             params.set('book', key);
         } else if (level === 'counterparty') {
             params.set('counterparty', key);
@@ -186,16 +191,27 @@ export function RunResultsPanel({
     const filtered =
         level !== 'trade'
             ? []
-            : trades.filter(
-                  (row) =>
-                      (bookFilter === '' || row.book_id === bookFilter) &&
-                      (counterpartyFilter === '' || row.counterparty === counterpartyFilter),
-              );
+            : trades.filter((row) => {
+                  if (noBook) {
+                      return row.book_id === '';
+                  }
+                  if (bookFilter !== '') {
+                      return row.book_id === bookFilter;
+                  }
+                  return counterpartyFilter === '' || row.counterparty === counterpartyFilter;
+              });
     const totals = results.data?.totals ?? [];
     const reason = results.data?.reason ?? '';
-    const filtering = bookFilter !== '' || counterpartyFilter !== '';
+    const filtering = bookFilter !== '' || counterpartyFilter !== '' || noBook;
     const tradeCount =
-        level === 'trade' ? filtered.length : aggregates.reduce((sum, row) => sum + row.trades, 0);
+        level === 'trade' ? trades.length : aggregates.reduce((sum, row) => sum + row.trades, 0);
+    const filterName = noBook
+        ? t(`${field}.unbooked`)
+        : bookFilter !== ''
+          ? (trades.find((row) => row.book_id === bookFilter)?.book_name ?? '')
+          : (trades.find((row) => row.counterparty === counterpartyFilter)?.counterparty_name ??
+            '');
+    const degraded = results.data?.recordsComplete === false;
 
     return (
         <section className="card space-y-4 p-6">
@@ -240,6 +256,9 @@ export function RunResultsPanel({
                                           date: pricedAt,
                                       })}
                             </p>
+                            {degraded && (
+                                <p className="text-sm text-down">{t(`${field}.degraded`)}</p>
+                            )}
                             <dl className="flex flex-wrap gap-8">
                                 <div>
                                     <dt className="text-xs text-ink-faint">
@@ -265,7 +284,13 @@ export function RunResultsPanel({
                             {filtering && level === 'trade' && (
                                 <p className="flex items-center gap-2 text-sm">
                                     <span className="rounded border border-line px-2 py-0.5 text-xs">
-                                        {t(`${field}.filtered`)}
+                                        {t(`${field}.filteredTo`, {
+                                            name:
+                                                filterName === ''
+                                                    ? t(`${field}.unassigned`)
+                                                    : filterName,
+                                            count: filtered.length,
+                                        })}
                                     </span>
                                     <button
                                         type="button"
@@ -311,7 +336,6 @@ export function RunResultsPanel({
     );
 }
 
-/** The per-trade table: the archive's own columns, one row per trade. */
 function TradeTable({
     rows,
     errorsOf,
@@ -357,7 +381,7 @@ function TradeTable({
                             >
                                 <td className="px-2 py-1 font-mono text-xs">
                                     <Link
-                                        to={`/trading/trades/${encodeURIComponent(row.trade_id)}`}
+                                        to={tradePath(row.trade_id)}
                                         className="text-accent hover:text-accent-bright"
                                     >
                                         {row.trade_id}
@@ -385,7 +409,7 @@ function TradeTable({
                                         </span>
                                     ) : (
                                         <Link
-                                            to={`/refdata/books/${encodeURIComponent(row.book_id)}`}
+                                            to={bookPath(row.book_id)}
                                             className="text-accent hover:text-accent-bright"
                                         >
                                             {row.book_name === '' ? row.book_id : row.book_name}
@@ -397,12 +421,10 @@ function TradeTable({
                                         '—'
                                     ) : (
                                         <Link
-                                            to={`/refdata/counterparties/${encodeURIComponent(row.counterparty)}`}
+                                            to={counterpartyPath(row.counterparty)}
                                             className="text-accent hover:text-accent-bright"
                                         >
-                                            {row.counterparty_name === ''
-                                                ? row.counterparty
-                                                : row.counterparty_name}
+                                            {row.counterparty_name}
                                         </Link>
                                     )}
                                 </td>
@@ -415,7 +437,6 @@ function TradeTable({
     );
 }
 
-/** The book and counterparty tables: one row per group, largest first. */
 function AggregateTable({
     level,
     rows,
@@ -446,17 +467,21 @@ function AggregateTable({
                         <tr key={row.key} className="border-t border-line-subtle">
                             <td className="px-2 py-1 uppercase">
                                 {row.key === '' ? (
-                                    t(`${field}.unassigned`)
+                                    level === 'book' ? (
+                                        t(`${field}.unbooked`)
+                                    ) : (
+                                        t(`${field}.unassigned`)
+                                    )
                                 ) : level === 'book' ? (
                                     <Link
-                                        to={`/refdata/books/${encodeURIComponent(row.key)}`}
+                                        to={bookPath(row.key)}
                                         className="text-accent hover:text-accent-bright"
                                     >
                                         {row.name === '' ? row.key : row.name}
                                     </Link>
                                 ) : (
                                     <Link
-                                        to={`/refdata/counterparties/${encodeURIComponent(row.key)}`}
+                                        to={counterpartyPath(row.key)}
                                         className="text-accent hover:text-accent-bright"
                                     >
                                         {row.name === '' ? row.key : row.name}
@@ -521,7 +546,7 @@ function TradeResult({
                     <dt className="text-xs text-ink-faint">{t(`${field}.trade`)}</dt>
                     <dd className="font-mono text-xs">
                         <Link
-                            to={`/trading/trades/${encodeURIComponent(row.trade_id)}`}
+                            to={tradePath(row.trade_id)}
                             className="text-accent hover:text-accent-bright"
                         >
                             {row.trade_id}

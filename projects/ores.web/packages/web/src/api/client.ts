@@ -504,6 +504,31 @@ export interface RunResults {
     readonly rows: readonly unknown[];
     readonly totals: readonly Money[];
     readonly reason: ResultReason;
+    readonly recordsComplete: boolean;
+}
+
+/** One report run, as the reporting area reads it. */
+export interface ReportRunDetail {
+    readonly id: string;
+    readonly name: string;
+    readonly party_id: string;
+    readonly definition_id: string;
+    readonly kind: string;
+    readonly state_name: string;
+    readonly started_at: string;
+    readonly completed_at: string;
+    readonly priced_at: string;
+    readonly price_note: string;
+    readonly output_message: string;
+    readonly output_storage_key: string;
+}
+
+/** A run's results, as the server answered them. */
+export interface RunResults {
+    readonly level: ResultLevel;
+    readonly rows: readonly unknown[];
+    readonly totals: readonly Money[];
+    readonly reason: ResultReason;
 }
 
 /** One report run, as the reporting area reads it. */
@@ -2530,16 +2555,17 @@ export const api = {
             `/api/reporting/runs/${id}/results?by=${encodeURIComponent(by)}`,
             { method: 'GET' },
         )) as {
-            level?: string;
             rows?: readonly unknown[];
             totals?: readonly Money[];
             reason?: string;
+            recordsComplete?: boolean;
         };
         return {
             level: by,
             rows: reply.rows ?? [],
             totals: reply.totals ?? [],
             reason: resultReasonOf(reply.reason),
+            recordsComplete: reply.recordsComplete !== false,
         };
     },
 

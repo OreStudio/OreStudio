@@ -5213,8 +5213,6 @@ const pt: SourceCatalogue = {
             errors: 'Ler os erros desta execução',
         },
         results: {
-            aggregateNote:
-                'Estes valores são as transações da execução agregadas por {level}. A execução avaliou em {date}.',
             oneRowPer: {
                 trade: 'Uma linha por transação',
                 book: 'Uma linha por livro',
@@ -5226,33 +5224,34 @@ const pt: SourceCatalogue = {
                 book: 'Livro',
                 counterparty: 'Contraparte',
             },
+            runTag_one: '{count} transação · avaliada em {date}',
+            runTag_other: '{count} transações · avaliadas em {date}',
+            sourceNote:
+                'Esta tabela lê npv.csv do arquivo de saída da execução. Cada linha é uma transação avaliada pelo motor; uma transação que ele não conseguiu construir não escreve linha.',
+            aggregateNote:
+                'Estes valores são as transações da execução agregadas por {level}. A execução avaliou em {date}.',
+            degraded:
+                'Os livros ou contrapartes por trás destes valores não puderam ser lidos: um nome vazio significa que o nome não foi lido, não que não exista.',
+            selectHint:
+                'Selecione uma linha para ler o resultado dessa transação: o seu VAL, o VAL na moeda base, o notional, a contraparte e qualquer erro registado pela execução.',
             aggregateHint:
                 'Uma linha abre o seu registo, e « Ver as transações » lê as transações por baixo.',
             showTrades: 'Ver as transações',
-            filtered: 'Filtrado',
+            filteredTo: '{name} · {count} transações',
             clearFilter: 'Limpar o filtro',
+            trades: 'Transações',
+            total: 'VAL total',
+            totalIn: 'VAL total ({currency})',
+            trade: 'Transação',
+            type: 'Tipo',
             book: 'Livro',
             actions: 'Ações',
             unbooked: 'Sem livro',
             unassigned: 'Não indicada',
-            tradeId: 'TradeId',
-            tradeType: 'TradeType',
             npv: 'VAL',
-            npvBase: 'VAL(Base)',
+            npvBase: 'VAL (base)',
             notional: 'Notional',
             counterparty: 'Contraparte',
-            trades: 'Transações',
-            total: 'VAL total',
-            totalIn: 'VAL total ({currency})',
-            title: 'Resultados',
-            trade: 'Transação',
-            type: 'Tipo',
-            oneRowPerTrade: 'Uma linha por transação',
-            sourceNote:
-                'Esta tabela lê npv.csv do arquivo de saída da execução. Cada linha é uma transação avaliada pelo motor; uma transação que ele não conseguiu construir não escreve linha.',
-            selectHint:
-                'Selecione uma linha para ler o resultado dessa transação: o seu VAL, o VAL na moeda base, o notional, a contraparte e qualquer erro registado pela execução.',
-            runTag: '{count} linhas · avaliadas em {date}',
             noRun: 'Este relatório não tem execução para ler.',
             noOutput: 'Esta execução não produziu saída.',
             noResultFile: 'A saída desta execução não contém npv.csv.',

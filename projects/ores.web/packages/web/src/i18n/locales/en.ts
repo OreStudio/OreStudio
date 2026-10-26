@@ -5172,8 +5172,6 @@ export const en: SourceCatalogue = {
             errors: "Read this run's errors",
         },
         results: {
-            aggregateNote:
-                "These figures are the run's trades rolled up to their {level}. The run priced {date}.",
             oneRowPer: {
                 trade: 'One row per trade',
                 book: 'One row per book',
@@ -5185,33 +5183,34 @@ export const en: SourceCatalogue = {
                 book: 'Book',
                 counterparty: 'Counterparty',
             },
+            runTag_one: '{count} trade · priced {date}',
+            runTag_other: '{count} trades · priced {date}',
+            sourceNote:
+                "This table reads npv.csv from the run's output archive. Every row is a trade the engine priced; a trade it could not build writes no row.",
+            aggregateNote:
+                "These figures are the run's trades rolled up to their {level}. The run priced {date}.",
+            degraded:
+                'The books or counterparties behind these figures could not be read, so an empty name means the name was not read, not that none was recorded.',
+            selectHint:
+                "Select a row to read that trade's result: its NPV, its base-currency NPV, its notional, its counterparty, and any error the run recorded against it.",
             aggregateHint:
                 'A row opens its record, and Show the trades reads the trades beneath it.',
             showTrades: 'Show the trades',
-            filtered: 'Filtered',
+            filteredTo: '{name} · {count} trades',
             clearFilter: 'Clear the filter',
+            trades: 'Trades',
+            total: 'Total NPV',
+            totalIn: 'Total NPV ({currency})',
+            trade: 'Trade',
+            type: 'Type',
             book: 'Book',
             actions: 'Actions',
             unbooked: 'Unbooked',
             unassigned: 'Not stated',
-            tradeId: 'TradeId',
-            tradeType: 'TradeType',
             npv: 'NPV',
             npvBase: 'NPV(Base)',
             notional: 'Notional',
             counterparty: 'CounterParty',
-            trades: 'Trades',
-            total: 'Total NPV',
-            totalIn: 'Total NPV ({currency})',
-            title: 'Results',
-            trade: 'Trade',
-            type: 'Type',
-            oneRowPerTrade: 'One row per trade',
-            sourceNote:
-                "This table reads npv.csv from the run's output archive. Every row is a trade the engine priced; a trade it could not build writes no row.",
-            selectHint:
-                "Select a row to read that trade's result: its NPV, its base-currency NPV, its notional, its counterparty, and any error the run recorded against it.",
-            runTag: '{count} rows · priced {date}',
             noRun: 'This report has no run to read.',
             noOutput: 'This run produced no output.',
             noResultFile: "This run's output holds no npv.csv.",

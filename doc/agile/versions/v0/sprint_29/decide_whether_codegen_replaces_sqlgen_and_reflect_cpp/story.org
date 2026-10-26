@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 170E2C8C-5DF7-4608-8C52-6951F3938F0F
+:END:
+#+title: Story: Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code
+#+description: Analyse whether the code generator should emit the SQL access, MessagePack and JSON code of every entity directly over raw APIs, in place of sqlgen and reflect-cpp, now that the data path's use of the database is settled.
+#+type: story
+#+level: s2
+#+filetags: :codegen:database:serialisation:analysis:sprint_29:v0:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A decision, with measurements, on whether the generator emits raw SQL, MessagePack and JSON code for every entity in place of sqlgen and reflect-cpp, and if so the plan to move.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-26                               |
+
+* Acceptance
+
+- Measured: read and write speed, allocations, build time and binary size of
+  generated raw code against sqlgen and reflect-cpp, for a few representative
+  entities, with the commands and commits that produced each number.
+- Listed: every sqlgen and reflect-cpp feature the platform uses, and how
+  generated code covers each one.
+- Decided: keep, replace, or replace in part, with the reasons and, if
+  replacing, the order of the move.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5A8896F6-E9AF-4047-A038-3771ED77C1BC][Compare generated raw code with sqlgen and reflect-cpp]] | BACKLOG | | | Prototype generated raw SQL, MessagePack and JSON code for a few entities and measure it against sqlgen and reflect-cpp for speed, build time, binary size and the features the platform uses. |
+
+* Decisions
+
+* Out of scope
+
+- Building the replacement. This story decides; a later story builds.
+- The data path's connections, unit of work and typed statements, which
+  the data path architecture notes sets out and the story "Carry one hundred thousand feeds on the
+  data path" builds. The generated code this story weighs runs inside them.

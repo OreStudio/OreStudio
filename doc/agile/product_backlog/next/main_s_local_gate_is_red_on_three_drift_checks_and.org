@@ -37,6 +37,11 @@ web: prettier on the grid report runs test and page test. er-diagram: the
 same seven schema warnings. protocol-twins: the synthetic market regime
 protocol has no TypeScript twin.
 
+Seen again on 2026-10-26 at 00:55 on a web and documentation branch with
+origin/main at 89ed948cc3: prototypes, the market data prototype
+=control-how-a-market-ticks= is on the tree and not listed on its group page
+as the inventory check wants.
+
 * Why
 
 A branch that touches the sql or tooling class runs these checks, and the

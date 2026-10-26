@@ -7,41 +7,54 @@
 #+level: s1
 #+filetags: :take_the_currencies_topic_through_the_screen_pipeline:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/test-and-sign-off-the-screens-of-the-currencies-topic
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
-#+updated: 2026-10-25
-#+environment:
+#+updated: 2026-10-26
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The currencies, desk groups and currency pairs screens are proved on a running
+system by a scenario, a harness run and a sheet per screen, every gap is a
+capture or a fix, and the owner's walk signs the topic off.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-25                               |
+| Now          | The scenario passed its thirteen steps on the agent's run, the harness has no failure on the three screens, and the three sheets carry the agent's walk with the verdict open. |
+| Waiting on   | The owner: they run the scenario by hand and walk the sheets; their verdict closes the topic. |
+| Next         | Record the owner's verdict on the scenario, the sheets, this task and the story; then close the story and scaffold the next topic. |
+| Last touched | 2026-10-26                               |
 
 * Acceptance
 
--
+- A test scenario covers list, record page, create, amend with a stale version, links, the pair's convention, history and revert, delete, the reader, and the Import and Export pair, and is run on a fresh database.
+- The harness runs on each of the three screens alone with no failure that is the screen's, and the sheet of each screen is filled from the scenario and its screenshots.
+- Every gap the walk finds is a capture or a fix before the sign off.
+- The owner's run and verdict are recorded on the scenario, the sheets, this task and the story.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Follow step 4 of the screen pipeline runbook on a fresh database. Recreate the
+database and provision Acme, write the test scenario over the three lists, a
+record of each kind, create, links, the stale amend, history and revert, the
+export and the import of a change, a desk group's members, a pair with its
+convention, delete and the reader, and drive it with a script, one function
+per step, so the run is repeatable and its log is the evidence. Run the
+harness on each screen alone, fold the run into a sheet per screen with
+=screen_sign_off.py=, fill the person's lines from the scenario and its
+screenshots, and record the verdict. File every gap the walk finds as a
+capture, or fix it when it is the screen's and small. The sign off that
+closes the topic is the owner's walk, so the task waits on it.
 
 * Measurements
 
@@ -55,9 +68,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Scenario steps | 13 passed on the ninth run; the eight before failed on the script's own faults and on the state earlier runs left | =evidence/scenario_runner.mjs=, log in =evidence/scenario_run_2026-10-26.log= | 8f96cb0dc6 |
+| Harness on the three screens, nothing else driving the web | 70 passed, 0 failed, 4 skipped | =npx playwright test --grep "record (currencies\|currency-groups\|currency-pairs)"= from =packages/harness= | 8f96cb0dc6 |
+| Sheet, currencies | 20 lines marked by the harness, 0 failing; 10 gaps, 49 met, 34 N/A, 18 not checked by the agent | =evidence/sign_off_currencies.org= | 8f96cb0dc6 |
+| Sheet, desk groups | 20 lines marked by the harness, 0 failing; 5 gaps, 30 met, 38 N/A, 38 not checked by the agent | =evidence/sign_off_desk_groups.org= | 8f96cb0dc6 |
+| Sheet, currency pairs | 20 lines marked by the harness, 0 failing; 6 gaps, 44 met, 34 N/A, 27 not checked by the agent | =evidence/sign_off_currency_pairs.org= | 8f96cb0dc6 |
+| Gaps captured | 4: a deleted currency's links left behind, a link removed with no reason, a select named by its option text, the import's zero-fraction notices | =compass list --type capture= | this branch |
+| Fixed before the sheet | 3: the history states the unversioned links as a gap, a classification label opens its page, the tenant's currency pair classifications are seeded and copied by the provisioner | =RecordTimeline.tsx=, =records.tsx=, =refdata_currency_pair_classifications_populate.sql=, =iam_tenant_provisioner_create.sql= | this branch |
+| Exported by the scenario | 169 records, the 168 of the seed and the scenario dollar | the scenario's step 8 | 8f96cb0dc6 |
 
 * Notes
+
+- The screenshots of the agent's run are the runner's: it writes them under
+  =SCENARIO_OUT= or the system's temporary folder, one per step, and a
+  =fail-N.png= for a step that fails.
+- The classification labels, Fiat, G10 and Closest, are the labels the
+  catalogue gives the rows, not the codes; the scenario had expected the
+  names. The sheet records it under ES-WORDS-06 for the owner to decide.
 
 * Test Scenarios
 
@@ -68,7 +95,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:68747AB3-1061-438F-805E-DD6075F98762][Verify the currencies screens]] | PENDING | Thirteen steps over the three lists, the euro, create, links, the stale amend, history and revert, export and import, a desk group's members, a pair and its convention, delete and the reader; the agent's run passed all thirteen, the owner's run is pending |
 
 * PRs
 
@@ -80,6 +107,6 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: web, sql and docs classes | the scenario, the runner, the sheets, the captures, records.tsx, the seed | Accept | The runner's first failures were its own: a select found by its label where the label carries the option text, a link panel read as a dialog, a count read before Refresh; each is fixed in the runner. The four captures gained short titles, their tags, their bucket and a Why. The classification label became a link to its page, which the prototype drew and the build had dropped |
 
 * Result

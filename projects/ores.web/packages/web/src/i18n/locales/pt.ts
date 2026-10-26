@@ -2740,6 +2740,8 @@ const pt: SourceCatalogue = {
         },
         gaps: 'O que este histórico não pode mostrar',
         gapFor: {
+            record_links_unversioned:
+                'As ligações a outros registos, países, calendários ou grupos, não são versionadas, por isso uma ligação adicionada ou removida não aparece.',
             record_parts_removed:
                 'Uma parte apagada do registo não está neste fluxo: o ecrã lê o histórico das partes que o registo tem agora.',
             party_country:

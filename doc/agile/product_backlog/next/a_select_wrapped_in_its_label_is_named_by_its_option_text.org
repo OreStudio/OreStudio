@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: FC4A72DA-6763-4D5C-A57C-8196BFECFDDD
+:END:
+#+title: A select wrapped in its label is named by its option text
+#+description: The shared Field wraps its control in the label, so a select's accessible name adds the chosen option's words.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:a11y:capture:next:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A select wrapped in its label is named by its option text too. The shared Field wraps its control in the label element, so a select's accessible name is the label's words followed by the chosen option's, such as Rounding type Round to Nearest. A screen reader announces both, and a locator by label finds no select. Seen on 2026-10-26 while driving the currencies scenario. The Field should name the control with aria-labelledby on the label's text alone, or put the control outside the label and point at it with for.
+
+* Why
+
+A screen reader announces the label and the option together, such as Rounding type Round to Nearest, and a locator by label finds no select; the scenario runner had to find selects by their label's text instead. The Field should name the control with aria-labelledby on the label's text alone, or put the control outside the label and point at it with for.
+
+* References
+
+- =projects/ores.web/packages/web/src/ui/Primitives.tsx= — =Field=.
+- The scenario runner of the currencies topic, which works around it.
+
+* See also
+
+-

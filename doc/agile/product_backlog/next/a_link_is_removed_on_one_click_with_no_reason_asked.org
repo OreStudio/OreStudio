@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 72CD3D61-63DF-4A40-A79B-4AD249C362E2
+:END:
+#+title: A link is removed on one click with no reason asked
+#+description: The link panel's Remove writes the removal at once, with no reason, where RS-FEEDBACK-06 says no write is silent.
+#+type: capture
+#+level: cross
+#+filetags: :ux:web:standards:capture:next:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A link is removed on one click with no reason asked. The link panel's Remove writes the removal at once: no confirmation, no change reason, no commentary, where RS-FEEDBACK-06 says every write carries a change reason and the currencies prototype drew a remove dialog that asks one. Seen on 2026-10-26 on the currency's Countries tab and the desk group's Members tab. Decide whether a link removal is a write that needs a reason, and if so give the shared LinkPanel the remove dialog.
+
+* Why
+
+RS-FEEDBACK-06 says every write carries a change reason, and the currencies prototype drew a remove dialog that asks one. Decide whether a link removal is a write that needs a reason; if it is, give the shared LinkPanel the remove dialog, and the desk group's members panel gains it too.
+
+* References
+
+- =projects/ores.web/packages/web/src/refdata/records.tsx= — =LinkPanel=.
+- The record screen standard, RS-FEEDBACK-06 and RS-RELATED-03.
+
+* See also
+
+-

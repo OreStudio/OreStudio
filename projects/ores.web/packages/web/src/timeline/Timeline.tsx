@@ -238,6 +238,7 @@ function Gaps({
 /** The gaps a screen says in words, by the record they leave out. */
 const KNOWN_GAPS: ReadonlySet<string> = new Set([
     'record_parts_removed',
+    'record_links_unversioned',
     'party_country',
     'party_currency',
     'party_counterparty',

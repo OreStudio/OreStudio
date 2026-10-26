@@ -2719,6 +2719,8 @@ export const en: SourceCatalogue = {
         },
         gaps: 'What this history cannot show',
         gapFor: {
+            record_links_unversioned:
+                'The links to other records, such as countries, calendars and groups, are not versioned, so a link added or removed does not appear.',
             record_parts_removed:
                 'A part deleted from the record is not in this stream: the screen reads the history of the parts the record holds now.',
             party_country:

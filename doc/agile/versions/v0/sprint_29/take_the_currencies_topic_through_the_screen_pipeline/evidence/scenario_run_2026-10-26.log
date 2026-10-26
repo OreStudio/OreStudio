@@ -1,0 +1,28 @@
+PASS Sign in as the tenant administrator 
+PASS Open the currencies list header Refresh,Export,Add currency + Import link; columns ISO code,Name,Symbol,Monetary nature,Market tier; nature reads "fiat"; pager 1–15 of 168; search in the address
+PASS Open the euro buttons Refresh,Edit,Delete; tabs Details,Countries,Calendars,Desk groups,History; 16 labels; Day basis "ACT/360", Market tier "G10"
+PASS Add the scenario dollar groups Identity,Display,Market; five selects; opened on ZZS
+PASS Link a country, a calendar and a desk group three links present after Refresh (already linked before this run's add, left behind by a deleted record: Calendars: TARGET; Desk groups: Scandies); the country removed on the click, with no dialog and no reason asked
+PASS Amend the currency against a stale version "Edit Scenario dollar" with its load time; the stale save refused; Reload closed the dialog
+PASS Read the history and revert 17 entries then 18; Revert on every version but the newest; title back to Scenario dollar (the history continues an earlier run's, a captured gap)
+PASS Export the currencies and import a change Saved currencyconfig.xml, 169 records. ; wrong file refused by its root; counts right; 13 zero-fraction currencies listed as values with no row; one changed row; "Imported: 0 added, 1 changed, 0 deleted, 0 kept. Refresh shows the new versions."; Symbol in the history
+PASS Open a desk group and change its members pager 1–6 of 6; tabs Details,Members,History; 11 members, ZZS added and removed; the timeline
+PASS Set up a currency pair columns Pair,Base currency,Quote currency,Classification; groups The pair,Quoting convention; equal legs refused; code ZZS/USD; two cards; history with Convention v1
+PASS Edit the pair's convention and delete the pair "Edit ZZS/USD"; base fixed; sample 1.08424; Convention v2 newest; "Delete ZZS/USD?"; list without the pair
+PASS Delete the scenario dollar "Delete Scenario dollar?"; list opened; address answers no such record
+PASS Look as a reader Export drawn; Import link 1, Add drawn; EUR marked Editable
+
+SUMMARY
+PASS	Sign in as the tenant administrator	
+PASS	Open the currencies list	header Refresh,Export,Add currency + Import link; columns ISO code,Name,Symbol,Monetary nature,Market tier; nature reads "fiat"; pager 1–15 of 168; search in the address
+PASS	Open the euro	buttons Refresh,Edit,Delete; tabs Details,Countries,Calendars,Desk groups,History; 16 labels; Day basis "ACT/360", Market tier "G10"
+PASS	Add the scenario dollar	groups Identity,Display,Market; five selects; opened on ZZS
+PASS	Link a country, a calendar and a desk group	three links present after Refresh (already linked before this run's add, left behind by a deleted record: Calendars: TARGET; Desk groups: Scandies); the country removed on the click, with no dialog and no reason asked
+PASS	Amend the currency against a stale version	"Edit Scenario dollar" with its load time; the stale save refused; Reload closed the dialog
+PASS	Read the history and revert	17 entries then 18; Revert on every version but the newest; title back to Scenario dollar (the history continues an earlier run's, a captured gap)
+PASS	Export the currencies and import a change	Saved currencyconfig.xml, 169 records. ; wrong file refused by its root; counts right; 13 zero-fraction currencies listed as values with no row; one changed row; "Imported: 0 added, 1 changed, 0 deleted, 0 kept. Refresh shows the new versions."; Symbol in the history
+PASS	Open a desk group and change its members	pager 1–6 of 6; tabs Details,Members,History; 11 members, ZZS added and removed; the timeline
+PASS	Set up a currency pair	columns Pair,Base currency,Quote currency,Classification; groups The pair,Quoting convention; equal legs refused; code ZZS/USD; two cards; history with Convention v1
+PASS	Edit the pair's convention and delete the pair	"Edit ZZS/USD"; base fixed; sample 1.08424; Convention v2 newest; "Delete ZZS/USD?"; list without the pair
+PASS	Delete the scenario dollar	"Delete Scenario dollar?"; list opened; address answers no such record
+PASS	Look as a reader	Export drawn; Import link 1, Add drawn; EUR marked Editable

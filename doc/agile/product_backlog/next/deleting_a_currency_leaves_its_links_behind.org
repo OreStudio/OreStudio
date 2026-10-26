@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: A1EFDC2F-94BF-4B66-AFB1-37E938B7AAAA
+:END:
+#+title: Deleting a currency leaves its links behind
+#+description: A deleted currency keeps its country, calendar and group links, so a re-created code opens with the old links.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:web:sql:capture:next:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Deleting a currency leaves its links behind. The currency's rows in currency_countries, currency_calendars and currency_currency_groups stay when the currency is deleted, so a currency re-created with the same code opens with the old links already in place. Seen on 2026-10-26 by the currencies scenario: ZZS deleted and added again showed TARGET and Scandies linked before the step added them. The calendar's business days show the same shape (captured apart). The delete of a currency should close its links, or the remove dialog should say what stays.
+
+* Why
+
+The delete of a currency should close its links, or the delete dialog should say what stays. A currency re-created with the same code inherits links nobody chose for it, and the scenario runner had to skip links it found already there.
+
+* References
+
+- =projects/ores.sql= — the =currency_countries=, =currency_calendars= and =currency_currency_groups= tables.
+- The calendars topic captured the same shape for a deleted calendar's business days.
+
+* See also
+
+-

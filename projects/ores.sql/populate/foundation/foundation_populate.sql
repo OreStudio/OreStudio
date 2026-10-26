@@ -127,6 +127,7 @@ select ores_utility_allow_version_replace_fn();
 \ir ../refdata/refdata_rounding_types_populate.sql
 \ir ../refdata/refdata_monetary_natures_populate.sql
 \ir ../refdata/refdata_currency_market_tiers_populate.sql
+\ir ../refdata/refdata_currency_pair_classifications_populate.sql
 \ir ../refdata/refdata_countries_populate.sql
 \ir ../refdata/refdata_calendar_types_populate.sql
 \ir ../refdata/refdata_diary_entry_types_populate.sql

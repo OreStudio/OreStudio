@@ -1,0 +1,262 @@
+:PROPERTIES:
+:ID: 68747AB3-1061-438F-805E-DD6075F98762
+:END:
+#+title: Test Scenario: Verify the currencies screens
+#+description: Walk the currencies, desk groups and currency pairs screens on a fresh database: the lists, a record of each kind, create, amend with a stale version, links, the pair's convention, history and revert, delete, the reader, and the Import and Export pair.
+#+type: test_scenario
+#+level: s1
+#+filetags: :take_the_currencies_topic_through_the_screen_pipeline:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: brave_hopper
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:1592D684-2DC9-46B5-B348-032470DFDC08][Test and sign off the screens of the currencies topic]] in [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]]. It walks the currencies, desk groups and currency pairs screens as the [[id:E44A471B-E3FB-4B86-8DB3-E00C02C8BADF][signed off prototype]] draws them: the three lists, a currency created, linked, amended against a stale version, reverted, exported, imported and deleted, a desk group's members, a pair with its convention, and the reader. Pass means every step's outcome matches what the step states; a step that does not is a gap for the sign off sheet. Record the outcome by hand in =* Results=.
+
+* Before you start
+
+The session did the following. Confirm the system is in this state before you start; do not repeat the work.
+
+- The build is current for =main= at or after the merge of PR 3863, which finished the build of the currencies screens.
+- The database was recreated with =compass db recreate -y -k= and Acme Corporation was provisioned with =compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores= on 2026-10-26; the run completed with no failed step.
+- All 24 services are active and the web answers on =http://localhost:20402=.
+- You need =tenant_admin@acme_corporation= with the password =Secure-Password-123=.
+- The 168 currencies of the ISO seed are present; the scenario creates the currency =ZZS= and the pair =ZZS/USD= and deletes both at the end.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:1592D684-2DC9-46B5-B348-032470DFDC08][Test and sign off the screens of the currencies topic]] |
+| Parent story  | [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]]   |
+| Target screen | Reference data → Currencies, Desk groups and Currency pairs, under =http://localhost:20402/refdata/=, and one record's page of each |
+| Clients       | Chromium 1400 px, driven by =evidence/scenario_runner.mjs=; the owner by hand |
+| State         | PENDING: the agent's run passed every step; the owner's run decides |
+
+* Steps
+
+** Sign in as the tenant administrator
+
+- Open =http://localhost:20402/sign-in=.
+- Sign in as =tenant_admin@acme_corporation= with =Secure-Password-123=.
+- If the screen asks you to choose a party, choose the first.
+- The landing page opens with *Your account* in the header. If it does not, stop here.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+PASS. The landing page opened as tenant_admin.
+
+** Open the currencies list
+
+- Open Reference data, then Currencies.
+- The breadcrumb reads Home › Reference data › Currencies; the title is *Currencies* with one sentence under it.
+- At the right stand *Refresh* with the load time under it, then *Import* and *Export*, then *Add currency*.
+- The table shows ISO code with its flag, Name, Symbol, Monetary nature and Market tier; the nature and the tier draw their labels, *Fiat* and *G10*, and a click on a label opens the classification's page; the pager reads *1–15 of 168* and starts at 15 rows.
+- Type =EUR= in the search box: one row, *Euro*, and the address carries the search.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+PASS. Refresh, Import, Export and Add currency at the right; ISO code, Name, Symbol, Monetary nature and Market tier; the nature's label Fiat; 1–15 of 168; the search for EUR in the address.
+
+** Open the euro
+
+- Click the *EUR* row.
+- The page opens at =/refdata/currencies/EUR=; the breadcrumb ends at *EUR* and the title is *Euro* with the euro's flag; the lead reads *EUR · version n*.
+- At the right stand Refresh with its load time, the mark *Editable*, *Edit* and *Delete*; nothing else.
+- The tabs are Details, Countries, Calendars, Desk groups and History.
+- Details stand in four columns in the field table's order, the ISO code first with the fixed reason under it; Rounding type, Monetary nature and Market tier draw their labels, *Closest*, *Fiat* and *G10*, and open their classification; Day basis reads *ACT/360*; the Details end with the last-changed line.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+PASS. Refresh, Editable, Edit and Delete; the tabs Details, Countries, Calendars, Desk groups and History; sixteen labels; Day basis ACT/360 and the tier's label G10.
+
+** Add the scenario dollar
+
+- Back on the list, click *Add currency*.
+- The dialog is titled *Add a currency*; its fields stand under three headings, *Identity*, *Display* and *Market*; Rounding type, Monetary nature, Market tier, ORE currency type and Day basis are selects; the numbers are number fields.
+- Fill in: ISO code =ZZS=, Name =Scenario dollar=, Numeric code =999=, Symbol =Z$=, Fraction symbol =c=, Fractions per unit =100=, Rounding type *Round to Nearest*, Rounding precision =2=, Format =Z$#,##0.00=, Monetary nature *Fiat Currency*, Market tier *Exotic*, ORE currency type *Major*, Spot days =2=, Day basis *ACT/360*, Base precedence =50=.
+- The note says the row is recorded as a new record and no reason is needed; *Still to fill in* names the fields until they are filled.
+- Click *Add*: the page opens at =/refdata/currencies/ZZS=, titled *Scenario dollar*, version 1, with *Editable*, Edit and Delete.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+PASS. The groups Identity, Display and Market; five selects; the page opened on ZZS at version 1.
+
+** Link a country, a calendar and a desk group
+
+- On the Countries tab, choose *Germany (DE)* in the picker under the list and click *Add*; press *Refresh*: the row shows the flag, *DE* and *Germany*, with *Remove* on the row.
+- On the Calendars tab, add *TARGET (Euro area)*; press Refresh: the row shows *TARGET* and the name, which opens the calendar's page.
+- On the Desk groups tab, add *Scandies*; press Refresh: the row shows *SCANDIES* and *Scandies*, which opens the group's page.
+- Click *Remove* on the country row: the link goes on the click, with no dialog and no reason asked; press Refresh: the row is gone. Note this for the sheet: the prototype drew a remove dialog that asks a reason, and the standard's RS-FEEDBACK-06 says no write is silent.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+PASS. The three links present after Refresh; on this database TARGET and Scandies were already linked before the step, left behind by the earlier runs' deleted ZZS, which is captured; the country's Remove took the link away on the click with no dialog and no reason, noted for the sheet and captured.
+
+** Amend the currency against a stale version
+
+- Open a second browser tab on =/refdata/currencies/ZZS= and click *Edit* there; leave the dialog open.
+- In the first tab, click *Edit*: the dialog is titled *Edit Scenario dollar* and says under its title when it was loaded. Change the name to =Scenario dollar, renamed=, choose a reason, and click *Save*. The dialog closes; after Refresh the title reads the new name.
+- In the second tab, the dialog still open, change the name to =Scenario dollar, stale= and click *Save*.
+- The save is refused: the dialog says somebody changed the record after you opened it and offers *Reload*; nothing is saved. Click *Reload*: the dialog closes and the page shows the renamed currency.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+PASS. Edit Scenario dollar with its load time; the second tab's stale save refused; Reload closed the dialog.
+
+** Read the history and revert
+
+- On the History tab, the timeline shows the chart and the currency's story: two versions, newest first, each on one line with the kind, *currency ZZS v2* or *v1*, the reason, you and the field that changed; the box under the rail says the links are not versioned. On a database where =ZZS= was created and deleted before, the history continues the deleted record's and the versions interleave; that is the captured gap of a re-created code, not a failure of the step.
+- The newest entry carries the current-version emblem and offers no Revert; the first offers *Revert*.
+- Click *Revert* on version 1: the dialog says what changes, asks for a reason, and writes a new version; the timeline then shows version 3 and the title reads *Scenario dollar* again after Refresh.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+PASS. Seventeen entries, then eighteen after the revert and Refresh, because the history continues the earlier runs' deleted ZZS, the captured gap; Revert on every version but the newest; the title back to Scenario dollar.
+
+** Export the currencies and import a change
+
+- On the list, click *Export*: the dialog is titled *Export*, says it writes =currencyconfig.xml= with the tenant's currencies, and that the server writes and your browser saves. Click *Export*: the browser saves the file and the dialog says *Saved currencyconfig.xml, 169 records*.
+- Open the file in an editor; change the scenario dollar's =<Symbol>Z$</Symbol>= to =<Symbol>ZS</Symbol>= and save it.
+- On the list, click *Import*: the page =/refdata/currencies/import= opens, titled *Import currencies*, with the four steps in the rail.
+- Choose any other XML file, such as a calendar adjustments file: *Next* is refused, and the banner names the root element found and asks for a =CurrencyConfig= file.
+- Choose the changed file and click Next: *What the file holds* counts 169 in the file, 168 already held, 1 changed, 0 new and 0 not in the file.
+- Next: *What the system does not know* names the fields the document has no element for, Format, Monetary nature, Market tier, Spot days, Day basis, Base precedence and Flag. It also lists thirteen currencies with no fraction unit, the yen among them, under *Values with no row* with *Fractions per unit must be positive*: the importer's check, not the file's fault, captured as a gap; the import writes them as they are.
+- Next: *The difference, and the review* lists one row, *Changed ZZS Scenario dollar Symbol Z$ → ZS* with *Take the file's* chosen; choose a reason and click *Import*.
+- The list opens with the notice *Imported: 0 added, 1 changed, 0 deleted, 0 kept*; open ZZS: the symbol reads *ZS* and the History tab shows a version whose field is Symbol.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+PASS. Saved currencyconfig.xml, 169 records; a calendar file refused by its root element; the counts 169, 168, 1, 0, 0; the seven fields the document lacks and thirteen zero-fraction currencies under values with no row, captured; one changed row; Imported: 0 added, 1 changed, 0 deleted, 0 kept; the Symbol version in the history.
+
+** Open a desk group and change its members
+
+- Open Reference data, then Desk groups: the list stands in display order with Display order, Code and Name; the pager reads *1–6 of 6*.
+- Click *G11*: the page is titled *G11*, the tabs are Details, Members and History; the Details show the code with its fixed reason, the name, the description and the display order.
+- On the Members tab, the eleven members stand with their flags; choose *Scenario dollar (ZZS)* in the picker under them, click *Add* and press Refresh: ZZS is a member; click *Remove* on its row and press Refresh: it is gone.
+- The History tab is the timeline with the group's versions and the box that says the members are not versioned.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+PASS. 1–6 of 6; the tabs Details, Members and History; eleven members; ZZS added and removed after Refresh; the timeline with the members gap stated.
+
+** Set up a currency pair
+
+- Open Reference data, then Currency pairs: the table shows Pair with both flags, Base currency and Quote currency with their flags, and Classification as its label, which opens the classification; the pager reads *1–15 of 179*.
+- Click *Add pair*: the dialog is titled *Add a currency pair* with two headings, *The pair* and *Quoting convention*; the line under the pair reads *Pair code: —*.
+- Choose base *Scenario dollar (ZZS)* and quote *Scenario dollar (ZZS)*: the dialog says the base and quote currencies must differ and *Add* stays disabled.
+- Choose quote *US Dollar (USD)*: the line reads *Pair code: ZZS/USD*. Choose the classification *Exotic*; fill the convention: Pip factor =0.0001=, Tick size =1=, Decimal places =4=, Business day convention *Modified Following*, Spot relative *Yes*, End of month *No*; the line reads *A rate at this precision reads 1.0842*.
+- Click *Add*: the page opens at =/refdata/currency-pairs/ZZS/USD=, titled *ZZS/USD* with both flags; the Details show the pair's card and the convention's card, each with its last-changed line; the base and quote open the currencies.
+- The Calendars tab is a link panel; the History tab shows the pair's story with *pair ZZS/USD v1* and *Convention v1*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+PASS. Pair, Base currency, Quote currency and Classification; the groups The pair and Quoting convention; equal legs refused; the code ZZS/USD; the two cards; the history with Convention v1. The classification list was empty for the tenant on the first runs; the task seeded it and the provisioner now copies it.
+
+** Edit the pair's convention and delete the pair
+
+- Click *Edit*: the dialog is titled *Edit ZZS/USD*, the base and quote are fixed, the convention stands under its heading. Change Decimal places to =5=, choose a reason, and click *Save*; press Refresh: the sample rate reads *1.08424* and the History tab shows *Convention v2* with Decimal places in its line, above *pair ZZS/USD v1*.
+- Click *Delete*: the dialog is titled *Delete ZZS/USD?*, warns that the convention goes with the pair, and asks for a reason; click *Delete*: the list opens and =ZZS/USD= is gone.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+PASS. Edit ZZS/USD with the base fixed; the sample rate 1.08424 after Refresh; Convention v2 the newest entry; Delete ZZS/USD? with the convention named; the list without the pair.
+
+** Delete the scenario dollar
+
+- Open =/refdata/currencies/ZZS= and click *Delete*: the dialog is titled *Delete Scenario dollar?*, warns that nothing checks whether trades, books or pairs still use it, and asks for a reason.
+- Choose a reason and click *Delete*: the list opens; search =ZZS=: *No currencies match the search.* with *Clear the search*.
+- Open =/refdata/currencies/ZZS= by address: the page says there is no such record, or you may not see it, and offers the way back to the list.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+PASS. Delete Scenario dollar? with the warning; the list opened; the address answers no such record.
+
+** Look as a reader
+
+- Sign out and sign in as =adrian.vance@acme_corporation= with =Secure-Password-123=.
+- Open Currencies: *Export* is drawn, because any reader may export. Note whether *Import* and *Add currency* are drawn: on this environment adrian.vance is a writer, so they are; record that in the sheet rather than failing the step, and see the capture *A seeded reader is editable on currencies*.
+- Open EUR and note the mark in the header.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+PASS. Export drawn; Import and Add currency drawn too, because adrian.vance is a writer on this environment, as the capture says; EUR marked Editable.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PENDING: the agent's ninth run passed all thirteen steps on 2026-10-26; the owner's run by hand is the one that passes the scenario |
+| Completed at  | 2026-10-26T01:49Z, the agent's run |
+| Branch        | feature/test-and-sign-off-the-screens-of-the-currencies-topic |
+| Commit        | 8f96cb0dc6, main at the merge of PR 3863 built and served, plus this branch's two fixes |
+| Worktree      | brave_hopper |
+
+* Notes
+
+The scenario was driven by the agent with a Playwright script, one function per
+step, on 2026-10-26 against the fresh database; the script's log,
+=evidence/scenario_run_2026-10-26.log=, is the source of each step's result.
+Eight runs before it failed on the script's own faults and on the state the
+earlier runs left, which surfaced the gaps now captured: a deleted currency
+leaves its links behind, a link is removed with no reason asked, a select
+wrapped in its label is named by its option text, and the import names every
+zero-fraction currency as a value with no row. One gap of the data was fixed
+on the way: the tenant had no currency pair classifications, so the seed now
+holds them and the provisioner copies them. The sheets of the three screens
+carry the walk. A person has not walked the scenario yet; the owner's run by
+hand is the one that passes it.

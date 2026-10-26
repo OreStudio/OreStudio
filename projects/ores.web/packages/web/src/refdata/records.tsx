@@ -48,7 +48,14 @@ import { fieldValue } from './HistoryPanel.js';
 import { RecordTimeline } from './RecordTimeline.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import type { LoadState } from '../events/useEntityChanges.js';
-import { Crumbs, ReasonFields, RowLabel, useLabelCatalogue, useReason } from './shared.js';
+import {
+    Crumbs,
+    ReasonFields,
+    RowLabel,
+    classificationsPath,
+    useLabelCatalogue,
+    useReason,
+} from './shared.js';
 import { refdataStore, useRecordStore, type RecordStore, type WriteIntent } from './store.js';
 
 export type { WriteIntent } from './store.js';
@@ -993,7 +1000,11 @@ function RecordValue({
     );
 }
 
-/** A code of a classification list, drawn as its label when the list has labels. */
+/**
+ * A code of a classification list, drawn as its label when the list has
+ * labels, and as a link to the classification's page once the row is read
+ * (RS-PAGE-08). A code the list does not hold stays plain, so a gap shows.
+ */
 export function ClassifiedValue({
     list,
     code,
@@ -1007,10 +1018,22 @@ export function ClassifiedValue({
         queryFn: () => api.classificationRows(list),
     });
     const row = rows.data?.find((candidate) => candidate.code === code);
-    if (row?.labelCode != null) {
-        return <RowLabel labelCode={row.labelCode} byCode={byCode} />;
-    }
-    return <>{row?.name !== undefined && row.name !== '' ? row.name : code}</>;
+    if (row === undefined) return <>{code}</>;
+    const shown =
+        row.labelCode != null ? (
+            <RowLabel labelCode={row.labelCode} byCode={byCode} />
+        ) : (
+            <>{row.name !== '' ? row.name : code}</>
+        );
+    return (
+        <Link
+            to={classificationsPath(list, code)}
+            onClick={(event) => event.stopPropagation()}
+            className="inline-flex rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+        >
+            {shown}
+        </Link>
+    );
 }
 
 /** A table of records; a row opens its own page. */

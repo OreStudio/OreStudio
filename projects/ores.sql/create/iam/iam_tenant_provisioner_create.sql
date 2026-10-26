@@ -42,7 +42,8 @@
 --     curve configuration vocabulary
 --   - diary_entry_types: Calendar event kinds (e.g. central_bank_meeting)
 --   - rounding_types: Rounding method definitions
---   - monetary_natures, currency_market_tiers: Currency classification
+--   - monetary_natures, currency_market_tiers, currency_pair_classifications:
+--     Currency and pair classification
 --   - tenor_anchors, tenors, tenor_conventions, tenor_convention_resolutions:
 --     Tenor labels and their per-convention resolution rules. A resolution's
 --     schedule_code and schedule_step_count are not copied: the tenor
@@ -524,6 +525,22 @@ begin
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % currency market tiers', v_copied_count;
+
+    -- Currency pair classifications (e.g. major, minor, exotic, commodity)
+    insert into ores_refdata_currency_pair_classifications_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, name, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_currency_pair_classifications_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % currency pair classifications', v_copied_count;
 
     -- Asset class codes (e.g. fx, rates, credit)
     insert into ores_refdata_asset_class_codes_tbl (

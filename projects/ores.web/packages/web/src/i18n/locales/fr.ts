@@ -2751,6 +2751,8 @@ const fr: SourceCatalogue = {
         },
         gaps: 'Ce que cet historique ne peut pas montrer',
         gapFor: {
+            record_links_unversioned:
+                "Les liens vers d'autres enregistrements, pays, calendriers ou groupes, ne sont pas versionnés : un lien ajouté ou retiré n'apparaît pas.",
             record_parts_removed:
                 "Une partie supprimée de l'enregistrement n'est pas dans ce flux : l'écran lit l'historique des parties que l'enregistrement détient maintenant.",
             party_country:

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :let_a_busy_market_move_prices:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/make-a-rate-change-change-sampling-only
 #+pr:
 #+blocked_on: 5AEEAC8B-5435-46FD-B9C4-250F634682D3
 #+blocked_since: 2026-10-27
@@ -28,7 +28,7 @@ gets twice the samples of the same path, not twice the realized volatility.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]] |
 | Now          | Not yet started.                       |
 | Waiting on   | [[id:5AEEAC8B-5435-46FD-B9C4-250F634682D3][Schedule every feed on the market clock]]: the price step must come from the time the scheduler hands each feed. |
@@ -100,3 +100,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Finding, before any code
+
+The task was raised against the claim that a rate change moves time. Measuring the
+class first shows the claim is half wrong, and the half that is wrong is the half
+this task would have spent effort on.
+
+- *Spot feeds are already time-scaled.* The three processes that take a gap are
+  the Gaussian mixture, the arithmetic mixture and the Ornstein–Uhlenbeck process,
+  and those are exactly what the three FX engines build: "geometric" is the
+  mixture, "arithmetic" the variant, "ornstein_uhlenbeck" the mean-reverting one.
+  A rate change on a spot feed already changes sampling only.
+- *Every other price process is a curve engine*, and all of them answer
+  =supports_variable_step() == false=. A curve feed steps one **simulated calendar
+  day per tick** by design, so its rate is a calendar speed — one a minute means
+  one simulated day a minute — and not a sampling rate at all.
+
+So the two feed classes use one word for two quantities. That is a real problem,
+but it is a naming and a decision problem, not a bug in the spot path, and a
+volatility loading — which belongs to the price law — is unaffected by it.
+
+Measured at =4b49b4ef2e=: 13 price processes, 3 time-scaled (the FX engines), 10
+one-tick (the curve engines).
+
+* Proposed re-scope
+
+Replace this task with one that decides and states the curve convention, in the
+model, the config and the screen: either a curve keeps a calendar-speed rate and
+both surfaces say "one simulated day per tick", or curves move to sampling like
+spot feeds, which changes what a curve's configuration means and needs its own
+migration story for existing rows. Until that is decided, no code changes here,
+and the story's second task (the volatility loading) proceeds on its own because
+it applies to spot feeds.

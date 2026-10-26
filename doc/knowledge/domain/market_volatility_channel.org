@@ -59,11 +59,33 @@ differently under a rate change:
 - A process that answers =supports_variable_step() == false= takes one nominal
   step per tick. When each step's variance is the same, the same nominal step now
   fits into a shorter gap, so **variance per wall-clock second rises in proportion
-  to the rate**, and sigma with its square root. A curve process that steps one
-  calendar day per tick also runs its calendar faster; a rate change quietly moves
-  time. Three processes answer true — the Gaussian mixture, the arithmetic
-  mixture and the Ornstein–Uhlenbeck process — and every other one answers false,
-  so it is the majority behaviour that is wrong.
+  to the rate**, and sigma with its square root.
+
+*Which processes answer which* was measured before the task was started, and it
+narrows the problem considerably. The three processes that take a gap are the
+Gaussian mixture, the arithmetic mixture and the Ornstein–Uhlenbeck process —
+which is exactly the set the three FX engines build ("geometric" is the mixture,
+"arithmetic" the mixture variant, "ornstein_uhlenbeck" the mean-reverting one). So
+every **spot** feed is already time-scaled: a rate change there changes how often
+the series is sampled and not how much time it covers.
+
+Every other price process answers false, and all of them are **curve** engines
+(Vasicek, CIR, Hull–White, Black–Karasinski, Black–Derman–Toy, HJM, LMM, the
+quadratic and two-factor Gaussians, the affine term structure). A curve feed steps
+its process one **simulated calendar day per tick** by design, so for a curve the
+rate is not a sampling rate at all: it is the speed of the simulated calendar. A
+rate of one a minute means one simulated day per minute.
+
+That means the platform uses one word for two different quantities, and the note
+should say so rather than call the curve convention a defect:
+
+- for a **spot** feed, the rate is a sampling rate, and time is wall time;
+- for a **curve** feed, the rate is a calendar speed, and a tick is a day.
+
+The defect the first task was raised against is therefore not a defect for the
+feeds a volatility loading applies to. What remains is to decide whether curves
+should keep a calendar-speed rate (and say so in the config and the screen) or
+move to sampling like spot feeds, which is a design decision, not a bug.
 
 The second behaviour is a defect rather than a feature: an operator who doubles a
 feed's rate to get more ticks also doubles its realized volatility without asking.

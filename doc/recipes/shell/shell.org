@@ -1807,3 +1807,7 @@ tangled into the runnable script library
 * Engine Settings Groups
 
 - [[id:D7949CEC-5DFA-5208-A15C-705E6245D711][How do I run the engine_settings_groups commands from the shell?]]
+
+* Convention Kind Terms
+
+- [[id:94E1B3CC-AA96-594B-8A25-4D18153EAFE1][How do I run the convention_kind_terms commands from the shell?]]

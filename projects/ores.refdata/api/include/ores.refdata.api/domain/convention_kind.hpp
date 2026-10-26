@@ -27,6 +27,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -72,6 +73,21 @@ struct convention_kind final {
      * @brief One-line description of the convention kind.
      */
     std::string description;
+
+    /**
+     * @brief The asset class of the product model the kind serves: interest-rates, fx, inflation,
+     * credit, commodity or bond. A screen groups the kinds by it, so the grouping is data and not a
+     * table in the screen.
+     */
+    std::string asset_class;
+
+    /**
+     * @brief The element that writes the kind in ORE's conventions document, such as Swap or
+     * TenorBasisSwap. Empty for a kind ORE Studio keeps that the document does not carry, such as
+     * TENOR. With the terms of convention_kind_term, it ties the kind to the ORE parameter
+     * contract.
+     */
+    std::optional<std::string> ore_element;
 
     /**
      * @brief Ordinal position for dropdown/list display.

@@ -25,7 +25,8 @@ import { describe, expect, it } from 'vitest';
 import type { OresClient } from '@ores/wire-protocol';
 import { CONVENTION_FAMILY_ENTRIES } from '@ores/wire-protocol/generated/refdata/domain/convention_family_registry';
 import type { Config } from './config.js';
-import { ABSORBED_REGISTRY_KEYS, CONVENTION_FAMILIES } from './conventions.js';
+import { readFileSync } from 'node:fs';
+import { ABSORBED_REGISTRY_KEYS, CONVENTION_FAMILIES, kindCodeOf } from './conventions.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
 import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
@@ -171,7 +172,70 @@ describe('the family list', () => {
     });
 });
 
+describe('the families and their kinds', () => {
+    // The kinds the database seeds, read from the populate script the families route reads them from.
+    const seeded = new Set(
+        [
+            ...readFileSync(
+                resolve(
+                    dirname(fileURLToPath(import.meta.url)),
+                    '../../../../ores.sql/populate/refdata/refdata_convention_kinds_populate.sql',
+                ),
+                'utf-8',
+            ).matchAll(/\(ores_utility_system_tenant_id_fn\(\), '([A-Z_]+)', 0,/g),
+        ].map((match) => match[1]),
+    );
+
+    it('names a seeded kind for every family, so every card can take its class', () => {
+        expect(seeded.size).toBeGreaterThan(0);
+        expect(
+            CONVENTION_FAMILIES.map((family) => kindCodeOf(family.key)).filter(
+                (code) => !seeded.has(code),
+            ),
+        ).toEqual([]);
+    });
+
+    it('states a family as shared only where the registry does not, so the two cannot disagree', () => {
+        const registry = new Set(
+            CONVENTION_FAMILY_ENTRIES.map((entry) => entry.key.replaceAll('_', '-')),
+        );
+        expect(
+            ['tenor', 'currency-pair', 'tenor-basis-swap'].filter((key) => registry.has(key)),
+        ).toEqual([]);
+    });
+});
+
 describe('convention routes', () => {
+    it("takes each family's asset class from its kind and its holder from the registry", async () => {
+        const replies: Record<string, unknown> = {};
+        for (const family of CONVENTION_FAMILIES) {
+            replies[`refdata.v1.${family.prefix}.list`] = { result: ok, total: 1 };
+        }
+        replies['refdata.v1.conventions.list'] = { result: ok, total: 1 };
+        replies['refdata.v1.convention_kinds.list'] = {
+            result: ok,
+            kinds: [
+                { code: 'SWAP', asset_class: 'interest-rates' },
+                { code: 'TENOR_BASIS_SWAP', asset_class: 'interest-rates' },
+                { code: 'CDS', asset_class: 'credit' },
+            ],
+        };
+        const { server, sessionId } = buildTestServer(replies);
+        const response = await send(server, sessionId, 'GET', '/api/conventions/families');
+        const families: { key: string; assetClass: string | null; shared: boolean }[] =
+            response.json().families;
+        const card = (key: string) => families.find((f) => f.key === key);
+        expect(card('swap')?.assetClass).toBe('interest-rates');
+        expect(card('tenor-basis-swap')?.assetClass).toBe('interest-rates');
+        expect(card('cds')?.assetClass).toBe('credit');
+        // A kind the data gives no class to has none, and the screen groups it under Other.
+        expect(card('fra')?.assetClass).toBeNull();
+        expect(card('ibor-index')?.shared).toBe(true);
+        expect(card('tenor')?.shared).toBe(true);
+        expect(card('swap')?.shared).toBe(false);
+        expect(card('tenor-basis-swap')?.shared).toBe(false);
+    });
+
     it('counts every family, and reads a count it cannot as null', async () => {
         const replies: Record<string, unknown> = {};
         for (const family of CONVENTION_FAMILIES) {

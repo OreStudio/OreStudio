@@ -49,6 +49,8 @@ generate_synthetic_convention_kind(utility::generation::generation_context& ctx)
     r.code = std::string("TENOR_BASIS_SWAP") + "-" + std::to_string(idx);
     r.name = std::string("Tenor Basis Swap") + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
+    r.asset_class = std::string("interest-rates");
+    r.ore_element = std::optional<std::string>("Swap");
     r.display_order = faker::number::integer(1, 100);
     r.modified_by = modified_by;
     r.performed_by = modified_by;

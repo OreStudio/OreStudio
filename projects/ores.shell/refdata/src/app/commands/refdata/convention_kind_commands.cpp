@@ -141,21 +141,24 @@ void convention_kind_commands::register_commands(cli::Menu& root_menu, nats_clie
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <code> <name> <description> <display_order> <reason> <commentary>");
+        "add <code> <name> <description> <asset_class> <ore_element> <display_order> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]");
+        "set <code> <name> <description> <asset_class> <ore_element> <display_order> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>");
+        "put-many --count <n> <code> <name> <description> <asset_class> <ore_element> "
+        "<display_order> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -350,14 +353,16 @@ void convention_kind_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.code, parsed->positionals[next++], "code");
         read_token(req.change.write.name, parsed->positionals[next++], "name");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
+        read_token(req.change.write.asset_class, parsed->positionals[next++], "asset_class");
+        read_token(req.change.write.ore_element, parsed->positionals[next++], "ore_element");
         read_token(req.change.write.display_order, parsed->positionals[next++], "display_order");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -401,14 +406,16 @@ void convention_kind_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
         read_token(req.change.write.code, parsed->positionals[next++], "code");
         read_token(req.change.write.name, parsed->positionals[next++], "name");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
+        read_token(req.change.write.asset_class, parsed->positionals[next++], "asset_class");
+        read_token(req.change.write.ore_element, parsed->positionals[next++], "ore_element");
         read_token(req.change.write.display_order, parsed->positionals[next++], "display_order");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -464,8 +471,8 @@ void convention_kind_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 4 + 2) {
-            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 6 + 2) {
+            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -474,6 +481,8 @@ void convention_kind_commands::process_put_many(std::ostream& out,
             read_token(change.write.code, parsed->positionals[next++], "code");
             read_token(change.write.name, parsed->positionals[next++], "name");
             read_token(change.write.description, parsed->positionals[next++], "description");
+            read_token(change.write.asset_class, parsed->positionals[next++], "asset_class");
+            read_token(change.write.ore_element, parsed->positionals[next++], "ore_element");
             read_token(change.write.display_order, parsed->positionals[next++], "display_order");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));

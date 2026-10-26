@@ -170,10 +170,15 @@ def classes(text):
                 continue
             assigned.append((child.start(), child.group(1), parent + [child.group(3)]))
             assigned.sort(key=lambda a: a[0])
-            # A node whose value is read directly is a term, not a container.
-            after = body[child.end():child.end() + 240]
+            # A node whose value is read directly is a term, not a container. The
+            # read may stand well after the node is found, past checks on it, so
+            # it is looked for up to the next assignment of the same variable.
+            after = body[child.end():]
+            reassigned = re.search(r"\b" + child.group(1) + r"\s*=[^=]", after)
+            if reassigned:
+                after = after[:reassigned.start()]
             value = re.search(r"(parse\w+)?\(?XMLUtils::getNodeValue\(" + child.group(1) + r"\)", after)
-            if value and "getChildNode" not in after[:value.start()]:
+            if value:
                 line = text.count("\n", 0, fn["offset"] + child.start()) + 1
                 terms.append({
                     "path": parent[1:], "name": child.group(3), "member": None,

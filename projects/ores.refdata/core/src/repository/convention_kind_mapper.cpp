@@ -47,6 +47,8 @@ domain::convention_kind convention_kind_mapper::map(const convention_kind_entity
     r.name = v.name;
 
     r.description = v.description;
+    r.asset_class = v.asset_class;
+    r.ore_element = v.ore_element;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -69,6 +71,8 @@ convention_kind_entity convention_kind_mapper::map(const domain::convention_kind
     r.name = v.name;
 
     r.description = v.description;
+    r.asset_class = v.asset_class;
+    r.ore_element = v.ore_element;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

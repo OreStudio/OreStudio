@@ -36,6 +36,8 @@ export interface ConventionKindWrite {
     code: string;
     name: string;
     description: string;
+    asset_class: string;
+    ore_element: string | null;
     display_order: number;
 }
 

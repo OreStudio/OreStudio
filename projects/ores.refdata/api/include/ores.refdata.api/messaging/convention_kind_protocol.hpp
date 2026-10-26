@@ -43,6 +43,8 @@ struct convention_kind_write {
     std::string code;
     std::string name;
     std::string description;
+    std::string asset_class;
+    std::optional<std::string> ore_element;
     int display_order;
 };
 

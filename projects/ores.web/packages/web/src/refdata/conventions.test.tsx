@@ -29,12 +29,54 @@ import { ConventionDocumentsPage, ConventionKindsPage, FAMILIES_KEY } from './co
 import { FIRST_PAGE, pageKey } from './RecordList.js';
 
 const CARDS: readonly ConventionFamilyCard[] = [
-    { key: 'swap', entity: 'swap_convention', writable: true, count: 320 },
-    { key: 'deposit', entity: 'deposit_convention', writable: true, count: 24 },
-    { key: 'cds', entity: 'cds_convention', writable: false, count: 3 },
-    { key: 'fx-option', entity: 'fx_option_convention', writable: false, count: null },
-    { key: 'tenor', entity: 'tenor_convention', writable: false, count: 4 },
-    { key: 'currency-pair', entity: 'currency_pair_convention', writable: false, count: 179 },
+    {
+        key: 'swap',
+        entity: 'swap_convention',
+        writable: true,
+        shared: false,
+        assetClass: 'interest-rates',
+        count: 320,
+    },
+    {
+        key: 'deposit',
+        entity: 'deposit_convention',
+        writable: true,
+        shared: false,
+        assetClass: 'interest-rates',
+        count: 24,
+    },
+    {
+        key: 'cds',
+        entity: 'cds_convention',
+        writable: false,
+        shared: false,
+        assetClass: 'credit',
+        count: 3,
+    },
+    {
+        key: 'fx-option',
+        entity: 'fx_option_convention',
+        writable: false,
+        shared: false,
+        assetClass: 'fx',
+        count: null,
+    },
+    {
+        key: 'tenor',
+        entity: 'tenor_convention',
+        writable: false,
+        shared: true,
+        assetClass: 'interest-rates',
+        count: 4,
+    },
+    {
+        key: 'currency-pair',
+        entity: 'currency_pair_convention',
+        writable: false,
+        shared: true,
+        assetClass: 'fx',
+        count: 179,
+    },
 ];
 
 function render(address: string, seed: (client: QueryClient) => void = () => undefined): string {
@@ -66,6 +108,25 @@ describe('the list of convention kinds', () => {
         expect(html).toContain('Credit');
         expect(html).toContain('Swap');
         expect(html).toContain('Kinds 2 · Documents 344');
+    });
+
+    it('draws a kind whose asset class the data does not give under Other', () => {
+        const html = render('/refdata/conventions', (client) =>
+            client.setQueryData(FAMILIES_KEY, [
+                ...CARDS,
+                {
+                    key: 'fra',
+                    entity: 'fra_convention',
+                    writable: false,
+                    shared: false,
+                    assetClass: null,
+                    count: 2,
+                },
+            ]),
+        );
+
+        expect(html).toContain('Other');
+        expect(html).toContain('Party conventions (5)');
     });
 
     it('counts each tab and keeps the shared kinds out of the party tab', () => {

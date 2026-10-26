@@ -348,7 +348,7 @@ not checked it.
 | OL-DOC-04: one panel | Meets: the shared panel | Meets: the shared panel | Gap |
 | OL-DOC-05: no ORE text in the screen | Meets | Meets | Gap: the contract holds 238 of the 296 terms the ORE parser reads, and no screen reads them yet |
 | OL-DOC-07: focus opens the documentation | Meets | Gap | Gap |
-| OL-ELEMENT-04: metadata in data | Gap: the groups are a constant in code | Meets | Gap: the asset class and the holder are in =conventionKinds.ts= |
+| OL-ELEMENT-04: metadata in data | Gap: the groups are a constant in code | Meets | Meets: the asset class and the ORE element are on the kind, its terms are =convention_kind_term= rows, and the holder comes from the registry |
 | OL-SOURCE-01: the source tag | Gap: none | Partial: a tag in the journey, a line of text on the page; no word for the seed | Gap |
 | OL-CONTROL-01: *Default (X)* first | Meets, for a select and as a number's placeholder | Gap: the select has no default option | Gap |
 | OL-CONTROL-02: no value outside the set | Meets | Gap: a value outside the set is added to the options | Gap |

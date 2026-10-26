@@ -36,7 +36,6 @@ import { Icon } from '../ui/Icon.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { useTabs } from '../ui/Tabs.js';
 import { Button, Input, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
-import { ASSET_CLASSES, assetClassOf, isShared, type AssetClass } from './conventionKinds.js';
 import { RecordList, type ListColumn, type ListSource } from './RecordList.js';
 import { Crumbs } from './shared.js';
 
@@ -59,11 +58,18 @@ type KindColumn = (typeof SORT_COLUMNS)[number];
 /** How many terms a document list draws; the record page will show the rest. */
 const LISTED_TERMS = 4;
 
-/** The groups a list of kinds is drawn in, and the one that holds a kind the table does not know. */
-type Group = AssetClass | 'other';
+/**
+ * The asset classes a list of kinds is drawn under, in the order the screen
+ * draws them. Which class a kind serves is data on the kind, and reaches the
+ * screen on its card.
+ */
+const ASSET_CLASSES = ['interest-rates', 'fx', 'inflation', 'credit', 'commodity', 'bond'] as const;
 
-function groupOf(family: string): Group {
-    return assetClassOf(family) ?? 'other';
+/** The groups a list of kinds is drawn in, and the one that holds a kind whose class is not known. */
+type Group = (typeof ASSET_CLASSES)[number] | 'other';
+
+function groupOf(card: ConventionFamilyCard): Group {
+    return ASSET_CLASSES.find((group) => group === card.assetClass) ?? 'other';
 }
 
 /**
@@ -84,7 +90,7 @@ export function ConventionKindsPage(): ReactNode {
     const cards = families.data ?? [];
     const areaRoot = useAreaRoot('refdata');
     const countIn = (tab: Tab): number =>
-        cards.filter((card) => isShared(card.key) === (tab === 'shared')).length;
+        cards.filter((card) => card.shared === (tab === 'shared')).length;
     const { tab, bar } = useTabs({
         label: t('refdata.conventions.tabs'),
         tabs: TABS,
@@ -111,11 +117,11 @@ export function ConventionKindsPage(): ReactNode {
         setParams(next, { replace: true });
     };
 
-    const inTab = cards.filter((card) => isShared(card.key) === (tab === 'shared'));
+    const inTab = cards.filter((card) => card.shared === (tab === 'shared'));
     const needle = search.trim().toLocaleLowerCase();
     const shown = inTab.filter(
         (card) =>
-            (assetClass === '' || groupOf(card.key) === assetClass) &&
+            (assetClass === '' || groupOf(card) === assetClass) &&
             (needle === '' ||
                 nameOf(card).toLocaleLowerCase().includes(needle) ||
                 card.key.includes(needle)),
@@ -128,10 +134,10 @@ export function ConventionKindsPage(): ReactNode {
         return (a < b ? -1 : a > b ? 1 : 0) * (descending ? -1 : 1);
     });
     const groups = [...ASSET_CLASSES, 'other' as const]
-        .map((group) => ({ group, rows: ordered.filter((card) => groupOf(card.key) === group) }))
+        .map((group) => ({ group, rows: ordered.filter((card) => groupOf(card) === group) }))
         .filter((entry) => entry.rows.length > 0);
     const present = [...ASSET_CLASSES, 'other' as const].filter((group) =>
-        inTab.some((card) => groupOf(card.key) === group),
+        inTab.some((card) => groupOf(card) === group),
     );
     const total = inTab.reduce((sum, card) => sum + (card.count ?? 0), 0);
 
@@ -473,12 +479,12 @@ export function ConventionDocumentsPage(): ReactNode {
             source={source}
             title={t(`journey.conventions.families.${family}`)}
             lead={t('refdata.conventions.documentsLead', {
-                class: t(`refdata.conventions.classes.${groupOf(family)}`),
+                class: t(`refdata.conventions.classes.${groupOf(card)}`),
             })}
             crumbs={crumbs}
             keyOf={(row) => row.id}
             notes={
-                isShared(family)
+                card.shared
                     ? [
                           {
                               tone: 'warn',

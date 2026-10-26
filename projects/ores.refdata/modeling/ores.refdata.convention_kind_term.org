@@ -1,0 +1,179 @@
+:PROPERTIES:
+:ID: 0A0FCEEC-D4B0-410B-86EA-888C11097FA9
+:END:
+#+title: ores.refdata.convention_kind_term
+#+description: Codegen entity model for the refdata =convention_kind_term= table. One term of one convention kind: the column its value travels under and the leaf of the ORE conventions document that documents it.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: convention_kind_term
+#+entity_plural: convention_kind_terms
+#+entity_title: Convention Kind Term
+#+brief: One term of a convention kind, tied to the ORE parameter contract.
+#+created: 2026-10-25
+#+updated: 2026-10-25
+
+One term of one convention kind, as a screen draws it: the entity and the column
+its value travels under, and the leaf of ORE's conventions document that holds it,
+named by its schema and its XPath. The XPath is the key of the term's entry in the
+ORE parameter contract, which gives the term its label, help, description, default,
+format and value set, so none of them is restated here or in a screen.
+
+A kind's terms are what a convention screen shows, in the order the position
+states. The first rows come from the mapper that reads and writes the conventions
+document, so the column a value is stored in and the element ORE reads it from are
+the ones the import and the export already use.
+
+* Flags
+:PROPERTIES:
+:schema:                    public
+:product:                   ores
+:component:                 refdata
+:profile:                   simple-lookup
+:system_tenant_validation:  true
+:tablename: ores_refdata_convention_kind_terms_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
+:END:
+
+The kind, the entity and the column joined, for example
+=SWAP:swap_convention.fixed_calendar=.
+
+** kind_code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The kind the term belongs to. Soft foreign key to
+=ores_refdata_convention_kinds_tbl=.
+
+** entity_name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The entity whose table holds the value, for example =swap_convention=. A
+composite kind holds its terms in more than one entity, such as the parts of a
+tenor basis swap.
+
+** column_name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The column the value travels under, for example =fixed_calendar=.
+
+** schema_name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The schema of the ORE document the leaf belongs to, =conventions.xsd=.
+
+#+begin_src cpp :name generator
+std::string("conventions.xsd")
+#+end_src
+
+** xpath
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The leaf in a document of that schema, for example
+=/Conventions/Swap/FixedCalendar=. With the schema it names the term's entry in
+the ORE parameter contract.
+
+#+begin_src cpp :name generator
+std::string("/Conventions/Swap/FixedCalendar")
+#+end_src
+
+** position
+:PROPERTIES:
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:END:
+
+Where the term sits in its kind, counting from zero, in the order the document
+writes it.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_convention_kind_terms_tbl
+:END:
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                       |
+|----------------------+-------------------------------------------|
+| change_reason_code   | ores_dq_validate_change_reason_fn         |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:service_find_prefix:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: term
+:entity_plural_short:   terms
+:entity_singular_words: convention kind term
+:entity_plural_words:   convention kind terms
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ckt
+:END:
+
+** Table display
+
+| column          | header   |
+|-----------------+----------|
+| kind_code       | Kind     |
+| entity_name     | Entity   |
+| column_name     | Column   |
+| xpath           | ORE      |
+| position        | Position |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:31412676-338C-482C-9476-B902E6F81B02][ores.refdata.convention_kind]] — the kind a term belongs to.
+- [[id:15b838bb-9106-47fc-82b1-2df0ec300ec4][ores.reporting.engine_settings_group_setting]] — the same shape for the engine run settings, which this follows.

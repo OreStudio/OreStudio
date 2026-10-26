@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-convention_kinds add <code> <name> <description> <display_order> <reason> <commentary>
+convention_kinds add <code> <name> <description> <asset_class> <ore_element> <display_order> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.convention_kinds.put=.
 
 #+name: convention_kinds-add
 #+begin_src ores-shell :tangle convention_kinds-add.ores :exports none
-convention_kinds add __none__ __none__ __none__ 0 system.new_record generated_script
+convention_kinds add __none__ __none__ __none__ __none__ - 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-convention_kinds set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+convention_kinds set <code> <name> <description> <asset_class> <ore_element> <display_order> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =refdata.v1.convention_kinds.put=.
 
 #+name: convention_kinds-set
 #+begin_src ores-shell :tangle convention_kinds-set.ores :exports none
-convention_kinds set __none__ __none__ __none__ 0 system.new_record generated_script
+convention_kinds set __none__ __none__ __none__ __none__ - 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-convention_kinds put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+convention_kinds put-many --count <n> <code> <name> <description> <asset_class> <ore_element> <display_order> <reason> <commentary>
 #+end_example
 
 It is addressed at =refdata.v1.convention_kinds.put_many=.
 
 #+name: convention_kinds-put-many
 #+begin_src ores-shell :tangle convention_kinds-put-many.ores :exports none
-convention_kinds put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+convention_kinds put-many --count 1 __none__ __none__ __none__ __none__ - 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

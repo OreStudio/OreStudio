@@ -29,7 +29,7 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 | Parent story  | [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]]                |
 | Target screen | Reporting, Pricing engines (=/reporting/pricing-engines=)         |
 | Clients       |                                                                   |
-| State         | PENDING |
+| State         | PASSED |
 
 * Steps
 
@@ -90,8 +90,7 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | when I try to save i get: "Invalid UUID Invalid UUID Invalid UUID Invalid UUID Invalid UUID Invalid UUID Invalid UUID Invalid UUID Invalid UUID Invalid UUID Invalid UUID"; ; ; [[file:scenario_verify_the_pricing_engine_screens_step4_20261021_134226.png]] |
+| Status | PASS |
 
 
 ** Change how a product is priced
@@ -110,7 +109,7 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 
 ** Add a product and remove a product
@@ -124,7 +123,7 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 
 ** Check that a stale save is refused
@@ -139,7 +138,7 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 
 ** Author a new configuration from a copy
@@ -158,7 +157,7 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 
 ** Author an empty configuration and see the checks
@@ -171,7 +170,7 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 
 ** Delete the test configuration
@@ -185,7 +184,7 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 
 ** Check a user without write permission
@@ -199,7 +198,7 @@ Open the web as the tenant administrator with =./compass.sh open-as tenant_admin
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 
 * Results=.
@@ -291,8 +290,8 @@ a =*** Result= child heading directly under it.
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PENDING |
-| Completed at  |  |
+| Status        | PASSED |
+| Completed at  | 2026-10-26T00:27:08Z |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

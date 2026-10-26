@@ -75,6 +75,13 @@ task and name that file in the Command column.
   codec. Generated message codecs add files (about 516 for one each, about 40 for
   one for each component) but remove the repeated instantiation, so the total
   compile CPU of a full build is the number that decides, not the file count.
+- Layout to prototype and measure: one file pair for each concern of each type.
+  The type's header holds the plain struct. =_json_io.hpp=, =_msgpack.hpp= and the
+  repository's header only declare; their =.cpp= files define the codec or the
+  statements and include only their own library (yyjson, msgpack-c, libpq or
+  libpqxx). A caller compiles a function call, never a template, and no codec is
+  defined in a header. If the file count costs too much, CMake's unity build
+  batches the small generated files at build time without merging the sources.
 - reflect-cpp's cost sits inside our own wrappers, such as the wire codec's
   =encode<T>=, so attribution by outermost instantiation hides it. The figures
   above are exclusive times: each instantiation less its nested children, and

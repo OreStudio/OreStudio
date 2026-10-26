@@ -615,22 +615,27 @@ function AggregateTable({
                             </td>
                             {compared && (
                                 <>
-                                    <td
-                                        className={`px-2 py-1 text-right font-mono ${
-                                            (row.change[0]?.total ?? '').startsWith('-')
-                                                ? 'text-down'
-                                                : ''
-                                        }`}
-                                    >
-                                        {row.change[0] === undefined
-                                            ? ''
-                                            : asFigure(row.change[0].total)}
+                                    <td className="px-2 py-1 text-right font-mono">
+                                        {row.change.map((money) => (
+                                            <span
+                                                key={money.currency}
+                                                className={`mr-2 ${
+                                                    money.total.startsWith('-') ? 'text-down' : ''
+                                                }`}
+                                            >
+                                                {asFigure(money.total)}
+                                                {money.currency === '' ? '' : ` ${money.currency}`}
+                                            </span>
+                                        ))}
                                     </td>
                                     <td className="px-2 py-1 text-right font-mono text-ink-muted">
-                                        {row.change_pct[0] === undefined ||
-                                        row.change_pct[0].total === ''
-                                            ? '—'
-                                            : `${asFigure(row.change_pct[0].total)}%`}
+                                        {row.change_pct.map((money) => (
+                                            <span key={money.currency} className="mr-2">
+                                                {money.total === ''
+                                                    ? '—'
+                                                    : `${asFigure(money.total)}%`}
+                                            </span>
+                                        ))}
                                     </td>
                                 </>
                             )}

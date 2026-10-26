@@ -421,7 +421,18 @@ export function comparedWith(
             continue;
         }
         const { change, pct } = changeBetween([], row.totals);
-        const removed = { ...row, previous: row.totals, change, change_pct: pct, is_removed: true };
+        // A removed row states what it was, not figures that look current, so it
+        // cannot be read as a book that still holds trades.
+        const removed = {
+            ...row,
+            trades: 0,
+            totals: [],
+            notional: [],
+            previous: row.totals,
+            change,
+            change_pct: pct,
+            is_removed: true,
+        };
         // A removed row stays with its group rather than trailing the table, so a
         // group and the names under it keep reading together.
         const anchor =

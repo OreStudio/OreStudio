@@ -423,6 +423,10 @@ describe('comparedWith', () => {
 
         const gone = rows.find((row) => row.key === 'b9');
         expect(gone?.is_removed).toBe(true);
+        expect(gone?.trades).toBe(0);
+        expect(gone?.totals).toEqual([]);
+        expect(gone?.notional).toEqual([]);
+        expect(gone?.previous).toEqual([{ currency: 'GBP', total: '40.00' }]);
         expect(gone?.change).toEqual([{ currency: 'GBP', total: '-40.00' }]);
     });
 });

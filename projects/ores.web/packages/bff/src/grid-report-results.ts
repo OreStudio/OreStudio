@@ -279,7 +279,7 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
         complete: false,
     };
     try {
-        const [counterparties, bookings, books, portfolios] = await Promise.all([
+        const [counterparties, bookings, books] = await Promise.all([
             readAll(session, counterpartySubjects.list_counterparties_request, 'counterparties', {
                 filter: null,
                 as_of: null,
@@ -288,10 +288,15 @@ async function recordsOf(session: LiveSession, tradeIds: readonly string[]): Pro
                 filter: { trade_id_one_of: [...tradeIds] },
             }),
             readAll(session, bookSubjects.list_books_request, 'books', { filter: null }),
-            readAll(session, portfolioSubjects.list_portfolios_request, 'portfolios', {
-                filter: null,
-            }),
         ]);
+        // A portfolio read that fails costs the portfolio names, not the
+        // counterparties and the books beside it.
+        const portfolios = await readAll(
+            session,
+            portfolioSubjects.list_portfolios_request,
+            'portfolios',
+            { filter: null },
+        ).catch(() => []);
         const counterpartyName = new Map(
             counterparties.map((counterparty) => [
                 text(counterparty['id']),

@@ -541,3 +541,44 @@ describe('comparedWith, a group that disappeared', () => {
         expect(rows[rollUp + 1]?.is_removed).toBe(true);
     });
 });
+
+describe('withGroups, the book level', () => {
+    const book = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'b1',
+        name: 'Book One',
+        trades: 1,
+        totals: [{ currency: 'GBP', total: '100.00' }],
+        notional: [{ currency: 'GBP', total: '1000.00' }],
+        group: '',
+        is_group: false,
+        previous: [],
+        change: [],
+        change_pct: [],
+        is_removed: false,
+        ...over,
+    });
+
+    it('groups books under a portfolio id, which is a different id space', () => {
+        const rows = withGroups(
+            [book({ key: 'b1', name: 'Book One' }), book({ key: 'b2', name: 'Book Two' })],
+            new Map([
+                ['b1', 'pf1'],
+                ['b2', 'pf1'],
+            ]),
+            new Map([['pf1', 'The Portfolio']]),
+        );
+
+        expect(rows[0]?.name).toBe('The Portfolio');
+        expect(rows[0]?.is_group).toBe(true);
+        expect(rows[0]?.trades).toBe(2);
+        expect(rows.slice(1).every((row) => row.group === 'The Portfolio')).toBe(true);
+        expect(rows.every((row) => row.is_group || row.group !== '')).toBe(true);
+    });
+
+    it('leaves a book in no portfolio standing', () => {
+        const rows = withGroups([book({ key: 'b1' })], new Map(), new Map());
+
+        expect(rows).toHaveLength(1);
+        expect(rows[0]?.is_group).toBe(false);
+    });
+});

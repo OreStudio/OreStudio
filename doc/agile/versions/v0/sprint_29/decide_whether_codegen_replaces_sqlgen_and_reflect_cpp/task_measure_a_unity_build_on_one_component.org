@@ -55,9 +55,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =ores.dq.core= as a unity build of 16 | fails after 32 s: =redefinition of 'list_order'= in =methodology_repository.cpp= | =build_target.sh= (deletes the target's objects, builds =ores.dq.core.lib= under =systemd-run --wait=), with =UNITY_BUILD ON=, =UNITY_BUILD_BATCH_SIZE 16= | =ced6c2fc70=, release preset, 3 jobs, no ccache |
 
 * Notes
+
+- Every generated repository defines helpers such as =list_order= in an anonymous
+  namespace, so files merged into one unity source redefine them. A unity build
+  needs the generator to put each file's helpers in a namespace of its own, which
+  CMake supports with =UNITY_BUILD_UNIQUE_ID=. Measure after that change.
 
 * Test Scenarios
 

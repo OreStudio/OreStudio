@@ -55,7 +55,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =ores.dq.core=, 173 files, baseline | 8 min 08 s wall, 23 min 18 s CPU, 1.8 GiB peak | =build_target.sh= (deletes the target's objects, builds =ores.dq.core.lib= under =systemd-run --wait=) | =ced6c2fc70=, release preset, 3 jobs, no ccache |
+| =ores.dq.core= with a precompiled header | 4 min 36 s wall (-43%), 12 min 46 s CPU (-45%), 1.8 GiB peak | the same, with =target_precompile_headers= of the standard headers, Boost.Log's severity source, sqlgen's read and where, reflect-cpp's JSON, and the common =ores.logging=, =ores.database= and =ores.utility= headers | =ced6c2fc70=, release preset, 3 jobs, no ccache |
 
 * Notes
 

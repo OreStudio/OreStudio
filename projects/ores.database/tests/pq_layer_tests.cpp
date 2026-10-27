@@ -16,8 +16,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/domain/context_transact.hpp"
 #include "ores.database/pq/store_error.hpp"
+#include "ores.database/pq/text.hpp"
 #include "ores.database/pq/unit_of_work.hpp"
+#include "ores.database/pq/where.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -338,4 +342,109 @@ TEST_CASE("a statement that fails to prepare reports its own error, not the abor
     }
     CHECK(transact(p, ctx, [&](transaction& tx) { return std::get<0>(tx.query(fine).at(0)); }) ==
           1);
+}
+
+TEST_CASE("a statement built at run time binds every value it is given", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    pool p(options_of(h), 1);
+    const auto ctx = context_of(h);
+    transact(p, ctx, [&](transaction& tx) {
+        tx.execute(create_probe);
+        transaction::batch b;
+        for (const auto* label : {"red", "green", "blue", "o'brien"})
+            b.add(insert_probe, ctx.tenant, std::string(label));
+        tx.run(b);
+    });
+
+    dynamic_statement s("select label from pq_probe where label = any(");
+    s.append(s.bind(std::vector<std::string>{"green", "o'brien", "missing"}));
+    s.append(") and label <> ").append(s.bind(std::string("red"))).append(" order by label");
+    const auto rows = transact(p, ctx, [&](transaction& tx) { return tx.query<std::string>(s); });
+    REQUIRE(rows.size() == 2);
+    CHECK(std::get<0>(rows[0]) == "green");
+    CHECK(std::get<0>(rows[1]) == "o'brien");
+}
+
+TEST_CASE("a context reaches the layer through one pool that every copy shares", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    const auto& ctx = h.context();
+    const auto other = random_tenant();
+    const auto scoped = ctx.with_tenant(other, "someone");
+    CHECK(&scoped.pq_pool() == &ctx.pq_pool());
+
+    const auto seen = ores::database::transact(
+        scoped, [&](transaction& tx) { return std::get<0>(tx.query(current_tenant).at(0)); });
+    CHECK(seen == other.to_string());
+    CHECK(scoped.pq_session().actor == "someone");
+}
+
+TEST_CASE("a context bound to a sqlgen unit of work is refused by the layer", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    ores::database::repository::unit_of_work uow(h.context());
+    try {
+        ores::database::transact(uow.ctx(), [](transaction&) {});
+        FAIL("the bound context was not refused");
+    } catch (const store_error& e) {
+        CHECK_FALSE(e.retryable());
+    }
+}
+
+TEST_CASE("a text statement fills an entity's text fields as sqlgen did", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    pool p(options_of(h), 1);
+    const auto ctx = context_of(h);
+    using ores::database::repository::db_timestamp;
+    const text_statement create{"pq_text_create",
+                                "create temp table if not exists pq_text (id uuid not null,"
+                                " n integer not null, big bigint not null, flag boolean not null,"
+                                " at timestamptz not null, note text)"};
+    const text_statement insert{"pq_text_insert",
+                                "insert into pq_text values ($1, $2, $3, $4, $5, $6)"};
+    const text_statement read{"pq_text_read",
+                              "select id, n, big, flag, at, note from pq_text where n = $1"};
+    const std::string id = "3f2504e0-4f89-11d3-9a0c-0305e82c3301";
+    const auto rows = transact(p, ctx, [&](transaction& tx) {
+        tx.run(create, {});
+        const std::vector<param> values{to_text(id),
+                                        to_text(42),
+                                        to_text(std::int64_t{9'000'000'000}),
+                                        to_text(true),
+                                        to_text(db_timestamp("2026-10-27 18:30:00")),
+                                        to_text(std::optional<std::string>())};
+        tx.run(insert, values);
+        const std::vector<param> key{to_text(42)};
+        return tx.run(read, key);
+    });
+    REQUIRE(rows.rows() == 1);
+    CHECK(from_text<std::string>(rows, 0, 0) == id);
+    CHECK(from_text<int>(rows, 0, 1) == 42);
+    CHECK(from_text<std::int64_t>(rows, 0, 2) == 9'000'000'000);
+    CHECK(from_text<bool>(rows, 0, 3));
+    CHECK(std::string(rows.text(0, 4)).ends_with("+00"));
+    CHECK(from_text<db_timestamp>(rows, 0, 4).str() == "2026-10-27 18:30:00");
+    CHECK_FALSE(from_text<std::optional<std::string>>(rows, 0, 5).has_value());
+}
+
+TEST_CASE("a list read's conditions bind their values and order by the key", "[pq]") {
+    ores::testing::scoped_database_helper h;
+    pool p(options_of(h), 1);
+    const auto ctx = context_of(h);
+    transact(p, ctx, [&](transaction& tx) {
+        tx.execute(create_probe);
+        transaction::batch b;
+        for (const auto* label : {"alpha", "beta", "gamma", "o'brien"})
+            b.add(insert_probe, ctx.tenant, std::string(label));
+        tx.run(b);
+    });
+    namespace w = ores::database::pq::where;
+    dynamic_statement s("select label from pq_probe where ");
+    const auto condition =
+        w::all_of({w::one_of("label", std::vector<std::string>{"alpha", "o'brien", "gamma"}),
+                   w::contains_any({"label"}, "A")});
+    s.append(condition(s));
+    s.append(w::order_by({"label"}, true, {"label"}));
+    const auto rows = transact(p, ctx, [&](transaction& tx) { return tx.query<std::string>(s); });
+    REQUIRE(rows.size() == 2);
+    CHECK(std::get<0>(rows[0]) == "gamma");
+    CHECK(std::get<0>(rows[1]) == "alpha");
 }

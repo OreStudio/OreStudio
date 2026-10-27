@@ -164,6 +164,8 @@ context context_factory::make_context(const configuration& cfg) {
               cfg.service_account,
               policy);
 
+    r.set_pq_pool_size(cfg.pool_size);
+
     verify_schema_fingerprint(r, cfg.database_options.database);
 
     BOOST_LOG_SEV(lg(), debug) << "Finished creating context.";

@@ -47,6 +47,8 @@
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/domain/swaption_instrument.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
+#include "ores.trading.api/messaging/structure_member_protocol.hpp"
+#include "ores.trading.api/messaging/structure_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -170,6 +172,7 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     scope.as_of_date = config.as_of_date;
     scope.seed = config.seed;
     scope.trades_per_book = config.trades_per_book;
+    scope.structures_per_book = static_cast<std::uint32_t>(config.structures_per_book);
     scope.reference_curve_id = config.reference_curve_id;
 
     synthetic::list_trade_generation_books_request book_scope_req;
@@ -908,5 +911,98 @@ void trading_trade_population_writer::write_trade(const domain::trade_population
                                                        boost::uuids::to_string(slot.trade_id),
                                                        booked->result.message));
 }
+
+
+bool trading_trade_population_writer::structure_exists(const boost::uuids::uuid& structure_id) {
+    const auto& codec = ores::nats::default_wire_codec();
+    ores::trading::messaging::get_structure_request req;
+    req.key.id = structure_id;
+
+    const auto reply = nats_.authenticated_request(
+        ores::trading::messaging::get_structure_request::nats_subject, codec.encode(req));
+    const auto error = reply.headers.find("X-Error");
+    if (error != reply.headers.end())
+        throw trade_population_write_error(
+            std::format("Reading structure {} was refused: {}",
+                        boost::uuids::to_string(structure_id),
+                        error->second));
+    auto decoded = codec.decode<ores::trading::messaging::get_structure_response>(reply.data);
+    if (!decoded)
+        throw trade_population_write_error(
+            std::format("Reading structure {} answered something unreadable.",
+                        boost::uuids::to_string(structure_id)));
+    return decoded->structure.has_value();
+}
+
+void trading_trade_population_writer::write_structure(
+    const domain::trade_population_structure& structure,
+    const domain::trade_generation_scope& /*scope*/) {
+    const auto& codec = ores::nats::default_wire_codec();
+    ores::trading::messaging::put_structure_request req;
+    req.change.write.id = structure.structure_id;
+    req.change.write.counterparty_id = structure.counterparty_id;
+    req.change.write.kind = structure.kind;
+    req.change.write.template_code = structure.template_code;
+    req.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
+                               std::nullopt};
+    req.intent.reason_code = std::string(population_reason);
+    req.intent.commentary = "Grouped by the generated trade population.";
+
+    const auto reply = nats_.authenticated_request(
+        ores::trading::messaging::put_structure_request::nats_subject, codec.encode(req));
+    const auto error = reply.headers.find("X-Error");
+    if (error != reply.headers.end())
+        throw trade_population_write_error(
+            std::format("Writing structure {} was refused: {}",
+                        boost::uuids::to_string(structure.structure_id),
+                        error->second));
+    auto decoded = codec.decode<ores::trading::messaging::put_structure_response>(reply.data);
+    if (!decoded)
+        throw trade_population_write_error(
+            std::format("Writing structure {} answered something unreadable.",
+                        boost::uuids::to_string(structure.structure_id)));
+    if (decoded->result.outcome != outcome::ok)
+        throw trade_population_write_error(
+            std::format("Writing structure {} failed: {}",
+                        boost::uuids::to_string(structure.structure_id),
+                        decoded->result.message));
+}
+
+void trading_trade_population_writer::write_structure_member(
+    const boost::uuids::uuid& structure_id,
+    const domain::trade_population_slot& slot) {
+    const auto& codec = ores::nats::default_wire_codec();
+    ores::trading::messaging::put_structure_member_request req;
+    req.change.write.trade_id = slot.trade_id;
+    req.change.write.structure_id = structure_id;
+    req.change.write.role = slot.structure_role;
+    req.change.write.sequence_number = slot.structure_sequence;
+    req.intent.reason_code = std::string(population_reason);
+    req.intent.commentary = "Grouped by the generated trade population.";
+
+    const auto reply = nats_.authenticated_request(
+        ores::trading::messaging::put_structure_member_request::nats_subject, codec.encode(req));
+    const auto error = reply.headers.find("X-Error");
+    if (error != reply.headers.end())
+        throw trade_population_write_error(
+            std::format("Adding trade {} to structure {} was refused: {}",
+                        boost::uuids::to_string(slot.trade_id),
+                        boost::uuids::to_string(structure_id),
+                        error->second));
+    auto decoded =
+        codec.decode<ores::trading::messaging::put_structure_member_response>(reply.data);
+    if (!decoded)
+        throw trade_population_write_error(
+            std::format("Adding trade {} to structure {} answered something unreadable.",
+                        boost::uuids::to_string(slot.trade_id),
+                        boost::uuids::to_string(structure_id)));
+    if (decoded->result.outcome != outcome::ok)
+        throw trade_population_write_error(
+            std::format("Adding trade {} to structure {} failed: {}",
+                        boost::uuids::to_string(slot.trade_id),
+                        boost::uuids::to_string(structure_id),
+                        decoded->result.message));
+}
+
 
 }

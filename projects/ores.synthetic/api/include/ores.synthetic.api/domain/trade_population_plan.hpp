@@ -413,6 +413,9 @@ struct trade_population_slot final {
  */
 struct trade_population_structure final {
     boost::uuids::uuid structure_id;
+    /// The party on the other side, which the structure states once for all
+    /// its legs.
+    boost::uuids::uuid counterparty_id;
     std::string kind;
     std::string template_code;
 };

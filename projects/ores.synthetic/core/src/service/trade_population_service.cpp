@@ -27,7 +27,14 @@ trade_population_service::trade_population_service(trade_population_writer& writ
 
 trade_population_run trade_population_service::run(const boost::uuids::uuid& config_id) {
     const auto scope = writer_.resolve_scope(config_id);
-    const auto plan = planner_for(scope.asset_class_code).plan(scope);
+    auto plan = planner_for(scope.asset_class_code).plan(scope);
+    group_into_structures(plan, scope.structures_per_book);
+
+    // The structures come first, because a leg cannot name a deal that is not
+    // there yet, and a run that grouped them before leaves them alone.
+    for (const auto& structure : plan.structures)
+        if (!writer_.structure_exists(structure.structure_id))
+            writer_.write_structure(structure, scope);
 
     trade_population_run run;
     run.config_id = scope.config_id;
@@ -52,6 +59,8 @@ trade_population_run trade_population_service::run(const boost::uuids::uuid& con
         }
 
         writer_.write_trade(slot, scope);
+        if (slot.structure_id)
+            writer_.write_structure_member(*slot.structure_id, slot);
 
         ++run.written;
         run.outcomes.push_back(

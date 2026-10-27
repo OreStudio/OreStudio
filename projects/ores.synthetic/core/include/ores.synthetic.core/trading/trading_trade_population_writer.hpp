@@ -87,6 +87,14 @@ public:
     void write_trade(const domain::trade_population_slot& slot,
                      const domain::trade_generation_scope& scope) override;
 
+    [[nodiscard]] bool structure_exists(const boost::uuids::uuid& structure_id) override;
+
+    void write_structure(const domain::trade_population_structure& structure,
+                         const domain::trade_generation_scope& scope) override;
+
+    void write_structure_member(const boost::uuids::uuid& structure_id,
+                                const domain::trade_population_slot& slot) override;
+
 private:
     /**
      * @brief Creates the trade's security with the security operation.

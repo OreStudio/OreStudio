@@ -165,6 +165,24 @@ public:
  */
 ORES_SYNTHETIC_CORE_EXPORT const trade_planner& planner_for(const std::string& asset_class_code);
 
+/**
+ * @brief Groups a plan's trades into the structures the scope asks for.
+ *
+ * The grouping is a property of the population rather than of the asset class,
+ * so it happens once, after a planner has stated its slots, and every family
+ * gets it. A book's trades are taken in the order they were planned and paired:
+ * two legs make a package, and a package needs no template because its legs
+ * confirm on their own.
+ *
+ * The structure's id is derived from its first leg, so a second run of the same
+ * config names the same structure and the run stays repeatable.
+ *
+ * @param plan the slots the planner stated, and the structures added to it
+ * @param structures_per_book how many structures each book groups, zero for none
+ */
+ORES_SYNTHETIC_CORE_EXPORT void group_into_structures(domain::trade_population_plan& plan,
+                                                      std::uint32_t structures_per_book);
+
 /// The asset classes that have a planner, in the order the registry holds them.
 ORES_SYNTHETIC_CORE_EXPORT std::vector<std::string_view> planned_asset_classes();
 

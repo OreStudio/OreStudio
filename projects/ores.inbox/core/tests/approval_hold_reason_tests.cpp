@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "approval_fixture.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/repository/approval_decision_repository.hpp"
@@ -27,24 +28,14 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
+using ores::inbox::tests::seed_account;
+using ores::inbox::tests::acting;
+
 namespace {
 
 // The operational authorisation kind is the one seeded kind that allows a hold,
 // so it is the kind these cases park.
 constexpr auto holding_kind = "trading.operational_authorisation";
-
-ores::iam::domain::account seed_account(ores::testing::scoped_database_helper& h) {
-    auto ctx = ores::testing::make_generation_context(h);
-    auto a = ores::iam::generators::generate_synthetic_account(ctx);
-    a.change_reason_code = "system.test";
-    ores::iam::repository::account_repository repo;
-    repo.write(h.context(), a);
-    return a;
-}
-
-ores::database::context acting(ores::testing::scoped_database_helper& h) {
-    return h.context().with_tenant(h.tenant_id(), h.db_user());
-}
 
 }
 

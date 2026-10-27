@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "approval_fixture.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/service/approval_apply_retry.hpp"
@@ -31,28 +32,14 @@
 #include <string>
 #include <vector>
 
+using ores::inbox::tests::seed_account;
+using ores::inbox::tests::acting;
+using ores::inbox::tests::sweeping;
+
 namespace {
 
 using ores::inbox::service::approval_apply_retry;
 using ores::inbox::service::approval_lifecycle;
-
-ores::iam::domain::account seed_account(ores::testing::scoped_database_helper& h) {
-    auto ctx = ores::testing::make_generation_context(h);
-    auto a = ores::iam::generators::generate_synthetic_account(ctx);
-    a.change_reason_code = "system.test";
-    ores::iam::repository::account_repository repo;
-    repo.write(h.context(), a);
-    return a;
-}
-
-ores::database::context acting(ores::testing::scoped_database_helper& h) {
-    return h.context().with_tenant(h.tenant_id(), h.db_user());
-}
-
-// The sweep comes from the scheduler, so nobody is signed in.
-ores::database::context sweeping(ores::testing::scoped_database_helper& h) {
-    return h.context().with_tenant(h.tenant_id(), "");
-}
 
 /**
  * @brief An engine that records what it was asked and answers as told.

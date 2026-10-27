@@ -2,16 +2,16 @@
 :ID: 44fecaa3-95de-464c-925c-30ed9da87a1a
 :END:
 #+title: ores.ore.pricing_engines_messages
-#+description: Codegen operation model for the ORE pricing engine configuration's export: the operation that writes pricingengine.xml from one configuration. Rendered to C++ and TypeScript from one source.
+#+description: Codegen operation model for the ORE pricing engine configuration's document pair: the export that writes pricingengine.xml from one configuration, the preview that says what a file would change, and the import that writes it with the person's choices. Rendered to C++ and TypeScript from one source.
 #+type: ores.codegen.operation
 #+component: ore
 #+subcomponent: api
 #+entity_singular: pricing_engines
 #+namespace: ores::ore::messaging
-#+brief: Export a pricing engine configuration as the ORE document.
+#+brief: Export, preview and import the ORE pricing engine configuration.
 #+filetags: :model:operation:ore:
 #+created: 2026-10-26
-#+updated: 2026-10-26
+#+updated: 2026-10-27
 
 A pricing engine configuration is one ORE document, =pricingengine.xml=, whose
 root element is =PricingEngines=. The export writes it from one configuration
@@ -21,6 +21,38 @@ analytics' own messages, under the caller's delegated session, and never
 touches analytics' tables.
 
 The export is read-only: it writes no row and records no history.
+
+The preview and the import are the other half of the pair, in the shape the
+currencies' pair established: =preview_<document>_import= parses a file and
+says what the import would do, and =import_<document>= writes with the person's
+choices. The preview writes nothing, and both need write on the configuration,
+because the preview is the first step of a write.
+
+Every =Product= becomes a product row and every =Parameter= a parameter row
+scoped to the element that carried it, exactly as the exporter writes them, so
+the document comes back product for product and setting for setting. Three
+things a file may state have no row of their own, and the preview names each:
+
+- a product type the vocabulary does not hold — the row is still written,
+  because the tables hold any type code, but a person is told the screen cannot
+  offer the type back;
+- an attribute or element the tables have no column for — the row is written
+  without it and the element is named;
+- a row the file states twice, in one owner and scope — the first stands and
+  the rest are named, because a document that states one setting twice cannot
+  be saved (analytics refuses a repeated setting), so silence would be a
+  refused write the person could not act on.
+
+The difference is stated as rows: added, changed and removed. A row's =key= is
+its identity within the configuration — the type of its product and which
+product of that type it is, then the scope and the name of a setting — so a
+choice names a row rather than a position in a list.
+
+Only removed rows ask a question. A file that omits a row usually omits it by
+accident, so every removed row is kept unless the person says otherwise, and
+the import request carries the keys of the removed rows that were kept. An
+added or changed row has no choice: the file's value is the one the person
+reviewed.
 
 The names of the operation, of its request and of its response follow the
 record screen standard's =ore.v1.ops.export_<document>= (RS-ORE-06). The file
@@ -128,6 +160,412 @@ component has no part under =projects/ores.shell=.
 *** problems
 :PROPERTIES:
 :cpp_type: std::vector<pricing_engines_export_problem>
+:END:
+
+** pricing_engines_import_product
+
+#+begin_src cpp :name comment
+/**
+ * @brief One product the file holds, as the preview states it.
+ *
+ * A person compares the file against the configurations they hold by the type,
+ * the model and the engine, so the preview names them rather than counting
+ * them alone.
+ */
+#+end_src
+
+*** type_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** model
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** engine
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** parameters
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/** How many settings this product carries, of both scopes. */
+#+end_src
+
+** pricing_engines_import_row
+
+#+begin_src cpp :name comment
+/**
+ * @brief One row of the difference between the file and the target: added,
+ * changed or removed, and in words what differs.
+ *
+ * =key= is the row's identity within its configuration, and it is what the
+ * import's choices name, so a person acts on a row rather than on a position in
+ * a list they cannot see twice.
+ */
+#+end_src
+
+*** key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The row's identity, such as =Swap#0= or =Swap#0/engine/DiscountFactor=. */
+#+end_src
+
+*** entity
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** One of product, parameter. */
+#+end_src
+
+*** change
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** One of added, changed, removed. */
+#+end_src
+
+*** owner
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The product the row belongs to, or the configuration for a global setting. */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The setting's name, empty for a product. */
+#+end_src
+
+*** what
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** pricing_engines_import_issue
+
+#+begin_src cpp :name comment
+/**
+ * @brief Something in the file the system does not know: a product type with no
+ * vocabulary row, an element the tables cannot hold, or a row the file states
+ * twice.
+ */
+#+end_src
+
+*** kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** One of unknown_type, dropped, duplicate. */
+#+end_src
+
+*** subject
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** detail
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** preview_pricing_engines_import_request
+:PROPERTIES:
+:subject: ore.v1.ops.preview_pricing_engines_import
+:response: preview_pricing_engines_import_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Parses a pricing engines document and says what importing it would do.
+ *
+ * Nothing is written. A file of another kind is refused, and the refusal names
+ * the root element found. The target is optional: a file read against no
+ * target is a file for a configuration that does not exist yet, so every row it
+ * holds is an addition.
+ */
+#+end_src
+
+*** content
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** target_configuration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The reporting configuration to compare against, or empty for none. */
+#+end_src
+
+** preview_pricing_engines_import_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the file holds, what the system does not know, and how it differs
+ * from the target.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** root_element
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** in_file_products
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** in_file_parameters
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** products
+:PROPERTIES:
+:cpp_type: std::vector<pricing_engines_import_product>
+:END:
+
+*** global_parameters
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/** The names of the root-level settings the file states. */
+#+end_src
+
+*** target_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The configuration the file was compared against, or empty for none. */
+#+end_src
+
+*** held
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/** Rows the target holds with the file's values. */
+#+end_src
+
+*** added
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** changed
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** removed
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/** Rows the target holds and the file omits. */
+#+end_src
+
+*** rows
+:PROPERTIES:
+:cpp_type: std::vector<pricing_engines_import_row>
+:END:
+
+*** issues
+:PROPERTIES:
+:cpp_type: std::vector<pricing_engines_import_issue>
+:END:
+
+** import_pricing_engines_request
+:PROPERTIES:
+:subject: ore.v1.ops.import_pricing_engines
+:response: import_pricing_engines_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Writes a pricing engines document with the person's choices.
+ *
+ * The target is an existing configuration, named by the reporting
+ * configuration it fills, or a new one, named here. A new configuration is
+ * registered in reporting first and removed again when the document is
+ * refused, so a refused import leaves nothing behind.
+ *
+ * A removed row the choices do not name is dropped, which is the file's
+ * reading; the screen names every removed row it keeps, because a row a file
+ * omits is usually omitted by accident.
+ */
+#+end_src
+
+*** content
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** target_configuration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The reporting configuration to write into, or empty to make a new one. */
+#+end_src
+
+*** new_configuration_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** new_configuration_variant
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** removals_kept
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/** The keys of the removed rows the person chose to keep. */
+#+end_src
+
+*** reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** pricing_engines_import_error
+
+#+begin_src cpp :name comment
+/**
+ * @brief A row the import could not write, and the owner's reason.
+ */
+#+end_src
+
+*** key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** import_pricing_engines_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the import wrote, kept and could not write.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** configuration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/** The pricing engine configuration the import wrote, as the screen names it. */
+#+end_src
+
+*** configuration_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** added
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** changed
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** deleted
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** kept
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+*** errors
+:PROPERTIES:
+:cpp_type: std::vector<pricing_engines_import_error>
 :END:
 
 * See also

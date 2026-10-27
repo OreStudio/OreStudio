@@ -53,7 +53,7 @@ create table if not exists "ores_analytics_sensitivity_templates_tbl" (
     check ("code" <> ''),
     check ("asset_class" in ('IR', 'FX', 'EQ', 'COMM', 'CR', 'ALL')),
     check ("method_code" in ('Analytical', 'Semianalytical', 'FD', 'MC', 'Trade')),
-    check ((method, method_code) in (('Analytical', 'Analytical'), ('Semianalytical', 'Semianalytical'), ('FD', 'Finite difference'), ('MC', 'Monte Carlo'), ('Trade', 'Trade level')))
+    check ((method, method_code) in (('Analytical', 'Analytical'), ('Semianalytical', 'Semianalytical'), ('Finite difference', 'FD'), ('Monte Carlo', 'MC'), ('Trade level', 'Trade')))
 );
 
 -- Version uniqueness for optimistic concurrency

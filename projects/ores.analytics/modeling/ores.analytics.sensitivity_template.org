@@ -11,7 +11,7 @@
 #+entity_plural: sensitivity_templates
 #+entity_title: Sensitivity Template
 #+created: 2026-10-21
-#+updated: 2026-10-21
+#+updated: 2026-10-27
 
 A sensitivity template is a key. The pricing engine configuration puts it on a product with the setting SensitivityTemplate. The sensitivity configuration gives shift sizes and shift schemes to the products that carry the key. The key names an asset class and a method, for example IR_FD, and the row states both of them in the two forms ORE uses: the token a key carries, and the words a person reads.
 
@@ -131,7 +131,7 @@ is the metadata each row states, not the spelling of a key a tenant chose.
 |------------|
 | "asset_class" in ('IR', 'FX', 'EQ', 'COMM', 'CR', 'ALL') |
 | "method_code" in ('Analytical', 'Semianalytical', 'FD', 'MC', 'Trade') |
-| (method, method_code) in (('Analytical', 'Analytical'), ('Semianalytical', 'Semianalytical'), ('FD', 'Finite difference'), ('MC', 'Monte Carlo'), ('Trade', 'Trade level')) |
+| (method, method_code) in (('Analytical', 'Analytical'), ('Semianalytical', 'Semianalytical'), ('Finite difference', 'FD'), ('Monte Carlo', 'MC'), ('Trade level', 'Trade')) |
 
 * Insert trigger
 ** Validations

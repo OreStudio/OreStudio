@@ -247,3 +247,29 @@ They are the build tree's, not the source tree's:
   (the home directory is read-only), so a local launch config points at the
   revision the checkout's cache holds. It is gitignored, and the README's rule
   about the browsers' location says why.
+
+** The second pass: the model the screen needed
+
+The first pass stored the class and the method as text and enforced them with checks. A design review settled the model this screen should sit on:
+
+- =asset_class_code= is a nullable soft FK to =ores_refdata_asset_class_codes_tbl=, validated by =ores_refdata_validate_asset_class_code_fn=, the same pattern the market series junction uses. The ORE presentation prefix (=COMM= for commodity) lives in a bridge entity, =sensitivity_asset_class=, with the class's words; the five classes ORE presents are seeded, and bond and inflation are not, because ORE's templates have no prefix for them.
+- The method is its own entity, =sensitivity_method=: code, name, description, =needs_asset_class= and display order. Trade is the one method that names no class.
+- =SensiTrade= is a real ORE product type with no asset class, so =ALL= is gone: the class is null exactly when the method is Trade. The rule is a table check, because the generator's validations see one column at a time; the method's =needs_asset_class= is what the screen reads.
+- The template key stays free: ORE resolves the key a configuration states.
+
+The catalogue view composes the label from the two lookups: *Interest rate · Analytical*, and *Trade level* alone for the classless key. The BFF choices route reads the two list subjects, the writes carry the two codes and refuse a pair the tables would refuse, and the screen draws both as selects; choosing Trade clears and disables the class, and the record states the class's words, the method's words, the method code and the prefix under the sentence that says the shifts are set per market key and may reach keys outside the class.
+
+The seeds are 5 methods, 5 classes and 19 templates, verified on a recreated database, and =SensiTrade= carries no class.
+
+** Two defects the pass exposed
+
+1. A generated synthetic generator appended =-<idx>= to a text primary key even when the model opted out with =:no_generator_suffix:=. The flag was parsed and the element generator honoured it; the scalar generator did not. The template now honours it for a text primary key, and the bridge states a refdata code unsuffixed, cycling the five so many synthetic rows stay distinct. The common case's generated output is unchanged, so no other entity was regenerated.
+2. Running the browser case as a person rather than the tenant administrator showed the screen's role could read the keys and nothing else: Operations held the template read, the write and delete were seeded without a grant, and the two lookups were granted to Member alone. The seed now grants the four to Operations, and the browser case signs in as an Operations account.
+
+** Verification of the second pass
+
+- =./compass.sh build= exit 0.
+- =ores.analytics.core.tests= 78 cases and 512 assertions; BFF 1072 tests; web 2165 tests; the pgTAP suites for the templates and the lookups pass 18 of 18 on a recreated, provisioned database.
+- The browser case passes as an Operations account against the running environment: 19 keys paged, search, add, correct, history, delete, seeded key untouched.
+- The named local checks pass: cmake-sources, model-drift, sql-hygiene, model-sql-types, handler-permissions, route-auth, bff-list-requests, web, tangle-templates, format, component-drift.
+

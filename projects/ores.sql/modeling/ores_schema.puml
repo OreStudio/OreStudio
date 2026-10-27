@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-624 tables in 21 groups.
+625 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -788,6 +788,7 @@ entity "inbox" as inbox {
   ores_inbox_approval_request_states_tbl
   ores_inbox_approval_requests_tbl
   ores_inbox_delivery_outcome_types_tbl
+  ores_inbox_hold_reasons_tbl
   ores_inbox_notification_arguments_tbl
   ores_inbox_notification_channels_tbl
   ores_inbox_notification_deliveries_tbl
@@ -798,7 +799,7 @@ entity "inbox" as inbox {
 }
 note bottom of inbox
 Inbox — Approval Requests and Notifications
-16 tables — ores_schema.inbox.puml
+17 tables — ores_schema.inbox.puml
 end note
 
 

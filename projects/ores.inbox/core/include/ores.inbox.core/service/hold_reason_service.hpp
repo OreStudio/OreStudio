@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_hold_reasons_response
-    list_hold_reasons(const messaging::list_hold_reasons_request& request);
-    messaging::get_hold_reason_response
-    get_hold_reason(const messaging::get_hold_reason_request& request);
-    messaging::get_many_hold_reasons_response
-    get_many_hold_reasons(const messaging::get_many_hold_reasons_request& request);
-    messaging::put_hold_reason_response
-    put_hold_reason(const messaging::put_hold_reason_request& request);
-    messaging::put_many_hold_reasons_response
-    put_many_hold_reasons(const messaging::put_many_hold_reasons_request& request);
-    messaging::delete_hold_reason_response
-    delete_hold_reason(const messaging::delete_hold_reason_request& request);
-    messaging::delete_many_hold_reasons_response
-    delete_many_hold_reasons(const messaging::delete_many_hold_reasons_request& request);
-    messaging::list_hold_reason_versions_response
-    list_hold_reason_versions(const messaging::list_hold_reason_versions_request& request);
-    messaging::get_hold_reason_version_response
-    get_hold_reason_version(const messaging::get_hold_reason_version_request& request);
+    ::ores::inbox::messaging::list_hold_reasons_response
+    list_hold_reasons(const ::ores::inbox::messaging::list_hold_reasons_request& request);
+    ::ores::inbox::messaging::get_hold_reason_response
+    get_hold_reason(const ::ores::inbox::messaging::get_hold_reason_request& request);
+    ::ores::inbox::messaging::get_many_hold_reasons_response
+    get_many_hold_reasons(const ::ores::inbox::messaging::get_many_hold_reasons_request& request);
+    ::ores::inbox::messaging::put_hold_reason_response
+    put_hold_reason(const ::ores::inbox::messaging::put_hold_reason_request& request);
+    ::ores::inbox::messaging::put_many_hold_reasons_response
+    put_many_hold_reasons(const ::ores::inbox::messaging::put_many_hold_reasons_request& request);
+    ::ores::inbox::messaging::delete_hold_reason_response
+    delete_hold_reason(const ::ores::inbox::messaging::delete_hold_reason_request& request);
+    ::ores::inbox::messaging::delete_many_hold_reasons_response delete_many_hold_reasons(
+        const ::ores::inbox::messaging::delete_many_hold_reasons_request& request);
+    ::ores::inbox::messaging::list_hold_reason_versions_response list_hold_reason_versions(
+        const ::ores::inbox::messaging::list_hold_reason_versions_request& request);
+    ::ores::inbox::messaging::get_hold_reason_version_response get_hold_reason_version(
+        const ::ores::inbox::messaging::get_hold_reason_version_request& request);
     /**@}*/
 
     /**
@@ -186,9 +186,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::hold_reason_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::hold_reason& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::inbox::messaging::hold_reason_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::hold_reason& out);
 };
 
 }

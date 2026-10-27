@@ -366,14 +366,20 @@ void approval_decision_commands::process_add(std::ostream& out,
             return;
         }
         req.change.write.id = boost::uuids::random_generator()();
-        approval_decision_read_token(req.change.write.request_id, parsed->positionals[next++], "request_id");
-        approval_decision_read_token(req.change.write.decision_code, parsed->positionals[next++], "decision_code");
-        approval_decision_read_token(req.change.write.part_code, parsed->positionals[next++], "part_code");
-        approval_decision_read_token(req.change.write.decided_by, parsed->positionals[next++], "decided_by");
-        approval_decision_read_token(req.change.write.decided_at, parsed->positionals[next++], "decided_at");
+        approval_decision_read_token(
+            req.change.write.request_id, parsed->positionals[next++], "request_id");
+        approval_decision_read_token(
+            req.change.write.decision_code, parsed->positionals[next++], "decision_code");
+        approval_decision_read_token(
+            req.change.write.part_code, parsed->positionals[next++], "part_code");
+        approval_decision_read_token(
+            req.change.write.decided_by, parsed->positionals[next++], "decided_by");
+        approval_decision_read_token(
+            req.change.write.decided_at, parsed->positionals[next++], "decided_at");
         approval_decision_read_token(
             req.change.write.hold_reason_code, parsed->positionals[next++], "hold_reason_code");
-        approval_decision_read_token(req.change.write.comment, parsed->positionals[next++], "comment");
+        approval_decision_read_token(
+            req.change.write.comment, parsed->positionals[next++], "comment");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -422,14 +428,20 @@ void approval_decision_commands::process_set(std::ostream& out,
             return;
         }
         approval_decision_read_token(req.change.write.id, parsed->positionals[next++], "id");
-        approval_decision_read_token(req.change.write.request_id, parsed->positionals[next++], "request_id");
-        approval_decision_read_token(req.change.write.decision_code, parsed->positionals[next++], "decision_code");
-        approval_decision_read_token(req.change.write.part_code, parsed->positionals[next++], "part_code");
-        approval_decision_read_token(req.change.write.decided_by, parsed->positionals[next++], "decided_by");
-        approval_decision_read_token(req.change.write.decided_at, parsed->positionals[next++], "decided_at");
+        approval_decision_read_token(
+            req.change.write.request_id, parsed->positionals[next++], "request_id");
+        approval_decision_read_token(
+            req.change.write.decision_code, parsed->positionals[next++], "decision_code");
+        approval_decision_read_token(
+            req.change.write.part_code, parsed->positionals[next++], "part_code");
+        approval_decision_read_token(
+            req.change.write.decided_by, parsed->positionals[next++], "decided_by");
+        approval_decision_read_token(
+            req.change.write.decided_at, parsed->positionals[next++], "decided_at");
         approval_decision_read_token(
             req.change.write.hold_reason_code, parsed->positionals[next++], "hold_reason_code");
-        approval_decision_read_token(req.change.write.comment, parsed->positionals[next++], "comment");
+        approval_decision_read_token(
+            req.change.write.comment, parsed->positionals[next++], "comment");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -492,14 +504,20 @@ void approval_decision_commands::process_put_many(std::ostream& out,
         for (std::uint32_t i = 0; i < change_count; ++i) {
             messaging::approval_decision_change change;
             approval_decision_read_token(change.write.id, parsed->positionals[next++], "id");
-            approval_decision_read_token(change.write.request_id, parsed->positionals[next++], "request_id");
-            approval_decision_read_token(change.write.decision_code, parsed->positionals[next++], "decision_code");
-            approval_decision_read_token(change.write.part_code, parsed->positionals[next++], "part_code");
-            approval_decision_read_token(change.write.decided_by, parsed->positionals[next++], "decided_by");
-            approval_decision_read_token(change.write.decided_at, parsed->positionals[next++], "decided_at");
+            approval_decision_read_token(
+                change.write.request_id, parsed->positionals[next++], "request_id");
+            approval_decision_read_token(
+                change.write.decision_code, parsed->positionals[next++], "decision_code");
+            approval_decision_read_token(
+                change.write.part_code, parsed->positionals[next++], "part_code");
+            approval_decision_read_token(
+                change.write.decided_by, parsed->positionals[next++], "decided_by");
+            approval_decision_read_token(
+                change.write.decided_at, parsed->positionals[next++], "decided_at");
             approval_decision_read_token(
                 change.write.hold_reason_code, parsed->positionals[next++], "hold_reason_code");
-            approval_decision_read_token(change.write.comment, parsed->positionals[next++], "comment");
+            approval_decision_read_token(
+                change.write.comment, parsed->positionals[next++], "comment");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

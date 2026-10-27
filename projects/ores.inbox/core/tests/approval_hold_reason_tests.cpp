@@ -29,8 +29,6 @@
 
 namespace {
 
-const std::string tags("[approval][hold]");
-
 // The operational authorisation kind is the one seeded kind that allows a hold,
 // so it is the kind these cases park.
 constexpr auto holding_kind = "trading.operational_authorisation";
@@ -52,7 +50,7 @@ ores::database::context acting(ores::testing::scoped_database_helper& h) {
 
 using ores::inbox::service::approval_lifecycle;
 
-TEST_CASE("a_hold_takes_a_reason_from_the_lookup_and_parks_the_request", tags) {
+TEST_CASE("a_hold_takes_a_reason_from_the_lookup_and_parks_the_request", "[approval][hold]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -87,7 +85,7 @@ TEST_CASE("a_hold_takes_a_reason_from_the_lookup_and_parks_the_request", tags) {
     CHECK(decisions.front().hold_reason_code == std::optional<std::string>("awaiting.sales_ticket"));
 }
 
-TEST_CASE("a_hold_naming_no_reason_is_refused_with_the_codes_the_lookup_holds", tags) {
+TEST_CASE("a_hold_naming_no_reason_is_refused_with_the_codes_the_lookup_holds", "[approval][hold]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -106,7 +104,7 @@ TEST_CASE("a_hold_naming_no_reason_is_refused_with_the_codes_the_lookup_holds", 
     CHECK(lifecycle.request(id)->state_code == "waiting");
 }
 
-TEST_CASE("a_hold_naming_an_unknown_reason_is_refused_with_the_lookup_terms", tags) {
+TEST_CASE("a_hold_naming_an_unknown_reason_is_refused_with_the_lookup_terms", "[approval][hold]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);

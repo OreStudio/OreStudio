@@ -30,8 +30,6 @@
 
 namespace {
 
-const std::string tags("[curve_publish][approval]");
-
 using ores::inbox::service::approval_lifecycle;
 using ores::marketdata::service::app::curve_publish_kind_code;
 using ores::marketdata::service::app::raise_publish_request;
@@ -62,7 +60,7 @@ person seed_person(ores::testing::scoped_database_helper& h) {
 
 }
 
-TEST_CASE("a_publish_that_names_no_request_is_refused_and_states_the_kind", tags) {
+TEST_CASE("a_publish_that_names_no_request_is_refused_and_states_the_kind", "[curve_publish][approval]") {
     ores::testing::scoped_database_helper h;
     const auto maker = seed_person(h);
 
@@ -73,7 +71,7 @@ TEST_CASE("a_publish_that_names_no_request_is_refused_and_states_the_kind", tags
     CHECK(verdict.message.find(std::string(curve_publish_kind_code)) != std::string::npos);
 }
 
-TEST_CASE("asking_for_a_publish_raises_the_market_data_kind_for_the_person_who_asked", tags) {
+TEST_CASE("asking_for_a_publish_raises_the_market_data_kind_for_the_person_who_asked", "[curve_publish][approval]") {
     ores::testing::scoped_database_helper h;
     const auto maker = seed_person(h);
 
@@ -92,7 +90,7 @@ TEST_CASE("asking_for_a_publish_raises_the_market_data_kind_for_the_person_who_a
     CHECK(verdict.state_code == "waiting");
 }
 
-TEST_CASE("the_market_risk_decider_sees_the_request_and_approving_it_permits_the_publish", tags) {
+TEST_CASE("the_market_risk_decider_sees_the_request_and_approving_it_permits_the_publish", "[curve_publish][approval]") {
     ores::testing::scoped_database_helper h;
     const auto maker = seed_person(h);
     const auto decider = seed_person(h);
@@ -119,7 +117,7 @@ TEST_CASE("the_market_risk_decider_sees_the_request_and_approving_it_permits_the
     CHECK(verdict.message.empty());
 }
 
-TEST_CASE("a_refused_publish_request_does_not_permit_the_publish", tags) {
+TEST_CASE("a_refused_publish_request_does_not_permit_the_publish", "[curve_publish][approval]") {
     ores::testing::scoped_database_helper h;
     const auto maker = seed_person(h);
     const auto decider = seed_person(h);
@@ -136,7 +134,7 @@ TEST_CASE("a_refused_publish_request_does_not_permit_the_publish", tags) {
     CHECK(verdict.state_code == "refused");
 }
 
-TEST_CASE("an_approved_request_of_another_kind_does_not_permit_a_publish", tags) {
+TEST_CASE("an_approved_request_of_another_kind_does_not_permit_a_publish", "[curve_publish][approval]") {
     ores::testing::scoped_database_helper h;
     const auto maker = seed_person(h);
     const auto decider = seed_person(h);

@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/draw-the-curve-configuration-page
-#+pr:
+#+pr: 3931
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -157,7 +157,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3931][#3931]] | [web] Draw the curve configuration page with the shared leaf parts |
 
 * Review
 

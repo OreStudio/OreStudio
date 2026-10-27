@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/let-a-signed-in-person-open-a-curve-configuration
-#+pr:
+#+pr: 3946
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -108,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3946][#3946]] | [refdata] Let a signed-in person open a curve configuration |
 
 * Review
 

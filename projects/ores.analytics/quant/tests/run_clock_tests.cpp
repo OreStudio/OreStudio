@@ -20,6 +20,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <future>
+#include <thread>
+#include <utility>
 
 using namespace std::chrono_literals;
 using ores::analytics::quant::service::i_run_clock;
@@ -42,8 +44,9 @@ TEST_CASE("a manual clock wakes a waiter exactly when time reaches its deadline"
     });
     clock.await_waiter();
 
+    // Long enough for a waiter that woke too early to have returned.
     clock.advance(9ms);
-    CHECK(woken.wait_for(0ms) == std::future_status::timeout);
+    CHECK(woken.wait_for(50ms) == std::future_status::timeout);
 
     clock.advance(1ms);
     const auto [why, at] = woken.get();
@@ -89,6 +92,9 @@ TEST_CASE("an interrupt cuts a steady clock's wait short", "[run_clock]") {
     auto woken =
         std::async(std::launch::async, [&] { return clock.wait_until(clock.now() + 24h); });
 
+    // The steady clock cannot report a waiter, so give the thread time to start
+    // waiting; an interrupt sent before it waits is the kept path, tested above.
+    std::this_thread::sleep_for(50ms);
     clock.interrupt();
     CHECK(woken.get() == i_run_clock::wake::interrupted);
     CHECK(clock.now() - start < 10s);

@@ -22,6 +22,7 @@
 #include <chrono>
 #include <condition_variable>
 #include <mutex>
+#include <stdexcept>
 
 namespace ores::analytics::quant::service {
 
@@ -30,6 +31,9 @@ namespace ores::analytics::quant::service {
  *
  * Everything in the arrival path reads and waits on time through this, so a test
  * can swap in a manual clock and assert exact event times without sleeping.
+ *
+ * One thread waits at a time: an interrupt is one flag, and the first waiter to
+ * wake takes it.
  */
 class i_run_clock {
 public:
@@ -146,6 +150,8 @@ public:
 
     /// Move time forward and wake every waiter whose deadline it reaches.
     void advance(std::chrono::steady_clock::duration by) {
+        if (by < std::chrono::steady_clock::duration::zero())
+            throw std::invalid_argument("manual_run_clock: time cannot move backwards");
         {
             const auto guard = std::lock_guard(mutex_);
             now_ += by;

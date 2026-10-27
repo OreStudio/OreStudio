@@ -96,7 +96,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Bot: the not-one-step-early check waits zero time, so an early wake could pass. | run_clock_tests.cpp | Accept | Waits 50 ms now. |
+| 2 | Bot: the steady interrupt test may only take the kept path. | run_clock_tests.cpp | Accept | Sleeps 50 ms before the interrupt, so the mid-wait path runs. |
+| 3 | Bot: say one waiter at a time. | run_clock.hpp | Accept | In the interface doc. |
+| 4 | Bot: advance takes a negative duration. | run_clock.hpp | Accept | It throws. |
+| 5 | Bot: the two clocks repeat the interrupt logic. | run_clock.hpp | Decline | Two clocks; a helper earns its place at a third. |
+| 6 | Bot: the test uses std::pair without utility. | run_clock_tests.cpp | Accept | Included. |
 
 * Result
 

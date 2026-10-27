@@ -2543,8 +2543,8 @@ Free function. It builds an fx_spot_feed from a persisted config and its
 gmm_component rows, ready to start() on its own thread. A config with
 price_source "vintage" resolves its initial price from a real
 market_observation instead of the stored gmm_initial_price; "fixed" uses the
-stored value as-is. The process starts from random_device, so two builds of
-the same config differ.
+stored value as-is. The process draws from a stream keyed by the run seed and
+the source name, so two runs with one seed publish the same prices.
 end note
 
 class ores::synthetic::feed::make_ir_curve_feed {

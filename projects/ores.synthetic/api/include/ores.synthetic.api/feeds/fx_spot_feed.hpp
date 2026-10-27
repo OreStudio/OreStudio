@@ -145,7 +145,8 @@ private:
  * @brief Constructs an FX spot feed from a persisted fx_spot_generation_config and its
  * gmm_component rows, ready to start() on its own thread -- the FX half of the factory seam,
  * mirroring make_ir_curve_feed for curves. The process is built from the components' means/
- * stdevs/weights via process_factory, seeded from random_device; the publish subject is derived
+ * stdevs/weights via process_factory, drawing from a stream keyed by the run seed and the source
+ * name, so a run's prices reproduce; the publish subject is derived
  * from the config's source_name via producer_subject().
  *
  * A config with price_source "vintage" resolves its initial price from a real market_observation

@@ -21,6 +21,7 @@
 #define ORES_SYNTHETIC_API_DOMAIN_YIELD_CURVE_PROCESS_PARAMETER_MAPPING_HPP
 
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
 #include "ores.synthetic.api/export.hpp"
@@ -66,7 +67,7 @@ map_parameters_to_yield_curve_process(
     const std::string& process_type,
     const std::vector<yield_curve_process_parameter_definition>& definitions,
     const std::vector<ir_curve_generation_config_process_parameter_value>& values,
-    std::uint32_t seed,
+    ores::analytics::quant::math::rng_stream stream,
     double dt);
 
 } // namespace ores::synthetic::domain

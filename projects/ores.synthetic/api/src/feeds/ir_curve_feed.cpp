@@ -331,7 +331,11 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     }
 
     auto process = ores::synthetic::domain::map_parameters_to_yield_curve_process(
-        cfg.process_type, definitions, cfg_values, 42, ir_curve_feed_dt);
+        cfg.process_type,
+        definitions,
+        cfg_values,
+        price_stream_for(scheduler.run_seed(), cfg.source_name),
+        ir_curve_feed_dt);
 
     // source_name is a persisted, editable column (see the field's own doc comment) -- the same
     // shape fx_spot_generation_config.source_name already uses, set at publish/save time rather

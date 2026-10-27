@@ -21,7 +21,8 @@ These are yours to run before the tester opens the browser.
 
 - Confirm the environment matches this checkout. =compass db status= shows the fingerprint in sync; if it is stale, run =compass db recreate -y -k=.
 - Start the fleet and confirm 24 services are active. =compass services status=.
-- Provision the tenant if it is not there, and confirm no step failed. The vocabulary holds 19 sensitivity templates.
+- Provision the tenant if it is not there, and confirm no step failed. The vocabulary holds 5 methods, 5 asset classes and 19 templates.
+- The screen's writing role is *Operations*. =tenant_admin= holds the wildcard and may write; =adrian.vance@acme_corporation= holds Operations and is the account to use when checking the role boundary.
 
 * Scenario Info
 
@@ -51,6 +52,7 @@ These are yours to run before the tester opens the browser.
 
 - Open Reporting, then *Sensitivity templates*.
 - The list states the code, the asset class, the method and the description of each template.
+- The asset class and the method read in words, such as *Interest rate* and *Finite difference*, not as codes.
 - The first page holds 15 of the 19 keys, and the pager says so.
 - The keys read alphabetically, with SensiTrade after the CR keys.
 
@@ -76,9 +78,21 @@ These are yours to run before the tester opens the browser.
 
 - Open *IR_FD*.
 - The title is the code and the line under it shows the version.
-- Details states the asset class *IR*, the method *Finite difference*, the method code *FD*, and the seeded description.
-- The screen says the key names what a pricing engine configuration puts on a product, and that the shift sizes a key implies are set by the sensitivity configuration, not here.
+- Details states the asset class *Interest rate*, the method *Finite difference*, the method code *FD*, the template prefix *IR*, and the seeded description.
+- The screen says the key names what a pricing engine configuration puts on a product, that the class is the class of that product, and that the shift sizes the key applies are set per market key in the sensitivity configuration, which may set them on keys outside that class.
 - History shows its first version with the reason the seed gave.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Read the trade-level key
+
+- Return to the list and open *SensiTrade*.
+- The Details state no asset class, the method *Trade level*, the method code *Trade*, and the seeded description.
+- The record explains that a trade-level template names no asset class, because the trade states its own sensitivities.
 
 *** Result
 
@@ -90,8 +104,9 @@ These are yours to run before the tester opens the browser.
 
 - Choose *New template*.
 - The dialog asks for a code, an asset class, a method and a description.
-- Asset class and method are selects, not text fields. Choosing *Finite difference* shows the method code *FD* as the token the key carries; no field accepts a method code.
-- Enter code =PW_SENS_FD=, asset class *IR*, method *Finite difference*, and a description of your own, then give a reason and save.
+- Asset class and method are selects, not text fields. The asset class select offers the five classes ORE presents, by name; the method select offers the five methods by name.
+- Choosing *Finite difference* shows the method code *FD* as the token the key carries; no field accepts a method code.
+- Enter code =PW_SENS_FD=, asset class *Interest rate*, method *Finite difference*, and a description of your own, then give a reason and save.
 - The record page opens on the new key and the list shows 20.
 
 *** Result
@@ -104,6 +119,18 @@ These are yours to run before the tester opens the browser.
 
 - Choose *New template* again and enter the code =IR_FD=.
 - Saving is refused and the refusal names the code the tenant already holds.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** The trade-level method names no class
+
+- Choose *New template* and choose the method *Trade level*.
+- The asset class select clears and is disabled, and the dialog says a trade-level template names no asset class.
+- Choose *Cancel*; nothing is written.
 
 *** Result
 
@@ -149,6 +176,7 @@ These are yours to run before the tester opens the browser.
 
 * Notes
 
-- The method code is derived from the method and is never typed. The model checks the pair, so a row cannot state *Finite difference* with *MC*.
-- The screen manages keys only. A key's shift sizes, tenors and shift schemes belong to the sensitivity configuration.
+- The method code is derived from the method and is never typed. The method's row states both forms; the table checks that the class is null exactly for the trade-level method.
+- The screen manages keys only. A key's shift sizes, tenors and shift schemes belong to the sensitivity configuration, and its =key= attributes are how a template reaches market keys of any class.
 - The seeded 19 keys are the ones ORE's examples use. A tenant may add a key of its own; the table does not hold the key to a spelling, because ORE resolves the key a configuration states.
+- The asset class is a soft reference to the reference data asset class codes. The prefix the key carries (*COMM* for commodity) comes from the bridge the screen reads.

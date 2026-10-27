@@ -32,6 +32,7 @@
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <optional>
 #include <rfl.hpp>
 #include <span>
@@ -39,6 +40,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <vector>
 
 namespace ores::service::messaging {
 
@@ -189,6 +191,43 @@ void stamp(T& obj,
         if (obj.change_reason_code.empty())
             obj.change_reason_code = std::string(change_reason);
     }
+}
+
+/**
+ * @brief The rows of the caller's acting party, from rows read by a key.
+ *
+ * A key that names a row by its id alone finds that id's row in every party
+ * the session sees, and a session of a parent party sees its subsidiaries,
+ * which may hold the same id. A write lands under the acting party, as stamp()
+ * states, so the row it replaces, and the row it reads back, is the acting
+ * party's. A type with no party_id, or a context with no party, keeps every
+ * row.
+ *
+ * The same caution as stamp() holds: a type whose party_id names something
+ * other than the row's own scope must not be filtered by it.
+ */
+template <typename T>
+std::vector<T> of_acting_party(std::vector<T> rows, const ores::database::context& ctx) {
+    if constexpr (requires(const T& row) { row.party_id; }) {
+        const auto pid = ctx.party_id();
+        if (!pid.has_value())
+            return rows;
+        const auto other = [&](const auto& party) {
+            using P = std::decay_t<decltype(party)>;
+            if constexpr (std::is_convertible_v<P, boost::uuids::uuid>)
+                return boost::uuids::uuid(party) != *pid;
+            else
+                return std::string(party) != boost::uuids::to_string(*pid);
+        };
+        // A row with no party belongs to no other party, so it is kept.
+        std::erase_if(rows, [&](const T& row) {
+            if constexpr (requires { row.party_id.has_value(); })
+                return row.party_id.has_value() && other(*row.party_id);
+            else
+                return other(row.party_id);
+        });
+    }
+    return rows;
 }
 
 /**

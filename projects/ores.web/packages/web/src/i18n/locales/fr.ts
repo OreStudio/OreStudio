@@ -272,6 +272,7 @@ const fr: SourceCatalogue = {
         kind: {
             'iam.role_grant': 'Demande de rôle',
             'refdata.book_change': 'Modification de livre',
+            'marketdata.curve_publish': 'Publication de courbe',
         },
         bell: {
             label: 'Notifications, {count} non lues',
@@ -290,6 +291,19 @@ const fr: SourceCatalogue = {
                 "Ce que vous ne pouvez pas faire aujourd'hui, et ce que ce rôle vous permettrait",
             none: 'Il ne reste aucun rôle à demander.',
             submit: 'Demander',
+        },
+        curvePublish: {
+            subject: 'Le sujet que la demande autorise',
+            curve: 'Courbe',
+            party: 'Partie',
+            asOf: 'Date d’arrêté publiée',
+            points: 'Points',
+            openComparison: 'Ouvrir la comparaison',
+            noSubject:
+                'Cette demande est une publication de courbe, et son sujet n’est pas lisible ici : le composant de données de marché le détient, ou ce compte ne peut pas lire cette courbe.',
+            row: '{party} · arrêté au {asOf} · {points} points',
+            summary: '{curve} de {party}, arrêté au {asOf}',
+            approve: 'Approuver la publication',
         },
         mine: {
             none: 'Vous n’avez fait aucune demande.',
@@ -4558,6 +4572,146 @@ const fr: SourceCatalogue = {
     },
 
     marketdata: {
+        published: {
+            title: 'Courbes publiées',
+            plural: 'courbes publiées',
+            lead: 'Les jeux à partir desquels le desk valorise, l’acte qui a publié chacun, et les candidats que personne n’a approuvés.',
+            allParties: 'Toutes les parties',
+            leftUse: 'hors usage {at}',
+            readOnly:
+                'Un jeu publié est en lecture seule : la porte qui applique une demande approuvée l’écrit, et aucun écran ne l’écrit. Une courbe devient un jeu publié lorsqu’une personne publie un candidat approuvé.',
+            state: {
+                published: 'Publié',
+                superseded: 'Remplacé',
+                withdrawn: 'Retiré',
+                candidate: 'Candidat',
+            },
+            columns: {
+                curve: 'Courbe',
+                party: 'Partie',
+                asOf: 'Date d’arrêté publiée',
+                publisher: 'Publié par',
+                published: 'Publié',
+                points: 'Points',
+                state: 'État',
+            },
+            filter: {
+                candidates: 'Afficher les candidats',
+                ended: 'Afficher les jeux terminés',
+            },
+            tabs: 'Onglets de la fiche',
+            tab: {
+                details: 'Détails',
+                points: 'Points publiés',
+                compare: 'Comparer à la date',
+                history: 'Historique',
+            },
+            noSuchCurve: 'Il n’y a aucun jeu publié pour {curve}.',
+            noSet: 'La courbe {curve} n’a aucun jeu publié. Un candidat existe et personne ne l’a publié, donc la page n’affiche aucun onglet : un candidat face à un ensemble vide n’est pas une comparaison.',
+            asOfLead: 'arrêté au {at}',
+            publishedLead: 'publié {at}',
+            endedLead: 'terminé {at}',
+            waitingLead: 'personne ne l’a publié',
+            details: {
+                subject: 'Le sujet que la demande a autorisé',
+                act: 'L’acte',
+                end: 'Le jeu a pris fin',
+                asOf: 'Date d’arrêté publiée',
+                series: 'Série de sortie',
+                config: 'Configuration de la courbe',
+                publisher: 'Publié par',
+                publishedAt: 'Publié le',
+                request: 'Demande d’autorisation',
+                endedAt: 'Retiré le',
+                endedBy: 'Retiré par',
+                reason: 'Motif',
+                endRequest: 'Demande de retrait',
+                noRequest: 'Aucune : le trader a retiré seul',
+                supersededAt: 'Remplacé le',
+                successorRequest: 'Demande du successeur',
+                successorAsOf: 'Date d’arrêté du successeur',
+                lastChanged:
+                    'Dernière modification {at}. La série détient {count} jeu(x) publié(s).',
+                readOnly:
+                    'L’enregistrement de publication est écrit par la porte qui applique une demande approuvée, et jamais par un écran.',
+            },
+            history: {
+                decision: 'Décision d’approbation',
+                noRevert:
+                    'Il n’y a pas de retour en arrière. Personne ne peut écrire un enregistrement de publication : une correction est une nouvelle publication ou un retrait, et chacun est un acte propre avec une demande derrière lui.',
+                decisionHidden:
+                    'La décision sur cette demande n’est pas lisible ici : elle appartient à la demande, et la lire demande le droit de lire les décisions de la boîte.',
+            },
+            chart: {
+                noPublished:
+                    'Le graphique ne peut pas être tracé. Aucun jeu publié, donc aucune courbe à tracer.',
+                noPoints: 'Le graphique ne peut pas être tracé. Le jeu ne détient aucun point.',
+                onePoint:
+                    'Le graphique ne peut pas être tracé. Une courbe demande au moins deux piliers. Un seul point n’a pas de forme ; le tableau ci-dessous le porte.',
+            },
+            points: {
+                lead: 'Les derniers jeux publiés de cette courbe et de cette partie sont tracés ensemble, pour qu’un mouvement entre publications soit une forme et pas seulement un tableau.',
+                count: 'Jeux',
+                countHelp: 'Combien de jeux publiés tracer, de 1 à 20.',
+                asOf: 'Date d’arrêté',
+                published: 'Publié',
+                publisher: 'Publié par',
+                request: 'Demande',
+                points: 'Points',
+                chart: 'Les derniers jeux publiés',
+                legend: {
+                    one: 'Un jeu publié est tracé. Le plus récent est vert et gras ; un jeu plus ancien est bleu-gris et s’estompe avec l’âge.',
+                    many: 'Le jeu le plus récent est vert et gras. Les plus anciens sont bleu-gris, plus fins, et s’estompent avec l’âge ; le plus récent est toujours la ligne la plus forte.',
+                },
+                pillars: 'Le jeu le plus récent',
+                pillar: 'Pilier',
+                rate: 'Taux',
+                discount: 'Facteur d’actualisation',
+                observed: 'Observé',
+                noPillars: 'Le jeu ne détient aucun pilier.',
+                valueNote:
+                    'La valeur publiée est une donnée de type {kind} ; l’autre face est celle qu’elle implique sur le pilier, et elle est vide lorsque le pilier n’est pas une période.',
+                one: 'Un jeu publié est tracé.',
+                fewer: '{asked} demandés, {published} publiés. Le graphique trace les {published} jeux qui existent.',
+                newest: 'Les {count} jeux publiés les plus récents sont tracés.',
+            },
+            compare: {
+                asOf: 'Date d’arrêté de référence',
+                baseline: 'Le jeu publié',
+                candidate: 'Le candidat',
+                builtBy: 'Construit par',
+                nobody: 'Personne ne l’a approuvé',
+                endedBaseline:
+                    'La comparaison répond encore à ce que le candidat change face au dernier jeu publié. Le desk ne valorise à partir d’aucun jeu de cette courbe, ou à partir de son successeur.',
+                nothingChanged:
+                    'Aucun point n’a changé. Le candidat correspond au jeu publié à cette date d’arrêté, point par point. Il n’y a rien à soulever, et le jeu publié reste celui en usage.',
+                summary:
+                    '{changed} modifiés, {added} ajoutés, {dropped} supprimés, {unchanged} inchangés.',
+                chart: 'Le jeu publié et le candidat',
+                chartCaption:
+                    'Le jeu publié est en pointillés et atténué ; le candidat est plein et accentué. Un pilier que seul l’un des deux détient est un vide dans l’autre ligne, et jamais un zéro.',
+                table: 'Point par point',
+                showUnchanged: 'Afficher {count} point(s) inchangé(s)',
+                hideUnchanged: 'Masquer les points inchangés',
+                pillar: 'Pilier',
+                publishedValue: 'Publié',
+                candidateValue: 'Candidat',
+                change: 'Écart',
+                mark: 'Marque',
+                newPillar: 'Nouveau pilier',
+                droppedPillar: 'Absent du candidat',
+                onlyUnchanged: 'Tous les points ici sont inchangés.',
+                marks: {
+                    changed: 'Modifié',
+                    added: 'Ajouté',
+                    dropped: 'Supprimé',
+                    unchanged: 'Inchangé',
+                },
+                basisPoints: 'points de base',
+                noBaseline: 'Aucun jeu publié, donc aucune référence à comparer.',
+                noCandidate: 'La courbe {curve} n’a aucun candidat, donc rien à comparer au jeu publié.',
+            },
+        },
         subscriptions: {
             title: 'Souscriptions',
             description:

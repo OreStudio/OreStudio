@@ -34,7 +34,7 @@ import { RefreshQueries } from '../ui/RefreshButton.js';
 import { useHolds } from '../access/holds.js';
 import { MyRequests } from './MyRequests.js';
 import { RequestStateChip } from './RequestStateChip.js';
-import { summaryOf } from './kinds.js';
+import { descriptorFor, summaryOf } from './kinds.js';
 
 /** How many requests the queue holds at once. */
 const PAGE = 100;
@@ -201,7 +201,15 @@ function QueueRow({ request }: { readonly request: InboxRequestView }): ReactNod
                     <PersonRef who={request.requestedBy} />
                 </span>
             </td>
-            <td className="px-4 py-2 font-medium">{summaryOf(t, request)}</td>
+            <td
+                className={
+                    descriptorFor(request.kindCode).wideSubject === true
+                        ? 'w-2/5 px-4 py-2 font-medium'
+                        : 'px-4 py-2 font-medium'
+                }
+            >
+                {descriptorFor(request.kindCode).subjectCell?.(t, request) ?? summaryOf(t, request)}
+            </td>
             <td className="max-w-md px-4 py-2 text-ink-muted">
                 {request.reason === '' ? t('inbox.queue.noReason') : request.reason}
             </td>

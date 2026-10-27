@@ -44,7 +44,12 @@ export const SERIES_COLOURS = [
 ] as const;
 
 export interface ChartSeries {
-    readonly points: readonly number[];
+    /**
+     * The values, one for each x. A null is a gap: the series does not hold that
+     * point, and the line breaks there rather than falling to zero, because a
+     * point that is absent and a point at zero are different facts.
+     */
+    readonly points: readonly (number | null)[];
     readonly colour: string;
     readonly dashed?: boolean;
     readonly strong?: boolean;
@@ -105,7 +110,7 @@ export function LineChart({
     const left = price ? BARE_MARGIN : AXIS_MARGIN;
     const right = price ? AXIS_MARGIN : BARE_MARGIN;
     const xAt = xs ?? Array.from({ length }, (_, i) => i);
-    const values = series.flatMap((one) => one.points);
+    const values = series.flatMap((one) => one.points).filter((value) => value !== null);
     const lowest = Math.min(...values);
     const highest = Math.max(...values);
     const room =
@@ -118,14 +123,18 @@ export function LineChart({
     const xHigh = xAt[length - 1] ?? 1;
     const xOf = (i: number): number => scale(xAt[i] ?? i, xLow, xHigh, left, width.value - right);
     const yOf = (value: number): number => scale(value, low, high, HEIGHT - BOTTOM, TOP);
-    const pathOf = (points: readonly number[]): string =>
+    // A gap starts a new subpath, so the line breaks where the series holds no
+    // point and joins nothing across it.
+    const pathOf = (points: readonly (number | null)[]): string =>
         points
-            .map(
-                (value, i) =>
-                    `${i === 0 ? 'M' : 'L'} ${xOf(i).toFixed(1)} ${yOf(value).toFixed(1)}`,
+            .map((value, i) =>
+                value === null
+                    ? ''
+                    : `${i === 0 || points[i - 1] === null ? 'M' : 'L'} ${xOf(i).toFixed(1)} ${yOf(value).toFixed(1)}`,
             )
+            .filter((part) => part !== '')
             .join(' ');
-    const areaOf = (points: readonly number[]): string =>
+    const areaOf = (points: readonly (number | null)[]): string =>
         `${pathOf(points)} L ${xOf(points.length - 1).toFixed(1)} ${String(HEIGHT - BOTTOM)} L ${xOf(0).toFixed(1)} ${String(HEIGHT - BOTTOM)} Z`;
     const showX = xFormat ?? ((value: number) => String(value));
     const levels = price
@@ -234,16 +243,20 @@ export function LineChart({
             ))}
             {series.map((one, i) =>
                 one.dots === true
-                    ? one.points.map((value, j) => (
-                          <circle
-                              key={`dot-${String(i)}-${String(j)}`}
-                              cx={xOf(j)}
-                              cy={yOf(value)}
-                              r={one.strong === true ? 3.5 : 2.5}
-                              fill={one.colour}
-                              {...(one.opacity === undefined ? {} : { fillOpacity: one.opacity })}
-                          />
-                      ))
+                    ? one.points.map((value, j) =>
+                          value === null ? null : (
+                              <circle
+                                  key={`dot-${String(i)}-${String(j)}`}
+                                  cx={xOf(j)}
+                                  cy={yOf(value)}
+                                  r={one.strong === true ? 3.5 : 2.5}
+                                  fill={one.colour}
+                                  {...(one.opacity === undefined
+                                      ? {}
+                                      : { fillOpacity: one.opacity })}
+                              />
+                          ),
+                      )
                     : null,
             )}
         </svg>

@@ -23,6 +23,7 @@ set(files
     "classification_series_classifier_tests.cpp"
     "composite_eventing_integration_tests.cpp"
     "composite_input_eventing_integration_tests.cpp"
+    "curve_publish_eventing_integration_tests.cpp"
     "datum_ore_index_codec_tests.cpp"
     "datum_ore_key_codec_tests.cpp"
     "datum_oresmd_uri_codec_tests.cpp"

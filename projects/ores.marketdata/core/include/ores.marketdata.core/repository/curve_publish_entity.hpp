@@ -53,6 +53,13 @@ struct curve_publish_entity {
     std::string as_of;
     std::string published_by = "";
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> published_at;
+    std::string withdrawn_by = "";
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> withdrawn_at;
+    std::string withdrawn_reason_code = "";
+    std::optional<std::string> withdrawal_request_id;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> superseded_at;
+    std::optional<std::string> superseded_by_request_id;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> superseded_as_of;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

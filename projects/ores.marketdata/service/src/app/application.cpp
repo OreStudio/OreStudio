@@ -46,6 +46,7 @@
 #include "ores.marketdata.service/messaging/delivery_count_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/demand_interval_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_data_mapping_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/published_curves_handler.hpp"
 #include "ores.marketdata.service/messaging/market_data_source_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_data_vendor_instrument_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_fixing_event_registrar.hpp"
@@ -315,6 +316,26 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                  mm::approval_gated_curve_publish_handler h(
                                                      n, c, v);
                                                  h.publish(std::move(msg));
+                                             }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::list_published_curves_request::nats_subject),
+                                  queue,
+                                  [&n, c, v](ores::nats::message msg) mutable {
+                                      mm::published_curves_handler h(n, c, v);
+                                      h.list(std::move(msg));
+                                  }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::get_published_curve_sets_request::nats_subject),
+                                  queue,
+                                  [&n, c, v](ores::nats::message msg) mutable {
+                                      mm::published_curves_handler h(n, c, v);
+                                      h.sets(std::move(msg));
+                                  }));
+            subs.push_back(n.queue_subscribe(std::string(mm::withdraw_curve_request::nats_subject),
+                                             queue,
+                                             [&n, c, v](ores::nats::message msg) mutable {
+                                                 mm::published_curves_handler h(n, c, v);
+                                                 h.withdraw(std::move(msg));
                                              }));
             return subs;
         },

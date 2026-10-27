@@ -59,6 +59,21 @@ namespace ores::marketdata::domain {
  * unapplied subject beside it. request_id is the natural key, so a request
  * authorises one publish and no second apply can find a row to write.
  *
+ * A set ends once, and the end is two more facts on the same row rather than a
+ * second entity. withdrawn_at, withdrawn_by, withdrawn_reason_code and
+ * withdrawal_request_id are the withdrawal: the instant, the account, the reason
+ * and the request that authorised it, written as a new version of this row. The
+ * withdrawal is not a deletion: the published facts stay, so the set a desk priced
+ * from is still readable afterwards. superseded_at,
+ * superseded_by_request_id and superseded_as_of are the supersession: a later
+ * publish replaced this set, and the link names the successor's request and the
+ * as-of it was built at. A supersession is a publish and not a second act, so the
+ * successor's own apply writes it on this row.
+ *
+ * The state a reader sees is a function of these facts and is stored nowhere:
+ * withdrawn when withdrawn_at holds an instant, superseded when superseded_at
+ * does, published when published_at does, and a candidate otherwise.
+ *
  * The row is not a client's to write: the raise writes it, the gate reads it, and
  * the apply stamps it. A client reads it to decide a request or to audit a curve.
  */
@@ -134,6 +149,68 @@ struct curve_publish final {
      * here, and the latest such instant is the version in use.
      */
     std::optional<std::chrono::system_clock::time_point> published_at;
+
+    /**
+     * @brief The username of the account that took the set out of use, or empty while the set is in
+     * use or ended by a successor.
+     *
+     * The account is the withdrawer, which is not the publisher: the journey states that the
+     * publisher of a set has no special right to withdraw it, and the reason is the error and not
+     * the person.
+     */
+    std::string withdrawn_by = "";
+
+    /**
+     * @brief When the set left use, or null while it is in use.
+     *
+     * The instant is the end of the act, and it is written in the same version as the withdrawer
+     * and the reason, so a reader never sees a withdrawal with no account behind it.
+     */
+    std::optional<std::chrono::system_clock::time_point> withdrawn_at;
+
+    /**
+     * @brief Why the set left use, as a change reason code, or empty while it is in use.
+     *
+     * The journey keeps the reason against the act, so the code travels with the instant and the
+     * account. The screen offers the reasons a curve leaves use and the record holds the one
+     * chosen.
+     */
+    std::string withdrawn_reason_code = "";
+
+    /**
+     * @brief The withdrawal request that authorised the act, or null.
+     *
+     * Null is not a gap: a tenant whose withdrawal kind requires no approval lets the trader
+     * withdraw alone, and the act then names no request. The column is a soft reference to
+     * ores_inbox_approval_requests_tbl rather than a foreign key, because the row states its own
+     * authority and a hard key would refuse the count-zero path the journey allows.
+     */
+    std::optional<boost::uuids::uuid> withdrawal_request_id;
+
+    /**
+     * @brief When a later set took this one's place, or null while this set is in use or withdrawn.
+     *
+     * A supersession is a publish whose subject is the successor, so the instant is the successor's
+     * published instant and no person signs it: the successor's own record names the publisher.
+     */
+    std::optional<std::chrono::system_clock::time_point> superseded_at;
+
+    /**
+     * @brief The publish request whose apply replaced this set, or null.
+     *
+     * A soft reference, as the withdrawal request is: the successor is published under its own
+     * request and this row links to it so a reader follows one live set and one superseded set and
+     * never two live sets.
+     */
+    std::optional<boost::uuids::uuid> superseded_by_request_id;
+
+    /**
+     * @brief The as-of the successor was built at, or null.
+     *
+     * Carried beside the successor's request so the history names the set that replaced this one
+     * without a second read.
+     */
+    std::optional<std::chrono::system_clock::time_point> superseded_as_of;
 
     /**
      * @brief Username of the person who last modified this curve publish.

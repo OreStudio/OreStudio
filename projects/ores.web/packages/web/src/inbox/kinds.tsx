@@ -22,8 +22,10 @@
 import type { ReactNode } from 'react';
 import type { InboxRequestView, RequestChange } from '@ores/wire-protocol/browser';
 import type { InterpolationValues } from '../i18n/translate.js';
+import { CurvePublishExtras } from './CurvePublishExtras.js';
 import { RoleRequestExtras } from './RoleRequestExtras.js';
 import { kindLabel } from './words.js';
+import { Tag } from '../ui/Primitives.js';
 
 /**
  * How the shared request screens draw one kind of request.
@@ -42,12 +44,25 @@ import { kindLabel } from './words.js';
 
 export type Translate = (key: string, values?: InterpolationValues) => string;
 
+/** What a descriptor reads of a request: its kind, the roles it names and its subject. */
+export type Summarised = Pick<InboxRequestView, 'kindCode' | 'roles'> & {
+    readonly publishedSubject?: InboxRequestView['publishedSubject'];
+};
+
 export interface KindDescriptor {
     readonly code: string;
     /** The kind's name. */
     readonly label: (t: Translate) => string;
     /** The line that stands for a request in a list and in a title. */
-    readonly summary: (t: Translate, request: Pick<InboxRequestView, 'roles'>) => string;
+    readonly summary: (t: Translate, request: Summarised) => string;
+    /**
+     * What the queue draws in its Asked for column, for a kind whose subject is
+     * more than a phrase: a badge, a code and the facts of the subject. A kind
+     * without one draws its summary.
+     */
+    readonly subjectCell?: (t: Translate, request: InboxRequestView) => ReactNode;
+    /** Whether the Asked for column gives this kind's subject the wider room. */
+    readonly wideSubject?: boolean;
     /** The words on the button that approves a request of this kind. */
     readonly approveLabel: (t: Translate, request: Pick<InboxRequestView, 'roles'>) => string;
     /** The page a line's subject lives on, or null when the subject has none. */
@@ -101,9 +116,65 @@ const BOOK_CHANGE: KindDescriptor = {
     drawsDelta: true,
 };
 
+/**
+ * The subject of a curve publish, as the queue draws it: the kind beside the
+ * curve, and the party and the as-of under it.
+ *
+ * A publish request's subject is three facts and not a phrase, so the row takes
+ * two lines for this kind and one for every other. The subject is the market data
+ * component's read and not the request's own words; a reader who may not read it
+ * sees the kind alone, which is still the truth.
+ */
+function curvePublishSubject(t: Translate, request: InboxRequestView): ReactNode {
+    const subject = request.publishedSubject ?? null;
+    return (
+        <span className="block">
+            <span className="flex flex-wrap items-center gap-2">
+                <Tag tone="accent" small>
+                    <span className="font-mono">{request.kindCode}</span>
+                </Tag>
+                {subject !== null && <span className="font-mono">{subject.curve}</span>}
+            </span>
+            {subject !== null && (
+                <span className="mt-0.5 block text-xs text-ink-muted">
+                    {t('inbox.curvePublish.row', {
+                        party: subject.party,
+                        asOf: subject.as_of,
+                        points: String(subject.point_count),
+                    })}
+                </span>
+            )}
+        </span>
+    );
+}
+
+const CURVE_PUBLISH: KindDescriptor = {
+    code: 'marketdata.curve_publish',
+    label: (t) => kindLabel(t, 'marketdata.curve_publish'),
+    summary: (t, request) => {
+        const subject = request.publishedSubject ?? null;
+        if (subject === undefined || subject === null || subject.curve === '') {
+            return kindLabel(t, 'marketdata.curve_publish');
+        }
+        return t('inbox.curvePublish.summary', {
+            curve: subject.curve,
+            party: subject.party,
+            asOf: subject.as_of,
+        });
+    },
+    approveLabel: (t) => t('inbox.curvePublish.approve'),
+    subjectCell: curvePublishSubject,
+    wideSubject: true,
+    subjectRoute: () => null,
+    fieldLabel: fieldLabelUnder('marketdata.curve_publish'),
+    drawsDelta: false,
+    Extras: CurvePublishExtras,
+};
+
 const KINDS: Readonly<Record<string, KindDescriptor>> = {
     [ROLE_GRANT.code]: ROLE_GRANT,
     [BOOK_CHANGE.code]: BOOK_CHANGE,
+    [CURVE_PUBLISH.code]: CURVE_PUBLISH,
 };
 
 /** The descriptor of a kind, or a plain one for a kind this build does not know. */
@@ -122,10 +193,7 @@ export function descriptorFor(code: string): KindDescriptor {
 }
 
 /** The line that stands for a request, whichever kind it is. */
-export function summaryOf(
-    t: Translate,
-    request: Pick<InboxRequestView, 'kindCode' | 'roles'>,
-): string {
+export function summaryOf(t: Translate, request: Summarised): string {
     return descriptorFor(request.kindCode).summary(t, request);
 }
 

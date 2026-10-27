@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: 3E5A507D-85B5-4CBC-AEA0-4F676026ABB8
+:END:
+#+title: Task: Build the published curve screens
+#+description: Implement the signed-off prototype: the list, the record page with its four tabs, the last-N overlay, the comparison, the history and the queue subject.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/build-the-published-curve-screens
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The published curve screens read the service and match the signed-off prototype.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Built, tested and verified live.       |
+| Waiting on   | Nothing.                               |
+| Next         | Review the four commits and raise the PR. |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+- The list and the record page render from real reads, with the last-N overlay and the comparison.
+- History shows the record's versions with the decision merged.
+- The requests queue carries the publish subject in the row.
+
+* Plan
+
+Three units, each committed and verified on its own.
+
+1. *The reads and the model.* The end facts go on the publish record: a
+   withdrawal is a new version carrying the account, the instant, the reason and
+   the request that authorised it, and a supersession links the successor's
+   request and its as-of. The state is read off those facts and stored nowhere.
+   Two new operations serve the screens: the tenant's published sets with the
+   filters and the pager, and one series' last sets with the pillars each holds.
+2. *The web.* The list at the market data area, the record page with Details,
+   Published points, Compare as of and History, the routing and the words in
+   three languages.
+3. *The queue subject.* The BFF joins the market data component's own subject
+   into the requests it holds, and the Requests row and the opened request draw
+   it.
+
+*The transitions, and why.* A withdrawal is an operation of its own
+(=marketdata.v1.ops.withdraw_curve=): it names a withdrawal request, not a
+publish request, so the publish gate's single-use rule is untouched. A
+supersession is not an operation at all, because the journey states that a
+replacement is a publish whose subject is the successor: the successor's own
+apply ends the sets it replaces, in the same transaction, so a series never
+holds two live sets.
+
+*What is deliberately not here.* The zero-approval publish path, the publish
+notice and the maker and checker pair on the kind are a later task. The
+withdrawal's own raise, and the withdrawal kind's approval count, are the other
+journey's screens: the operation records whether a request authorised the act and
+enforces that a request ends one set, and it applies the act at once when no
+request is named.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Marketdata service suite | 185 cases, the 22 =[curve_publish]= cases among them | =build/output/linux-clang-release-ninja/publish/bin/ores.marketdata.service.tests= | 172faff715 |
+| Marketdata core suite | 307 cases | =.../ores.marketdata.core.tests= | 172faff715 |
+| Shell marketdata suite | 313 cases | =.../ores.shell.marketdata.tests= | 172faff715 |
+| Web workspace tests | 2195 cases | =npm run test= in =projects/ores.web= | f5c14cb92b |
+| BFF suite | 1080 cases | =npm run test --workspace @ores/bff= | 1ba0bbcad8 |
+| SQL schema validation | 630 tables, 14 warnings, none of them new | =./projects/ores.sql/utility/validate_schemas.sh= | 172faff715 |
+| Docs validation | 39 components pass | =./projects/ores.codegen/validate_docs.sh= | 172faff715 |
+|      |       |         |        |
+
+* Notes
+
+** The live run, against the provisioned Acme tenant
+
+Tenant =Acme Corporation= (35479084-80b9-4362-8fc6-e108b2b7985a), the web service
+on port 21402. The personas: =henry.jones= (a market data maker holding
+=marketdata::curve_bootstrap:publish=, =curve_publishes:read= and
+=curve_snapshots:read=), =mindy.adams= (a Market Risk decider holding
+=inbox::approvals:decide_market_risk= and =curve_publishes:read=), and
+=graham.pierce= (an account that holds =inbox::approval_decisions:read=).
+
+| Read | Payload |
+|------+---------|
+| =POST /api/curves/published= with no filter | =total= 3 before the run: three published sets of =USD-SOFR-ACME= / =ACCOUS=, each at as-of 2026-10-27T12:00Z, 2 points, published by =henry.jones= at 16:07:08, 16:15:36 and 16:15:50. Default filters drew no candidate and no ended set. |
+| The same with =include_candidates= | =total= 4: the three sets and one =candidate= with an empty publisher and no published instant. |
+| =POST /api/curves/published-sets= | =published_count= 3, 4 sets returned oldest first, each with its 2 pillars: =12M= 0.95803793830235673 and =2Y= 0.92105010131696952, =value_kind= =discount=, observed 2026-10-27T12:00Z. The candidate's pillars are the same two values. |
+| =POST /api/curves/published/withdraw= | ={withdrawn_at: 2026-10-27 21:11:58Z, withdrawn_by: henry.jones}=. Afterwards the default list is =total= 2; with =include_ended= it is 4 and the set reads =state_code= =withdrawn= with =withdrawn_by= =henry.jones=, =withdrawn_reason_code= =common.stale_data= and no withdrawal request. The sets read still returns its two pillars. |
+| =GET /api/history?entityType=ores.marketdata.curve_publish= | Three versions: v1 the raise (no changes), v2 the publish stamp (=Published By= and =Published At= from empty, =Change Reason Code= =system.new_record= to =system.curve_published=), v3 the withdrawal (=Withdrawn By=, =Withdrawn At=, =Withdrawn Reason Code= from empty, and the commentary the withdrawer wrote). |
+| =GET /api/requests= as =mindy.adams= with =limit= 100 | 64 waiting and 4 answered. The curve publish rows carry =publishedSubject= with =curve= =USD-SOFR-ACME=, =party= =ACCOUS=, =as_of= 2026-10-27T12:00Z, =point_count= 2 and =state_code= =candidate= for the request raised in the run; two older waiting requests carry none, because their subject row is not in the store. |
+| =POST /api/curves/published-sets= after publishing the approved candidate | The two sets that were live are =superseded=, each with =superseded_at= 2026-10-27T21:12:30Z, =superseded_by_request_id= =01a17f34-4b92-7e14-a488-78aba1c3f90d= and =superseded_as_of= 2026-10-27T12:00Z; one set is =published=; the default list is =total= 1. |
+
+The run left the tenant with one published set, one withdrawn set and two
+superseded sets, which is a state that draws every state the screens have.
+
+** What the demo data cannot show, and why
+
+- *A move between publishes.* The observations are keyed by (series, as-of,
+  pillar) and the demo holds one as-of, so every set of the curve reads the same
+  two pillars. The overlay therefore draws identical curves, and a comparison of
+  two sets on this data is the "nothing changed" state and never a changed,
+  added or dropped pillar. A set whose pillars differ needs a second as-of, which
+  needs a bootstrap run at that instant, which needs market quotes there. The
+  three states are asserted in the reference suite instead.
+- *The decision beside the versions for one person.* Reading a decision needs
+  =inbox::approval_decisions:read=, which the seeded Market Risk decider role
+  does not hold, and no account holds both that and
+  =marketdata::curve_publishes:read=. The History tab states the decision it
+  cannot read as a gap of the stream. The merge itself is asserted in the
+  reference suite, and the two halves were verified live separately: the subject
+  as =mindy.adams=, the decision as =graham.pierce=.
+
+** The reads the screens needed that did not exist
+
+The list, the last-N sets with their pillars, and the withdrawal. The comparison
+is drawn from the sets, as the prototype argues, and needs no read of its own:
+the snapshot read serves the market at the caller's clock, so a set built at an
+earlier as-of travels with its points.
+
+** Fixes the live run forced
+
+The reads asked for =marketdata::curve_snapshots:read=, which a Market Risk
+decider does not hold, so the decider could not read the subject of the request
+it was deciding; they now ask for =marketdata::curve_publishes:read=. The BFF's
+history allow-list did not name the publish record, so the History tab answered
+"No history is served" even though the service registers the provider.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Built as three units, each committed and verified:
+
+- =172faff715= the end facts on the publish record, the two reads and the
+  withdrawal, with the reference suites.
+- =f5c14cb92b= the list and the record page with its four tabs, the overlay, the
+  comparison and the history, with the routing, the words and the BFF routes.
+- =c9e586c2dd= the publish subject in the queue's row and in the opened request.
+- =1ba0bbcad8= the two permission and history doors the live run found, and the
+  decision stated as a gap.
+
+The zero-approval publish path, the publish notice and the maker and checker pair
+on the kind are *not* built, as the task states: they are a later task.
+

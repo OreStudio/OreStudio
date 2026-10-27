@@ -223,6 +223,9 @@ public:
     std::optional<domain::curve_publish>
     read_latest_published_for_series(context ctx, const boost::uuids::uuid& series_id);
 
+    std::vector<domain::curve_publish> read_live_for_series(context ctx,
+                                                            const boost::uuids::uuid& series_id);
+
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or

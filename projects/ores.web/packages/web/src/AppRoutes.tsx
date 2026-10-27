@@ -104,6 +104,8 @@ import { ConventionDocumentsPage, ConventionKindsPage } from './refdata/conventi
 import { ConventionRecordPage } from './refdata/ConventionRecordPage.js';
 import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
+import { PublishedCurvePage } from './marketdata/PublishedCurvePage.js';
+import { PublishedCurvesPage } from './marketdata/PublishedCurvesPage.js';
 import { SubscriptionsPage } from './marketdata/SubscriptionsPage.js';
 import { FxFeedPage } from './marketdata/synthetic/fxFeeds.js';
 import { IrFeedPage } from './marketdata/synthetic/irFeeds.js';
@@ -673,6 +675,30 @@ export function AppRoutes({
                     shell,
                     (view) => (
                         <SubscriptionsPage partyId={view.party.id} />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.publishedCurves}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <PublishedCurvesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.publishedCurves}/:curve`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <PublishedCurvePage />
                     ),
                     'workspace',
                 )}

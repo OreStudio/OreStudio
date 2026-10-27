@@ -1435,3 +1435,130 @@ describe('the book changes a maker proposes', () => {
         expect(responses.map((response) => response.statusCode)).toEqual([401, 401, 401, 401]);
     });
 });
+
+/**
+ * The subject of a curve publish, joined from the market data component.
+ *
+ * A publish request is about a curve, a party and an as-of, and the request's own
+ * header names none of them. The queue joins the subject from the component that
+ * keeps it, in one read for the page, and every other kind's row is the row it
+ * was before the join existed.
+ */
+describe('the subject of a curve publish in the queue', () => {
+    const PUBLISH_REQUEST = '66666666-6666-4666-8666-666666666666';
+
+    function publishRequest(id: string) {
+        return {
+            ...wireRequest(id, DANIEL),
+            kind_code: 'marketdata.curve_publish',
+            reason: 'The desk prices off this curve',
+        };
+    }
+
+    const PUBLISHED = {
+        publish_id: '77777777-7777-4777-8777-777777777777',
+        request_id: PUBLISH_REQUEST,
+        curve: 'USD-SOFR-ACME',
+        series_id: '88888888-8888-4888-8888-888888888888',
+        series_uri: 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-ACME',
+        bootstrap_config_id: '99999999-9999-4999-8999-999999999999',
+        party: 'ACCOUS',
+        party_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        as_of: '2026-10-27 12:00:00Z',
+        published_by: '',
+        published_at: null,
+        state_code: 'candidate',
+        point_count: 2,
+        withdrawn_by: '',
+        withdrawn_at: null,
+        withdrawn_reason_code: '',
+        withdrawal_request_id: '',
+        superseded_at: null,
+        superseded_by_request_id: '',
+        superseded_as_of: null,
+        points: [],
+    };
+
+    it('carries the curve, the party, the as-of and the point count in the row', async () => {
+        const { server, calls, cookies } = buildTestServer({
+            'inbox.v1.ops.list_approval_queue': {
+                result: OK,
+                requests: [publishRequest(PUBLISH_REQUEST)],
+                total: 1,
+                answered: [],
+            },
+            'marketdata.v1.ops.list_published_curves': {
+                success: true,
+                message: '',
+                sets: [PUBLISHED],
+                total: 1,
+            },
+            ...joins(),
+        });
+
+        const response = await server.inject({ method: 'GET', url: '/api/requests', cookies });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json() as { items: readonly Record<string, unknown>[] };
+        expect(body.items[0]?.['publishedSubject']).toEqual({
+            publish_id: PUBLISHED.publish_id,
+            curve: 'USD-SOFR-ACME',
+            party: 'ACCOUS',
+            party_id: PUBLISHED.party_id,
+            series_id: PUBLISHED.series_id,
+            as_of: '2026-10-27 12:00:00Z',
+            point_count: 2,
+            state_code: 'candidate',
+            published_at: null,
+        });
+        // One read answers the page, and it names the requests the page holds.
+        const joined = calls.find(
+            (call) => call.subject === 'marketdata.v1.ops.list_published_curves',
+        );
+        expect(joined?.body).toMatchObject({ request_id_one_of: [PUBLISH_REQUEST] });
+    });
+
+    it('is read for the one request an address opens', async () => {
+        const { server, cookies } = buildTestServer({
+            ...requestReads(PUBLISH_REQUEST, publishRequest(PUBLISH_REQUEST)),
+            'inbox.v1.ops.get_approval_parts': { result: OK, parts: [] },
+            'marketdata.v1.ops.list_published_curves': {
+                success: true,
+                message: '',
+                sets: [PUBLISHED],
+                total: 1,
+            },
+            ...joins(),
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: `/api/requests/${PUBLISH_REQUEST}`,
+            cookies,
+        });
+        await server.close();
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json() as Record<string, unknown>;
+        expect(body['publishedSubject']).toMatchObject({ curve: 'USD-SOFR-ACME' });
+    });
+
+    it('leaves every other kind’s row as it was', async () => {
+        const { server, cookies } = buildTestServer({
+            'inbox.v1.ops.list_approval_queue': {
+                result: OK,
+                requests: [wireRequest(REQUEST, DANIEL)],
+                total: 1,
+                answered: [],
+            },
+            ...joins(),
+        });
+
+        const response = await server.inject({ method: 'GET', url: '/api/requests', cookies });
+        await server.close();
+
+        const body = response.json() as { items: readonly Record<string, unknown>[] };
+        expect(body.items[0]).not.toHaveProperty('publishedSubject');
+    });
+});

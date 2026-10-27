@@ -18,10 +18,12 @@
  *
  */
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -91,6 +93,41 @@ std::string describe(const subject_names& n) {
 std::chrono::system_clock::time_point at_store_precision(
     const std::chrono::system_clock::time_point& t) {
     return std::chrono::floor<std::chrono::microseconds>(t);
+}
+
+/**
+ * @brief Ends every live set of the series the successor is published into.
+ *
+ * A supersession is not a second act: a corrected set is a publish whose subject
+ * is the successor, so the successor's own apply writes the link. Every live set
+ * of the series is ended and not only the newest, because the promise a reader
+ * is given is one live set -- a series that carries two is a set that never
+ * ended, and the next publish is where that is put right.
+ */
+void end_previous_sets(const ores::database::context& ctx,
+                       const domain::curve_publish& successor) {
+    if (successor.output_series_id.is_nil() || !successor.published_at)
+        return;
+
+    repository::curve_publish_repository repo;
+    for (auto previous : repo.read_live_for_series(ctx, successor.output_series_id)) {
+        if (previous.id == successor.id)
+            continue;
+        previous.superseded_at = successor.published_at;
+        previous.superseded_by_request_id = successor.request_id;
+        previous.superseded_as_of = successor.as_of;
+        previous.modified_by = successor.published_by;
+        previous.performed_by = ctx.service_account();
+        previous.change_reason_code = "system.curve_superseded";
+        previous.change_commentary =
+            "Superseded by the set published under request " +
+            boost::uuids::to_string(successor.request_id) + " as of " +
+            datetime::to_iso8601_utc(successor.as_of);
+        repo.write(ctx,
+                   previous,
+                   {ores::utility::domain::precondition_kind::must_match_version,
+                    static_cast<std::uint32_t>(previous.version)});
+    }
 }
 
 }
@@ -254,8 +291,19 @@ domain::curve_publish record_publication(const ores::database::context& ctx,
     record.change_reason_code = "system.curve_published";
     record.change_commentary = "Published under approval request " +
                                boost::uuids::to_string(record.request_id) + " by " + publisher;
+
+    // The set this one replaces ends in the same act, and both writes are one
+    // transaction: a series promises one live set, so an apply that ended the
+    // previous set but failed to write its successor would leave a series with
+    // none, and one that wrote the successor first and then failed would leave
+    // two.
+    ores::database::repository::unit_of_work uow(ctx);
+    const auto& tx = uow.ctx();
+    end_previous_sets(tx, record);
+
     repository::curve_publish_repository repo;
-    repo.write(ctx, record);
+    repo.write(tx, record);
+    uow.commit();
     return record;
 }
 

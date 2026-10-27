@@ -274,6 +274,7 @@ export const en: SourceCatalogue = {
         kind: {
             'iam.role_grant': 'Role request',
             'refdata.book_change': 'Book change',
+            'marketdata.curve_publish': 'Curve publish',
         },
         bell: {
             label: 'Notifications, {count} unread',
@@ -291,6 +292,19 @@ export const en: SourceCatalogue = {
             whyPlaceholder: 'What you cannot do today, and what this would let you do',
             none: 'There is no role left to ask for.',
             submit: 'Ask',
+        },
+        curvePublish: {
+            subject: 'The subject the request authorises',
+            curve: 'Curve',
+            party: 'Party',
+            asOf: 'Published as-of',
+            points: 'Points',
+            openComparison: 'Open the comparison',
+            noSubject:
+                'This request is a curve publish, and its subject is not readable here: the market data component holds it, or this account may not read that curve.',
+            row: '{party} · as of {asOf} · {points} points',
+            summary: '{curve} of {party}, as of {asOf}',
+            approve: 'Approve the publish',
         },
         mine: {
             none: 'You have made no requests.',
@@ -4495,6 +4509,146 @@ export const en: SourceCatalogue = {
     },
 
     marketdata: {
+        published: {
+            title: 'Published curves',
+            plural: 'published curves',
+            lead: 'The sets the desk prices from, the act that published each, and the candidates nobody has approved.',
+            allParties: 'All parties',
+            leftUse: 'left use {at}',
+            readOnly:
+                'A published set is read only: the gate that applies an approved request writes it, and no screen does. A curve becomes a published set when a person publishes an approved candidate.',
+            state: {
+                published: 'Published',
+                superseded: 'Superseded',
+                withdrawn: 'Withdrawn',
+                candidate: 'Candidate',
+            },
+            columns: {
+                curve: 'Curve',
+                party: 'Party',
+                asOf: 'Published as-of',
+                publisher: 'Publisher',
+                published: 'Published',
+                points: 'Points',
+                state: 'State',
+            },
+            filter: {
+                candidates: 'Show candidates',
+                ended: 'Show ended sets',
+            },
+            tabs: 'Record tabs',
+            tab: {
+                details: 'Details',
+                points: 'Published points',
+                compare: 'Compare as of',
+                history: 'History',
+            },
+            noSuchCurve: 'There is no published set for {curve}.',
+            noSet: 'The curve {curve} has no published set. A candidate exists and nobody has published it, so the page draws no tabs: a candidate against an empty set is not a comparison.',
+            asOfLead: 'as of {at}',
+            publishedLead: 'published {at}',
+            endedLead: 'ended {at}',
+            waitingLead: 'nobody has published it',
+            details: {
+                subject: 'The subject the request authorised',
+                act: 'The act',
+                end: 'The set ended',
+                asOf: 'Published as-of',
+                series: 'Output series',
+                config: 'Curve configuration',
+                publisher: 'Publisher',
+                publishedAt: 'Published at',
+                request: 'Authorising request',
+                endedAt: 'Withdrawn at',
+                endedBy: 'Withdrawn by',
+                reason: 'Reason',
+                endRequest: 'Withdrawal request',
+                noRequest: 'None: the trader withdrew alone',
+                supersededAt: 'Superseded at',
+                successorRequest: 'Successor request',
+                successorAsOf: 'Successor as-of',
+                lastChanged:
+                    'Last changed {at}. The series holds {count} published set(s).',
+                readOnly:
+                    'The publish record is written by the gate that applies an approved request and never by a screen.',
+            },
+            history: {
+                decision: 'Approval decision',
+                noRevert:
+                    'There is no Revert. Nobody may write a publish record, so a correction is a new publish or a withdrawal, and each is an act of its own with a request behind it.',
+                decisionHidden:
+                    'The decision on this request is not readable here: it belongs to the request, and reading it needs the inbox’s decisions read.',
+            },
+            chart: {
+                noPublished:
+                    'The chart cannot be drawn. No published set, so there is no curve to draw.',
+                noPoints: 'The chart cannot be drawn. The set holds no points.',
+                onePoint:
+                    'The chart cannot be drawn. A curve needs at least two pillars. One point has no shape; the table below holds it.',
+            },
+            points: {
+                lead: 'The last published sets of this curve and party are drawn together, so a move between publishes is a shape and not only a table.',
+                count: 'Sets',
+                countHelp: 'How many published sets to draw, from 1 to 20.',
+                asOf: 'As-of',
+                published: 'Published',
+                publisher: 'Publisher',
+                request: 'Request',
+                points: 'Points',
+                chart: 'The last published sets',
+                legend: {
+                    one: 'One published set is drawn. The newest is bold green; an older set is grey-blue and fades with age.',
+                    many: 'The newest set is bold green. The older ones are grey-blue, thinner, and fade with age; the newest is always the strongest line.',
+                },
+                pillars: 'The newest set',
+                pillar: 'Pillar',
+                rate: 'Rate',
+                discount: 'Discount factor',
+                observed: 'Observed',
+                noPillars: 'The set holds no pillars.',
+                valueNote:
+                    'The published value is a {kind} datum; the other side is the one it implies over the pillar and is empty where the pillar is not a period.',
+                one: 'One published set is drawn.',
+                fewer: '{asked} asked, {published} published. The chart draws all {published} sets that exist.',
+                newest: 'The newest {count} of the published sets are drawn.',
+            },
+            compare: {
+                asOf: 'Baseline as-of',
+                baseline: 'The published set',
+                candidate: 'The candidate',
+                builtBy: 'Built by',
+                nobody: 'Nobody has approved it',
+                endedBaseline:
+                    'The comparison still answers what the candidate changes against the last published set. The desk prices from no set of this curve, or from its successor.',
+                nothingChanged:
+                    'No point changed. The candidate matches the published set at this as-of point for point. There is nothing to raise, and the published set stays the one in use.',
+                summary:
+                    '{changed} changed, {added} added, {dropped} dropped, {unchanged} unchanged.',
+                chart: 'The published set and the candidate',
+                chartCaption:
+                    'The published set is dashed and muted; the candidate is solid and accented. A pillar only one of them holds is a gap in the other line and never a zero.',
+                table: 'Point by point',
+                showUnchanged: 'Show {count} unchanged point(s)',
+                hideUnchanged: 'Hide the unchanged points',
+                pillar: 'Pillar',
+                publishedValue: 'Published',
+                candidateValue: 'Candidate',
+                change: 'Change',
+                mark: 'Mark',
+                newPillar: 'New pillar',
+                droppedPillar: 'Not in the candidate',
+                onlyUnchanged: 'Every point here is unchanged.',
+                marks: {
+                    changed: 'Changed',
+                    added: 'Added',
+                    dropped: 'Dropped',
+                    unchanged: 'Unchanged',
+                },
+                basisPoints: 'basis points',
+                noBaseline: 'No published set, so there is no baseline to compare against.',
+                noCandidate: 'The curve {curve} has no candidate, so there is nothing to compare against the published set.',
+            },
+        },
         subscriptions: {
             title: 'Subscriptions',
             description:

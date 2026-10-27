@@ -107,6 +107,9 @@ const HISTORY_TYPES = new Set([
     'ores.refdata.curve_configuration',
     // A sensitivity template is analytics' own record too, and its history tab reads it here.
     'ores.analytics.sensitivity_template',
+    // The publish record is market data's own: its versions are served by the
+    // service that writes it, and the published curve's History tab reads them here.
+    'ores.marketdata.curve_publish',
     // Parties and counterparties are not in the record table; their screens read their versions here.
     'ores.refdata.party',
     'ores.refdata.party_identifier',

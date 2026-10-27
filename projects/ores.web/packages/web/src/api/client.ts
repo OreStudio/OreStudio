@@ -172,6 +172,7 @@ import {
     type WorkflowProgress,
     type WireTimestamp,
     wireTimestampSchema,
+    nullableWireTimestampSchema,
     configurationDetailSchema,
     reportConfigurationBindingsSchema,
     reportDetailSchema,
@@ -196,6 +197,56 @@ import { ApiFailure, request } from './transport.js';
  */
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
+
+/**
+ * One pillar of a published set.
+ *
+ * The pillar is the coordinate the datum stands at and the value is the text the
+ * publish wrote. `value_kind` says what the value denotes, so a screen that
+ * draws a rate and the discount factor it implies knows which of the two it was
+ * given.
+ */
+const publishedCurvePointSchema = z.object({
+    pillar: z.string().default(''),
+    value: z.string().default(''),
+    value_kind: z.string().default(''),
+    oresmd_uri: z.string().default(''),
+    observation_datetime: wireTimestampSchema,
+});
+
+/**
+ * One published set, or the candidate that waits to become one.
+ *
+ * The state is the record's own: `published`, `superseded`, `withdrawn` or
+ * `candidate`. A set read for the list carries its point count and no points; a
+ * set read for one curve carries the pillars it holds.
+ */
+const publishedCurveSetSchema = z.object({
+    publish_id: z.string().default(''),
+    request_id: z.string().default(''),
+    curve: z.string().default(''),
+    series_id: z.string().default(''),
+    series_uri: z.string().default(''),
+    bootstrap_config_id: z.string().default(''),
+    party: z.string().default(''),
+    party_id: z.string().default(''),
+    as_of: wireTimestampSchema,
+    published_by: z.string().default(''),
+    published_at: nullableWireTimestampSchema,
+    state_code: z.string().default(''),
+    point_count: z.int().nonnegative().default(0),
+    withdrawn_by: z.string().default(''),
+    withdrawn_at: nullableWireTimestampSchema,
+    withdrawn_reason_code: z.string().default(''),
+    withdrawal_request_id: z.string().default(''),
+    superseded_at: nullableWireTimestampSchema,
+    superseded_by_request_id: z.string().default(''),
+    superseded_as_of: nullableWireTimestampSchema,
+    points: z.array(publishedCurvePointSchema).default([]),
+});
+
+export type PublishedCurvePoint = z.infer<typeof publishedCurvePointSchema>;
+export type PublishedCurveSet = z.infer<typeof publishedCurveSetSchema>;
 
 /**
  * One reason a decider may park a request with, as the lookup holds it.
@@ -2661,6 +2712,112 @@ export const api = {
         return z
             .object({ versions: z.array(historyVersionSchema) })
             .parse(await request(`/api/history?${query.toString()}`, { method: 'GET' })).versions;
+    },
+
+    /**
+     * The tenant's published curve sets, with the state each is in.
+     *
+     * The filters and the pager are the server's, so a page is the page: a
+     * screen never filters a page it was given. A candidate and an ended set are
+     * drawn only when the caller asks for them.
+     */
+    async publishedCurves(query: {
+        readonly partyId?: string;
+        readonly search?: string;
+        readonly includeCandidates?: boolean;
+        readonly includeEnded?: boolean;
+        readonly requestIds?: readonly string[];
+        readonly offset?: number;
+        readonly limit?: number;
+    }): Promise<{ readonly sets: readonly PublishedCurveSet[]; readonly total: number }> {
+        const answer = z
+            .object({
+                sets: z.array(publishedCurveSetSchema).default([]),
+                total: z.number().default(0),
+            })
+            .parse(
+                await request('/api/curves/published', {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: JSON.stringify({
+                        party_id: query.partyId ?? '',
+                        search: query.search ?? '',
+                        include_candidates: query.includeCandidates ?? false,
+                        include_ended: query.includeEnded ?? false,
+                        request_id_one_of: query.requestIds ?? [],
+                        offset: query.offset ?? 0,
+                        limit: query.limit ?? 50,
+                    }),
+                }),
+            );
+        return { sets: answer.sets, total: answer.total };
+    },
+
+    /**
+     * One curve's last published sets, oldest first, with the pillars each holds.
+     *
+     * The points travel with the set because a published set is the observations
+     * the publish wrote at its own as-of, and the snapshot read serves the market
+     * as it stands now.
+     */
+    async publishedCurveSets(query: {
+        readonly seriesId: string;
+        readonly limit?: number;
+        readonly includeCandidates?: boolean;
+    }): Promise<{
+        readonly sets: readonly PublishedCurveSet[];
+        readonly publishedCount: number;
+    }> {
+        const answer = z
+            .object({
+                sets: z.array(publishedCurveSetSchema).default([]),
+                published_count: z.number().default(0),
+            })
+            .parse(
+                await request('/api/curves/published-sets', {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: JSON.stringify({
+                        series_id: query.seriesId,
+                        limit: query.limit ?? 5,
+                        include_candidates: query.includeCandidates ?? true,
+                    }),
+                }),
+            );
+        return { sets: answer.sets, publishedCount: answer.published_count };
+    },
+
+    /**
+     * Takes a published set out of use, keeping the reason against the act.
+     *
+     * The answer states the account and the instant the record now holds, so the
+     * screen shows what the record says rather than its own clock.
+     */
+    async withdrawPublishedCurve(request_: {
+        readonly publishId: string;
+        readonly reasonCode: string;
+        readonly comment?: string;
+        readonly approvalRequestId?: string;
+    }): Promise<{ readonly withdrawnAt: string; readonly withdrawnBy: string }> {
+        const answer = z
+            .object({
+                withdrawn_at: wireTimestampSchema,
+                withdrawn_by: z.string().default(''),
+                message: z.string().default(''),
+            })
+            .parse(
+                await request('/api/curves/published/withdraw', {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: JSON.stringify({
+                        publish_id: request_.publishId,
+                        reason_code: request_.reasonCode,
+                        comment: request_.comment ?? '',
+                        approval_request_id: request_.approvalRequestId ?? '',
+                    }),
+                }),
+            );
+        return { withdrawnAt: answer.withdrawn_at, withdrawnBy: answer.withdrawn_by };
     },
 
     /**

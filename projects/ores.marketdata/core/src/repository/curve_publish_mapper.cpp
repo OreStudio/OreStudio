@@ -60,6 +60,25 @@ domain::curve_publish curve_publish_mapper::map(const curve_publish_entity& v) {
     r.published_at = v.published_at.has_value() ?
                          std::optional(timestamp_to_timepoint(*v.published_at)) :
                          std::nullopt;
+    r.withdrawn_by = v.withdrawn_by;
+    r.withdrawn_at = v.withdrawn_at.has_value() ?
+                         std::optional(timestamp_to_timepoint(*v.withdrawn_at)) :
+                         std::nullopt;
+    r.withdrawn_reason_code = v.withdrawn_reason_code;
+    r.withdrawal_request_id =
+        v.withdrawal_request_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.withdrawal_request_id)) :
+            std::nullopt;
+    r.superseded_at = v.superseded_at.has_value() ?
+                          std::optional(timestamp_to_timepoint(*v.superseded_at)) :
+                          std::nullopt;
+    r.superseded_by_request_id =
+        v.superseded_by_request_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.superseded_by_request_id)) :
+            std::nullopt;
+    r.superseded_as_of = v.superseded_as_of.has_value() ?
+                             std::optional(timestamp_to_timepoint(*v.superseded_as_of)) :
+                             std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -87,6 +106,27 @@ curve_publish_entity curve_publish_mapper::map(const domain::curve_publish& v) {
     r.published_at =
         v.published_at.has_value() ?
             std::optional(ores::platform::time::datetime::to_db_string(*v.published_at)) :
+            std::nullopt;
+    r.withdrawn_by = v.withdrawn_by;
+    r.withdrawn_at =
+        v.withdrawn_at.has_value() ?
+            std::optional(ores::platform::time::datetime::to_db_string(*v.withdrawn_at)) :
+            std::nullopt;
+    r.withdrawn_reason_code = v.withdrawn_reason_code;
+    r.withdrawal_request_id = v.withdrawal_request_id.has_value() ?
+                                  std::optional(boost::uuids::to_string(*v.withdrawal_request_id)) :
+                                  std::nullopt;
+    r.superseded_at =
+        v.superseded_at.has_value() ?
+            std::optional(ores::platform::time::datetime::to_db_string(*v.superseded_at)) :
+            std::nullopt;
+    r.superseded_by_request_id =
+        v.superseded_by_request_id.has_value() ?
+            std::optional(boost::uuids::to_string(*v.superseded_by_request_id)) :
+            std::nullopt;
+    r.superseded_as_of =
+        v.superseded_as_of.has_value() ?
+            std::optional(ores::platform::time::datetime::to_db_string(*v.superseded_as_of)) :
             std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

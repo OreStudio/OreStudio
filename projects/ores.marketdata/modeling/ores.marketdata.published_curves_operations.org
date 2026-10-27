@@ -1,0 +1,579 @@
+:PROPERTIES:
+:ID: 4C1F7A62-9B3D-4E58-8C21-6A7D0E3B5F94
+:END:
+#+title: ores.marketdata.published_curves_operations
+#+description: Codegen operation model for the published curve screens: the list of a tenant's published sets and candidates, one curve's last sets with the points they hold, and the act that takes a set out of use.
+#+type: ores.codegen.operation
+#+component: marketdata
+#+subcomponent: api
+#+entity_singular: published_curves_operations
+#+namespace: ores::marketdata::messaging
+#+brief: The reads of published curves, and the act that ends a set.
+#+filetags: :model:operation:marketdata:
+#+created: 2026-10-27
++#+updated: 2026-10-27
+
+A published set is the =curve_publish= detail row of the request that
+authorised it, and a screen reads three things about it that no existing read
+answers together:
+
+1. every set the tenant holds, with the curve, the party, the publisher and the
+   state, because a reader finds one set for one series today and never the
+   tenant's sets together;
+2. the last sets of one curve and party with the points each holds, because the
+   points tab draws them overlaid and the comparison draws two of them;
+3. the act that takes a set out of use, because a set that ended is a state a
+   reader must reach.
+
+The first two are reads over the publish records joined to the series they
+published and the observations the published set holds. The third is a write,
+and it is an operation rather than a second half of the publish gate: the
+publish gate's single-use rule is that one request publishes once, and a
+withdrawal does not use a publish request at all. A supersession is not here,
+because a supersession is a publish: the successor's own apply writes the link
+on the set it replaced.
+
+The points travel with the set rather than in a second read of their own. The
+curve snapshot read states the values a series holds now, and it reads the
+market at the caller's clock, so it cannot serve a set built at an earlier
+as-of; the set's points are the observations the publish wrote at its own
+as-of, and they are read beside it.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** published_curve_point
+
+One pillar of a published set: where the point stands, the value the set holds
+there, and the instant the value was observed.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One pillar of a published set.
+ *
+ * The pillar is the coordinate the datum stands at -- the term of an interest
+ * rate curve -- and the value is the text the publish wrote, exact. The kind
+ * says what the value denotes, so a reader that shows a rate and the discount
+ * factor it implies knows which of the two it was given.
+ */
+#+end_src
+
+*** pillar
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The coordinate the point stands at, such as the term of a curve pillar. Empty
+when the datum's key carries no coordinate a reader can name.
+
+*** value
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The value the published set holds at the pillar, as text and unchanged.
+
+*** value_kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+What the value denotes: the instrument the datum was written under, such as
+=discount= for a discount factor or =rate= for a zero rate.
+
+*** oresmd_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The datum's own oresmd key, so a reader can ask the datum's series for more.
+
+*** observation_datetime
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The instant the value was observed at, which is the set's as-of.
+
+** published_curve_set
+
+One publish record as a reader draws it: the subject, the act that published
+it, the state it is in now, and the points it holds.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One published set, or the candidate that waits to become one.
+ *
+ * The state is a function of the record's own facts and is stated here rather
+ * than stored: `withdrawn` when the set was taken out of use, `superseded` when
+ * a later set replaced it, `published` when a person applied a request and the
+ * set is in use, and `candidate` when the request still waits. A candidate
+ * holds no publisher and no published instant, so a reader cannot mistake it
+ * for the set a desk prices from.
+ *
+ * A set read from the list carries its point count and no points; a set read
+ * for one curve carries its points, because the screen draws them.
+ */
+#+end_src
+
+*** publish_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The publish record's own id, which the history and the withdrawal name.
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The approval request the record is the subject of.
+
+*** curve
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The curve's name: the curve id its output series carries, so the same curve id
+in two parties reads as two curves.
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The series the published output is written to.
+
+*** series_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The output series' oresmd URI, exact, for a reader that names the series by it.
+
+*** bootstrap_config_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The curve configuration the publish was asked for.
+
+*** party
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The party the set belongs to, by its short code.
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The party's id, which the list's party filter names.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The instant the set was built at, which is the subject the request authorised.
+
+*** published_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The account that applied the approval, or empty while the request waits.
+
+*** published_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+The instant the set moved, or null while the request waits.
+
+*** state_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+=published=, =superseded=, =withdrawn= or =candidate=.
+
+*** point_count
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+How many pillars the set holds.
+
+*** withdrawn_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The account that took the set out of use, or empty.
+
+*** withdrawn_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+When the set left use, or null.
+
+*** withdrawn_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Why the set left use, as a change reason code, or empty.
+
+*** withdrawal_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The request that authorised the withdrawal, or empty when the withdrawer acted
+alone.
+
+*** superseded_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+When a later set took this one's place, or null.
+
+*** superseded_by_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The request whose apply replaced this set, or empty.
+
+*** superseded_as_of
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+The as-of the successor was built at, or null.
+
+*** points
+:PROPERTIES:
+:cpp_type: std::vector<published_curve_point>
+:END:
+
+The pillars the set holds, in the order the data stores them. Empty in a set
+read from the list.
+
+** list_published_curves_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.list_published_curves
+:response: list_published_curves_response
+:END:
+
+The tenant's published sets, with the filters the list screen draws.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The published sets of the tenant, newest first, and the candidates.
+ *
+ * A reader sees the sets in use by default. A candidate is a set nobody has
+ * approved and an ended set is one that was in use and is not any more, so
+ * neither is drawn unless the caller asks for it: a candidate read as the set
+ * a desk prices from would be a lie, and an ended set is reached on purpose.
+ *
+ * The total is the size of the whole filtered set and not of the page, so a
+ * screen can page without a second read.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+The party whose sets are wanted. Empty asks across the parties the caller can
+see.
+
+*** search
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+Text the curve's name must hold, matched without case. Empty matches every
+curve.
+
+*** include_candidates
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+Whether the sets nobody has approved are drawn beside the sets in use.
+
+*** include_ended
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+Whether the withdrawn and superseded sets are drawn.
+
+*** request_id_one_of
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The requests whose subjects are wanted, so a screen that holds a page of
+requests reads their subjects in one call. Empty asks for every set.
+
+*** offset
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+How many rows to skip, for the pager.
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 50
+:END:
+
+How many rows to return.
+
+** list_published_curves_response
+
+The rows the list draws, newest published set first, and then the candidates.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The rows of the published curve list.
+ *
+ * The order is the screen's and not the caller's: the sets in use come first,
+ * newest published instant first, and the candidates follow in as-of order, so
+ * a set nobody approved never stands above a set a desk prices from.
+ */
+#+end_src
+
+*** sets
+:PROPERTIES:
+:cpp_type: std::vector<published_curve_set>
+:END:
+
+The page of rows, each with its state and its point count and no points.
+
+*** total
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+How many rows the filter matches, across every page.
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The reason a read was refused. Empty on success.
+
+** get_published_curve_sets_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.get_published_curve_sets
+:response: get_published_curve_sets_response
+:END:
+
+One curve's last published sets, with the points each holds, for the overlay
+and the comparison.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The last sets published for one series, newest last, with their points.
+ *
+ * The sets come back oldest first, so a reader draws them in the order they
+ * happened and colours the newest one strongest. A candidate of the same curve
+ * is included when it is asked for, with no published instant, so the
+ * comparison tab reads the baseline and the candidate from one answer.
+ */
+#+end_src
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The series whose published sets are wanted.
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 5
+:END:
+
+How many published sets to return, counted from the newest. A candidate is not
+counted against it.
+
+*** include_candidates
+:PROPERTIES:
+:cpp_type: bool
+:default: true
+:END:
+
+Whether the sets nobody has approved are returned beside the published ones.
+
+** get_published_curve_sets_response
+
+The sets of one curve, oldest first.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One curve's sets, oldest first, each with the points it holds.
+ *
+ * An ended set is returned like any other published set, because it was
+ * published; its state says that it is not the set in use.
+ */
+#+end_src
+
+*** sets
+:PROPERTIES:
+:cpp_type: std::vector<published_curve_set>
+:END:
+
+*** published_count
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+How many sets the series holds in all, so a caption can say that fewer were
+asked for than exist.
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** withdraw_curve_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.withdraw_curve
+:response: withdraw_curve_response
+:END:
+
+The act that takes a published set out of use, with the reason kept against
+it.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Takes a published set out of use, as a new version of its record.
+ *
+ * The set is not deleted and its values are not cleared: the record keeps the
+ * publisher, the published instant and the set's points, and gains the account
+ * that ended it, the instant and the reason. A set that already ended cannot be
+ * ended again, and a set that was never published cannot be withdrawn, because
+ * a candidate is not in use.
+ *
+ * A withdrawal names no request when the tenant lets a trader act alone, and
+ * names one when a decision stands behind the act. A request authorises one
+ * withdrawal, so a request that already ended a set ends nothing else.
+ */
+#+end_src
+
+*** publish_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The publish record to end.
+
+*** reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Why the set leaves use, as a change reason code. Empty is refused: the reason
+is what the record keeps against the act.
+
+*** comment
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+The words the withdrawer adds, which the history shows with the reason code.
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:default:  ""
+:END:
+
+The approved withdrawal request that authorises the act, or empty when the
+withdrawer acts alone.
+
+** withdraw_curve_response
+
+What the act wrote, so the caller reads the record rather than its own clock.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant and the account the record now holds.
+ *
+ * The answer states the withdrawal the record carries so a screen can show the
+ * ended set without reading it again.
+ */
+#+end_src
+
+*** withdrawn_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** withdrawn_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The reason a withdrawal was refused. Empty on success.
+* See also
+
+- [[id:F2FA516C-1F86-43EF-80D4-E92F640B6CFD][ores.marketdata]] — component group overview.
+- [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] — the record these reads draw and the withdrawal ends.
+- [[id:ea078e64-15a8-48d1-97d4-400a5bd669ee][ores.marketdata.curve_publish_operations]] — the raise and the publish gate that writes the record.

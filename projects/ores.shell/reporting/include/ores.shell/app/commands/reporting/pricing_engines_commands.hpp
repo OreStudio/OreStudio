@@ -50,6 +50,20 @@ public:
                                const std::vector<std::string>& args);
 
     /**
+     * @brief Imports an ORE pricing engines document into a configuration.
+     *
+     * The same two operations the screen sends: the preview, which parses the
+     * file and writes nothing, and the import, which writes with the person's
+     * choices. =--dry-run= stops after the preview.
+     *
+     * @param args The configuration's id, or =--new-name=, and =--file=; plus
+     *             =--new-variant=, =--reason=, =--commentary= and =--dry-run=.
+     */
+    static void process_import(std::ostream& out,
+                               ores::nats::service::nats_client& session,
+                               const std::vector<std::string>& args);
+
+    /**
      * @brief Writes the document where the person asked for it: to a file, or
      * to standard output, so it can be piped into ORE.
      *

@@ -103,6 +103,7 @@ const toAggregate = (raw: unknown): AggregateRow => {
         change: money(row['change']),
         change_pct: money(row['change_pct']),
         is_removed: row['is_removed'] === true,
+        depth: typeof row['depth'] === 'number' ? Math.max(0, row['depth']) : 0,
     };
 };
 
@@ -231,8 +232,7 @@ export function RunResultsPanel({
     const totals = results.data?.totals ?? [];
     const reason = results.data?.reason ?? '';
     const filtering = bookFilter !== '' || counterpartyFilter !== '' || noBook;
-    const tradeCount =
-        level === 'trade' ? trades.length : aggregates.reduce((sum, row) => sum + row.trades, 0);
+    const tradeCount = results.data?.tradeCount ?? 0;
     const filterName = noBook
         ? t(`${field}.unbooked`)
         : bookFilter !== ''
@@ -563,7 +563,10 @@ function AggregateTable({
                                 row.is_group ? 'font-medium' : ''
                             }`}
                         >
-                            <td className={`px-2 py-1 uppercase ${row.group === '' ? '' : 'pl-8'}`}>
+                            <td
+                                className="px-2 py-1 uppercase"
+                                style={{ paddingLeft: `${8 + row.depth * 16}px` }}
+                            >
                                 {row.is_removed && (
                                     <span className="mr-2 rounded border border-line px-1 text-xs text-ink-muted">
                                         {t(`${field}.gone`)}

@@ -26,6 +26,7 @@ import {
     entriesOf,
     rowsOf,
     withGroups,
+    withPortfolioTree,
 } from './grid-report-results.js';
 import type { AggregateRow, RunResultRow } from './grid-report-results.js';
 
@@ -580,5 +581,173 @@ describe('withGroups, the book level', () => {
 
         expect(rows).toHaveLength(1);
         expect(rows[0]?.is_group).toBe(false);
+    });
+});
+
+describe('withPortfolioTree', () => {
+    const book = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'b1',
+        name: 'Book One',
+        trades: 1,
+        totals: [{ currency: 'GBP', total: '100.00' }],
+        notional: [{ currency: 'GBP', total: '1000.00' }],
+        group: '',
+        is_group: false,
+        previous: [],
+        change: [],
+        change_pct: [],
+        is_removed: false,
+        depth: 0,
+        ...over,
+    });
+
+    it('nests a portfolio inside its parent and rolls the figures up', () => {
+        const rows = withPortfolioTree(
+            [
+                book({ key: 'b1', name: 'Book One' }),
+                book({
+                    key: 'b2',
+                    name: 'Book Two',
+                    totals: [{ currency: 'GBP', total: '50.00' }],
+                }),
+                book({ key: 'b3', name: 'Book Three' }),
+            ],
+            new Map([
+                ['b1', 'pf1'],
+                ['b2', 'pf2'],
+                ['b3', 'pf2'],
+            ]),
+            new Map([
+                ['pf1', 'Portfolio One'],
+                ['pf2', 'Portfolio Two'],
+            ]),
+            new Map([['pf2', 'pf1']]),
+        );
+
+        expect(rows.map((row) => `${row.name}:${row.depth}`)).toEqual([
+            'Portfolio One:0',
+            'Book One:1',
+            'Portfolio Two:1',
+            'Book Three:2',
+            'Book Two:2',
+        ]);
+        expect(rows[0]?.totals).toEqual([{ currency: 'GBP', total: '250.00' }]);
+        expect(rows[0]?.trades).toBe(3);
+        expect(rows[2]?.is_group).toBe(true);
+        // The parent holds one book of its own besides its child's two.
+        expect(rows[0]?.trades).toBe(3);
+        expect(rows[2]?.trades).toBe(2);
+    });
+
+    it('leaves a book in no portfolio at the top', () => {
+        const rows = withPortfolioTree(
+            [book({ key: 'b9', name: 'Loose Book' })],
+            new Map(),
+            new Map(),
+            new Map(),
+        );
+
+        expect(rows).toHaveLength(1);
+        expect(rows[0]?.depth).toBe(0);
+        expect(rows[0]?.is_group).toBe(false);
+    });
+});
+
+describe('withGroups and withPortfolioTree, the depths and the cycles', () => {
+    const row = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'c1',
+        name: 'First',
+        trades: 1,
+        totals: [{ currency: 'GBP', total: '100.00' }],
+        notional: [{ currency: 'GBP', total: '1000.00' }],
+        group: '',
+        is_group: false,
+        previous: [],
+        change: [],
+        change_pct: [],
+        is_removed: false,
+        depth: 0,
+        ...over,
+    });
+
+    it('states a member at depth one under its group', () => {
+        const rows = withGroups(
+            [row({ key: 'c1' })],
+            new Map([['c1', 'p1']]),
+            new Map([['p1', 'The Group']]),
+        );
+
+        expect(rows[0]?.depth).toBe(0);
+        expect(rows[0]?.is_group).toBe(true);
+        expect(rows[1]?.depth).toBe(1);
+    });
+
+    it('keeps a portfolio that sits in a cycle rather than dropping its books', () => {
+        const rows = withPortfolioTree(
+            [row({ key: 'b1', name: 'Book One' })],
+            new Map([['b1', 'pa']]),
+            new Map([
+                ['pa', 'Portfolio A'],
+                ['pb', 'Portfolio B'],
+            ]),
+            new Map([
+                ['pa', 'pb'],
+                ['pb', 'pa'],
+            ]),
+        );
+
+        const names = rows.map((entry) => entry.name);
+        expect(names).toContain('Book One');
+        expect(names).toContain('Portfolio A');
+        expect(names).toContain('Portfolio B');
+    });
+});
+
+describe('withPortfolioTree, a parent holding no book of its own', () => {
+    const book = (over: Partial<AggregateRow>): AggregateRow => ({
+        key: 'b1',
+        name: 'Book One',
+        trades: 1,
+        totals: [{ currency: 'GBP', total: '100.00' }],
+        notional: [{ currency: 'GBP', total: '1000.00' }],
+        group: '',
+        is_group: false,
+        previous: [],
+        change: [],
+        change_pct: [],
+        is_removed: false,
+        depth: 0,
+        ...over,
+    });
+
+    it('rolls a child portfolio up into a parent that trades nothing itself', () => {
+        const rows = withPortfolioTree(
+            [
+                book({ key: 'b1', name: 'Book One' }),
+                book({
+                    key: 'b2',
+                    name: 'Book Two',
+                    totals: [{ currency: 'GBP', total: '50.00' }],
+                }),
+            ],
+            new Map([
+                ['b1', 'pf2'],
+                ['b2', 'pf2'],
+            ]),
+            new Map([
+                ['pf1', 'The Parent'],
+                ['pf2', 'The Child'],
+            ]),
+            new Map([['pf2', 'pf1']]),
+        );
+
+        expect(rows.map((row) => `${row.name}:${row.depth}`)).toEqual([
+            'The Parent:0',
+            'The Child:1',
+            'Book One:2',
+            'Book Two:2',
+        ]);
+        expect(rows[0]?.trades).toBe(2);
+        expect(rows[0]?.totals).toEqual([{ currency: 'GBP', total: '150.00' }]);
     });
 });

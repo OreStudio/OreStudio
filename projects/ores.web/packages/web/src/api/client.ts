@@ -698,6 +698,7 @@ export interface AggregateRow {
     readonly change: readonly Money[];
     readonly change_pct: readonly Money[];
     readonly is_removed: boolean;
+    readonly depth: number;
 }
 
 /** The run a comparison is against. */
@@ -713,6 +714,7 @@ export interface RunResults {
     readonly level: ResultLevel;
     readonly rows: readonly unknown[];
     readonly totals: readonly Money[];
+    readonly tradeCount: number;
     readonly reason: ResultReason;
     readonly recordsComplete: boolean;
     readonly baseline: BaselineSummary | null;
@@ -2939,6 +2941,7 @@ export const api = {
         })) as {
             rows?: readonly unknown[];
             totals?: readonly Money[];
+            tradeCount?: number;
             reason?: string;
             recordsComplete?: boolean;
             baseline?: BaselineSummary | null;
@@ -2947,6 +2950,7 @@ export const api = {
             level: by,
             rows: reply.rows ?? [],
             totals: reply.totals ?? [],
+            tradeCount: reply.tradeCount ?? 0,
             reason: resultReasonOf(reply.reason),
             recordsComplete: reply.recordsComplete !== false,
             baseline: reply.baseline ?? null,

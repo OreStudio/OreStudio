@@ -21,9 +21,10 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
   holding group: =compass db status= answers, and the fleet is up with
   =compass services status= showing every unit running, including the five
   =ores.compute.wrapper= nodes.
-- The report the scenario runs has market data for the date it prices at. If the
-  run fails on a missing quote, the run's page states which quote and at which
-  date; seed the quote ladder for that date before the scenario starts.
+- The report the scenario runs has market data for the date it prices at. A fresh
+  environment carries no currency curve quotes, so seed them first with
+  [[file:/home/marco/Development/OreStudio/ores_dev_swift_curie/doc/recipes/seed-currency-quotes-for-a-local-report-run.org][How do I seed currency quotes for a local report run?]].
+  Without them the run reaches the grid and the engine refuses every curve.
 - The result rows table answers the reporting service:
   =grant select, insert, update, delete, truncate on
   ores_reporting_report_result_rows_tbl to ores_swift_curie_reporting_service=

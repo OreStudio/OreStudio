@@ -5636,6 +5636,8 @@ const fr: SourceCatalogue = {
             total: 'VAN totale',
             totalIn: 'VAN totale ({currency})',
             trade: 'Transaction',
+            tradeId: 'ID de transaction',
+            tradeType: 'Type de transaction',
             type: 'Type',
             book: 'Livre',
             actions: 'Actions',

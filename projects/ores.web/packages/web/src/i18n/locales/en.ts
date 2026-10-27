@@ -5522,8 +5522,6 @@ export const en: SourceCatalogue = {
             runTagOne: '{count} trade · priced {date}',
             runTagMany: '{count} trades · priced {date}',
             oneRowPer: {
-                tradeId: 'Trade ID',
-                tradeType: 'Trade type',
                 trade: 'One row per trade',
                 book: 'One row per book',
                 counterparty: 'One row per counterparty',
@@ -5551,6 +5549,8 @@ export const en: SourceCatalogue = {
             total: 'Total NPV',
             totalIn: 'Total NPV ({currency})',
             trade: 'Trade',
+            tradeId: 'Trade ID',
+            tradeType: 'Trade type',
             type: 'Type',
             book: 'Book',
             actions: 'Actions',

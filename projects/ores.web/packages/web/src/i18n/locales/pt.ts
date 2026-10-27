@@ -5594,6 +5594,8 @@ const pt: SourceCatalogue = {
             total: 'VAL total',
             totalIn: 'VAL total ({currency})',
             trade: 'Transação',
+            tradeId: 'ID da transação',
+            tradeType: 'Tipo de transação',
             type: 'Tipo',
             book: 'Livro',
             actions: 'Ações',

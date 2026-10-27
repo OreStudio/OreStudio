@@ -431,6 +431,19 @@ CATALOGUE: tuple[Check, ...] = (
         fix="Move each family's serialisation into a unit of its own, or lower the "
             "ceiling in KNOWN when a file has improved.",
     ),
+    # The tree builds as a unity build. Generated code never collides; the
+    # hand-written files that did are recorded, and the record only shrinks.
+    Check(
+        id="unity-collisions",
+        title="No two sources of a target define the same file-local name",
+        argv=("python3", "build/scripts/check_unity_collisions.py"),
+        classes=("cpp",),
+        paths=("projects/*",
+               "cmake/unity_exclusions.cmake",
+               "build/scripts/check_unity_collisions.py"),
+        fix="Name the new helper for what it does, or share one definition; when a "
+            "recorded file no longer collides, remove it from cmake/unity_exclusions.cmake.",
+    ),
     # A family is either supported by a table, migrating from a mapper, or
     # unused. The census is a decision; this check is whether the tree still
     # agrees with it.

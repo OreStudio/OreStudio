@@ -79,6 +79,7 @@ set(files
     "scripted_instrument_commands_tests.cpp"
     "settlement_type_commands_tests.cpp"
     "structure_commands_tests.cpp"
+    "structure_identifier_commands_tests.cpp"
     "structure_kind_commands_tests.cpp"
     "structure_member_commands_tests.cpp"
     "structure_template_commands_tests.cpp"

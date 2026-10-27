@@ -477,7 +477,7 @@ TEST_CASE("build_black_karasinski_tree rejects invalid parameters", "[black_kara
 TEST_CASE("black_karasinski states the largest step its scheme can carry", "[black_karasinski]") {
     // The law is stepped by an Euler scheme, so the bound is a calibration choice:
     // a week, and a caller that asks for more is refused.
-    black_karasinski_process process(0.3, 0.0, 0.2, 0.05);
+    black_karasinski_process process(0.3, 0.0, 0.2, 0.05, price_stream(42));
 
     CHECK(process.max_step() == Catch::Approx(1.0 / 52.0));
     CHECK(process.max_step() < 1.0);

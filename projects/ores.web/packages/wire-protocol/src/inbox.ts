@@ -1254,7 +1254,9 @@ export async function decideRequest(
  */
 export async function readHoldReasons(
     caller: AuthenticatedCaller,
-): Promise<readonly { readonly code: string; readonly name: string; readonly description: string }[]> {
+): Promise<
+    readonly { readonly code: string; readonly name: string; readonly description: string }[]
+> {
     const reply = await caller.callAuthenticated(
         INBOX_SUBJECTS.holdReasons,
         completeListRequest(INBOX_SUBJECTS.holdReasons, {
@@ -1266,7 +1268,10 @@ export async function readHoldReasons(
             // order of its own: the codes group the reasons by what is awaited.
             order: { field: '', descending: false },
         }),
-        z.looseObject({ result: resultEnvelopeSchema, reasons: z.array(z.looseObject({})).default([]) }),
+        z.looseObject({
+            result: resultEnvelopeSchema,
+            reasons: z.array(z.looseObject({})).default([]),
+        }),
     );
     ok(INBOX_SUBJECTS.holdReasons, reply.result);
     return reply.reasons.map((row) => ({

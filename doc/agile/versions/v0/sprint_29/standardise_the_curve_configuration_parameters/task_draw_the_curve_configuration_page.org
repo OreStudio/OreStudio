@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A person reads a curve configuration's sections and its curve entries with the s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -61,6 +61,29 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- *What the page needs, established before any code.* The web app reads through
+  a TypeScript BFF in =projects/ores.web/packages/bff=, whose routes are Fastify
+  handlers that read a wire-protocol subject and parse the reply with zod. The
+  curve configuration has no route there: =bff/src/curves.ts= serves market
+  curve series, which is a different concern, and
+  =reporting/ConfigurationPage.tsx= is a read-only view of a report's
+  configuration binding, not of a kind's sections.
+- *The data is already on the wire.* =configuration_document_protocol= carries
+  =get_curve_configuration_document=, and =curve_definition_protocol= exists
+  beside it, so the page needs no new backend operation. What it needs is a BFF
+  route over that subject, a client in =web/src/api=, and the page itself.
+- *The open question is the section mapping.* The document message carries one
+  vector per curve family (=yield_curves=, =equity_curves=, =fx_volatilities=),
+  while =curve_section= names the ORE container and the entry element
+  (=YieldCurves= holds =YieldCurve=). The page must join the two once, so a tab
+  is labelled from the section row and filled from the vector, rather than the
+  screen holding a table that maps one to the other.
+- *The shape to follow* is =refdata/ConventionRecordPage.tsx=, which composes
+  =ParameterRow=, =ParameterControl=, =ParameterDocuments= and
+  =ParameterFilters= over =ui/EditingMode=. A curve section is a collection, so
+  the card and the dialog come from the configuration standard's collection
+  shape rather than its group shape.
 
 * Test Scenarios
 

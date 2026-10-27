@@ -32,11 +32,6 @@ struct overloaded : Ts... {
     using Ts::operator()...;
 };
 
-// On (0, 1], so a logarithm of it is finite.
-double open_uniform(math::rng_stream& stream) {
-    return static_cast<double>((stream() >> 11) + 1) * 0x1.0p-53;
-}
-
 }
 
 arrival_law make_arrival_law(const arrival_spec& spec, math::rng_stream& stream) {
@@ -49,7 +44,7 @@ arrival_law make_arrival_law(const arrival_spec& spec, math::rng_stream& stream)
     const double rate = spec.ticks_per_hour / seconds_per_hour;
 
     if (spec.mode == "periodic")
-        return periodic_law{.rate = rate, .offset = open_uniform(stream)};
+        return periodic_law{.rate = rate, .offset = math::open_uniform(stream)};
     if (spec.mode == "poisson")
         return poisson_law{.rate = rate};
     if (spec.mode != "hawkes")
@@ -68,13 +63,13 @@ double draw_gap(const arrival_law& law, math::rng_stream& stream) {
     return std::visit(
         overloaded{
             [](const periodic_law& p) { return p.offset / p.rate; },
-            [&](const poisson_law& p) { return -std::log(open_uniform(stream)) / p.rate; },
+            [&](const poisson_law& p) { return -std::log(math::open_uniform(stream)) / p.rate; },
             [&](const hawkes_law& h) {
                 // The earlier of a baseline arrival and one from the fading excess
                 // (Dassios and Zhao, 2013). Both uniforms are drawn every time, so
                 // a stream's position does not depend on the state.
-                const double baseline_gap = -std::log(open_uniform(stream)) / h.baseline;
-                const double d = 1.0 + h.decay * std::log(open_uniform(stream)) / h.excess;
+                const double baseline_gap = -std::log(math::open_uniform(stream)) / h.baseline;
+                const double d = 1.0 + h.decay * std::log(math::open_uniform(stream)) / h.excess;
                 const double excess_gap = h.excess > 0.0 && d > 0.0 ?
                                               -std::log(d) / h.decay :
                                               std::numeric_limits<double>::infinity();

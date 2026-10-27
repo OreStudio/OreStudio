@@ -24,12 +24,8 @@ import { Route } from 'react-router';
 import type { CurveConfiguration } from '../api/curveConfiguration.js';
 import { renderRecords } from '../refdata/testSupport.js';
 import { textOf } from '../textOf.js';
-import {
-    CURVE_CONFIGURATION_ENTITY,
-    CurveConfigurationPage,
-    configurationKey,
-    curveConfigurationKey,
-} from './CurveConfigurationPage.js';
+import { CurveConfigurationPage, curveConfigurationKey } from './CurveConfigurationPage.js';
+import { configurationKey } from '../reporting/ConfigurationPage.js';
 
 /**
  * The curve configuration page, rendered from a seeded query cache.
@@ -84,7 +80,7 @@ const CURVE: CurveConfiguration = {
     modifiedBy: 'analyst',
     recordedAt: '2026-10-27 09:00:00.000000Z',
     documented: 2,
-    total: 4,
+    total: 5,
     sections: [
         {
             code: 'YieldCurves',
@@ -124,6 +120,15 @@ const CURVE: CurveConfiguration = {
                             label: '',
                             description: '',
                         }),
+                        leaf(
+                            'IncludeAtm',
+                            '/CurveConfiguration/CapFloorVolatilities/CapFloorVolatility/IncludeAtm',
+                            {
+                                value: 'true',
+                                sourceKind: 'boolean',
+                                label: 'Include at the money',
+                            },
+                        ),
                     ],
                     blocks: [
                         { element: 'Report', present: true },
@@ -218,11 +223,17 @@ describe('the curve configuration page', () => {
         expect(words).toContain('Linear');
     });
 
-    it('marks the gap of a leaf the contract does not document, and still shows its value', () => {
+    it('counts the gaps of an entry and still shows the value of a leaf the contract does not document', () => {
         const words = textOf(page('section:YieldCurves'));
         expect(words).toContain('Tolerance');
         expect(words).toContain('0.0001');
-        expect(words).toContain('No documentation');
+        expect(words).toContain('1 without documentation');
+    });
+
+    it('draws a flag as Yes or No', () => {
+        const words = textOf(page('section:YieldCurves'));
+        expect(words).toContain('Include at the money');
+        expect(words).toContain('Yes');
     });
 
     it('names the child elements an entry holds', () => {
@@ -247,8 +258,7 @@ describe('the curve configuration page', () => {
         expect(words).toContain('HK daily VaR');
     });
 
-    it('reads the history under the curve configuration entity', () => {
-        expect(CURVE_CONFIGURATION_ENTITY).toBe('ores.refdata.curve_configuration');
+    it('reads the history as the record timeline draws it', () => {
         expect(textOf(page('history'))).toContain(
             'Every version of the configuration, newest first',
         );

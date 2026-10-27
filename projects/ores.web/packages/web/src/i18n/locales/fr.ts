@@ -5967,6 +5967,11 @@ const fr: SourceCatalogue = {
         },
         details: {
             lead: "Ce qu'est la configuration, qui la détient, et quelle part en décrit le contrat de documentation unique.",
+            decides:
+                "Elle décide comment chaque courbe est définie et calibrée : ses cotations, ses segments et son interpolation. Elle ne décide ni le marché qu'une exécution lit, ni les données de transaction.",
+            related: 'Configurations liées',
+            relatedLead:
+                'La configuration de rapport que cette configuration de courbes remplit. Un rapport lie cette ligne, et une modification ici atteint sa prochaine exécution.',
         },
         fields: {
             name: 'Nom',
@@ -5977,7 +5982,10 @@ const fr: SourceCatalogue = {
             documented: 'Documenté',
             documentedValue: '{documented} des {total} paramètres',
             lastChanged: 'Dernière modification',
-            curveConfiguration: 'Configuration des courbes',
+            description: 'Description',
+            boundBy: 'Utilisée par les rapports',
+            boundByValue: '{count} rapports',
+            configuration: 'Configuration de rapport',
         },
         section: {
             title: '{section}, qui contient les entrées {entry}',
@@ -5993,10 +6001,6 @@ const fr: SourceCatalogue = {
             blockStated: 'déclaré',
             blockAbsent: 'non déclaré',
             blockNotRecorded: 'non enregistré ici',
-        },
-        leaf: {
-            notSet: 'Non défini',
-            gap: 'Aucune documentation',
         },
         usedBy: {
             lead: 'Une modification atteint la prochaine exécution de chaque rapport ci-dessous. Une exécution déjà produite garde ce avec quoi elle a couru.',
@@ -6019,6 +6023,8 @@ const fr: SourceCatalogue = {
         showAllDocumentation: 'Afficher toute la documentation',
         hideAllDocumentation: 'Masquer toute la documentation',
         required: 'Obligatoire',
+        yes: 'Oui',
+        no: 'Non',
         nouns: {
             parameters: 'paramètres',
             settings: 'réglages',

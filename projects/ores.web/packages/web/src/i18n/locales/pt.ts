@@ -5924,6 +5924,11 @@ const pt: SourceCatalogue = {
         },
         details: {
             lead: 'O que a configuração é, quem a detém, e quanto dela o contrato de documentação único descreve.',
+            decides:
+                'Decide como cada curva é definida e calibrada: as suas cotações, os seus segmentos e a sua interpolação. Não decide o mercado que uma execução lê, nem os dados de transação.',
+            related: 'Configurações relacionadas',
+            relatedLead:
+                'A configuração de relatório que esta configuração de curvas preenche. Um relatório liga essa linha, e uma alteração aqui chega à sua próxima execução.',
         },
         fields: {
             name: 'Nome',
@@ -5934,7 +5939,10 @@ const pt: SourceCatalogue = {
             documented: 'Documentado',
             documentedValue: '{documented} de {total} parâmetros',
             lastChanged: 'Última alteração',
-            curveConfiguration: 'Configuração de curvas',
+            description: 'Descrição',
+            boundBy: 'Usada por relatórios',
+            boundByValue: '{count} relatórios',
+            configuration: 'Configuração de relatório',
         },
         section: {
             title: '{section}, com entradas {entry}',
@@ -5950,10 +5958,6 @@ const pt: SourceCatalogue = {
             blockStated: 'declarado',
             blockAbsent: 'não declarado',
             blockNotRecorded: 'não registado aqui',
-        },
-        leaf: {
-            notSet: 'Não definido',
-            gap: 'Sem documentação',
         },
         usedBy: {
             lead: 'Uma alteração chega à próxima execução de cada relatório abaixo. Uma execução já produzida mantém aquilo com que correu.',
@@ -5976,6 +5980,8 @@ const pt: SourceCatalogue = {
         showAllDocumentation: 'Mostrar toda a documentação',
         hideAllDocumentation: 'Ocultar toda a documentação',
         required: 'Obrigatório',
+        yes: 'Sim',
+        no: 'Não',
         nouns: {
             parameters: 'parâmetros',
             settings: 'definições',

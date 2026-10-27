@@ -161,9 +161,34 @@ via its "Verifies task" field.
 
 * Review
 
+Findings of the local review of this change, in two passes: one on the
+standards the repository states, one on this task's acceptance.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The page calls =useTabs=, =useState= and =useEffect= after the loading and error returns, so the hook count changes when the read lands and React throws. | CurveConfigurationPage.tsx | Accept | Every hook now runs before the first return, and the tab list reads =reading.data?.sections ?? []=. The seeded cache hid this: a static render never saw a pending read. |
+| 2 | A flag shows =true= or =false=, not *Yes* or *No* (OL-READ-05). | CurveConfigurationPage.tsx | Accept | A leaf whose set states a flag draws the shared =oreParameter.yes= and =oreParameter.no=, added to the three catalogues, and a test covers it. |
+| 3 | The page copies the gap words into =curveConfiguration.leaf.gap= beside the shared panel's sentence (OL-WORDS-01). | CurveConfigurationPage.tsx, locales | Accept | The per-leaf tag and the two local copies are gone. The card counts its gaps, and the shared panel states the leaf's when it is opened. |
+| 4 | =CurveId= and =CurveDescription= are drawn twice, in the header and as parameters. | CurveConfigurationPage.tsx | Decline | The header carries the record's identity, and the card lists every leaf the entry takes, which OL-READ-04 requires: a leaf the document omits is still a row. The convention record page draws its =Id= term the same way. |
+| 5 | The page is reached only from the configuration's own record page, not from a list. | ConfigurationPage.tsx | Accept | A curve configuration binding in a report's configuration list now opens the curve page, which is the list a person meets a configuration through. The record page keeps its card. |
+| 6 | Details omits the description, the party's name and the configuration the document fills. | CurveConfigurationPage.tsx | Accept | All three are drawn, and the party reads as its name where the configuration row carries one. |
+| 7 | The page has no sentence that says what the configuration decides, no related configurations and no reach in the header. | CurveConfigurationPage.tsx | Accept | The deciding sentence and the count of reports that bind it are in. There is no access mark, because the page writes nothing. |
+| 8 | *Show all documentation* sits on each entry card, not over the section (OL-DOC-03). | CurveConfigurationPage.tsx | Accept | One button in the section header opens and closes every leaf of every entry in it. |
+| 9 | =list_requests.ts= carries shapes for other components' subjects. | wire-protocol/src/generated/list_requests.ts | Accept | The table was stale on =origin/main= after =report_result_rows= and =structure_identifiers= merged, so the =bff-list-requests= check failed on every branch. Regenerated from the protocols this branch already has, and named here. |
+| 10 | New task documents and story decisions ride the change. | task and story | Decline | The runbook asks for the successor work to be captured and for the task's decisions to reach the story. Two successors were split out because the page cannot write and does not draw the nested collections. |
+| 11 | The browser's section-order test asserts the order it seeds, so it proves only that the page preserves it. | screens.test.tsx | Decline | The order is decided by the route, and the BFF test asserts it from unordered rows. The browser test asserts the tabs the page draws from that answer. |
+| 12 | The page's leaf words left the leaf namespace: a local "not set" where OL-READ-03 wants *Default: X*. | CurveConfigurationPage.tsx | Accept | The row now prints *Default: X* when the contract states a default and a dash when it does not, exactly as the convention record row does, and the local word is gone. |
+| 13 | =oreParameter.yes= and =oreParameter.no= are one more copy of *Yes* and *No*. | locales | Decline | OL-READ-05 fixes *Yes* and *No* as the words for a flag, and the leaf namespace is where the leaf's words belong. The other copies sit under screens that own their reading; folding them in is not this task. |
+| 14 | "No {noun} matches the filters." is drawn once per entry card. | CurveConfigurationPage.tsx | Accept | The section draws it once, and a card whose leaves the filter hides draws no list. |
+| 15 | Details lacks the related-configuration card, prints a UUID, and the header lacks the reach and the access mark. | CurveConfigurationPage.tsx | Accept | The card links the report configuration the document fills, the UUID details are gone, and the count of binding reports is in Details. There is no access mark because the page writes nothing. |
+| 16 | The generated module's comment names =curve_terms.json= and "the extractor", which the generator does not read. | generate_curve_section_parameters.py | Accept | It names the projection and the ORE schema now, and the module was regenerated. |
+| 17 | =json= is imported unused, and the generated lookup is re-implemented in the route. | generator, curve-configuration.ts | Accept | The import is gone and the route calls =curveSectionOf=. |
+| 18 | Duplicated code: =valueText=, =configurationKey=, the empty value-set literal, the documentation key, the kind literal, the filters and the leaf row. | several | Accept | =valueText= moved to =refdata-calls.ts= and both routes call it; =NO_VALUE_SET= is exported and reused; =configurationKey= is imported from the configuration page; the key, the kind and the leaf words each have one home. Declined for =usedBy.lead=: the reach is read by two screens' own words. |
+| 19 | A row's flag is read two ways: ==== true= and a string comparison. | curve-configuration.ts | Decline | A block's presence reads a stored flag in any spelling the row may hold; a parameter's value is text either way and the screen never reinterprets it. |
+| 20 | The generated module carries a =position= that nothing renders and a =schema= that the route hardcodes. | generated.ts | Accept | Both are gone, and the module was regenerated. |
+| 21 | =entry= in the wiring and =entryElement= in the view name one thing. | generated.ts | Accept | The generated field is =entryElement=. |
+| 22 | Three docstrings restate what the code does. | curve-configuration.ts | Decline | They say why the function exists, which is what the comment standard asks for. |
+| 23 | A test asserts a constant against its own literal. | screens.test.tsx | Accept | The assertion is gone; the history tab is asserted through the words it draws. |
 
 * Result
 

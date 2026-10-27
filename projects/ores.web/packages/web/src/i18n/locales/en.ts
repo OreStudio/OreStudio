@@ -5881,6 +5881,11 @@ export const en: SourceCatalogue = {
         },
         details: {
             lead: 'What the configuration is, who holds it, and how much of it the one documentation contract describes.',
+            decides:
+                'It decides how each curve is defined and bootstrapped: its quotes, its segments and its interpolation. It does not decide the market a run reads, nor the trade data.',
+            related: 'Related configurations',
+            relatedLead:
+                'The report configuration this curve configuration fills. A report binds that row, and a change here reaches its next run.',
         },
         fields: {
             name: 'Name',
@@ -5891,7 +5896,10 @@ export const en: SourceCatalogue = {
             documented: 'Documented',
             documentedValue: '{documented} of {total} parameters',
             lastChanged: 'Last changed',
-            curveConfiguration: 'Curve configuration',
+            description: 'Description',
+            boundBy: 'Used by reports',
+            boundByValue: '{count} reports',
+            configuration: 'Report configuration',
         },
         section: {
             title: '{section}, holding {entry} entries',
@@ -5907,10 +5915,6 @@ export const en: SourceCatalogue = {
             blockStated: 'stated',
             blockAbsent: 'not stated',
             blockNotRecorded: 'not recorded here',
-        },
-        leaf: {
-            notSet: 'Not set',
-            gap: 'No documentation',
         },
         usedBy: {
             lead: 'A change reaches the next run of each report below. A run already produced keeps what it ran with.',
@@ -5933,6 +5937,8 @@ export const en: SourceCatalogue = {
         showAllDocumentation: 'Show all documentation',
         hideAllDocumentation: 'Hide all documentation',
         required: 'Required',
+        yes: 'Yes',
+        no: 'No',
         nouns: {
             parameters: 'parameters',
             settings: 'settings',

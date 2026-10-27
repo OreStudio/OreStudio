@@ -27,10 +27,14 @@ import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/repo
 import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_value_protocol';
 import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_catalogue_protocol';
 import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_setting_value_set_protocol';
-import { CURVE_SECTIONS, type CurveSectionWiring } from './curve-sections.generated.js';
-import { readValueSets } from './ore-value-sets.js';
+import {
+    CURVE_SECTIONS,
+    curveSectionOf,
+    type CurveSectionWiring,
+} from './curve-sections.generated.js';
+import { NO_VALUE_SET, readValueSets } from './ore-value-sets.js';
 import { notFound } from './errors.js';
-import { input, readAll, row, text } from './refdata-calls.js';
+import { input, readAll, row, text, valueText } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /*
@@ -136,21 +140,6 @@ export interface CurveConfigurationView {
     readonly documented: number;
     readonly total: number;
     readonly sections: readonly CurveSectionView[];
-}
-
-/** A value as the text a control shows: null when the row holds none. */
-function valueText(value: unknown): string | null {
-    if (value === null || value === undefined) {
-        return null;
-    }
-    if (typeof value === 'boolean') {
-        return value ? 'true' : 'false';
-    }
-    if (typeof value === 'number') {
-        return String(value);
-    }
-    const asText = text(value);
-    return asText === '' ? null : asText;
 }
 
 /** A row as a number, defaulting to zero for a row that states none. */
@@ -274,16 +263,7 @@ function parametersOf(
             format: text(entry?.['format']),
             introducedIn: text(entry?.['introduced_in']),
             removedIn: text(entry?.['removed_in']),
-            ...(entry === undefined
-                ? {
-                      valueSet: '',
-                      sourceKind: '',
-                      choices: [],
-                      minimum: null,
-                      maximum: null,
-                      pattern: '',
-                  }
-                : valueSetOf(scope, name)),
+            ...(entry === undefined ? NO_VALUE_SET : valueSetOf(scope, name)),
         };
     });
 }
@@ -398,7 +378,7 @@ export function registerCurveConfigurationRoutes(
                 .map((definition) => entryOf(definition, document, wiring, contract, valueSetOf));
             return {
                 code: section.code,
-                entryElement: section.entry === '' ? (wiring?.entry ?? '') : section.entry,
+                entryElement: section.entry === '' ? (wiring?.entryElement ?? '') : section.entry,
                 description: section.description,
                 mapped: wiring !== undefined,
                 entries,

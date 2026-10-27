@@ -63,6 +63,9 @@ const CONFIGURATION_EVENTS = [
     { component: 'reporting', entity: 'configuration_analytics' },
 ] as const;
 
+/** The kind code of a configuration filled by an ORE curve configuration document. */
+const CURVE_CONFIGURATION_KIND = 'curve_configuration';
+
 /** The eight characters a person reads to tell one identifier from another. */
 function shortId(id: string): string {
     return id.slice(0, 8);
@@ -187,7 +190,7 @@ export function ConfigurationPage(): ReactNode {
                         ],
                     ]}
                 />
-                {configuration.typeCode === 'curve_configuration' && (
+                {configuration.typeCode === CURVE_CONFIGURATION_KIND && (
                     <section className="card space-y-3 p-4">
                         <h2 className="text-sm font-medium">
                             {t('reporting.configurations.curveDocument')}
@@ -332,7 +335,7 @@ function BindingList({
                     <dd className="mt-0.5 text-sm">
                         <Link
                             to={
-                                binding.typeCode === 'curve_configuration'
+                                binding.typeCode === CURVE_CONFIGURATION_KIND
                                     ? curveConfigurationPath(binding.configurationId)
                                     : configurationPath(binding.configurationId)
                             }

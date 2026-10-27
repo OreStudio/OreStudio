@@ -30,13 +30,15 @@ import {
     type CurveSection,
 } from '../api/curveConfiguration.js';
 import { ApiFailure } from '../api/transport.js';
+import type { ConfigurationDetail } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { ParameterRow } from '../parameters/ParameterRow.js';
 import { shortDefault } from '../parameters/control.js';
 import { RecordTimeline } from '../refdata/RecordTimeline.js';
+import { configurationKey } from '../reporting/ConfigurationPage.js';
 import { Crumbs } from '../refdata/shared.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
-import { reportPath } from '../shell/paths.js';
+import { configurationPath, reportPath } from '../shell/paths.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { EditingModeToggle, useEditingMode, type EditingMode } from '../ui/EditingMode.js';
 import { Detail, Notice, PageHeader, Tag } from '../ui/Primitives.js';
@@ -69,9 +71,9 @@ export function curveConfigurationKey(configurationId: string): readonly unknown
     return ['curve-configuration', configurationId];
 }
 
-/** Where the report configuration a curve configuration fills is cached, as the configuration page reads it. */
-export function configurationKey(configurationId: string): readonly unknown[] {
-    return ['configuration', configurationId];
+/** The documentation switch of one leaf of one entry, which the section opens and closes. */
+function documentationKey(entryId: string, leaf: CurveParameter): string {
+    return `${entryId}|${leaf.ore}`;
 }
 
 /** The eight characters a person reads to tell one identifier from another. */
@@ -95,6 +97,29 @@ export function CurveConfigurationPage(): ReactNode {
         queryKey: configurationKey(id),
         queryFn: () => api.configuration(id),
     });
+    // Every hook runs before the first return, because the page draws its
+    // loading state, its refusal and its content from one component.
+    const sections = reading.data?.sections ?? [];
+    const tabs = [
+        'details',
+        ...sections.map((section) => `section:${section.code}`),
+        'usedBy',
+        'history',
+    ];
+    const panel = useTabs({
+        label: t('curveConfiguration.tabs.label'),
+        tabs,
+        titleOf: (tab) =>
+            tab.startsWith('section:')
+                ? tab.slice('section:'.length)
+                : t(`curveConfiguration.tabs.${tab}`),
+    });
+    // A tab the person opened stays drawn and hidden while another is open, so
+    // leaving a section never loses the documentation they opened in it.
+    const [seen, setSeen] = useState<ReadonlySet<string>>(() => new Set([panel.tab]));
+    useEffect(() => {
+        setSeen((before) => (before.has(panel.tab) ? before : new Set(before).add(panel.tab)));
+    }, [panel.tab]);
     const trail = [...area, { label: t('curveConfiguration.title') }];
     if (reading.isPending) {
         return (
@@ -129,26 +154,6 @@ export function CurveConfigurationPage(): ReactNode {
     }
     const curve = reading.data;
     const name = serving.data?.configuration.name ?? curve.name;
-    const tabs = [
-        'details',
-        ...curve.sections.map((section) => `section:${section.code}`),
-        'usedBy',
-        'history',
-    ] as const;
-    const panel = useTabs({
-        label: t('curveConfiguration.tabs.label'),
-        tabs,
-        titleOf: (tab) =>
-            tab.startsWith('section:')
-                ? tab.slice('section:'.length)
-                : t(`curveConfiguration.tabs.${tab}`),
-    });
-    // A tab the person opened stays drawn and hidden while another is open, so
-    // leaving a section never loses the documentation they opened in it.
-    const [seen, setSeen] = useState<ReadonlySet<string>>(() => new Set([panel.tab]));
-    useEffect(() => {
-        setSeen((before) => (before.has(panel.tab) ? before : new Set(before).add(panel.tab)));
-    }, [panel.tab]);
     const pane = (name: string, children: ReactNode): ReactNode => (
         <TabPane name={name} tab={panel.tab} seen={seen}>
             {children}
@@ -168,7 +173,7 @@ export function CurveConfigurationPage(): ReactNode {
                 actions={<EditingModeToggle mode={mode} onChange={setMode} words="leaves" />}
             />
             {panel.bar}
-            {pane('details', <DetailsTab curve={curve} name={name} />)}
+            {pane('details', <DetailsTab curve={curve} name={name} serving={serving.data} />)}
             {curve.sections.map((section) => (
                 <Fragment key={section.code}>
                     {pane(`section:${section.code}`, <SectionTab section={section} mode={mode} />)}
@@ -191,25 +196,36 @@ export function CurveConfigurationPage(): ReactNode {
 function DetailsTab({
     curve,
     name,
+    serving,
 }: {
     readonly curve: CurveConfiguration;
     readonly name: string;
+    readonly serving: ConfigurationDetail | undefined;
 }): ReactNode {
     const { t } = useTranslation();
     const entries = curve.sections.reduce((count, section) => count + section.entries.length, 0);
+    const party =
+        serving === undefined || serving.configuration.partyName === ''
+            ? curve.partyId
+            : serving.configuration.partyName;
     return (
         <section className="card space-y-4 p-4">
             <h2 className="text-sm font-medium">{t('curveConfiguration.tabs.details')}</h2>
             <p className="text-sm text-ink-muted">{t('curveConfiguration.details.lead')}</p>
+            <p className="text-sm">{t('curveConfiguration.details.decides')}</p>
             <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-4">
                 <Detail label={t('curveConfiguration.fields.name')} value={name} />
+                <Detail
+                    label={t('curveConfiguration.fields.description')}
+                    value={curve.description === '' ? '—' : curve.description}
+                />
                 <Detail
                     label={t('curveConfiguration.fields.version')}
                     value={String(curve.version)}
                 />
                 <Detail
                     label={t('curveConfiguration.fields.party')}
-                    value={curve.partyId === '' ? '—' : curve.partyId}
+                    value={party === '' ? '—' : party}
                 />
                 <Detail
                     label={t('curveConfiguration.fields.sections')}
@@ -227,14 +243,35 @@ function DetailsTab({
                     label={t('curveConfiguration.fields.lastChanged')}
                     value={curve.recordedAt === '' ? '—' : curve.recordedAt}
                 />
-                <div className="sm:col-span-4">
-                    <Detail
-                        label={t('curveConfiguration.fields.curveConfiguration')}
-                        value={curve.id === '' ? '—' : curve.id}
-                        mono
-                    />
-                </div>
+                <Detail
+                    label={t('curveConfiguration.fields.boundBy')}
+                    value={
+                        serving === undefined
+                            ? '—'
+                            : t('curveConfiguration.fields.boundByValue', {
+                                  count: String(serving.reports.length),
+                              })
+                    }
+                />
             </dl>
+            <div className="space-y-1 border-t border-line-subtle pt-3">
+                <h3 className="text-xs text-ink-faint">
+                    {t('curveConfiguration.details.related')}
+                </h3>
+                <p className="text-sm">
+                    <Link
+                        to={configurationPath(curve.configurationId)}
+                        className="text-accent hover:text-accent-bright"
+                    >
+                        {serving === undefined
+                            ? shortId(curve.configurationId)
+                            : serving.configuration.name}
+                    </Link>
+                </p>
+                <p className="text-xs text-ink-faint">
+                    {t('curveConfiguration.details.relatedLead')}
+                </p>
+            </div>
         </section>
     );
 }
@@ -252,6 +289,11 @@ function SectionTab({
     const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
     const leaves = section.entries.flatMap((entry) => entry.parameters);
     const shown = leaves.filter((leaf) => leaf.value !== null);
+    const allOpen =
+        leaves.length > 0 &&
+        section.entries.every((entry) =>
+            entry.parameters.every((leaf) => opened.has(documentationKey(entry.id, leaf))),
+        );
     return (
         <section className="space-y-4">
             <header className="space-y-1">
@@ -268,13 +310,44 @@ function SectionTab({
             {!section.mapped && (
                 <Notice tone="warn">{t('curveConfiguration.section.unmapped')}</Notice>
             )}
-            <ParameterFilters
-                set={setOnly}
-                onSet={() => setSetOnly((before) => !before)}
-                shown={shown.length}
-                total={leaves.length}
-                noun={t('oreParameter.nouns.parameters')}
-            />
+            <div className="flex flex-wrap items-center gap-2">
+                <ParameterFilters
+                    set={setOnly}
+                    onSet={() => setSetOnly((before) => !before)}
+                    shown={shown.length}
+                    total={leaves.length}
+                    noun={t('oreParameter.nouns.parameters')}
+                />
+                <span className="grow" />
+                {leaves.length > 0 && (
+                    <button
+                        type="button"
+                        className="text-xs text-accent hover:text-accent-bright"
+                        onClick={() =>
+                            setOpened(
+                                allOpen
+                                    ? new Set()
+                                    : new Set(
+                                          section.entries.flatMap((entry) =>
+                                              entry.parameters.map((leaf) =>
+                                                  documentationKey(entry.id, leaf),
+                                              ),
+                                          ),
+                                      ),
+                            )
+                        }
+                    >
+                        {allOpen
+                            ? t('oreParameter.hideAllDocumentation')
+                            : t('oreParameter.showAllDocumentation')}
+                    </button>
+                )}
+            </div>
+            {setOnly && shown.length === 0 && (
+                <p className="text-sm text-ink-muted">
+                    {t('oreParameter.filters.none', { noun: t('oreParameter.nouns.parameters') })}
+                </p>
+            )}
             {section.entries.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('curveConfiguration.section.empty')}</p>
             ) : (
@@ -295,20 +368,6 @@ function SectionTab({
                                 return next;
                             })
                         }
-                        onAll={(open) =>
-                            setOpened((before) => {
-                                const next = new Set(before);
-                                for (const leaf of entry.parameters) {
-                                    const key = `${entry.id}|${leaf.ore}`;
-                                    if (open) {
-                                        next.add(key);
-                                    } else {
-                                        next.delete(key);
-                                    }
-                                }
-                                return next;
-                            })
-                        }
                     />
                 ))
             )}
@@ -324,7 +383,6 @@ function EntryCard({
     setOnly,
     opened,
     onToggle,
-    onAll,
 }: {
     readonly entry: CurveEntry;
     readonly section: CurveSection;
@@ -332,13 +390,10 @@ function EntryCard({
     readonly setOnly: boolean;
     readonly opened: ReadonlySet<string>;
     readonly onToggle: (key: string) => void;
-    readonly onAll: (open: boolean) => void;
 }): ReactNode {
     const { t } = useTranslation();
     const visible = entry.parameters.filter((leaf) => !setOnly || leaf.value !== null);
     const gaps = entry.parameters.filter((leaf) => !leaf.documented).length;
-    const allOpen =
-        visible.length > 0 && visible.every((leaf) => opened.has(`${entry.id}|${leaf.ore}`));
     return (
         <article className="card space-y-3 p-4">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
@@ -365,27 +420,12 @@ function EntryCard({
                             {t('curveConfiguration.entry.gaps', { count: String(gaps) })}
                         </Tag>
                     )}
-                    {visible.length > 0 && (
-                        <button
-                            type="button"
-                            className="text-xs text-accent hover:text-accent-bright"
-                            onClick={() => onAll(!allOpen)}
-                        >
-                            {allOpen
-                                ? t('oreParameter.hideAllDocumentation')
-                                : t('oreParameter.showAllDocumentation')}
-                        </button>
-                    )}
                 </div>
             </header>
-            {visible.length === 0 ? (
-                <p className="text-sm text-ink-muted">
-                    {t('oreParameter.filters.none', { noun: t('oreParameter.nouns.parameters') })}
-                </p>
-            ) : (
+            {visible.length > 0 && (
                 <ul className="divide-y divide-line-subtle">
                     {visible.map((leaf) => {
-                        const key = `${entry.id}|${leaf.ore}`;
+                        const key = documentationKey(entry.id, leaf);
                         return (
                             <LeafRow
                                 key={key}
@@ -439,7 +479,8 @@ function LeafRow({
 }): ReactNode {
     const { t } = useTranslation();
     const label = leaf.label === '' ? leaf.ore : leaf.label;
-    const fallback = shortDefault(leaf.defaultText);
+    const words = leaf.choices.find((choice) => choice.value === leaf.value)?.label;
+    const flag = leaf.sourceKind === 'boolean';
     return (
         <li className="space-y-2 py-3">
             <ParameterRow
@@ -450,22 +491,18 @@ function LeafRow({
                 <div className="flex flex-wrap items-center gap-2">
                     {leaf.value === null ? (
                         <span className="text-sm text-ink-faint">
-                            {fallback === ''
-                                ? t('curveConfiguration.leaf.notSet')
-                                : t('oreParameter.defaultIs', { text: fallback })}
-                        </span>
-                    ) : leaf.choices.length > 0 &&
-                      leaf.choices.some((choice) => choice.value === leaf.value) ? (
-                        <span className="text-sm">
-                            {leaf.choices.find((choice) => choice.value === leaf.value)?.label}
+                            {leaf.documented
+                                ? t('oreParameter.defaultIs', { text: leaf.defaultText })
+                                : '—'}
                         </span>
                     ) : (
-                        <span className="font-mono text-xs">{leaf.value}</span>
-                    )}
-                    {!leaf.documented && (
-                        <Tag small tone="warn">
-                            {t('curveConfiguration.leaf.gap')}
-                        </Tag>
+                        <span className={flag ? 'text-sm' : 'font-mono text-xs'}>
+                            {flag
+                                ? t(leaf.value === 'true' ? 'oreParameter.yes' : 'oreParameter.no')
+                                : words !== undefined && words !== leaf.value
+                                  ? `${words} (${leaf.value})`
+                                  : leaf.value}
+                        </span>
                     )}
                 </div>
             </ParameterRow>

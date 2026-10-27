@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/close-the-gaps-the-unity-build-review-found
-#+pr:
+#+pr: 3913
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -112,7 +112,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3913][#3913]] | [build] Close the gaps the unity build review found |
 
 * Review
 

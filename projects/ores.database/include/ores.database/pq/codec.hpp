@@ -42,6 +42,9 @@ namespace ores::database::pq {
 struct param final {
     std::string bytes;
     bool null = false;
+    Oid oid = 0;
+    /// A text parameter, typed by the server from where it is used.
+    bool text = false;
 };
 
 namespace wire {
@@ -314,6 +317,7 @@ constexpr Oid oid_of() {
 template <typename T>
 param encode_param(const T& v) {
     param p;
+    p.oid = oid_of<T>();
     if constexpr (detail::is_optional<T>::value) {
         if (!v) {
             p.null = true;

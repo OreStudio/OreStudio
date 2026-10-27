@@ -50,6 +50,7 @@ group's standard constructs.
 | [[id:D09D4DE0-811D-458B-BF03-79B21A4E888E][ores.cpp.repository.mapper_impl]] | Domain ↔ entity conversions including timestamp handling. =repository= profile. |
 | [[id:6499F37D-73C3-4E3C-A5D8-6DE23D160D33][ores.cpp.repository.repository_header]] | Repository declarations with custom-member paste points. =repository= profile. |
 | [[id:CA9F9135-3EB4-4578-9A97-760F4CA28480][ores.cpp.repository.repository_impl]] | CRUD + temporal queries over sqlgen; custom-method paste points. =repository= profile. |
+| [[id:42F146B8-C9D1-4B47-85BD-6D6830984606][ores.cpp.repository.repository_impl_pq]] | The repository source of a component on the libpq layer: the sqlgen archetype's queries, run through the ores.database query builder. =repository= profile. |
 
 * See also
 

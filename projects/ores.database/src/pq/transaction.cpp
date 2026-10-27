@@ -32,7 +32,8 @@ const statement<std::tuple<>, std::string, std::string, std::string, std::string
                 " set_config('app.current_party_id', $2, true),"
                 " set_config('app.visible_party_ids', $3, true),"
                 " set_config('app.current_actor', $4, true),"
-                " set_config('app.current_service', $5, true)"};
+                " set_config('app.current_service', $5, true),"
+                " set_config('TimeZone', 'UTC', true)"};
 
 std::string visible_text(const std::vector<boost::uuids::uuid>& ids) {
     if (ids.empty())
@@ -93,6 +94,28 @@ void transaction::round_trip(std::span<const sent_statement> statements) {
     std::vector<sent_command> sent;
     std::unordered_set<std::string> preparing;
     const auto send = [&](const sent_statement& s) {
+        std::vector<const char*> values;
+        std::vector<int> lengths;
+        std::vector<int> formats;
+        for (const auto& p : s.params) {
+            values.push_back(p.null ? nullptr : p.bytes.data());
+            lengths.push_back(static_cast<int>(p.bytes.size()));
+            formats.push_back(p.text ? 0 : 1);
+        }
+        if (s.name.empty()) {
+            const std::string sql(s.sql);
+            if (PQsendQueryParams(c,
+                                  sql.c_str(),
+                                  static_cast<int>(s.params.size()),
+                                  s.oids.data(),
+                                  values.data(),
+                                  lengths.data(),
+                                  formats.data(),
+                                  s.result_format) != 1)
+                lost(connection_, "Could not send a statement");
+            sent.push_back({sent_kind::execute, &s});
+            return;
+        }
         const std::string name(s.name);
         if (!connection_.is_prepared(name) && preparing.insert(name).second) {
             const std::string sql(s.sql);
@@ -102,20 +125,13 @@ void transaction::round_trip(std::span<const sent_statement> statements) {
                 lost(connection_, "Could not send a prepare");
             sent.push_back({sent_kind::prepare, &s});
         }
-        std::vector<const char*> values;
-        std::vector<int> lengths;
-        std::vector<int> formats(s.params.size(), 1);
-        for (const auto& p : s.params) {
-            values.push_back(p.null ? nullptr : p.bytes.data());
-            lengths.push_back(static_cast<int>(p.bytes.size()));
-        }
         if (PQsendQueryPrepared(c,
                                 name.c_str(),
                                 static_cast<int>(s.params.size()),
                                 values.data(),
                                 lengths.data(),
                                 formats.data(),
-                                1) != 1)
+                                s.result_format) != 1)
             lost(connection_, "Could not send a statement");
         sent.push_back({sent_kind::execute, &s});
     };
@@ -139,7 +155,10 @@ void transaction::round_trip(std::span<const sent_statement> statements) {
             lost(connection_, "The connection ended a pipeline early");
         if (r.status() != PGRES_PIPELINE_ABORTED) {
             try {
-                const auto what = command.statement ? command.statement->name : "begin";
+                const std::string_view what = !command.statement ? "begin" :
+                                              command.statement->name.empty() ?
+                                                                   "statement" :
+                                                                   command.statement->name;
                 check(connection_, r, what);
                 if (command.kind == sent_kind::begin) {
                     begun_ = true;
@@ -147,7 +166,8 @@ void transaction::round_trip(std::span<const sent_statement> statements) {
                     connection_.mark_prepared(command.statement->name);
                     command.statement->counters->prepares.fetch_add(1);
                 } else {
-                    command.statement->counters->executions.fetch_add(1);
+                    if (command.statement->counters)
+                        command.statement->counters->executions.fetch_add(1);
                     if (command.statement->out)
                         *command.statement->out = std::move(r);
                 }

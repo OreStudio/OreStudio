@@ -43,7 +43,7 @@ domain::lei_entity lei_entity_mapper::map(const lei_entity_entity& v) {
 
     domain::lei_entity r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.lei = v.lei.value();
+    r.lei = v.lei;
     r.entity_legal_name = v.entity_legal_name;
     r.entity_entity_category = v.entity_entity_category;
     r.entity_entity_sub_category = v.entity_entity_sub_category;

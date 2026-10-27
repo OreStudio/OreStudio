@@ -25,8 +25,8 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_DATASET_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_DATASET_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct dataset_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_dq_datasets_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
 
@@ -72,6 +72,41 @@ struct dataset_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = dataset_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) | query_builder::bind("code", &e::code) |
+               query_builder::bind("catalog_name", &e::catalog_name) |
+               query_builder::bind("subject_area_name", &e::subject_area_name) |
+               query_builder::bind("domain_name", &e::domain_name) |
+               query_builder::bind("coding_scheme_code", &e::coding_scheme_code) |
+               query_builder::bind("origin_code", &e::origin_code) |
+               query_builder::bind("nature_code", &e::nature_code) |
+               query_builder::bind("treatment_code", &e::treatment_code) |
+               query_builder::bind("methodology_id", &e::methodology_id) |
+               query_builder::bind("name", &e::name) |
+               query_builder::bind("description", &e::description) |
+               query_builder::bind("source_system_id", &e::source_system_id) |
+               query_builder::bind("business_context", &e::business_context) |
+               query_builder::bind("upstream_derivation_id", &e::upstream_derivation_id) |
+               query_builder::bind("lineage_depth", &e::lineage_depth) |
+               query_builder::bind("as_of_date", &e::as_of_date) |
+               query_builder::bind("ingestion_timestamp", &e::ingestion_timestamp) |
+               query_builder::bind("license_info", &e::license_info) |
+               query_builder::bind("artefact_type", &e::artefact_type) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const dataset_entity& v);

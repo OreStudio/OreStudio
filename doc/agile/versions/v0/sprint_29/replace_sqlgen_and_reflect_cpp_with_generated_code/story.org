@@ -46,7 +46,7 @@ Every component reads and writes the database through generated statements on a 
 | [[id:86EB0D6E-8BF5-4416-B578-84B0DC669D8C][Build every component as a unity build]] | STARTED | 2026-10-27 | | Make generated code and the test constants unity-safe, turn on a unity build of 16 for every target, keep the hand-written collisions out of it under a check, and measure the full build. |
 | [[id:B6121657-0FF2-4570-8CAF-EAF77E1AFDDF][Remove the unity build exclusions]] | DONE | 2026-10-27 | 2026-10-27 | Fix the hand-written file-local collisions recorded in cmake/unity_exclusions.cmake, component by component: share identical helpers, name different ones for what they do, and move file-local loggers into their classes. |
 | [[id:C80F7F1A-F761-42F5-8D86-C4D2EE3C52A4][Build the libpq layer in ores.database]] | DONE | 2026-10-27 | 2026-10-27 | A thin layer of our own over libpq: RAII handles, one ensure for results, SQLSTATE mapped to our exceptions, prepared statements, pipeline batches, COPY and the tenant session settings. |
-| [[id:FDB4F81B-421E-46AF-A2FD-F4EAF848CB9A][Generate repositories on libpq for ores.dq]] | BACKLOG | | | Change the repository templates to emit statements, typed parameters and row decoders on the libpq layer, behind the same repository interface, and regenerate ores.dq. |
+| [[id:FDB4F81B-421E-46AF-A2FD-F4EAF848CB9A][Generate repositories on libpq for ores.dq]] | DONE | 2026-10-27 | 2026-10-27 | Change the repository templates to emit statements, typed parameters and row decoders on the libpq layer, behind the same repository interface, and regenerate ores.dq. |
 | [[id:A9DC77BC-327A-4E51-A4E0-C3B6BA20A532][Move ores.refdata repositories to libpq]] | BACKLOG | | | Regenerate ores.refdata's repositories on the libpq layer and move its hand-written queries. |
 | [[id:8B46D41B-AC72-42CD-9469-B764A5996256][Move ores.trading repositories to libpq]] | BACKLOG | | | Regenerate ores.trading's repositories on the libpq layer and move its hand-written queries. |
 | [[id:DC215EA7-6398-4620-AFE8-CD6DE7AB146F][Move ores.reporting repositories to libpq]] | BACKLOG | | | Regenerate ores.reporting's repositories on the libpq layer and move its hand-written queries. |
@@ -62,6 +62,7 @@ Every component reads and writes the database through generated statements on a 
 | [[id:71C5FBA3-B3A2-498F-91C4-0582B784A7E7][Move ores.telemetry repositories to libpq]] | BACKLOG | | | Regenerate ores.telemetry's repositories on the libpq layer and move its hand-written queries. |
 | [[id:82D7C498-FF20-4B04-8FFC-3AD28243B821][Move ores.variability repositories to libpq]] | BACKLOG | | | Regenerate ores.variability's repositories on the libpq layer and move its hand-written queries. |
 | [[id:C6FEBC6C-A575-40FA-B0A3-BCB5E638B82C][Remove sqlgen]] | BACKLOG | | | Move the remaining hand-written sqlgen use in ores.database and ores.testing, delete the sqlgen facets and drop the dependency. |
+| [[id:551DA90D-4457-4CA2-9617-B18C5FDAEDBF][Read and write typed binary rows in the generated repositories]] | BACKLOG | | | After sqlgen is gone, the generated repositories read typed binary rows instead of text into string-shaped entities: the entity holds each column's own type (uuid, timestamp, date, decimal), the mapper's string conversions go, and the timestamp text parsing the codec analysis measured as the dominant cost goes with them. |
 | [[id:EE2F8EC0-352D-4334-9F9B-7404016A7C57][Write codecs for the types with a custom encoding]] | BACKLOG | | | Hand-written JSON and MessagePack codecs, once, for the twelve types whose wire form our reflectors set: uuid, tenant_id, decimal, time_point, year_month_day and the rest. |
 | [[id:0A1C6A23-7C5C-485C-95AF-FC49955E8176][Generate codecs for ores.dq and switch the wire codec]] | BACKLOG | | | Generate each type's JSON and MessagePack functions into its own translation unit, make ores::nats::wire_codec call them, and regenerate ores.dq. |
 | [[id:467D400B-CD8C-4B2A-95E0-013FB81D9B1C][Move ores.refdata codecs off reflect-cpp]] | BACKLOG | | | Regenerate ores.refdata's codecs and move its hand-written reflect-cpp use to the generated functions or to yyjson. |
@@ -96,6 +97,9 @@ Every component reads and writes the database through generated statements on a 
   3. Generate repositories on the layer: the templates move with =ores.dq=,
      then each other component moves in its own task.
   4. Remove sqlgen.
+     Then read and write typed binary rows in the generated repositories: until
+     sqlgen goes they read text into the entity sqlgen filled, so the mapper
+     is unchanged.
   5. Write codecs, once, for the twelve types with a custom encoding.
   6. Generate codecs and switch the wire codec: the templates move with
      =ores.dq=, then each other component moves in its own task.
@@ -122,6 +126,12 @@ Every component reads and writes the database through generated statements on a 
   - [[id:63AFAA9D-42F6-465E-9423-9A3FE81148A4][Hand repositories an open transaction, not credentials]]
   - [[id:B1575A54-4B73-4E3C-B958-0041E01D1625][Declare hand-written statements once, prepared and typed]]
   - [[id:E750C5F0-5A59-466D-A33A-538B90A1F1B9][Say in every store error whether to retry]]
+- *The repositories move through a query builder that matches sqlgen.* The
+  repository templates keep their sqlgen-shaped queries; =ores::database::query_builder=
+  runs them on the libpq layer with sqlgen's names and SQL, and reads text into
+  the entity sqlgen filled. A component moves by stating
+  =#+repository_backend: libpq=. Typed binary rows and generated statements
+  follow sqlgen's removal.
 - *Generated code stays unity-safe.* Every file-local name in a generated file
   carries its entity's name.
 

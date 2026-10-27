@@ -83,6 +83,11 @@ std::span<const std::byte> result::value(int row, int column) const noexcept {
     return {data, static_cast<std::size_t>(PQgetlength(handle_.get(), row, column))};
 }
 
+std::string_view result::text(int row, int column) const noexcept {
+    return {PQgetvalue(handle_.get(), row, column),
+            static_cast<std::size_t>(PQgetlength(handle_.get(), row, column))};
+}
+
 std::uint64_t result::affected() const {
     const std::string_view tag = PQcmdTuples(handle_.get());
     std::uint64_t n = 0;

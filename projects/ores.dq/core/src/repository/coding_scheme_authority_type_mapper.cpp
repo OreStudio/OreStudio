@@ -43,7 +43,7 @@ coding_scheme_authority_type_mapper::map(const coding_scheme_authority_type_enti
     domain::coding_scheme_authority_type r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.name = v.name;
     r.description = v.description;
     r.modified_by = v.modified_by;

@@ -42,6 +42,107 @@ struct statement_counters final {
 };
 
 /**
+ * @brief Reads every row of a result into the given column types.
+ */
+template <typename... Columns>
+std::vector<std::tuple<Columns...>> read_rows(const result& r) {
+    std::vector<std::tuple<Columns...>> out;
+    out.reserve(static_cast<std::size_t>(r.rows()));
+    for (int i = 0; i < r.rows(); ++i) {
+        [&]<std::size_t... I>(std::index_sequence<I...>) {
+            out.emplace_back(read<Columns>(r, i, static_cast<int>(I))...);
+        }(std::index_sequence_for<Columns...>{});
+    }
+    return out;
+}
+
+/**
+ * @brief A statement declared once whose parameters and results are text, as
+ * a repository that fills a text entity runs. The server types each parameter
+ * from where it is used, so the statement names no types; it is prepared once
+ * per connection all the same.
+ */
+class text_statement final {
+public:
+    text_statement(std::string_view name, std::string_view sql)
+        : name_(name)
+        , sql_(sql) {}
+
+    text_statement(const text_statement&) = delete;
+    text_statement& operator=(const text_statement&) = delete;
+
+    [[nodiscard]] std::string_view name() const noexcept {
+        return name_;
+    }
+
+    [[nodiscard]] std::string_view sql() const noexcept {
+        return sql_;
+    }
+
+    [[nodiscard]] const statement_counters& counters() const noexcept {
+        return counters_;
+    }
+
+private:
+    std::string_view name_;
+    std::string_view sql_;
+    statement_counters counters_;
+};
+
+/**
+ * @brief A statement whose text is built at run time, such as a list read
+ * whose filter and order the request states.
+ *
+ * Every value is bound, never written into the text: bind() keeps the value
+ * as a typed parameter and returns its placeholder. Only code, such as a
+ * column a whitelist allowed, is appended as text. It runs unnamed, so it is
+ * parsed on each run and never prepared.
+ */
+class dynamic_statement final {
+public:
+    explicit dynamic_statement(std::string sql = {})
+        : sql_(std::move(sql)) {}
+
+    dynamic_statement& append(std::string_view text) {
+        sql_ += text;
+        return *this;
+    }
+
+    template <typename T>
+    std::string bind(const T& v) {
+        params_.push_back(encode_param<T>(v));
+        oids_.push_back(params_.back().oid);
+        return "$" + std::to_string(params_.size());
+    }
+
+    /**
+     * @brief Adds a parameter already encoded, for a statement whose text
+     * already holds its placeholder.
+     */
+    void add(param p) {
+        oids_.push_back(p.oid);
+        params_.push_back(std::move(p));
+    }
+
+    [[nodiscard]] const std::string& sql() const noexcept {
+        return sql_;
+    }
+
+    [[nodiscard]] const std::vector<param>& params() const noexcept {
+        return params_;
+    }
+
+    [[nodiscard]] const std::vector<Oid>& oids() const noexcept {
+        return oids_;
+    }
+
+private:
+    std::string sql_;
+    std::vector<param> params_;
+    std::vector<Oid> oids_;
+};
+
+/**
  * @brief A statement declared once: its name, its SQL, the types of its
  * parameters and the types of the columns it returns.
  *
@@ -90,19 +191,10 @@ public:
      * @brief Reads every row of a result into the declared column types.
      */
     [[nodiscard]] std::vector<row> rows(const result& r) const {
-        std::vector<row> out;
-        out.reserve(static_cast<std::size_t>(r.rows()));
-        for (int i = 0; i < r.rows(); ++i)
-            out.push_back(read_row(r, i, std::index_sequence_for<Columns...>{}));
-        return out;
+        return read_rows<Columns...>(r);
     }
 
 private:
-    template <std::size_t... I>
-    static row read_row(const result& r, int i, std::index_sequence<I...>) {
-        return row{read<Columns>(r, i, static_cast<int>(I))...};
-    }
-
     std::string_view name_;
     std::string_view sql_;
     statement_counters counters_;

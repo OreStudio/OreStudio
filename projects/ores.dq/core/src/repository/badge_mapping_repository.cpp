@@ -19,12 +19,11 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/badge_mapping_repository.hpp"
-#include "ores.database/domain/tenant_aware_pool.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/badge_mapping.hpp"
@@ -37,16 +36,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
-#include <sqlgen/aggregations.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/select_from.hpp>
-#include <sqlgen/to.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -54,13 +43,14 @@
 
 namespace ores::dq::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string badge_mapping_repository::sql() {
-    return generate_create_table_sql<badge_mapping_entity>(lg());
+    return query_builder::generate_create_table_sql<badge_mapping_entity>(lg());
 }
 
 badge_mapping_repository::badge_mapping_repository(context ctx)
@@ -138,7 +128,7 @@ void badge_mapping_repository::write(
 std::vector<domain::badge_mapping> badge_mapping_repository::read_latest() {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<badge_mapping_entity>> |
+    const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("code_domain_code"_c, "entity_code"_c);
 
@@ -156,10 +146,10 @@ std::vector<domain::badge_mapping> badge_mapping_repository::read_latest(std::ui
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<badge_mapping_entity>> |
+    const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("code_domain_code"_c, "entity_code"_c) | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+                       order_by("code_domain_code"_c, "entity_code"_c) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return execute_read_query<badge_mapping_entity, domain::badge_mapping>(
         ctx_,
@@ -179,7 +169,7 @@ badge_mapping_repository::read_latest(const std::string& code_domain_code,
     const auto code_domain_code_str = code_domain_code;
     const auto entity_code_str = entity_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<badge_mapping_entity>> |
+    const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
                        where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
                              "entity_code"_c == entity_code && "valid_to"_c == max.value());
 
@@ -195,19 +185,12 @@ std::uint32_t badge_mapping_repository::get_total_mapping_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active badge mappings count";
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::select_from<badge_mapping_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = execute_count_query<badge_mapping_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting badge mappings");
     BOOST_LOG_SEV(lg(), debug) << "Total active badge mappings count: " << count;
     return count;
 }
@@ -219,7 +202,7 @@ badge_mapping_repository::read_latest_by_code_domain(const std::string& code_dom
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<badge_mapping_entity>> |
+    const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
                        where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
                              "valid_to"_c == max.value()) |
                        order_by("entity_code"_c);
@@ -240,7 +223,7 @@ badge_mapping_repository::read_latest_by_entity(const std::string& entity_code) 
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<badge_mapping_entity>> |
+    const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
                        where("tenant_id"_c == tid && "entity_code"_c == entity_code &&
                              "valid_to"_c == max.value()) |
                        order_by("code_domain_code"_c);
@@ -262,10 +245,11 @@ std::vector<domain::badge_mapping> badge_mapping_repository::read_latest_by_code
 
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<badge_mapping_entity>> |
+    const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
                        where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
                              "valid_to"_c == max.value()) |
-                       order_by("entity_code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+                       order_by("entity_code"_c) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
     auto rows = execute_read_query<badge_mapping_entity, domain::badge_mapping>(
         ctx_,
@@ -283,20 +267,13 @@ std::uint32_t badge_mapping_repository::get_total_mapping_count_by_code_domain(
                                << code_domain_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::select_from<badge_mapping_entity>(sqlgen::count().as<"count">()) |
+    const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
                        where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
-                             "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = execute_count_query<badge_mapping_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting badge mappings");
     BOOST_LOG_SEV(lg(), debug) << "Total active badge mappings count by code_domain: " << count;
     return count;
 }
@@ -307,20 +284,13 @@ badge_mapping_repository::get_total_mapping_count_by_entity(const std::string& e
                                << entity_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    struct count_result {
-        long long count;
-    };
-
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::select_from<badge_mapping_entity>(sqlgen::count().as<"count">()) |
+    const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
                        where("tenant_id"_c == tid && "entity_code"_c == entity_code &&
-                             "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+                             "valid_to"_c == max.value());
 
-    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
+    const auto count = execute_count_query<badge_mapping_entity>(
+        ctx_, query, std::nullopt, lg(), "Counting badge mappings");
     BOOST_LOG_SEV(lg(), debug) << "Total active badge mappings count by entity: " << count;
     return count;
 }
@@ -331,7 +301,7 @@ badge_mapping_repository::read_all_by_code_domain(const std::string& code_domain
                                << code_domain_code;
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<badge_mapping_entity>> |
+    const auto query = query_builder::read<std::vector<badge_mapping_entity>> |
                        where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code) |
                        order_by("entity_code"_c, "valid_from"_c.desc());
 
@@ -396,7 +366,7 @@ badge_mapping_repository::remove(const std::string& code_domain_code,
     const auto code_domain_code_str = code_domain_code;
     const auto entity_code_str = entity_code;
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<badge_mapping_entity> |
+    const auto query = query_builder::delete_from<badge_mapping_entity> |
                        where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code &&
                              "entity_code"_c == entity_code && "valid_to"_c == max.value() &&
                              "version"_c == expected);
@@ -426,7 +396,7 @@ void badge_mapping_repository::remove_by_code_domain(const std::string& code_dom
     BOOST_LOG_SEV(lg(), debug) << "Removing all badge mappings from database: " << code_domain_code;
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<badge_mapping_entity> |
+    const auto query = query_builder::delete_from<badge_mapping_entity> |
                        where("tenant_id"_c == tid && "code_domain_code"_c == code_domain_code);
 
     execute_delete_query(ctx_, query, lg(), "removing all badge mappings from database");

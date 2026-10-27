@@ -76,6 +76,11 @@ public:
     [[nodiscard]] std::span<const std::byte> value(int row, int column) const noexcept;
 
     /**
+     * @brief A value of a statement that asked for text results.
+     */
+    [[nodiscard]] std::string_view text(int row, int column) const noexcept;
+
+    /**
      * @brief The rows a write touched, from the command tag.
      */
     [[nodiscard]] std::uint64_t affected() const;

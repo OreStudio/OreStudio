@@ -47,7 +47,7 @@ domain::publication publication_mapper::map(const publication_entity& v) {
 
     domain::publication r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.id = boost::lexical_cast<boost::uuids::uuid>(v.id);
     r.dataset_id = boost::lexical_cast<boost::uuids::uuid>(v.dataset_id);
     r.dataset_code = v.dataset_code;
     r.mode = v.mode;

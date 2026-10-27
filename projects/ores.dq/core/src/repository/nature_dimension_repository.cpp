@@ -19,15 +19,12 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/nature_dimension_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/nature_dimension.hpp"
 #include "ores.dq.api/domain/nature_dimension_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/messaging/nature_dimension_protocol.hpp"
@@ -41,16 +38,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -59,13 +46,14 @@
 
 namespace ores::dq::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string nature_dimension_repository::sql() {
-    return generate_create_table_sql<nature_dimension_entity>(lg());
+    return query_builder::generate_create_table_sql<nature_dimension_entity>(lg());
 }
 
 bool nature_dimension_repository::is_sortable(std::string_view field) {
@@ -80,10 +68,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
-nature_dimension_list_order(const ores::utility::domain::order& order,
-                            std::initializer_list<std::string> default_columns,
-                            bool default_descending) {
+query_builder::order nature_dimension_list_order(const ores::utility::domain::order& order,
+                                                 std::initializer_list<std::string> default_columns,
+                                                 bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!nature_dimension_repository::is_sortable(order.field))
@@ -96,13 +83,13 @@ nature_dimension_list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition> nature_dimension_filter_condition(
+std::optional<query_builder::condition> nature_dimension_filter_condition(
     const std::optional<messaging::nature_dimensions_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->code_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->code_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("code", std::move(values)));
@@ -186,7 +173,7 @@ void nature_dimension_repository::write(
 
 std::vector<domain::nature_dimension> nature_dimension_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<nature_dimension_entity>> |
+    const auto query = query_builder::read<std::vector<nature_dimension_entity>> |
                        where("valid_to"_c == max.value()) | order_by("code"_c);
 
     return execute_read_query<nature_dimension_entity, domain::nature_dimension>(
@@ -201,7 +188,7 @@ std::vector<domain::nature_dimension>
 nature_dimension_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest nature dimension. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<nature_dimension_entity>> |
+    const auto query = query_builder::read<std::vector<nature_dimension_entity>> |
                        where("code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<nature_dimension_entity, domain::nature_dimension>(
@@ -216,7 +203,7 @@ nature_dimension_repository::read_latest(context ctx, const std::string& code) {
 std::vector<domain::nature_dimension>
 nature_dimension_repository::read_all(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all nature dimension versions. " << "code: " << code;
-    const auto query = sqlgen::read<std::vector<nature_dimension_entity>> |
+    const auto query = query_builder::read<std::vector<nature_dimension_entity>> |
                        where("code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
@@ -232,8 +219,8 @@ std::optional<domain::nature_dimension> nature_dimension_repository::read_at_ver
     context ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading nature dimension at version. " << "code: " << code
                                << " version: " << version;
-    const auto query = sqlgen::read<std::vector<nature_dimension_entity>> |
-                       where("code"_c == code && "version"_c == version) | sqlgen::limit(1);
+    const auto query = query_builder::read<std::vector<nature_dimension_entity>> |
+                       where("code"_c == code && "version"_c == version) | query_builder::limit(1);
 
     const auto entities = execute_read_query<nature_dimension_entity, domain::nature_dimension>(
         ctx,
@@ -263,7 +250,7 @@ nature_dimension_repository::remove_status nature_dimension_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<nature_dimension_entity> |
+    const auto query = query_builder::delete_from<nature_dimension_entity> |
                        where("tenant_id"_c == tid && "code"_c == code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
@@ -289,8 +276,8 @@ std::vector<domain::nature_dimension> nature_dimension_repository::read_latest(
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest nature dimensions with offset: " << offset
                                << " and limit: " << limit;
-    const auto query = sqlgen::read<std::vector<nature_dimension_entity>> | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+    const auto query = query_builder::read<std::vector<nature_dimension_entity>> |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return execute_ordered_read_query<nature_dimension_entity, domain::nature_dimension>(
         ctx,
@@ -308,7 +295,7 @@ std::uint32_t nature_dimension_repository::get_total_dimension_count(
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active nature dimension count";
 
-    const auto query = sqlgen::read<std::vector<nature_dimension_entity>>;
+    const auto query = query_builder::read<std::vector<nature_dimension_entity>>;
 
     return execute_count_query<nature_dimension_entity>(
         ctx,
@@ -323,7 +310,7 @@ nature_dimension_repository::read_latest(context ctx, const std::vector<std::str
     if (codes.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<nature_dimension_entity>> |
+    const auto query = query_builder::read<std::vector<nature_dimension_entity>> |
                        where("code"_c.in(codes) && "valid_to"_c == max.value());
     auto result = execute_read_query<nature_dimension_entity, domain::nature_dimension>(
         ctx,
@@ -346,7 +333,7 @@ void nature_dimension_repository::remove(context ctx, const std::vector<std::str
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::delete_from<nature_dimension_entity> |
+        query_builder::delete_from<nature_dimension_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing nature dimensions.");
 }

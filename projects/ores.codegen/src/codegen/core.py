@@ -2847,6 +2847,52 @@ def shell_command_surface(projects_dir, component):
     return enabled, local_units
 
 
+# The libraries a component's generated repositories may run on. A
+# component names its own in its modeling/component_overview.org, as
+# ``#+repository_backend:``; one that names none stays on sqlgen until its
+# move. See :func:`repository_backend`.
+_REPOSITORY_BACKENDS = ("sqlgen", "libpq")
+
+# The templates whose libpq form is a template of its own. The rest take the
+# ``repository_on_libpq`` flag and switch a line at a time.
+_LIBPQ_TEMPLATE_VARIANTS = {
+    "cpp_domain_type_repository.cpp.mustache": "cpp_domain_type_repository_pq.cpp.mustache",
+}
+
+
+@functools.lru_cache(maxsize=None)
+def repository_backend(projects_dir, component):
+    """The library a component's generated repositories run on.
+
+    Read from ``#+repository_backend:`` in the component's
+    ``modeling/component_overview.org``. A component that names none runs on
+    sqlgen. A name outside :data:`_REPOSITORY_BACKENDS` is refused, so a typo
+    cannot leave a component on the old library unnoticed.
+    """
+    # Deferred import: org_loader imports this module.
+    from .org_loader import parse_org
+
+    if not component:
+        return "sqlgen"
+    overview = (Path(projects_dir) / f"ores.{component}" / "modeling" / "component_overview.org")
+    if not overview.is_file():
+        return "sqlgen"
+    frontmatter = parse_org(overview.read_text(encoding="utf-8")).frontmatter
+    backend = str(frontmatter.get("repository_backend", "sqlgen")).strip() or "sqlgen"
+    if backend not in _REPOSITORY_BACKENDS:
+        raise ValueError(
+            f"{overview}: #+repository_backend: {backend} is not one of "
+            f"{', '.join(_REPOSITORY_BACKENDS)}")
+    return backend
+
+
+def template_for_backend(template_name, data):
+    """The template that renders ``template_name`` for the data's backend."""
+    if not data.get("repository_on_libpq"):
+        return template_name
+    return _LIBPQ_TEMPLATE_VARIANTS.get(template_name, template_name)
+
+
 def _convention_family_row(entry):
     """One registry entry, with the one-hot mode flags a Mustache section needs."""
     return {
@@ -6815,9 +6861,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     if git_path is None:
         git_path = current_path
 
+    owner = data.get('domain_entity') or data.get('junction')
+    if isinstance(owner, dict) and owner.get('component'):
+        data['repository_on_libpq'] = repository_backend(
+            str(_repo_root_from(model_path) / 'projects'), owner['component']) == 'libpq'
+
     # Process each associated template
     for template_name in templates_to_process:
-        template_path = templates_dir / template_name
+        template_path = templates_dir / template_for_backend(template_name, data)
         if not template_path.exists():
             print(f"Template not found: {template_path}")
             continue

@@ -42,7 +42,7 @@ domain::data_domain data_domain_mapper::map(const data_domain_entity& v) {
     domain::data_domain r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.name = v.name.value();
+    r.name = v.name;
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

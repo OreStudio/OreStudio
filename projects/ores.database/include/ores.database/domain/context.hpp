@@ -21,8 +21,13 @@
 #define ORES_DATABASE_CONTEXT_HPP
 
 #include "ores.database/domain/tenant_aware_pool.hpp"
+#include "ores.database/export.hpp"
+#include "ores.database/pq/pool.hpp"
+#include "ores.database/pq/transaction.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <memory>
+#include <mutex>
 #include <optional>
 #include <sqlgen/Session.hpp>
 #include <sqlgen/Transaction.hpp>
@@ -223,6 +228,7 @@ public:
                               policy_);
         scoped.roles_ = roles_;
         scoped.active_transaction_ = active_transaction_;
+        scoped.pq_ = pq_;
         return scoped;
     }
 
@@ -247,8 +253,33 @@ public:
                               policy_);
         scoped.roles_ = roles_;
         scoped.active_transaction_ = active_transaction_;
+        scoped.pq_ = pq_;
         return scoped;
     }
+
+    /**
+     * @brief The libpq pool every copy of this context shares, opened on its
+     * first use.
+     *
+     * On the libpq layer the tenant and the party are settings of each
+     * transaction, so one pool serves every tenant and party that a copy of
+     * this context names. A service that never uses the layer opens none of
+     * its connections.
+     */
+    ORES_DATABASE_EXPORT pq::pool& pq_pool() const;
+
+    /**
+     * @brief Sets how many connections the libpq pool opens. Takes effect only
+     * before its first use.
+     */
+    void set_pq_pool_size(std::size_t size) {
+        pq_->size = size;
+    }
+
+    /**
+     * @brief The settings a libpq transaction made for this context sets.
+     */
+    ORES_DATABASE_EXPORT pq::session_context pq_session() const;
 
 private:
     connection_pool_type connection_pool_;
@@ -257,6 +288,13 @@ private:
     std::string service_account_;
     std::optional<std::vector<std::string>> roles_;
     std::optional<sqlgen::Ref<transaction_type>> active_transaction_;
+
+    struct pq_slot {
+        std::mutex mutex;
+        std::unique_ptr<pq::pool> pool;
+        std::size_t size = 2;
+    };
+    std::shared_ptr<pq_slot> pq_ = std::make_shared<pq_slot>();
 };
 
 }

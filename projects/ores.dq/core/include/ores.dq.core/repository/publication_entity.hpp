@@ -25,8 +25,8 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_PUBLICATION_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_PUBLICATION_ENTITY_HPP
 
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct publication_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_dq_dataset_publications_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     std::string dataset_id;
     std::string dataset_code;
@@ -54,6 +54,26 @@ struct publication_entity {
     std::int64_t records_deleted;
     std::string published_by;
     std::string published_at;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = publication_entity;
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("dataset_id", &e::dataset_id) |
+               query_builder::bind("dataset_code", &e::dataset_code) |
+               query_builder::bind("mode", &e::mode) |
+               query_builder::bind("target_table", &e::target_table) |
+               query_builder::bind("records_inserted", &e::records_inserted) |
+               query_builder::bind("records_updated", &e::records_updated) |
+               query_builder::bind("records_skipped", &e::records_skipped) |
+               query_builder::bind("records_deleted", &e::records_deleted) |
+               query_builder::bind("published_by", &e::published_by) |
+               query_builder::bind("published_at", &e::published_at);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const publication_entity& v);

@@ -24,7 +24,6 @@
 #include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
 

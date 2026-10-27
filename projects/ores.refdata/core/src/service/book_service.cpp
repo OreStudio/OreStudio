@@ -167,7 +167,7 @@ std::vector<std::string> book_columns_changed(const std::vector<domain::book>& l
  * request could open the gate for them. They are refused, and the protocol
  * operations are the only way to write.
  */
-[[noreturn]] void refuse_direct_write() {
+[[noreturn]] void book_refuse_direct_write() {
     throw std::logic_error(
         ores::database::domain::describe(outcome_code::approval_required, {.entity = "book"}));
 }
@@ -667,7 +667,7 @@ std::vector<domain::book> book_service::get_books(const std::vector<std::string>
 }
 
 void book_service::save_book(const domain::book& v) {
-    refuse_direct_write();
+    book_refuse_direct_write();
     if (v.id.is_nil())
         throw std::invalid_argument("Book id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving book. " << "id: " << v.id;
@@ -678,7 +678,7 @@ void book_service::save_book(const domain::book& v) {
 }
 
 void book_service::save_books(const std::vector<domain::book>& books) {
-    refuse_direct_write();
+    book_refuse_direct_write();
     for (const auto& e : books) {
         if (e.id.is_nil())
             throw std::invalid_argument("Book id cannot be empty.");
@@ -692,14 +692,14 @@ void book_service::save_books(const std::vector<domain::book>& books) {
 }
 
 void book_service::delete_book(const boost::uuids::uuid& id) {
-    refuse_direct_write();
+    book_refuse_direct_write();
     BOOST_LOG_SEV(lg(), debug) << "Removing book. " << "id: " << id;
     repo_.remove(ctx_, boost::uuids::to_string(id));
     BOOST_LOG_SEV(lg(), info) << "Removed book. " << "id: " << id;
 }
 
 void book_service::delete_books(const std::vector<std::string>& ids) {
-    refuse_direct_write();
+    book_refuse_direct_write();
     repo_.remove(ctx_, ids);
 }
 

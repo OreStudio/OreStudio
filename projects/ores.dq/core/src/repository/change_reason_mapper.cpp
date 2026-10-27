@@ -42,7 +42,7 @@ domain::change_reason change_reason_mapper::map(const change_reason_entity& v) {
     domain::change_reason r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.description = v.description;
     r.category_code = v.category_code;
     r.applies_to_new = v.applies_to_new;

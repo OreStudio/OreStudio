@@ -42,7 +42,7 @@ domain::badge_mapping badge_mapping_mapper::map(const badge_mapping_entity& v) {
     domain::badge_mapping r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.code_domain_code = v.code_domain_code.value();
+    r.code_domain_code = v.code_domain_code;
     r.entity_code = v.entity_code;
     r.badge_code = v.badge_code;
     r.modified_by = v.modified_by;

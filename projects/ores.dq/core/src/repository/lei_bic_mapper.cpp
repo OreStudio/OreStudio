@@ -41,7 +41,7 @@ domain::lei_bic lei_bic_mapper::map(const lei_bic_entity& v) {
 
     domain::lei_bic r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.lei = v.lei.value();
+    r.lei = v.lei;
     r.bic = v.bic;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;

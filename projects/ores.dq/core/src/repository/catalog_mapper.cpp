@@ -42,7 +42,7 @@ domain::catalog catalog_mapper::map(const catalog_entity& v) {
     domain::catalog r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.name = v.name.value();
+    r.name = v.name;
     r.description = v.description;
     r.owner = v.owner;
     r.modified_by = v.modified_by;

@@ -43,7 +43,7 @@ dataset_bundle_member_mapper::map(const dataset_bundle_member_entity& v) {
     domain::dataset_bundle_member r;
     r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.bundle_code = v.bundle_code.value();
+    r.bundle_code = v.bundle_code;
     r.dataset_code = v.dataset_code;
     r.display_order = v.display_order;
     r.optional = v.optional;

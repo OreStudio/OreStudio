@@ -9,7 +9,7 @@
 #+target_dialog: Reporting > Reports > one report
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: swift_curie
 #+todo: PENDING | PASSED FAILED
 #+startup: inlineimages
 
@@ -41,6 +41,7 @@ This page documents a test scenario verifying [[id:77CC92BD-4F9E-42A6-84F8-45265
 | Verifies task | [[id:77CC92BD-4F9E-42A6-84F8-45265F2DAA91][Run a report from its page and read its rows]] |
 | Parent story  | [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]]   |
 | Target screen | Reporting > Reports > a report, and that run's +Results+ tab |
+| Environment   | =swift_curie=, at =http://127.0.0.1:20202= |
 | Clients       |                                          |
 | State         | PENDING                               |
 

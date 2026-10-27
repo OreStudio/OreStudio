@@ -2,7 +2,7 @@
 :ID: 654E4DFD-FD96-4A65-A350-AC8DD3F87BE0
 :END:
 #+title: Published curves prototype
-#+description: The published-curve screens before they are built: the tenant's published curves and the record page a row opens, the delta of a candidate against a chosen as-of, and the approvals queue row that carries a publish's subject
+#+description: The published-curve screens before they are built: the tenant's published sets and the record page a row opens, its four tabs of details, published points, comparison as of and history, the curve charts, and the approvals queue row that carries a publish's subject
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:market_data:published:approval:
@@ -17,20 +17,24 @@
 
 * Summary
 
-The published-curve screens, as one plain page with three surfaces: the list of
-published curves, the delta of one curve against a chosen as-of, and the
-approvals queue with the subject of a =marketdata.curve_publish= request in its
-row.
+The published-curve screens, as one plain page with two surfaces: the list of
+published sets, and the approvals queue with the subject of a
+=marketdata.curve_publish= request in its row. A row of the list opens a record
+page with four tabs: Details, Published points, Compare as of, and History.
 
-It argues three things. A published set is a row a person reads, with the act
-that published it, and a candidate is a set nobody has approved. A delta marks
-each point as changed, added, dropped or unchanged, and it says in words when
-nothing changed. The queue row needs the subject beside the existing kinds, and
-it needs more space than the one line it holds today.
+The page argues five things. A published set is a row a person reads, with the
+act that published it. A candidate is a set nobody has approved, and an ended
+set is one that was in use and is not any more. The comparison marks each point
+as changed, added, dropped or unchanged, and it says in words when nothing
+changed. The curve is drawn, so a moved pillar is visible where it moved. And
+the record's history is the standard's: every version newest first, with its
+actor, its time, its reason and the field-level difference from the version
+before.
 
 It is throwaway. It reads no service, it holds no session, and every value on
-it is mock data. It exists because three journeys settle what a publish *does*
-and nothing yet settles what a person *sees* while reading or deciding one.
+it is mock data. It exists because the journeys settle what a publish *does* and
+nothing yet settles what a person *sees* while reading one, comparing one or
+deciding one.
 
 * Detail
 
@@ -47,54 +51,61 @@ server:
    role request names and a trade subject for a trading authorisation, and
    nothing that names a curve, a party and an as-of.
 
-The screen set answers the first two, and the third is a change to a surface
-that already exists: the Requests queue at =/requests=.
+The record page adds two needs of its own. A curve is a shape, and a table of
+rates does not show where the candidate moved. And a record page has a History
+tab, which the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and the
+[[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]]
+define in full, so this record must say which parts of that history it can hold.
 
 ** The surfaces
 
-Switch with the bottom bar, or with =?surface=list=, =?surface=delta= or
-=?surface=queue=. The default is =list=.
+Switch with the bottom bar, or with =?surface=list= or =?surface=queue=. The
+default is =list=.
 
 | Surface | Query | What it draws |
 |---------+-------+---------------|
-| List | =?surface=list= | The tenant's published curves, the filters, the states and the pager. |
-| Record page | =?surface=list&curve=USD-SOFR-3M&party=ACME+London= | One published set, with Details, Published points and History tabs. |
-| Delta | =?surface=delta&curve=USD-SOFR-3M&party=ACME+London&asof=2026-10-06T16:00:00Z= | The candidate set point by point against the published set at the chosen as-of. |
+| List | =?surface=list= | The tenant's published sets, the filters, the states and the pager. |
+| Record page | =?surface=list&curve=USD-SOFR-3M&party=ACME+London= | One published set, on one of its four tabs. |
 | Queue | =?surface=queue= | The Requests queue, the person's own requests, and the subject of a curve publish in its row. |
-| Request page | =?surface=queue&open=r1= | One request a decider opens: its subject, the delta, the checks, the rule, the decisions and the answer. |
+| Request page | =?surface=queue&open=r1= | One request a decider opens: its subject, the comparison summary, the checks, the rule, the decisions and the answer. |
 
-The prototype adds one screen to the approvals surface: a published curve keeps
-a list and a record page, and the queue is the existing Requests screen with
-one column changed. It does not add a second approvals screen.
+The record page tabs are Details, Published points, Compare as of and History.
+The tab is in the address, so a comparison reopens where it was left:
+=?tab=compare&asof=2026-10-06T16:00:00Z=. The list stays a list, the record page
+is one page with tabs, and the queue is the Requests screen that already
+exists.
 
 ** The list
 
-The list follows [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen
-standard]]: the breadcrumb, the plural as the title, one sentence, a search and
-a filter, the table, and the pager.
+The list follows the record standard: the breadcrumb, the plural as the title,
+one sentence, a search and a filter, the table, and the pager.
 
 | Column | What it holds |
 |--------+---------------|
-| Curve | The curve configuration code, monospace, and the first column |
-| Party | The party the published set belongs to. The same code in two parties is two curves |
+| Curve | The curve configuration code, monospace, and the first column. An ended set says under it when it left use |
+| Party | The party the set belongs to. The same code in two parties is two curves |
 | Published as-of | The instant the set was built at, exact, because it is the subject |
 | Publisher | The account that applied the approval |
 | Published | The published instant, relative, with the exact value on hover |
 | Points | How many pillars the set holds, right-aligned |
-| State | Published, or Candidate |
+| State | Published, Withdrawn, Superseded, or Candidate |
 
-A row opens the record page. Two filters sit beside the search: a party select,
-and a *Show candidates* toggle. A candidate row is drawn under the published
-sets, with no publisher and no published instant, so a set nobody approved
-cannot be read as one pricing uses. The search, the order and the pager are
-client-side in the prototype; the target is the list contract's own filter and
-order.
+Two filters sit beside the search: a party select, and two toggles. *Show
+candidates* draws a candidate row under the sets in use, with no publisher and no
+published instant, so a set nobody approved cannot be read as one pricing uses.
+*Show ended sets* draws the withdrawn and superseded sets, muted, so a person can
+reach the record whose history shows how it ended. A set in use is drawn by
+default; an ended set and a candidate are not.
+
+A row opens the record page. The search, the order and the pager are client-side
+in the prototype; the target is the list contract's own filter and order.
 
 *RS-LIST-21* gives the list its states, and the prototype draws each one:
 
 - No records. "There are no published curves yet." It says a curve becomes a
   published set when a person publishes an approved candidate, it names the
-  bootstrap and the request, and it offers to open the delta.
+  bootstrap and the request, and it offers to open a comparison.
 - Nothing matches. "No published curves match the search." and a way to clear
   it.
 - First load. "Loading…" in the body of the table.
@@ -105,27 +116,59 @@ applies an approved request and never by a screen, so the list draws no Add, no
 Edit and no Delete, and the record page says so in one line. This is the
 read-only exception (*RS-EXCEPT-01*), and the journey names it.
 
-The record page carries the display field as its title, the party and the as-of
-in the lead line, and three tabs: Details, Published points and History. The
-Details tab names the subject, the publisher and the authorising request, and
-it ends with the last-changed line. The Published points tab lists the pillars
-with the value the set holds for each. The History tab states the raise, the
-approval and the publish as one timeline.
+** The record page
 
-** The delta
+The header carries the display field as its title, the party, the as-of, the
+state and the published or ended instant in the lead line, and two actions:
+*Compare as of* and *Refresh*. The tabs are Details, Published points, Compare
+as of and History.
 
-The delta takes its baseline from the publish record: the as-of the published
-set was built at, the publisher and the authorising request. A select chooses
-another as-of, so a person compares against an earlier set. The candidate is the
-set the bootstrap built, and it states that nobody has approved it.
+- *Details.* The subject the request authorised, the publisher, the authorising
+  request, the output series and the state. An ended set adds the ended instant,
+  the account and the request that authorised the end. The tab ends with the
+  last-changed line and the read-only reason.
+- *Published points.* The chart of the published set alone, then the pillar
+  table: each pillar, the discount factor and the rate it implies, the source
+  and the observation instant. The tab offers *Compare as of* under the chart.
+- *Compare as of.* The baseline, the candidate, the two curves on one chart, the
+  summary and the point table.
+- *History.* The record's story, newest first.
+
+The tabs follow the standard's order and words. *Compare as of* is the kind's
+own tab and not a fifth idea: the standard gives a record page a tab for the
+related view a kind needs, and this is that view. The note records it under
+/What it does not settle/ because the standard's tab table names field groups
+and related plurals, and a comparison is neither.
+
+** The comparison tab
+
+The as-of select sits in the tab, beside the comparison. It offers the published
+as-of and two earlier as-ofs, so a person compares against an earlier set as well
+as the current baseline.
+
+Two panels state what is compared. The baseline names the published as-of, the
+publisher and the instant, the authorising request and the state. The candidate
+names the instant it was built at, the account that built it, that nobody has
+approved it, and its point count. A withdrawn or superseded baseline adds one
+notice: the comparison still answers what the candidate changes against the last
+published set, and the desk prices from no set of this curve or from its
+successor.
+
+The chart draws both sets on one x axis, so a moved pillar is visible where it
+moved. The published set is dashed and muted; the candidate is solid and
+accented, with a dot at each of its pillars. A pillar a set does not hold is a
+gap in its line and never a zero: the candidate's line breaks at a dropped
+pillar, and the published point there is ringed in the warning colour; a pillar
+only the candidate holds ends the published line and stands as a hollow ring.
+The caption under the title states this in words.
 
 The table names one row for each pillar, and each row reads one of four ways:
 
 | Mark | How the row reads |
 |------+-------------------|
 | Changed | The published value stands struck through, the candidate value stands beside it, and the change is stated in basis points with its sign |
-| Added | The published cell is a muted dash, the candidate value stands beside it, and the mark says Added; the change cell says new pillar |
-| Dropped | The published value stands, the candidate cell is a muted dash, and the mark says Dropped |
+| Added | The published cell is a muted dash, the candidate value stands beside it, and the change cell says new pillar |
+| Dropped | The published value stands, the candidate cell is a muted dash, and the change cell says not in candidate |
 | Unchanged | The change cell is a muted dash and the row is muted; unchanged rows are hidden until *Show unchanged points* is pressed, and the count of hidden rows is stated |
 
 A dropped point is drawn because a comparison that hides a removal is not a
@@ -133,15 +176,90 @@ comparison. The model has no place for it yet: an observation carries no
 =valid_to=, so the screen cannot say when the published point stopped applying.
 The prototype draws the removal and leaves the record open.
 
-The summary above the table counts the four marks, and the page states when it
-hides rows. When nothing changed, the delta says so in one notice: *No point
-changed. The candidate matches the published set at this as-of point for point.
-There is nothing to raise, and the published set stays the one in use.* The
-table then holds one line: every point here is unchanged.
+The summary above the table counts the four marks. When nothing changed, the
+tab says so in one notice: *No point changed. The candidate matches the
+published set at this as-of point for point. There is nothing to raise, and the
+published set stays the one in use.* The table then holds one line, every point
+here is unchanged, and the chart's caption says the candidate's line covers the
+published one.
 
-When the curve has no published set, the delta says there is nothing to compare
-against and not that the sets agree. A candidate against an empty set is not a
-delta, and the screen sends the person to the queue.
+When the curve has no published set, the page draws no tabs: there is no record
+to tab through. It states that a candidate exists and nobody has published it,
+and the chart says it cannot be drawn because there is no published set to
+draw. A candidate against an empty set is not a comparison.
+
+** The charts
+
+The chart follows the application's own chart: plain SVG, the value axis on the
+left in monospace, the tenors as categories under their points, a dot at each
+point, the latest or candidate series strong, and one series colour per set
+(=LineChart= and the ticks panel are the reference). The chart is drawn at its
+own size and capped, so its labels keep the page's type size, and it never
+stretches to fill a wide card.
+
+A chart that cannot be drawn says why and draws nothing else:
+
+| Cannot draw | What it says |
+|-------------+--------------|
+| No published set | "The chart cannot be drawn. No published set, so there is no curve to draw." |
+| One point | "The chart cannot be drawn. A curve needs at least two pillars. One point has no shape; the table below holds it." |
+| No points | "The chart cannot be drawn. The set holds no points." |
+
+The comparison's chart states the one case where it draws a single line: the two
+sets coincide at every point, so the candidate's line covers the published one.
+
+** The History tab
+
+The History tab follows the record standard's History and the entity screen
+specification's timeline. It is the record's story, newest first: an event chart
+over the entries, then one rail of entries, then the detail of each entry
+collapsed behind *Details*.
+
+The chart is a histogram, one bar for each day the entries span, split by the
+kind of entry, with a legend that names each kind and counts it. A day with no
+entry is empty space and the chart draws every day from the first to the last.
+A bar names its day and its count on hover, and a click reaches the entries of
+that day.
+
+The rail groups the entries by day. Each entry is a header on one line: the kind,
+the record and its version, the reason code, the author and the account, with the
+time in the left gutter. An entry that changed a field opens its difference, old
+beside new; the first version opens the whole record; the decision opens its
+comment. The newest version carries the *Current version* emblem and no control.
+Day dividers name the day. The *Hide system activity* toggle is drawn beside the
+History title, as the standard requires, and it hides nothing here because no
+service account wrote this record.
+
+The versions this record actually has are four, and the prototype draws all of
+them:
+
+| Entry | What it is | What the detail holds |
+|-------+------------+-----------------------|
+| Raised, version 1 | The raise wrote the subject: the curve, the party, the output series and the as-of | The whole record, because the first version is the whole record |
+| Approved | The request's decision, read by the request's id | The comment and the request version |
+| Published, version 2 | The apply stamped the publisher and the instant | =published_by= and =published_at=, empty to written |
+| Withdrawn, version 3 | The set left use, with the reason | =withdrawn_at=, =withdrawn_by=, =withdrawn_reason_code= |
+| Superseded, version 3 | A later set replaced it | =superseded_at=, =superseded_by_request_id=, the successor's as-of |
+
+Two facts of the model change what this tab can do, and the screen and this note
+state both rather than inventing a different history.
+
+- *No Revert.* *RS-HIST-02* offers Revert on any version but the current one to a
+  person who may write. Nobody may write a publish record: the gate writes it,
+  and the record is read only. So the tab draws no Revert on any version, and the
+  rail does not explain the absence entry by entry, as *ES-HIST-12* asks. The tab
+  states it once, under the rail: a correction is a new publish or a withdrawal,
+  and each is an act of its own with a request behind it.
+- *The decision is not a version.* The standard's stream is the record's own
+  versions and the versions of its parts. The approval decision belongs to the
+  request, which is not a part of the publish record. The tab reads the decision
+  by =request_id= and merges it by time, because the publish stands on it, and it
+  names the decision as the request's record and not as a version of this one.
+  No read returns that merged stream today.
+
+The record carries no =change_reason_code= and no =change_commentary=, because the
+gate writes it and not a person. The entry names the act and its fields instead.
+A reason code exists on the withdrawal, which the withdrawal decision adds.
 
 ** The queue
 
@@ -151,29 +269,28 @@ kind filter, the table, and the answered tail below. The table keeps its four
 columns, Who, Asked for, Why and Waiting, because that is the shape a decider
 already reads.
 
-The *Asked for* column is where the change sits. Today it holds one line of
-text: the roles a role request names, or the kind's name. A curve publish needs
-a badge, the curve, the party and the as-of, so the column takes 42% of the
-table and two lines for that kind, and the role and counterparty rows keep one
-line. The badge carries the kind, and the code stands beside it in monospace so
-a reader can name the kind: =marketdata.curve_publish= appears beside
-=iam.role_grant= and =refdata.counterparty_change= in one table.
+The *Asked for* column is where the change sits. Today it holds one line of text:
+the roles a role request names, or the kind's name. A curve publish needs a badge,
+the curve, the party and the as-of, so the column takes 42% of the table and two
+lines for that kind, and the role and counterparty rows keep one line. The badge
+carries the kind, and the code stands beside it in monospace so a reader can name
+the kind: =marketdata.curve_publish= appears beside =iam.role_grant= and
+=refdata.counterparty_change= in one table.
 
-A decider opens the request by the row, on a click and on Enter. The request
-page then reads in the order the existing screen reads: the subject, the reason,
-the delta, the checks, the rule, the decisions so far, and the answer last. The
-answer offers Approve, Refuse and Hold, a comment that is required on a refusal,
-and a note that the decision is recorded under the decider's name. A hold states
-that the request stays in the queue and that the asker is told. The page marks
-each check *unknown* and explains that no operation runs the checks yet, so a
-decider reads unknown as not checked and never as passed.
+A decider opens the request by the row, on a click and on Enter. The request page
+then reads in the order the existing screen reads: the subject, the reason, the
+comparison summary, the checks, the rule, the decisions so far, and the answer
+last. Its *Open the comparison* control opens the record page on the Compare as
+of tab, at the subject's as-of. The answer offers Approve, Refuse and Hold, a
+comment that is required on a refusal, and a note that the decision is recorded
+under the decider's name. The page marks each check *unknown* and explains that no
+operation runs the checks yet, so a decider reads unknown as not checked and never
+as passed.
 
-The prototype lets the reviewer look as three people, because the queue is
-scoped by the decide permission: a tenant administrator who holds every decide
+The prototype lets the reviewer look as three people, because the queue is scoped
+by the decide permission: a tenant administrator who holds every decide
 permission and sees every kind, the head of market risk who sees only curve
-publishes, and an operations person who sees only reference data. The permission
-rule is the point: the market-data kind joins the queue because the row read
-learns the kind's subject, and not because the table holds every kind.
+publishes, and an operations person who sees only reference data.
 
 ** The states
 
@@ -185,12 +302,20 @@ Switch with the bottom bar, or with the query string.
 | List | =?state=nomatch= | No published curve matches the search |
 | List | =?state=loading= | Loading, in the body of the table |
 | List | =?state=error= | The error and Retry |
-| List | =?show=candidates= | Candidates drawn under the published sets |
-| Delta | =?points=changed= | Four changed, one added, one dropped, seven unchanged |
-| Delta | =?points=same= | No point changed, and nothing to raise |
-| Delta | =?points=added= | One pillar added, and every other point unchanged |
-| Delta | =?state=nopublished= | A curve with no published set, so no baseline |
-| Delta | =?unchanged=1= | The unchanged points drawn |
+| List | =?show=candidates= | Candidates drawn under the sets in use |
+| List | =?ended=1= | Withdrawn and superseded sets drawn, muted |
+| Record | =?tab=details= | The subject, the act, the state and the last-changed line |
+| Record | =?tab=points= | The published set's chart and pillar table |
+| Record | =?tab=points&chart=one= | A one-point set, and why the chart cannot be drawn |
+| Record | =?tab=points&chart=none= | A set with no points, and why the chart cannot be drawn |
+| Record | =?tab=compare= | The two curves on one chart, four changed, one added, one dropped, seven unchanged |
+| Record | =?tab=compare&points=same= | No point changed, and nothing to raise |
+| Record | =?tab=compare&points=added= | One pillar added, and every other point unchanged |
+| Record | =?tab=compare&unchanged=1= | The unchanged points drawn |
+| Record | =?surface=list&curve=JPY-TONA-6M&tab=compare= | A curve with no published set, so no baseline and no chart |
+| Record | =?tab=history= | The event chart, the rail and the difference of each version |
+| Record | =?curve=GBP-SONIA-3M&tab=history= | The withdrawn version and its reason code |
+| Record | =?curve=EUR-ESTR-6M&party=ACME+Hong+Kong&tab=history= | The superseded version and the successor link |
 | Queue | =?surface=queue= | The queue with the subject in the row |
 | Queue | =?actor=m.oduya= | The queue of one who holds one decide permission |
 | Queue | =?actor=k.mori= | The queue of an operations decider |
@@ -202,29 +327,31 @@ Switch with the bottom bar, or with the query string.
 
 ** Driving it
 
-The bottom bar switches the surface and its state, and the query string carries
-the difference between the state and the default, so any pair can be linked. A
-row of the list opens the record page, and a tab is written to =?tab=. A row of
-the queue opens the request. The search, the filters, the sorts, the pager and
-the as-of select all write the query string. The answer panel refuses a refusal
-with no comment under the field. The *Hide gaps* button turns the server-gap
-notes off, so a reviewer can read the design without them.
+The bottom bar switches the surface, the tab and the state, and the query string
+carries the difference from the default, so any pair can be linked. A row of the
+list opens the record page, and a tab is written to =?tab=. A row of the queue
+opens the request. The search, the filters, the sorts, the pager, the as-of select
+and the chart overrides all write the query string. The answer panel refuses a
+refusal with no comment under the field. The *Hide gaps* button turns the
+server-gap notes off, so a reviewer can read the design without them.
 
 ** What is fake
 
-Everything on the page is mock data: the five published sets, the three
+Everything on the page is mock data: the five sets, their history, the three
 candidates, the twelve pillars and their values, the two parties, the six
 requests, the decisions, the kind's rules and the checks are hard-coded
 literals. There is no server, no session and no build step. A decision writes a
 sentence into the panel and nothing else; reload and the page is as it was.
 
-The reviewer should know three assumptions. The tenant administrator holds every
+The reviewer should know four assumptions. The tenant administrator holds every
 decide permission, so one table can show the kinds together; the Acme
 demonstration lets that account read the whole queue, and it does not let it
 decide a market-risk request. The published as-ofs are mock instants, and the
 current time of the mock tenant is 07 October 2026, 09:00 UTC. The kind's
 deciding group is drawn from the permission the kind names, because the model
-names a permission and not a group.
+names a permission and not a group. The withdrawal and supersession fields are
+the design the journey's decision states, and no such columns exist on the
+record today.
 
 ** Where the code lives
 
@@ -235,22 +362,24 @@ build copies the directory as it stands and adds nothing to it.
 
 The product screens would live here:
 
-| Surface | Where |
-|---------+-------|
+| Part | Where |
+|------+-------|
 | The list and the record page | A new =PublishedCurvesPage= and =PublishedCurvePage= under =projects/ores.web/packages/web/src/marketdata/=, with a route at =/market-data/published-curves= in =AppRoutes.tsx= and a path in =shell/paths.ts= |
-| The delta | A panel under =web/src/marketdata/=, reached from the record page and from the request page, and drawing the kind's change lines |
+| The comparison tab | A panel under =web/src/marketdata/=, drawing the kind's change lines; the tab is the record page's own, so no second route |
+| The curve chart | =web/src/marketdata/LineChart.tsx=, drawn with =categories= as the ticks panel draws a curve's tenors |
+| The History tab | The shared =Timeline= in =web/src/timeline/=, with the record's versions and the request's decisions merged by time |
 | The queue and the request page | =web/src/inbox/RequestsPage.tsx= and =RequestPage.tsx=, which exist; the kind's descriptor in =web/src/inbox/kinds.tsx= gains its subject line |
 | The queue read | =projects/ores.web/packages/bff/src/inbox.ts= and =wire-protocol/src/inbox.ts=, whose request view carries the subject |
-| The delta read | =wire-protocol/src/request-changes.ts=, whose =RequestChange= holds one line per subject with each field's before and after, and =bff/src/curves.ts= |
+| The change read | =wire-protocol/src/request-changes.ts=, whose =RequestChange= holds one line per subject with each field's before and after, and =bff/src/curves.ts= |
 | The published-curves list | A read over the publish records in the marketdata component's =ores.marketdata.operations=, served by =bff/src/curves.ts= |
 
 The model already holds most of it. =ores.marketdata.curve_publish= is the
 subject, keyed by the request, and its index =curve_publishes_series_published=
 orders the publish records the list reads. The change shape exists too: one line
 names its operation, its subject and each field's before and after, and a curve
-pivot answers it with one line for each pillar, =put= when the point stands and
-=delete= when the candidate drops it. So the delta is a rendering question for
-the point table, and not a second record.
+publish answers it with one line for each pillar, =put= when the point stands and
+=delete= when the candidate drops it. So the comparison is a rendering question
+for the point table and the chart, and not a second record.
 
 Two reads are missing, and the note names them where the screen draws them: a
 list over the publish records, and =marketdata.v1.curve_candidates.diff=. One
@@ -262,41 +391,56 @@ Open. It is offered for sign-off with the four model decisions the journeys now
 state: the withdrawal or supersession rule, the zero-approval path, the publish
 notice, and the maker and checker pair on the kind.
 
-The design to sign off is: the list and its record page as drawn, the delta with
-its four marks and its words for nothing changed, the subject in the *Asked for*
-column with the space it needs, and the request page in the order the existing
-screen reads.
+The design to sign off is: the list with its three states of set, the record page
+with its four tabs, the comparison tab with its four marks and its words for
+nothing changed, the two curve charts and the words they use when they cannot be
+drawn, the standard's History tab with the record's four versions and the
+decision beside them, and the subject in the queue's *Asked for* column with the
+space it needs.
 
 ** What it does not settle
 
-The list's filter. The prototype filters by party and by published or candidate.
-Whether the work needs a filter by publisher or by age is open, because no
-tenant has yet held enough published sets to ask.
+The tabs and the standard. The standard names Details, a field group, a related
+plural and History. This record draws Details, Published points, Compare as of and
+History. The two middle tabs are the kind's own views, and whether a comparison
+belongs as a tab or as a panel reached from the points tab is the question this
+prototype leaves open.
 
-The withdrawal in the list. A withdrawn set has no marker and no state on the
-publish record, so the list draws published and candidate and nothing else. The
-withdrawal decision in [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or
-replace a published curve]] decides what the row reads afterwards.
+Revert. The standard offers Revert to a person who may write; nobody may write
+this record. Whether a tenant ever needs a Revert on a publish record, or whether
+every correction must be its own act, is settled by the decision only for the
+withdrawal: the prototype follows it and offers no Revert.
 
-The dropped point. The delta draws a point the candidate drops, and the model
-cannot say when the published point stopped applying. The supersession decision
-owns that answer.
+The decision in the history. The screen merges the request's decision into the
+record's stream, and no read does that today. Whether the request becomes a part
+of the publish record, or the history read learns to merge a kind's own reads, is
+open.
 
-The request page's story. The product has a request story screen. This prototype
-does not draw it, and it does not decide whether the published curve's history
-links into it.
+The chart's points. The chart draws the published set and the candidate from the
+same pillar list, so a candidate that adds or drops a pillar is drawn with a gap.
+Whether the chart should align the two sets on a rate axis rather than on the
+tenor list is open; the table answers the same question a second way.
+
+The ended baseline. The comparison tab still compares against a withdrawn or
+superseded set and says so. Whether a person should be able to compare against an
+ended set at all, or only against the set in use, is open.
+
+The withdrawal in the list. The list draws the ended sets because the history
+needs a way in, and the marker they read is the design the withdrawal decision
+states. Until the model holds it, the list can draw the sets in use only.
 
 * See also
 
 - [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] — the journey the list and the record page answer.
 - [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] — the journey the queue row and the request page answer.
 - [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — the raise the request page shows.
-- [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] — the state the list does not yet draw.
+- [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] — the state the history and the list draw.
 - [[id:213FE9F1-9189-4C36-965E-EFA6F589482D][Decide a publish prototype]] — the decision screen this request page reuses.
 - [[id:353B80C3-FAEA-4BA5-884B-678D6FD6B230][Decide a convention change prototype]] — the Requests queue layout the queue surface reuses.
 - [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record, the kinds, the queue and the four-eyes rule.
 - [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] — the subject the request names and the record the apply stamps.
-- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the list, the record page, the tabs and the states.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the list, the record page, the tabs, the states and the History tab.
+- [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]] — the timeline, the event chart and the rail this History tab follows.
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the tokens and the rules the page follows.
 - [[file:index.org][Market data prototypes]] — the group page and the row that records what this prototype argues.
 - [[file:../index.org][Prototypes]] — the method and the rules that hold for every group.

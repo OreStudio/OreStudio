@@ -108,17 +108,11 @@ body.nogaps .gap{display:none}
 .rows tr.pick{cursor:pointer}
 .rows tr.pick:hover td{background:#1e1e23}
 .rows tr.candidate td{background:#17171b}
+.rows tr.ended td{background:#161619}
 .rows .key{font-family:var(--mono);color:var(--ink)}
 .rows .num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
 .rows .sub{display:block;font-size:12px;color:var(--ink-faint);margin-top:2px}
 .rows .same{color:var(--ink-faint)}
-.rows.queue .askedfor{white-space:normal}
-.rows.queue .askedfor .subjectline{display:block;margin-top:6px}
-.kindcode{font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin-left:6px}
-.rows.queue .askedfor .subjectline .key{font-weight:500}
-.rows.queue .why{max-width:26rem}
-.person{display:inline-flex;align-items:center;gap:8px}
-.avatar{display:inline-flex;align-items:center;justify-content:center;flex:0 0 24px;width:24px;height:24px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);font-size:10px;color:var(--ink-dim)}
 .rows td.subject{white-space:normal;min-width:300px;width:36%}
 .rows td.subject .key{font-weight:500}
 .tblstate{padding:40px 24px;text-align:center;color:var(--ink-dim);font-size:13px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
@@ -134,7 +128,6 @@ body.nogaps .gap{display:none}
 .sel-menu{position:absolute;left:0;top:calc(100% + 4px);z-index:30;min-width:100%;max-height:260px;overflow:auto;background:var(--panel);border:1px solid var(--line-strong);border-radius:var(--radius);padding:4px}
 .sel-menu button{display:block;width:100%;text-align:left;background:none;border:none;border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer;white-space:nowrap}
 .sel-menu button:hover,.sel-menu button.on{background:var(--panel-2)}
-.sel-menu .hintline{font-size:11px;color:var(--ink-faint);padding:4px 8px}
 
 /* Tabs. */
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 16px;flex-wrap:wrap}
@@ -183,12 +176,50 @@ a.btn.primary{color:#06121f}
 .summary .stat{color:var(--ink-dim)}
 .summary .stat b{color:var(--ink);font-family:var(--mono);font-weight:500}
 
-/* A timeline of the act. */
-.timeline{list-style:none;margin:0;padding:0}
-.timeline li{display:grid;grid-template-columns:96px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft)}
-.timeline .when{font-size:12px;color:var(--ink-faint)}
-.timeline .head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:13px}
-.timeline .note{margin:4px 0 0;font-size:13px;color:var(--ink-dim)}
+/* A chart, as the application draws one: plain SVG, axes in mono. */
+.chartpanel{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:16px;margin:0 0 16px}
+.chartpanel h3{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink);margin:0 0 8px}
+.chartlegend{margin:0 0 8px}
+.chartlegend .legendline{font-size:12px;color:var(--ink-faint);font-style:italic}
+.chart{width:100%;max-width:760px;height:auto;display:block;overflow:visible}
+.histchart svg.chart{width:auto;max-width:none;height:130px;display:block}
+.chart text{font-family:var(--mono);font-size:11px;fill:var(--ink-faint)}
+.chart .grid{stroke:var(--line-soft);stroke-width:1}
+.chart .axis{stroke:var(--line);stroke-width:1}
+.chartempty{border:1px dashed var(--line);border-radius:var(--radius);padding:24px;text-align:center;color:var(--ink-dim);font-size:13px}
+.chartempty b{display:block;color:var(--ink);margin-bottom:4px}
+.chartbeside{display:grid;grid-template-columns:minmax(380px,5fr) minmax(420px,6fr);gap:16px;align-items:start}
+@media(max-width:1020px){.chartbeside{grid-template-columns:1fr}}
+
+/* History: the event chart, then the rail. */
+.histwrap{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:16px;margin:0 0 16px}
+.histwrap h3{font-family:var(--mono);font-size:12px;font-weight:600;margin:0 0 12px}
+.histchart{overflow-x:auto}
+.histlegend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-dim);margin:12px 0 0}
+.histlegend .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.histtools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 8px}
+.histrail{list-style:none;margin:0;padding:0}
+.histrail li{display:grid;grid-template-columns:104px 40px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line-soft)}
+.histrail li.marked{background:#141b23}
+.histrail .gutter{font-size:12px;color:var(--ink-faint);text-align:right}
+.histrail .gutter .cur{display:block;font-size:10px;color:var(--accent-bright);letter-spacing:.04em;margin-top:2px}
+.histrail .face{display:flex;align-items:flex-start;justify-content:center}
+.avatar{display:inline-flex;align-items:center;justify-content:center;flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);font-size:10px;color:var(--ink-dim)}
+.histrail .head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:13px}
+.histrail .head .rec{font-family:var(--mono);font-size:12px;color:var(--ink-dim)}
+.histrail .head .why{font-family:var(--mono);font-size:11px;color:var(--ink-faint)}
+.histrail .note{margin:4px 0 0;font-size:13px;color:var(--ink-dim)}
+.histrail details{margin-top:6px}
+.histrail summary{cursor:pointer;font-size:12px;color:var(--accent-bright)}
+.histrail .detailline{font-size:12px;color:var(--ink-faint);margin:2px 0 0}
+.daydiv{font-size:12px;font-weight:600;color:var(--ink-dim);padding:16px 0 8px;border-bottom:1px solid var(--line);margin-top:8px}
+.daydiv:first-child{margin-top:0;padding-top:0}
+.person{display:inline-flex;align-items:center;gap:8px}
+.rows.queue .askedfor{white-space:normal}
+.rows.queue .askedfor .subjectline{display:block;margin-top:6px}
+.rows.queue .askedfor .subjectline .key{font-weight:500}
+.rows.queue .why{max-width:26rem}
+.kindcode{font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin-left:6px}
 a.bare{color:var(--ink-dim);text-decoration:underline;text-decoration-color:var(--line-strong)}
 a.bare:hover{color:var(--ink)}
 </style>
@@ -198,32 +229,34 @@ a.bare:hover{color:var(--ink)}
 <!--
   PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
 
-  The published-curve screens, as three surfaces on one page:
+  The published-curve screens, as two surfaces on one page:
 
-    ?surface=list    the tenant's published curves: the list, the empty states,
-                     and the record page a row opens (tabs)
-    ?surface=delta   one curve's candidate set against a chosen as-of, point
-                     by point
+    ?surface=list    the tenant's published sets: the list, its states, and the
+                     record page a row opens, with four tabs
     ?surface=queue   the Requests queue with the subject in the row, and the
                      request page a decider opens
+
+  The record page's tabs are Details, Published points, Compare as of and
+  History, and the tab is in the address with the comparison's as-of:
+
+    ?surface=list&curve=USD-SOFR-3M&party=ACME+London&tab=details
+    ?surface=list&curve=USD-SOFR-3M&party=ACME+London&tab=points
+    ?surface=list&curve=USD-SOFR-3M&party=ACME+London&tab=compare&asof=<instant>
+    ?surface=list&curve=USD-SOFR-3M&party=ACME+London&tab=history
 
   The other parameters:
 
     ?state=none|nomatch|loading|error     the list's states
-    ?curve=USD-SOFR-3M&party=ACME+London  the record page, or the delta's curve
-    ?tab=details|points|history           the record page's tab
-    ?asof=<instant>                       the as-of the delta compares against
-    ?points=changed|same|added            the delta's state
-    ?show=candidates|published            whether the list draws candidates
-    ?unchanged=1                          whether the delta draws unchanged points
-    ?open=r1                              the request page the queue opens
-    ?q=<text>&party=<name>&page=<n>&size=<n>   the list's search, filter and pager
-    ?sort=<column>&dir=1|-1                the list's order
-    ?actor=m.oduya|a.reyes                 who is looking
+    ?show=candidates&ended=1              what the list draws beside the sets in use
+    ?points=changed|same|added            the comparison's state
+    ?unchanged=1                          whether the comparison draws unchanged points
+    ?chart=one|none                       a chart that cannot be drawn, and why
+    ?fparty=<party>&q=<text>&page=<n>&size=<n>&sort=<col>&dir=1|-1   the list's tools
+    ?open=r1&decision=approve|refuse|hold&actor=<username>           the queue and its answer
     ?gaps=0                                hide the server-gap notes
 
-  Every control is prototype chrome. A change is written to the query string,
-  so any surface and state can be linked directly.
+  A change is written to the query string, so any surface, tab and state can be
+  linked directly. Every control is prototype chrome.
 -->
 <div class="proto-note" id="note">Prototype · mock data · reads no server</div>
 <header class="shell-head" id="shell"></header>
@@ -239,18 +272,19 @@ a.bare:hover{color:var(--ink)}
     /* ---------------------------------------------------------------- */
 
     var Q = new URLSearchParams(location.search);
-    var DEFAULTS = { list: 'rows', delta: 'changed', queue: 'queue' };
 
     var S = {
         surface: Q.get('surface') || 'list',
-        state: Q.get('state') || '',
         curve: Q.get('curve') || '',
         party: Q.get('party') || '',
         tab: Q.get('tab') || 'details',
         asof: Q.get('asof') || '',
         points: Q.get('points') || '',
         show: Q.get('show') || 'published',
+        ended: Q.get('ended') === '1',
         unchanged: Q.get('unchanged') === '1',
+        chart: Q.get('chart') || '',
+        state: Q.get('state') || '',
         open: Q.get('open') || '',
         q: Q.get('q') || '',
         partyFilter: Q.get('fparty') || 'all',
@@ -260,10 +294,10 @@ a.bare:hover{color:var(--ink)}
         dir: Q.get('dir') === '1' ? 1 : -1,
         kind: Q.get('kind') || 'all',
         actor: Q.get('actor') || 'n.haugen',
-        decision: Q.get('chosen') || '',
+        chosen: Q.get('chosen') || '',
         comment: Q.get('comment') || '',
+        decision: Q.get('decision') || null,
         tried: false,
-        done: Q.get('decision') || null,
         menu: ''
     };
     if (Q.get('gaps') === '0') { document.body.classList.add('nogaps'); }
@@ -273,6 +307,7 @@ a.bare:hover{color:var(--ink)}
     /* ---------------------------------------------------------------- */
 
     var NOW = Date.parse('2026-10-07T09:00:00Z');
+    var TABS = ['details', 'points', 'compare', 'history'];
 
     var PEOPLE = {
         'a.reyes': { name: 'A. Reyes', role: 'Market data maker', decides: [] },
@@ -282,30 +317,57 @@ a.bare:hover{color:var(--ink)}
         'n.haugen': { name: 'N. Haugen', role: 'Tenant administrator', decides: ['marketdata', 'iam', 'refdata'] }
     };
     var KIND_AREA = { marketdata: 'Market data', iam: 'Access', refdata: 'Reference data' };
-
     var PARTIES = ['ACME London', 'ACME New York', 'ACME Hong Kong'];
     var MARKET_RISK = 'Market Risk';
-
     var SERIES = 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-ACME';
 
-    /* A published set. The row is the request's detail row, stamped by the
-       apply. published_at is the marker that makes the set the one in use. */
+    /* A published set: the detail row of the request that authorises it. Every
+       fact a history reads is here, because the row is the whole record. */
     var SETS = [
         { curve: 'USD-SOFR-3M', party: 'ACME London', asof: '2026-10-06T16:00:00Z',
-          published_at: '2026-10-06T16:41:00Z', published_by: 'a.reyes', request: '8f1c…a41',
-          points: 12, series: SERIES },
+          raised_at: '2026-10-06T15:05:00Z', raised_by: 'a.reyes',
+          approved_at: '2026-10-06T16:12:00Z', approved_by: 'm.oduya',
+          approved_comment: 'Checked against the 16:00 quotes.',
+          published_at: '2026-10-06T16:41:00Z', published_by: 'a.reyes',
+          request: '8f1c…a41', points: 12, series: SERIES, state: 'published' },
         { curve: 'EUR-ESTR-6M', party: 'ACME London', asof: '2026-10-06T16:00:00Z',
-          published_at: '2026-10-06T16:44:00Z', published_by: 'j.silva', request: '7b02…c19',
-          points: 12, series: 'oresmd://ir/EUR?type=series&instrument=discount&quote=rate&curve_id=EUR-ESTR-ACME' },
-        { curve: 'GBP-SONIA-3M', party: 'ACME London', asof: '2026-10-03T16:00:00Z',
-          published_at: '2026-10-03T16:38:00Z', published_by: 'a.reyes', request: '4d10…7b2',
-          points: 12, series: 'oresmd://ir/GBP?type=series&instrument=discount&quote=rate&curve_id=GBP-SONIA-ACME' },
+          raised_at: '2026-10-06T14:10:00Z', raised_by: 'j.silva',
+          approved_at: '2026-10-06T15:58:00Z', approved_by: 'm.oduya',
+          approved_comment: 'The rebuild agrees with the quotes.',
+          published_at: '2026-10-06T16:44:00Z', published_by: 'j.silva',
+          request: '7b02…c19', points: 12,
+          series: 'oresmd://ir/EUR?type=series&instrument=discount&quote=rate&curve_id=EUR-ESTR-ACME',
+          state: 'published' },
         { curve: 'USD-SOFR-3M', party: 'ACME New York', asof: '2026-10-06T21:00:00Z',
-          published_at: '2026-10-06T21:02:00Z', published_by: 'a.reyes', request: '9a31…4de',
-          points: 12, series: 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-NY' },
+          raised_at: '2026-10-06T20:50:00Z', raised_by: 'j.silva',
+          approved_at: '2026-10-06T21:00:00Z', approved_by: 'm.oduya',
+          approved_comment: 'New York closed on the 21:00 snapshot.',
+          published_at: '2026-10-06T21:02:00Z', published_by: 'a.reyes',
+          request: '9a31…4de', points: 12,
+          series: 'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-NY',
+          state: 'published' },
         { curve: 'EUR-ESTR-6M', party: 'ACME Hong Kong', asof: '2026-10-05T06:00:00Z',
-          published_at: '2026-10-05T06:19:00Z', published_by: 'j.silva', request: '0c77…1b8',
-          points: 12, series: 'oresmd://ir/EUR?type=series&instrument=discount&quote=rate&curve_id=EUR-ESTR-HK' }
+          raised_at: '2026-10-05T05:30:00Z', raised_by: 'j.silva',
+          approved_at: '2026-10-05T06:02:00Z', approved_by: 'm.oduya',
+          approved_comment: 'The Hong Kong snapshot agrees.',
+          published_at: '2026-10-05T06:19:00Z', published_by: 'j.silva',
+          request: '0c77…1b8', points: 12,
+          series: 'oresmd://ir/EUR?type=series&instrument=discount&quote=rate&curve_id=EUR-ESTR-HK',
+          state: 'superseded', ended_at: '2026-10-06T07:05:00Z', ended_by: 'j.silva',
+          ended_request: '9f0a…2c4', ended_approved_by: 'm.oduya',
+          successor_asof: '2026-10-06T06:00:00Z',
+          reason_text: 'The 06:00 snapshot replaced it as the set the desk reads.' },
+        { curve: 'GBP-SONIA-3M', party: 'ACME London', asof: '2026-10-03T16:00:00Z',
+          raised_at: '2026-10-03T15:40:00Z', raised_by: 'a.reyes',
+          approved_at: '2026-10-03T16:10:00Z', approved_by: 'm.oduya',
+          approved_comment: 'The 16:00 quotes are in.',
+          published_at: '2026-10-03T16:38:00Z', published_by: 'a.reyes',
+          request: '4d10…7b2', points: 12,
+          series: 'oresmd://ir/GBP?type=series&instrument=discount&quote=rate&curve_id=GBP-SONIA-ACME',
+          state: 'withdrawn', ended_at: '2026-10-06T09:12:00Z', ended_by: 'a.reyes',
+          ended_request: '5b3e…7c1', ended_approved_by: 'm.oduya',
+          reason_code: 'stale_fixing',
+          reason_text: 'The 6M pillar was built on a stale fixing.' }
     ];
 
     /* A candidate set: built, reviewed, and nobody has approved it. It has no
@@ -336,23 +398,18 @@ a.bare:hover{color:var(--ink)}
         { tenor: '10Y', role: 'Swap', value: 3.9000 }
     ];
 
-    /* The candidate's change against each published pillar, in basis points.
-       A pillar the candidate adds, and one it drops, are stated by tenor. */
     var POINT_STATES = {
         changed: { moves: { '2W': 0.7, '1M': 0.8, '6M': -0.9, '2Y': -1.2 }, added: ['30Y'], dropped: ['9M'] },
         same:    { moves: {}, added: [], dropped: [] },
         added:   { moves: {}, added: ['30Y'], dropped: [] }
     };
 
-    /* The as-ofs a person may compare the candidate against. The first is the
-       as-of the published set was built at. */
     var AS_OFS = [
-        { iso: '2026-10-06T16:00:00Z', label: '06 Oct 2026, 16:00 UTC — published', shiftBp: 0 },
+        { iso: '2026-10-06T16:00:00Z', label: '06 Oct 2026, 16:00 UTC — the published as-of', shiftBp: 0 },
         { iso: '2026-10-05T16:00:00Z', label: '05 Oct 2026, 16:00 UTC — published then', shiftBp: 0.4 },
         { iso: '2026-10-03T16:00:00Z', label: '03 Oct 2026, 16:00 UTC — published then', shiftBp: -0.3 }
     ];
 
-    /* The queue. Its header is generic; the subject is the kind's own detail. */
     var REQUESTS = [
         { id: 'r1', ref: '8f1c…a41', kind: 'marketdata.curve_publish', label: 'Curve publish',
           subject: { curve: 'USD-SOFR-3M', party: 'ACME London', asof: '2026-10-06T16:00:00Z', points: 12,
@@ -371,21 +428,20 @@ a.bare:hover{color:var(--ink)}
           by: 'a.reyes', at: '2026-10-05T09:20:00Z', state: 'held', group: MARKET_RISK,
           reason: 'The SONIA fixing was late yesterday, so the 6M point may move again.',
           permission: 'inbox::approvals:decide_market_risk', expires: '2026-10-19T09:20:00Z' },
-        { id: 'r4', ref: '2c88…40b', kind: 'iam.role_grant', label: 'Role grant', subjectText: 'J. Silva · Trader, Equity Trader',
+        { id: 'r4', ref: '2c88…40b', kind: 'iam.role_grant', label: 'Role grant',
+          subjectText: 'J. Silva · Trader, Equity Trader',
           by: 'j.silva', at: '2026-10-03T10:00:00Z', state: 'waiting', group: 'Tenant administration',
           reason: 'I have joined the equity desk and need the role to book there.',
           permission: 'iam::roles:assign', expires: '2026-10-17T10:00:00Z' },
         { id: 'r5', ref: '6e13…2af', kind: 'refdata.counterparty_change', label: 'Counterparty change',
           subjectText: 'CPTY-0142 · Legal name', by: 'k.mori', at: '2026-10-04T14:15:00Z', state: 'waiting',
           group: 'Operations', reason: 'The counterparty renamed after the merger.',
-          permission: 'inbox::approvals:decide_operations', expires: '2026-10-18T14:15:00Z' },
+          permission: 'inbox::approvals:decide_operations', expires: '2026-10-18T14:15:00Z' }
     ];
 
-    /* Decisions already taken on a request. A hold names a reason code from the
-       lookup, never free text alone. */
     var DECISIONS = {
         r3: [{ at: '2026-10-05T15:10:00Z', by: 'm.oduya', what: 'hold',
-                       comment: 'Waiting on the 4pm fixing.', reason: 'awaiting_fixing' }],
+               comment: 'Waiting on the 4pm fixing.', reason: 'awaiting_fixing' }]
     };
 
     /* ---------------------------------------------------------------- */
@@ -397,7 +453,7 @@ a.bare:hover{color:var(--ink)}
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;');
     }
-    function person(id) { return PEOPLE[id] || { name: id, role: '' }; }
+    function person(id) { return PEOPLE[id] || { name: id, role: '', decides: [] }; }
     function badge(kind, text) { return '<span class="badge ' + kind + '">' + esc(text) + '</span>'; }
     function dash(v) { return v === '' || v === null || v === undefined ? '<span class="dash">—</span>' : esc(v); }
     function mono(v) { return '<span class="mono">' + esc(v) + '</span>'; }
@@ -409,6 +465,19 @@ a.bare:hover{color:var(--ink)}
         return two(d.getUTCDate()) + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear() +
             ', ' + two(d.getUTCHours()) + ':' + two(d.getUTCMinutes()) + ' UTC';
     }
+    function clock(iso) {
+        var d = new Date(iso);
+        function two(n) { return n < 10 ? '0' + n : String(n); }
+        return two(d.getUTCHours()) + ':' + two(d.getUTCMinutes()) + ':' + two(d.getUTCSeconds());
+    }
+    function dayName(iso) {
+        var d = new Date(iso);
+        var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+            'August', 'September', 'October', 'November', 'December'];
+        return days[d.getUTCDay()] + ', ' + d.getUTCDate() + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
+    }
+    function dayKey(iso) { return iso.slice(0, 10); }
     function rel(iso) {
         var d = Date.parse(iso) - NOW;
         var future = d > 0;
@@ -426,12 +495,32 @@ a.bare:hover{color:var(--ink)}
         }
         return future ? 'in ' + text : text + ' ago';
     }
-    function when(iso) {
-        return '<span title="' + esc(exact(iso)) + '">' + esc(rel(iso)) + '</span>';
-    }
+    function when(iso) { return '<span title="' + esc(exact(iso)) + '">' + esc(rel(iso)) + '</span>'; }
     function rate(v) { return v.toFixed(4); }
+    /* The years the pillar spans, so the table can hold the discount factor it
+       implies at the published rate. */
+    function tenorYears(tenor) {
+        var n = Number(tenor.replace(/[A-Z]/g, ''));
+        var unit = tenor.slice(-1);
+        if (unit === 'W') { return n / 52; }
+        if (unit === 'M') { return n / 12; }
+        if (unit === 'Y') { return n; }
+        return n;
+    }
+    function discountFactor(tenor, ratePct) {
+        return (1 / Math.pow(1 + ratePct / 100, tenorYears(tenor))).toFixed(6);
+    }
     function bp(v) { return (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1); }
+    function initials(name) {
+        return name.split(/[\s.]+/).filter(function (p) { return p.length > 0; })
+            .map(function (p) { return p[0]; }).join('').slice(0, 2).toUpperCase();
+    }
 
+    function setStateBadge(code) {
+        var cls = code === 'published' ? 'ok' : code === 'withdrawn' ? 'bad' : 'inactive';
+        var text = code === 'published' ? 'Published' : code === 'withdrawn' ? 'Withdrawn' : 'Superseded';
+        return badge(cls, text);
+    }
     function stateName(code) {
         return { waiting: 'Waiting', held: 'Held', approved: 'Approved', refused: 'Refused' }[code] || code;
     }
@@ -444,22 +533,19 @@ a.bare:hover{color:var(--ink)}
     /* The URL is the state, so a link reopens what the person saw.       */
     /* ---------------------------------------------------------------- */
 
-    function defaultState(surface) {
-        return S.state || DEFAULTS[surface] || '';
-    }
-
     function sync() {
         var p = new URLSearchParams();
         p.set('surface', S.surface);
-        var st = defaultState(S.surface);
-        if (st && st !== DEFAULTS[S.surface]) { p.set('state', st); }
         if (S.curve) { p.set('curve', S.curve); }
         if (S.party) { p.set('party', S.party); }
-        if (S.tab !== 'details') { p.set('tab', S.tab); }
+        if (S.curve && S.tab !== 'details') { p.set('tab', S.tab); }
         if (S.asof) { p.set('asof', S.asof); }
         if (S.points) { p.set('points', S.points); }
         if (S.show !== 'published') { p.set('show', S.show); }
+        if (S.ended) { p.set('ended', '1'); }
         if (S.unchanged) { p.set('unchanged', '1'); }
+        if (S.chart) { p.set('chart', S.chart); }
+        if (S.state) { p.set('state', S.state); }
         if (S.open) { p.set('open', S.open); }
         if (S.q) { p.set('q', S.q); }
         if (S.kind !== 'all') { p.set('kind', S.kind); }
@@ -469,8 +555,8 @@ a.bare:hover{color:var(--ink)}
         if (S.sort !== 'published_at') { p.set('sort', S.sort); }
         if (S.dir !== -1) { p.set('dir', String(S.dir)); }
         if (S.actor !== 'n.haugen') { p.set('actor', S.actor); }
-        if (S.done) { p.set('decision', S.done); }
-        if (S.decision) { p.set('chosen', S.decision); }
+        if (S.decision) { p.set('decision', S.decision); }
+        if (S.chosen) { p.set('chosen', S.chosen); }
         if (S.comment) { p.set('comment', S.comment); }
         if (document.body.classList.contains('nogaps')) { p.set('gaps', '0'); }
         history.replaceState(null, '', '?' + p.toString());
@@ -502,7 +588,7 @@ a.bare:hover{color:var(--ink)}
 
     function gap(text) { return '<p class="gap"><b>Server gap.</b> ' + text + '</p>'; }
 
-    function select(id, options, value, extra) {
+    function select(id, options, value) {
         var label = (options.filter(function (o) { return o.v === value; })[0] || options[0]).t;
         var menu = S.menu === id
             ? '<div class="sel-menu">' + options.map(function (o) {
@@ -536,11 +622,18 @@ a.bare:hover{color:var(--ink)}
     }
 
     /* ---------------------------------------------------------------- */
-    /* The list of published curves.                                     */
+    /* The list of published sets.                                       */
     /* ---------------------------------------------------------------- */
 
+    function liveSets() {
+        return SETS.filter(function (s) { return s.state === 'published'; });
+    }
+
     function listRows() {
-        var rows = SETS.map(function (s) { return Object.assign({ kind: 'published' }, s); });
+        var rows = SETS.slice();
+        if (!S.ended) {
+            rows = rows.filter(function (r) { return r.state === 'published'; });
+        }
         if (S.show === 'candidates') {
             rows = rows.concat(CANDIDATES.map(function (c) { return Object.assign({ kind: 'candidate' }, c); }));
         }
@@ -553,6 +646,7 @@ a.bare:hover{color:var(--ink)}
             if (key === 'published_at') { return r.published_at || r.built_at || ''; }
             if (key === 'asof') { return r.asof; }
             if (key === 'points') { return r.points; }
+            if (key === 'state') { return r.state || r.kind; }
             return String(r[key] || '').toLowerCase();
         }
         var x = val(a), y = val(b);
@@ -582,13 +676,16 @@ a.bare:hover{color:var(--ink)}
             sortHead('published_by', 'Publisher') +
             sortHead('published_at', 'Published') +
             sortHead('points', 'Points', 'num') +
-            '<th scope="col">State</th></tr>';
+            sortHead('state', 'State') + '</tr>';
         var body = rows.map(function (r) {
             var isCandidate = r.kind === 'candidate';
-            var open = 'data-open="' + esc(r.curve) + '|' + esc(r.party) + '|' + esc(r.asof) + '"';
-            var state = isCandidate ? badge('caution', 'Candidate') : badge('ok', 'Published');
-            return '<tr class="pick ' + (isCandidate ? 'candidate' : '') + '" ' + open + ' tabindex="0" role="link">' +
-                '<td><span class="key">' + esc(r.curve) + '</span></td>' +
+            var ended = r.state === 'withdrawn' || r.state === 'superseded';
+            var open = 'data-open="' + esc(r.curve) + '|' + esc(r.party) + '"';
+            var state = isCandidate ? badge('pending', 'Candidate') : setStateBadge(r.state);
+            return '<tr class="pick ' + (isCandidate ? 'candidate' : '') + ' ' + (ended ? 'ended' : '') +
+                '" ' + open + ' tabindex="0" role="link">' +
+                '<td><span class="key">' + esc(r.curve) + '</span>' +
+                (ended ? '<span class="sub">in use until ' + esc(rel(r.ended_at)) + '</span>' : '') + '</td>' +
                 '<td>' + esc(r.party) + '</td>' +
                 '<td class="nowrap">' + (r.asof ? esc(exact(r.asof)) : '<span class="dash">—</span>') + '</td>' +
                 '<td>' + (r.published_by ? esc(person(r.published_by).name) : '<span class="dash">—</span>') + '</td>' +
@@ -601,12 +698,12 @@ a.bare:hover{color:var(--ink)}
     }
 
     function listStateView() {
-        var st = defaultState('list');
+        var st = S.state;
         if (st === 'loading') {
-            return '<div class="tblstate"><b>Loading…</b>The published curves of the tenant are being read.</div>';
+            return '<div class="tblstate"><b>Loading…</b>The published sets of the tenant are being read.</div>';
         }
         if (st === 'error') {
-            return '<div class="tblstate"><b>The published curves could not be read.</b>' +
+            return '<div class="tblstate"><b>The published sets could not be read.</b>' +
                 'The market data service did not answer. ' +
                 '<button class="btn small" data-act="retry">Retry</button></div>';
         }
@@ -614,16 +711,11 @@ a.bare:hover{color:var(--ink)}
             return '<div class="tblstate"><b>There are no published curves yet.</b>' +
                 'A curve becomes a published set when a person publishes an approved candidate. ' +
                 'Build a candidate in Bootstrap or refresh a curve, then raise a publish request.' +
-                '<div style="margin-top:16px"><button class="btn small" data-act="surface" data-arg="delta">' +
+                '<div style="margin-top:16px"><button class="btn small" data-act="tabfirst">' +
                 'See what a comparison looks like</button></div></div>';
         }
-        if (st === 'nomatch') {
-            return '<div class="tblstate"><b>No published curves match the search.</b>' +
-                'Clear the search or the party filter to see the tenant\'s curves. ' +
-                '<button class="btn small" data-act="clear">Clear</button></div>';
-        }
         var rows = filteredRows();
-        if (rows.length === 0) {
+        if (st === 'nomatch' || rows.length === 0) {
             return '<div class="tblstate"><b>No published curves match the search.</b>' +
                 'Clear the search or the party filter to see the tenant\'s curves. ' +
                 '<button class="btn small" data-act="clear">Clear</button></div>';
@@ -634,56 +726,78 @@ a.bare:hover{color:var(--ink)}
 
     function listSurface() {
         if (S.curve) { return recordPage(); }
-        var count = SETS.length;
         var actions = '<button class="btn" data-act="reload">Refresh</button>';
         return crumbs([{ t: 'Home' }, { t: 'Market data' }, { t: 'Published curves' }]) +
             pagehead('Published curves',
-                'The curves the tenant prices from: one row for each published set, with the act that published it.',
+                'The sets the tenant prices from: one row for each set, with the act that published it.',
                 actions,
                 '<p class="lead"><span class="access">Read only</span></p>') +
             '<div class="listtools">' +
             '<span class="searchbox"><input type="text" data-input="search" placeholder="Search curves, parties or people" value="' + esc(S.q) + '" aria-label="Search published curves"></span>' +
             select('fparty', [{ v: 'all', t: 'All parties' }].concat(PARTIES.map(function (p) { return { v: p, t: p }; })), S.partyFilter) +
             toggle('candidates', 'Show candidates', S.show === 'candidates') +
+            toggle('ended', 'Show ended sets', S.ended) +
             '</div>' +
-            '<p class="listnote">' + count + ' published sets. ' +
+            '<p class="listnote">' + liveSets().length + ' sets in use. ' +
+            (S.ended ? 'The ended sets are drawn under them: a withdrawn set and a superseded one. ' : '') +
             (S.show === 'candidates'
-                ? 'Candidates are drawn under the published sets, with no publisher and no published instant: nobody has approved them.'
+                ? 'Candidates are drawn with no publisher and no published instant: nobody has approved them.'
                 : 'A candidate is a set nobody has approved; Show candidates draws them.') + '</p>' +
             listStateView() +
-            gap('No read lists the tenant\'s published curves yet. The candidate is a list over the publish records, ' +
-                'latest instant for each series, which the index curve_publishes_series_published already orders. ' +
-                'Until it exists the screen reads one curve\'s snapshot at a time. The search, the filter, the order ' +
-                'and the pager are client-side here; the target is the list contract\'s own filter and order.');
+            gap('No read lists the tenant\'s published sets yet. The candidate is a list over the publish records, ' +
+                'the latest instant for each series, which the index curve_publishes_series_published already orders. ' +
+                'The ended sets need the same read to include the ended record, which the marker of the withdrawal decision provides. ' +
+                'Until it exists the screen reads one curve\'s snapshot at a time. The search, the filter, the order and the pager are client-side here; ' +
+                'the target is the list contract\'s own filter and order.');
     }
 
     /* ---------------------------------------------------------------- */
-    /* The record page a row opens.                                      */
+    /* The record page and its four tabs.                                */
     /* ---------------------------------------------------------------- */
 
+    function findSet(curve, party) {
+        return SETS.filter(function (s) { return s.curve === curve && (!party || s.party === party); })[0];
+    }
+
     function recordPage() {
-        var set = SETS.filter(function (s) {
-            return s.curve === S.curve && (!S.party || s.party === S.party);
-        })[0];
-        if (!set) {
-            var cand = CANDIDATES.filter(function (c) { return c.curve === S.curve; })[0];
-            return crumbs([{ t: 'Home' }, { t: 'Market data' }, { t: 'Published curves', act: 'surface:list' }]) +
-                pagehead(cand ? cand.curve : S.curve, 'A candidate set. Nobody has published it.') +
-                '<div class="tblstate"><b>' + esc(S.curve) + ' has no published set.</b>' +
-                'The candidate was built ' + (cand ? esc(rel(cand.built_at)) : 'recently') + ' and waits for a person to raise it. ' +
-                '<div style="margin-top:16px"><button class="btn small" data-act="surface" data-arg="queue">Open the queue</button></div></div>';
-        }
-        var tab = S.tab;
-        var title = set.curve;
-        var lead = esc(set.party) + ' · as-of ' + esc(exact(set.asof)) + ' · published ' + when(set.published_at);
-        var actions = '<button class="btn" data-act="compare">Compare to an as-of</button>' +
+        var set = findSet(S.curve, S.party);
+        if (!set) { return noSetPage(); }
+        var tab = TABS.indexOf(S.tab) >= 0 ? S.tab : 'details';
+        var lead = esc(set.party) + ' · as-of ' + esc(exact(set.asof)) + ' · ' + setStateBadge(set.state) +
+            (set.state === 'published'
+                ? ' · published ' + when(set.published_at)
+                : ' · ' + (set.state === 'withdrawn' ? 'withdrawn' : 'superseded') + ' ' + when(set.ended_at));
+        var actions = '<button class="btn" data-act="compare">Compare as of</button>' +
             '<button class="btn" data-act="reload">Refresh</button>';
-        return crumbs([{ t: 'Home' }, { t: 'Market data' }, { t: 'Published curves', act: 'surface:list' }, { t: title }]) +
-            pagehead(title, lead, actions) +
+        return crumbs([{ t: 'Home' }, { t: 'Market data' }, { t: 'Published curves', act: 'surface:list' }, { t: set.curve }]) +
+            pagehead(set.curve, lead, actions) +
             '<div class="tabs" role="tablist">' +
             tabButton('details', 'Details', tab) + tabButton('points', 'Published points', tab) +
-            tabButton('history', 'History', tab) + '</div>' +
-            '<div class="card">' + (tab === 'points' ? pointsTab(set) : tab === 'history' ? historyTab(set) : detailsTab(set)) + '</div>';
+            tabButton('compare', 'Compare as of', tab) + tabButton('history', 'History', tab) + '</div>' +
+            '<div class="card">' +
+            (tab === 'points' ? pointsTab(set)
+                : tab === 'compare' ? compareTab(set)
+                : tab === 'history' ? historyTab(set)
+                : detailsTab(set)) + '</div>';
+    }
+
+    function noSetPage() {
+        var cand = CANDIDATES.filter(function (c) { return c.curve === S.curve && (!S.party || c.party === S.party); })[0];
+        return crumbs([{ t: 'Home' }, { t: 'Market data' }, { t: 'Published curves', act: 'surface:list' }, { t: S.curve }]) +
+            pagehead(S.curve, (cand ? esc(cand.party) : '') + ' · no published set',
+                '<button class="btn" data-act="surface:list">Back to the list</button>') +
+            '<div class="card"><h2>No published set</h2>' +
+            '<p class="lede">A candidate exists and nobody has published it, so there is no record page and no baseline.</p>' +
+            (cand ? '<dl class="fields">' +
+                '<div><dt>Candidate built at</dt><dd>' + esc(exact(cand.built_at)) + '</dd></div>' +
+                '<div><dt>Candidate built by</dt><dd>' + esc(person(cand.built_by).name) + '</dd></div>' +
+                '<div><dt>As-of</dt><dd>' + esc(exact(cand.asof)) + '</dd></div>' +
+                '<div><dt>Points</dt><dd class="mono">' + cand.points + '</dd></div></dl>' : '') +
+            '<div style="margin-top:16px">' +
+            chartPanel('Curve shape', emptyChart('No published set, so there is no curve to draw.')) + '</div>' +
+            '<p class="hint">A comparison needs a published as-of to read. Until a publish record exists for the series, the tab cannot draw the baseline either.</p>' +
+            gap('The comparison needs a published set to read. Until a publish record exists for the series, the screen has no baseline and states that.') +
+            '</div>';
     }
 
     function tabButton(id, text, current) {
@@ -692,36 +806,56 @@ a.bare:hover{color:var(--ink)}
     }
 
     function detailsTab(set) {
+        var ended = set.state !== 'published';
         return '<h2>Details</h2><p class="lede">The subject the request authorised, and the act that published it.</p>' +
             '<dl class="fields">' +
             '<div><dt>Curve configuration</dt><dd class="mono">' + esc(set.curve) + '</dd></div>' +
             '<div><dt>Party</dt><dd>' + esc(set.party) + '</dd></div>' +
             '<div><dt>Published as-of</dt><dd>' + esc(exact(set.asof)) + '</dd></div>' +
             '<div><dt>Publisher</dt><dd>' + esc(person(set.published_by).name) + '</dd></div>' +
-            '<div><dt>Published at</dt><dd><span title="' + esc(exact(set.published_at)) + '">' + esc(exact(set.published_at)) + '</span></dd></div>' +
+            '<div><dt>Published at</dt><dd>' + esc(exact(set.published_at)) + '</dd></div>' +
             '<div><dt>Points published</dt><dd class="mono">' + set.points + '</dd></div>' +
             '<div><dt>Authorising request</dt><dd>' + mono(set.request) + '</dd></div>' +
             '<div><dt>Output series</dt><dd class="mono">' + esc(set.series) + '</dd></div>' +
-            '<div><dt>Source</dt><dd>SOFR OIS, bootstrapped from ' + set.points + ' pillars</dd></div>' +
+            '<div><dt>State</dt><dd>' + setStateBadge(set.state) + '</dd></div>' +
+            (ended ? '<div><dt>' + (set.state === 'withdrawn' ? 'Withdrawn at' : 'Superseded at') + '</dt><dd>' + esc(exact(set.ended_at)) + '</dd></div>' +
+                '<div><dt>' + (set.state === 'withdrawn' ? 'Withdrawn by' : 'Superseded by') + '</dt><dd>' + esc(person(set.ended_by).name) + '</dd></div>' +
+                '<div><dt>Authorising request</dt><dd>' + mono(set.ended_request) + '</dd></div>' +
+                (set.reason_code ? '<div><dt>Reason</dt><dd>' + mono(set.reason_code) + ' — ' + esc(set.reason_text) + '</dd></div>' : '') : '') +
             '</dl>' +
             '<p class="lastchanged">Read only: a publish record is written by the gate that applies an approved request, and never by a screen. ' +
             'Last changed: published by ' + esc(person(set.published_by).name) + ' ' + when(set.published_at) + '.</p>' +
-            gap('There is no withdrawal and no superseded marker on the publish record, so this page can name the set in use but cannot say what replaced it. ' +
-                'The note records the decision that closes this.') +
+            gap('There is no withdrawal and no superseded marker on the publish record today, so this page would read the set in use but not what replaced it. ' +
+                'The prototype draws the state and the fields the withdrawal decision adds.') +
             gap('The read that serves a curve returns the latest snapshot of one series. ' +
                 'A list over the publish records is the missing read the list surface names.');
     }
 
+    function chartPoints(set) {
+        if (S.chart === 'none') { return []; }
+        if (S.chart === 'one') { return PILLARS.slice(0, 1); }
+        return PILLARS;
+    }
+
     function pointsTab(set) {
-        var shift = (AS_OFS.filter(function (a) { return a.iso === set.asof; })[0] || { shiftBp: 0 }).shiftBp;
-        var body = PILLARS.map(function (p, i) {
+        var points = chartPoints(set);
+        var chart = curveChart({
+            categories: points.map(function (p) { return p.tenor; }),
+            published: points.map(function (p) { return p.value; }),
+            caption: 'The published set at ' + exact(set.asof) + ' · ' + points.length + ' pillars.'
+        });
+        var body = PILLARS.map(function (p) {
             return '<tr><td>' + esc(p.tenor) + ' · ' + esc(p.role) + '</td>' +
-                '<td class="num">' + rate(p.value + shift / 100) + '</td>' +
-                '<td class="num">' + rate(p.value + shift / 100 + (i % 5 === 0 ? 0.0001 : 0)) + '</td>' +
+                '<td class="num">' + discountFactor(p.tenor, p.value) + '</td>' +
+                '<td class="num">' + rate(p.value) + '</td>' +
                 '<td class="dim">bootstrapped</td>' +
                 '<td class="dim">' + esc(exact(set.asof)) + '</td></tr>';
         }).join('');
-        return '<h2>Published points</h2><p class="lede">The pillars the recipe asks for, with the value the published set holds for each.</p>' +
+        return '<h2>Published points</h2><p class="lede">The pillars the recipe asks for, and the shape the published set holds.</p>' +
+            chartPanel('Curve shape', chart) +
+            '<div class="listtools" style="margin-top:4px">' +
+            '<button class="btn small" data-act="compare">Compare as of</button>' +
+            '<span class="hint">Compares this set against a candidate at a chosen as-of.</span></div>' +
             '<table class="diff"><thead><tr><th>Pillar</th><th class="num">Discount factor</th><th class="num">Rate (%)</th><th>Source</th><th>Observed</th></tr></thead>' +
             '<tbody>' + body + '</tbody></table>' +
             '<p class="lastchanged">Each point is identified by its oresmd_uri, not by a tenor column. ' +
@@ -730,59 +864,14 @@ a.bare:hover{color:var(--ink)}
                 'so the screen joins them by the recipe as it stands today and not as it stood at the as-of.');
     }
 
-    function historyTab(set) {
-        var entries = [
-            { at: set.at || '2026-10-06T15:05:00Z', who: 'a.reyes', what: 'Request raised',
-              note: 'Asked to publish ' + set.curve + ' at ' + exact(set.asof) + '.' },
-            { at: '2026-10-06T16:12:00Z', who: 'm.oduya', what: 'Approved', note: 'Checked against the 16:00 quotes.' },
-            { at: set.published_at, who: set.published_by, what: 'Published',
-              note: 'The set became the curve the desk prices from. One request publishes once.' }
-        ];
-        return '<h2>History</h2><p class="lede">The act that made this set the one in use.</p>' +
-            '<ul class="timeline">' + entries.map(function (e) {
-                return '<li><span class="when">' + when(e.at) + '</span><div><div class="head">' +
-                    badge(e.what === 'Published' ? 'ok' : e.what === 'Approved' ? 'pending' : 'inactive', e.what) +
-                    '<span>' + esc(person(e.who).name) + '</span></div>' +
-                    '<p class="note">' + esc(e.note) + '</p></div></li>';
-            }).join('') + '</ul>' +
-            gap('A publish record is bitemporal, so its versions hold the unapplied subject beside the applied one. ' +
-                'The history read returns a series\' versions; a withdrawal and a superseded link are not part of it yet.');
-    }
-
-    /* ---------------------------------------------------------------- */
-    /* The delta: one candidate set against a chosen as-of.               */
-    /* ---------------------------------------------------------------- */
-
-    function deltaCurve() {
-        if (defaultState('delta') === 'nopublished') {
-            return { curve: 'JPY-TONA-6M', party: 'ACME Hong Kong' };
-        }
-        var set = S.curve ? SETS.filter(function (s) { return s.curve === S.curve && (!S.party || s.party === S.party); })[0] : SETS[0];
-        return set ? { curve: set.curve, party: set.party } : { curve: SETS[0].curve, party: SETS[0].party };
-    }
-
-    function deltaSurface() {
-        var which = deltaCurve();
-        var set = SETS.filter(function (s) { return s.curve === which.curve && s.party === which.party; })[0];
-        var cand = CANDIDATES.filter(function (c) { return c.curve === which.curve && c.party === which.party; })[0];
-        var asof = S.asof || (set ? set.asof : AS_OFS[0].iso);
+    function compareTab(set) {
+        var cand = CANDIDATES.filter(function (c) { return c.curve === set.curve && c.party === set.party; })[0];
+        var asof = S.asof || set.asof;
         var entry = AS_OFS.filter(function (a) { return a.iso === asof; })[0] || AS_OFS[0];
-        var state = S.points || (defaultState('delta') === 'same' ? 'same' : defaultState('delta') === 'added' ? 'added' : 'changed');
+        var state = S.points || 'changed';
+        if (state !== 'changed' && state !== 'same' && state !== 'added') { state = 'changed'; }
 
-        var head = crumbs([{ t: 'Home' }, { t: 'Market data' }, { t: 'Published curves', act: 'surface:list' }, { t: which.curve }]) +
-            pagehead(which.curve + ' · delta',
-                esc(which.party) + ' · the candidate set against the published set at a chosen as-of',
-                '<button class="btn" data-act="surface" data-arg="list">Back to the list</button>');
-
-        if (!set) {
-            return head + '<div class="tblstate"><b>' + esc(which.curve) + ' has no published set.</b>' +
-                'There is nothing to compare against. A candidate that nobody has published is compared against an empty set, ' +
-                'and that is not a delta. Publish a set first, then compare later candidates against it.' +
-                '<div style="margin-top:16px"><button class="btn small" data-act="surface" data-arg="queue">Open the queue</button></div></div>' +
-                gap('The comparison needs a published as-of to read. Until a publish record exists for the series, the screen has none.');
-        }
-
-        var model = POINT_STATES[state] || POINT_STATES.changed;
+        var model = POINT_STATES[state];
         var rows = PILLARS.map(function (p) {
             var pubV = p.value + entry.shiftBp / 100;
             var move = model.moves[p.tenor];
@@ -793,33 +882,37 @@ a.bare:hover{color:var(--ink)}
         model.added.forEach(function (tenor) {
             rows.push({ tenor: tenor, role: 'Swap', pub: null, cand: 3.8600, move: null, dropped: false, added: true });
         });
-
         rows.forEach(function (r) {
             r.mark = r.added ? 'added' : r.dropped ? 'dropped' : r.move === undefined ? 'unchanged' : 'changed';
         });
+
         var changed = rows.filter(function (r) { return r.mark === 'changed'; }).length;
         var added = rows.filter(function (r) { return r.mark === 'added'; }).length;
         var dropped = rows.filter(function (r) { return r.mark === 'dropped'; }).length;
         var unchanged = rows.filter(function (r) { return r.mark === 'unchanged'; }).length;
         var nothingChanged = changed === 0 && added === 0 && dropped === 0;
+
+        var chartRows = rows.filter(function (r) { return S.chart === 'one' ? r.tenor === '1W' : true; });
+        var chart = curveChart({
+            categories: chartRows.map(function (r) { return r.tenor; }),
+            published: chartRows.map(function (r) { return r.pub; }),
+            candidate: chartRows.map(function (r) { return r.cand; }),
+            caption: nothingChanged
+                ? 'The two sets coincide at every point; the candidate line covers the published one.'
+                : 'Published dashed, candidate solid. A gap is a pillar the set does not hold, and never a zero.'
+        });
+
         var shown = S.unchanged ? rows : rows.filter(function (r) { return r.mark !== 'unchanged'; });
-
         var asofOptions = AS_OFS.map(function (a) { return { v: a.iso, t: a.label }; });
-
-        var summary = '<p class="summary">' +
-            '<span class="stat"><b>' + changed + '</b> changed</span>' +
-            '<span class="stat"><b>' + added + '</b> added</span>' +
-            '<span class="stat"><b>' + dropped + '</b> dropped</span>' +
-            '<span class="stat"><b>' + unchanged + '</b> unchanged</span>' +
-            '<span class="dim">' + (rows.length) + ' points in the comparison</span></p>';
 
         var banner = nothingChanged
             ? '<div class="notice info"><b>No point changed.</b> The candidate matches the published set at ' +
               esc(exact(asof)) + ' point for point. There is nothing to raise, and the published set stays the one in use.</div>'
             : '';
-
-        var ledger = state === 'changed'
-            ? '<p class="listnote">The applied as-of is the published one. Change is stated in basis points, and the sign is the candidate\'s move against the published value.</p>'
+        var endedNotice = set.state !== 'published'
+            ? '<div class="notice warn"><b>The baseline set was ' + (set.state === 'withdrawn' ? 'withdrawn' : 'superseded') + '.</b> ' +
+              'The comparison still answers what the candidate changes against the last published set, and the desk prices from ' +
+              (set.state === 'withdrawn' ? 'no set of this curve.' : 'its successor.') + '</div>'
             : '';
 
         var table = '<table class="diff"><thead><tr><th>Pillar</th><th class="num">Published</th><th class="num">Candidate</th>' +
@@ -847,19 +940,20 @@ a.bare:hover{color:var(--ink)}
                 }).join('')) +
             '</tbody></table>';
 
-        return head +
+        return '<h2>Compare as of</h2><p class="lede">The candidate set against the published set at a chosen as-of.</p>' +
             '<div class="listtools">' +
             '<span class="dim">Compare against</span>' +
             select('asof', asofOptions, asof) +
             toggle('unchanged', 'Show unchanged points', S.unchanged) +
             '</div>' +
+            endedNotice +
             '<div class="grid2" style="margin-bottom:16px">' +
             '<div class="panel"><h2>Published set <span class="sub">the baseline</span></h2>' +
             '<dl class="fields" style="grid-template-columns:1fr 1fr">' +
             '<div><dt>As-of</dt><dd>' + esc(exact(set.asof)) + '</dd></div>' +
             '<div><dt>Published by</dt><dd>' + esc(person(set.published_by).name) + ' ' + when(set.published_at) + '</dd></div>' +
             '<div><dt>Authorising request</dt><dd>' + mono(set.request) + '</dd></div>' +
-            '<div><dt>Points</dt><dd class="mono">' + set.points + '</dd></div>' +
+            '<div><dt>State</dt><dd>' + setStateBadge(set.state) + '</dd></div>' +
             '</dl></div>' +
             '<div class="panel"><h2>Candidate set <span class="sub">what would replace it</span></h2>' +
             '<dl class="fields" style="grid-template-columns:1fr 1fr">' +
@@ -868,16 +962,347 @@ a.bare:hover{color:var(--ink)}
             '<div><dt>State</dt><dd>' + (state === 'same' ? 'A rebuild at the published as-of' : 'Not published · no approved request') + '</dd></div>' +
             '<div><dt>Points</dt><dd class="mono">' + (cand ? cand.points : 12) + '</dd></div>' +
             '</dl></div></div>' +
-            banner + summary +
-            (state === 'same' ? '' : ledger) +
+            banner +
+            chartPanel('The two curves', chart) +
+            '<p class="summary"><span class="stat"><b>' + changed + '</b> changed</span>' +
+            '<span class="stat"><b>' + added + '</b> added</span>' +
+            '<span class="stat"><b>' + dropped + '</b> dropped</span>' +
+            '<span class="stat"><b>' + unchanged + '</b> unchanged</span></p>' +
             (unchanged > 0 && !S.unchanged && state !== 'same'
                 ? '<p class="listnote">' + unchanged + ' unchanged points are hidden. Show unchanged points draws them.</p>'
                 : '') + table +
             gap('No read returns a point-by-point difference. The candidate is ' +
                 'marketdata.v1.curve_candidates.diff, taking the published as-of from the publish record. ' +
-                'Until it exists this table joins two observation sets by the point\'s oresmd_uri and marks an unmatched point as added or dropped.') +
+                'Until it exists this tab joins two observation sets by the point\'s oresmd_uri and marks an unmatched point as added or dropped.') +
             gap('A dropped point has no place in the model yet: an observation carries no valid_to, so the screen cannot say when the published point stopped applying. ' +
-                'The note states the decision the withdrawal and supersession rule takes about this.');
+                'The withdrawal and supersession decision in the journey states the answer the record gains.');
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The curve chart, plain SVG, as the application's LineChart draws.  */
+    /* ---------------------------------------------------------------- */
+
+    function chartPanel(title, body) {
+        return '<div class="chartpanel"><h3>' + esc(title) + '</h3>' + body + '</div>';
+    }
+
+    function emptyChart(reason) {
+        return '<div class="chartempty"><b>The chart cannot be drawn.</b>' + esc(reason) + '</div>';
+    }
+
+    var CHART_W = 720;
+    var CHART_H = 250;
+    var CHART_LEFT = 56;
+    var CHART_RIGHT = 16;
+    var CHART_TOP = 16;
+    var CHART_BOTTOM = 40;
+
+    function curveChart(opts) {
+        var categories = opts.categories;
+        var pub = opts.published;
+        var cand = opts.candidate || null;
+        var drawable = categories.length;
+        if (drawable === 0) {
+            return emptyChart('The set holds no points.');
+        }
+        if (drawable < 2) {
+            return emptyChart('A curve needs at least two pillars. One point has no shape; the table below holds it.');
+        }
+        var values = [];
+        pub.forEach(function (v) { if (v !== null) { values.push(v); } });
+        if (cand) { cand.forEach(function (v) { if (v !== null) { values.push(v); } }); }
+        var low = Math.min.apply(null, values);
+        var high = Math.max.apply(null, values);
+        var room = high === low ? Math.max(Math.abs(high) * 0.0005, 1e-6) : (high - low) * 0.12;
+        var yLow = low - room;
+        var yHigh = high + room;
+        var plotW = CHART_W - CHART_LEFT - CHART_RIGHT;
+        var plotH = CHART_H - CHART_TOP - CHART_BOTTOM;
+
+        function xOf(i) { return CHART_LEFT + ((i + 0.5) * plotW) / drawable; }
+        function yOf(v) { return CHART_TOP + plotH - ((v - yLow) / (yHigh - yLow)) * plotH; }
+
+        var svg = [];
+        svg.push('<svg class="chart" role="img" viewBox="0 0 ' + CHART_W + ' ' + CHART_H + '" ' +
+            'preserveAspectRatio="xMidYMid meet" aria-label="' + esc(opts.caption) + '">');
+        for (var g = 0; g < 5; g += 1) {
+            var level = yLow + ((yHigh - yLow) * g) / 4;
+            var y = yOf(level);
+            svg.push('<line class="grid" x1="' + CHART_LEFT + '" x2="' + (CHART_W - CHART_RIGHT) +
+                '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"></line>');
+            svg.push('<text x="' + (CHART_LEFT - 8) + '" y="' + (y + 3).toFixed(1) + '" text-anchor="end">' +
+                rate(level) + '</text>');
+        }
+        svg.push('<line class="axis" x1="' + CHART_LEFT + '" x2="' + CHART_LEFT + '" y1="' + CHART_TOP +
+            '" y2="' + (CHART_H - CHART_BOTTOM) + '"></line>');
+        svg.push('<line class="axis" x1="' + CHART_LEFT + '" x2="' + (CHART_W - CHART_RIGHT) + '" y1="' +
+            (CHART_H - CHART_BOTTOM) + '" y2="' + (CHART_H - CHART_BOTTOM) + '"></line>');
+        categories.forEach(function (name, i) {
+            svg.push('<text x="' + xOf(i).toFixed(1) + '" y="' + (CHART_H - 24) + '" text-anchor="middle">' +
+                esc(name) + '</text>');
+        });
+
+        function runs(series) {
+            var out = [];
+            var current = [];
+            series.forEach(function (v, i) {
+                if (v === null || v === undefined) {
+                    if (current.length) { out.push(current); current = []; }
+                } else {
+                    current.push([i, v]);
+                }
+            });
+            if (current.length) { out.push(current); }
+            return out;
+        }
+        function pathOf(run) {
+            return run.map(function (p, k) {
+                return (k === 0 ? 'M ' : 'L ') + xOf(p[0]).toFixed(1) + ' ' + yOf(p[1]).toFixed(1);
+            }).join(' ');
+        }
+
+        if (cand) {
+            runs(pub).forEach(function (run) {
+                svg.push('<path d="' + pathOf(run) + '" fill="none" stroke="var(--ink-faint)" ' +
+                    'stroke-width="1.4" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"></path>');
+            });
+            runs(cand).forEach(function (run) {
+                svg.push('<path d="' + pathOf(run) + '" fill="none" stroke="var(--accent)" ' +
+                    'stroke-width="2.2" vector-effect="non-scaling-stroke"></path>');
+            });
+            cand.forEach(function (v, i) {
+                if (v === null || v === undefined) {
+                    if (pub[i] !== null && pub[i] !== undefined) {
+                        svg.push('<circle cx="' + xOf(i).toFixed(1) + '" cy="' + yOf(pub[i]).toFixed(1) +
+                            '" r="3.5" fill="none" stroke="var(--bad)" stroke-width="1.5"></circle>');
+                    }
+                } else {
+                    svg.push('<circle cx="' + xOf(i).toFixed(1) + '" cy="' + yOf(v).toFixed(1) +
+                        '" r="2.8" fill="var(--accent)"></circle>');
+                }
+            });
+            pub.forEach(function (v, i) {
+                if ((v === null || v === undefined) && cand[i] !== null && cand[i] !== undefined) {
+                    svg.push('<circle cx="' + xOf(i).toFixed(1) + '" cy="' + yOf(cand[i]).toFixed(1) +
+                        '" r="3.5" fill="none" stroke="var(--accent)" stroke-width="1.5"></circle>');
+                }
+            });
+        } else {
+            runs(pub).forEach(function (run) {
+                svg.push('<path d="' + pathOf(run) + '" fill="none" stroke="var(--accent)" ' +
+                    'stroke-width="2.2" vector-effect="non-scaling-stroke"></path>');
+            });
+            pub.forEach(function (v, i) {
+                if (v !== null && v !== undefined) {
+                    svg.push('<circle cx="' + xOf(i).toFixed(1) + '" cy="' + yOf(v).toFixed(1) +
+                        '" r="2.8" fill="var(--accent)"></circle>');
+                }
+            });
+        }
+        svg.push('<text x="' + CHART_LEFT + '" y="' + (CHART_H - 6) + '">' + esc('Rate (%)') + '</text>');
+        svg.push('<text x="' + (CHART_W - CHART_RIGHT) + '" y="' + (CHART_H - 6) + '" text-anchor="end">' +
+            esc(cand ? 'published · candidate' : 'published') + '</text>');
+        svg.push('</svg>');
+        return '<div class="chartlegend"><span class="legendline">' + esc(opts.caption) + '</span></div>' + svg.join('');
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* The History tab, as the record screen standard and the entity      */
+    /* screen specification's timeline draw it.                          */
+    /* ---------------------------------------------------------------- */
+
+    function historyOf(set) {
+        var out = [];
+        out.push({
+            id: 'raised', version: 1, kind: 'raised', at: set.raised_at, by: set.raised_by,
+            reason: 'system.new_record',
+            note: 'The raise wrote the subject: the curve, the party, the output series and the as-of.',
+            detail: { type: 'whole', set: set }
+        });
+        out.push({
+            id: 'decision', version: null, kind: 'approved', at: set.approved_at, by: set.approved_by,
+            reason: 'inbox.approval.approved',
+            note: 'Approved the request. The decision belongs to the request, not to this record.',
+            detail: { type: 'decision', comment: set.approved_comment, request: set.request }
+        });
+        out.push({
+            id: 'published', version: 2, kind: 'published', at: set.published_at, by: set.published_by,
+            reason: 'marketdata.publish.applied',
+            note: 'Applied the approved request: the set became the curve the desk prices from.',
+            detail: {
+                type: 'diff',
+                fields: [['published_by', '', set.published_by], ['published_at', '', exact(set.published_at)]]
+            }
+        });
+        if (set.state === 'withdrawn') {
+            out.push({
+                id: 'withdrawn', version: 3, kind: 'withdrawn', at: set.ended_at, by: set.ended_by,
+                reason: 'marketdata.publish.withdrawn',
+                note: set.reason_text,
+                detail: {
+                    type: 'diff',
+                    fields: [
+                        ['withdrawn_at', '', exact(set.ended_at)],
+                        ['withdrawn_by', '', set.ended_by],
+                        ['withdrawn_reason_code', '', set.reason_code]
+                    ]
+                }
+            });
+        }
+        if (set.state === 'superseded') {
+            out.push({
+                id: 'superseded', version: 3, kind: 'superseded', at: set.ended_at, by: set.ended_by,
+                reason: 'marketdata.publish.superseded',
+                note: set.reason_text,
+                detail: {
+                    type: 'diff',
+                    fields: [
+                        ['superseded_at', '', exact(set.ended_at)],
+                        ['superseded_by_request_id', '', set.ended_request],
+                        ['successor_as_of', '', exact(set.successor_asof)]
+                    ]
+                }
+            });
+        }
+        return out.sort(function (a, b) { return Date.parse(b.at) - Date.parse(a.at); });
+    }
+
+    var KIND_STYLE = {
+        raised: { label: 'Raised', cls: 'inactive', colour: 'var(--inactive)' },
+        approved: { label: 'Approved', cls: 'pending', colour: 'var(--info)' },
+        published: { label: 'Published', cls: 'ok', colour: 'var(--ok)' },
+        withdrawn: { label: 'Withdrawn', cls: 'bad', colour: 'var(--bad)' },
+        superseded: { label: 'Superseded', cls: 'caution', colour: 'var(--stale)' }
+    };
+    var HISTORY_ORDER = ['raised', 'approved', 'published', 'withdrawn', 'superseded'];
+
+    function eventChart(entries) {
+        var counts = {};
+        HISTORY_ORDER.forEach(function (k) { counts[k] = 0; });
+        var days = {};
+        entries.forEach(function (e) {
+            var k = dayKey(e.at);
+            if (!days[k]) { days[k] = { total: 0, kinds: {} }; }
+            days[k].total += 1;
+            days[k].kinds[e.kind] = (days[k].kinds[e.kind] || 0) + 1;
+            counts[e.kind] = (counts[e.kind] || 0) + 1;
+        });
+        var keys = Object.keys(days).sort();
+        var top = Math.max.apply(null, keys.map(function (k) { return days[k].total; }));
+        var barW = 26;
+        var gap = 12;
+        var left = 8;
+        var height = 96;
+        var width = Math.max(320, left * 2 + keys.length * (barW + gap));
+        var svg = ['<svg class="chart" role="img" width="' + width + '" height="' + (height + 34) +
+            '" viewBox="0 0 ' + width + ' ' + (height + 34) +
+            '" aria-label="History entries by day" preserveAspectRatio="xMinYMin meet">'];
+        keys.forEach(function (key, i) {
+            var x = left + i * (barW + gap);
+            var d = days[key];
+            var y = height;
+            HISTORY_ORDER.forEach(function (kind) {
+                var n = d.kinds[kind] || 0;
+                if (n === 0) { return; }
+                var h = (n / top) * (height - 8);
+                y -= h;
+                svg.push('<rect x="' + x + '" y="' + y.toFixed(1) + '" width="' + barW + '" height="' +
+                    h.toFixed(1) + '" fill="' + KIND_STYLE[kind].colour + '" fill-opacity="0.85" ' +
+                    'data-act="jump" data-arg="' + esc(key) + '"><title>' + esc(dayName(key + 'T00:00:00Z')) +
+                    ' · ' + d.total + (d.total === 1 ? ' entry' : ' entries') + '</title></rect>');
+            });
+            svg.push('<text x="' + (x + barW / 2) + '" y="' + (height + 16) + '" text-anchor="middle">' +
+                esc(key.slice(5)) + '</text>');
+        });
+        svg.push('<line class="axis" x1="0" x2="' + width + '" y1="' + height + '" y2="' + height + '"></line>');
+        svg.push('</svg>');
+        var legend = HISTORY_ORDER.filter(function (k) { return counts[k] > 0; }).map(function (k) {
+            return '<span><span class="sw" style="background:' + KIND_STYLE[k].colour + '"></span>' +
+                esc(KIND_STYLE[k].label) + ' <span class="mono">' + counts[k] + '</span></span>';
+        }).join('');
+        return '<div class="histchart">' + svg.join('') + '</div><p class="histlegend">' + legend +
+            '<span class="faint">One bar a day, split by the kind of entry. Click a bar to reach its entries.</span></p>';
+    }
+
+    function wholeRecord(set) {
+        var rows = [
+            ['curve configuration', set.curve],
+            ['party', set.party],
+            ['output series', set.series],
+            ['as-of', exact(set.asof)],
+            ['published_by', '—'],
+            ['published_at', '—']
+        ];
+        return '<dl class="fields" style="grid-template-columns:1fr 1fr">' + rows.map(function (r) {
+            return '<div><dt>' + esc(r[0]) + '</dt><dd class="mono">' + esc(r[1]) + '</dd></div>';
+        }).join('') + '</dl>';
+    }
+
+    function diffDetail(fields) {
+        return '<table class="diff"><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>' +
+            fields.map(function (f) {
+                return '<tr><td>' + esc(f[0]) + '</td><td class="was">' + (f[1] === '' ? '' : esc(f[1])) +
+                    '</td><td class="now">' + esc(f[2]) + '</td></tr>';
+            }).join('') + '</tbody></table>';
+    }
+
+    function historyRail(entries) {
+        var html = [];
+        var lastDay = '';
+        var versioned = entries.filter(function (e) { return e.version !== null; });
+        var newestId = versioned.length ? versioned[0].id : '';
+        entries.forEach(function (e) {
+            var day = dayKey(e.at);
+            if (day !== lastDay) {
+                if (lastDay !== '') { html.push('</ul>'); }
+                html.push('<div class="daydiv">' + esc(dayName(e.at)) + '</div><ul class="histrail">');
+                lastDay = day;
+            }
+            var style = KIND_STYLE[e.kind];
+            var detail;
+            if (e.detail.type === 'whole') {
+                detail = wholeRecord(e.detail.set);
+            } else if (e.detail.type === 'decision') {
+                detail = '<p class="detailline">Comment: ' + esc(e.detail.comment) + '</p>' +
+                    '<p class="detailline">Read on the request ' + esc(e.detail.request) + ', version 2. ' +
+                    'The decision is the request\'s record, and it is drawn here because the publish stands on it.</p>';
+            } else {
+                detail = diffDetail(e.detail.fields);
+            }
+            html.push('<li id="e-' + esc(e.id) + '">' +
+                '<div class="gutter"><span title="' + esc(exact(e.at)) + '">' + esc(rel(e.at)) + '</span>' +
+                (e.id === newestId ? '<span class="cur">Current version</span>' : '') + '</div>' +
+                '<div class="face"><span class="avatar" aria-hidden="true">' + esc(initials(person(e.by).name)) + '</span></div>' +
+                '<div><div class="head">' + badge(style.cls, style.label) +
+                '<span class="rec">' + esc(e.kind === 'approved' ? 'approval_request ' + e.detail.request : 'curve_publish v' + e.version) + '</span>' +
+                '<span class="why">' + esc(e.reason) + '</span>' +
+                '<span>' + esc(person(e.by).name) + '</span></div>' +
+                '<p class="note">' + esc(e.note) + '</p>' +
+                '<details><summary>Details</summary>' + detail + '</details>' +
+                '</div></li>');
+        });
+        if (lastDay !== '') { html.push('</ul>'); }
+        return html.join('');
+    }
+
+    function historyTab(set) {
+        var entries = historyOf(set);
+        return '<h2>History</h2>' +
+            '<p class="lede">The story of this set: the raise, the decision it stands on, the apply, and its end. ' +
+            'Newest first. <span class="access">Read only</span></p>' +
+            '<div class="histtools">' +
+            toggle('service', 'Hide system activity', false) +
+            '<span class="hint">Drawn even here: no service account wrote this record. The toggle is the timeline\'s own.</span>' +
+            '</div>' +
+            '<div class="histwrap"><h3>Entries over time</h3>' + eventChart(entries) + '</div>' +
+            historyRail(entries) +
+            '<p class="lastchanged">No version offers Revert. A publish record is read only: the gate writes it, and no person may write it back. ' +
+            'A correction is a new publish or a withdrawal, and each is an act of its own with a request behind it.</p>' +
+            gap('The publish record is bitemporal, so its versions hold the raised subject beside the applied one. ' +
+                'The history read returns a record\'s versions; the approval decision is not one of them, and no read merges the request\'s decisions into the record\'s stream. ' +
+                'The screen reads the decision by request_id and merges it by time, which the note states as the open question it is.') +
+            gap('The record carries no change_reason_code and no change_commentary, because the gate writes it and not a person. ' +
+                'The entry names the act and its fields instead, and a reason code exists only on the withdrawal the decision adds.');
     }
 
     /* ---------------------------------------------------------------- */
@@ -908,7 +1333,7 @@ a.bare:hover{color:var(--ink)}
 
     function queueSurface() {
         if (S.open) { return requestPage(); }
-        if (defaultState('queue') === 'none') { return queueEmpty(); }
+        if (S.state === 'none') { return queueEmpty(); }
 
         var rows = queueRows();
         var table = '<table class="rows queue"><thead><tr>' +
@@ -958,12 +1383,6 @@ a.bare:hover{color:var(--ink)}
                 'The subject names its party, so the decider knows whose curve it is.');
     }
 
-    function initials(name) {
-        return name.split(/[\s.]+/).filter(function (p) { return p.length > 0; })
-            .map(function (p) { return p[0]; }).join('').slice(0, 2).toUpperCase();
-    }
-
-    /* A person's own requests, drawn above the queue as the product does. */
     function myRequests() {
         var mine = REQUESTS.filter(function (r) { return r.by === S.actor; });
         var body = mine.length === 0
@@ -1014,13 +1433,11 @@ a.bare:hover{color:var(--ink)}
             '<span class="stat"><b>1</b> dropped</span><span class="stat"><b>7</b> unchanged</span></p>' +
             '<p class="hint">The candidate against the published set at ' + esc(exact(r.subject.asof)) + '. ' +
             '<button class="btn small" data-act="compare" data-arg="' + esc(r.subject.curve) + '|' + esc(r.subject.party) + '">' +
-            'Read the delta point by point</button></p>' +
-            gap('The delta panel is the missing read of the same name. It is drawn here as the summary the decider needs, ' +
+            'Open the comparison</button></p>' +
+            gap('The comparison is the missing read of the same name. It is drawn here as the summary the decider needs, ' +
                 'not as a value the queue read returns.') + '</div>';
     }
 
-    /* The checks the decider names before answering. No operation runs them,
-       so each reads as unknown and not as passed. */
     function checksPanel(r) {
         if (!r.subject) { return ''; }
         var names = ['Every pillar priced', 'Discount factors monotonic', 'No arbitrage'];
@@ -1037,39 +1454,38 @@ a.bare:hover{color:var(--ink)}
     function requestPage() {
         var r = REQUESTS.filter(function (x) { return x.id === S.open; })[0];
         if (!r) { S.open = ''; return queueSurface(); }
-        var st = defaultState('queue');
         var decisions = (DECISIONS[r.id] || []).slice();
         var rstate = r.state;
-        if (st === 'held' && !S.done) {
+        if (S.state === 'held' && !S.decision) {
             rstate = 'held';
             if (decisions.length === 0) {
                 decisions.push({ at: '2026-10-06T16:20:00Z', by: S.actor, what: 'hold',
                     comment: 'Waiting on the 4pm fixing.', reason: 'awaiting_fixing' });
             }
         }
-        if (st === 'decided' && !S.done) {
+        if (S.state === 'decided' && !S.decision) {
             rstate = 'approved';
             if (decisions.length === 0) {
                 decisions.push({ at: '2026-10-06T16:12:00Z', by: S.actor, what: 'approve',
                     comment: 'Checked against the 16:00 quotes.' });
             }
         }
-        if (S.done) {
-            rstate = S.done === 'approve' ? 'approved' : S.done === 'refuse' ? 'refused' : 'held';
-            var taken = decisions.some(function (d) { return d.by === S.actor && d.what === S.done; });
+        if (S.decision) {
+            rstate = S.decision === 'approve' ? 'approved' : S.decision === 'refuse' ? 'refused' : 'held';
+            var taken = decisions.some(function (d) { return d.by === S.actor && d.what === S.decision; });
             if (!taken) {
-                decisions.push({ at: '2026-10-07T09:00:00Z', by: S.actor, what: S.done,
-                    comment: S.comment || (S.done === 'approve' ? 'Checked against the 16:00 quotes.' : ''),
-                    reason: S.done === 'hold' ? 'awaiting_fixing' : '' });
+                decisions.push({ at: '2026-10-07T09:00:00Z', by: S.actor, what: S.decision,
+                    comment: S.comment || (S.decision === 'approve' ? 'Checked against the 16:00 quotes.' : ''),
+                    reason: S.decision === 'hold' ? 'awaiting_fixing' : '' });
             }
         }
         var final = rstate === 'approved' || rstate === 'refused';
-        var outcome = S.done
-            ? '<div class="notice ' + (S.done === 'approve' ? 'success' : S.done === 'refuse' ? 'error' : 'warn') + '"><b>' +
-              (S.done === 'approve' ? 'Approved.' : S.done === 'refuse' ? 'Refused.' : 'Held.') + '</b> ' +
-              (S.done === 'approve'
+        var outcome = S.decision
+            ? '<div class="notice ' + (S.decision === 'approve' ? 'success' : S.decision === 'refuse' ? 'error' : 'warn') + '"><b>' +
+              (S.decision === 'approve' ? 'Approved.' : S.decision === 'refuse' ? 'Refused.' : 'Held.') + '</b> ' +
+              (S.decision === 'approve'
                   ? 'The request is approved. Nothing publishes yet: the trader applies the approved subject in Publish the approved set.'
-                  : S.done === 'refuse'
+                  : S.decision === 'refuse'
                       ? 'The request is refused and the reason is kept. ' + esc(person(r.by).name) + ' reads your comment.'
                       : 'The request is parked in the queue until somebody resumes it. ' + esc(person(r.by).name) + ' is told.') +
               '</div>'
@@ -1077,15 +1493,16 @@ a.bare:hover{color:var(--ink)}
 
         var decisionsBlock = decisions.length === 0
             ? '<p class="dim">No decision yet.</p>'
-            : '<ul class="timeline">' + decisions.map(function (d) {
-                return '<li><span class="when">' + when(d.at) + '</span><div><div class="head">' +
+            : '<ul class="histrail">' + decisions.map(function (d) {
+                return '<li><span class="gutter">' + when(d.at) + '</span><div class="face"><span class="avatar" aria-hidden="true">' +
+                    esc(initials(person(d.by).name)) + '</span></div><div><div class="head">' +
                     badge(d.what === 'approve' ? 'ok' : d.what === 'refuse' ? 'bad' : 'caution',
                         d.what === 'approve' ? 'Approved' : d.what === 'refuse' ? 'Refused' : 'Held') +
                     '<span>' + esc(person(d.by).name) + '</span></div>' +
                     '<p class="note">' + esc(d.comment) + (d.reason ? ' <span class="dim">Reason: ' + esc(d.reason) + '</span>' : '') + '</p></div></li>';
             }).join('') + '</ul>';
 
-        var commentNeeds = S.decision === 'refuse';
+        var commentNeeds = S.chosen === 'refuse';
         var bad = S.tried && commentNeeds && !S.comment.trim();
         var panel = final
             ? '<p class="dim">This request is ' + stateName(rstate).toLowerCase() + ' and can no longer be decided. ' +
@@ -1100,7 +1517,7 @@ a.bare:hover{color:var(--ink)}
               '<textarea data-input="comment" aria-label="Comment">' + esc(S.comment) + '</textarea>' +
               (bad ? '<p class="msg">Say why you refuse, so the person who asked can act.</p>' : '') + '</div>' +
               '<div class="stepfoot"><span class="dim">Your decision is recorded under your name.</span>' +
-              '<span class="ml-auto"></span><button class="btn primary" data-act="send"' + (S.decision ? '' : ' disabled') +
+              '<span class="ml-auto"></span><button class="btn primary" data-act="send"' + (S.chosen ? '' : ' disabled') +
               '>Send the decision</button></div>';
 
         var title = r.subject ? 'Publish ' + r.subject.curve : r.label + ' · ' + r.ref;
@@ -1138,44 +1555,63 @@ a.bare:hover{color:var(--ink)}
     }
 
     function choice(value, name, sub) {
-        return '<div class="choice' + (S.decision === value ? ' on' : '') + '" role="radio" aria-checked="' +
-            (S.decision === value) + '" tabindex="0" data-act="decide" data-arg="' + value + '">' +
+        return '<div class="choice' + (S.chosen === value ? ' on' : '') + '" role="radio" aria-checked="' +
+            (S.chosen === value) + '" tabindex="0" data-act="decide" data-arg="' + value + '">' +
             '<span class="dot"></span><span><span class="nm">' + esc(name) + '</span><br>' +
             '<span class="sub">' + esc(sub) + '</span></span></div>';
     }
 
     /* ---------------------------------------------------------------- */
-    /* The bottom bar: the surface, its states, and the gap toggle.       */
+    /* The bottom bar: the surface, the tab, the state and the gaps.      */
     /* ---------------------------------------------------------------- */
 
     function bar() {
-        var surfaces = [['list', 'List'], ['delta', 'Delta'], ['queue', 'Queue']];
-        var states = {
-            list: [['rows', 'Rows'], ['none', 'No published'], ['nomatch', 'No match'], ['loading', 'Loading'], ['error', 'Error']],
-            delta: [['changed', 'Changed'], ['same', 'Nothing changed'], ['added', 'One added'], ['nopublished', 'No published set']],
-            queue: [['queue', 'Queue'], ['request', 'Open request'], ['held', 'Held'], ['decided', 'Decided'], ['none', 'Nothing waits']]
-        };
-        var current = S.surface === 'queue'
-            ? (S.open ? (S.state || 'request') : (S.state || 'queue'))
-            : defaultState(S.surface);
-        var actors = S.surface === 'queue'
-            ? '<span class="sep">|</span><span class="label">Looking as</span>' +
-              ['n.haugen', 'm.oduya', 'k.mori'].map(function (id) {
-                  return '<button data-act="actor" data-arg="' + id + '" class="' + (S.actor === id ? 'on' : '') + '">' +
-                      esc(person(id).name) + '</button>';
-              }).join('')
-            : '';
-        return '<span class="label">Surface</span>' +
+        var surfaces = [['list', 'List'], ['queue', 'Queue']];
+        var listStates = [['rows', 'Rows'], ['none', 'No published'], ['nomatch', 'No match'], ['loading', 'Loading'], ['error', 'Error']];
+        var compareStates = [['changed', 'Changed'], ['same', 'Nothing changed'], ['added', 'One added'], ['nopublished', 'No published set']];
+        var queueStates = [['queue', 'Queue'], ['request', 'Open request'], ['held', 'Held'], ['decided', 'Decided'], ['none', 'Nothing waits']];
+        var record = S.surface === 'list' && S.curve;
+        var out = '<span class="label">Surface</span>' +
             surfaces.map(function (s) {
                 return '<button data-act="surface" data-arg="' + s[0] + '" class="' + (S.surface === s[0] ? 'on' : '') + '">' + s[1] + '</button>';
-            }).join('') +
-            '<span class="sep">|</span><span class="label">State</span>' +
-            states[S.surface].map(function (s) {
-                return '<button data-act="state" data-arg="' + s[0] + '" class="' + (s[0] === current ? 'on' : '') + '">' + s[1] + '</button>';
-            }).join('') +
-            actors +
-            '<span class="sep">|</span><button data-act="gaps">' +
+            }).join('');
+        if (record) {
+            var words = { details: 'Details', points: 'Published points', compare: 'Compare as of', history: 'History' };
+            out += '<span class="sep">|</span><span class="label">Tab</span>' +
+                TABS.map(function (t) {
+                    return '<button data-act="tab" data-arg="' + t + '" class="' + (S.tab === t ? 'on' : '') + '">' + words[t] + '</button>';
+                }).join('');
+        }
+        if (S.surface === 'list') {
+            if (record && S.tab === 'compare') {
+                out += '<span class="sep">|</span><span class="label">Compare</span>' +
+                    compareStates.map(function (s) {
+                        var on = s[0] === (S.points || 'changed');
+                        return '<button data-act="cstate" data-arg="' + s[0] + '" class="' + (on ? 'on' : '') + '">' + s[1] + '</button>';
+                    }).join('');
+            } else if (!record) {
+                out += '<span class="sep">|</span><span class="label">List</span>' +
+                    listStates.map(function (s) {
+                        var on = s[0] === (S.state || 'rows');
+                        return '<button data-act="lstate" data-arg="' + s[0] + '" class="' + (on ? 'on' : '') + '">' + s[1] + '</button>';
+                    }).join('');
+            }
+        }
+        if (S.surface === 'queue') {
+            var current = S.open ? (S.state || 'request') : (S.state || 'queue');
+            out += '<span class="sep">|</span><span class="label">State</span>' +
+                queueStates.map(function (s) {
+                    return '<button data-act="qstate" data-arg="' + s[0] + '" class="' + (s[0] === current ? 'on' : '') + '">' + s[1] + '</button>';
+                }).join('') +
+                '<span class="sep">|</span><span class="label">Looking as</span>' +
+                ['n.haugen', 'm.oduya', 'k.mori'].map(function (id) {
+                    return '<button data-act="actor" data-arg="' + id + '" class="' + (S.actor === id ? 'on' : '') + '">' +
+                        esc(person(id).name) + '</button>';
+                }).join('');
+        }
+        out += '<span class="sep">|</span><button data-act="gaps">' +
             (document.body.classList.contains('nogaps') ? 'Show gaps' : 'Hide gaps') + '</button>';
+        return out;
     }
 
     /* ---------------------------------------------------------------- */
@@ -1183,13 +1619,14 @@ a.bare:hover{color:var(--ink)}
     /* ---------------------------------------------------------------- */
 
     function render() {
-        if (['list', 'delta', 'queue'].indexOf(S.surface) < 0) { S.surface = 'list'; }
+        if (['list', 'queue'].indexOf(S.surface) < 0) { S.surface = 'list'; }
+        if (TABS.indexOf(S.tab) < 0) { S.tab = 'details'; }
         document.getElementById('shell').innerHTML = shell();
-        var body = S.surface === 'list' ? listSurface() : S.surface === 'delta' ? deltaSurface() : queueSurface();
+        var body = S.surface === 'list' ? listSurface() : queueSurface();
         document.getElementById('app').innerHTML = body;
         document.getElementById('bar').innerHTML = bar();
         document.getElementById('note').textContent = 'Prototype · mock data · reads no server · ' +
-            S.surface + ' · ' + (S.surface === 'queue' && S.open ? 'request' : defaultState(S.surface) || 'rows');
+            S.surface + (S.surface === 'list' && S.curve ? ' · ' + S.tab : ' · ' + (S.state || 'rows'));
         sync();
         wire();
     }
@@ -1228,57 +1665,55 @@ a.bare:hover{color:var(--ink)}
         S.page = 0;
         S.q = '';
         S.kind = 'all';
-        S.done = null;
-        S.decision = '';
+        S.decision = null;
+        S.chosen = '';
         S.comment = '';
         S.tried = false;
-        if (s !== 'list') { S.curve = ''; S.party = ''; S.tab = 'details'; }
-        if (s !== 'delta') { S.points = ''; }
+        S.curve = '';
+        S.party = '';
+        S.tab = 'details';
+        S.asof = '';
+        S.points = '';
         if (s !== 'queue') { S.open = ''; }
         render();
     }
 
-    function goState(st) {
+    function openRecord(curve, party, tab) {
+        S.surface = 'list';
+        S.curve = curve;
+        S.party = party;
+        S.tab = tab || 'details';
         S.state = '';
         S.menu = '';
-        S.done = null;
-        S.decision = '';
-        S.comment = '';
-        S.tried = false;
-        if (S.surface === 'list') {
-            S.curve = '';
-            S.party = '';
-            S.state = st === 'rows' ? '' : st;
-            S.page = 0;
-        } else if (S.surface === 'delta') {
-            if (st === 'nopublished') {
-                S.state = 'nopublished';
-                S.curve = 'JPY-TONA-6M';
-                S.party = 'ACME Hong Kong';
-            } else {
-                S.state = '';
-                S.points = st;
-                if (S.curve === 'JPY-TONA-6M') { S.curve = ''; S.party = ''; }
-                if (!S.curve) { S.curve = 'USD-SOFR-3M'; S.party = 'ACME London'; }
-            }
-        } else {
-            if (st === 'none') {
-                S.state = 'none';
-                S.open = '';
-            } else if (st === 'request' || st === 'held' || st === 'decided') {
-                S.open = 'r1';
-                S.state = st === 'request' ? '' : st;
-            } else {
-                S.open = '';
-                S.state = '';
-            }
-        }
+        S.points = '';
+        S.asof = '';
         render();
     }
 
     document.addEventListener('click', function (e) {
         var anchor = e.target.closest && e.target.closest('a[href="#"]');
         if (anchor) { e.preventDefault(); }
+        var jump = e.target.closest('[data-act=jump]');
+        if (jump) {
+            var key = jump.getAttribute('data-arg');
+            var target = null;
+            var all = document.querySelectorAll('[id^="e-"]');
+            for (var j = 0; j < all.length; j += 1) {
+                var at = all[j].querySelector('.gutter span');
+                if (at && at.getAttribute('title') && at.getAttribute('title').indexOf(key) >= 0) {
+                    target = all[j];
+                    break;
+                }
+            }
+            if (target) {
+                target.scrollIntoView({ block: 'center' });
+                target.classList.add('marked');
+            } else {
+                var first = document.querySelector('[id^="e-"]');
+                if (first) { first.scrollIntoView({ block: 'center' }); first.classList.add('marked'); }
+            }
+            return;
+        }
         var menuBtn = e.target.closest('[data-act=menu]');
         if (menuBtn) {
             var id = menuBtn.getAttribute('data-arg');
@@ -1303,14 +1738,15 @@ a.bare:hover{color:var(--ink)}
         var row = e.target.closest('[data-open]');
         if (row && S.surface === 'list') {
             var v = row.getAttribute('data-open').split('|');
-            S.curve = v[0]; S.party = v[1]; S.tab = 'details';
+            S.curve = v[0]; S.party = v[1]; S.tab = 'details'; S.asof = '';
+            S.state = '';
             render();
             return;
         }
         var qrow = e.target.closest('[data-openreq]');
         if (qrow && S.surface === 'queue') {
             S.open = qrow.getAttribute('data-openreq'); S.state = '';
-            S.done = null; S.decision = ''; S.comment = ''; S.tried = false;
+            S.decision = null; S.chosen = ''; S.comment = ''; S.tried = false;
             render();
             return;
         }
@@ -1319,11 +1755,45 @@ a.bare:hover{color:var(--ink)}
         if (!b) { return; }
         var act = b.getAttribute('data-act');
         var arg = b.getAttribute('data-arg');
-        if (act === 'surface') { goSurface(arg); }
-        else if (act === 'state') { goState(arg); }
-        else if (act === 'tab') { S.tab = arg; render(); }
+        if (act === 'surface') {
+            goSurface(arg === 'queue' ? 'queue' : 'list');
+        }
+        else if (act === 'tab') {
+            S.tab = arg; S.state = ''; S.menu = '';
+            if (arg !== 'compare') { S.points = ''; S.unchanged = false; S.asof = ''; }
+            render();
+        }
+        else if (act === 'lstate') {
+            S.curve = ''; S.party = ''; S.state = arg === 'rows' ? '' : arg; S.page = 0;
+            render();
+        }
+        else if (act === 'cstate') {
+            S.state = '';
+            if (arg === 'nopublished') {
+                S.curve = 'JPY-TONA-6M'; S.party = 'ACME Hong Kong'; S.tab = 'compare';
+            } else {
+                S.tab = 'compare';
+                S.points = arg === 'changed' ? '' : arg;
+                if (!S.curve || S.curve === 'JPY-TONA-6M') { S.curve = 'USD-SOFR-3M'; S.party = 'ACME London'; }
+            }
+            render();
+        }
+        else if (act === 'qstate') {
+            S.state = '';
+            S.decision = null; S.chosen = ''; S.comment = ''; S.tried = false;
+            if (arg === 'queue') { S.open = ''; S.state = ''; }
+            else if (arg === 'none') { S.open = ''; S.state = 'none'; }
+            else { S.open = 'r1'; S.state = arg === 'request' ? '' : arg; }
+            render();
+        }
+        else if (act === 'actor') {
+            S.actor = arg; S.open = ''; S.state = '';
+            S.decision = null; S.chosen = ''; S.comment = '';
+            render();
+        }
         else if (act === 'toggle') {
             if (arg === 'candidates') { S.show = S.show === 'candidates' ? 'published' : 'candidates'; S.page = 0; }
+            if (arg === 'ended') { S.ended = !S.ended; S.page = 0; }
             if (arg === 'unchanged') { S.unchanged = !S.unchanged; }
             render();
         }
@@ -1332,8 +1802,8 @@ a.bare:hover{color:var(--ink)}
             render();
         }
         else if (act === 'page') {
-            var rows = filteredRows().length;
-            var pages = Math.max(1, Math.ceil(rows / S.size));
+            var count = filteredRows().length;
+            var pages = Math.max(1, Math.ceil(count / S.size));
             if (arg === 'first') { S.page = 0; }
             if (arg === 'prev') { S.page = Math.max(0, S.page - 1); }
             if (arg === 'next') { S.page = Math.min(pages - 1, S.page + 1); }
@@ -1342,37 +1812,26 @@ a.bare:hover{color:var(--ink)}
         }
         else if (act === 'clear') { S.q = ''; S.partyFilter = 'all'; S.page = 0; S.state = ''; render(); }
         else if (act === 'reload') { render(); }
-        else if (act === 'retry') { S.state = 'rows'; render(); }
+        else if (act === 'retry') { S.state = ''; render(); }
+        else if (act === 'tabfirst') { openRecord('USD-SOFR-3M', 'ACME London', 'compare'); }
         else if (act === 'compare') {
             var curve = S.curve, party = S.party;
             if (arg) { var c = arg.split('|'); curve = c[0]; party = c[1]; }
-            S.surface = 'delta'; S.state = ''; S.points = '';
-            S.curve = curve || 'USD-SOFR-3M'; S.party = party || 'ACME London';
-            S.open = ''; S.asof = '';
-            render();
+            openRecord(curve || 'USD-SOFR-3M', party || 'ACME London', 'compare');
         }
         else if (act === 'queue') { goSurface('queue'); }
-        else if (act === 'actor') {
-            S.actor = arg;
-            S.open = '';
-            S.state = '';
-            S.done = null;
-            S.decision = '';
-            S.comment = '';
-            render();
-        }
-        else if (act === 'decide') { S.decision = arg; render(); }
+        else if (act === 'surface:list') { goSurface('list'); }
+        else if (act === 'decide') { S.chosen = arg; render(); }
         else if (act === 'send') {
             S.tried = true;
-            if (S.decision === 'refuse' && !S.comment.trim()) { render(); return; }
-            S.done = S.decision;
+            if (S.chosen === 'refuse' && !S.comment.trim()) { render(); return; }
+            S.decision = S.chosen;
             render();
         }
         else if (act === 'gaps') {
             document.body.classList.toggle('nogaps');
             render();
         }
-        else if (act === 'surface:list') { goSurface('list'); }
     });
 
     document.addEventListener('keydown', function (e) {

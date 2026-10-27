@@ -457,6 +457,28 @@ struct collect_compute_results_result {
     std::string message;
 };
 
+struct post_process_results_request {
+    using response_type = struct post_process_results_result;
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.post_process_results";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string report_instance_id;
+    std::string tenant_id;
+    std::string correlation_id;
+    std::string batch_id;
+};
+
+struct post_process_results_result {
+    bool success = false;
+    std::string message;
+    int rows_loaded = 0;
+};
+
 struct finalise_report_request {
     using response_type = struct finalise_report_result;
     static constexpr std::string_view nats_subject = "reporting.v1.ops.finalise_report";

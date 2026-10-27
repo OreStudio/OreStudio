@@ -26,11 +26,11 @@ A parameter has one contract row per version window, and the publish function re
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] |
-| Now          | The publish supersedes an orphaned generation and the resolve expression picks one row. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Provision ACME past the token expiry, then smoke the page. |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -85,3 +85,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Two defects, both found by ACME provisioning and both fixed.
+
+- The publish closed no orphan. The parameter id derives from schema and XPath,
+  and that derivation has changed between generations, so the id-keyed check
+  could not see the row it no longer reproduces. In upsert mode it now closes
+  any live row of the target tenant whose scope, subtype, name, schema and
+  XPath are staged under a different id.
+- The risk report configuration resolved each analytic parameter with a scalar
+  subquery, which a versioned contract defeats. The candidates are ordered and
+  the first is taken.
+
+Evidence: the run passes step 20 of the tenant setup, which previously aborted
+it with "more than one row returned by a subquery used as an expression", and
+the live duplicate check across every tenant returns none. The tenant has not
+reached active: provisioning now stops on the party-selected token expiring
+after 300 seconds, which is captured separately.

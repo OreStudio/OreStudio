@@ -293,6 +293,9 @@ export function ReportConfigurations({
                 <h2 className="text-sm font-medium">{t('reporting.configurations.title')}</h2>
                 <AccessMark canWrite={false} />
             </header>
+            <p className="text-sm text-ink-muted">
+                {t('reporting.configurations.configurationsLead')}
+            </p>
             <BindingList bindings={bindings} />
         </section>
     );
@@ -328,11 +331,15 @@ function BindingList({
         return <p className="text-sm text-ink-muted">{t('reporting.configurations.none')}</p>;
     }
     return (
-        <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
             {list.map((binding) => (
-                <div key={binding.id}>
-                    <dt className="text-xs text-ink-faint">{binding.typeName}</dt>
-                    <dd className="mt-0.5 text-sm">
+                <section key={binding.id} className="card space-y-2 p-4">
+                    <header className="flex flex-wrap items-baseline justify-between gap-2">
+                        <h3 className="text-sm font-medium">{binding.typeName}</h3>
+                        <AccessMark canWrite={false} />
+                    </header>
+                    <p className="text-sm text-ink-muted">{blurbOf(binding.typeCode, t)}</p>
+                    <p className="text-sm">
                         <Link
                             to={
                                 binding.typeCode === CURVE_CONFIGURATION_KIND
@@ -343,9 +350,35 @@ function BindingList({
                         >
                             {binding.name === '' ? shortId(binding.configurationId) : binding.name}
                         </Link>
-                    </dd>
-                </div>
+                    </p>
+                </section>
             ))}
-        </dl>
+        </div>
+    );
+}
+
+/**
+ * The sentence that says what a configuration kind is for.
+ *
+ * A kind the screen does not know still gets a sentence, so a new kind reads as
+ * one of the report's configurations rather than as nothing. The sentence
+ * belongs on the kind's own row once =configuration_type= holds one; until then
+ * it is here, in the one place that draws the bindings.
+ */
+const KIND_WORDS: Readonly<Record<string, string>> = {
+    pricing_engines: 'pricingEngines',
+    engine_settings: 'engineSettings',
+    todays_market: 'todaysMarket',
+    curve_configuration: 'curveConfiguration',
+    conventions: 'conventions',
+    risk_report_config: 'runSettings',
+};
+
+function blurbOf(typeCode: string, t: (key: string) => string): string {
+    const word = KIND_WORDS[typeCode];
+    return t(
+        word === undefined
+            ? 'reporting.configurations.kinds.other'
+            : `reporting.configurations.kinds.${word}`,
     );
 }

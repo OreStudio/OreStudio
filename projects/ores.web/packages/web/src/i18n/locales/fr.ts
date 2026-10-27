@@ -6432,7 +6432,23 @@ const fr: SourceCatalogue = {
             error: 'erreur',
         },
         tabs: {
-            definition: 'Définition',
+            details: 'Détails',
+            configurations: 'Configurations',
+            configurationsLead:
+                'Les configurations que ce rapport lie. Une modification atteint la prochaine exécution de ce rapport, et une exécution déjà produite garde ce avec quoi elle a couru.',
+            kinds: {
+                pricingEngines:
+                    'Comment chaque type de produit est valorisé : le modèle, le moteur et leurs paramètres.',
+                engineSettings:
+                    'Comment le moteur prépare ses entrées et exécute la tâche : fixings, construction, exécution.',
+                todaysMarket:
+                    'Comment les courbes et les surfaces d’une exécution sont construites.',
+                curveConfiguration: 'Comment chaque courbe est définie et calibrée.',
+                conventions: 'Les conditions de marché sur lesquelles une transaction est lue.',
+                runSettings:
+                    'Les chemins, la devise, le type de marché et la portée de l’exécution.',
+                other: 'Une des configurations que ce rapport lie.',
+            },
             runs: 'Exécutions',
             results: 'Résultats',
         },
@@ -6842,6 +6858,7 @@ const fr: SourceCatalogue = {
             settings: 'réglages',
             terms: 'termes',
         },
+        validValues: 'Valeurs acceptées : {values}',
         documentation: 'Documentation',
         hideDocumentation: 'Masquer la documentation',
         undocumented: "Aucune documentation n'est disponible pour {name}.",

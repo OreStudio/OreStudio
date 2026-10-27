@@ -6336,7 +6336,21 @@ export const en: SourceCatalogue = {
             error: 'error',
         },
         tabs: {
-            definition: 'Definition',
+            details: 'Details',
+            configurations: 'Configurations',
+            configurationsLead:
+                'The configurations this report binds. A change reaches the next run of this report, and a run already produced keeps what it ran with.',
+            kinds: {
+                pricingEngines:
+                    'How each product type is priced: the model, the engine and their parameters.',
+                engineSettings:
+                    'How the engine prepares its inputs and runs the job: fixings, building, execution.',
+                todaysMarket: 'How the curves and surfaces of a run are built.',
+                curveConfiguration: 'How each curve is defined and bootstrapped.',
+                conventions: 'The market terms a trade is read on.',
+                runSettings: 'The run’s paths, currency, market kind and scope.',
+                other: 'One of the configurations this report binds.',
+            },
             runs: 'Runs',
             results: 'Results',
         },
@@ -6745,6 +6759,7 @@ export const en: SourceCatalogue = {
             settings: 'settings',
             terms: 'terms',
         },
+        validValues: 'Valid values: {values}',
         documentation: 'Documentation',
         hideDocumentation: 'Hide documentation',
         undocumented: 'No documentation is held for {name}.',

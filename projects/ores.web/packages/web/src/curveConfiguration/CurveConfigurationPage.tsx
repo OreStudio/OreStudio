@@ -584,6 +584,7 @@ function LeafRow({
                     introducedIn: leaf.introducedIn,
                     removedIn: leaf.removedIn,
                     xpath: leaf.xpath,
+                    choices: leaf.choices.map((choice) => choice.value),
                 }}
                 mode={mode}
                 open={open}

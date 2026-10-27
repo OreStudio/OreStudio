@@ -335,14 +335,15 @@ function ReportBody(): ReactNode {
                 }
             />
             {bar}
+            {tab === 'configurations' && <ReportConfigurations definitionId={definition.id} />}
             {tab === 'runs' && <ReportRuns definitionId={definition.id} />}
-            {tab === 'definition' && (
+            {tab === 'details' && (
                 <div className="space-y-4">
                     <RecordDetails
                         specs={DEFINITION_FIELDS}
                         row={definition}
                         heading={{
-                            title: t('reporting.detail.record'),
+                            title: t('reporting.tabs.details'),
                             onEdit: mayEdit ? () => setEditing(true) : undefined,
                         }}
                         extra={[
@@ -362,16 +363,6 @@ function ReportBody(): ReactNode {
                             ],
                         ]}
                     />
-                    <section className="card space-y-4 p-4">
-                        <header className="flex flex-wrap items-baseline justify-between gap-2">
-                            <h2 className="text-sm font-medium">
-                                {t('reporting.detail.latestRun')}
-                            </h2>
-                            <AccessMark canWrite={false} />
-                        </header>
-                        <LatestRun detail={open.data.detail} unread={unread} />
-                    </section>
-                    <ReportConfigurations definitionId={definition.id} />
                 </div>
             )}
             {editing && (
@@ -389,7 +380,7 @@ function ReportBody(): ReactNode {
 }
 
 /** The tabs of a report: the definition, its runs, and the results of its latest run. */
-const REPORT_TABS = ['definition', 'runs'] as const;
+const REPORT_TABS = ['details', 'configurations', 'runs'] as const;
 
 /**
  * The runs of one report, newest first, each with what the run reached and the
@@ -503,98 +494,6 @@ function PartyDetail({ detail }: { readonly detail: ReportDetail }): ReactNode {
         >
             {detail.definition.party_name}
         </Link>
-    );
-}
-
-/**
- * The latest run, as the list states it, so the detail and the list agree.
- *
- * A page that saw no run says which it is: a definition that never ran, or a
- * latest-run read that failed, in which case nothing about the run was checked.
- */
-function LatestRun({
-    detail,
-    unread,
-}: {
-    readonly detail: ReportDetail;
-    readonly unread: ReportDetail['unread'];
-}): ReactNode {
-    const { t } = useTranslation();
-    const { report } = detail;
-    if (report.latestRun === null) {
-        const refusal = unread.find((entry) => entry.cell === 'latestRun');
-        if (refusal !== undefined) {
-            return (
-                <p className="text-sm text-ink-muted">
-                    {t('reporting.detail.couldNotCheck', { message: refusal.message })}
-                </p>
-            );
-        }
-        return <p className="text-sm text-ink-muted">{t('reporting.detail.neverRun')}</p>;
-    }
-    const ms = runDuration(report.latestRun.startedAt, report.latestRun.completedAt);
-    const countsUnread = unread.some((entry) => entry.cell === 'errors');
-    return (
-        <div className="space-y-2">
-            <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-4">
-                <Detail
-                    label={t('reporting.detail.started')}
-                    value={
-                        report.latestRun.startedAt === null ? (
-                            <Absent />
-                        ) : (
-                            <RelativeTime at={report.latestRun.startedAt} />
-                        )
-                    }
-                />
-                <Detail
-                    label={t('reporting.detail.completed')}
-                    value={
-                        report.latestRun.completedAt === null ? (
-                            <Absent />
-                        ) : (
-                            <RelativeTime at={report.latestRun.completedAt} />
-                        )
-                    }
-                />
-                <Detail
-                    label={t('reporting.columns.duration')}
-                    value={ms === null ? <Absent /> : formatDuration(ms, t)}
-                />
-                <Detail
-                    label={t('reporting.columns.errors')}
-                    value={
-                        countsUnread
-                            ? t('reporting.cell.unread')
-                            : String(report.latestRun.errors ?? '')
-                    }
-                />
-                <Detail
-                    label={t('reporting.columns.warnings')}
-                    value={
-                        countsUnread
-                            ? t('reporting.cell.unread')
-                            : String(report.latestRun.warnings ?? '')
-                    }
-                />
-                <Detail
-                    label={t('reporting.columns.schedule')}
-                    value={
-                        report.nextFireAt === null ? (
-                            t('reporting.detail.noNextFire')
-                        ) : (
-                            <RelativeTime at={report.nextFireAt} />
-                        )
-                    }
-                />
-            </dl>
-            <Link
-                to={reportRunPath(report.latestRun.id)}
-                className="text-sm text-accent hover:text-accent-bright"
-            >
-                {t('reporting.detail.openRun')}
-            </Link>
-        </div>
     );
 }
 

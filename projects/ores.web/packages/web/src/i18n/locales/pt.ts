@@ -6384,7 +6384,21 @@ const pt: SourceCatalogue = {
             error: 'erro',
         },
         tabs: {
-            definition: 'Definição',
+            details: 'Detalhes',
+            configurations: 'Configurações',
+            configurationsLead:
+                'As configurações que este relatório liga. Uma alteração chega à próxima execução deste relatório, e uma execução já produzida mantém aquilo com que correu.',
+            kinds: {
+                pricingEngines:
+                    'Como cada tipo de produto é avaliado: o modelo, o motor e os seus parâmetros.',
+                engineSettings:
+                    'Como o motor prepara as suas entradas e executa a tarefa: fixings, construção, execução.',
+                todaysMarket: 'Como as curvas e superfícies de uma execução são construídas.',
+                curveConfiguration: 'Como cada curva é definida e calibrada.',
+                conventions: 'As condições de mercado sobre as quais uma transação é lida.',
+                runSettings: 'Os caminhos, a moeda, o tipo de mercado e o âmbito da execução.',
+                other: 'Uma das configurações que este relatório liga.',
+            },
             runs: 'Execuções',
             results: 'Resultados',
         },
@@ -6793,6 +6807,7 @@ const pt: SourceCatalogue = {
             settings: 'definições',
             terms: 'termos',
         },
+        validValues: 'Valores aceites: {values}',
         documentation: 'Documentação',
         hideDocumentation: 'Ocultar documentação',
         undocumented: 'Não há documentação para {name}.',

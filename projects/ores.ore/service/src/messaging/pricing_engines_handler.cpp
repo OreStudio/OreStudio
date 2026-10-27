@@ -125,13 +125,14 @@ read_target(ores::nats::service::nats_client& owners,
             std::string& error) {
     if (configuration_id.empty())
         return {};
-    const auto read = nats_call(
-        owners, an::get_pricing_engines_document_request{.configuration_id = configuration_id}, error);
+    const auto read =
+        nats_call(owners,
+                  an::get_pricing_engines_document_request{.configuration_id = configuration_id},
+                  error);
     if (!read || !read->success) {
         if (error.empty())
-            error = read->message.empty() ?
-                        "The pricing engine configuration could not be read." :
-                        read->message;
+            error = read->message.empty() ? "The pricing engine configuration could not be read." :
+                                            read->message;
         return {};
     }
     return read->document;
@@ -174,9 +175,8 @@ std::string create_header(ores::nats::service::nats_client& owners,
     change.write.owning_component = "ores.analytics";
     change.precondition = {.kind = ores::utility::domain::precondition_kind::must_not_exist};
     std::string error;
-    const auto reply = nats_call(owners,
-                                 rp::put_configuration_request{.change = change, .intent = intent},
-                                 error);
+    const auto reply =
+        nats_call(owners, rp::put_configuration_request{.change = change, .intent = intent}, error);
     if (!reply)
         throw std::runtime_error(error.empty() ? "the configuration could not be registered" :
                                                  error);
@@ -192,9 +192,10 @@ void remove_header(ores::nats::service::nats_client& owners,
                    const std::string& name,
                    const ores::utility::domain::change_intent& intent) {
     std::string error;
-    nats_call(owners,
-              rp::delete_configuration_request{.removal = {.key = {.name = name}}, .intent = intent},
-              error);
+    nats_call(
+        owners,
+        rp::delete_configuration_request{.removal = {.key = {.name = name}}, .intent = intent},
+        error);
 }
 
 /// The identifier a request states, or a refusal naming it. The unit is built
@@ -370,8 +371,7 @@ void pricing_engines_handler::preview_pricing_engines_import(ores::nats::message
                                        response.in_file_parameters);
         BOOST_LOG_SEV(lg(), info) << "pricing engines previewed | corr=" << correlation_id
                                   << " products=" << response.in_file_products
-                                  << " added=" << response.added
-                                  << " changed=" << response.changed
+                                  << " added=" << response.added << " changed=" << response.changed
                                   << " removed=" << response.removed;
         reply(nats_, msg, response);
     } catch (const std::exception& e) {
@@ -451,8 +451,8 @@ void pricing_engines_handler::import_pricing_engines(ores::nats::message msg) {
 
         const auto difference = ores::ore::domain::pricing_engines_import::difference(
             file, target, known_product_types(owners));
-        auto document = ores::ore::domain::pricing_engines_import::merge(
-            file, target, req->removals_kept);
+        auto document =
+            ores::ore::domain::pricing_engines_import::merge(file, target, req->removals_kept);
 
         const auto configuration = configuration_id_of(configuration_id);
         if (target.config.name.empty())
@@ -475,10 +475,10 @@ void pricing_engines_handler::import_pricing_engines(ores::nats::message msg) {
 
         const auto keys = keys_of(document);
         std::string error;
-        const auto saved = nats_call(
-            owners,
-            an::save_pricing_engines_document_request{.document = std::move(document)},
-            error);
+        const auto saved =
+            nats_call(owners,
+                      an::save_pricing_engines_document_request{.document = std::move(document)},
+                      error);
         if (!saved || !error.empty()) {
             if (!created_header.empty())
                 remove_header(owners, created_header, intent);
@@ -489,8 +489,8 @@ void pricing_engines_handler::import_pricing_engines(ores::nats::message msg) {
         if (!saved->success) {
             if (!created_header.empty())
                 remove_header(owners, created_header, intent);
-            response.message = saved->message.empty() ? "The configuration was refused." :
-                                                        saved->message;
+            response.message =
+                saved->message.empty() ? "The configuration was refused." : saved->message;
             for (const auto& problem : saved->problems) {
                 std::string key;
                 if (!problem.product_id.empty()) {
@@ -505,8 +505,8 @@ void pricing_engines_handler::import_pricing_engines(ores::nats::message msg) {
                 }
                 response.errors.push_back({.key = key, .message = problem.message});
             }
-            BOOST_LOG_SEV(lg(), warn) << "pricing engines import refused | corr="
-                                      << correlation_id << " " << response.message;
+            BOOST_LOG_SEV(lg(), warn) << "pricing engines import refused | corr=" << correlation_id
+                                      << " " << response.message;
             reply(nats_, msg, response);
             return;
         }

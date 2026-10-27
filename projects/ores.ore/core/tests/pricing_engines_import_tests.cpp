@@ -22,8 +22,8 @@
 #include "ores.ore.core/xml/exporter.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
-#include <catch2/catch_test_macros.hpp>
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include <optional>
 #include <set>
 #include <string>
@@ -388,8 +388,7 @@ TEST_CASE("a_product_the_file_omits_is_one_removal_and_not_one_per_setting",
     CHECK(pricing_engines_import::merge(file, target, {}).parameters.empty());
 }
 
-TEST_CASE("a_setting_the_file_omits_is_a_removal_of_its_own",
-          "[ore][import][pricing_engines]") {
+TEST_CASE("a_setting_the_file_omits_is_a_removal_of_its_own", "[ore][import][pricing_engines]") {
     auto lg(make_logger(test_suite));
 
     pricing_engines_document target;

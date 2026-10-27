@@ -90,9 +90,9 @@ std::string pei_product_key(const std::string& type_code, int occurrence) {
 /// A setting's identity within its product, and within the configuration when it
 /// belongs to no product.
 std::string pei_setting_key(const std::string& owner_key,
-                        std::string_view scope,
-                        const std::string& name,
-                        int occurrence) {
+                            std::string_view scope,
+                            const std::string& name,
+                            int occurrence) {
     if (occurrence == 0)
         return std::format("{}/{}/{}", owner_key, scope, name);
     return std::format("{}/{}/{}#{}", owner_key, scope, name, occurrence);
@@ -111,11 +111,12 @@ pricing_engines_import_issue pei_missing(const std::string& subject, const std::
 /// question of the same rows.
 struct pei_target_rows {
     std::map<std::string, std::vector<const pei_product_row*>> by_type;
-    std::map<boost::uuids::uuid, std::map<std::string, std::vector<const pei_parameter_row*>>> settings;
+    std::map<boost::uuids::uuid, std::map<std::string, std::vector<const pei_parameter_row*>>>
+        settings;
     std::map<std::string, std::vector<const pei_parameter_row*>> globals;
 
-    const std::vector<const pei_parameter_row*>& settings_of(const std::optional<boost::uuids::uuid>& id,
-                                                        const std::string& key) const {
+    const std::vector<const pei_parameter_row*>&
+    settings_of(const std::optional<boost::uuids::uuid>& id, const std::string& key) const {
         static const std::vector<const pei_parameter_row*> none;
         if (!id)
             return none;
@@ -128,7 +129,7 @@ struct pei_target_rows {
 };
 
 const std::vector<const pei_product_row*>& pei_products_of(const pei_target_rows& target,
-                                                   const std::string& type_code) {
+                                                           const std::string& type_code) {
     static const std::vector<const pei_product_row*> none;
     const auto found = target.by_type.find(type_code);
     return found == target.by_type.end() ? none : found->second;
@@ -159,9 +160,10 @@ pei_target_rows pei_group_target(const pei_document& target) {
         if (parameter->parameter_scope == pei_scope_global)
             grouped.globals[parameter->parameter_name].push_back(parameter);
         else if (parameter->pricing_model_product_id)
-            grouped.settings[*parameter->pricing_model_product_id]
-                [parameter->parameter_scope + '\x1f' + parameter->parameter_name]
-                    .push_back(parameter);
+            grouped
+                .settings[*parameter->pricing_model_product_id]
+                         [parameter->parameter_scope + '\x1f' + parameter->parameter_name]
+                .push_back(parameter);
     }
     return grouped;
 }
@@ -226,56 +228,55 @@ pricing_engines_import_file pricing_engines_import::parse(std::string_view text)
     std::set<std::string> stated_globals;
     int product_position = 0;
 
-    const auto read_settings =
-        [&](const pugi::xml_node& section,
-            const std::optional<boost::uuids::uuid>& product,
-            const std::string& owner_key,
-            std::string_view scope) {
-            int position = 0;
-            for (const auto& node : section.children()) {
-                if (node.type() != pugi::node_element)
-                    continue;
-                if (std::string_view(node.name()) != "Parameter") {
-                    out.issues.push_back(pei_dropped(
-                        std::format("{}/{}", owner_key, node.name()),
-                        "The tables hold settings only; this element is left out."));
-                    continue;
-                }
-                for (const auto& attribute : node.attributes())
-                    if (std::string_view(attribute.name()) != "name")
-                        out.issues.push_back(
-                            pei_dropped(std::format("{}/Parameter@{}", owner_key, attribute.name()),
+    const auto read_settings = [&](const pugi::xml_node& section,
+                                   const std::optional<boost::uuids::uuid>& product,
+                                   const std::string& owner_key,
+                                   std::string_view scope) {
+        int position = 0;
+        for (const auto& node : section.children()) {
+            if (node.type() != pugi::node_element)
+                continue;
+            if (std::string_view(node.name()) != "Parameter") {
+                out.issues.push_back(
+                    pei_dropped(std::format("{}/{}", owner_key, node.name()),
+                                "The tables hold settings only; this element is left out."));
+                continue;
+            }
+            for (const auto& attribute : node.attributes())
+                if (std::string_view(attribute.name()) != "name")
+                    out.issues.push_back(
+                        pei_dropped(std::format("{}/Parameter@{}", owner_key, attribute.name()),
                                     "A setting is a name and a value; this attribute is left "
                                     "out."));
-                const auto name = std::string(node.attribute("name").value());
-                if (name.empty()) {
-                    out.issues.push_back(pei_missing(std::format("{}/Parameter", owner_key),
+            const auto name = std::string(node.attribute("name").value());
+            if (name.empty()) {
+                out.issues.push_back(pei_missing(std::format("{}/Parameter", owner_key),
                                                  "A setting with no name cannot be written; it "
                                                  "is left out."));
-                    continue;
-                }
-                const auto identity = pei_settings_key(scope, name);
-                if (!stated_settings.insert(owner_key + '\x1f' + identity).second) {
-                    out.issues.push_back(
-                        {.kind = "duplicate",
-                         .subject = std::format("{}/{}/{}", owner_key, scope, name),
-                         .detail = "The file states this setting twice. A configuration cannot "
-                                   "hold it twice, so the first value stands; change the file to "
-                                   "choose another."});
-                    continue;
-                }
-                pei_parameter_row row;
-                row.id = pei_new_uuid();
-                row.pricing_model_config_id = rows.config.id;
-                row.pricing_model_product_id = product;
-                row.parameter_scope = std::string(scope);
-                row.parameter_name = name;
-                row.parameter_value = pei_text_of(node);
-                row.position = position++;
-                pei_set_audit(row);
-                rows.parameters.push_back(std::move(row));
+                continue;
             }
-        };
+            const auto identity = pei_settings_key(scope, name);
+            if (!stated_settings.insert(owner_key + '\x1f' + identity).second) {
+                out.issues.push_back(
+                    {.kind = "duplicate",
+                     .subject = std::format("{}/{}/{}", owner_key, scope, name),
+                     .detail = "The file states this setting twice. A configuration cannot "
+                               "hold it twice, so the first value stands; change the file to "
+                               "choose another."});
+                continue;
+            }
+            pei_parameter_row row;
+            row.id = pei_new_uuid();
+            row.pricing_model_config_id = rows.config.id;
+            row.pricing_model_product_id = product;
+            row.parameter_scope = std::string(scope);
+            row.parameter_name = name;
+            row.parameter_value = pei_text_of(node);
+            row.position = position++;
+            pei_set_audit(row);
+            rows.parameters.push_back(std::move(row));
+        }
+    };
 
     for (const auto& child : root.children()) {
         if (child.type() != pugi::node_element)
@@ -290,22 +291,23 @@ pricing_engines_import_file pricing_engines_import::parse(std::string_view text)
             continue;
         }
         if (name != "Product") {
-            out.issues.push_back(
-                pei_dropped(std::string(name),
-                        "The tables hold products and settings only; this element is left out."));
+            out.issues.push_back(pei_dropped(
+                std::string(name),
+                "The tables hold products and settings only; this element is left out."));
             continue;
         }
 
         for (const auto& attribute : child.attributes())
             if (std::string_view(attribute.name()) != "type")
                 out.issues.push_back(pei_dropped(std::format("Product@{}", attribute.name()),
-                                             "A product is a type, a model and an engine; this "
-                                             "attribute is left out."));
+                                                 "A product is a type, a model and an engine; this "
+                                                 "attribute is left out."));
 
         const auto type_code = std::string(child.attribute("type").value());
         if (type_code.empty()) {
-            out.issues.push_back(pei_missing("Product", "A product with no type cannot be written; it "
-                                                    "is left out."));
+            out.issues.push_back(pei_missing("Product",
+                                             "A product with no type cannot be written; it "
+                                             "is left out."));
             continue;
         }
         const auto occurrence = pei_occurrence_of(type_counts, type_code);
@@ -345,30 +347,30 @@ pricing_engines_import_file pricing_engines_import::parse(std::string_view text)
             } else if (element == "EngineParameters") {
                 read_settings(node, product.id, owner_key, pei_scope_engine);
             } else {
-                out.issues.push_back(
-                    pei_dropped(std::format("{}/{}", owner_key, element),
-                            "The tables hold a model, its settings, an engine and its settings; "
-                            "this element is left out."));
+                out.issues.push_back(pei_dropped(
+                    std::format("{}/{}", owner_key, element),
+                    "The tables hold a model, its settings, an engine and its settings; "
+                    "this element is left out."));
             }
         }
         if (!model_stated)
-            out.issues.push_back(
-                pei_missing(owner_key,
-                        std::format("The {} product states no model, and a document with no model "
-                                    "cannot be saved.",
-                                    type_code)));
+            out.issues.push_back(pei_missing(
+                owner_key,
+                std::format("The {} product states no model, and a document with no model "
+                            "cannot be saved.",
+                            type_code)));
         if (!engine_stated)
             out.issues.push_back(
                 pei_missing(owner_key,
-                        std::format("The {} product states no engine, and a document with no "
-                                    "engine cannot be saved.",
-                                    type_code)));
+                            std::format("The {} product states no engine, and a document with no "
+                                        "engine cannot be saved.",
+                                        type_code)));
 
-        out.products.push_back({.type_code = type_code,
-                                .model = product.model,
-                                .engine = product.engine,
-                                .parameters = static_cast<std::uint32_t>(rows.parameters.size() -
-                                                                         settings_before)});
+        out.products.push_back(
+            {.type_code = type_code,
+             .model = product.model,
+             .engine = product.engine,
+             .parameters = static_cast<std::uint32_t>(rows.parameters.size() - settings_before)});
         rows.products.push_back(std::move(product));
     }
 
@@ -421,8 +423,8 @@ pei_file_view pei_view_of(const pei_document& file, const pei_target_rows& targe
 
 /// The settings the file states under one product in one scope, in their order.
 std::vector<const pei_parameter_row*> pei_settings_of(const pei_document& file,
-                                             const boost::uuids::uuid& product,
-                                             std::string_view scope) {
+                                                      const boost::uuids::uuid& product,
+                                                      std::string_view scope) {
     std::vector<const pei_parameter_row*> found;
     for (const auto& parameter : file.parameters)
         if (parameter.pricing_model_product_id.has_value() &&
@@ -473,14 +475,13 @@ pricing_engines_import::difference(const pricing_engines_import_file& file,
 
         if (theirs == nullptr) {
             ++out.added;
-            out.rows.push_back({.key = key,
-                                .entity = "product",
-                                .change = "added",
-                                .owner = {},
-                                .name = {},
-                                .what = std::format("Model {}, engine {}",
-                                                    product->model,
-                                                    product->engine)});
+            out.rows.push_back(
+                {.key = key,
+                 .entity = "product",
+                 .change = "added",
+                 .owner = {},
+                 .name = {},
+                 .what = std::format("Model {}, engine {}", product->model, product->engine)});
         } else {
             std::string what;
             const auto note = [&what](std::string_view label,
@@ -490,7 +491,8 @@ pricing_engines_import::difference(const pricing_engines_import_file& file,
                     return;
                 if (!what.empty())
                     what += "; ";
-                what += std::format("{} {} → {}", label, pei_shortened(held), pei_shortened(stated));
+                what +=
+                    std::format("{} {} → {}", label, pei_shortened(held), pei_shortened(stated));
             };
             note("Model", theirs->model, product->model);
             note("Engine", theirs->engine, product->engine);
@@ -510,31 +512,32 @@ pricing_engines_import::difference(const pricing_engines_import_file& file,
             for (const auto* parameter : pei_settings_of(file.document, product->id, scope)) {
                 const auto at = seen[parameter->parameter_name]++;
                 const auto identity = pei_settings_key(scope, parameter->parameter_name);
-                const auto row_key =
-                    pei_setting_key(key, scope, parameter->parameter_name, at);
+                const auto row_key = pei_setting_key(key, scope, parameter->parameter_name, at);
                 const auto& found = grouped.settings_of(pei_id_of(theirs), identity);
                 const pei_parameter_row* held =
                     at < static_cast<int>(found.size()) ? found[at] : nullptr;
                 if (held == nullptr) {
                     ++out.added;
-                    out.rows.push_back({.key = row_key,
-                                        .entity = "parameter",
-                                        .change = "added",
-                                        .owner = key,
-                                        .name = parameter->parameter_name,
-                                        .what = std::format("{} = {}",
-                                                            parameter->parameter_name,
-                                                            pei_shortened(parameter->parameter_value))});
+                    out.rows.push_back(
+                        {.key = row_key,
+                         .entity = "parameter",
+                         .change = "added",
+                         .owner = key,
+                         .name = parameter->parameter_name,
+                         .what = std::format("{} = {}",
+                                             parameter->parameter_name,
+                                             pei_shortened(parameter->parameter_value))});
                 } else if (held->parameter_value != parameter->parameter_value) {
                     ++out.changed;
-                    out.rows.push_back({.key = row_key,
-                                        .entity = "parameter",
-                                        .change = "changed",
-                                        .owner = key,
-                                        .name = parameter->parameter_name,
-                                        .what = std::format("{} → {}",
-                                                            pei_shortened(held->parameter_value),
-                                                            pei_shortened(parameter->parameter_value))});
+                    out.rows.push_back(
+                        {.key = row_key,
+                         .entity = "parameter",
+                         .change = "changed",
+                         .owner = key,
+                         .name = parameter->parameter_name,
+                         .what = std::format("{} → {}",
+                                             pei_shortened(held->parameter_value),
+                                             pei_shortened(parameter->parameter_value))});
                 } else {
                     ++out.held;
                 }
@@ -555,15 +558,14 @@ pricing_engines_import::difference(const pricing_engines_import_file& file,
                     return parameter.pricing_model_product_id.has_value() &&
                            *parameter.pricing_model_product_id == product.id;
                 });
-            out.rows.push_back(
-                {.key = pei_product_key(type_code, at),
-                 .entity = "product",
-                 .change = "removed",
-                 .owner = {},
-                 .name = {},
-                 .what = std::format("Not in the file. It carries {} setting{}.",
-                                     settings,
-                                     settings == 1 ? "" : "s")});
+            out.rows.push_back({.key = pei_product_key(type_code, at),
+                                .entity = "product",
+                                .change = "removed",
+                                .owner = {},
+                                .name = {},
+                                .what = std::format("Not in the file. It carries {} setting{}.",
+                                                    settings,
+                                                    settings == 1 ? "" : "s")});
         }
     }
 
@@ -604,9 +606,9 @@ pricing_engines_import::difference(const pricing_engines_import_file& file,
     for (const auto* parameter : pei_global_settings_of(file.document)) {
         const auto key = pei_setting_key("/", pei_scope_global, parameter->parameter_name, 0);
         const auto found = grouped.globals.find(parameter->parameter_name);
-        const auto* held =
-            found == grouped.globals.end() || found->second.empty() ? nullptr :
-                                                                     found->second.front();
+        const auto* held = found == grouped.globals.end() || found->second.empty() ?
+                               nullptr :
+                               found->second.front();
         if (held == nullptr) {
             ++out.added;
             out.rows.push_back({.key = key,
@@ -663,8 +665,8 @@ pricing_engines_import::kept_by_default(const pricing_engines_import_difference&
 }
 
 pei_document pricing_engines_import::merge(const pricing_engines_import_file& file,
-                                       const pei_document& target,
-                                       const std::vector<std::string>& kept_removals) {
+                                           const pei_document& target,
+                                           const std::vector<std::string>& kept_removals) {
     const std::set<std::string> kept(kept_removals.begin(), kept_removals.end());
     const auto grouped = pei_group_target(target);
     const auto view = pei_view_of(file.document, grouped);

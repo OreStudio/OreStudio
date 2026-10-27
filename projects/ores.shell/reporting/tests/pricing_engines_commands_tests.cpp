@@ -235,8 +235,7 @@ TEST_CASE("pricing_engines_commands_process_import_names_one_configuration", "[c
     std::filesystem::remove(path);
 }
 
-TEST_CASE("pricing_engines_commands_process_import_refuses_a_file_it_cannot_read",
-          "[commands]") {
+TEST_CASE("pricing_engines_commands_process_import_refuses_a_file_it_cannot_read", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -267,9 +266,7 @@ TEST_CASE("pricing_engines_commands_process_import_refuses_two_configurations", 
 
     command_feedback::reset();
     pricing_engines_commands::process_import(
-        out,
-        session,
-        {configuration_id, "--new-name", "From ORE", "--file", path.string()});
+        out, session, {configuration_id, "--new-name", "From ORE", "--file", path.string()});
 
     BOOST_LOG_SEV(lg, debug) << "Output: " << out.str();
     CHECK(out.str().find("Name one configuration") != std::string::npos);

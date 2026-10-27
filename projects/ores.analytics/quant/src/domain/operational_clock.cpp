@@ -59,16 +59,17 @@ double checked_calm_multiplier(const market_config& c) {
 }
 
 operational_clock::operational_clock(const market_config& config, math::rng_stream stream)
-    : config_(config), calm_multiplier_(checked_calm_multiplier(config)),
-      stream_(std::move(stream)) {
+    : config_(config)
+    , calm_multiplier_(checked_calm_multiplier(config))
+    , stream_(std::move(stream)) {
     // Start where the chain spends its time in the long run, so the first
     // minutes of a run are not always calm. A dwell is memoryless, so the time
     // left in the first state is a fresh dwell.
     const double active_share = config_.wake_rate / (config_.wake_rate + config_.calm_rate);
-    chain_state_ = math::open_uniform(stream_) <= active_share ? market_state::active
-                                                               : market_state::calm;
-    remaining_ = unit_dwell(0) / (chain_state_ == market_state::calm ? config_.wake_rate
-                                                                     : config_.calm_rate);
+    chain_state_ =
+        math::open_uniform(stream_) <= active_share ? market_state::active : market_state::calm;
+    remaining_ = unit_dwell(0) /
+                 (chain_state_ == market_state::calm ? config_.wake_rate : config_.calm_rate);
     upcoming_dwells_.pop_front();
 }
 
@@ -130,8 +131,8 @@ void operational_clock::advance(double seconds) {
         remaining_ -= span;
         if (turns) {
             chain_state_ = other(chain_state_);
-            remaining_ = unit_dwell(0) / (chain_state_ == market_state::calm ? config_.wake_rate
-                                                                             : config_.calm_rate);
+            remaining_ = unit_dwell(0) / (chain_state_ == market_state::calm ? config_.wake_rate :
+                                                                               config_.calm_rate);
             upcoming_dwells_.pop_front();
         }
     }
@@ -156,7 +157,8 @@ double operational_clock::time_to_reach(double target) {
         elapsed += remaining;
         heat *= std::exp(-config_.decay * remaining);
         s = other(s);
-        remaining = unit_dwell(k) / (s == market_state::calm ? config_.wake_rate : config_.calm_rate);
+        remaining =
+            unit_dwell(k) / (s == market_state::calm ? config_.wake_rate : config_.calm_rate);
     }
 }
 

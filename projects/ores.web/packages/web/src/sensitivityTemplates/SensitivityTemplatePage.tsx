@@ -45,7 +45,13 @@ import {
     useSensitivityTemplate,
     useSensitivityTemplatePermissions,
 } from './choices.js';
-import { MethodCode, methodCodeOf, TemplateFields } from './TemplateForm.js';
+import {
+    MethodCode,
+    codeOfAssetClassName,
+    codeOfMethodName,
+    methodCodeOf,
+    TemplateFields,
+} from './TemplateForm.js';
 
 /**
  * One sensitivity template: the key, the asset class and the method it names,
@@ -74,6 +80,7 @@ function TemplateBody({ template }: { readonly template: SensitivityTemplate }):
     const queries = useQueryClient();
     const root = useAreaRoot('reporting');
     const may = useSensitivityTemplatePermissions();
+    const choices = useChoices();
     const [editing, setEditing] = useState(false);
     const [removing, setRemoving] = useState(false);
     const [reverting, setReverting] = useState<HistoryVersion | null>(null);
@@ -156,8 +163,12 @@ function TemplateBody({ template }: { readonly template: SensitivityTemplate }):
                     current={template.version}
                     version={reverting}
                     changes={[
-                        [t('sensitivityTemplates.assetClass'), template.assetClass, 'Asset Class'],
-                        [t('sensitivityTemplates.method'), template.method, 'Method'],
+                        [
+                            t('sensitivityTemplates.assetClass'),
+                            template.assetClassName,
+                            'Asset Class',
+                        ],
+                        [t('sensitivityTemplates.method'), template.methodName, 'Method'],
                         [
                             t('sensitivityTemplates.description'),
                             template.description,
@@ -173,8 +184,13 @@ function TemplateBody({ template }: { readonly template: SensitivityTemplate }):
                     onClose={() => setReverting(null)}
                     write={async (intent) => {
                         await api.correctSensitivityTemplate(template.code, {
-                            assetClass: fieldValue(reverting, 'Asset Class'),
-                            method: fieldValue(reverting, 'Method'),
+                            // A version states the words a person reads, so the
+                            // revert restores the codes those words stand for.
+                            methodCode: codeOfMethodName(choices, fieldValue(reverting, 'Method')),
+                            assetClassCode: codeOfAssetClassName(
+                                choices,
+                                fieldValue(reverting, 'Asset Class'),
+                            ),
                             description: fieldValue(reverting, 'Description'),
                             version: template.version,
                             ...intent,
@@ -198,13 +214,23 @@ function Details({ template }: { readonly template: SensitivityTemplate }): Reac
             extra={[
                 [
                     t('sensitivityTemplates.assetClass'),
-                    <span className="font-mono text-xs">{text(template.assetClass)}</span>,
+                    text(template.assetClassName),
+                    t('sensitivityTemplates.assetClassHelp'),
                 ],
-                [t('sensitivityTemplates.method'), text(template.method)],
+                [t('sensitivityTemplates.method'), text(template.methodName)],
                 [
                     t('sensitivityTemplates.methodCode'),
                     <span className="font-mono text-xs">{text(template.methodCode)}</span>,
                     t('sensitivityTemplates.methodCodeHelp'),
+                ],
+                [
+                    t('sensitivityTemplates.templatePrefix'),
+                    template.templatePrefix === '' ? (
+                        <span className="text-ink-faint">—</span>
+                    ) : (
+                        <span className="font-mono text-xs">{template.templatePrefix}</span>
+                    ),
+                    t('sensitivityTemplates.templatePrefixHelp'),
                 ],
                 [t('sensitivityTemplates.description'), text(template.description)],
             ]}
@@ -235,13 +261,13 @@ export function EditTemplateDialog({
     const { t } = useTranslation();
     const queries = useQueryClient();
     const choices = useChoices();
-    const [assetClass, setAssetClass] = useState(template.assetClass);
-    const [method, setMethod] = useState(template.method);
+    const [methodCode, setMethodCode] = useState(template.methodCode);
+    const [assetClassCode, setAssetClassCode] = useState(template.assetClassCode);
     const [description, setDescription] = useState(template.description);
     const [commentary, setCommentary] = useState('');
     const changed =
-        assetClass !== template.assetClass ||
-        method !== template.method ||
+        methodCode !== template.methodCode ||
+        assetClassCode !== template.assetClassCode ||
         description.trim() !== template.description;
     const reason = useReason('amend', changed);
     const guard = useCloseGuard(changed || commentary.trim() !== '', onClose);
@@ -249,8 +275,8 @@ export function EditTemplateDialog({
     const save = useMutation({
         mutationFn: () =>
             api.correctSensitivityTemplate(template.code, {
-                assetClass,
-                method,
+                methodCode,
+                assetClassCode: assetClassCode === '' ? null : assetClassCode,
                 description: description.trim(),
                 version: template.version,
                 reasonCode: reason.code,
@@ -302,14 +328,14 @@ export function EditTemplateDialog({
                     </p>
                 </div>
                 <TemplateFields
-                    assetClass={assetClass}
-                    method={method}
+                    methodCode={methodCode}
+                    assetClassCode={assetClassCode}
                     description={description}
-                    onAssetClass={setAssetClass}
-                    onMethod={setMethod}
+                    onMethod={setMethodCode}
+                    onAssetClass={setAssetClassCode}
                     onDescription={setDescription}
                 />
-                <MethodCode code={methodCodeOf(choices, method)} />
+                <MethodCode code={methodCodeOf(choices, methodCode)} />
                 <ReasonFields
                     reason={reason}
                     commentary={commentary}

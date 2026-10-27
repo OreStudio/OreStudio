@@ -35,9 +35,11 @@ import { PATHS, sensitivityTemplatePath } from '../shell/paths.js';
 
 const ROW = {
     code: 'IR_FD',
-    assetClass: 'IR',
-    method: 'Finite difference',
     methodCode: 'FD',
+    methodName: 'Finite difference',
+    assetClassCode: 'interest_rates',
+    assetClassName: 'Interest rate',
+    templatePrefix: 'IR',
     description: 'Interest rate products priced on a finite difference grid.',
     version: 1,
     modifiedBy: 'priya',
@@ -79,8 +81,8 @@ describe('a create the server refused', () => {
         await expect(
             api.addSensitivityTemplate({
                 code: 'IR_FD',
-                assetClass: 'IR',
-                method: 'Finite difference',
+                methodCode: 'FD',
+                assetClassCode: 'interest_rates',
                 description: '',
                 reasonCode: 'system.new_record',
                 commentary: '',
@@ -90,15 +92,15 @@ describe('a create the server refused', () => {
         expect(asked[0]?.method).toBe('POST');
         expect(JSON.parse(asked[0]?.body ?? '{}')).toEqual({
             code: 'IR_FD',
-            assetClass: 'IR',
-            method: 'Finite difference',
+            methodCode: 'FD',
+            assetClassCode: 'interest_rates',
             description: '',
             reasonCode: 'system.new_record',
             commentary: '',
         });
     });
 
-    it('never sends the method code, because the server derives it', async () => {
+    it('sends the chosen codes, and no words a person typed', async () => {
         const sent: string[] = [];
         vi.stubGlobal('fetch', async (_path: string, init: RequestInit) => {
             sent.push(String(init.body ?? ''));
@@ -110,14 +112,42 @@ describe('a create the server refused', () => {
 
         await api.addSensitivityTemplate({
             code: 'IR_FD',
-            assetClass: 'IR',
-            method: 'Finite difference',
+            methodCode: 'FD',
+            assetClassCode: 'interest_rates',
             description: '',
             reasonCode: 'system.new_record',
             commentary: '',
         });
-        expect(JSON.parse(sent[0] ?? '{}')).not.toHaveProperty('methodCode');
-        expect(JSON.parse(sent[0] ?? '{}')).not.toHaveProperty('method_code');
+        const body = JSON.parse(sent[0] ?? '{}') as Record<string, unknown>;
+        expect(body['methodCode']).toBe('FD');
+        expect(body['assetClassCode']).toBe('interest_rates');
+        // The words a person reads live in the lookups, so they never travel.
+        expect(body).not.toHaveProperty('method');
+        expect(body).not.toHaveProperty('assetClass');
+        expect(body).not.toHaveProperty('method_code');
+    });
+
+    it('sends no asset class for a trade-level template', async () => {
+        const sent: string[] = [];
+        vi.stubGlobal('fetch', async (_path: string, init: RequestInit) => {
+            sent.push(String(init.body ?? ''));
+            return new Response(JSON.stringify({ template: ROW }), {
+                status: 201,
+                headers: { 'content-type': 'application/json' },
+            });
+        });
+
+        await api.addSensitivityTemplate({
+            code: 'ACME_Trade',
+            methodCode: 'Trade',
+            assetClassCode: null,
+            description: '',
+            reasonCode: 'system.new_record',
+            commentary: '',
+        });
+        expect(
+            (JSON.parse(sent[0] ?? '{}') as Record<string, unknown>)['assetClassCode'],
+        ).toBeNull();
     });
 });
 

@@ -21,9 +21,11 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { readEntityHistory } from '@ores/wire-protocol';
+import { subjects as methodSubjects } from '@ores/wire-protocol/generated/analytics/protocol/sensitivity_method_protocol';
+import { subjects as assetClassSubjects } from '@ores/wire-protocol/generated/analytics/protocol/sensitivity_asset_class_protocol';
 import { subjects } from '@ores/wire-protocol/generated/analytics/protocol/sensitivity_template_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
-import { input, resultSchema, row, text } from './refdata-calls.js';
+import { NO_ORDER, input, resultSchema, row, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /*
@@ -35,28 +37,127 @@ import type { LiveSession } from './sessions.js';
  * create states a key the table does not hold and a correction states the
  * version it read, so a key written meanwhile is refused rather than replaced.
  *
- * The method is held as two fields: the words a person reads, and the token ORE
- * spells in a key such as IR_FD. The token follows from the words and is never
- * typed, so a row cannot state a pair the table refuses.
+ * Two lookups hold what a key names. The method is one of the five ORE defines,
+ * and the asset class is the reference data's code, with the prefix a key spells
+ * and the words a person reads held beside it. A trade-level template states no
+ * class, because the trade computes its own sensitivities; the methods table says
+ * which method is that one, so this module asks it rather than repeating the
+ * exception.
+ *
+ * Nothing here derives a value a person typed: the two codes travel as they were
+ * chosen, and the row states them.
  */
 
 /** The entity type one key's history is read by. */
 const ENTITY_TYPE = 'ores.analytics.sensitivity_template';
 
-/** The asset classes a template belongs to, as the table holds them. */
-const ASSET_CLASSES = ['IR', 'FX', 'EQ', 'COMM', 'CR', 'ALL'] as const;
+/** One method, as the screen chooses it. */
+export interface MethodChoice {
+    /** The token ORE spells in a template key, such as FD. */
+    readonly code: string;
+    /** The words a person reads, such as Finite difference. */
+    readonly name: string;
+    /** Whether a template that states this method also states an asset class. */
+    readonly needsAssetClass: boolean;
+}
+
+/** One asset class ORE presents a template prefix for. */
+export interface AssetClassChoice {
+    /** The reference data's asset class code, such as interest_rates. */
+    readonly code: string;
+    /** The prefix a template key spells, such as IR. */
+    readonly prefix: string;
+    /** The words a person reads, such as Interest rate. */
+    readonly name: string;
+}
+
+/** The two lookups, in the order the screen offers them. */
+export interface Choices {
+    readonly assetClasses: readonly AssetClassChoice[];
+    readonly methods: readonly MethodChoice[];
+}
+
+const methodsReplySchema = z.looseObject({
+    result: resultSchema,
+    methods: z.array(row).default([]),
+    total: z.number().default(0),
+});
+
+const assetClassesReplySchema = z.looseObject({
+    result: resultSchema,
+    asset_classes: z.array(row).default([]),
+    total: z.number().default(0),
+});
 
 /**
- * The five methods, each with the token ORE puts in a template key. The table
- * holds the pair in a check, so this list is the one place a screen reads it.
+ * The methods and the asset classes a template may name, read from the tables
+ * that hold them. A screen offers what the store holds and never a list of its
+ * own, so a method or a class added to a table reaches the form without a change
+ * here.
  */
-export const METHODS = [
-    { label: 'Analytical', code: 'Analytical' },
-    { label: 'Semianalytical', code: 'Semianalytical' },
-    { label: 'Finite difference', code: 'FD' },
-    { label: 'Monte Carlo', code: 'MC' },
-    { label: 'Trade level', code: 'Trade' },
-] as const;
+export async function readChoices(session: LiveSession): Promise<Choices> {
+    const reply = await session.client.callAuthenticated(
+        methodSubjects.list_sensitivity_methods_request,
+        { filter: null, as_of: null, offset: 0, limit: 1000, order: NO_ORDER },
+        methodsReplySchema,
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw refusalOf(reply.result);
+    }
+    const classes = await session.client.callAuthenticated(
+        assetClassSubjects.list_sensitivity_asset_classes_request,
+        { filter: null, as_of: null, offset: 0, limit: 1000, order: NO_ORDER },
+        assetClassesReplySchema,
+    );
+    if (classes.result.outcome !== 'ok') {
+        throw refusalOf(classes.result);
+    }
+    const order = (
+        left: Readonly<Record<string, unknown>>,
+        right: Readonly<Record<string, unknown>>,
+    ) => Number(left['display_order'] ?? 0) - Number(right['display_order'] ?? 0);
+    return {
+        assetClasses: [...classes.asset_classes].sort(order).map((stored) => ({
+            code: text(stored['asset_class_code']),
+            prefix: text(stored['template_prefix']),
+            name: text(stored['name']),
+        })),
+        methods: [...reply.methods].sort(order).map((stored) => ({
+            code: text(stored['code']),
+            name: text(stored['name']),
+            needsAssetClass: stored['needs_asset_class'] === true,
+        })),
+    };
+}
+
+/**
+ * The pair a write states, refused when it is not one the tables allow.
+ *
+ * The rule is the methods table's: a method that needs no class states none. The
+ * store refuses it too, and this says which of the two is wrong before the write
+ * reaches it.
+ */
+function pairOf(
+    choices: Choices,
+    methodCode: string,
+    assetClassCode: string | null,
+): { methodCode: string; assetClassCode: string | null } {
+    const method = choices.methods.find((candidate) => candidate.code === methodCode);
+    if (method === undefined) {
+        throw invalidRequest(
+            `${methodCode === '' ? 'A template' : methodCode} is not a method a template may state. The methods are ${choices.methods.map((candidate) => candidate.name).join(', ')}.`,
+        );
+    }
+    if (method.needsAssetClass && assetClassCode === null) {
+        throw invalidRequest(
+            `A ${method.name} template states the asset class of the product it belongs to.`,
+        );
+    }
+    if (!method.needsAssetClass && assetClassCode !== null) {
+        throw invalidRequest(`A ${method.name} template states no asset class.`);
+    }
+    return { methodCode: method.code, assetClassCode };
+}
 
 const codeSchema = z.string().trim().min(1).max(100);
 const textSchema = z.string().max(2000).default('');
@@ -65,20 +166,9 @@ const reasonSchema = z.object({
     commentary: textSchema,
 });
 
-/** A method's token, or a refusal that names the method the request stated. */
-function methodCodeOf(method: string): string {
-    const found = METHODS.find((candidate) => candidate.label === method);
-    if (found === undefined) {
-        throw invalidRequest(
-            `${method === '' ? 'A template' : method} is not a method a template may state. The methods are ${METHODS.map((candidate) => candidate.label).join(', ')}.`,
-        );
-    }
-    return found.code;
-}
-
 const templateBodySchema = z.object({
-    assetClass: z.enum(ASSET_CLASSES),
-    method: z.string().trim().min(1).max(100),
+    methodCode: z.string().trim().min(1).max(100),
+    assetClassCode: codeSchema.nullable().default(null),
     description: textSchema,
 });
 
@@ -122,13 +212,29 @@ const getReplySchema = z.looseObject({
     sensitivity_template: row.nullable().default(null),
 });
 
-/** One key as the screen reads it. */
-function templateOf(stored: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
+/**
+ * One key as the screen reads it: the two codes it states, and the words and the
+ * prefix the lookups hold for them.
+ *
+ * A class the bridge does not present still reads as its code, so a row written
+ * before the bridge held the class shows what it holds rather than a blank. A
+ * trade-level key has no class, and its three class fields are empty.
+ */
+function templateOf(
+    stored: Readonly<Record<string, unknown>>,
+    choices: Choices,
+): Readonly<Record<string, unknown>> {
+    const methodCode = text(stored['method_code']);
+    const assetClassCode = text(stored['asset_class_code']);
+    const method = choices.methods.find((candidate) => candidate.code === methodCode);
+    const assetClass = choices.assetClasses.find((candidate) => candidate.code === assetClassCode);
     return {
         code: text(stored['code']),
-        assetClass: text(stored['asset_class']),
-        method: text(stored['method']),
-        methodCode: text(stored['method_code']),
+        methodCode,
+        methodName: method?.name ?? methodCode,
+        assetClassCode,
+        assetClassName: assetClass?.name ?? assetClassCode,
+        templatePrefix: assetClass?.prefix ?? '',
         description: text(stored['description']),
         version: typeof stored['version'] === 'number' ? stored['version'] : 0,
         modifiedBy: text(stored['modified_by']),
@@ -186,6 +292,7 @@ function refusalOf(result: z.infer<typeof resultSchema>): HttpFailure {
 async function readOne(
     session: LiveSession,
     code: string,
+    choices: Choices,
 ): Promise<Readonly<Record<string, unknown>>> {
     const reply = await session.client.callAuthenticated(
         subjects.get_sensitivity_template_request,
@@ -199,7 +306,7 @@ async function readOne(
     if (found === null) {
         throw notFound(`There is no sensitivity template ${code}.`);
     }
-    return templateOf(found);
+    return templateOf(found, choices);
 }
 
 /** The sensitivity template routes: the tenant's keys, the writes, and one key's history. */
@@ -211,6 +318,7 @@ export function registerSensitivityTemplateRoutes(
     server.get('/api/analytics/sensitivity-templates', async (request) => {
         const session = requireSession(request);
         const query = input(listQuerySchema, request.query);
+        const choices = await readChoices(session);
         const reply = await session.client.callAuthenticated(
             subjects.list_sensitivity_templates_request,
             {
@@ -225,23 +333,26 @@ export function registerSensitivityTemplateRoutes(
         if (reply.result.outcome !== 'ok') {
             throw refusalOf(reply.result);
         }
-        return { rows: reply.templates.map(templateOf), total: reply.total };
+        return {
+            rows: reply.templates.map((stored) => templateOf(stored, choices)),
+            total: reply.total,
+        };
     });
 
     /**
-     * The values a template states. The method's token comes with its label,
-     * because the dialog shows the token the chosen method implies.
+     * The two lookups a template states, in the order the screen offers them.
+     * They are read from their tables rather than stated here, so a method or a
+     * class added to one reaches the form without a change to this module.
      */
-    server.get('/api/analytics/sensitivity-templates/choices', async () => ({
-        assetClasses: [...ASSET_CLASSES],
-        methods: METHODS.map((method) => ({ ...method })),
-    }));
+    server.get('/api/analytics/sensitivity-templates/choices', async (request) =>
+        readChoices(requireSession(request)),
+    );
 
     /** One key, as its page reads it. */
     server.get('/api/analytics/sensitivity-templates/:code', async (request) => {
         const session = requireSession(request);
         const { code } = input(z.object({ code: codeSchema }), request.params);
-        return { template: await readOne(session, code) };
+        return { template: await readOne(session, code, await readChoices(session)) };
     });
 
     /** Every version of one key, newest first, with what changed in each. */
@@ -258,15 +369,16 @@ export function registerSensitivityTemplateRoutes(
     server.post('/api/analytics/sensitivity-templates', async (request, reply) => {
         const session = requireSession(request);
         const body = input(createBodySchema, request.body);
+        const choices = await readChoices(session);
+        const pair = pairOf(choices, body.methodCode, body.assetClassCode);
         const answer = await session.client.callAuthenticated(
             subjects.put_sensitivity_template_request,
             {
                 change: {
                     write: {
                         code: body.code,
-                        asset_class: body.assetClass,
-                        method: body.method,
-                        method_code: methodCodeOf(body.method),
+                        method_code: pair.methodCode,
+                        asset_class_code: pair.assetClassCode,
                         description: body.description,
                     },
                     precondition: { kind: 'must_not_exist', version: null },
@@ -281,7 +393,10 @@ export function registerSensitivityTemplateRoutes(
         void reply.code(201);
         const written = answer.sensitivity_template;
         return {
-            template: written === null ? await readOne(session, body.code) : templateOf(written),
+            template:
+                written === null
+                    ? await readOne(session, body.code, choices)
+                    : templateOf(written, choices),
         };
     });
 
@@ -293,15 +408,16 @@ export function registerSensitivityTemplateRoutes(
         const session = requireSession(request);
         const { code } = input(z.object({ code: codeSchema }), request.params);
         const body = input(updateBodySchema, request.body);
+        const choices = await readChoices(session);
+        const pair = pairOf(choices, body.methodCode, body.assetClassCode);
         const answer = await session.client.callAuthenticated(
             subjects.put_sensitivity_template_request,
             {
                 change: {
                     write: {
                         code,
-                        asset_class: body.assetClass,
-                        method: body.method,
-                        method_code: methodCodeOf(body.method),
+                        method_code: pair.methodCode,
+                        asset_class_code: pair.assetClassCode,
                         description: body.description,
                     },
                     precondition: { kind: 'must_match_version', version: body.version },
@@ -314,7 +430,12 @@ export function registerSensitivityTemplateRoutes(
             throw refusalOf(answer.result);
         }
         const written = answer.sensitivity_template;
-        return { template: written === null ? await readOne(session, code) : templateOf(written) };
+        return {
+            template:
+                written === null
+                    ? await readOne(session, code, choices)
+                    : templateOf(written, choices),
+        };
     });
 
     /**
@@ -325,7 +446,8 @@ export function registerSensitivityTemplateRoutes(
         const session = requireSession(request);
         const { code } = input(z.object({ code: codeSchema }), request.params);
         const body = input(removeBodySchema, request.body);
-        const removed = await readOne(session, code);
+        const choices = await readChoices(session);
+        const removed = await readOne(session, code, choices);
         const answer = await session.client.callAuthenticated(
             subjects.delete_sensitivity_template_request,
             {

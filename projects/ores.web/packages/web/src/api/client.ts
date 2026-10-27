@@ -2493,8 +2493,8 @@ export const api = {
     /** Adds a key. A code the tenant already holds is refused. */
     async addSensitivityTemplate(input: {
         readonly code: string;
-        readonly assetClass: string;
-        readonly method: string;
+        readonly methodCode: string;
+        readonly assetClassCode: string | null;
         readonly description: string;
         readonly reasonCode: string;
         readonly commentary: string;
@@ -2512,8 +2512,8 @@ export const api = {
     async correctSensitivityTemplate(
         code: string,
         input: {
-            readonly assetClass: string;
-            readonly method: string;
+            readonly methodCode: string;
+            readonly assetClassCode: string | null;
             readonly description: string;
             readonly version: number;
             readonly reasonCode: string;

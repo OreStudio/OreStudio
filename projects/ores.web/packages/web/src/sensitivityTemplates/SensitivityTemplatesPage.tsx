@@ -52,7 +52,10 @@ export function SensitivityTemplatesPage(): ReactNode {
         key: 'sensitivity-templates',
         read: (page) => api.sensitivityTemplates(page),
         search: true,
-        sortable: ['code', 'asset_class', 'method', 'description'],
+        // The store orders by the values it holds. The two lookups read as the
+        // words they hold, and those live in another table, so the two columns
+        // that show them are not offered as orders the server cannot keep.
+        sortable: ['code', 'description'],
         mayAdd: may.write,
     };
 
@@ -81,14 +84,12 @@ export function SensitivityTemplatesPage(): ReactNode {
                     {
                         id: 'asset_class',
                         header: t('sensitivityTemplates.assetClass'),
-                        cell: (row) => row.assetClass,
-                        sort: 'asset_class',
+                        cell: (row) => row.assetClassName,
                     },
                     {
                         id: 'method',
                         header: t('sensitivityTemplates.method'),
-                        cell: (row) => row.method,
-                        sort: 'method',
+                        cell: (row) => row.methodName,
                     },
                     {
                         id: 'description',
@@ -113,16 +114,16 @@ export function AddTemplateDialog({ onClose }: { readonly onClose: () => void })
     const queries = useQueryClient();
     const choices = useChoices();
     const [code, setCode] = useState('');
-    const [assetClass, setAssetClass] = useState(choices?.assetClasses[0] ?? '');
-    const [method, setMethod] = useState(choices?.methods[0]?.label ?? '');
+    const [methodCode, setMethodCode] = useState(choices?.methods[0]?.code ?? '');
+    const [assetClassCode, setAssetClassCode] = useState(choices?.assetClasses[0]?.code ?? '');
     const [description, setDescription] = useState('');
     const guard = useCloseGuard(code.trim() !== '' || description.trim() !== '', onClose);
     const add = useMutation({
         mutationFn: () =>
             api.addSensitivityTemplate({
                 code: code.trim(),
-                assetClass,
-                method,
+                methodCode,
+                assetClassCode: assetClassCode === '' ? null : assetClassCode,
                 description: description.trim(),
                 reasonCode: NEW_RECORD_REASON,
                 commentary: '',
@@ -149,7 +150,7 @@ export function AddTemplateDialog({ onClose }: { readonly onClose: () => void })
                             variant="primary"
                             icon="add"
                             pending={add.isPending}
-                            disabled={code.trim() === '' || assetClass === '' || method === ''}
+                            disabled={code.trim() === '' || methodCode === ''}
                             onClick={() => add.mutate()}
                         >
                             {t('refdata.records.add')}
@@ -170,14 +171,14 @@ export function AddTemplateDialog({ onClose }: { readonly onClose: () => void })
                     />
                 </Field>
                 <TemplateFields
-                    assetClass={assetClass}
-                    method={method}
+                    methodCode={methodCode}
+                    assetClassCode={assetClassCode}
                     description={description}
-                    onAssetClass={setAssetClass}
-                    onMethod={setMethod}
+                    onMethod={setMethodCode}
+                    onAssetClass={setAssetClassCode}
                     onDescription={setDescription}
                 />
-                <MethodCode code={methodCodeOf(choices, method)} />
+                <MethodCode code={methodCodeOf(choices, methodCode)} />
                 <p className="text-xs text-ink-faint">{t('sensitivityTemplates.newRecordNote')}</p>
                 {add.isError && <Notice tone="error">{add.error.message}</Notice>}
                 {guard.leaving && <Notice tone="warn">{t('refdata.records.unsaved')}</Notice>}

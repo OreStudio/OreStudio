@@ -25,18 +25,50 @@ import { Field, Input, Select } from '../ui/Primitives.js';
 import { useChoices } from './choices.js';
 
 /**
- * The token ORE writes in a key for one method, or nothing while the choices
- * are still being read. A key carries the token and never the words, so the
- * form states the token rather than asking for it.
+ * Whether the chosen method is one whose templates name an asset class.
+ *
+ * The methods table states it, so the form asks rather than repeating that the
+ * trade-level method is the one ORE defines without a class.
  */
-export function methodCodeOf(
+export function needsAssetClass(
     choices: SensitivityTemplateChoices | undefined,
-    method: string,
-): string {
-    return choices?.methods.find((candidate) => candidate.label === method)?.code ?? '';
+    methodCode: string,
+): boolean {
+    return (
+        choices?.methods.find((candidate) => candidate.code === methodCode)?.needsAssetClass ?? true
+    );
 }
 
-/** The method code the chosen method implies, stated under the form's values. */
+/**
+ * The code a method's words stand for, or empty when no method reads so.
+ *
+ * A history entry states the words a person reads, so restoring a version maps
+ * them back through the same lookup that wrote them.
+ */
+export function codeOfMethodName(
+    choices: SensitivityTemplateChoices | undefined,
+    name: string,
+): string {
+    return choices?.methods.find((candidate) => candidate.name === name)?.code ?? '';
+}
+
+/** The code an asset class's words stand for, or null when no class reads so. */
+export function codeOfAssetClassName(
+    choices: SensitivityTemplateChoices | undefined,
+    name: string,
+): string | null {
+    return choices?.assetClasses.find((candidate) => candidate.name === name)?.code ?? null;
+}
+
+/** The token ORE writes in a key for the chosen method, as the method states it. */
+export function methodCodeOf(
+    choices: SensitivityTemplateChoices | undefined,
+    methodCode: string,
+): string {
+    return choices?.methods.find((candidate) => candidate.code === methodCode)?.code ?? methodCode;
+}
+
+/** The method code the chosen method spells, stated under the form's values. */
 export function MethodCode({ code }: { readonly code: string }): ReactNode {
     const { t } = useTranslation();
     return (
@@ -59,45 +91,68 @@ export function MethodCode({ code }: { readonly code: string }): ReactNode {
 }
 
 /**
- * The values a template states, as every form that changes one draws them: the
- * asset class and the method are each a select over what the table allows,
- * because a row that states anything else is refused by the store.
+ * The values a template states, as every form that changes one draws them.
+ *
+ * Both are selects over what the tables hold: the method by the words a person
+ * reads, and the asset class by its name. A method whose templates name no class
+ * clears the class and holds it closed, so a trade-level template is written
+ * without one rather than refused for carrying one.
  */
 export function TemplateFields({
-    assetClass,
-    method,
+    methodCode,
+    assetClassCode,
     description,
-    onAssetClass,
     onMethod,
+    onAssetClass,
     onDescription,
 }: {
-    readonly assetClass: string;
-    readonly method: string;
+    readonly methodCode: string;
+    /** The chosen class, or empty when the method names none. */
+    readonly assetClassCode: string;
     readonly description: string;
-    readonly onAssetClass: (value: string) => void;
-    readonly onMethod: (value: string) => void;
+    readonly onMethod: (code: string) => void;
+    readonly onAssetClass: (code: string) => void;
     readonly onDescription: (value: string) => void;
 }): ReactNode {
     const { t } = useTranslation();
     const choices = useChoices();
+    const classless = !needsAssetClass(choices, methodCode);
+    const choose = (code: string): void => {
+        onMethod(code);
+        if (!needsAssetClass(choices, code)) {
+            onAssetClass('');
+        }
+    };
+
     return (
         <div className="grid gap-3 sm:grid-cols-2">
-            <Field label={t('sensitivityTemplates.assetClass')}>
-                <Select value={assetClass} onChange={(event) => onAssetClass(event.target.value)}>
-                    {(choices?.assetClasses ?? []).map((code) => (
-                        <option key={code} value={code}>
-                            {code}
+            <Field label={t('sensitivityTemplates.method')}>
+                <Select value={methodCode} onChange={(event) => choose(event.target.value)}>
+                    {(choices?.methods ?? []).map((method) => (
+                        <option key={method.code} value={method.code}>
+                            {method.name}
                         </option>
                     ))}
                 </Select>
             </Field>
-            <Field label={t('sensitivityTemplates.method')}>
-                <Select value={method} onChange={(event) => onMethod(event.target.value)}>
-                    {(choices?.methods ?? []).map((choice) => (
-                        <option key={choice.label} value={choice.label}>
-                            {choice.label}
-                        </option>
-                    ))}
+            <Field
+                label={t('sensitivityTemplates.assetClass')}
+                {...(classless ? { hint: t('sensitivityTemplates.tradeNoClass') } : {})}
+            >
+                <Select
+                    value={classless ? '' : assetClassCode}
+                    disabled={classless}
+                    onChange={(event) => onAssetClass(event.target.value)}
+                >
+                    {classless ? (
+                        <option value="">{t('sensitivityTemplates.noAssetClass')}</option>
+                    ) : (
+                        (choices?.assetClasses ?? []).map((assetClass) => (
+                            <option key={assetClass.code} value={assetClass.code}>
+                                {assetClass.name}
+                            </option>
+                        ))
+                    )}
                 </Select>
             </Field>
             <div className="sm:col-span-2">

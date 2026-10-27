@@ -379,10 +379,32 @@ function vocabularyReads(): Record<string, unknown> {
             templates: [
                 {
                     code: 'IR_FD',
-                    asset_class: 'IR',
-                    method: 'Finite difference',
+                    asset_class_code: 'interest_rates',
                     method_code: 'FD',
                     description: 'Interest rate products priced on a grid.',
+                },
+                {
+                    code: 'SensiTrade',
+                    asset_class_code: null,
+                    method_code: 'Trade',
+                    description: 'The trade states its own sensitivities.',
+                },
+            ],
+        },
+        'analytics.v1.sensitivity_methods.list': {
+            result: ok,
+            methods: [
+                { code: 'FD', name: 'Finite difference', needs_asset_class: true },
+                { code: 'Trade', name: 'Trade level', needs_asset_class: false },
+            ],
+        },
+        'analytics.v1.sensitivity_asset_classes.list': {
+            result: ok,
+            asset_classes: [
+                {
+                    asset_class_code: 'interest_rates',
+                    template_prefix: 'IR',
+                    name: 'Interest rate',
                 },
             ],
         },
@@ -681,7 +703,10 @@ describe('pricing engine routes', () => {
         expect(setting).toMatchObject({
             valueSet: 'sensitivitytemplate',
             sourceKind: 'catalogue',
-            choices: [{ value: 'IR_FD', label: 'IR_FD' }],
+            choices: [
+                { value: 'IR_FD', label: 'IR_FD' },
+                { value: 'SensiTrade', label: 'SensiTrade' },
+            ],
         });
     });
 
@@ -726,12 +751,26 @@ describe('pricing engine routes', () => {
             source: 'ore_guide',
         });
         expect(response.json().methods[0]).toMatchObject({ code: 'Grid' });
-        expect(response.json().templates[0]).toEqual({
-            code: 'IR_FD',
-            assetClass: 'IR',
-            method: 'Finite difference',
-            description: 'Interest rate products priced on a grid.',
-        });
+        // The words come from the two lookups the template names, and a
+        // trade-level key names no class.
+        expect(response.json().templates).toEqual([
+            {
+                code: 'IR_FD',
+                assetClassCode: 'interest_rates',
+                methodCode: 'FD',
+                assetClass: 'Interest rate',
+                method: 'Finite difference',
+                description: 'Interest rate products priced on a grid.',
+            },
+            {
+                code: 'SensiTrade',
+                assetClassCode: '',
+                methodCode: 'Trade',
+                assetClass: '',
+                method: 'Trade level',
+                description: 'The trade states its own sensitivities.',
+            },
+        ]);
     });
 
     it('offers the tenors that are a count of days, weeks, months or years, in order', async () => {

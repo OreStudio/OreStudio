@@ -709,16 +709,18 @@ export type ClassificationRow = z.infer<typeof classificationRowSchema>;
  * One sensitivity template: a key a pricing engine configuration puts on a
  * product with the SensitivityTemplate setting.
  *
- * The key is the code, and it is fixed once the row exists. The method stands
- * in two forms: the words a person reads, and the token ORE spells in the key,
- * such as IR_FD. The shifts a key implies are the sensitivity configuration's
- * and are not part of this record.
+ * The key is the code, and it is fixed once the row exists. The row states two
+ * codes, the method and the class, and the screen reads the words a person reads
+ * and the prefix a key spells from the lookups that hold them. A trade-level
+ * template states no class, so its three class fields are empty.
  */
 export const sensitivityTemplateSchema = z.object({
     code: z.string(),
-    assetClass: z.string(),
-    method: z.string(),
     methodCode: z.string(),
+    methodName: z.string(),
+    assetClassCode: z.string(),
+    assetClassName: z.string(),
+    templatePrefix: z.string(),
     description: z.string(),
     version: z.int().nonnegative(),
     modifiedBy: z.string(),
@@ -730,10 +732,19 @@ export const sensitivityTemplateSchema = z.object({
 
 export type SensitivityTemplate = z.infer<typeof sensitivityTemplateSchema>;
 
-/** The values a template states: an asset class, and a method with its token. */
+/**
+ * The two lookups a template states, in the order the screen offers them.
+ *
+ * The class is the reference data's code with the prefix ORE spells in a key;
+ * the two are not the same word, so both are stated. A method says whether the
+ * templates that state it also state a class, which is how the form knows to
+ * clear and disable the class for a trade-level template.
+ */
 export const sensitivityTemplateChoicesSchema = z.object({
-    assetClasses: z.array(z.string()),
-    methods: z.array(z.object({ label: z.string(), code: z.string() })),
+    assetClasses: z.array(z.object({ code: z.string(), prefix: z.string(), name: z.string() })),
+    methods: z.array(
+        z.object({ code: z.string(), name: z.string(), needsAssetClass: z.boolean() }),
+    ),
 });
 
 export type SensitivityTemplateChoices = z.infer<typeof sensitivityTemplateChoicesSchema>;

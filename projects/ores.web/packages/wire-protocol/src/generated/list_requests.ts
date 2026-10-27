@@ -195,6 +195,26 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'analytics.v1.sensitivity_asset_classes.list': {
+        asOf: true,
+        filter: ['asset_class_code_one_of'],
+        rows: ['asset_classes'],
+    },
+    'analytics.v1.sensitivity_asset_classes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'analytics.v1.sensitivity_methods.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['methods'],
+    },
+    'analytics.v1.sensitivity_methods_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'analytics.v1.sensitivity_templates.list': {
         asOf: true,
         filter: ['code_one_of', 'search'],

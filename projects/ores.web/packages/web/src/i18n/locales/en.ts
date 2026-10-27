@@ -5133,14 +5133,21 @@ export const en: SourceCatalogue = {
         code: 'Code',
         codeHelp: 'The key ORE reads, such as IR_FD. It is set once and never changed.',
         assetClass: 'Asset class',
+        assetClassHelp:
+            'The class of the products that carry the key, and not the keys its shifts reach.',
         method: 'Method',
         methodCode: 'Method code',
-        methodCodeHelp: 'The token ORE writes in a key. It follows from the method.',
+        methodCodeHelp: 'The token ORE writes in a key, which the method states.',
+        templatePrefix: 'Template prefix',
+        templatePrefixHelp: 'The prefix ORE spells in the key for this asset class.',
+        noAssetClass: 'None',
+        tradeNoClass:
+            'A trade-level template names no asset class, because the trade states its own sensitivities.',
         description: 'Description',
         add: 'New template',
         addTitle: 'Add a sensitivity template',
         decides:
-            'It names a key a pricing engine configuration puts on a product. The shift sizes a key implies are set by the sensitivity configuration, not here.',
+            'It names a key a pricing engine configuration puts on a product. The class is the class of that product, and the shift sizes the key applies are set per market key in the sensitivity configuration, which may set them on market keys outside that class.',
         newRecordNote:
             'A new template is recorded as a new record, and its history starts with that write.',
         readerOnly: 'Changing a template needs the permission to change sensitivity templates.',

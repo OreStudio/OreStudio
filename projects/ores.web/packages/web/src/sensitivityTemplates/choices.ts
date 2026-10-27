@@ -30,9 +30,10 @@ export const ENTITY_TYPE = 'ores.analytics.sensitivity_template';
 export const TEMPLATES_KEY = ['sensitivity-templates'] as const;
 
 /**
- * The values a template states: the six asset classes and the five methods,
- * each with the token ORE writes in a key. The table checks the pair, so the
- * screen reads the pair rather than repeating it.
+ * The two lookups a template states: the methods, each with the words a person
+ * reads and whether it needs an asset class, and the asset classes, each with
+ * the prefix a key spells and the words a person reads. Both come from the
+ * tables that hold them, so the form offers what the store holds.
  */
 export function useChoices(): SensitivityTemplateChoices | undefined {
     return useQuery({

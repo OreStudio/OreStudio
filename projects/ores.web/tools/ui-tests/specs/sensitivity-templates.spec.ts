@@ -102,17 +102,23 @@ test('the list shows the seeded templates and the run adds, corrects and removes
     const adding = page.getByRole('dialog');
     await expect(adding).toBeVisible();
     await adding.getByLabel('Code').fill(TEMPLATE);
-    await adding.getByLabel('Asset class').selectOption('IR');
-    await adding.getByLabel('Method').selectOption('Finite difference');
-    // The token follows from the method, and is stated rather than typed.
+    await adding.getByLabel('Method').selectOption('FD');
+    await adding.getByLabel('Asset class').selectOption('interest_rates');
+    // The method states the token ORE writes in a key; it is not a field.
     await expect(adding).toContainText('FD');
+    await expect(adding.getByLabel('Method')).toHaveValue('FD');
+    await expect(adding.getByLabel('Asset class')).toHaveValue('interest_rates');
     await adding.getByLabel('Description').fill(DESCRIPTION);
     await page.screenshot({ path: `${SHOTS}/04-add-dialog.png`, fullPage: true });
     await adding.getByRole('button', { name: 'Add', exact: true }).click();
 
     // The new key's page opens, and it states what it does not decide.
     await expect(page.getByRole('heading', { name: TEMPLATE })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText(/The shift sizes a key implies are set by/)).toBeVisible();
+    await expect(
+        page.getByText(/set per market key in the sensitivity configuration/),
+    ).toBeVisible();
+    await expect(page.getByText('Interest rate')).toBeVisible();
+    await expect(page.getByText('Finite difference')).toBeVisible();
     await expect(page.getByText(DESCRIPTION)).toBeVisible();
     await page.screenshot({ path: `${SHOTS}/05-record.png`, fullPage: true });
 
@@ -150,10 +156,24 @@ test('the list shows the seeded templates and the run adds, corrects and removes
     await expect(page.getByRole('cell', { name: TEMPLATE, exact: true })).toHaveCount(0);
     await page.screenshot({ path: `${SHOTS}/09-list-after-delete.png`, fullPage: true });
 
+    // A trade-level template names no asset class: choosing the method clears
+    // the class and holds it closed, so the write carries none.
+    await page.getByRole('button', { name: 'New template' }).click();
+    const tradeLevel = page.getByRole('dialog');
+    await expect(tradeLevel).toBeVisible();
+    await tradeLevel.getByLabel('Method').selectOption('Trade');
+    await expect(tradeLevel.getByLabel('Asset class')).toBeDisabled();
+    await expect(tradeLevel.getByLabel('Asset class')).toHaveValue('');
+    await expect(tradeLevel.getByText('A trade-level template names no asset class')).toBeVisible();
+    await page.screenshot({ path: `${SHOTS}/11-trade-level.png`, fullPage: true });
+    await tradeLevel.getByRole('button', { name: 'Cancel' }).click();
+    await expect(tradeLevel).toBeHidden();
+
     // None of the seeded keys moved: every one still answers, and its words are
     // the words it was seeded with.
     await page.getByRole('searchbox').fill('IR_FD');
     await expect(page.getByRole('cell', { name: 'IR_FD', exact: true })).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'Interest rate', exact: true })).toBeVisible();
     await expect(page.getByText(/Bermudan swaptions/)).toBeVisible();
     await page.getByRole('cell', { name: 'IR_FD', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'IR_FD' })).toBeVisible();

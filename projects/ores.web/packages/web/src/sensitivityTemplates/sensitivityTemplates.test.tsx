@@ -46,22 +46,37 @@ import { SensitivityTemplatesPage, AddTemplateDialog } from './SensitivityTempla
  */
 
 const CHOICES: SensitivityTemplateChoices = {
-    assetClasses: ['IR', 'FX', 'EQ', 'COMM', 'CR', 'ALL'],
+    assetClasses: [
+        { code: 'interest_rates', prefix: 'IR', name: 'Interest rate' },
+        { code: 'fx', prefix: 'FX', name: 'Foreign exchange' },
+        { code: 'equity', prefix: 'EQ', name: 'Equity' },
+        { code: 'commodity', prefix: 'COMM', name: 'Commodity' },
+        { code: 'credit', prefix: 'CR', name: 'Credit' },
+    ],
     methods: [
-        { label: 'Analytical', code: 'Analytical' },
-        { label: 'Semianalytical', code: 'Semianalytical' },
-        { label: 'Finite difference', code: 'FD' },
-        { label: 'Monte Carlo', code: 'MC' },
-        { label: 'Trade level', code: 'Trade' },
+        { code: 'Analytical', name: 'Analytical', needsAssetClass: true },
+        { code: 'Semianalytical', name: 'Semianalytical', needsAssetClass: true },
+        { code: 'FD', name: 'Finite difference', needsAssetClass: true },
+        { code: 'MC', name: 'Monte Carlo', needsAssetClass: true },
+        { code: 'Trade', name: 'Trade level', needsAssetClass: false },
     ],
 };
 
-function template(code: string, assetClass: string, method: string, methodCode: string) {
+function template(
+    code: string,
+    assetClassCode: string,
+    assetClassName: string,
+    templatePrefix: string,
+    methodCode: string,
+    methodName: string,
+) {
     return {
         code,
-        assetClass,
-        method,
         methodCode,
+        methodName,
+        assetClassCode,
+        assetClassName,
+        templatePrefix,
         description: `${code} explained`,
         version: 2,
         modifiedBy: 'priya',
@@ -162,8 +177,9 @@ function renderDialog(dialog: React.ReactNode, seed?: (client: QueryClient) => v
 
 describe('the sensitivity template list', () => {
     const rows = [
-        template('IR_FD', 'IR', 'Finite difference', 'FD'),
-        template('EQ_MC', 'EQ', 'Monte Carlo', 'MC'),
+        template('IR_FD', 'interest_rates', 'Interest rate', 'IR', 'FD', 'Finite difference'),
+        template('EQ_MC', 'equity', 'Equity', 'EQ', 'MC', 'Monte Carlo'),
+        template('SensiTrade', '', '', '', 'Trade', 'Trade level'),
     ];
 
     it('names the four columns and finds every key through the server', () => {
@@ -180,7 +196,7 @@ describe('the sensitivity template list', () => {
         expect(html).toContain('Finite difference');
         expect(html).toContain('EQ_MC explained');
         expect(html).toContain('Search…');
-        expect(html).toContain('1–2 of 2');
+        expect(html).toContain('1–3 of 3');
     });
 
     it('offers a writer the New template action', () => {
@@ -203,7 +219,14 @@ describe('the sensitivity template list', () => {
 });
 
 describe('one sensitivity template', () => {
-    const row = template('IR_FD', 'IR', 'Finite difference', 'FD');
+    const row = template(
+        'IR_FD',
+        'interest_rates',
+        'Interest rate',
+        'IR',
+        'FD',
+        'Finite difference',
+    );
 
     it('opens on its details, which say what it decides and what it does not', () => {
         const html = render('/reporting/sensitivity-templates/IR_FD', (client) => {
@@ -221,7 +244,7 @@ describe('one sensitivity template', () => {
         expect(html).toContain('FD');
         expect(html).toContain('IR_FD explained');
         expect(textOf(html)).toContain(
-            'It names a key a pricing engine configuration puts on a product. The shift sizes a key implies are set by the sensitivity configuration, not here.',
+            'It names a key a pricing engine configuration puts on a product. The class is the class of that product, and the shift sizes the key applies are set per market key in the sensitivity configuration, which may set them on market keys outside that class.',
         );
         expect(html).toContain('Last changed');
         expect(html).toContain('common.rectification');
@@ -257,30 +280,39 @@ describe('one sensitivity template', () => {
 });
 
 describe('the form that changes a template', () => {
-    const row = template('IR_FD', 'IR', 'Finite difference', 'FD');
+    const row = template(
+        'IR_FD',
+        'interest_rates',
+        'Interest rate',
+        'IR',
+        'FD',
+        'Finite difference',
+    );
 
-    it('draws the asset class and the method as selects of what the table allows', () => {
+    it('draws the method and the asset class as selects of what the tables hold', () => {
         const html = renderDialog(<EditTemplateDialog template={row} onClose={() => undefined} />);
         expect(html).toContain('Edit IR_FD');
-        // The two selects, each over the six asset classes and the five methods.
-        expect(html).toContain('<select');
         for (const assetClass of CHOICES.assetClasses) {
-            expect(html).toContain(`<option value="${assetClass}"`);
+            expect(html).toContain(`<option value="${assetClass.code}"`);
         }
         for (const method of CHOICES.methods) {
-            expect(html).toContain(`<option value="${method.label}"`);
+            expect(html).toContain(`<option value="${method.code}"`);
         }
-        expect(html).toContain('<option value="IR" selected="">');
-        expect(html).toContain('<option value="Finite difference" selected="">');
+        // The two selects stand on the codes the row states, and show the words
+        // the lookups read for them.
+        expect(html).toContain('<option value="interest_rates" selected="">');
+        expect(html).toContain('<option value="FD" selected="">');
+        expect(html).toContain('Interest rate');
+        expect(html).toContain('Finite difference');
     });
 
-    it('states the method code the chosen method implies, and never asks for it', () => {
+    it('states the method code the chosen method spells, and never asks for it', () => {
         const html = renderDialog(<EditTemplateDialog template={row} onClose={() => undefined} />);
         expect(textOf(html)).toContain('Method code');
         expect(html).toContain('FD');
-        expect(html).toContain('The token ORE writes in a key. It follows from the method.');
+        expect(html).toContain('The token ORE writes in a key, which the method states.');
         // Neither the key nor its token is a field: the form's selects are the
-        // asset class, the method and the change reason, and its two inputs the
+        // method, the asset class and the change reason, and its two inputs the
         // description and the commentary (RS-WRITE-01, RS-WRITE-07).
         expect(html.match(/<select/g) ?? []).toHaveLength(3);
         expect(html.match(/<input/g) ?? []).toHaveLength(2);
@@ -292,13 +324,28 @@ describe('the form that changes a template', () => {
         expect(html).toContain('>IR_FD</p>');
     });
 
-    it('adds a key by stating it once, with the method code its method implies', () => {
+    it('adds a key by stating it once, with the method and the class it names', () => {
         const html = renderDialog(<AddTemplateDialog onClose={() => undefined} />);
         expect(html).toContain('Add a sensitivity template');
         expect(textOf(html)).toContain('The key ORE reads, such as IR_FD.');
-        // The method a new template opens on, and the token it implies.
+        // The method a new template opens on, and the token it spells.
         expect(html).toContain('<option value="Analytical" selected="">');
         expect(textOf(html)).toContain('Analytical');
         expect(textOf(html)).toContain('A new template is recorded as a new record');
+    });
+
+    it('names no class for a trade-level template, and holds the class closed', () => {
+        const trade = template('SensiTrade', '', '', '', 'Trade', 'Trade level');
+        const html = renderDialog(
+            <EditTemplateDialog template={trade} onClose={() => undefined} />,
+        );
+        // The select stands closed on the words that say there is no class, and
+        // the form says why rather than leaving the person to guess.
+        expect(html).toContain(
+            'A trade-level template names no asset class, because the trade states its own sensitivities.',
+        );
+        expect(html).toMatch(/<select[^>]*disabled=""/);
+        expect(html).toContain('>None</option>');
+        expect(html).toContain('<option value="" selected="">');
     });
 });

@@ -31,9 +31,10 @@ import { loadSiteConfiguration, SITE_CONFIG_VARIABLE } from './site-config.js';
  * The sensitivity template routes.
  *
  * What is checked is what the routes promise a screen: the page comes from the
- * server with its total and its search, one key is read by its code, a write
- * carries the change reason and derives the method's token, a create refused
- * for a code the tenant holds says so, and a removal states what it removed.
+ * server with its total and its search, each key reads as the words its two
+ * lookups hold, a write states the two codes the person chose, a create refused
+ * for a code the tenant holds says so, and a pair the tables refuse is refused
+ * before it reaches them.
  */
 
 const config: Config = {
@@ -66,6 +67,68 @@ const GET = 'analytics.v1.sensitivity_templates.get';
 const PUT = 'analytics.v1.sensitivity_templates.put';
 const DELETE = 'analytics.v1.sensitivity_templates.delete';
 const HISTORY = 'analytics.v1.history.get';
+const METHODS = 'analytics.v1.sensitivity_methods.list';
+const CLASSES = 'analytics.v1.sensitivity_asset_classes.list';
+
+/** The methods table, as the analytics service answers it. */
+function methods(): Record<string, unknown> {
+    return {
+        result: ok,
+        total: 6,
+        methods: [
+            {
+                version: 1,
+                code: 'Trade',
+                name: 'Trade level',
+                needs_asset_class: false,
+                display_order: 5,
+            },
+            {
+                version: 1,
+                code: 'FD',
+                name: 'Finite difference',
+                needs_asset_class: true,
+                display_order: 3,
+            },
+            {
+                version: 1,
+                code: 'Analytical',
+                name: 'Analytical',
+                needs_asset_class: true,
+                display_order: 1,
+            },
+        ],
+    };
+}
+
+/** The bridge table, as the analytics service answers it. */
+function assetClasses(): Record<string, unknown> {
+    return {
+        result: ok,
+        total: 3,
+        asset_classes: [
+            {
+                version: 1,
+                asset_class_code: 'commodity',
+                template_prefix: 'COMM',
+                name: 'Commodity',
+                display_order: 4,
+            },
+            {
+                version: 1,
+                asset_class_code: 'interest_rates',
+                template_prefix: 'IR',
+                name: 'Interest rate',
+                display_order: 1,
+            },
+        ],
+    };
+}
+
+/** The two reads every route that answers a template makes. */
+function lookups(): Record<string, unknown> {
+    return { [METHODS]: methods(), [CLASSES]: assetClasses() };
+}
 
 function buildTestServer(replies: Readonly<Record<string, unknown>>): {
     readonly server: ReturnType<typeof buildServer>;
@@ -135,8 +198,7 @@ function send(
 /** One stored row, in the server's own field names. */
 function stored(
     code: string,
-    assetClass: string,
-    method: string,
+    assetClassCode: string | null,
     methodCode: string,
     description = `${code} explained`,
 ): Record<string, unknown> {
@@ -144,9 +206,8 @@ function stored(
         version: 2,
         tenant_id: '44444444-4444-4444-4444-444444444444',
         code,
-        asset_class: assetClass,
-        method,
         method_code: methodCode,
+        asset_class_code: assetClassCode,
         description,
         modified_by: 'priya',
         performed_by: 'ores_analytics_service',
@@ -159,12 +220,13 @@ function stored(
 const reason = { reasonCode: 'common.rectification', commentary: 'Tidy up' };
 
 describe('GET /api/analytics/sensitivity-templates', () => {
-    it('answers one page of the tenant keys with the server total', async () => {
+    it('answers one page of the tenant keys with the server total and the names', async () => {
         const { server, sessionId, calls } = buildTestServer({
+            ...lookups(),
             [LIST]: {
                 result: ok,
                 total: 19,
-                templates: [stored('IR_FD', 'IR', 'Finite difference', 'FD')],
+                templates: [stored('IR_FD', 'interest_rates', 'FD')],
             },
         });
         const response = await send(
@@ -178,9 +240,11 @@ describe('GET /api/analytics/sensitivity-templates', () => {
             rows: [
                 {
                     code: 'IR_FD',
-                    assetClass: 'IR',
-                    method: 'Finite difference',
                     methodCode: 'FD',
+                    methodName: 'Finite difference',
+                    assetClassCode: 'interest_rates',
+                    assetClassName: 'Interest rate',
+                    templatePrefix: 'IR',
                     description: 'IR_FD explained',
                     version: 2,
                     modifiedBy: 'priya',
@@ -192,36 +256,63 @@ describe('GET /api/analytics/sensitivity-templates', () => {
             ],
             total: 19,
         });
-        expect(calls[0]).toEqual({
-            subject: LIST,
-            body: {
-                offset: 15,
-                limit: 15,
-                order: { field: '', descending: false },
-                filter: { code_one_of: null, search: null },
-                as_of: null,
+        expect(calls.find((call) => call.subject === LIST)?.body).toEqual({
+            offset: 15,
+            limit: 15,
+            order: { field: '', descending: false },
+            filter: { code_one_of: null, search: null },
+            as_of: null,
+        });
+    });
+
+    it('reads a trade-level key with no class', async () => {
+        const { server, sessionId } = buildTestServer({
+            ...lookups(),
+            [LIST]: {
+                result: ok,
+                total: 1,
+                templates: [stored('SensiTrade', null, 'Trade')],
             },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/analytics/sensitivity-templates',
+        );
+        expect(response.json()).toMatchObject({
+            rows: [
+                {
+                    code: 'SensiTrade',
+                    methodName: 'Trade level',
+                    assetClassCode: '',
+                    assetClassName: '',
+                    templatePrefix: '',
+                },
+            ],
         });
     });
 
     it('sends the search and the order to the server', async () => {
         const { server, sessionId, calls } = buildTestServer({
+            ...lookups(),
             [LIST]: { result: ok, total: 0, templates: [] },
         });
         await send(
             server,
             sessionId,
             'GET',
-            '/api/analytics/sensitivity-templates?search=MC&sort=method&descending=true',
+            '/api/analytics/sensitivity-templates?search=MC&sort=description&descending=true',
         );
-        expect(calls[0]?.body).toMatchObject({
+        expect(calls.find((call) => call.subject === LIST)?.body).toMatchObject({
             filter: { code_one_of: null, search: 'MC' },
-            order: { field: 'method', descending: true },
+            order: { field: 'description', descending: true },
         });
     });
 
     it('says why the server refused the read', async () => {
         const { server, sessionId } = buildTestServer({
+            ...lookups(),
             [LIST]: {
                 result: {
                     outcome: 'invalid',
@@ -250,25 +341,84 @@ describe('GET /api/analytics/sensitivity-templates', () => {
     });
 });
 
-describe('GET /api/analytics/sensitivity-templates/:code', () => {
-    it('answers one key', async () => {
+describe('GET /api/analytics/sensitivity-templates/choices', () => {
+    it('answers the two lookups in the order the screen offers them', async () => {
+        const { server, sessionId, calls } = buildTestServer(lookups());
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/analytics/sensitivity-templates/choices',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({
+            assetClasses: [
+                { code: 'interest_rates', prefix: 'IR', name: 'Interest rate' },
+                { code: 'commodity', prefix: 'COMM', name: 'Commodity' },
+            ],
+            methods: [
+                { code: 'Analytical', name: 'Analytical', needsAssetClass: true },
+                { code: 'FD', name: 'Finite difference', needsAssetClass: true },
+                { code: 'Trade', name: 'Trade level', needsAssetClass: false },
+            ],
+        });
+        expect(calls.map((call) => call.subject)).toEqual([METHODS, CLASSES]);
+        expect(calls[0]?.body).toEqual({
+            filter: null,
+            as_of: null,
+            offset: 0,
+            limit: 1000,
+            order: { field: '', descending: false },
+        });
+    });
+
+    it('says why the server refused a lookup read', async () => {
         const { server, sessionId } = buildTestServer({
-            [GET]: { result: ok, sensitivity_template: stored('EQ_MC', 'EQ', 'Monte Carlo', 'MC') },
+            [METHODS]: {
+                result: { outcome: 'denied', code: '', message: 'You may not read the methods.' },
+            },
+            [CLASSES]: assetClasses(),
         });
         const response = await send(
             server,
             sessionId,
             'GET',
-            '/api/analytics/sensitivity-templates/EQ_MC',
+            '/api/analytics/sensitivity-templates/choices',
+        );
+        expect(response.statusCode).toBe(403);
+        expect(response.json()).toMatchObject({ message: 'You may not read the methods.' });
+    });
+});
+
+describe('GET /api/analytics/sensitivity-templates/:code', () => {
+    it('answers one key', async () => {
+        const { server, sessionId } = buildTestServer({
+            ...lookups(),
+            [GET]: { result: ok, sensitivity_template: stored('EQ_FD', 'equity', 'FD') },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/analytics/sensitivity-templates/EQ_FD',
         );
         expect(response.statusCode).toBe(200);
         expect(response.json()).toMatchObject({
-            template: { code: 'EQ_MC', assetClass: 'EQ', methodCode: 'MC' },
+            template: {
+                code: 'EQ_FD',
+                methodName: 'Finite difference',
+                // A class the bridge does not present reads as its own code,
+                // so a gap shows rather than a blank.
+                assetClassCode: 'equity',
+                assetClassName: 'equity',
+                templatePrefix: '',
+            },
         });
     });
 
     it('answers 404 for a code the tenant does not hold', async () => {
         const { server, sessionId } = buildTestServer({
+            ...lookups(),
             [GET]: {
                 result: {
                     outcome: 'missing',
@@ -291,6 +441,7 @@ describe('GET /api/analytics/sensitivity-templates/:code', () => {
 
     it('answers 404 for a row the service answered with no key', async () => {
         const { server, sessionId } = buildTestServer({
+            ...lookups(),
             [GET]: { result: ok, sensitivity_template: null },
         });
         const response = await send(
@@ -304,17 +455,12 @@ describe('GET /api/analytics/sensitivity-templates/:code', () => {
 });
 
 describe('POST /api/analytics/sensitivity-templates', () => {
-    it('writes a new key with the reason and the token its method implies', async () => {
+    it('writes a new key with the reason and the two codes the person chose', async () => {
         const { server, sessionId, calls } = buildTestServer({
+            ...lookups(),
             [PUT]: {
                 result: ok,
-                sensitivity_template: stored(
-                    'IR_Grid',
-                    'IR',
-                    'Finite difference',
-                    'FD',
-                    'Grid keys',
-                ),
+                sensitivity_template: stored('IR_Grid', 'interest_rates', 'FD', 'Grid keys'),
             },
         });
         const response = await send(
@@ -324,36 +470,58 @@ describe('POST /api/analytics/sensitivity-templates', () => {
             '/api/analytics/sensitivity-templates',
             {
                 code: 'IR_Grid',
-                assetClass: 'IR',
-                method: 'Finite difference',
+                methodCode: 'FD',
+                assetClassCode: 'interest_rates',
                 description: 'Grid keys',
                 ...reason,
             },
         );
         expect(response.statusCode).toBe(201);
         expect(response.json()).toMatchObject({
-            template: { code: 'IR_Grid', methodCode: 'FD', reasonCode: 'common.rectification' },
+            template: { code: 'IR_Grid', methodName: 'Finite difference', templatePrefix: 'IR' },
         });
-        expect(calls[0]).toEqual({
-            subject: PUT,
-            body: {
-                change: {
-                    write: {
-                        code: 'IR_Grid',
-                        asset_class: 'IR',
-                        method: 'Finite difference',
-                        method_code: 'FD',
-                        description: 'Grid keys',
-                    },
-                    precondition: { kind: 'must_not_exist', version: null },
+        expect(calls.find((call) => call.subject === PUT)?.body).toEqual({
+            change: {
+                write: {
+                    code: 'IR_Grid',
+                    method_code: 'FD',
+                    asset_class_code: 'interest_rates',
+                    description: 'Grid keys',
                 },
-                intent: { reason_code: 'common.rectification', commentary: 'Tidy up' },
+                precondition: { kind: 'must_not_exist', version: null },
+            },
+            intent: { reason_code: 'common.rectification', commentary: 'Tidy up' },
+        });
+    });
+
+    it('writes a trade-level key, which states no class', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            ...lookups(),
+            [PUT]: { result: ok, sensitivity_template: stored('ACME_Trade', null, 'Trade') },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/analytics/sensitivity-templates',
+            {
+                code: 'ACME_Trade',
+                methodCode: 'Trade',
+                description: 'The trade states its own sensitivities.',
+                ...reason,
+            },
+        );
+        expect(response.statusCode).toBe(201);
+        expect(calls.find((call) => call.subject === PUT)?.body).toMatchObject({
+            change: {
+                write: { code: 'ACME_Trade', method_code: 'Trade', asset_class_code: null },
             },
         });
     });
 
     it('refuses a code the tenant already holds, naming it', async () => {
         const { server, sessionId } = buildTestServer({
+            ...lookups(),
             [PUT]: {
                 result: {
                     outcome: 'conflict',
@@ -369,8 +537,8 @@ describe('POST /api/analytics/sensitivity-templates', () => {
             '/api/analytics/sensitivity-templates',
             {
                 code: 'IR_FD',
-                assetClass: 'IR',
-                method: 'Finite difference',
+                methodCode: 'FD',
+                assetClassCode: 'interest_rates',
                 ...reason,
             },
         );
@@ -381,8 +549,8 @@ describe('POST /api/analytics/sensitivity-templates', () => {
         });
     });
 
-    it('refuses a method the table does not allow, before the write', async () => {
-        const { server, sessionId, calls } = buildTestServer({});
+    it('refuses a method the store does not hold, before the write', async () => {
+        const { server, sessionId, calls } = buildTestServer(lookups());
         const response = await send(
             server,
             sessionId,
@@ -390,37 +558,62 @@ describe('POST /api/analytics/sensitivity-templates', () => {
             '/api/analytics/sensitivity-templates',
             {
                 code: 'IR_Bespoke',
-                assetClass: 'IR',
-                method: 'Bespoke',
+                methodCode: 'Bespoke',
+                assetClassCode: 'interest_rates',
                 ...reason,
             },
         );
         expect(response.statusCode).toBe(400);
         expect(response.json()).toMatchObject({
-            message: expect.stringContaining('Bespoke is not a method'),
+            message: expect.stringContaining('Bespoke is not a method a template may state'),
         });
-        expect(calls).toHaveLength(0);
+        expect(calls.some((call) => call.subject === PUT)).toBe(false);
     });
 
-    it('refuses an asset class the table does not allow', async () => {
-        const { server, sessionId } = buildTestServer({});
+    it('refuses a class on a trade-level template, before the write', async () => {
+        const { server, sessionId, calls } = buildTestServer(lookups());
         const response = await send(
             server,
             sessionId,
             'POST',
             '/api/analytics/sensitivity-templates',
             {
-                code: 'XX_FD',
-                assetClass: 'XX',
-                method: 'Finite difference',
+                code: 'ACME_Trade',
+                methodCode: 'Trade',
+                assetClassCode: 'interest_rates',
                 ...reason,
             },
         );
         expect(response.statusCode).toBe(400);
+        expect(response.json()).toMatchObject({
+            message: 'A Trade level template states no asset class.',
+        });
+        expect(calls.some((call) => call.subject === PUT)).toBe(false);
+    });
+
+    it('refuses a method that needs a class without one', async () => {
+        const { server, sessionId, calls } = buildTestServer(lookups());
+        const response = await send(
+            server,
+            sessionId,
+            'POST',
+            '/api/analytics/sensitivity-templates',
+            {
+                code: 'IR_NoClass',
+                methodCode: 'FD',
+                ...reason,
+            },
+        );
+        expect(response.statusCode).toBe(400);
+        expect(response.json()).toMatchObject({
+            message:
+                'A Finite difference template states the asset class of the product it belongs to.',
+        });
+        expect(calls.some((call) => call.subject === PUT)).toBe(false);
     });
 
     it('refuses a create that carries no reason', async () => {
-        const { server, sessionId } = buildTestServer({});
+        const { server, sessionId } = buildTestServer(lookups());
         const response = await send(
             server,
             sessionId,
@@ -428,8 +621,8 @@ describe('POST /api/analytics/sensitivity-templates', () => {
             '/api/analytics/sensitivity-templates',
             {
                 code: 'IR_Grid',
-                assetClass: 'IR',
-                method: 'Finite difference',
+                methodCode: 'FD',
+                assetClassCode: 'interest_rates',
             },
         );
         expect(response.statusCode).toBe(400);
@@ -439,9 +632,10 @@ describe('POST /api/analytics/sensitivity-templates', () => {
 describe('PUT /api/analytics/sensitivity-templates/:code', () => {
     it('corrects a key against the version read, with the reason', async () => {
         const { server, sessionId, calls } = buildTestServer({
+            ...lookups(),
             [PUT]: {
                 result: ok,
-                sensitivity_template: stored('IR_FD', 'IR', 'Monte Carlo', 'MC', 'Corrected'),
+                sensitivity_template: stored('IR_FD', 'commodity', 'FD', 'Corrected'),
             },
         });
         const response = await send(
@@ -450,18 +644,20 @@ describe('PUT /api/analytics/sensitivity-templates/:code', () => {
             'PUT',
             '/api/analytics/sensitivity-templates/IR_FD',
             {
-                assetClass: 'IR',
-                method: 'Monte Carlo',
+                methodCode: 'FD',
+                assetClassCode: 'commodity',
                 description: 'Corrected',
                 version: 2,
                 ...reason,
             },
         );
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toMatchObject({ template: { methodCode: 'MC' } });
-        expect(calls[0]?.body).toMatchObject({
+        expect(response.json()).toMatchObject({
+            template: { methodName: 'Finite difference', templatePrefix: 'COMM' },
+        });
+        expect(calls.find((call) => call.subject === PUT)?.body).toMatchObject({
             change: {
-                write: { code: 'IR_FD', method_code: 'MC' },
+                write: { code: 'IR_FD', method_code: 'FD', asset_class_code: 'commodity' },
                 precondition: { kind: 'must_match_version', version: 2 },
             },
         });
@@ -469,6 +665,7 @@ describe('PUT /api/analytics/sensitivity-templates/:code', () => {
 
     it('refuses a code the tenant does not hold', async () => {
         const { server, sessionId } = buildTestServer({
+            ...lookups(),
             [PUT]: {
                 result: {
                     outcome: 'missing',
@@ -483,8 +680,8 @@ describe('PUT /api/analytics/sensitivity-templates/:code', () => {
             'PUT',
             '/api/analytics/sensitivity-templates/NOPE',
             {
-                assetClass: 'IR',
-                method: 'Monte Carlo',
+                methodCode: 'FD',
+                assetClassCode: 'commodity',
                 description: '',
                 version: 1,
                 ...reason,
@@ -495,6 +692,7 @@ describe('PUT /api/analytics/sensitivity-templates/:code', () => {
 
     it('refuses a row that changed since it was read', async () => {
         const { server, sessionId } = buildTestServer({
+            ...lookups(),
             [PUT]: {
                 result: {
                     outcome: 'conflict',
@@ -509,8 +707,8 @@ describe('PUT /api/analytics/sensitivity-templates/:code', () => {
             'PUT',
             '/api/analytics/sensitivity-templates/IR_FD',
             {
-                assetClass: 'IR',
-                method: 'Monte Carlo',
+                methodCode: 'FD',
+                assetClassCode: 'commodity',
                 description: '',
                 version: 2,
                 ...reason,
@@ -521,13 +719,13 @@ describe('PUT /api/analytics/sensitivity-templates/:code', () => {
     });
 
     it('refuses a correction that states no version', async () => {
-        const { server, sessionId } = buildTestServer({});
+        const { server, sessionId } = buildTestServer(lookups());
         const response = await send(
             server,
             sessionId,
             'PUT',
             '/api/analytics/sensitivity-templates/IR_FD',
-            { assetClass: 'IR', method: 'Monte Carlo', ...reason },
+            { methodCode: 'FD', assetClassCode: 'commodity', ...reason },
         );
         expect(response.statusCode).toBe(400);
     });
@@ -536,10 +734,8 @@ describe('PUT /api/analytics/sensitivity-templates/:code', () => {
 describe('DELETE /api/analytics/sensitivity-templates/:code', () => {
     it('states what it removed', async () => {
         const { server, sessionId, calls } = buildTestServer({
-            [GET]: {
-                result: ok,
-                sensitivity_template: stored('IR_FD', 'IR', 'Finite difference', 'FD'),
-            },
+            ...lookups(),
+            [GET]: { result: ok, sensitivity_template: stored('IR_FD', 'interest_rates', 'FD') },
             [DELETE]: { result: ok },
         });
         const response = await send(
@@ -551,22 +747,25 @@ describe('DELETE /api/analytics/sensitivity-templates/:code', () => {
         );
         expect(response.statusCode).toBe(200);
         expect(response.json()).toMatchObject({
-            removed: { code: 'IR_FD', method: 'Finite difference', methodCode: 'FD', version: 2 },
-        });
-        expect(calls[1]).toEqual({
-            subject: DELETE,
-            body: {
-                removal: {
-                    key: { code: 'IR_FD' },
-                    precondition: { kind: 'must_match_version', version: 2 },
-                },
-                intent: { reason_code: 'common.rectification', commentary: 'Tidy up' },
+            removed: {
+                code: 'IR_FD',
+                methodName: 'Finite difference',
+                assetClassName: 'Interest rate',
+                version: 2,
             },
+        });
+        expect(calls.find((call) => call.subject === DELETE)?.body).toEqual({
+            removal: {
+                key: { code: 'IR_FD' },
+                precondition: { kind: 'must_match_version', version: 2 },
+            },
+            intent: { reason_code: 'common.rectification', commentary: 'Tidy up' },
         });
     });
 
     it('refuses a removal of a key the tenant does not hold', async () => {
         const { server, sessionId } = buildTestServer({
+            ...lookups(),
             [GET]: { result: ok, sensitivity_template: null },
         });
         const response = await send(
@@ -581,10 +780,8 @@ describe('DELETE /api/analytics/sensitivity-templates/:code', () => {
 
     it('refuses a removal the server rejected as stale', async () => {
         const { server, sessionId } = buildTestServer({
-            [GET]: {
-                result: ok,
-                sensitivity_template: stored('IR_FD', 'IR', 'Finite difference', 'FD'),
-            },
+            ...lookups(),
+            [GET]: { result: ok, sensitivity_template: stored('IR_FD', 'interest_rates', 'FD') },
             [DELETE]: {
                 result: {
                     outcome: 'conflict',
@@ -672,28 +869,5 @@ describe('GET /api/analytics/sensitivity-templates/:code/history', () => {
         // the generic history route answers too, so a screen receives the same.
         expect(response.statusCode).toBe(409);
         expect(response.json()).toMatchObject({ message: 'No history is served.' });
-    });
-});
-
-describe('GET /api/analytics/sensitivity-templates/choices', () => {
-    it('answers the six asset classes and the five methods with their tokens', async () => {
-        const { server, sessionId } = buildTestServer({});
-        const response = await send(
-            server,
-            sessionId,
-            'GET',
-            '/api/analytics/sensitivity-templates/choices',
-        );
-        expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({
-            assetClasses: ['IR', 'FX', 'EQ', 'COMM', 'CR', 'ALL'],
-            methods: [
-                { label: 'Analytical', code: 'Analytical' },
-                { label: 'Semianalytical', code: 'Semianalytical' },
-                { label: 'Finite difference', code: 'FD' },
-                { label: 'Monte Carlo', code: 'MC' },
-                { label: 'Trade level', code: 'Trade' },
-            ],
-        });
     });
 });

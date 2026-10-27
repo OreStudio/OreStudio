@@ -5216,14 +5216,21 @@ const fr: SourceCatalogue = {
         codeHelp:
             'La clé que lit ORE, telle que IR_FD. Elle est fixée à la création et ne change plus.',
         assetClass: 'Classe d’actif',
+        assetClassHelp:
+            'La classe des produits qui portent la clé, et non les clés que ses décalages atteignent.',
         method: 'Méthode',
         methodCode: 'Code de méthode',
-        methodCodeHelp: 'Le jeton qu’ORE écrit dans une clé. Il découle de la méthode.',
+        methodCodeHelp: 'Le jeton qu’ORE écrit dans une clé, tel que la méthode le déclare.',
+        templatePrefix: 'Préfixe de modèle',
+        templatePrefixHelp: 'Le préfixe qu’ORE écrit dans la clé pour cette classe d’actif.',
+        noAssetClass: 'Aucune',
+        tradeNoClass:
+            'Un modèle au niveau de la transaction ne nomme aucune classe d’actif, car la transaction déclare ses propres sensibilités.',
         description: 'Description',
         add: 'Nouveau modèle',
         addTitle: 'Ajouter un modèle de sensibilité',
         decides:
-            'Il nomme une clé qu’une configuration de moteur de valorisation pose sur un produit. Les tailles de décalage qu’une clé implique sont fixées par la configuration de sensibilité, pas ici.',
+            'Il nomme une clé qu’une configuration de moteur de valorisation pose sur un produit. La classe est celle de ce produit, et les tailles de décalage que la clé applique sont fixées par clé de marché dans la configuration de sensibilité, qui peut les fixer sur des clés de marché hors de cette classe.',
         newRecordNote:
             'Un nouveau modèle est enregistré comme un nouvel enregistrement, et son historique commence par cette écriture.',
         readerOnly:

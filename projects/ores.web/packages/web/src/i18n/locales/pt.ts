@@ -5174,14 +5174,21 @@ const pt: SourceCatalogue = {
         code: 'Código',
         codeHelp: 'A chave que o ORE lê, como IR_FD. É fixada na criação e nunca muda.',
         assetClass: 'Classe de ativo',
+        assetClassHelp:
+            'A classe dos produtos que transportam a chave, e não as chaves que os seus choques atingem.',
         method: 'Método',
         methodCode: 'Código do método',
-        methodCodeHelp: 'O símbolo que o ORE escreve numa chave. Decorre do método.',
+        methodCodeHelp: 'O símbolo que o ORE escreve numa chave, tal como o método o declara.',
+        templatePrefix: 'Prefixo do modelo',
+        templatePrefixHelp: 'O prefixo que o ORE escreve na chave para esta classe de ativo.',
+        noAssetClass: 'Nenhuma',
+        tradeNoClass:
+            'Um modelo ao nível da transação não nomeia classe de ativo, porque a transação declara as suas próprias sensibilidades.',
         description: 'Descrição',
         add: 'Novo modelo',
         addTitle: 'Adicionar um modelo de sensibilidade',
         decides:
-            'Nomeia uma chave que uma configuração de motor de preços coloca num produto. Os tamanhos de choque que uma chave implica são definidos pela configuração de sensibilidade, não aqui.',
+            'Nomeia uma chave que uma configuração de motor de preços coloca num produto. A classe é a desse produto, e os tamanhos de choque que a chave aplica são definidos por chave de mercado na configuração de sensibilidade, que os pode definir em chaves de mercado fora dessa classe.',
         newRecordNote:
             'Um novo modelo é registado como um novo registo, e o seu histórico começa nessa escrita.',
         readerOnly: 'Alterar um modelo exige a permissão para alterar modelos de sensibilidade.',

@@ -6,6 +6,10 @@
 #+type: ores.codegen.entity
 #+component: reporting
 #+filetags: :model:entity:reporting:
+#+brief: One figure a run produced, for one subject in one measure.
+#+entity_singular: report_result_row
+#+entity_plural: report_result_rows
+#+entity_title: Report result row
 #+created: 2026-10-27
 #+updated: 2026-10-27
 
@@ -22,6 +26,7 @@ report post processing note.
 :component:     reporting
 :subcomponent:  api
 :profile:       readonly-timeseries
+:read_only:     true
 :END:
 
 * Columns
@@ -122,3 +127,16 @@ The figure, as the engine stated it and never formatted.
 :END:
 
 The file and the row the marshal read, for provenance.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                    ores_reporting_report_result_rows_tbl
+:current_state:                true
+:immutable:                    true
+:hypertable:                   true
+:hypertable_partition_column:  as_of
+:hypertable_chunk_interval:    30 days
+:no_audit_columns:             true
+:END:

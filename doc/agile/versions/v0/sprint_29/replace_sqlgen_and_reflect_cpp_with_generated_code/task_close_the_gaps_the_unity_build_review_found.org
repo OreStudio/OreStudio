@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/close-the-gaps-the-unity-build-review-found
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,7 +29,7 @@ fixed in the same pass.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -54,9 +54,21 @@ fixed in the same pass.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Rewrite the type-name check around one function, =defined_types=, which
+   walks the header's braces with a scope stack. A type counts when every
+   enclosing scope is a named namespace, so nested and sibling namespaces
+   qualify it in full and a type in a class, a function or an anonymous
+   namespace does not count. Comments, literals and directives are blanked
+   first.
+2. Read test headers too, and say which binary each header can reach: a
+   public header any binary, a test header only its own test target.
+3. Group the collision scan by =target_dir=, not by directory.
+4. Keep a committed file in the unity build before a new one when =--write=
+   picks the exclusion of a group.
+5. Read a relative compiler log path from its =projects/= part on.
+6. Give lint a fallback that lints every file when git is missing.
+7. Reword the RLS comment in the two org template sources and regenerate.
+8. Pin each point with a test in =projects/ores.codegen/tests/test_unity_checks.py=.
 
 * Measurements
 
@@ -70,9 +82,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Type names the check reads | 17,721, each defined once (17,639 before: nested namespaces and test headers were not read) | =build/scripts/check_unique_type_names.py= | 5b2c4b9304 plus this branch |
+| Collisions outside the record with grouping by target | none; 207 recorded files | =build/scripts/check_unity_collisions.py= | 5b2c4b9304 plus this branch |
+| Script tests | 12 pass | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests/test_unity_checks.py= | 5b2c4b9304 plus this branch |
+| =cmake_minimum_required= | 3.28 | =grep cmake_minimum_required CMakeLists.txt= | 5b2c4b9304 |
 
 * Notes
+
+The CMake point needed no change: the tree already requires 3.28, and
+=SKIP_UNITY_BUILD_INCLUSION= read through =DIRECTORY= needs 3.18.
+
+The collision scan still reads declarations one line at a time, so a helper
+declared on the same line as =namespace {= is not seen. The tree never writes
+one that way, and the compiler-driven =--record= catches what the scan
+misses, so the scan was left line-based.
 
 * Test Scenarios
 
@@ -95,6 +118,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Review of PR #3904: the points this task closes | | Accept | Recorded in the Review table of [[id:86EB0D6E-8BF5-4416-B578-84B0DC669D8C][Build every component as a unity build]]. |
 
 * Result
+
+Both unity build checks now see what a unity batch sees. The collision check
+groups sources by target, keeps committed files in the build before new
+ones, and reads relative paths in a compiler log. The type-name check reads
+every named namespace, nested and sibling, and covers test headers within
+their own test target. Twelve tests pin these points. Lint lints every file
+when git is missing, and the own-or-system RLS comment is reworded in the
+templates and the generated SQL. CMake already required 3.28, so that point
+needed no change.

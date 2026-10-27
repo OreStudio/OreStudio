@@ -75,24 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_equity_underlyings_response
-    list_equity_underlyings(const messaging::list_equity_underlyings_request& request);
-    messaging::get_equity_underlying_response
-    get_equity_underlying(const messaging::get_equity_underlying_request& request);
-    messaging::get_many_equity_underlyings_response
-    get_many_equity_underlyings(const messaging::get_many_equity_underlyings_request& request);
-    messaging::put_equity_underlying_response
-    put_equity_underlying(const messaging::put_equity_underlying_request& request);
-    messaging::put_many_equity_underlyings_response
-    put_many_equity_underlyings(const messaging::put_many_equity_underlyings_request& request);
-    messaging::delete_equity_underlying_response
-    delete_equity_underlying(const messaging::delete_equity_underlying_request& request);
-    messaging::delete_many_equity_underlyings_response delete_many_equity_underlyings(
-        const messaging::delete_many_equity_underlyings_request& request);
-    messaging::list_equity_underlying_versions_response list_equity_underlying_versions(
-        const messaging::list_equity_underlying_versions_request& request);
-    messaging::get_equity_underlying_version_response
-    get_equity_underlying_version(const messaging::get_equity_underlying_version_request& request);
+    ::ores::refdata::messaging::list_equity_underlyings_response list_equity_underlyings(
+        const ::ores::refdata::messaging::list_equity_underlyings_request& request);
+    ::ores::refdata::messaging::get_equity_underlying_response
+    get_equity_underlying(const ::ores::refdata::messaging::get_equity_underlying_request& request);
+    ::ores::refdata::messaging::get_many_equity_underlyings_response get_many_equity_underlyings(
+        const ::ores::refdata::messaging::get_many_equity_underlyings_request& request);
+    ::ores::refdata::messaging::put_equity_underlying_response
+    put_equity_underlying(const ::ores::refdata::messaging::put_equity_underlying_request& request);
+    ::ores::refdata::messaging::put_many_equity_underlyings_response put_many_equity_underlyings(
+        const ::ores::refdata::messaging::put_many_equity_underlyings_request& request);
+    ::ores::refdata::messaging::delete_equity_underlying_response delete_equity_underlying(
+        const ::ores::refdata::messaging::delete_equity_underlying_request& request);
+    ::ores::refdata::messaging::delete_many_equity_underlyings_response
+    delete_many_equity_underlyings(
+        const ::ores::refdata::messaging::delete_many_equity_underlyings_request& request);
+    ::ores::refdata::messaging::list_equity_underlying_versions_response
+    list_equity_underlying_versions(
+        const ::ores::refdata::messaging::list_equity_underlying_versions_request& request);
+    ::ores::refdata::messaging::get_equity_underlying_version_response
+    get_equity_underlying_version(
+        const ::ores::refdata::messaging::get_equity_underlying_version_request& request);
     /**@}*/
 
     /**
@@ -188,9 +191,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::equity_underlying_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::equity_underlying& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::equity_underlying_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::equity_underlying& out);
 };
 
 }

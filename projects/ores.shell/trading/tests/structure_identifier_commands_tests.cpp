@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/trading/structure_identifier_commands.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -41,7 +42,6 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.shell.trading.tests");
 const std::string tags("[commands]");
 
 const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");

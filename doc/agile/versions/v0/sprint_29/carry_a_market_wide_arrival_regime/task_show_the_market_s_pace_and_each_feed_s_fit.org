@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/show-the-market-s-pace-and-each-feed-s-fit
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,9 +26,9 @@ A person watching the Market regime tab can see how fast market time runs and wh
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Built; live check next.                |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-27                               |
@@ -44,9 +44,29 @@ A person watching the Market regime tab can see how fast market time runs and wh
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Everything the tab draws comes from the scheduler's own record, so the
+trace first carries what the screen needs.
+
+- Each trace event records the regime's multiplier and the pace after it,
+  so the pace is drawn as a step stacked into the regime's part and the
+  heat's, and the state bands come from the record rather than from the
+  screen's polling.
+- Each tick records its compensated gap, the law's intensity integrated
+  over the gap from the law's state before the event
+  (=domain::compensator=). By the time-rescaling theorem these are Exp(1)
+  for a feed that follows its law, so a QQ plot against Exp(1) checks every
+  law, a Hawkes one included; a periodic feed's are all one.
+- The trace reply lists every running feed's law: its mode, rate,
+  sensitivity, effective rate now (=domain::intensity_after= times the
+  sensitivity and the pace), periodic phase and Hawkes excess.
+- =marketTrace.ts= holds the pure functions: the pace steps, the bands, the
+  command log, the tau span and positions, each feed's fit, and the Exp(1)
+  quantiles. The tab and the Arrivals panel only draw them.
+- The raster switches between clock time and tau; in tau a periodic feed's
+  marks are evenly spaced. The switch is a radio group, so the regime switch
+  stays the one pressed button.
+- The fit expects the rate times the sensitivity times the tau the window
+  spans, and leaves out each feed's first gap, which began before it.
 
 * Measurements
 

@@ -56,6 +56,8 @@ The ACME report definition runs to completion against the compute grid from an i
 | [[id:627A5FF2-C353-4861-8401-4BF6C985AC3F][Read a run's results at trade, book or counterparty level]] | DONE | | 2026-10-26 | One control chooses the level a run's results are read at, and the server does the aggregation. |
 | [[id:6644C73A-ADB5-4379-AF80-78B79B6C15A6][Roll a run's counterparties up to their groups]] | DONE | | 2026-10-26 | The counterparty level states each group's rolled-up figure above its members, so a group can be checked against the parts beneath it. |
 | [[id:1379A7DF-8755-4314-A564-B4771A4C1B5F][Compare a run with an earlier one]] | DONE | | 2026-10-26 | A run's aggregate levels can be stated against an earlier completed run of the same report, with each row's change and share. |
+| [[id:9B64F464-EC3D-4B3F-B2B7-4DF1E7F321EA][Group books under their portfolios]] | DONE | | 2026-10-26 | The book level states each portfolio's rolled-up figure above the books it holds. |
+| [[id:EF671389-BF56-4635-A154-5FF2BC19BF57][Nest the portfolios into a tree]] | DONE | | 2026-10-26 | The book level reads as a tree: a global portfolio over banking books over the ports and books beneath them, each row rolled up from what it holds. |
 
 * Decisions
 

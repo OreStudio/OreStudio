@@ -116,6 +116,17 @@ export function otherParty(owner: string): HttpFailure {
 }
 
 /** The thing the address names does not exist, or is not one this route serves. */
+/**
+ * The service answered something the route cannot serve.
+ *
+ * A route that promises one file and receives several has nothing to send the
+ * browser that it could save, so it reports the upstream answer rather than
+ * handing over a shape the client cannot read.
+ */
+export function unexpectedReply(message: string): HttpFailure {
+    return new HttpFailure(502, { code: 'internal', message });
+}
+
 export function notFound(message: string): HttpFailure {
     return new HttpFailure(404, { code: 'not-found', message });
 }

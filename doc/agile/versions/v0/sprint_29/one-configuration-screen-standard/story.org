@@ -55,12 +55,12 @@ binds.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:7D30043A-E1A9-414B-9367-C9C794C80590][Investigate the two engine-facing configurations]] | STARTED | 2026-10-24 | | Establish what the pricing engine configuration and the engine run settings each decide, where one ends and the other starts, how they are linked, and which names and patterns follow. |
+| [[id:7D30043A-E1A9-414B-9367-C9C794C80590][Investigate the two engine-facing configurations]] | DONE | 2026-10-24 | 2026-10-27 | Establish what the pricing engine configuration and the engine run settings each decide, where one ends and the other starts, how they are linked, and which names and patterns follow. |
 | [[id:0A7787A1-4AAA-4B68-B425-DB82E856C9A3][Write the configuration screen standard]] | DONE | 2026-10-24 | 2026-10-24 | Generalise the engine run settings pattern into one UX standard for every configuration that comes off ORE XML, and record the pricing engine configuration as its second application. |
 | [[id:AF272041-13E2-4525-B634-7BA1A81031A5][Update the configuration journeys and prototypes]] | DONE | 2026-10-24 | 2026-10-24 | Bring the pricing engine configuration and engine run settings journeys and prototypes onto the standard, and add the cross-links that say how the two configurations relate. |
 | [[id:12525577-9902-44BB-9E18-413E72F1A0CF][Rename the configuration screens and their words]] | DONE | 2026-10-24 | 2026-10-25 | Apply the standard's screen words to the area cards, the list and record pages, the journeys and the translations. |
 | [[id:5BF23494-E801-4B0A-8FE0-CEB8DE48BF13][Apply the standard to the pricing engine configuration]] | DONE | 2026-10-24 | 2026-10-25 | Bring the pricing engine configuration list, page, dialogs, journey and import onto the standard. |
-| [[id:C9C764D9-99DF-4327-8FE6-87704D32B34C][Move the pricing engine documentation onto the one contract]] | STARTED | 2026-10-25 | | Extract the pricing engine pairs, models, engines and parameters from the ORE guide and source into the one documentation contract, with the format, the release and the XPath. |
+| [[id:C9C764D9-99DF-4327-8FE6-87704D32B34C][Move the pricing engine documentation onto the one contract]] | DONE | 2026-10-25 | 2026-10-27 | Extract the pricing engine pairs, models, engines and parameters from the ORE guide and source into the one documentation contract, with the format, the release and the XPath. |
 | [[id:4EC59CB6-0169-485F-9F85-889A9BFC0535][Put the numbers-changing engine run settings through sign-off]] | BACKLOG | | | A change to an engine run settings group that alters the numbers a run computes becomes a proposal, signed off by the kind's approval parts. |
 | [[id:9D5084F3-EF0B-4703-BF30-C1D915603CE9][Manage the sensitivity templates]] | BACKLOG | | | Give the sensitivity templates a screen: the codes a pricing parameter refers to, with their asset class, method and description, and the shifts the configuration sets. |
 | [[id:103E6B66-25C4-4703-A9A5-974665D72BDD][Record the sourcing and curation methodology]] | DONE | 2026-10-25 | 2026-10-25 | Write the methodology for the pricing data: extraction, curation, generation, review and provenance, with the curation file schema. |
@@ -79,7 +79,7 @@ binds.
 | [[id:8C0BEBAB-E0E7-48C2-8E15-CA454F11C8F4][Show every party's configurations on the list]] | DONE | 2026-10-25 | 2026-10-25 | The list offers All parties but the read is scoped to the acting party. Decide how another party's configurations are reached, and make the filter say what it does. |
 | [[id:57DA9BE1-DA44-40C1-AC7E-0B234839F126][Model the valid values of a parameter]] | DONE | 2026-10-25 | 2026-10-25 | Give every ORE parameter a value set: its storage type, its allowed values and, where the values are other ORE Studio data, the catalogue they come from. The screen draws the control from it and the write path enforces it. |
 | [[id:4393E8D0-A238-4F9B-8512-0BC3E87D542E][Export a pricing engine configuration as ORE XML]] | BACKLOG | | | A server operation renders one pricing engine configuration as the ORE XML document ORE reads, with a download from the screen and a command in ores.shell. |
-| [[id:25AFAE34-ADF9-4FD7-B44D-5941128034EB][Fix the second value the parameter history test writes]] | DONE | | | The history test appended a suffix to a real value to force a second version, which ORE cannot parse and the value set guard refuses. |
+| [[id:25AFAE34-ADF9-4FD7-B44D-5941128034EB][Fix the second value the parameter history test writes]] | DONE | | 2026-10-27 | The history test appended a suffix to a real value to force a second version, which ORE cannot parse and the value set guard refuses. |
 
 * Decisions
 

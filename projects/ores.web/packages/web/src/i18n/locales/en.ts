@@ -3945,6 +3945,8 @@ export const en: SourceCatalogue = {
             exportNote:
                 'The server writes the document; your browser saves it. Nothing changes here.',
             exported: 'Saved {file}, {count} records.',
+            recordExportLead: 'Writes {file} with {what}.',
+            recordSaved: 'Saved {file}, with {what}.',
             importTitle: 'Import {plural}',
             importLead:
                 'Bring an ORE document in. The server reads it, you review the difference, and nothing is written before the last step.',
@@ -5253,6 +5255,7 @@ export const en: SourceCatalogue = {
     // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
+        productCount: '{count} products',
         author: {
             next: 'Next',
             steps: {
@@ -5510,7 +5513,7 @@ export const en: SourceCatalogue = {
             aggregateNote:
                 "These figures are the run's trades rolled up to their {level}. The run priced {date}.",
             degraded:
-                'The books or counterparties behind these figures could not be read, so an empty name means the name was not read, not that none was recorded.',
+                'The books, portfolios or counterparties behind these figures could not be read, so an empty name means the name was not read, not that none was recorded.',
             selectHint:
                 "Select a row to read that trade's result: its NPV, its base-currency NPV, its notional, its counterparty, and any error the run recorded against it.",
             aggregateHint:

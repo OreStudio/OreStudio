@@ -4000,6 +4000,8 @@ const fr: SourceCatalogue = {
             exportNote:
                 "Le serveur écrit le document ; votre navigateur l'enregistre. Rien ne change ici.",
             exported: '{file} enregistré, {count} enregistrements.',
+            recordExportLead: 'Écrit {file} avec {what}.',
+            recordSaved: '{file} enregistré, avec {what}.',
             importTitle: 'Importer les {plural}',
             importLead:
                 "Apporter un document ORE. Le serveur le lit, vous relisez la différence, et rien n'est écrit avant la dernière étape.",
@@ -5336,6 +5338,7 @@ const fr: SourceCatalogue = {
     // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
+        productCount: '{count} produits',
         author: {
             next: 'Suivant',
             steps: {
@@ -5595,7 +5598,7 @@ const fr: SourceCatalogue = {
             aggregateNote:
                 "Ces chiffres sont les transactions de l'exécution agrégées par {level}. L'exécution a valorisé au {date}.",
             degraded:
-                "Les livres ou contreparties derrière ces chiffres n'ont pas pu être lus : un nom vide signifie que le nom n'a pas été lu, non qu'il n'en existe aucun.",
+                "Les livres, portefeuilles ou contreparties derrière ces chiffres n'ont pas pu être lus : un nom vide signifie que le nom n'a pas été lu, non qu'il n'en existe aucun.",
             selectHint:
                 "Sélectionnez une ligne pour lire le résultat de cette transaction : sa VAN, sa VAN en devise de base, son notionnel, sa contrepartie et toute erreur enregistrée par l'exécution.",
             aggregateHint:

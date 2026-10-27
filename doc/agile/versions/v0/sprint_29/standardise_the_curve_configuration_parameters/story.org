@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 18A29061-FBAD-4C5A-90A1-F02039F791BF
+:END:
+#+title: Story: Standardise the curve configuration's parameters on the one contract
+#+description: Bring curveconfig.xml onto the ORE parameter contract and the ORE element and leaf screen standard, as the engine run settings and the conventions have been, so a curve configuration's leaves read as every other ORE leaf does.
+#+type: story
+#+level: s2
+#+filetags: :standards:refdata:reporting:web:curveconfig:sprint_29:v0:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A curve configuration is drawn like every other configuration that comes off an ORE document. Its leaves are documented once, in the ORE parameter contract, keyed by curveconfig.xsd and XPath; its sections and entry elements come from data; and a person reads and changes a curve's leaves with the shared switch, documentation panel, value in force and control that a product parameter, an engine run setting and a convention term already use. Nothing about a curve section is restated in code.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | The story is scaffolded. The branch carries the story, its scaffold task, the umbrella implementation task and the documentation task. No code has changed. |
+| Waiting on    | Nothing.                               |
+| Next          | Document the leaves, then model the section metadata and the value sets, then draw the page. |
+| Last touched  | 2026-10-26                               |
+
+* Acceptance
+
+- Every leaf of curveconfig.xsd that ORE reads has a documentation entry in the ORE parameter contract, keyed by its schema and XPath, with a value set, or a recorded reason it is not documented.
+- The curve sections and their entry elements are read from the curve_section data, so no screen holds a table that names them.
+- A curve definition's leaves are drawn with the shared leaf parts: the Simple and Advanced switch, the documentation panel, the value in force and the control its value set gives.
+- The curve configuration page follows the configuration screen standard: Details, one tab per section in the declared order, Used by and History, with a curve entry drawn as a collection row.
+- A write whose value lies outside its leaf's value set is refused on the server, so every client gets the same answer.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:73E53884-1EB9-495A-AFB7-24082429C9D2][Scaffold story: Standardise the curve configuration's parameters on the one contract]] | DONE | 2026-10-26 | 2026-10-26 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:DEFAE250-79A6-4916-B081-267B9B0B4A89][Bring curveconfig.xml onto the one contract]] | BACKLOG | | | Initial task for: Standardise the curve configuration's parameters on the one contract |
+| [[id:A439B007-0810-449F-A78B-6F5A66D4D416][Document the curve configuration leaves in the one contract]] | BACKLOG | | | Give every leaf of curveconfig.xsd that ORE reads a documentation entry and a value set in the ORE parameter contract, extracted from the ORE source and the guide with provenance per row, so a curve screen can read its words from data rather than hold them. |
+
+* Decisions
+
+- *A curve configuration's leaf is a /parameter/*, decided 2026-10-26. Three
+  words the leaf standard already spends do not serve this kind, and a fourth
+  was rejected when the convention leaf was named.
+
+  | Candidate   | Why it was not chosen |
+  |-------------+-----------------------|
+  | /setting/   | Reserved to the engine run settings, the ORE =Setup= block, by [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]]: "The word is not used for a parameter of any other configuration." |
+  | /term/      | The conventions' word, and it collides with *term structure*, which is exactly what =curveconfig.xml= configures. |
+  | /field/     | Rejected when the convention leaf was named: "field is the record standard's word for any record and says nothing about ORE." |
+  | /entry/     | Already the row: =curve_definition= is "one curve entry", and =curve_section.entry_element= names the entry element. |
+  | /option/    | Already a thing inside a volatility config: the call or the put. |
+  | /attribute/ | A leaf is an element *or* an attribute, so this word cannot name both. |
+
+  /Parameter/ wins because the code already calls it that: the contract table is
+  =ore_parameter=, its docstring says "A parameter an ORE document accepts ... a
+  row documents one leaf of one ORE document", the configuration standard
+  defines /Parameter/ as "one leaf of an ORE document", and the generator that
+  writes convention terms as contract rows is =convention_parameter_rows.py=.
+
+  The cost is one amendment. The [[id:852207A6-6785-43E6-A5D6-2D5C2C374101][ORE element and leaf screen standard]]
+  defines /Parameter/ narrowly, as "a leaf of a product or of the document's
+  global parameters". The first task widens it to cover a curve configuration.
+  No screen prints the word for this kind yet, so the amendment changes a
+  definition, not a screen.
+
+- *The element type is the ORE entry element*, read from =curve_section=,
+  decided 2026-10-26. That table already holds the container and the element its
+  entries use: =YieldCurves= holds =YieldCurve=, =Correlations= holds
+  =Correlation=. Its own model records nineteen sections across the
+  seventy-six =curveconfig.xml= documents ORE ships; that count is the entity's
+  claim, not a measurement this story has taken, and the extractor re-measures
+  it in the first task. This is the
+  shape the convention kind already has — a declaration in data that a screen
+  reads and does not restate. =curve_section= is to this story what
+  =convention_kind= was to [[id:3D6ACCDB-6209-47BC-86F5-864A65C6389B][Draw every ORE leaf the same way]].
+
+- *The discriminator is not modelled yet, and the documentation does not wait
+  for it.* =CurveType= decides which leaves a yield curve may carry, and refdata
+  holds no curve type today: =yield_curve_config= is one flat row of the union.
+  The contract keys a leaf by its schema and XPath, and the XPath does not
+  depend on the discriminator, so the documentation proceeds without it.
+  Whether the discriminator joins the key as the *element pair* that OL-DOC-05
+  allows belongs to the task that moves the metadata into data.
+
+- *This story does not own the structural refactor of the document.* The
+  =curve_configuration_document= is still one aggregate carrying 34 families,
+  and that is [[id:6E7E20DA-D08B-410B-B1B8-A571C40F83CF][Apply the same shape to the curve configuration document]].
+  The two tasks meet at the same document and do not block each other, because
+  the contract is keyed by schema and XPath and not by the aggregate.
+
+* Out of scope
+
+- Changing =curveconfig.xml=, the ORE XSD, or the generated ORE model.
+- The structural split of the document by family, which the refactor task owns.
+- Renaming a table, a configuration type code or an API route. The
+  documentation and the screen words change; the model does not.
+

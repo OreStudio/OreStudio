@@ -25,20 +25,13 @@
 #ifndef ORES_ORE_API_MESSAGING_CURRENCY_CONFIG_PROTOCOL_HPP
 #define ORES_ORE_API_MESSAGING_CURRENCY_CONFIG_PROTOCOL_HPP
 
+#include "ores.ore.api/messaging/ore_document_protocol.hpp"
 #include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace ores::ore::messaging {
-
-/**
- * @brief One ORE document, as the browser saves it: its file name and its text.
- */
-struct ore_document {
-    std::string name;
-    std::string content;
-};
 
 /**
  * @brief Writes the tenant's currencies as an ORE currency configuration.
@@ -65,7 +58,7 @@ struct export_currency_config_response {
     bool success = false;
     std::string message;
     std::uint32_t count = 0;
-    std::vector<ore_document> files;
+    std::vector<ores::ore::messaging::ore_document> files;
 };
 
 /**

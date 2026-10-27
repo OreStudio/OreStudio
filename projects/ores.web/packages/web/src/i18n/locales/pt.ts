@@ -3973,6 +3973,8 @@ const pt: SourceCatalogue = {
                 'Escreve {file}, o documento ORE, com as {plural} do tenant tal como estão agora.',
             exportNote: 'O servidor escreve o documento; o seu navegador guarda-o. Nada muda aqui.',
             exported: '{file} guardado, {count} registos.',
+            recordExportLead: 'Escreve {file} com {what}.',
+            recordSaved: '{file} guardado, com {what}.',
             importTitle: 'Importar {plural}',
             importLead:
                 'Trazer um documento ORE. O servidor lê-o, você revê a diferença, e nada é escrito antes do último passo.',
@@ -5295,6 +5297,7 @@ const pt: SourceCatalogue = {
     // engineSettings:end
     // pricingEngines:begin
     pricingEngines: {
+        productCount: '{count} produtos',
         author: {
             next: 'Seguinte',
             steps: {
@@ -5553,7 +5556,7 @@ const pt: SourceCatalogue = {
             aggregateNote:
                 'Estes valores são as transações da execução agregadas por {level}. A execução avaliou em {date}.',
             degraded:
-                'Os livros ou contrapartes por trás destes valores não puderam ser lidos: um nome vazio significa que o nome não foi lido, não que não exista.',
+                'Os livros, carteiras ou contrapartes por trás destes valores não puderam ser lidos: um nome vazio significa que o nome não foi lido, não que não exista.',
             selectHint:
                 'Selecione uma linha para ler o resultado dessa transação: o seu VAL, o VAL na moeda base, o notional, a contraparte e qualquer erro registado pela execução.',
             aggregateHint:

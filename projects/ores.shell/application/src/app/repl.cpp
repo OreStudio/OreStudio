@@ -85,6 +85,7 @@
 #include "ores.shell/app/commands/reporting/ore_parameter_value_set_catalogue_commands.hpp"
 #include "ores.shell/app/commands/reporting/ore_parameter_value_set_commands.hpp"
 #include "ores.shell/app/commands/reporting/ore_parameter_value_set_value_commands.hpp"
+#include "ores.shell/app/commands/reporting/pricing_engines_commands.hpp"
 #include "ores.shell/app/commands/reporting/report_configuration_commands.hpp"
 #include "ores.shell/app/commands/reporting/report_definition_commands.hpp"
 #include "ores.shell/app/commands/reporting/report_error_event_commands.hpp"
@@ -167,6 +168,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     ore_parameter_value_set_catalogue_commands::register_commands(*root, session_);
     ore_parameter_value_set_commands::register_commands(*root, session_);
     ore_parameter_value_set_value_commands::register_commands(*root, session_);
+    pricing_engines_commands::register_commands(*root, session_);
     report_instance_commands::register_commands(*root, session_);
     report_type_configuration_type_commands::register_commands(*root, session_);
     report_trigger_type_commands::register_commands(*root, session_);

@@ -8,11 +8,11 @@
 #+filetags: :reporting:pricing:xml:shell:one-configuration-screen-standard:sprint_29:v0:
 #+owner: marco
 #+branch:
-#+pr: 3865
+#+pr: 3882
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
-#+updated: 2026-10-25
+#+updated: 2026-10-26
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,20 +26,20 @@ One pricing engine configuration leaves the system as the ORE XML ORE itself rea
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Designed; the server operation is the first step. |
-| Waiting on   | The configuration screen's sign-off, then work starts. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-25                               |
+| Now          | Built to the specification: protocol, exporter, handler, route, screen button and shell command. |
+| Waiting on   | Nothing.                              |
+| Next         | The import of the same document, which is the other half of the pair. |
+| Last touched | 2026-10-26                               |
 
 * Acceptance
 
-- The analytics service answers a request for one configuration with the ORE XML text, built from the stored configuration, products and parameters.
+- The ORE service answers a request for one configuration with the ORE XML text, built from the stored configuration, products and parameters, read through analytics' own messages ([[*What the specification changed][What the specification changed]]).
 - The XML is a valid PricingEngines document: each product names its type, model and engine, and each parameter sits under its model or engine node with its name and value.
-- The BFF exposes the export as a download, and the configuration page has a button that saves the file.
+- The BFF serves =GET /api/reporting/pricing-engines/:id/ore-document=, and the configuration page has an Export button that saves the file the server names.
 - ores.shell has a command that exports one configuration to a file or to standard output, and a test proves the output.
-- A golden test compares the export of a seeded configuration with the XML ORE would read, and a round-trip test parses the export back into the same document.
+- A test compares the export of one configuration with the XML ORE would read, character for character, and a round-trip test reads the export back with the projection that writes it.
 - The export refuses a configuration that does not exist or that the session's party cannot see, naming the reason.
 
 * Plan
@@ -91,12 +91,42 @@ The BFF adds =GET /api/reporting/pricing-engines/:id/export=, which asks the ser
 
 The export is read-only: it writes no row and records no history.
 
+* What the specification changed
+
+The plan above predates the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]'s Import and Export section and the [[id:E69C008D-7092-4855-98EC-47A75F422F61][Configuration screen standard]]'s Export section, which were written after it. The build follows the specification. Where the two differ:
+
+| The plan said | The specification says, and the build does |
+|---------------+--------------------------------------------|
+| The operation lives in the analytics service | Every =ore.v1.ops.*= operation lives in the ORE component (RS-ORE-06), so =ore.v1.ops.export_pricing_engines= is served by =ores.ore.service=, which reads the configuration through analytics' messages under the caller's delegated session |
+| =export_pricing_engines_document_request= | The verb-first name =export_pricing_engines_request= (RS-ORE-06) |
+| The request carries the configuration id | It carries the *reporting configuration* the record fills, which is what analytics finds a document by. The BFF and the shell join the id the screen shows to it |
+| The BFF route is =/api/reporting/pricing-engines/:id/export= | The spec's shape is =GET /api/<kind>/ore-document= (RS-ORE-06), with the id the screen names |
+| The file is named after the configuration | The name is the =name_pattern= of the file type row whose =configuration_type_code= is =pricing_engines= (RS-ORE-01): =pricingengine.xml=. The configuration's own name is not a file name |
+| A golden file beside the test | An exact-string test of the whole document, and a round trip through =pricing_engine_projection= |
+| The handler checks the party itself | Analytics refuses a configuration the session's party cannot see, in its own words, and the handler answers those words |
+
+One further point, not a defect:
+
+- The run parameter that =configuration_type.run_parameter= records may override the name for a run. The export is a screen and shell action on a configuration, not a run, so it writes the table's name pattern as it stands.
+
+** One writer
+
+The review of this task found the document stated twice: the exporter wrote it with pugixml and =pricing_engine_projection::write= wrote it with the schema-driven emitter, and the two already disagreed on an empty =GlobalParameters=. RS-ORE-04 names one ORE exporter, so the export became the only writer:
+
+- =exporter::export_pricing_engines= has one pugixml body, and two entry points: the ORE domain document (the type =pricing_engine_projection::reverse= answers with and =write= takes) and the analytics messaging document, which regroups the rows and calls the first.
+- =pricing_engine_projection::write= delegates to the domain entry point, and the emitter call it used is gone. Read, map and reverse are untouched, so =xg::pricing_engines_document= stays where the row mapping needs it.
+
+The consolidation changed what the run import writes back: a configuration whose source names no =GlobalParameters= block now leaves the store with an empty one, because the writer states every section. ORE reads it, and the only difference is that block. Two tests state it rather than hide it:
+
+- =every_pricing_engine_document_in_the_corpus_round_trips= accepts exactly one difference, =GlobalParameters was added= at the document, and pins the count: 70 of the 125 corpus documents gain the block, the other 55 round trip byte for byte as structure.
+- =a run's configuration imports and exports as the same files= accepts only a difference that ends in =: GlobalParameters was added=.
+
 * Notes
 
 - Nothing here generates XML in the browser. The screen holds the document, but the format is ORE's and the service is the one place that knows how the stored rows map onto it.
 - The value is written exactly as stored. The value set check already guards what a value may be, so the writer does not reformat numbers, dates or booleans.
 - =GlobalParameters= is a root-level block in ORE's format, not a child of a product.
-- The ORE source's example file is the reference for the shape, and the golden file is a copy of it beside the test with the configuration it describes.
+- The ORE source's example file at =Examples/MarketRisk/Input/Correlation/pricingengine.xml= is the reference for the shape. There is no golden file: the test states the whole document as a string, so a change to the shape fails it where a golden file could be regenerated without a reader noticing.
 
 * Measurements
 
@@ -110,7 +140,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Export test cases in the ORE core suite | 6 | =grep -c 'TEST_CASE("export_pricing_engines' projects/ores.ore/core/tests/xml_exporter_tests.cpp= | e1df37bb46 |
+| Products and parameters the export wrote for the HK party's XVA Overnight configuration | 5 products, 19 parameters, 1 global parameter | =curl .../ore-document= then =grep -c "<Product "= and =grep -c "<Parameter "= | e1df37bb46 |
+| Shell command test cases | 7 | =grep -c TEST_CASE projects/ores.shell/reporting/tests/pricing_engines_commands_tests.cpp= | e1df37bb46 |
+| Pricing engines route tests in the BFF | 24 | =grep -c "it(" projects/ores.web/packages/bff/src/pricing-engines.test.ts= | e1df37bb46 |
 
 * Notes
 
@@ -123,12 +156,13 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[file:scenario_export-a-pricing-engine-configuration-as-ore-xml.org][Export a pricing engine configuration as ORE XML]] | PENDING | Runs on 21002 after provisioning. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3882][#3882]] | [ore] Export a pricing engine configuration as ORE XML |
 | [[https://github.com/OreStudio/OreStudio/pull/3865][#3865]] | [docs] Name an ORE document from the file types table |
 
 * Review
@@ -138,3 +172,35 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** The build
+
+Committed on =feature/export-a-pricing-engine-configuration-as-ore-xml= in eight commits:
+
+| Commit | What |
+|--------+------|
+| =dfd379a004= | The protocol: =ore.v1.ops.export_pricing_engines=, and the shared =ore_document= moved into a model of its own so both exports state it once. C++ and TypeScript from the one model |
+| =d8d133ea55= | =exporter::export_pricing_engines=, with pugixml, and its tests |
+| =6d2e65e03c= | The handler in =ores.ore.service=, the file type lookup, and its registration |
+| =3eb3994987= | =GET /api/reporting/pricing-engines/:id/ore-document=, answering =application/xml= with the server's name |
+| =4529dd3c9d= | The Export button and its dialog on the record header, in English, French and Portuguese |
+| =e1df37bb46= | =pricing_engines export <id> [--file <path>]= in =ores.shell= |
+| =db5ab9ec2e= | The four cases that state which file type row names the document, and its absence |
+| The consolidation commit | One writer: the pugixml body takes the ORE domain document, the projection delegates to it, and the round-trip tests state the empty =GlobalParameters= they now gain |
+
+** What was proved
+
+- =./compass.sh build= passes.
+- The ORE core suite passes (401 cases, 475592 assertions), as does the analytics core suite (76 cases), the shell reporting suite (571 cases), the reporting api suite (68 cases), the BFF suite (1005 tests), the web suite (2067 tests) and the wire protocol suite (225 tests). =ores.ore.service.tests= holds no cases: the service's units are covered by the core suite and by the run below.
+- =GET /api/reporting/pricing-engines/5979e68e-ad30-fb47-b828-e7b08398f43d/ore-document= answered 200, =content-type: application/xml=, =content-disposition: attachment; filename="pricingengine.xml"=, for the HK party's *XVA Overnight* configuration. The document is well formed under =xmllint --noout= and holds the five products in their stored positions (Swap 0, CrossCurrencySwap 1, FxForward 2, CreditDefaultSwap 3, Bond 4), their models, engines and parameters, and one =GlobalParameters= block holding =ContinueOnCalibrationError=.
+- The web package's tests hold no browser: the screens render to static markup there, so the button, its permission and the dialog's sentence are asserted on the rendered page, and the download request is asserted against a stubbed =fetch= in =api/pricingEngines.test.ts=. The click itself was not driven through a browser.
+- After the consolidation the route and the command were run again and their documents are byte identical to the ones above, because this configuration holds a global parameter. The consolidation's own change is the other case: 70 of the 125 corpus documents gained an empty =GlobalParameters=, and the round-trip cases state it.
+- =pricing_engines export <id> --file <path>= wrote the same document, byte for byte, after =account_operations switch-party= to the HK party of the ACME Corporation tenant. The name came from =ores_reporting_file_types_tbl= (row =setup.pricingEnginesFile=, configuration type =pricing_engines=, kind =input_document=, direction =input=, name pattern =pricingengine.xml=).
+
+** The checks
+
+=python3 build/scripts/local_checks.py --exclude-heavy= runs 63 checks and passes 61. The two that fail carry main's inputs, not this branch's: =prototypes= names a market data prototype index main does not list, and =er-diagram= warns about =ores_refdata_convention_kind_terms_tbl=, a table this branch does not touch. The branch changes no =create= or =drop= SQL and no prototype file, which =git diff= against main confirms.
+
+The branch also carries the XML benchmark row the repo asks for when XML code changes (=benchmarks/xml/history.tsv=, 96 rows recorded), and it formats one market data file main already carried unformatted, because the =web= check refuses the whole tree otherwise.
+
+The component model now states the =pugixml= dependency the exporter needs, so the generated build file is no longer hand-edited; =component-drift= and =cmake-sources= both pass.

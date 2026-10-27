@@ -1,11 +1,56 @@
 {
-  "*/Id": {
-    "label": "Identifier",
-    "description": "The unique identifier of the convention. A curve segment, a quote or another convention refers to the convention by it.",
-    "reason": "The guide describes Id once, in the introduction to the chapter, and lists it in no section. The second sentence is ours: curve segments and the other conventions name a convention by its Id.",
-    "source": "authored",
-    "source_ref": "Docs/UserGuide/parameterisation/conventions.tex:9",
-    "curator": "marco",
-    "date": "2026-10-25"
-  }
+ "*/Id": {
+  "label": "Identifier",
+  "description": "The unique identifier of the convention. A curve segment, a quote or another convention refers to the convention by it.",
+  "reason": "The guide describes Id once, in the introduction to the chapter, and lists it in no section. The second sentence is ours: curve segments and the other conventions name a convention by its Id.",
+  "source": "authored",
+  "source_ref": "Docs/UserGuide/parameterisation/conventions.tex:9",
+  "curator": "marco",
+  "date": "2026-10-25"
+ },
+ "*/LongIndex": {
+  "label": "Long leg index",
+  "description": "The name of the Ibor or overnight index the long leg references, in the long and short form of a tenor basis swap.",
+  "reason": "The ORE guide documents the paying and receiving form of a tenor basis swap and not the long and short form. The text is authored from the field the ORE parser reads, which states what the value is and nothing more.",
+  "source": "authored",
+  "source_ref": "OREData/ored/configuration/conventions.cpp:732",
+  "curator": "marco",
+  "date": "2026-10-27"
+ },
+ "*/LongPayTenor": {
+  "label": "Long leg payment tenor",
+  "description": "The payment tenor of the long leg, stated as ORE's period code, in the long and short form of a tenor basis swap.",
+  "reason": "The ORE guide documents the paying and receiving form of a tenor basis swap and not the long and short form. The text is authored from the field the ORE parser reads, which states what the value is and nothing more.",
+  "source": "authored",
+  "source_ref": "OREData/ored/configuration/conventions.cpp:749",
+  "curator": "marco",
+  "date": "2026-10-27"
+ },
+ "*/ShortIndex": {
+  "label": "Short leg index",
+  "description": "The name of the Ibor or overnight index the short leg references, in the long and short form of a tenor basis swap.",
+  "reason": "The ORE guide documents the paying and receiving form of a tenor basis swap and not the long and short form. The text is authored from the field the ORE parser reads, which states what the value is and nothing more.",
+  "source": "authored",
+  "source_ref": "OREData/ored/configuration/conventions.cpp:741",
+  "curator": "marco",
+  "date": "2026-10-27"
+ },
+ "*/ShortPayTenor": {
+  "label": "Short leg payment tenor",
+  "description": "The payment tenor of the short leg, stated as ORE's period code, in the long and short form of a tenor basis swap.",
+  "reason": "The ORE guide documents the paying and receiving form of a tenor basis swap and not the long and short form. The text is authored from the field the ORE parser reads, which states what the value is and nothing more.",
+  "source": "authored",
+  "source_ref": "OREData/ored/configuration/conventions.cpp:756",
+  "curator": "marco",
+  "date": "2026-10-27"
+ },
+ "*/SpreadOnShort": {
+  "label": "Spread on the short leg",
+  "description": "Whether the quoted spread is added to the short leg rather than the long one, in the long and short form of a tenor basis swap.",
+  "reason": "The ORE guide documents the paying and receiving form of a tenor basis swap and not the long and short form. The text is authored from the field the ORE parser reads, which states what the value is and nothing more.",
+  "source": "authored",
+  "source_ref": "OREData/ored/configuration/conventions.cpp:763",
+  "curator": "marco",
+  "date": "2026-10-27"
+ }
 }

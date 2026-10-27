@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 9A469BC5-A655-4B5E-95B3-BDD5181A9C9D
+:END:
+#+title: Carry a document's families as a bundle, not as one struct of typed arrays
+#+description: The curve configuration document is one struct of 34 typed vectors of full domain types, which the data classifications forbid as a second type system. It is the same anti-pattern the conventions carried before they were split. File the redesign as its own story.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+`curve_configuration_document` carries the curve configuration file as one
+struct of 34 typed vectors, each a full domain type: the root configuration,
+its sections, definitions, nine kinds of curve, six kinds of volatility
+configuration, the reports, the bootstrap configurations, the segments and the
+quotes. It is the largest message in the tree, and its translation unit is the
+one that fails the Windows build.
+
+* Why
+
+The classifications call this shape what it is: *an aggregate list of entities
+in one struct is a second type system and is forbidden*, because the generator
+cannot see it and the compiler pays with a diagnostic that names no field. That
+is exactly the nightly failure: `C1202` inside
+`rfl/internal/no_duplicate_field_names.hpp`, reached from
+`reply<get_curve_configuration_document_response>`, naming nothing.
+
+The families here *are* related — every one of them hangs off
+`curve_definition_id` — so the set is a bundle, and the bundle is not a message
+shape. Per the classifications: a bundle's verbs are its families' operations,
+and its rows never sit in a message field. Where the bytes must still travel as
+one ORE file, that file is a package: a modelled manifest of references and a
+content-addressed archive of msgpack parts, with a coordinator that sends one
+message per bundle carrying the archive URI and never the data.
+
+The precedent to avoid is `conventions_bundle`, whose `std::string payload`
+holds JSON in a staging row. That is the import staging path, not the wire
+shape, and it is not the model to copy.
+
+* Acceptance
+
+- The curve configuration document is a bundle: one generated
+  `ores.codegen.family` operation per family, each with its own protocol.
+- The ORE boundary carries it as a package: a modelled manifest of references,
+  an archive of msgpack parts, and a coordinator that sends one message per
+  bundle with the archive URI.
+- The Windows nightly compiles without the C1202, proven by the job rather than
+  by argument.
+- No struct in the tree carries a typed array per kind.
+
+* References
+
+- `doc/knowledge/architecture/data_classification.org` — the anti-pattern and
+  the decision rule.
+- `doc/knowledge/architecture/package_transport.org` — manifest, parts and
+  coordinator.
+- `doc/knowledge/architecture/data_oriented_design.org` — the accumulation path,
+  which is why the handler fails while the entity compiles.
+- Windows nightly run `40457388317` — the failure this removes.
+- `projects/ores.refdata/modeling/ores.refdata.configuration_document_messages.org`
+  — the model that produces the aggregate.
+
+

@@ -55,9 +55,15 @@ ctx.generate_uuid()
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
 :nullable:    false
+:natural_key: true
+:unique:      true
 :END:
 
-The central convention row this part belongs to.
+The central convention row this part belongs to. One row per convention, so
+the generated table adds the unique index on the live rows of
+=(tenant_id, convention_id)=: a convention fills this form or it does not,
+and never two of it. History is unaffected, because the index is partial on
+=valid_to= infinity.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()

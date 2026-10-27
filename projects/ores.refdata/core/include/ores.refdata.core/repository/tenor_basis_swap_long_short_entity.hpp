@@ -46,6 +46,7 @@ struct tenor_basis_swap_long_short_entity {
     std::string tenant_id;
     int version = 0;
     std::string convention_id;
+
     std::string party_id;
     std::optional<std::string> long_index;
     std::optional<std::string> long_pay_tenor;

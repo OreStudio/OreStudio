@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: 9A223460-CCB4-4C76-AD1C-40D4CFE3286F
+:END:
+#+title: Task: Close the four tenor basis swap snags
+#+description: The review of the grouped convention left four snags: no uniqueness on a part's convention_id, five long and short leaves with no contract entry or value set, the bundle redesign still owed as its own story, and no browser smoke since the nesting landed.
+#+type: task
+#+level: s1
+#+filetags: :fix-the-tenor-basis-swap-convention-model-remaining:sprint_29:v0:
+#+owner: marco
+#+branch: feature/close-the-four-convention-snags
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The convention family's invariants are enforced in the schema, its long and short terms are documented and carry value sets, the bundle redesign is filed as its own story, and the record page is seen working on a live service.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] |
+| Now          | Three of the four snags are done; the browser smoke needs a provisioned tenant. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the PR, then smoke the page once the fleet is up. |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+- A convention cannot hold two live rows of the same leg form, and the index is a partial one so history still works.
+- Every long and short leaf has a contract entry and a value set, so no term reads as a bare label.
+- The bundle redesign is filed as a story with the curve document named as its first candidate.
+- The convention record page shows both leg forms' terms on a running service.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** One live row per convention
+
+Both parts now mark =convention_id= as a natural key that is unique, so the
+generated table adds a partial index:
+
+#+begin_example
+create unique index ... tenor_basis_swap_pay_receives_convention_id_uniq_idx
+on "ores_refdata_tenor_basis_swap_pay_receives_tbl" (tenant_id, convention_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+#+end_example
+
+A convention can hold one live row of each leg form and never two, and the
+partial predicate leaves the value-log history alone. The refdata suite is 467
+cases and 5610 assertions, and the ORE suite 401 cases and 475592 assertions,
+both against a database rebuilt from this branch.
+
+** The five long and short leaves
+
+=LongIndex=, =LongPayTenor=, =ShortIndex=, =ShortPayTenor= and =SpreadOnShort=
+each have a curated label and description in =convention_term_curation.json=,
+so the seeded contract grows by five rows and the value-set seed by five links.
+The text is authored from the field the ORE parser reads, because the guide
+documents the paying and receiving form and not this one; each entry records
+that reason and the source line. The undocumented-terms evidence file drops
+from 53 to 48.
+
+** The bundle redesign, filed
+
+[[file:doc/agile/product_backlog/inbox/carry-a-documents-families-as-a-bundle.org][Carry a document's families as a bundle, not as one struct of typed arrays]]
+is in the inbox, with the anti-pattern, the package shape, the precedent not to
+copy and the nightly failure it removes.
+
+** The browser smoke, not done
+
+The fleet is stopped and the database was just recreated, so no tenant is
+provisioned and there is no session to open the page with. That is the one
+acceptance bullet this branch does not meet. The BFF's own suite covers the zip
+that the page reads, with the fixture in the shape the server sends.

@@ -22,6 +22,7 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <utility>
 
 namespace ores::analytics::quant::service {
 
@@ -60,7 +61,7 @@ two_factor_gaussian_process::two_factor_gaussian_process(double kappa_x,
                                                          double sigma_y,
                                                          double rho,
                                                          double initial_rate,
-                                                         std::uint32_t seed,
+                                                         math::rng_stream stream,
                                                          double dt)
     : kappa_x_(kappa_x)
     , kappa_y_(kappa_y)
@@ -70,7 +71,7 @@ two_factor_gaussian_process::two_factor_gaussian_process(double kappa_x,
     , factor_x_(initial_rate)
     , factor_y_(0.0)
     , dt_(dt)
-    , rng_(seed)
+    , rng_(std::move(stream))
     , normal_(0.0, 1.0) {
 
     if (kappa_x_ < 0.0 || kappa_y_ < 0.0)
@@ -84,7 +85,7 @@ two_factor_gaussian_process::two_factor_gaussian_process(double kappa_x,
 }
 
 two_factor_gaussian_process::two_factor_gaussian_process(const two_factor_gaussian_params& params,
-                                                         std::uint32_t seed,
+                                                         math::rng_stream stream,
                                                          double dt)
     : two_factor_gaussian_process(params.kappa_x,
                                   params.kappa_y,
@@ -92,7 +93,7 @@ two_factor_gaussian_process::two_factor_gaussian_process(const two_factor_gaussi
                                   params.sigma_y,
                                   params.rho,
                                   params.initial_rate,
-                                  seed,
+                                  std::move(stream),
                                   dt) {}
 
 double two_factor_gaussian_process::next() {

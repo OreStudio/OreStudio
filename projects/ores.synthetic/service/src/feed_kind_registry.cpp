@@ -27,6 +27,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
+#include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include "ores.synthetic.api/feeds/vintage_lookup.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
@@ -152,7 +153,7 @@ feed_kind make_fx_spot_kind() {
                         req.gmm_stdevs,
                         req.gmm_weights,
                         req.initial_price,
-                        seed));
+                        ores::synthetic::feed::price_stream_for(seed, "simulate")));
             }};
     };
     k.reply_simulate = [](ores::nats::service::client& nats,

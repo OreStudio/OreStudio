@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.analytics.quant/export.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
 #include <cstdint>
 #include <random>
 
@@ -53,7 +54,7 @@ public:
                                double theta,
                                double sigma,
                                double initial_price,
-                               std::uint32_t seed = 42,
+                               math::rng_stream stream,
                                double dt = 1.0);
 
     double next() override;
@@ -67,7 +68,7 @@ private:
     double sigma_;
     double price_;
     double dt_;
-    std::mt19937 rng_;
+    math::rng_stream rng_;
     std::normal_distribution<double> normal_;
 };
 

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.quant/service/processes/hull_white_process.hpp"
+#include "price_stream.hpp"
 #include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -29,27 +30,27 @@ using ores::analytics::quant::service::hull_white_process;
 
 TEST_CASE("hull_white_process reports the initial rate before any next() call",
           "[hull_white_process]") {
-    hull_white_process p(0.1, {0.03}, 0.01, 0.03);
+    hull_white_process p(0.1, {0.03}, 0.01, 0.03, price_stream(42));
     CHECK(p.current() == 0.03);
 }
 
 TEST_CASE("hull_white_process next() updates and returns the same value as current()",
           "[hull_white_process]") {
-    hull_white_process p(0.1, {0.03}, 0.01, 0.03);
+    hull_white_process p(0.1, {0.03}, 0.01, 0.03, price_stream(42));
     const double n = p.next();
     CHECK(n == p.current());
 }
 
 TEST_CASE("hull_white_process is deterministic for a fixed seed", "[hull_white_process]") {
-    hull_white_process a(0.3, {0.03, 0.04}, 0.01, 0.03, 7);
-    hull_white_process b(0.3, {0.03, 0.04}, 0.01, 0.03, 7);
+    hull_white_process a(0.3, {0.03, 0.04}, 0.01, 0.03, price_stream(7));
+    hull_white_process b(0.3, {0.03, 0.04}, 0.01, 0.03, price_stream(7));
 
     for (int i = 0; i < 20; ++i)
         CHECK(a.next() == b.next());
 }
 
 TEST_CASE("hull_white_process discount_factor(0) is exactly 1", "[hull_white_process]") {
-    hull_white_process p(0.3, {0.03, 0.05, 0.01}, 0.01, 0.04);
+    hull_white_process p(0.3, {0.03, 0.05, 0.01}, 0.01, 0.04, price_stream(42));
     CHECK(p.discount_factor(0) == 1.0);
 }
 
@@ -57,7 +58,7 @@ TEST_CASE("hull_white_process one-tick discount_factor is exp(-r_t)", "[hull_whi
     // Derived directly in the class docstring: P_i = exp(-r_i) * E_i[P_{i+1}]
     // with P_{i+1} == 1 at the bond's own maturity collapses to exp(-r_i)
     // for a single tick, regardless of theta/kappa/sigma.
-    hull_white_process p(0.3, {0.03, 0.05}, 0.02, 0.04);
+    hull_white_process p(0.3, {0.03, 0.05}, 0.02, 0.04, price_stream(42));
     CHECK(p.discount_factor(1) == Catch::Approx(std::exp(-0.04)));
 }
 
@@ -67,8 +68,8 @@ TEST_CASE("hull_white_process holds the last theta_path value flat beyond its le
     // longer must simulate identically for a fixed seed: theta_at() must
     // extend the last value, not wrap or throw once tick_ exceeds the
     // path's size.
-    hull_white_process a(0.3, {0.03}, 0.01, 0.03, 11);
-    hull_white_process b(0.3, {0.03, 0.03, 0.03, 0.03, 0.03}, 0.01, 0.03, 11);
+    hull_white_process a(0.3, {0.03}, 0.01, 0.03, price_stream(11));
+    hull_white_process b(0.3, {0.03, 0.03, 0.03, 0.03, 0.03}, 0.01, 0.03, price_stream(11));
 
     for (int i = 0; i < 10; ++i)
         CHECK(a.next() == b.next());
@@ -76,7 +77,7 @@ TEST_CASE("hull_white_process holds the last theta_path value flat beyond its le
 
 TEST_CASE("hull_white_process with zero volatility decays deterministically toward theta",
           "[hull_white_process]") {
-    hull_white_process p(0.5, {0.03}, 0.0, 0.08);
+    hull_white_process p(0.5, {0.03}, 0.0, 0.08, price_stream(42));
     double prev = 0.08;
     for (int i = 0; i < 50; ++i) {
         const double next = p.next();
@@ -89,23 +90,25 @@ TEST_CASE("hull_white_process with zero volatility decays deterministically towa
 
 TEST_CASE("hull_white_process with kappa <= 0 degenerates to a driftless random walk",
           "[hull_white_process]") {
-    hull_white_process p(0.0, {0.03}, 0.0, 0.03);
+    hull_white_process p(0.0, {0.03}, 0.0, 0.03, price_stream(42));
     for (int i = 0; i < 10; ++i)
         CHECK(p.next() == Catch::Approx(0.03));
 }
 
 TEST_CASE("hull_white_process rejects an empty theta_path", "[hull_white_process]") {
-    CHECK_THROWS_AS(hull_white_process(0.3, {}, 0.01, 0.03), std::invalid_argument);
+    CHECK_THROWS_AS(hull_white_process(0.3, {}, 0.01, 0.03, price_stream(42)),
+                    std::invalid_argument);
 }
 
 TEST_CASE("hull_white_process rejects negative sigma", "[hull_white_process]") {
-    CHECK_THROWS_AS(hull_white_process(0.3, {0.03}, -0.01, 0.03), std::invalid_argument);
+    CHECK_THROWS_AS(hull_white_process(0.3, {0.03}, -0.01, 0.03, price_stream(42)),
+                    std::invalid_argument);
 }
 
 TEST_CASE("hull_white_process discount_factor decreases monotonically with maturity for a "
           "positive rate",
           "[hull_white_process]") {
-    hull_white_process p(0.3, {0.03}, 0.01, 0.03);
+    hull_white_process p(0.3, {0.03}, 0.01, 0.03, price_stream(42));
     double prev = 1.0;
     for (std::size_t t = 1; t <= 20; ++t) {
         const double df = p.discount_factor(t);
@@ -118,7 +121,7 @@ TEST_CASE("hull_white_process discount_factor decreases monotonically with matur
 TEST_CASE("hull_white_process with a constant theta_path matches vasicek's discount_factor "
           "exactly (composition consistency)",
           "[hull_white_process]") {
-    hull_white_process p(0.3, {0.04}, 0.015, 0.05);
+    hull_white_process p(0.3, {0.04}, 0.015, 0.05, price_stream(42));
     // Same formula vasicek_process delegates to; recomputed here directly
     // against a single-element path to pin the constant-theta special case.
     for (std::size_t t = 0; t <= 10; ++t)
@@ -132,8 +135,8 @@ TEST_CASE("hull_white_process default dt is exactly today's un-scaled behaviour"
     // dt's default (1.0) must reproduce bit-identical results to a process
     // built with the pre-dt five-argument constructor -- this is the
     // backward-compatibility guarantee dt's introduction rests on.
-    hull_white_process implicit(0.3, {0.04, 0.05}, 0.01, 0.04, 7);
-    hull_white_process explicit_default(0.3, {0.04, 0.05}, 0.01, 0.04, 7, 1.0);
+    hull_white_process implicit(0.3, {0.04, 0.05}, 0.01, 0.04, price_stream(7));
+    hull_white_process explicit_default(0.3, {0.04, 0.05}, 0.01, 0.04, price_stream(7), 1.0);
 
     for (int i = 0; i < 20; ++i)
         CHECK(implicit.next() == explicit_default.next());
@@ -152,7 +155,7 @@ TEST_CASE("hull_white_process discount_factor with zero volatility reproduces a 
     // pre-fix, this would have failed for every dt != 1.0.
     const double r = 0.04;
     for (const double dt : {1.0, 1.0 / 365.0, 1.0 / (365.0 * 24.0), 1.0 / (365.0 * 24.0 * 60.0)}) {
-        hull_white_process p(0.3, {r}, 0.0, r, 42, dt);
+        hull_white_process p(0.3, {r}, 0.0, r, price_stream(42), dt);
         for (const std::size_t ticks : {std::size_t{1}, std::size_t{10}, std::size_t{365}}) {
             const double expected = std::exp(-r * static_cast<double>(ticks) * dt);
             CHECK(p.discount_factor(ticks) == Catch::Approx(expected).epsilon(1e-9));
@@ -181,7 +184,7 @@ TEST_CASE("hull_white_process discount_factor converges to the closed-form Vasic
     const double df_closed = std::exp(A_closed - B_closed * r0);
 
     auto df_error = [&](double dt) {
-        hull_white_process p(kappa, {theta}, 0.0, r0, 42, dt);
+        hull_white_process p(kappa, {theta}, 0.0, r0, price_stream(42), dt);
         const auto ticks = static_cast<std::size_t>(std::lround(T / dt));
         return std::fabs(p.discount_factor(ticks) - df_closed);
     };
@@ -203,8 +206,8 @@ TEST_CASE("hull_white_process discount_factor is consistent across fine dt granu
     // dt=1 case above, comparing two already-fine granularities is a
     // meaningful "tick granularity is an implementation choice" check.
     const double kappa = 0.3, theta = 0.04, r0 = 0.05;
-    hull_white_process daily(kappa, {theta}, 0.0, r0, 42, 1.0 / 365.0);
-    hull_white_process hourly(kappa, {theta}, 0.0, r0, 42, 1.0 / (365.0 * 24.0));
+    hull_white_process daily(kappa, {theta}, 0.0, r0, price_stream(42), 1.0 / 365.0);
+    hull_white_process hourly(kappa, {theta}, 0.0, r0, price_stream(42), 1.0 / (365.0 * 24.0));
 
     const double df_daily = daily.discount_factor(365);
     const double df_hourly = hourly.discount_factor(365 * 24);
@@ -224,7 +227,7 @@ TEST_CASE("hull_white_process per-tick variance scales with dt (statistical)",
     const double kappa = 0.05, theta = 0.04, sigma = 0.01, r0 = 0.04;
 
     auto sample_stdev = [&](double dt) {
-        hull_white_process p(kappa, {theta}, sigma, r0, seed, dt);
+        hull_white_process p(kappa, {theta}, sigma, r0, price_stream(seed), dt);
         double prev = r0;
         double sum_sq = 0.0;
         const int n = 2000;
@@ -250,8 +253,8 @@ TEST_CASE("hull_white_process degenerate kappa<=0 branch is dt-aware", "[hull_wh
     // The driftless random-walk branch must also scale sigma's
     // contribution by sqrt(dt) in next(), and accumulate dt (not 1.0)
     // per tick in discount_factor() -- both branches of the kappa<=0 fix.
-    hull_white_process daily(0.0, {0.03}, 0.02, 0.03, 5, 1.0 / 365.0);
-    hull_white_process annual(0.0, {0.03}, 0.02, 0.03, 5, 1.0);
+    hull_white_process daily(0.0, {0.03}, 0.02, 0.03, price_stream(5), 1.0 / 365.0);
+    hull_white_process annual(0.0, {0.03}, 0.02, 0.03, price_stream(5), 1.0);
 
     // Same seed, same z draws -- the daily process's rate excursions must
     // be sqrt(365) times smaller than the annual process's.
@@ -269,7 +272,7 @@ TEST_CASE("hull_white_process degenerate kappa<=0 branch is dt-aware", "[hull_wh
 
     // discount_factor(): zero volatility, kappa == 0 -- a pure deposit at
     // rate r0 over ticks_ahead*dt years, P = exp(-r0*ticks_ahead*dt).
-    hull_white_process p(0.0, {0.03}, 0.0, 0.03, 5, 1.0 / 365.0);
+    hull_white_process p(0.0, {0.03}, 0.0, 0.03, price_stream(5), 1.0 / 365.0);
     for (const std::size_t t : {std::size_t{1}, std::size_t{365}}) {
         const double expected = std::exp(-0.03 * static_cast<double>(t) / 365.0);
         CHECK(p.discount_factor(t) == Catch::Approx(expected).epsilon(1e-9));
@@ -277,8 +280,10 @@ TEST_CASE("hull_white_process degenerate kappa<=0 branch is dt-aware", "[hull_wh
 }
 
 TEST_CASE("hull_white_process rejects non-positive dt", "[hull_white_process][dt]") {
-    CHECK_THROWS_AS(hull_white_process(0.3, {0.03}, 0.01, 0.03, 42, 0.0), std::invalid_argument);
-    CHECK_THROWS_AS(hull_white_process(0.3, {0.03}, 0.01, 0.03, 42, -1.0), std::invalid_argument);
+    CHECK_THROWS_AS(hull_white_process(0.3, {0.03}, 0.01, 0.03, price_stream(42), 0.0),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(hull_white_process(0.3, {0.03}, 0.01, 0.03, price_stream(42), -1.0),
+                    std::invalid_argument);
 }
 
 TEST_CASE("hull_white_process struct constructor matches flat constructor",
@@ -291,9 +296,9 @@ TEST_CASE("hull_white_process struct constructor matches flat constructor",
     const std::uint32_t seed = 5;
     const double dt = 1.0 / 12.0;
 
-    hull_white_process from_struct(params, seed, dt);
+    hull_white_process from_struct(params, price_stream(seed), dt);
     hull_white_process from_flat(
-        params.kappa, {params.theta}, params.sigma, params.initial_rate, seed, dt);
+        params.kappa, {params.theta}, params.sigma, params.initial_rate, price_stream(seed), dt);
 
     for (int i = 0; i < 20; ++i) {
         CHECK(from_struct.next() == from_flat.next());

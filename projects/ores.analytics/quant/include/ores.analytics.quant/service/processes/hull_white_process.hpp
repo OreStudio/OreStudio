@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/export.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.analytics.quant/service/processes/hull_white_params.hpp"
 #include <cstdint>
 #include <random>
@@ -94,7 +95,7 @@ public:
                        std::vector<double> theta_path,
                        double sigma,
                        double initial_rate,
-                       std::uint32_t seed = 42,
+                       math::rng_stream stream,
                        double dt = 1.0);
 
     /**
@@ -109,7 +110,7 @@ public:
      * remains out of scope of the row-based architecture.
      */
     explicit hull_white_process(const hull_white_params& params,
-                                std::uint32_t seed = 42,
+                                math::rng_stream stream,
                                 double dt = 1.0);
 
     double next() override;
@@ -125,7 +126,7 @@ private:
     double rate_;
     double dt_;
     std::size_t tick_ = 0;
-    std::mt19937 rng_;
+    math::rng_stream rng_;
     std::normal_distribution<double> normal_;
 };
 

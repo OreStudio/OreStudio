@@ -112,10 +112,10 @@ Eigen::VectorXd hjm_no_arbitrage_drift(const Eigen::VectorXd& volatilities,
 heath_jarrow_morton_process::heath_jarrow_morton_process(Eigen::VectorXd initial_forward_rates,
                                                          Eigen::VectorXd volatilities,
                                                          Eigen::VectorXd tenor_spacings,
-                                                         std::uint32_t seed,
+                                                         math::rng_stream stream,
                                                          double dt)
     : dt_(dt)
-    , rng_(seed) {
+    , rng_(std::move(stream)) {
 
     // The constructor rejects invalid input with its own prefix before
     // the drift core runs (its own checks can then never fire).
@@ -136,10 +136,13 @@ heath_jarrow_morton_process::heath_jarrow_morton_process(Eigen::VectorXd initial
 }
 
 heath_jarrow_morton_process::heath_jarrow_morton_process(const heath_jarrow_morton_params& params,
-                                                         std::uint32_t seed,
+                                                         math::rng_stream stream,
                                                          double dt)
-    : heath_jarrow_morton_process(
-          params.initial_forward_rates, params.volatilities, params.tenor_spacings, seed, dt) {}
+    : heath_jarrow_morton_process(params.initial_forward_rates,
+                                  params.volatilities,
+                                  params.tenor_spacings,
+                                  std::move(stream),
+                                  dt) {}
 
 double heath_jarrow_morton_process::next() {
     // One shared shock moves every grid rate, exactly the single-factor

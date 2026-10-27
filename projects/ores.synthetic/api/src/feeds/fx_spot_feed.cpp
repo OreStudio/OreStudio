@@ -33,7 +33,6 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <format>
-#include <random>
 #include <stdexcept>
 
 namespace ores::synthetic::feed {
@@ -125,21 +124,13 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                 auth_nats, cfg, ores::marketdata::domain::start_date(cfg.vintage_date, clock)) :
             cfg.gmm_initial_price;
 
-    // Persistent random_device so the OS entropy pool is not re-seeded between rapid
-    // successive calls (which can produce equal values on some platforms when called on
-    // separate temporaries).
-    static std::random_device rd;
-    const std::uint32_t seed = rd();
-    BOOST_LOG_SEV(lg(), ores::logging::info)
-        << "SYNTHETIC SEED: source='" << cfg.source_name << "' seed=" << seed;
-
-    auto process =
-        ores::analytics::quant::service::process_factory::make_process(cfg.process_type,
-                                                                       std::move(means),
-                                                                       std::move(stdevs),
-                                                                       std::move(weights),
-                                                                       initial_price,
-                                                                       seed);
+    auto process = ores::analytics::quant::service::process_factory::make_process(
+        cfg.process_type,
+        std::move(means),
+        std::move(stdevs),
+        std::move(weights),
+        initial_price,
+        price_stream_for(scheduler.run_seed(), cfg.source_name));
 
     const auto arrival = to_arrival_spec(cfg);
     const auto compatibility = ores::analytics::quant::domain::validate_step_compatibility(

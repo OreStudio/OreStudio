@@ -33,6 +33,7 @@
 #include <cctype>
 #include <map>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 namespace ores::synthetic::domain {
@@ -75,7 +76,7 @@ map_parameters_to_yield_curve_process(
     const std::string& process_type,
     const std::vector<yield_curve_process_parameter_definition>& definitions,
     const std::vector<ir_curve_generation_config_process_parameter_value>& values,
-    std::uint32_t seed,
+    ores::analytics::quant::math::rng_stream stream,
     double dt) {
 
     using ores::analytics::quant::service::black_karasinski_params;
@@ -189,7 +190,7 @@ map_parameters_to_yield_curve_process(
         p.sigma_y = value("sigma_y");
         p.rho = value("rho");
         p.initial_rate = value("initial_rate");
-        return std::make_unique<two_factor_gaussian_process>(p, seed, dt);
+        return std::make_unique<two_factor_gaussian_process>(p, std::move(stream), dt);
     }
 
     if (type == "black_karasinski") {
@@ -198,7 +199,7 @@ map_parameters_to_yield_curve_process(
         p.theta = value("theta");
         p.sigma = value("sigma");
         p.initial_rate = value("initial_rate");
-        return std::make_unique<black_karasinski_process>(p, seed, dt);
+        return std::make_unique<black_karasinski_process>(p, std::move(stream), dt);
     }
 
     if (type == "vasicek") {
@@ -207,7 +208,7 @@ map_parameters_to_yield_curve_process(
         p.theta = value("theta");
         p.sigma = value("sigma");
         p.initial_rate = value("initial_rate");
-        return std::make_unique<vasicek_process>(p, seed, dt);
+        return std::make_unique<vasicek_process>(p, std::move(stream), dt);
     }
 
     if (type == "cox_ingersoll_ross") {
@@ -216,7 +217,7 @@ map_parameters_to_yield_curve_process(
         p.theta = value("theta");
         p.sigma = value("sigma");
         p.initial_rate = value("initial_rate");
-        return std::make_unique<cox_ingersoll_ross_process>(p, seed, dt);
+        return std::make_unique<cox_ingersoll_ross_process>(p, std::move(stream), dt);
     }
 
     // hull_white
@@ -225,7 +226,7 @@ map_parameters_to_yield_curve_process(
     p.theta = value("theta");
     p.sigma = value("sigma");
     p.initial_rate = value("initial_rate");
-    return std::make_unique<hull_white_process>(p, seed, dt);
+    return std::make_unique<hull_white_process>(p, std::move(stream), dt);
 }
 
 } // namespace ores::synthetic::domain

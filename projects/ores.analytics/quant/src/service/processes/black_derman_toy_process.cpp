@@ -22,6 +22,7 @@
 #include <numeric>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 namespace ores::analytics::quant::service {
 namespace math = ores::analytics::quant::math;
@@ -210,10 +211,10 @@ math::rate_tree build_black_derman_toy_tree(const std::vector<double>& discount_
 
 black_derman_toy_process::black_derman_toy_process(std::vector<double> discount_curve,
                                                    std::vector<double> sigma_path,
-                                                   std::uint32_t seed,
+                                                   math::rng_stream stream,
                                                    double dt)
     : dt_(dt)
-    , rng_(seed) {
+    , rng_(std::move(stream)) {
 
     // The constructor rejects invalid input with its own prefix before
     // the builder runs (the builder's own checks can then never fire).
@@ -231,9 +232,9 @@ black_derman_toy_process::black_derman_toy_process(std::vector<double> discount_
 }
 
 black_derman_toy_process::black_derman_toy_process(const black_derman_toy_params& params,
-                                                   std::uint32_t seed,
+                                                   math::rng_stream stream,
                                                    double dt)
-    : black_derman_toy_process(params.discount_curve, params.sigma_path, seed, dt) {}
+    : black_derman_toy_process(params.discount_curve, params.sigma_path, std::move(stream), dt) {}
 
 double black_derman_toy_process::next() {
     ++tick_;

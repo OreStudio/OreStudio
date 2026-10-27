@@ -20,6 +20,7 @@
 #include "ores.analytics.quant/service/processes/arithmetic_gaussian_mixture_model_process.hpp"
 #include <cmath>
 #include <stdexcept>
+#include <utility>
 
 namespace ores::analytics::quant::service {
 
@@ -28,12 +29,12 @@ arithmetic_gaussian_mixture_model_process::arithmetic_gaussian_mixture_model_pro
     std::vector<double> stdevs,
     std::vector<double> weights,
     double initial_price,
-    std::uint32_t seed)
+    math::rng_stream stream)
     : means_(std::move(means))
     , stdevs_(std::move(stdevs))
     , weights_(std::move(weights))
     , price_(initial_price)
-    , rng_(seed)
+    , rng_(std::move(stream))
     , component_dist_(weights_.begin(), weights_.end()) {
 
     if (means_.size() != stdevs_.size() || means_.size() != weights_.size())

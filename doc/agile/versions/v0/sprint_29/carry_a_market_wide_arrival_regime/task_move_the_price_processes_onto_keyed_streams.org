@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/move-the-price-processes-onto-keyed-streams
+#+pr: 3943
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A run's price paths are a function of its seed: every price process draws from a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -41,9 +41,28 @@ A run's price paths are a function of its seed: every price process draws from a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The change is made by two scripts, kept in =evidence/= so a reviewer can run
+them again.
+
+- =seed_codemod.py= moves the twelve price processes, =rate_tree= and
+  =process_factory= from a seeded =std::mt19937= to a =math::rng_stream=: a
+  =std::uint32_t seed = 42= parameter becomes a =math::rng_stream stream= with
+  no default, a member engine becomes a stream, and a delegating constructor or
+  a factory branch moves the stream it was given.
+- =wrap_seeds.py= moves the tests. It reads clang's errors after a build with
+  =-k 0=: a note that names an argument with no conversion to =rng_stream=
+  gives the call and the argument, which the script wraps in
+  =price_stream(...)=; a call that left the seed to its default is one
+  argument short, and the script appends =price_stream(42)=, the seed the
+  default gave. It runs until a round fixes nothing. The compiler decides
+  which argument is the seed, not a pattern.
+- =price_stream= in the tests keys a stream by an explicit seed.
+- A feed's price stream is keyed by the run seed, the series key of its
+  source name and the price purpose (=price_stream_for=), so its prices
+  follow the run seed as its arrivals do. =fx_spot_feed= no longer reads
+  =random_device=, and =ir_curve_feed= no longer uses a constant 42.
+- The simulate and the preview dry runs keep the seed their request names,
+  one more for each path, and key a stream from it.
 
 * Measurements
 
@@ -57,7 +76,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Production files the codemod changed | 30 | =python3 evidence/seed_codemod.py <repo>= | 7ffe732370 |
+| Test calls to price_stream | 352 in 16 files | =git diff 7ffe732370 415917acbf -- projects/ores.analytics/quant/tests=, counting price_stream( on added lines | 415917acbf |
+| Quant suite | 504 cases passed | =ores.analytics.quant.tests= | 415917acbf |
+| Synthetic suites | api and service passed | =compass test run -- -R ores.synthetic...= | f2fb13ca50 |
+| Live ticks | no tick failed after the restart; every adapter accepted every row | =compass smoke ticks --skip-provision --leave-running= | f2fb13ca50 |
 
 * Notes
 
@@ -76,12 +99,26 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3943][#3943]] | [analytics] Move the price processes onto keyed streams |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Bot: removing the seed block left two blank lines. | fx_spot_feed.cpp | Accept | One now. |
+| 2 | Bot: an FX and a curve feed with one source name would share a stream. | feed_factory.hpp | Decline | The fleet claims a source name once in one running set across every kind, so two running feeds cannot share one; the arrival stream has the same key. |
+| 3 | Bot: two processes in one dry run would share a stream. | feed_kind_registry.cpp | Decline | Each path builds one process from the request seed plus its index. |
+| 4 | Bot: log the run seed now the per-feed seed line is gone. | application.cpp | Decline | The service logs SYNTHETIC RUN SEED once at start. |
+| 5 | Bot: a restart with one seed republishes one price path. | | Decline | That is the purpose; the ticks smoke counts ticks, not distinct prices. |
 
 * Result
+
+Every random draw a run makes now comes from a keyed stream. The twelve price
+processes, =rate_tree= and =process_factory= take a =math::rng_stream= and no
+seed with a default; the change was made by =evidence/seed_codemod.py=, and
+the tests were moved by =evidence/wrap_seeds.py=, which wraps the arguments
+clang names. A feed's price stream is keyed by the run seed, its source name
+and the price purpose, so one run seed draws the same prices for a series, and
+another seed or another series does not; a test asserts all three. The FX
+feed no longer reads =random_device=. On Acme every feed priced and published
+after the change, with no failed tick.

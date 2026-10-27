@@ -74,7 +74,7 @@ void validate_branching(const rate_tree_node& node, std::size_t next_level_size)
 
 } // anonymous namespace
 
-tree_node next_tree_node(const rate_tree& tree, const tree_node& node, std::mt19937& rng) {
+tree_node next_tree_node(const rate_tree& tree, const tree_node& node, rng_stream& rng) {
     validate_node(tree, node);
     if (node.level + 1 >= tree.step_count())
         throw std::invalid_argument("rate_tree: cannot walk from the last level of the tree");

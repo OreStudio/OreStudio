@@ -27,6 +27,7 @@
 #include "ores.analytics.quant/service/processes/vasicek_process.hpp"
 #include <cmath>
 #include <stdexcept>
+#include <utility>
 
 namespace ores::analytics::quant::service {
 
@@ -36,7 +37,7 @@ process_factory::make_process(const std::string& process_type,
                               std::vector<double> stdevs,
                               std::vector<double> weights,
                               double initial_price,
-                              std::uint32_t seed,
+                              math::rng_stream stream,
                               double dt) {
     // Single source of truth for "are these parameters good?" — shared with the
     // Qt client (ores.analytics.quant::domain::validate_process_parameters), so
@@ -47,20 +48,23 @@ process_factory::make_process(const std::string& process_type,
         throw std::invalid_argument(validation.message);
 
     if (process_type == "arithmetic")
-        return std::make_unique<arithmetic_gaussian_mixture_model_process>(
-            std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
+        return std::make_unique<arithmetic_gaussian_mixture_model_process>(std::move(means),
+                                                                           std::move(stdevs),
+                                                                           std::move(weights),
+                                                                           initial_price,
+                                                                           std::move(stream));
     if (process_type == "ornstein_uhlenbeck") {
         const double kappa = weights.front();
         const double sigma = stdevs.front();
         return std::make_unique<ornstein_uhlenbeck_process>(
-            kappa, initial_price, sigma, initial_price, seed, dt);
+            kappa, initial_price, sigma, initial_price, std::move(stream), dt);
     }
     // Default to the geometric engine for "geometric" and any unknown value.
     // ores.analytics.quant deliberately carries no logging dependency (it stays
     // consumable standalone); callers that care about diagnosing an unknown
     // process_type should log around this call.
     return std::make_unique<gaussian_mixture_model_process>(
-        std::move(means), std::move(stdevs), std::move(weights), initial_price, seed);
+        std::move(means), std::move(stdevs), std::move(weights), initial_price, std::move(stream));
 }
 
 std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process>
@@ -69,7 +73,7 @@ process_factory::make_yield_curve_process(const std::string& process_type,
                                           std::vector<double> theta_path,
                                           double sigma,
                                           double initial_rate,
-                                          std::uint32_t seed,
+                                          math::rng_stream stream,
                                           double dt) {
     const auto validation = ores::analytics::quant::domain::validate_yield_curve_process_parameters(
         process_type, kappa, theta_path, sigma, initial_rate);
@@ -78,13 +82,13 @@ process_factory::make_yield_curve_process(const std::string& process_type,
 
     if (process_type == "vasicek")
         return std::make_unique<vasicek_process>(
-            kappa, theta_path.front(), sigma, initial_rate, seed, dt);
+            kappa, theta_path.front(), sigma, initial_rate, std::move(stream), dt);
     if (process_type == "cox_ingersoll_ross")
         return std::make_unique<cox_ingersoll_ross_process>(
-            kappa, theta_path.front(), sigma, initial_rate, seed, dt);
+            kappa, theta_path.front(), sigma, initial_rate, std::move(stream), dt);
     if (process_type == "hull_white")
         return std::make_unique<hull_white_process>(
-            kappa, std::move(theta_path), sigma, initial_rate, seed, dt);
+            kappa, std::move(theta_path), sigma, initial_rate, std::move(stream), dt);
 
     throw std::invalid_argument(
         "process_factory::make_yield_curve_process: unrecognised process_type '" + process_type +

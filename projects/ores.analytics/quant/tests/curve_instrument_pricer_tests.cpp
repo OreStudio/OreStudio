@@ -20,6 +20,7 @@
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.analytics.quant/service/processes/hull_white_process.hpp"
 #include "ores.analytics.quant/service/processes/vasicek_process.hpp"
+#include "price_stream.hpp"
 #include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -132,7 +133,7 @@ TEST_CASE("deposit_rate/fra_rate/swap_par_rate applied to a real hull_white_proc
     // between the shortest and longest single-period forward rates for a
     // monotonically-shaped curve) rather than checking exact values (which
     // duplicates the process's own discount_factor tests).
-    hull_white_process process(0.3, {0.03}, 0.01, 0.02);
+    hull_white_process process(0.3, {0.03}, 0.01, 0.02, price_stream(42));
 
     const double df_3m = process.discount_factor(1);
     const double df_1y = process.discount_factor(4);
@@ -161,8 +162,8 @@ TEST_CASE("deposit_rate/fra_rate/swap_par_rate applied to a real hull_white_proc
 TEST_CASE("vasicek_process (a hull_white_process composition) produces the same "
           "instrument rates as the equivalent hull_white_process directly",
           "[curve_instrument_pricer]") {
-    vasicek_process vasicek(0.4, 0.025, 0.02, 0.015);
-    hull_white_process hull_white(0.4, {0.025}, 0.02, 0.015);
+    vasicek_process vasicek(0.4, 0.025, 0.02, 0.015, price_stream(42));
+    hull_white_process hull_white(0.4, {0.025}, 0.02, 0.015, price_stream(42));
 
     const double v_df = vasicek.discount_factor(4);
     const double hw_df = hull_white.discount_factor(4);

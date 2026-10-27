@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.quant/math/rate_tree.hpp"
+#include "price_stream.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
@@ -88,7 +89,7 @@ TEST_CASE("rate_tree next_tree_node walks only along stored branches", "[rate_tr
     // along one of the current node's branches -- the recombining
     // property, exercised statistically over many draws.
     const rate_tree tree = build_binomial_tree(6, std::log(0.04), 0.05);
-    std::mt19937 rng(7);
+    auto rng = price_stream(7);
     tree_node node{0, 0};
     for (int i = 0; i < 2000; ++i) {
         if (node.level + 1 >= tree.step_count()) {
@@ -104,7 +105,7 @@ TEST_CASE("rate_tree next_tree_node walks only along stored branches", "[rate_tr
 
 TEST_CASE("rate_tree next_tree_node walks a trinomial the same way", "[rate_tree]") {
     const rate_tree tree = build_trinomial_tree(4);
-    std::mt19937 rng(11);
+    auto rng = price_stream(11);
     tree_node node{0, 0};
     for (int i = 0; i < 2000; ++i) {
         if (node.level + 1 >= tree.step_count()) {
@@ -193,14 +194,14 @@ TEST_CASE("rate_tree propagation with zero steps returns the unit state price", 
 
 TEST_CASE("rate_tree rejects operations on an empty tree", "[rate_tree]") {
     const rate_tree tree;
-    std::mt19937 rng(1);
+    auto rng = price_stream(1);
     CHECK_THROWS_AS(next_tree_node(tree, {0, 0}, rng), std::invalid_argument);
     CHECK_THROWS_AS(propagate_state_prices(tree, {0, 0}, 1, 1.0), std::invalid_argument);
 }
 
 TEST_CASE("rate_tree rejects out-of-range nodes", "[rate_tree]") {
     const rate_tree tree = build_binomial_tree(3, std::log(0.04), 0.05);
-    std::mt19937 rng(1);
+    auto rng = price_stream(1);
     CHECK_THROWS_AS(next_tree_node(tree, {3, 0}, rng), std::invalid_argument);
     CHECK_THROWS_AS(next_tree_node(tree, {1, 2}, rng), std::invalid_argument);
     CHECK_THROWS_AS(propagate_state_prices(tree, {3, 0}, 1, 1.0), std::invalid_argument);
@@ -208,7 +209,7 @@ TEST_CASE("rate_tree rejects out-of-range nodes", "[rate_tree]") {
 
 TEST_CASE("rate_tree rejects walking from the last level of the tree", "[rate_tree]") {
     const rate_tree tree = build_binomial_tree(2, std::log(0.04), 0.05);
-    std::mt19937 rng(1);
+    auto rng = price_stream(1);
     CHECK_THROWS_AS(next_tree_node(tree, {1, 0}, rng), std::invalid_argument);
 }
 
@@ -226,7 +227,7 @@ TEST_CASE("rate_tree rejects negative dt and malformed branches", "[rate_tree]")
 
     rate_tree broken = build_binomial_tree(2, std::log(0.04), 0.05);
     broken.levels[0][0].child_probabilities = {0.5};
-    std::mt19937 rng(1);
+    auto rng = price_stream(1);
     CHECK_THROWS_AS(next_tree_node(broken, {0, 0}, rng), std::invalid_argument);
 
     rate_tree out_of_range = build_binomial_tree(2, std::log(0.04), 0.05);

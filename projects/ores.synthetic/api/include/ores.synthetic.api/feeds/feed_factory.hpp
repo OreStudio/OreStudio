@@ -22,11 +22,13 @@
 
 #include "fx_spot_feed.hpp"
 #include "ir_curve_feed.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/domain/market_clock.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/export.hpp"
+#include <cstdint>
 #include <functional>
 #include <map>
 #include <memory>
@@ -42,6 +44,20 @@ namespace ores::synthetic::feed {
 // registered by make_default_feed_factory(). A producer's kind is the asset-class discriminator
 // of the factory seam: the control-plane passes it (or derives it from the config table) to
 // select the builder, and i_feed::kind() exposes it.
+
+/**
+ * @brief The stream a feed's price process draws from: keyed by the run seed, the series
+ * its source names, and the price purpose.
+ *
+ * A feed's prices are then a function of the run seed, as its arrivals are, and two runs
+ * with one seed publish the same prices for a series.
+ */
+inline ores::analytics::quant::math::rng_stream price_stream_for(std::uint64_t run_seed,
+                                                                 std::string_view source_name) {
+    using namespace ores::analytics::quant::math;
+    return rng_stream(stream_key{
+        .run_seed = run_seed, .series = series_key(source_name), .purpose = draw_purpose::price});
+}
 
 /**
  * @brief Shared inputs every producer builder needs, gathered once by the caller (application

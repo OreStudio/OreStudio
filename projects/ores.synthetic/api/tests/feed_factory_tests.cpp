@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.analytics.quant/service/run_clock.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
@@ -39,7 +40,12 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <cstdint>
+#include <memory>
 #include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace {
 
@@ -499,4 +505,25 @@ TEST_CASE("one clock drives every feed and each counts what it ticks", "[feed_fa
 
     first->stop();
     second->stop();
+}
+
+TEST_CASE("one run seed draws the same prices for a series, and another seed or series does not",
+          "[feed_factory]") {
+    const auto prices = [](std::uint64_t run_seed, std::string_view source) {
+        auto process = ores::analytics::quant::service::process_factory::make_process(
+            "geometric",
+            {0.0},
+            {0.01},
+            {1.0},
+            1.1,
+            ores::synthetic::feed::price_stream_for(run_seed, source));
+        std::vector<double> values;
+        for (int i = 0; i < 5; ++i)
+            values.push_back(process->next());
+        return values;
+    };
+
+    CHECK(prices(42, "synthetic.demo.eurusd") == prices(42, "synthetic.demo.eurusd"));
+    CHECK(prices(42, "synthetic.demo.eurusd") != prices(43, "synthetic.demo.eurusd"));
+    CHECK(prices(42, "synthetic.demo.eurusd") != prices(42, "synthetic.demo.gbpusd"));
 }

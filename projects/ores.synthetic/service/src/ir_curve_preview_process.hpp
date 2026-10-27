@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
+#include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -69,7 +70,11 @@ make_preview_process(const std::string& process_type,
         values.push_back(std::move(v));
     }
     return map_parameters_to_yield_curve_process(
-        process_type, definitions, values, seed, ores::synthetic::feed::ir_curve_feed_dt);
+        process_type,
+        definitions,
+        values,
+        ores::synthetic::feed::price_stream_for(seed, "preview"),
+        ores::synthetic::feed::ir_curve_feed_dt);
 }
 
 }

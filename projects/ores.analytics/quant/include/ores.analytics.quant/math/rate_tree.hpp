@@ -21,6 +21,7 @@
 #define ORES_ANALYTICS_QUANT_MATH_RATE_TREE_HPP
 
 #include "ores.analytics.quant/export.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
 #include <cstddef>
 #include <random>
 #include <vector>
@@ -94,7 +95,7 @@ struct rate_tree {
  */
 ORES_ANALYTICS_QUANT_EXPORT tree_node next_tree_node(const rate_tree& tree,
                                                      const tree_node& node,
-                                                     std::mt19937& rng);
+                                                     rng_stream& rng);
 
 /**
  * @brief Forward risk-neutral state-price propagation.

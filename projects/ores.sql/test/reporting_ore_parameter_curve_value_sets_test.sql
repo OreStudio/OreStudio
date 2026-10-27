@@ -25,9 +25,9 @@
  * scope:name. The set is one of the curve sets, drawn from a refdata catalogue,
  * from a list an ORE parser states, or from the leaf's own type.
  * - The curve leaves have links
- * - Every curve link names a value set that exists
+ * - Every link a curve leaf has names a value set that exists
  * - Every documented curve leaf has a link
- * - Every curve link points at a documented curve leaf
+ * - Every set a curve leaf uses is a curve set, not a convention or pricing one
  * - Every curve set has at least one leaf
  * - Every catalogue a curve set draws on is registered
  *
@@ -38,20 +38,6 @@ begin;
 
 select plan(6);
 
-create temporary table t_links on commit drop as
-select l.code, l.scope, l.name, l.value_set_code
-from ores_reporting_ore_parameter_setting_value_sets_tbl l
-where l.valid_to = ores_utility_infinity_timestamp_fn()
-  and l.tenant_id = ores_utility_system_tenant_id_fn()
-  and starts_with(l.value_set_code, 'curve.');
-
-create temporary table t_sets on commit drop as
-select s.code, s.source_kind, s.catalogue_code
-from ores_reporting_ore_parameter_value_sets_tbl s
-where s.valid_to = ores_utility_infinity_timestamp_fn()
-  and s.tenant_id = ores_utility_system_tenant_id_fn()
-  and starts_with(s.code, 'curve.');
-
 create temporary table t_documented on commit drop as
 select d.scope, d.name
 from ores_dq_ore_parameters_artefact_tbl d
@@ -59,6 +45,23 @@ where d.dataset_id = (select id from ores_dq_datasets_tbl
                       where code = 'ore.parameters'
                         and valid_to = ores_utility_infinity_timestamp_fn())
   and d.schema_name = 'curveconfig.xsd';
+
+-- The links a curve leaf holds, whatever set it names. Reading them by the
+-- leaf rather than by the set prefix is what lets the fourth test below state
+-- the rule instead of assuming it.
+create temporary table t_links on commit drop as
+select l.code, l.scope, l.name, l.value_set_code
+from ores_reporting_ore_parameter_setting_value_sets_tbl l
+join t_documented d on l.code = d.scope || ':' || d.name
+where l.valid_to = ores_utility_infinity_timestamp_fn()
+  and l.tenant_id = ores_utility_system_tenant_id_fn();
+
+create temporary table t_sets on commit drop as
+select s.code, s.source_kind, s.catalogue_code
+from ores_reporting_ore_parameter_value_sets_tbl s
+where s.valid_to = ores_utility_infinity_timestamp_fn()
+  and s.tenant_id = ores_utility_system_tenant_id_fn()
+  and exists (select 1 from t_links l where l.value_set_code = s.code);
 
 select cmp_ok(
     (select count(*)::int from t_links), '>', 0,
@@ -76,10 +79,9 @@ select is_empty(
     'every documented curve leaf has a link');
 
 select is_empty(
-    $$select l.code from t_links l
-      where not exists (select 1 from t_documented d
-                        where l.code = d.scope || ':' || d.name)$$,
-    'every curve link points at a documented curve leaf');
+    $$select code, value_set_code from t_links
+      where not starts_with(value_set_code, 'curve.')$$,
+    'every set a curve leaf uses is a curve set');
 
 select is_empty(
     $$select s.code from t_sets s

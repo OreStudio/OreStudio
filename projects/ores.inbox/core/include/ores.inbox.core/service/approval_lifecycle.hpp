@@ -57,6 +57,20 @@ struct request_page {
 };
 
 /**
+ * @brief What a caller may decide: whole kinds, and the parts whose answers
+ * are theirs.
+ *
+ * A request that names parts is decided by part rather than by count, so the
+ * permission its kind names reaches none of its deciders. The caller resolves
+ * each catalogue entry's permission against the permissions it holds and states
+ * the codes here, so this class never evaluates a permission.
+ */
+struct decidable_scope {
+    std::vector<std::string> kind_codes;
+    std::vector<std::string> part_codes;
+};
+
+/**
  * @brief A request the sweep closed because nobody answered it.
  */
 struct expired_request {
@@ -187,6 +201,15 @@ public:
     std::optional<domain::approval_part> part(const std::string& code);
 
     /**
+     * @brief Every part, read from the system tenant's catalogue.
+     *
+     * The caller resolves each part's decider permission into a
+     * @c decidable_scope, so this is the catalogue a person's queue is read
+     * against.
+     */
+    std::vector<domain::approval_part> parts();
+
+    /**
      * @brief Writes a decision and moves the request to the state the
      * decisions reach, in one statement.
      */
@@ -209,28 +232,35 @@ public:
     decision_result fail_apply(const std::string& request_id, const std::string& reason);
 
     /**
-     * @brief The open requests of the given kinds not raised by an account,
-     * oldest first.
+     * @brief The open requests the caller may decide and did not raise, oldest
+     * first.
+     *
+     * A request is the caller's when it names no parts and its kind is in the
+     * scope, or when a part it names is open and in the scope. A part is open
+     * when it has not approved and every part of an earlier answer order has,
+     * so a part decider sees a request when its turn comes and not before.
      */
-    request_page queue(const std::vector<std::string>& kind_codes,
+    request_page queue(const decidable_scope& scope,
                        const boost::uuids::uuid& excluding,
                        int offset,
                        int limit);
 
     /**
-     * @brief The requests of the given kinds, not raised by an account, that
-     * were answered within a window, newest answer first.
+     * @brief The requests the caller may decide, not raised by them, that were
+     * answered within a window, newest answer first.
      *
      * A request leaves the open queue the moment it is answered, so the person
      * who answered it has nothing to look at when a notice links back to what
-     * happened. This is the tail that keeps it in view.
+     * happened. This is the tail that keeps it in view. The window holds the
+     * requests of the caller's kinds, and every request the caller answered
+     * themselves, whatever part they answered for.
      *
      * The answer is the moment the request's current version was written,
      * which for an answered request is the moment of the answer. A window of
      * zero answers nothing.
      */
     std::vector<domain::approval_request>
-    recently_answered(const std::vector<std::string>& kind_codes,
+    recently_answered(const decidable_scope& scope,
                       const boost::uuids::uuid& excluding,
                       std::chrono::seconds window);
 

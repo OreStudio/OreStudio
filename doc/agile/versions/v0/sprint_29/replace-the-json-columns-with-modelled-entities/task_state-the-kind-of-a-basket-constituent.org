@@ -8,7 +8,7 @@
 #+filetags: :replace-the-json-columns-with-modelled-entities:sprint_29:v0:
 #+owner: marco
 #+branch: feature/state-the-kind-of-a-basket-constituent
-#+pr:
+#+pr: 3948
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -114,7 +114,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3948][#3948]] | [trading] State the kind of a basket constituent |
 
 * Review
 

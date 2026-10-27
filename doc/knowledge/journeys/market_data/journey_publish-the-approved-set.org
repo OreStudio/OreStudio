@@ -174,18 +174,158 @@ notification kind tells it what a publish notice is.
    version is live. The candidate is an =ores.inbox.notification_kind= such as
    =marketdata.curve_published=, with =message_key= and =mail_optional=, seeded
    beside the kind that raises it. Until then the consumers panel states that
-   nobody is told.
+   nobody is told. The recipients, the trigger and what the notice carries are
+   the decision *The publish notice* below.
 3. *Zero approvals have no path.* =approvals_required= is a count the kind
    carries, including zero, but nothing moves a zero-approval request to
    approved without a person. The candidate is the rule in the inbox service
    that a raise with =approvals_required= 0 closes the request approved at
    once, which then lets the owning publish apply it. Until then a kind that
-   publishes immediately cannot be expressed.
+   publishes immediately cannot be expressed. The rule, the actor and the
+   record it leaves are the decision *The zero-approval path* below.
 4. *There is no candidate set to publish.* The thing published would be a set
    of points with one as-of, and no entity holds it. The candidate is the
    candidate set of the first journey. Until then the publish names the curve
    configuration and the as-of, takes whatever the derivation wrote under them,
    and the record names that pair rather than a set identifier.
+
+* The decisions
+
+** The zero-approval path
+
+*** The rule
+
+=approval_kind.approvals_required= is a count on the kind, and zero is a count
+like any other. When it is zero, nobody decides, and the raise is the publish.
+
+One operation performs the whole act: =marketdata.v1.ops.publish_curve=, called
+with the configuration and the as-of and no approved request. It raises the
+request, writes its subject, and, because the kind needs no approval, the inbox
+closes the request approved in the same act. The owning operation applies the
+subject at once, and the answer carries the published instant and the publisher,
+which the publish record holds.
+
+The gate still states what happened. The request exists after the act, in the
+state =approved=, with its reason, its subject and its actor, so the audit reads
+one request and one publish and not a silent write. The publish record names the
+asker as the publisher, because the asker is the person who applied it.
+
+The zero-approval close is not a decision by a person. The rule that a decider
+is not the asker refuses a decision by the asker, so the inbox writes the close
+as a state transition whose decider is the system account, and whose comment
+names the kind and its zero count. A person's decision and the system's close
+therefore never read the same way.
+
+*** Who may take it
+
+An account that holds the kind's raise permission and the write the act needs:
+the market data maker's right to publish a curve. The decide permission is not
+needed, because there is no decision. The account is the maker and the publisher
+at once, and the record says so.
+
+*** Why this answer
+
+A tenant may run a curve family that needs no second pair of eyes: a synthetic
+curve, or a reference curve that no trade prices from. The count already exists
+on the kind, so the model should not carry a count it cannot reach. The gate
+stays in force either way: the publish is one operation with one record, and a
+tenant can raise the count to one without changing a screen.
+
+The alternative is that the raise writes no request and publishes straight away.
+That is rejected, because the gate would then have two shapes and the audit
+would have to tell a request-shaped publish from a shapeless one.
+
+*** Open questions
+
+1. May a tenant set the count to zero? The recommendation is yes, for a named
+   list of curve families, and the setting is audited like any other kind
+   change; the seeded value stays one for a curve publish. The alternative is
+   that zero is refused for market data and only other kinds may use it.
+2. Does the system close name a decider? The recommendation is one system
+   account, so every decision row names somebody and no row carries an empty
+   decider. The alternative is a null decider and no decision row, which reads
+   as a request that was never decided.
+3. What does the maker's screen say? The recommendation is that the act is named
+   Publish when the kind's count is zero, and the ask is named Raise publish
+   request when it is one or more, with the panel stating that no second person
+   stands in the act. The alternative is one word for both acts and a note under
+   it.
+4. Is the kind's expiry used? The recommendation is no: a zero-approval request
+   closes in the raise and never waits.
+
+** The publish notice
+
+*** The rule
+
+The trigger is the apply, once, at the instant the published set moves. The
+notice is not sent at the raise and not at the approval: until somebody applies
+an approval, the curve the system uses has not changed, and a notice that says
+it has is untrue.
+
+The recipients are the people and the services that read the curve:
+
+- the accounts subscribed to the curve through their party's market data
+  subscriptions, which is how the desk reads it;
+- the roles that price from the curve, where a party holds the subscription by
+  a role rather than by an account;
+- the services that consume the curve: pricing and reporting, and the market
+  data service itself.
+
+The notice is one notification of the kind =marketdata.curve_published=, seeded
+beside the kind that raises it, with a message key, its arguments and an
+optional mail. It carries the subject and the act, and no values:
+
+| Field                 | What it holds                                    |
+|-----------------------+--------------------------------------------------|
+| Curve configuration   | The code the reader knows                        |
+| Party                 | The party whose curve changed                    |
+| Published as-of       | The instant the set was built at                 |
+| Published at          | The instant the set moved                        |
+| Publisher             | The account that applied it                      |
+| Authorising request   | The request the act stands on                    |
+| Previous as-of        | The set it replaced, or empty for the first      |
+
+The link on the notice opens the published curve's record page, and the record
+page is where the values are read. A notice names the change; it does not carry
+the curve.
+
+A replacement sends the same notice, because a replacement is a publish. A
+withdrawal sends =marketdata.curve_withdrawn=, with the same subject and the
+withdrawal reason in words, because a withdrawn curve is a change a reader must
+act on.
+
+*** Why this answer
+
+The consumers of a published curve are people at a desk and services in the
+platform, and the model already holds both: the subscriptions name the party,
+and a notification names the account and the link. A notice that carried the
+values would duplicate the curve and drift from it; a notice that names the
+subject and links to it cannot drift.
+
+*** The alternative
+
+A change event alone, =marketdata.v1.market_series_events.updated=, and no
+notification. It is rejected because an event says a row changed, and a person
+cannot read it; and because a consumer that misses the event has no place to
+look.
+
+*** Open questions
+
+1. Is the notice per party or per person? The recommendation is per account
+   subscribed, because the party subscription names a party and the bell hangs
+   on an account. The alternative is one notice per party, which needs a party
+   bell the platform does not have.
+2. Does a consumer outside the tenant get a notice? The recommendation is not
+   yet: a published curve is tenant-scoped, and a cross-tenant feed is its own
+   design.
+3. Is mail sent? The recommendation is that mail is off for a publish and on for
+   a withdrawal, because taking a curve out of use is the one a person must not
+   miss. The alternative is mail on every publish.
+4. Does the notice carry the previous set's values? The recommendation is no: the
+   previous as-of is enough to find them, and the delta shows the difference.
+5. Who is told when nobody is subscribed? The recommendation is the queue and
+   nobody else: an unsubscribed curve changes without a notice, and the read
+   states the new instant.
 
 * Related journeys
 

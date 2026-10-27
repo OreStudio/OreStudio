@@ -166,13 +166,15 @@ changed".
    there is no read that excludes a withdrawn set. The candidate is a withdrawn
    instant and actor on the publish record, or a withdrawing record of its own.
    Until it exists a withdrawal would be a new publish, and the record would
-   read as two live sets rather than one replaced by the other.
+   read as two live sets rather than one replaced by the other. The decision
+   *Withdrawal and supersession* below states the state the record holds.
 3. *There is no market-data withdrawal kind.* One kind is seeded,
    =iam.role_grant=, and it does not withdraw a curve. The candidate is a kind,
    =marketdata.curve_withdrawal=, with =decide_permission_code=,
    =comment_on_approve= and a configurable =approvals_required=, so a tenant
    may allow a trader to withdraw alone or require approvals. Until then the
-   raise cannot be given a kind and the controls are disabled.
+   raise cannot be given a kind and the controls are disabled. The decision
+   below names the kind, its count and who may withdraw.
 4. *Nothing links a replacement to the version it supersedes.* A corrected
    curve written under the same =oresmd_uri= would be a new set of observations
    with no pointer from the old version to the new. The candidate is a
@@ -183,7 +185,9 @@ changed".
    published curve are not told it was withdrawn or replaced. The candidate is
    an =ores.inbox.notification_kind= such as =marketdata.curve_withdrawn=,
    seeded beside the kind. Until then the consumers panel states that nobody is
-   told, and the change is found only at the next read.
+   told, and the change is found only at the next read. The recipients and the
+   trigger are stated under *The publish notice* in
+   [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]].
 6. *No read maps a published curve to its consumers.* Nothing returns which
    people or services read a given published curve, so the screen cannot list
    who is affected. The candidate is a read over the party
@@ -193,6 +197,105 @@ changed".
    and there is no baseline to show what it changes. The candidate is the delta
    read of the first journey. Until then the change panel is shown empty and
    the trader describes the change in the reason.
+
+* The decision
+
+** Withdrawal and supersession
+
+*** The rule
+
+A withdrawal is an act on the published set, and it is a new version of the
+publish record. It is not a deletion and not an edit. The act writes four facts
+on the record of the request that published the set: the withdrawing account,
+the instant, the reason, and the withdrawal request that authorised the act. The
+record keeps its values and its publisher, so the set a desk priced from is
+still readable afterwards.
+
+A supersession is the same act with a successor. The corrected set is published
+by its own publish request, and the publish record of the set it replaces
+carries the link: the successor's request and its published instant. A reader
+therefore reads one live set and one superseded set, and never two live sets.
+
+The state is on the publish record, and not on a separate entity:
+
+| State      | What the record holds                                          | What a reader sees                      |
+|------------+----------------------------------------------------------------+-----------------------------------------|
+| published  | A published instant, a publisher and an authorising request     | The set in use                          |
+| superseded | The published facts, and a successor request and instant        | A set that was in use and is not any more |
+| withdrawn  | The published facts, a withdrawing account, an instant and a reason | A set taken out of use, and its reason |
+
+The reader reads the state beside the values. A read of a withdrawn curve
+returns its last published values and the words that say it is withdrawn, with
+the instant and the reason. It does not return an empty series, because an empty
+series cannot be told from a curve that was never published.
+
+*** Who may withdraw
+
+The maker is the account that holds the kind's raise permission. The checker is
+an account that holds the kind's decide permission and did not raise the
+withdrawal. The publisher of the set has no special right to withdraw it: an
+account that did not publish the set may take it out of use, because the reason
+is the error and not the person. Any account that may raise a publish may raise
+a withdrawal.
+
+A tenant sets the kind's approval count. The recommended value is one, so a
+second pair of eyes reads the reason before the set leaves use. The alternative
+is a count of zero, for a tenant whose operators act alone at night; the price
+is that the record then names one person for both the error and the act.
+
+*** How a replacement differs from a withdrawal
+
+A replacement puts a corrected set in place and keeps the curve in use. The
+corrected set is a candidate at a new as-of, it is raised as a publish request,
+and it is decided as every publish is. The replacement is not a second kind and
+not a second operation: it is a publish whose subject is the successor, and the
+link from the old record is what makes it a replacement.
+
+A withdrawal takes the curve out of use and leaves it out until somebody
+publishes again. Pricing and reporting read a withdrawn curve as last-known,
+and they state the withdrawal. A curve that must resume needs a publish, and a
+publish needs a request.
+
+The trader chooses between the two acts at step 4 of this journey. They are not
+two screens.
+
+*** Why this answer
+
+The publish record already holds the facts of the act: the request, the
+publisher and the instant. A withdrawal adds the end of the act to the same row,
+so the history of a curve is one stream of versions of one row and not a join of
+two tables. It also makes a list of published curves answer one question with
+one read: which set is in use for each series, and what ended it.
+
+*** The alternative
+
+A withdrawal is its own entity, =ores.marketdata.curve_withdrawal=, keyed by its
+own request and pointing at the publish record it ends. It carries the reason
+and the instant, and the publish record keeps the published facts alone. The
+screens then join the two reads. This is the answer if a tenant needs many
+withdrawals for one publish, which the model does not expect: a set leaves use
+once.
+
+*** Open questions
+
+1. Does the withdrawal apply when the last decider approves, or does the trader
+   apply it? The recommendation is that it applies on the decision. A publish
+   waits for the trader because the trader owns the set that becomes live; a
+   withdrawal takes a risk out of the book, and a second press adds a wait and
+   no check. The alternative is the publish's path, with an apply call that
+   names the approved withdrawal request.
+2. Which reasons may a withdrawal name? The recommendation is a lookup of its
+   own, seeded with the reasons a curve leaves use: a wrong quote, a stale
+   pillar, a recipe changed after the fact, a duplicate publish, and a
+   correction. A withdrawal names a code and a comment, as a hold does.
+3. May a withdrawn set be published again unchanged? The recommendation is no:
+   the route is a new candidate at a new as-of, so the record never reads as if
+   the error never happened. A tenant that must restore exactly the same values
+   raises a publish of that set, and the reason states the restoration.
+4. Does a withdrawal request expire? The recommendation is that it does not: a
+   withdrawal that nobody answers leaves a wrong set in use, and the ask must
+   stay visible rather than close in silence. The alternative is the two-week
+   window the publish kind carries.
 
 * Related journeys
 

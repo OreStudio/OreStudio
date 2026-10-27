@@ -186,7 +186,8 @@ journey draws it.
    decide permission, so one account can hold both. The candidate is a pair of
    permission codes on the kind, one to raise and one to decide. Until then the
    screen shows the decide permission as read-only text and cannot warn the
-   trader that they hold it.
+   trader that they hold it. The pair, and the codes recommended, is the
+   decision stated in [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]].
 5. *Nothing tells the approver that a request waits.* No notification kind
    exists for a market-data request, so the queue is the only signal. The
    candidate is an =ores.inbox.notification_kind= such as

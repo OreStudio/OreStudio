@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
-std::string opt_str(const std::optional<T>& o) {
+std::string tenor_basis_swap_pay_receive_opt_str(const std::optional<T>& o) {
     if (!o)
         return {};
     std::ostringstream s;
@@ -50,9 +50,10 @@ std::string convert_to_table(const std::vector<tenor_basis_swap_pay_receive>& v)
           << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& pr : v) {
-        table << opt_str(pr.pay_leg.pay_index) << opt_str(pr.rec_leg.receive_index)
-              << opt_str(pr.coupon.sub_periods_coupon_type) << pr.audit.modified_by
-              << pr.identity.version << fort::endr;
+        table << tenor_basis_swap_pay_receive_opt_str(pr.pay_leg.pay_index)
+              << tenor_basis_swap_pay_receive_opt_str(pr.rec_leg.receive_index)
+              << tenor_basis_swap_pay_receive_opt_str(pr.coupon.sub_periods_coupon_type)
+              << pr.audit.modified_by << pr.identity.version << fort::endr;
     }
     return table.to_string();
 }

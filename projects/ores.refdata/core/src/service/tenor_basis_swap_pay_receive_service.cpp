@@ -75,9 +75,9 @@ namespace {
  * repository's storage-key read is not used at all.
  */
 std::vector<domain::tenor_basis_swap_pay_receive>
-read_one(repository::tenor_basis_swap_pay_receive_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::tenor_basis_swap_pay_receive_key& key) {
+tenor_basis_swap_pay_receive_read_one(repository::tenor_basis_swap_pay_receive_repository& repo,
+                                      const ores::database::context& ctx,
+                                      const messaging::tenor_basis_swap_pay_receive_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
@@ -88,7 +88,7 @@ read_one(repository::tenor_basis_swap_pay_receive_repository& repo,
  * write produced is the one the object carries.
  */
 messaging::tenor_basis_swap_pay_receive_key
-key_from(const domain::tenor_basis_swap_pay_receive& v) {
+tenor_basis_swap_pay_receive_key_from(const domain::tenor_basis_swap_pay_receive& v) {
     messaging::tenor_basis_swap_pay_receive_key key;
     key.id = v.identity.id;
     return key;
@@ -102,7 +102,7 @@ key_from(const domain::tenor_basis_swap_pay_receive& v) {
  * database's to state, and are set after this conversion.
  */
 domain::tenor_basis_swap_pay_receive
-to_domain(const messaging::tenor_basis_swap_pay_receive_write& write) {
+tenor_basis_swap_pay_receive_to_domain(const messaging::tenor_basis_swap_pay_receive_write& write) {
     domain::tenor_basis_swap_pay_receive v;
     v.identity.id = write.id;
     v.identity.convention_id = write.convention_id;
@@ -200,7 +200,7 @@ messaging::get_tenor_basis_swap_pay_receive_response
 tenor_basis_swap_pay_receive_service::get_tenor_basis_swap_pay_receive(
     const messaging::get_tenor_basis_swap_pay_receive_request& request) {
     messaging::get_tenor_basis_swap_pay_receive_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = tenor_basis_swap_pay_receive_read_one(repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "tenor_basis_swap_pay_receive"});
@@ -221,7 +221,7 @@ tenor_basis_swap_pay_receive_service::get_many_tenor_basis_swap_pay_receives(
     for (const auto& k : request.keys) {
         messaging::tenor_basis_swap_pay_receive_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
+        auto found = tenor_basis_swap_pay_receive_read_one(repo_, ctx_, k);
         if (!found.empty())
             entry.tenor_basis_swap_pay_receive = std::move(found.front());
         response.entries.push_back(std::move(entry));
@@ -238,7 +238,8 @@ tenor_basis_swap_pay_receive_service::put_tenor_basis_swap_pay_receive(
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
+    auto written = tenor_basis_swap_pay_receive_read_one(
+        repo_, ctx_, tenor_basis_swap_pay_receive_key_from(value));
     if (!written.empty())
         response.tenor_basis_swap_pay_receive = std::move(written.front());
     return response;
@@ -271,7 +272,8 @@ tenor_basis_swap_pay_receive_service::put_many_tenor_basis_swap_pay_receives(
     repo_.write(ctx_, batch, claims);
     response.tenor_basis_swap_pay_receives.reserve(batch.size());
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
+        auto written = tenor_basis_swap_pay_receive_read_one(
+            repo_, ctx_, tenor_basis_swap_pay_receive_key_from(value));
         response.tenor_basis_swap_pay_receives.push_back(
             written.empty() ? value : std::move(written.front()));
     }
@@ -307,7 +309,8 @@ tenor_basis_swap_pay_receive_service::delete_tenor_basis_swap_pay_receive(
             // A conflicting removal states the version it expected but not the one
             // the row now holds, and the sentence wants both. The row is read only
             // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
+            const auto live =
+                tenor_basis_swap_pay_receive_read_one(repo_, ctx_, request.removal.key);
             response.result =
                 refuse(outcome_code::version_conflict,
                        {.entity = "tenor_basis_swap_pay_receive",
@@ -401,8 +404,9 @@ ores::utility::domain::result tenor_basis_swap_pay_receive_service::prepare_chan
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
-    out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    out = tenor_basis_swap_pay_receive_to_domain(change.write);
+    const auto current = tenor_basis_swap_pay_receive_read_one(
+        repo_, ctx_, tenor_basis_swap_pay_receive_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

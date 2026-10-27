@@ -8,7 +8,7 @@
 #+filetags: :make-ores-ore-the-only-owner-of-ore-formats:sprint_29:v0:
 #+owner: marco
 #+branch: feature/scaffold-the-ore-formats-story
-#+pr:
+#+pr: 3952
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3952][#3952]] | [agile] Scaffold the story that owns ORE formats |
 
 * Review
 

@@ -17,6 +17,7 @@
  *
  */
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 #include <utility>
@@ -119,6 +120,10 @@ void tick_scheduler::remove(std::size_t id) {
                 return;
             market_.withdraw(it->second.spec.arrival.ticks_per_hour / 3600.0);
             series_.erase(it);
+            // A removed series leaves its mark in the heap until the mark surfaces. Once such
+            // marks outnumber the live ones, the heap is rebuilt from the live series.
+            if (++stale_ > series_.size())
+                rebuild_heap();
         },
         true);
 }
@@ -173,6 +178,15 @@ void tick_scheduler::sample(i_run_clock::time_point t) {
         history_.pop_front();
 }
 
+void tick_scheduler::rebuild_heap() {
+    std::vector<pending> live;
+    live.reserve(series_.size());
+    for (const auto& [id, s] : series_)
+        live.push_back(pending{.mark = s.mark, .id = id});
+    heap_ = decltype(heap_)(std::greater<>{}, std::move(live));
+    stale_ = 0;
+}
+
 std::optional<double> tick_scheduler::next_due() {
     // A removed series leaves its mark behind; it is dropped when it surfaces.
     while (!heap_.empty()) {
@@ -181,6 +195,8 @@ std::optional<double> tick_scheduler::next_due() {
         if (it != series_.end() && it->second.mark == top.mark)
             return market_.now() + market_.time_to_reach(top.mark);
         heap_.pop();
+        if (stale_ > 0)
+            --stale_;
     }
     return std::nullopt;
 }
@@ -216,6 +232,10 @@ std::optional<fired_tick> tick_scheduler::fire(std::unique_lock<std::mutex>& loc
     } catch (const std::exception& ex) {
         if (on_failed)
             on_failed(ex);
+    } catch (...) {
+        // One feed that throws something else must not end the loop every feed runs on.
+        if (on_failed)
+            on_failed(std::runtime_error("a tick body threw something other than an exception"));
     }
     lock.lock();
     return fired;

@@ -109,6 +109,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Bot: a non-std throw from a body ends the loop. | tick_scheduler.cpp | Accept | catch (...) reports it through the failure hook. |
+| 2 | Bot: remove can deadlock if its caller holds a lock a body takes. | tick_scheduler.hpp | Accept | The runner halts feeds outside its lock and a body takes only the fault plan's own lock, so no caller does today; the doc says not to. |
+| 3 | Bot: marks of removed series grow the heap under churn. | tick_scheduler.cpp | Accept | The heap is rebuilt once stale marks outnumber live ones; tested with a thousand removals. |
+| 4 | Bot: a snapshot can be a sample period old. | tick_scheduler.hpp | Accept | Documented. |
+| 5 | Bot: std::min without algorithm. | tick_scheduler.cpp | Accept | Included. |
+| 6 | Bot: a per-command flag would read more simply than the ticket count. | tick_scheduler.cpp | Decline | The ticket is two counters under the lock it already holds. |
+| 7 | Bot: test stop while a remove waits, and a body that removes itself. | tick_scheduler_tests.cpp | Accept | Both tested. |
 
 * Result

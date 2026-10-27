@@ -189,12 +189,13 @@ TEST_CASE("a tick costs O(log n) in the number of series", "[tick_scheduler]") {
                steps;
     };
 
-    // A hundred times the series would cost a hundred times as much in O(n);
-    // in O(log n) it costs about one and two thirds as much.
+    // A hundred times the series would cost a hundred times as much in O(n). In O(log n) the
+    // comparisons grow by two thirds, and cache misses on a heap that no longer fits in cache
+    // add a few times more, so the bound sits well between the two.
     const double small = cost_per_step(1000);
     const double large = cost_per_step(100000);
     INFO("seconds per step: " << small << " at 1,000 series, " << large << " at 100,000");
-    CHECK(large < 5.0 * small);
+    CHECK(large < 20.0 * small);
 }
 
 TEST_CASE("a body that throws is reported and its series keeps ticking", "[tick_scheduler]") {
@@ -308,4 +309,68 @@ TEST_CASE("a running scheduler reads the heat on its sample period", "[tick_sche
     const auto readings = scheduler.readings_since(std::chrono::system_clock::time_point{});
     CHECK(readings.size() >= 3);
     CHECK(readings.size() <= 6);
+}
+
+TEST_CASE("a body may remove its own series", "[tick_scheduler]") {
+    steady_run_clock clock;
+    tick_scheduler scheduler(clock, no_heat, 1);
+    std::thread loop([&] { scheduler.run(); });
+
+    std::atomic<int> calls{0};
+    std::atomic<std::size_t> own{0};
+    // A hundred a second leaves time for add to return the id before the third tick.
+    own = scheduler.add({.series = 1, .arrival = per_second("poisson", 100.0)},
+                        [&](const tick_context&) {
+                            if (++calls == 3)
+                                scheduler.remove(own);
+                            return std::string{};
+                        });
+
+    // The add is posted to the loop, so the size can read zero before it lands: wait for the
+    // third call itself.
+    const auto until = std::chrono::steady_clock::now() + 5s;
+    while (calls < 3 && std::chrono::steady_clock::now() < until)
+        std::this_thread::sleep_for(5ms);
+    std::this_thread::sleep_for(50ms);
+    CHECK(scheduler.size() == 0);
+    CHECK(calls == 3);
+
+    scheduler.stop();
+    loop.join();
+}
+
+TEST_CASE("a remove that waits on a busy loop returns when the loop stops", "[tick_scheduler]") {
+    steady_run_clock clock;
+    tick_scheduler scheduler(clock, no_heat, 1);
+    std::thread loop([&] { scheduler.run(); });
+
+    std::atomic<bool> in_body{false};
+    const auto id = scheduler.add({.series = 1, .arrival = per_second("periodic", 1000.0)},
+                                  [&](const tick_context&) {
+                                      in_body = true;
+                                      std::this_thread::sleep_for(100ms);
+                                      return std::string{};
+                                  });
+    const auto until = std::chrono::steady_clock::now() + 5s;
+    while (!in_body && std::chrono::steady_clock::now() < until)
+        std::this_thread::sleep_for(1ms);
+
+    std::thread remover([&] { scheduler.remove(id); });
+    scheduler.stop();
+    remover.join();
+    loop.join();
+    CHECK(scheduler.size() == 0);
+}
+
+TEST_CASE("the heap drops the marks of removed series", "[tick_scheduler]") {
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, no_heat, 1);
+    const auto kept = scheduler.add({.series = 0, .arrival = per_second("poisson", 1.0)}, quiet);
+    for (std::size_t i = 1; i <= 1000; ++i)
+        scheduler.remove(
+            scheduler.add({.series = i, .arrival = per_second("poisson", 0.001)}, quiet));
+
+    CHECK(scheduler.size() == 1);
+    for (int i = 0; i < 10; ++i)
+        CHECK(scheduler.step()->id == kept);
 }

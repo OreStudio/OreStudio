@@ -131,13 +131,19 @@ public:
      */
     std::size_t add(const series_spec& spec, stream_body body);
 
-    /// Stop ticking a series. On return its body is not running and never will.
+    /**
+     * @brief Stop ticking a series. On return its body is not running and never will.
+     *
+     * Waits for the loop, which may be running a body, so do not call it while holding a lock
+     * that a body takes.
+     */
     void remove(std::size_t id);
 
     /// Pin the market to a state, or hand it back to the chain with nothing. On
     /// return the pin is in force.
     void pin(std::optional<domain::market_state> state);
 
+    /// The market as the loop last left it, which is at most one sample period old.
     [[nodiscard]] market_snapshot snapshot() const;
 
     /// The heat readings taken since @p from, oldest first.
@@ -199,6 +205,7 @@ private:
     void advance_to(double seconds);
     void schedule(std::size_t id, series& s);
     void sample(i_run_clock::time_point t);
+    void rebuild_heap();
 
     /// The run time at which the next series is due, or nothing.
     [[nodiscard]] std::optional<double> next_due();
@@ -222,6 +229,8 @@ private:
     bool running_ = false;
     std::thread::id loop_thread_;
     std::size_t next_id_ = 0;
+    /// Marks in the heap that belong to removed series.
+    std::size_t stale_ = 0;
 
     std::atomic<bool> stop_flag_{false};
     std::atomic<std::uint64_t> published_{0};

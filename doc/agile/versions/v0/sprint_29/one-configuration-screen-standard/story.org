@@ -80,6 +80,7 @@ binds.
 | [[id:57DA9BE1-DA44-40C1-AC7E-0B234839F126][Model the valid values of a parameter]] | DONE | 2026-10-25 | 2026-10-25 | Give every ORE parameter a value set: its storage type, its allowed values and, where the values are other ORE Studio data, the catalogue they come from. The screen draws the control from it and the write path enforces it. |
 | [[id:4393E8D0-A238-4F9B-8512-0BC3E87D542E][Export a pricing engine configuration as ORE XML]] | BACKLOG | | | A server operation renders one pricing engine configuration as the ORE XML document ORE reads, with a download from the screen and a command in ores.shell. |
 | [[id:25AFAE34-ADF9-4FD7-B44D-5941128034EB][Fix the second value the parameter history test writes]] | DONE | | 2026-10-27 | The history test appended a suffix to a real value to force a second version, which ORE cannot parse and the value set guard refuses. |
+| [[id:590A219B-1895-439A-9E92-EAC46E64D214][Import a pricing engine configuration as ORE XML]] | STARTED | 2026-10-27 | | The import half of the ORE document pair: parse a pricingengine.xml on the server, state what it holds and what the vocabulary does not know, compare it with the target configuration, and write it on the press. |
 
 * Decisions
 

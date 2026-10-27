@@ -1,0 +1,222 @@
+:PROPERTIES:
+:ID: 590A219B-1895-439A-9E92-EAC46E64D214
+:END:
+#+title: Task: Import a pricing engine configuration as ORE XML
+#+description: The import half of the ORE document pair: parse a pricingengine.xml on the server, state what it holds and what the vocabulary does not know, compare it with the target configuration, and write it on the press.
+#+type: task
+#+level: s1
+#+filetags: :analytics:ore:import:one-configuration-screen-standard:sprint_29:v0:
+#+owner: marco
+#+branch: feature/import-a-pricing-engine-configuration-as-ore-xml
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person brings an ORE pricing engine document into a pricing engine configuration, through the standard five-step import, with the server doing the parse and the review naming every addition, change, removal, unknown type and dropped element before anything is written.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+- The server parses the document and answers what it holds, what the vocabulary does not know and what the target does not hold.
+- The preview states added, changed and removed rows, with Keep it as the default for a removal.
+- The import writes the configuration through the same save path the screen uses, and the run is the person's, with a reason and a commentary.
+- The screen draws Import on the list header and the shell exposes the same two operations.
+
+* Plan
+
+** The pair, and where each part lives
+
+| Part | Where | Why there |
+|------+-------+-----------|
+| The two operations | =ores.ore.modeling=, generated to C++ and TypeScript | RS-ORE-06: every =ore.v1.ops.*= operation lives in the ORE component |
+| The parser, the document and the difference | =ores.ore.core=, =domain/pricing_engines_import= | The one place that knows how =PricingEngines= maps onto the analytics rows, beside =pricing_engine_projection= which maps them the other way |
+| The handler | =ores.ore.service=, =pricing_engines_handler= | It reads and writes the configuration through analytics' own messages under the caller's delegated session |
+| The routes | the BFF's =pricing-engines.ts= | =POST /api/reporting/pricing-engines/ore-import/preview= and =/ore-import=, carrying the file's text and the choices |
+| The steps | the web's shared =OreExchange= module | RS-ORE-07: one module carries the buttons, the Export dialog and the Import steps |
+| The command | =ores.shell=, =pricing_engines import= | The same two operations, with =--dry-run= as the preview |
+
+** The protocol
+
+Two requests and two responses, in the shape the currencies' pair established:
+
+- =preview_pricing_engines_import_request= carries the file's text and the
+  target: the reporting configuration to compare against, or nothing for a
+  configuration the file would create. The response states the root element it
+  found, the products and settings the file holds, the names of the root-level
+  settings, the difference in counts and in rows, and three lists of what the
+  system does not know.
+- =import_pricing_engines_request= carries the same file, the same target or a
+  new configuration's name and variant, the keys of the removed rows the person
+  kept, and the reason and commentary. The response states the configuration it
+  wrote, what it added, changed, deleted and kept, and the rows it could not
+  write.
+
+A row of the difference is named by a key: a product by its type and which
+product of that type it is (=Swap#0=), a setting by its product's key, its scope
+and its name (=Swap#0/engine/DiscountingCurve=). The key is what a choice names,
+and it is what makes two products of the same type, or a setting repeated twice
+in one scope, tellable apart.
+
+** The parse
+
+=pricing_engines_import::parse= reads the text with pugixml and answers the same
+analytics =pricing_engines_document= the exporter writes: the products in their
+order, each carrying Model, ModelParameters, Engine and EngineParameters, then
+one GlobalParameters block, with a =position= per scope so the export comes back
+in the order the file wrote. A text that is not well formed, or whose root
+element is another document's, answers a refusal that names the root element it
+found and writes nothing.
+
+Three things the tables cannot hold are named rather than dropped:
+
+| What | Kind | What happens to the row |
+|------+------+-------------------------|
+| an attribute or element with no column | =dropped= | written without it |
+| a product with no type, a setting with no name, a product with no model or engine | =missing= | the product is left out, or the row is named and the save refuses it |
+| a setting stated twice in one owner and scope | =duplicate= | the first value stands, because analytics refuses a repeated setting |
+| a product type the vocabulary does not hold | =unknown_type= | written as the file states it, and named |
+
+The vocabulary is analytics': the handler reads the pricing engine types and
+passes the codes to the difference, so the parser decides nothing about what a
+screen may offer.
+
+** The difference, and the person's choices
+
+A product is matched by its type and by which product of that type it is; a
+setting by its product, its scope and its name, and then by which repeat of that
+name it is. Nothing is matched by identity, because the file states no
+identifiers.
+
+Only removed rows ask a question, and the review starts every one of them at
+*Keep it*: a file that omits a row usually omits it by accident.
+=pricing_engines_import::kept_by_default= states that default once, so the
+screen and the command cannot default differently, and the import request
+carries the keys of the removed rows the person kept.
+
+** The write
+
+The import re-reads the target and re-parses the file, so the write acts on the
+configuration as it stands rather than on the preview's reading. It assembles the
+document with =pricing_engines_import::merge=: the file's rows laid over the
+target's, each row keeping the identity and the version of the row the target
+already holds, so a write corrects a row rather than replacing it and the history
+stays one line per setting. A kept removal is carried from the target with the
+settings it owns; a removal the person dropped is absent from the document,
+which is how the analytics save removes it.
+
+It then saves through =analytics.v1.pricing_engines_documents.put=, the same
+operation the configuration's own screen uses, so the validation, the history and
+the party rules are the screen's, and the person's reason and commentary travel
+on the rows, which is where that save keeps them.
+
+** A configuration the file creates
+
+The screen's create writes the reporting configuration the record fills and then
+the document, because analytics finds a document by that reporting configuration.
+Both the browser and the shell import, so neither may carry that order: the ORE
+service's handler registers the reporting configuration through reporting's own
+=put_configuration=, saves the document, and removes the header again if the save
+is refused, so a refused import leaves nothing behind.
+
+** The official configuration, and what is not built
+
+The configuration screen standard makes a file put into an official configuration
+a proposal, with a sign-off. Sign-off is not built. The import writes directly,
+with the person's reason and commentary, and the review states that in as many
+words before the press. It is the one place this build does not reach the
+standard, and it is recorded as the known gap rather than dressed as an approval.
+
+** The screen
+
+Import stands on the list header between Refresh and Workflows (RS-ORE-02), at
+=/reporting/pricing-engines/import=, and follows the standard's five steps on the
+steps UI: the file, what it holds, what the system does not know, the target
+(new or existing), and the difference with *Keep it* as the default for a removed
+row. The preview is read twice: once on leaving the file step, which states what
+the file holds and what the system does not know without a target, and again on
+leaving the target step, which states the difference against the configuration
+the person chose.
+
+The five steps are the shared module's, not the kind's: =OreImportPage= takes a
+kind that declares its document, its target and its wording, so the currencies
+and the pricing engines draw the same dialog. The kind's own file states what a
+row is called and what the review offers for it, and nothing else.
+
+** The command
+
+=pricing_engines import <id or --new-name> --file <path> [--dry-run]= sends the
+same two operations, prints what the file holds, what the system does not know
+and the difference, and then writes, keeping every removed row, because a command
+line states no per-row choice. =--dry-run= stops after the preview.
+
+** The order**
+
+1. The protocol, generated to C++ and TypeScript.
+2. The parser and the difference in =ores.ore.core=, with its tests.
+3. The handler: the preview, then the import, with the reporting configuration's
+   registration.
+4. The BFF's two routes, with their tests.
+5. The shared steps module, generalised for a kind with a target, and the
+   pricing engines' Import page and list action, with their tests.
+6. The shell command and its tests.
+7. The build, the suites, the local checks, and the live round trip.
+
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

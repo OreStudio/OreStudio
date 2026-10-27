@@ -2,7 +2,7 @@
 :ID: 654E4DFD-FD96-4A65-A350-AC8DD3F87BE0
 :END:
 #+title: Published curves prototype
-#+description: The published-curve screens before they are built: the tenant's published sets and the record page a row opens, its four tabs of details, published points, comparison as of and history, the curve charts, and the approvals queue row that carries a publish's subject
+#+description: The published-curve screens before they are built: the tenant's published sets and the record page a row opens, its four tabs of details, published points with the last sets overlaid, comparison as of and history, the curve charts, and the approvals queue row that carries a publish's subject
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:market_data:published:approval:
@@ -26,10 +26,11 @@ The page argues five things. A published set is a row a person reads, with the
 act that published it. A candidate is a set nobody has approved, and an ended
 set is one that was in use and is not any more. The comparison marks each point
 as changed, added, dropped or unchanged, and it says in words when nothing
-changed. The curve is drawn, so a moved pillar is visible where it moved. And
-the record's history is the standard's: every version newest first, with its
-actor, its time, its reason and the field-level difference from the version
-before.
+changed. The curve is drawn, so a moved pillar is visible where it moved, and
+the points tab draws the last published sets together, newest bold, so a move
+between publishes is visible too. And the record's history is the standard's:
+every version newest first, with its actor, its time, its reason and the
+field-level difference from the version before.
 
 It is throwaway. It reads no service, it holds no session, and every value on
 it is mock data. It exists because the journeys settle what a publish *does* and
@@ -98,8 +99,12 @@ published instant, so a set nobody approved cannot be read as one pricing uses.
 reach the record whose history shows how it ended. A set in use is drawn by
 default; an ended set and a candidate are not.
 
-A row opens the record page. The search, the order and the pager are client-side
-in the prototype; the target is the list contract's own filter and order.
+A row opens the record page. The record holds no button that repeats a tab: a
+person reaches the comparison by the tab, and the two routes from another screen
+are the list's row, which opens the record, and the request page's *Open the
+comparison* link, which opens the record on the Compare as of tab. The search,
+the order and the pager are client-side in the prototype; the target is the list
+contract's own filter and order.
 
 *RS-LIST-21* gives the list its states, and the prototype draws each one:
 
@@ -119,17 +124,23 @@ read-only exception (*RS-EXCEPT-01*), and the journey names it.
 ** The record page
 
 The header carries the display field as its title, the party, the as-of, the
-state and the published or ended instant in the lead line, and two actions:
-*Compare as of* and *Refresh*. The tabs are Details, Published points, Compare
-as of and History.
+state and the published or ended instant in the lead line, and one action:
+*Refresh*. The tabs are Details, Published points, Compare as of and History,
+and the tabs are the only way between them: a record page with a comparison is
+still one page, and a button that repeated a tab would be a second door to the
+same room.
 
 - *Details.* The subject the request authorised, the publisher, the authorising
   request, the output series and the state. An ended set adds the ended instant,
   the account and the request that authorised the end. The tab ends with the
   last-changed line and the read-only reason.
-- *Published points.* The chart of the published set alone, then the pillar
-  table: each pillar, the discount factor and the rate it implies, the source
-  and the observation instant. The tab offers *Compare as of* under the chart.
+- *Published points.* The last published sets of this curve and party, overlaid
+  on one chart, newest bold green and older ones grey-blue, fading with age; a
+  count control for how many sets to draw, capped at 20 and starting at 5; the
+  newest set's as-of, published instant, publisher, authorising request and point
+  count as stats; and the newest set's pillar table beside the chart: each
+  pillar, the rate, the discount factor it implies and the observation instant.
+  The chart is the IR feed's ticks panel applied to published sets.
 - *Compare as of.* The baseline, the candidate, the two curves on one chart, the
   summary and the point table.
 - *History.* The record's story, newest first.
@@ -140,7 +151,44 @@ related view a kind needs, and this is that view. The note records it under
 /What it does not settle/ because the standard's tab table names field groups
 and related plurals, and a comparison is neither.
 
-** The comparison tab
+** The published points tab
+
+The tab follows the IR feed's ticks panel: the last published sets of one curve
+and party are drawn together, so a move between publishes is visible as a shape.
+The count control names how many sets to draw, from 1 to 20, and starts at 5.
+The newest set is bold green; the older ones are grey-blue, thinner, and fade
+with age, and the newest is always the strongest line. The chart keeps the
+tenors along the bottom and the rate up the side, and a dot at each pillar.
+
+The strip above the chart carries the count control and the newest set's facts:
+its as-of, its published instant, its publisher, its authorising request and its
+point count. The newest set's pillar table stands beside the chart, and it is not
+replaced by it: each pillar, the rate, the discount factor that rate implies, and
+the observation instant. The chart is a shape of the tab; the table is its
+values.
+
+| Sets published | What the tab draws and says |
+|----------------+------------------------------|
+| None | The record page is not drawn at all: the curve has no published set, so the no-set page states that and the chart says there is no curve to draw |
+| One | One curve, green and bold, and the caption says a single curve is drawn |
+| Fewer than the count | The sets that exist, and the caption says "N asked, M published. The chart draws all M sets that exist." |
+| At least the count | The newest N, and the caption says "The newest N of M published sets." |
+| Exactly the count | The last N, and the caption states the colour rule |
+
+An ended set is drawn like any other published set, because it was published; the
+newest one is the set in use, and the list's *Show ended sets* is how a person
+reaches a record whose newest set has ended.
+
+The count, the colours and the weight follow =curveStyle= in the IR ticks panel:
+green =#22C55E= and bold for the newest, grey-blue =#8A9BAE= and thin for the
+older ones, with the opacity rising from the oldest to the newest and never below
+60 of 255. The prototype does not carry the prior art's CSV export; the record
+standard draws Export on the header for an ORE document only, and a published
+set is not one. The note records the question. Nor does it carry the prior art's
+process summary, because a published set has no process: its recipe is the
+configuration, and the Details tab names it.
+
+
 
 The as-of select sits in the tab, beside the comparison. It offers the published
 as-of and two earlier as-ofs, so a person compares against an earlier set as well
@@ -305,7 +353,9 @@ Switch with the bottom bar, or with the query string.
 | List | =?show=candidates= | Candidates drawn under the sets in use |
 | List | =?ended=1= | Withdrawn and superseded sets drawn, muted |
 | Record | =?tab=details= | The subject, the act, the state and the last-changed line |
-| Record | =?tab=points= | The published set's chart and pillar table |
+| Record | =?tab=points= | The last published sets overlaid, the count, the newest stats and its pillar table |
+| Record | =?tab=points&history=1= | The newest set alone, and the caption that says so |
+| Record | =?tab=points&history=20= | The count at its cap, and the caption that says how many sets exist |
 | Record | =?tab=points&chart=one= | A one-point set, and why the chart cannot be drawn |
 | Record | =?tab=points&chart=none= | A set with no points, and why the chart cannot be drawn |
 | Record | =?tab=compare= | The two curves on one chart, four changed, one added, one dropped, seven unchanged |
@@ -330,18 +380,24 @@ Switch with the bottom bar, or with the query string.
 The bottom bar switches the surface, the tab and the state, and the query string
 carries the difference from the default, so any pair can be linked. A row of the
 list opens the record page, and a tab is written to =?tab=. A row of the queue
-opens the request. The search, the filters, the sorts, the pager, the as-of select
-and the chart overrides all write the query string. The answer panel refuses a
-refusal with no comment under the field. The *Hide gaps* button turns the
-server-gap notes off, so a reviewer can read the design without them.
+opens the request. The search, the filters, the sorts, the pager, the as-of
+select, the count of curves and the chart overrides all write the query string.
+The answer panel refuses a refusal with no comment under the field. The *Hide
+gaps* button turns the server-gap notes off, so a reviewer can read the design
+without them.
 
 ** What is fake
 
-Everything on the page is mock data: the five sets, their history, the three
+Everything on the page is mock data: the seven sets, their history, the three
 candidates, the twelve pillars and their values, the two parties, the six
 requests, the decisions, the kind's rules and the checks are hard-coded
 literals. There is no server, no session and no build step. A decision writes a
 sentence into the panel and nothing else; reload and the page is as it was.
+
+Three sets of USD-SOFR-3M belong to ACME London, so the points tab has a
+history to overlay: the set in use and two older sets that it superseded. The
+older sets' values are the live set's pillars moved by a few tenths of a basis
+point, which is mock data and not a market.
 
 The reviewer should know four assumptions. The tenant administrator holds every
 decide permission, so one table can show the kinds together; the Acme
@@ -366,7 +422,8 @@ The product screens would live here:
 |------+-------|
 | The list and the record page | A new =PublishedCurvesPage= and =PublishedCurvePage= under =projects/ores.web/packages/web/src/marketdata/=, with a route at =/market-data/published-curves= in =AppRoutes.tsx= and a path in =shell/paths.ts= |
 | The comparison tab | A panel under =web/src/marketdata/=, drawing the kind's change lines; the tab is the record page's own, so no second route |
-| The curve chart | =web/src/marketdata/LineChart.tsx=, drawn with =categories= as the ticks panel draws a curve's tenors |
+| The curve chart | =web/src/marketdata/LineChart.tsx=, drawn with =categories= as the ticks panel draws a curve's tenors; the points tab passes one series for each published set, with the colours and weight of =curveStyle= |
+| The points overlay read | The published-curves read filtered to one series and party and limited to N, served by =bff/src/curves.ts=; no read answers it as one call today |
 | The History tab | The shared =Timeline= in =web/src/timeline/=, with the record's versions and the request's decisions merged by time |
 | The queue and the request page | =web/src/inbox/RequestsPage.tsx= and =RequestPage.tsx=, which exist; the kind's descriptor in =web/src/inbox/kinds.tsx= gains its subject line |
 | The queue read | =projects/ores.web/packages/bff/src/inbox.ts= and =wire-protocol/src/inbox.ts=, whose request view carries the subject |
@@ -392,11 +449,12 @@ state: the withdrawal or supersession rule, the zero-approval path, the publish
 notice, and the maker and checker pair on the kind.
 
 The design to sign off is: the list with its three states of set, the record page
-with its four tabs, the comparison tab with its four marks and its words for
-nothing changed, the two curve charts and the words they use when they cannot be
-drawn, the standard's History tab with the record's four versions and the
-decision beside them, and the subject in the queue's *Asked for* column with the
-space it needs.
+with its four tabs and no button that repeats one, the points tab with the last
+published sets overlaid and its count, the comparison tab with its four marks and
+its words for nothing changed, the two curve charts and the words they use when
+they cannot be drawn, the standard's History tab with the record's four versions
+and the decision beside them, and the subject in the queue's *Asked for* column
+with the space it needs.
 
 ** What it does not settle
 
@@ -428,6 +486,17 @@ ended set at all, or only against the set in use, is open.
 The withdrawal in the list. The list draws the ended sets because the history
 needs a way in, and the marker they read is the design the withdrawal decision
 states. Until the model holds it, the list can draw the sets in use only.
+
+The points tab's history. The overlay draws as many sets as the count asks for,
+and an ended set is drawn like the others because it was published. Whether a
+person should see ended sets there, or only the sets that were never replaced, is
+open. So is the export: the prior art hands the drawn curves to the browser as a
+CSV, the record standard gives Export to an ORE document, and a published set is
+not one. The prototype draws no export and leaves the question.
+
+The count's ceiling. The prior art caps the overlay at 20 because the Qt market
+simulator did. Whether a published curve's history should cap at 20 sets, or at
+a date range instead, is open.
 
 * See also
 

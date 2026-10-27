@@ -172,6 +172,7 @@ a.btn.primary{color:#06121f}
 .diff .was{color:var(--bad);text-decoration:line-through}
 .diff .now{color:var(--ok)}
 .diff .mark{font-family:inherit}
+.diff .sub{display:block;font-family:inherit;font-size:11px;color:var(--ink-faint);margin-top:2px}
 .summary{display:flex;gap:16px;flex-wrap:wrap;align-items:baseline;font-size:13px;margin:0 0 12px}
 .summary .stat{color:var(--ink-dim)}
 .summary .stat b{color:var(--ink);font-family:var(--mono);font-weight:500}
@@ -190,6 +191,14 @@ a.btn.primary{color:#06121f}
 .chartempty b{display:block;color:var(--ink);margin-bottom:4px}
 .chartbeside{display:grid;grid-template-columns:minmax(380px,5fr) minmax(420px,6fr);gap:16px;align-items:start}
 @media(max-width:1020px){.chartbeside{grid-template-columns:1fr}}
+.pointsbeside{display:grid;grid-template-columns:minmax(520px,7fr) minmax(360px,5fr);gap:16px;align-items:start}
+@media(max-width:1020px){.pointsbeside{grid-template-columns:1fr}}
+.statstrip{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:12px 16px;margin:0 0 16px}
+.statstrip .stat{display:block;min-width:110px}
+.statstrip .lbl{display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 2px}
+.statstrip .val{font-size:13px;color:var(--ink)}
+.countfield{display:block}
+.countfield input{width:80px;background:#0e1218;border:1px solid var(--line);border-radius:6px;color:var(--ink);padding:6px 8px;font:inherit;font-size:13px}
 
 /* History: the event chart, then the rail. */
 .histwrap{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:16px;margin:0 0 16px}
@@ -284,6 +293,7 @@ a.bare:hover{color:var(--ink)}
         ended: Q.get('ended') === '1',
         unchanged: Q.get('unchanged') === '1',
         chart: Q.get('chart') || '',
+        history: Number(Q.get('history') || 5),
         state: Q.get('state') || '',
         open: Q.get('open') || '',
         q: Q.get('q') || '',
@@ -330,6 +340,26 @@ a.bare:hover{color:var(--ink)}
           approved_comment: 'Checked against the 16:00 quotes.',
           published_at: '2026-10-06T16:41:00Z', published_by: 'a.reyes',
           request: '8f1c…a41', points: 12, series: SERIES, state: 'published' },
+        { curve: 'USD-SOFR-3M', party: 'ACME London', asof: '2026-10-05T16:00:00Z',
+          raised_at: '2026-10-05T15:30:00Z', raised_by: 'a.reyes',
+          approved_at: '2026-10-05T16:05:00Z', approved_by: 'm.oduya',
+          approved_comment: 'The 16:00 quotes are in.',
+          published_at: '2026-10-05T16:40:00Z', published_by: 'a.reyes',
+          request: 'c112…e8f', points: 12, shiftBp: 2.2, series: SERIES,
+          state: 'superseded', ended_at: '2026-10-06T16:41:00Z', ended_by: 'a.reyes',
+          ended_request: '8f1c…a41', ended_approved_by: 'm.oduya',
+          successor_asof: '2026-10-06T16:00:00Z',
+          reason_text: 'The 06 Oct set replaced it as the set the desk reads.' },
+        { curve: 'USD-SOFR-3M', party: 'ACME London', asof: '2026-10-03T16:00:00Z',
+          raised_at: '2026-10-03T15:20:00Z', raised_by: 'j.silva',
+          approved_at: '2026-10-03T15:55:00Z', approved_by: 'm.oduya',
+          approved_comment: "Friday's quotes agree with the rebuild.",
+          published_at: '2026-10-03T16:29:00Z', published_by: 'j.silva',
+          request: 'a7c3…19b', points: 12, shiftBp: 4.5, series: SERIES,
+          state: 'superseded', ended_at: '2026-10-05T16:40:00Z', ended_by: 'a.reyes',
+          ended_request: 'c112…e8f', ended_approved_by: 'm.oduya',
+          successor_asof: '2026-10-05T16:00:00Z',
+          reason_text: 'The 05 Oct set replaced it as the set the desk reads.' },
         { curve: 'EUR-ESTR-6M', party: 'ACME London', asof: '2026-10-06T16:00:00Z',
           raised_at: '2026-10-06T14:10:00Z', raised_by: 'j.silva',
           approved_at: '2026-10-06T15:58:00Z', approved_by: 'm.oduya',
@@ -406,7 +436,7 @@ a.bare:hover{color:var(--ink)}
 
     var AS_OFS = [
         { iso: '2026-10-06T16:00:00Z', label: '06 Oct 2026, 16:00 UTC — the published as-of', shiftBp: 0 },
-        { iso: '2026-10-05T16:00:00Z', label: '05 Oct 2026, 16:00 UTC — published then', shiftBp: 0.4 },
+        { iso: '2026-10-05T16:00:00Z', label: '05 Oct 2026, 16:00 UTC — published then', shiftBp: 2.2 },
         { iso: '2026-10-03T16:00:00Z', label: '03 Oct 2026, 16:00 UTC — published then', shiftBp: -0.3 }
     ];
 
@@ -478,6 +508,13 @@ a.bare:hover{color:var(--ink)}
         return days[d.getUTCDay()] + ', ' + d.getUTCDate() + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
     }
     function dayKey(iso) { return iso.slice(0, 10); }
+    function shortInstant(iso) {
+        var d = new Date(iso);
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        function two(n) { return n < 10 ? '0' + n : String(n); }
+        return two(d.getUTCDate()) + ' ' + months[d.getUTCMonth()] + ', ' +
+            two(d.getUTCHours()) + ':' + two(d.getUTCMinutes());
+    }
     function rel(iso) {
         var d = Date.parse(iso) - NOW;
         var future = d > 0;
@@ -545,6 +582,7 @@ a.bare:hover{color:var(--ink)}
         if (S.ended) { p.set('ended', '1'); }
         if (S.unchanged) { p.set('unchanged', '1'); }
         if (S.chart) { p.set('chart', S.chart); }
+        if (S.history !== 5) { p.set('history', String(S.history)); }
         if (S.state) { p.set('state', S.state); }
         if (S.open) { p.set('open', S.open); }
         if (S.q) { p.set('q', S.q); }
@@ -767,8 +805,7 @@ a.bare:hover{color:var(--ink)}
             (set.state === 'published'
                 ? ' · published ' + when(set.published_at)
                 : ' · ' + (set.state === 'withdrawn' ? 'withdrawn' : 'superseded') + ' ' + when(set.ended_at));
-        var actions = '<button class="btn" data-act="compare">Compare as of</button>' +
-            '<button class="btn" data-act="reload">Refresh</button>';
+        var actions = '<button class="btn" data-act="reload">Refresh</button>';
         return crumbs([{ t: 'Home' }, { t: 'Market data' }, { t: 'Published curves', act: 'surface:list' }, { t: set.curve }]) +
             pagehead(set.curve, lead, actions) +
             '<div class="tabs" role="tablist">' +
@@ -837,31 +874,96 @@ a.bare:hover{color:var(--ink)}
         return PILLARS;
     }
 
+    /* The published sets of one curve and party, newest first. */
+    function setsFor(curve, party) {
+        return SETS.filter(function (s) { return s.curve === curve && s.party === party; })
+            .sort(function (a, b) { return Date.parse(b.asof) - Date.parse(a.asof); });
+    }
+
+    /* The colour and weight of one curve of the history, as the Qt market
+       simulator and the IR ticks panel draw it: the newest is bold and green,
+       the older ones are grey-blue, thinner, and fade with age. */
+    function curveStyle(index, count) {
+        var newest = index === count - 1;
+        return {
+            colour: newest ? '#22C55E' : '#8A9BAE',
+            width: newest ? 2.5 : 1,
+            opacity: newest ? 1 : Math.max(40, (255 * (index + 1)) / count - 60) / 255,
+            dots: true
+        };
+    }
+
+    function overlayHistoryCount() {
+        var n = Math.round(Number(S.history));
+        if (!isFinite(n) || isNaN(n)) { n = 5; }
+        return Math.min(20, Math.max(1, n));
+    }
+
     function pointsTab(set) {
-        var points = chartPoints(set);
-        var chart = curveChart({
-            categories: points.map(function (p) { return p.tenor; }),
-            published: points.map(function (p) { return p.value; }),
-            caption: 'The published set at ' + exact(set.asof) + ' · ' + points.length + ' pillars.'
+        var all = setsFor(set.curve, set.party);
+        var asked = overlayHistoryCount();
+        var drawn = all.slice(0, asked).reverse(); /* oldest first, newest last */
+        var newest = all[0];
+        var points = S.chart === 'none' ? [] : (S.chart === 'one' ? PILLARS.slice(0, 1) : PILLARS);
+        var categories = points.map(function (p) { return p.tenor; });
+        var series = drawn.map(function (s, i) {
+            var style = curveStyle(i, drawn.length);
+            return {
+                values: points.map(function (p) { return p.value + (s.shiftBp || 0) / 100; }),
+                colour: style.colour, width: style.width,
+                opacity: style.opacity, dots: style.dots
+            };
         });
+        var caption;
+        if (all.length === 1) {
+            caption = 'One published set. A single curve is drawn.';
+        } else if (drawn.length < asked) {
+            caption = asked + ' asked, ' + all.length + ' published. The chart draws all ' + all.length + ' sets that exist.';
+        } else if (drawn.length < all.length) {
+            caption = 'The newest ' + drawn.length + ' of ' + all.length + ' published sets.';
+        } else {
+            caption = 'The last ' + drawn.length + ' published sets. Newest bold green; older curves grey-blue, fading with age.';
+        }
+        var chart = curveChart({
+            categories: categories,
+            series: series,
+            caption: caption
+        });
+        var strip = '<div class="statstrip">' +
+            '<label class="countfield"><span class="lbl">Curves shown</span>' +
+            '<input type="number" min="1" max="20" step="1" value="' + asked +
+            '" data-input="history" title="The last N published sets of this curve and party, up to 20"></label>' +
+            '<div class="stat"><span class="lbl">Newest as-of</span><span class="val">' + esc(exact(newest.asof)) + '</span></div>' +
+            '<div class="stat"><span class="lbl">Published</span><span class="val">' + when(newest.published_at) + '</span></div>' +
+            '<div class="stat"><span class="lbl">Publisher</span><span class="val">' + esc(person(newest.published_by).name) + '</span></div>' +
+            '<div class="stat"><span class="lbl">Authorising request</span><span class="val mono">' + esc(newest.request) + '</span></div>' +
+            '<div class="stat"><span class="lbl">Points</span><span class="val mono">' + newest.points + '</span></div>' +
+            '</div>';
         var body = PILLARS.map(function (p) {
-            return '<tr><td>' + esc(p.tenor) + ' · ' + esc(p.role) + '</td>' +
-                '<td class="num">' + discountFactor(p.tenor, p.value) + '</td>' +
-                '<td class="num">' + rate(p.value) + '</td>' +
-                '<td class="dim">bootstrapped</td>' +
-                '<td class="dim">' + esc(exact(set.asof)) + '</td></tr>';
+            return '<tr><td>' + esc(p.tenor) + '<span class="sub dim">' + esc(p.role) + '</span></td>' +
+                '<td class="num">' + rate(p.value + (newest.shiftBp || 0) / 100) + '</td>' +
+                '<td class="num">' + discountFactor(p.tenor, p.value + (newest.shiftBp || 0) / 100) + '</td>' +
+                '<td class="dim nowrap">' + esc(shortInstant(newest.asof)) + '</td></tr>';
         }).join('');
-        return '<h2>Published points</h2><p class="lede">The pillars the recipe asks for, and the shape the published set holds.</p>' +
+        return '<h2>Published points</h2>' +
+            '<p class="lede">The pillars the recipe asks for, and the shape the published sets hold. ' +
+            'The last sets of this curve are drawn together, newest first, so a move between publishes is visible.</p>' +
+            strip +
+            '<div class="pointsbeside">' +
             chartPanel('Curve shape', chart) +
-            '<div class="listtools" style="margin-top:4px">' +
-            '<button class="btn small" data-act="compare">Compare as of</button>' +
-            '<span class="hint">Compares this set against a candidate at a chosen as-of.</span></div>' +
-            '<table class="diff"><thead><tr><th>Pillar</th><th class="num">Discount factor</th><th class="num">Rate (%)</th><th>Source</th><th>Observed</th></tr></thead>' +
+            '<div class="panel"><h2>The newest published points <span class="sub">' + esc(exact(newest.asof)) + '</span></h2>' +
+            '<table class="diff"><thead><tr><th>Pillar</th><th class="num">Rate (%)</th><th class="num">DF</th><th>Observed</th></tr></thead>' +
             '<tbody>' + body + '</tbody></table>' +
+            '<p class="hint">Every point is bootstrapped from the recipe at the set\'s as-of.</p></div>' +
+            '</div>' +
             '<p class="lastchanged">Each point is identified by its oresmd_uri, not by a tenor column. ' +
             'The pillar list comes from the curve configuration, so a point the recipe drops is not shown here either.</p>' +
             gap('The read returns observations for a series and an instant. It does not return the pillar list beside them, ' +
-                'so the screen joins them by the recipe as it stands today and not as it stood at the as-of.');
+                'so the screen joins them by the recipe as it stands today and not as it stood at the as-of.') +
+            gap('The overlay needs the last N published sets of one series and party, which no read returns as one answer. ' +
+                'The candidate is the published-curves read the list names, filtered to the series and page-limited to N.') +
+            gap('The prior art exports the drawn curves as a CSV. This tab does not, because the record standard draws Export ' +
+                'on the header for an ORE document only, and a published set is not one. The note records the question.');
     }
 
     function compareTab(set) {
@@ -999,8 +1101,15 @@ a.bare:hover{color:var(--ink)}
 
     function curveChart(opts) {
         var categories = opts.categories;
-        var pub = opts.published;
+        var pub = opts.published || null;
         var cand = opts.candidate || null;
+        var seriesList = opts.series || null;
+        if (seriesList === null) {
+            seriesList = cand
+                ? [{ values: pub, colour: 'var(--ink-faint)', width: 1.4, opacity: 1, dots: false, dashed: true },
+                   { values: cand, colour: 'var(--accent)', width: 2.2, opacity: 1, dots: true }]
+                : [{ values: pub, colour: 'var(--accent)', width: 2.2, opacity: 1, dots: true }];
+        }
         var drawable = categories.length;
         if (drawable === 0) {
             return emptyChart('The set holds no points.');
@@ -1009,8 +1118,9 @@ a.bare:hover{color:var(--ink)}
             return emptyChart('A curve needs at least two pillars. One point has no shape; the table below holds it.');
         }
         var values = [];
-        pub.forEach(function (v) { if (v !== null) { values.push(v); } });
-        if (cand) { cand.forEach(function (v) { if (v !== null) { values.push(v); } }); }
+        seriesList.forEach(function (one) {
+            one.values.forEach(function (v) { if (v !== null && v !== undefined) { values.push(v); } });
+        });
         var low = Math.min.apply(null, values);
         var high = Math.max.apply(null, values);
         var room = high === low ? Math.max(Math.abs(high) * 0.0005, 1e-6) : (high - low) * 0.12;
@@ -1061,24 +1171,31 @@ a.bare:hover{color:var(--ink)}
             }).join(' ');
         }
 
+        seriesList.forEach(function (one) {
+            runs(one.values).forEach(function (run) {
+                svg.push('<path d="' + pathOf(run) + '" fill="none" stroke="' + one.colour + '" ' +
+                    'stroke-width="' + one.width + '"' +
+                    (one.opacity === undefined ? '' : ' stroke-opacity="' + one.opacity + '"') +
+                    (one.dashed === true ? ' stroke-dasharray="4 3"' : '') +
+                    ' vector-effect="non-scaling-stroke"></path>');
+            });
+            if (one.dots === true) {
+                one.values.forEach(function (v, i) {
+                    if (v !== null && v !== undefined) {
+                        svg.push('<circle cx="' + xOf(i).toFixed(1) + '" cy="' + yOf(v).toFixed(1) +
+                            '" r="' + (one.width > 2 ? 2.8 : 2) + '" fill="' + one.colour + '"' +
+                            (one.opacity === undefined ? '' : ' fill-opacity="' + one.opacity + '"') + '></circle>');
+                    }
+                });
+            }
+        });
         if (cand) {
-            runs(pub).forEach(function (run) {
-                svg.push('<path d="' + pathOf(run) + '" fill="none" stroke="var(--ink-faint)" ' +
-                    'stroke-width="1.4" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"></path>');
-            });
-            runs(cand).forEach(function (run) {
-                svg.push('<path d="' + pathOf(run) + '" fill="none" stroke="var(--accent)" ' +
-                    'stroke-width="2.2" vector-effect="non-scaling-stroke"></path>');
-            });
             cand.forEach(function (v, i) {
                 if (v === null || v === undefined) {
                     if (pub[i] !== null && pub[i] !== undefined) {
                         svg.push('<circle cx="' + xOf(i).toFixed(1) + '" cy="' + yOf(pub[i]).toFixed(1) +
                             '" r="3.5" fill="none" stroke="var(--bad)" stroke-width="1.5"></circle>');
                     }
-                } else {
-                    svg.push('<circle cx="' + xOf(i).toFixed(1) + '" cy="' + yOf(v).toFixed(1) +
-                        '" r="2.8" fill="var(--accent)"></circle>');
                 }
             });
             pub.forEach(function (v, i) {
@@ -1087,21 +1204,10 @@ a.bare:hover{color:var(--ink)}
                         '" r="3.5" fill="none" stroke="var(--accent)" stroke-width="1.5"></circle>');
                 }
             });
-        } else {
-            runs(pub).forEach(function (run) {
-                svg.push('<path d="' + pathOf(run) + '" fill="none" stroke="var(--accent)" ' +
-                    'stroke-width="2.2" vector-effect="non-scaling-stroke"></path>');
-            });
-            pub.forEach(function (v, i) {
-                if (v !== null && v !== undefined) {
-                    svg.push('<circle cx="' + xOf(i).toFixed(1) + '" cy="' + yOf(v).toFixed(1) +
-                        '" r="2.8" fill="var(--accent)"></circle>');
-                }
-            });
         }
         svg.push('<text x="' + CHART_LEFT + '" y="' + (CHART_H - 6) + '">' + esc('Rate (%)') + '</text>');
         svg.push('<text x="' + (CHART_W - CHART_RIGHT) + '" y="' + (CHART_H - 6) + '" text-anchor="end">' +
-            esc(cand ? 'published · candidate' : 'published') + '</text>');
+            esc(cand ? 'published · candidate' : (seriesList.length > 1 ? 'published sets, newest bold' : 'published')) + '</text>');
         svg.push('</svg>');
         return '<div class="chartlegend"><span class="legendline">' + esc(opts.caption) + '</span></div>' + svg.join('');
     }
@@ -1650,6 +1756,18 @@ a.bare:hover{color:var(--ink)}
                 render();
                 var n = document.querySelector('[data-input=qsearch]');
                 n.focus(); n.setSelectionRange(pos, pos);
+            });
+        }
+        var hi = document.querySelector('[data-input=history]');
+        if (hi) {
+            hi.addEventListener('input', function () {
+                var v = Number(hi.value);
+                if (!isFinite(v) || v < 1) { return; }
+                S.history = Math.min(20, Math.round(v));
+                var pos = hi.selectionStart;
+                render();
+                var n = document.querySelector('[data-input=history]');
+                if (n) { n.focus(); n.setSelectionRange(pos, pos); }
             });
         }
         var ci = document.querySelector('[data-input=comment]');

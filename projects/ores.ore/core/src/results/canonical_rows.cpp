@@ -29,9 +29,9 @@ namespace ores::ore::results {
 namespace {
 
 constexpr std::string_view subject_type_trade = "trade";
-constexpr std::string_view source_measure_npv = "npv";
-constexpr std::string_view source_measure_npv_base = "npv_base";
-constexpr std::string_view source_measure_notional = "notional";
+constexpr std::string_view measure_npv = "npv";
+constexpr std::string_view measure_npv_base = "npv_base";
+constexpr std::string_view measure_notional = "notional";
 
 /** The engine's headings, which the projection reads by name. */
 constexpr std::string_view heading_trade_id = "TradeId";
@@ -62,11 +62,6 @@ std::vector<std::string> split_fields(std::string_view line) {
     return fields;
 }
 
-/** Whether a reader can state a figure in this currency. */
-bool has_currency(std::string_view currency) {
-    return !currency.empty();
-}
-
 bool figure_of(std::string_view text, double& figure) {
     if (text.empty())
         return false;
@@ -74,26 +69,6 @@ bool figure_of(std::string_view text, double& figure) {
     const auto* last = text.data() + text.size();
     const auto parsed = std::from_chars(first, last, figure);
     return parsed.ec == std::errc() && parsed.ptr == last;
-}
-
-/** A figure as the shortest text that reads back to the same value. */
-std::string figure_text(double figure) {
-    char buffer[64];
-    const auto written = std::to_chars(buffer, buffer + sizeof buffer, figure);
-    return std::string(buffer, written.ptr);
-}
-
-std::string quoted(std::string_view field) {
-    if (field.find_first_of(",\"\n") == std::string_view::npos)
-        return std::string(field);
-    std::string out{"\""};
-    for (const auto c : field) {
-        if (c == '"')
-            out.push_back('"');
-        out.push_back(c);
-    }
-    out.push_back('"');
-    return out;
 }
 
 }
@@ -145,9 +120,9 @@ marshal_outcome marshal_npv_csv(std::string_view csv, std::string_view source_fi
     while (offset < csv.size()) {
         ++line_number;
         const auto line_break = csv.find('\n', offset);
-        const auto line =
-            csv.substr(offset, line_break == std::string_view::npos ? csv.size() - offset :
-                                                                      line_break - offset);
+        const auto line = csv.substr(offset,
+                                     line_break == std::string_view::npos ? csv.size() - offset :
+                                                                            line_break - offset);
         offset = line_break == std::string_view::npos ? csv.size() : line_break + 1;
         if (line.find_first_not_of("\r \t") == std::string_view::npos)
             continue;
@@ -163,19 +138,21 @@ marshal_outcome marshal_npv_csv(std::string_view csv, std::string_view source_fi
             continue;
         }
 
-        const auto add = [&](std::string_view measure, std::size_t figure_index,
-                             std::size_t currency_index, bool needs_currency) {
+        const auto add = [&](std::string_view measure,
+                             std::size_t figure_index,
+                             std::size_t currency_index,
+                             bool needs_currency) {
             const auto figure_text = field_at(figure_index);
             double figure = 0.0;
             if (!figure_of(figure_text, figure)) {
-                outcome.refusals.push_back(std::string(source_file) + " line " +
-                                           std::to_string(line_number) + " states " +
-                                           std::string(measure) + " as '" + std::string(figure_text) +
-                                           "', which is not a figure.");
+                outcome.refusals.push_back(
+                    std::string(source_file) + " line " + std::to_string(line_number) + " states " +
+                    std::string(measure) + " as '" + std::string(figure_text) +
+                    "', which is not a figure.");
                 return;
             }
             const auto currency = field_at(currency_index);
-            if (needs_currency && !has_currency(currency)) {
+            if (needs_currency && currency.empty()) {
                 outcome.refusals.push_back(std::string(source_file) + " line " +
                                            std::to_string(line_number) + " states " +
                                            std::string(measure) + " with no currency.");
@@ -189,17 +166,35 @@ marshal_outcome marshal_npv_csv(std::string_view csv, std::string_view source_fi
                                                  .source = std::string(source_file)});
         };
 
-        add(source_measure_npv, npv_at, npv_currency_at, true);
+        add(measure_npv, npv_at, npv_currency_at, true);
         if (npv_base_at != header.size())
-            add(source_measure_npv_base, npv_base_at, npv_currency_at, true);
+            add(measure_npv_base, npv_base_at, npv_currency_at, true);
         if (notional_at != header.size())
-            add(source_measure_notional, notional_at, notional_currency_at, false);
+            add(measure_notional, notional_at, notional_currency_at, false);
     }
 
     return outcome;
 }
 
 std::string canonical_csv(const std::vector<canonical_row>& rows) {
+    const auto figure_text = [](double figure) {
+        char buffer[64];
+        const auto written = std::to_chars(buffer, buffer + sizeof buffer, figure);
+        return std::string(buffer, written.ptr);
+    };
+    const auto quoted = [](std::string_view field) {
+        if (field.find_first_of(",\"\n") == std::string_view::npos)
+            return std::string(field);
+        std::string out{"\""};
+        for (const auto c : field) {
+            if (c == '"')
+                out.push_back('"');
+            out.push_back(c);
+        }
+        out.push_back('"');
+        return out;
+    };
+
     std::ostringstream out;
     out << "subject_type,subject_id,measure,currency,figure,source\n";
     for (const auto& row : rows) {

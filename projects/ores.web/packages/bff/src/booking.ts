@@ -214,6 +214,9 @@ export function registerBookingRoutes(
             schemes = declared
                 .map((row) => String(row['code'] ?? ''))
                 .filter((code) => code !== '')
+                // Sorted like the fallback below, so a picker reads the same
+                // whichever path a tenant takes.
+                .sort()
                 .map((code) => ({ code }));
         } else {
             const used = await readAll(

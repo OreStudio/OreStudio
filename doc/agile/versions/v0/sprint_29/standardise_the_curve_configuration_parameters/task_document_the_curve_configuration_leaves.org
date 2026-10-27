@@ -171,6 +171,13 @@ The six below came from the on-demand Claude review of PR #3905.
 | 8 | The wildcard rule in =curated_for= should be protected by a test once the curation file has entries. | curve_parameter_rows.py | Decline | The rule cannot drift while =rows()= and =undocumented()= both reach it through the same call, and there are no curation entries to guard yet. The task that adds them can add the test. |
 | 9 | Two curve leaves could collide on the parameter id, since =subtype= is the path without the leaf's own name. | generate_ore_parameters_dataset.py | Decline | =rows()= already raises when two parameters document the same leaf, and =ore-parameters-seed= passes, so a collision stops the generator instead of writing a duplicate. |
 
+The re-review of the updated PR raised two more, and accepted every decline above.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 10 | =CURATION_KEYS= does not require a =description=, so an entry could carry a label and still leave a gap. | curve_parameter_rows.py | Decline | The schema is the conventions curation's, key to key, so the two read alike. Requiring the text belongs to the task that adds the first entry, which the reviewer also named as the place to settle it. |
+| 11 | A =default_of= default that holds a parenthesis would be cut at it. | curve_parameter_rows.py | Decline | No such text occurs in the data today. The rule is recorded here so the next guide release checks it rather than rediscovering it. |
+
 * Result
 
 The extractor reads the ORE source and writes =curve_terms.json=: 19 sections,

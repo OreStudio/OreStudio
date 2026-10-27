@@ -236,7 +236,7 @@ function DetailsTab({
                     <Fact label={t('marketdata.published.details.series')}>
                         <Link
                             className="break-all text-accent hover:underline"
-                            to={`/market-data/series?uri=${encodeURIComponent(record.series_uri)}`}
+                            to={`/market-data/evolution?uri=${encodeURIComponent(record.series_uri)}`}
                         >
                             {record.series_uri}
                         </Link>

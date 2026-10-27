@@ -29,7 +29,7 @@ Every store failure reaches its caller as retryable or refused, and no caller re
 | State        | BACKLOG                              |
 | Parent story | [[id:A600B721-6BE3-4750-AF03-2438C3A06F94][Carry one hundred thousand feeds on the data path]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | The libpq layer, then each component's move. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-26                               |
 

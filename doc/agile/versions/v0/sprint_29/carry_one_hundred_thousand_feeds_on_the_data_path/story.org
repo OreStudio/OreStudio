@@ -67,6 +67,16 @@ in [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]].
 
 * Decisions
 
+- *The layer tasks are delivered by the sqlgen move.* The five tasks below are
+  built by [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]]: its step 2 builds the
+  libpq layer to this story's target, and its step 3 moves each component's
+  callers onto it. Each task closes when the last component has moved.
+  - [[id:964B4B51-C5C7-4339-AC51-593CE49CFB07][Run every hand-written query on a pooled connection]]
+  - [[id:8DFA22E1-F6EB-4F38-87CE-7F06BA4BFD93][Set the tenant context per transaction]]
+  - [[id:63AFAA9D-42F6-465E-9423-9A3FE81148A4][Hand repositories an open transaction, not credentials]]
+  - [[id:B1575A54-4B73-4E3C-B958-0041E01D1625][Declare hand-written statements once, prepared and typed]]
+  - [[id:E750C5F0-5A59-466D-A33A-538B90A1F1B9][Say in every store error whether to retry]]
+
 - *The target state is written first and reviewed before code.* The first pull
   request holds the scaffolding and the architecture notes only.
 - *Two paths.* The control plane and the data plane reach the store by different

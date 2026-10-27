@@ -41,6 +41,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import analytic_parameter_rows  # noqa: E402
 import convention_parameter_rows  # noqa: E402
+import curve_parameter_rows  # noqa: E402
 import pricing_parameter_rows  # noqa: E402
 import block_parameter_rows  # noqa: E402
 import setup_parameter_rows  # noqa: E402
@@ -155,7 +156,7 @@ PARAMETER_COLUMNS = (
 def rows():
     out = (setup_parameter_rows.rows() + block_parameter_rows.rows()
            + analytic_parameter_rows.rows() + pricing_parameter_rows.rows()
-           + convention_parameter_rows.rows())
+           + convention_parameter_rows.rows() + curve_parameter_rows.rows())
     ids = [parameter_id(r) for r in out]
     if len(set(ids)) != len(ids):
         raise ValueError("two parameters document the same leaf")
@@ -170,7 +171,8 @@ def missing():
             + block_parameter_rows.missing(block_parameter_rows.rows())
             + analytic_parameter_rows.missing(analytic_parameter_rows.rows())
             + pricing_parameter_rows.missing(pricing_parameter_rows.rows())
-            + convention_parameter_rows.missing(convention_parameter_rows.rows()))
+            + convention_parameter_rows.missing(convention_parameter_rows.rows())
+            + curve_parameter_rows.missing(curve_parameter_rows.rows()))
 
 
 def render(all_rows):
@@ -214,6 +216,9 @@ def main():
     gaps = convention_parameter_rows.undocumented()
     print(f"{len(gaps)} convention terms have no text yet and are not written, for example "
           f"{', '.join(gaps[:3])}.", file=sys.stderr)
+    curve_gaps = curve_parameter_rows.undocumented()
+    print(f"{len(curve_gaps)} curve configuration leaves have no text yet and are not written, "
+          f"for example {', '.join(curve_gaps[:3])}.", file=sys.stderr)
     content = render(all_rows)
     if args.check:
         current = ""

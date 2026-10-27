@@ -1,0 +1,199 @@
+:PROPERTIES:
+:ID: 1a718dca-ccfc-46a4-b725-6a2904438fcd
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.refdata.equity_underlying
+#+description: The equity underlyings a trade may name, as the engine spells them, with the kind each is and the instrument an alias resolves to.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:equity_underlying:
+#+brief: An equity underlying a trade may name.
+#+entity_singular: equity_underlying
+#+entity_plural: equity_underlyings
+#+entity_title: Equity Underlying
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+The equity underlyings a population may draw from. An equity instrument
+states =underlying_name=, documented as the ORE equity Name identifier, and
+nothing held the set a tenant may use, so a generator that needed one had to
+invent it.
+
+The code is the name the engine resolves, not a display name. ORE's own
+example trades price underlyings as bare index names such as =.SPX= and
+=.STOXX50E=, as exchange-suffixed shares such as =MSFT.O= and =CR.N=, and as
+ISINs such as =GB0005405286=. The catalogue therefore stores the spelling a
+document states, because that is the string the engine resolves.
+
+The same instrument appears under more than one spelling: =.SPX= and
+=RIC:.SPX= are one index, and the catalogue holds both because a document may
+state either. Resolving them to one instrument is what =resolves_to= is for: a
+row that is the instrument leaves it empty, and a row that is an alias names
+the instrument it resolves to. A population that read the two as two
+instruments would price one index twice.
+
+The kind travels with the underlying because it decides what the trade is.
+An option on an index and an option on a share are the same instrument type in
+the store, but a book that claimed to trade single names while holding only
+indices would misreport itself.
+
+Only underlyings a document states as =Equity= belong here. ORE states each
+underlying's kind beside its name, and one corpus trade proves the kind is not
+implied by the trade type: an =EquityWorstOfBasketSwap= in the examples carries
+two underlyings whose kind is =FX=, total return indices on currency pairs. A
+catalogue that took every name an equity typed trade mentions would file a
+currency pair as an equity.
+
+This model holds the vocabulary only. The prices and the volatility surfaces an
+equity prices on are market data, and they are not here.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The underlying as the engine spells it, in the spelling a document states.
+
+Examples: '.SPX', 'RIC:.SPX', '.STOXX50E', 'MSFT.O', 'GB0005405286'.
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-readable name for the underlying.
+
+Examples: 'S&P 500 Index', 'Euro Stoxx 50', 'Microsoft Corporation'.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Equity"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the underlying is.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** instrument_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Whether the underlying is an index or a share.
+
+An index is a published level over many constituents, such as '.SPX'. A share
+is one listed company, such as 'MSFT.O'. It is text and not a lookup because
+the two the tree distinguishes are a fact of how the underlying is listed and
+not a vocabulary a tenant curates.
+
+#+begin_src cpp :name generator
+std::string("index")
+#+end_src
+
+** resolves_to
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The code of the instrument an alias names, empty when the row is the
+instrument itself.
+
+'RIC:.SPX' resolves to '.SPX'. It is a soft reference to this table and not a
+database foreign key, because a catalogue is published as a set and a row that
+had to wait for the row it points at would make the order of the seed a
+correctness requirement.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The currency the underlying is quoted in, empty when the source does not say.
+
+It is a soft reference to =ores_refdata_currencies_tbl= and not a database
+foreign key, for the reason the commodity catalogue states: a tenant holds the
+currencies it publishes, and a row that could not be seeded until the currency
+list arrived would be unusable in an empty database.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_equity_underlyings_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: equity_underlying
+:entity_plural_short:   equity_underlyings
+:entity_singular_words: equity underlying
+:entity_plural_words:   equity underlyings
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src

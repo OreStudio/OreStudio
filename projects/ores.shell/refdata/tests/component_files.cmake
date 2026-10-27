@@ -112,6 +112,7 @@ set(files
     "diary_entry_type_commands_tests.cpp"
     "entity_classification_commands_tests.cpp"
     "equity_curve_config_commands_tests.cpp"
+    "equity_underlying_commands_tests.cpp"
     "equity_volatility_config_commands_tests.cpp"
     "floating_index_type_commands_tests.cpp"
     "fra_convention_commands_tests.cpp"

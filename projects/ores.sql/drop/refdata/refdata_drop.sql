@@ -396,6 +396,8 @@
 \ir ./refdata_calendar_types_drop.sql
 \ir ./refdata_commodities_notify_trigger_drop.sql
 \ir ./refdata_commodities_drop.sql
+\ir ./refdata_equity_underlyings_notify_trigger_drop.sql
+\ir ./refdata_equity_underlyings_drop.sql
 
 -- Countries
 \ir ./refdata_countries_notify_trigger_drop.sql

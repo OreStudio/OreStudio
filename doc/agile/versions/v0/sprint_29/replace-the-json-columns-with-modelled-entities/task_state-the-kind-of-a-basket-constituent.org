@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 8A153B75-1431-40EC-BC35-FB360D5F394C
+:END:
+#+title: Task: State the kind of a basket constituent
+#+description: A constituent names a code but not the vocabulary that code belongs to, so a worst-of basket whose constituents are FX pairs cannot be told apart from one whose constituents are equities. This adds the kind and refuses a constituent whose code the kind's catalogue does not hold.
+#+type: task
+#+level: s1
+#+filetags: :replace-the-json-columns-with-modelled-entities:sprint_29:v0:
+#+owner: marco
+#+branch: feature/state-the-kind-of-a-basket-constituent
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4BBDF56E-612C-4E0B-AAC0-A0EECF93F669][Eight columns in the trading models hold JSON blobs where th…]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A constituent states its kind and the code it names, and a write is refused when the kind's catalogue does not hold that code, so a mixed basket is representable and a basket cannot name an underlying that does not exist.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:4BBDF56E-612C-4E0B-AAC0-A0EECF93F669][Eight columns in the trading models hold JSON blobs where th…]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+- A constituent row states a kind beside the code it names.
+- A write whose kind's catalogue does not hold the code is refused at write time, with a message naming the kind and the code.
+- An export writes the kind back as the document states it, and a roundtrip test proves it.
+- A worst of basket whose constituents are FX pairs is representable.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

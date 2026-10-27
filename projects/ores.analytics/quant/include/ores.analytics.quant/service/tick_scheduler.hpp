@@ -19,286 +19,214 @@
 #ifndef ORES_ANALYTICS_QUANT_SERVICE_TICK_SCHEDULER_HPP
 #define ORES_ANALYTICS_QUANT_SERVICE_TICK_SCHEDULER_HPP
 
-#include "ores.analytics.quant/domain/i_arrival_process.hpp"
-#include "ores.analytics.quant/domain/market_link.hpp"
-#include <algorithm>
+#include "ores.analytics.quant/domain/arrival_law.hpp"
+#include "ores.analytics.quant/domain/arrival_spec.hpp"
+#include "ores.analytics.quant/domain/operational_clock.hpp"
+#include "ores.analytics.quant/export.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
+#include "ores.analytics.quant/service/run_clock.hpp"
+#include <queue>
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <cstdint>
+#include <deque>
+#include <exception>
 #include <functional>
-#include <limits>
 #include <map>
 #include <mutex>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
 
 namespace ores::analytics::quant::service {
 
+/// What a series is told when its turn comes.
+struct tick_context final {
+    /// Wall seconds since this series last ticked, or since it was added.
+    double elapsed_seconds;
+    /// When the tick happened, from the run clock.
+    std::chrono::system_clock::time_point observed_at;
+};
+
+/// What a scheduler needs to know about a series to schedule it.
+struct series_spec final {
+    /// The stable key of the series, from series_key(source name).
+    std::uint64_t series;
+    domain::arrival_spec arrival;
+    /// How strongly the series follows the market, one being the average.
+    double sensitivity = 1.0;
+};
+
+/// One tick the scheduler took.
+struct fired_tick final {
+    std::size_t id;
+    /// Seconds since the run started.
+    double at;
+    /// The market's operational time.
+    double tau;
+};
+
+/// The market as a reader sees it.
+struct market_snapshot final {
+    domain::market_state state;
+    double multiplier;
+    bool pinned;
+    double heat;
+    double pace;
+    double tau;
+    double jump;
+    double decay;
+    double loop_gain;
+    double population_rate;
+};
+
+/// The heat at one instant, for a screen to draw.
+struct heat_reading final {
+    std::chrono::system_clock::time_point at;
+    double heat;
+};
+
 /**
- * @brief One clock for a whole run: it decides which series ticks next.
+ * @brief The one loop of a run: it owns the market and decides which series
+ * ticks next.
  *
- * A feed with its own clock draws a gap from its own rate and sleeps, so it can
- * never see another feed's event. This scheduler holds every series' pending gap,
- * sleeps until the earliest, and calls only that series' body: the superposition
- * of independent streams is exactly the minimum of their gaps.
+ * Every series is scaled by one bracket, so all of them share one operational
+ * time, tau, which the market's operational_clock keeps. A series with
+ * sensitivity s whose law draws a gap g ticks when tau has moved by g / s. That
+ * mark is fixed when the gap is drawn: a heat jump, a pin or an enrolment
+ * changes how fast tau moves and moves no mark. So the series wait in one heap
+ * keyed on their marks, a tick costs O(log n), and a change in the market
+ * reaches every series at once.
  *
- * Each series is re-armed from its current rate when it fires, and every series
- * is re-armed once per refresh period. The refresh is what carries the shared
- * factors: the market state and the heat change continuously, and a pending gap
- * drawn before the change would otherwise ignore it. A refresh bounds that
- * staleness to one period instead of leaving it unbounded.
- *
- * The body is the only thing a feed supplies; the scheduler owns the time, the
- * order and the stop.
+ * Only the loop changes the market or the heap. add, remove and pin from other
+ * threads are commands the loop applies at its clock's now; remove waits until
+ * the loop has applied it, so a feed may destroy what its body points at once
+ * remove returns. Before run() starts, and on the loop's own thread, a command
+ * applies at once.
  */
-class tick_scheduler final {
+class ORES_ANALYTICS_QUANT_EXPORT tick_scheduler final {
 public:
-    /// What one series does when its turn comes, given the seconds it waited.
-    using stream_body = std::function<std::string(double elapsed_seconds)>;
+    using stream_body = std::function<std::string(const tick_context&)>;
     using published_hook = std::function<void(std::uint64_t, const std::string&)>;
     using failure_hook = std::function<void(const std::exception&)>;
 
+    /// How often the loop reads the heat while nothing else wakes it.
+    static constexpr std::chrono::milliseconds sample_period{100};
+
+    /// How many heat readings the history keeps.
+    static constexpr std::size_t history_capacity = 2048;
+
     /**
-     * @param arrivals The series' process, borrowed and outliving the scheduler.
-     * @param link The factors this series follows.
-     * @param body What the series does when it ticks.
+     * @param clock the run's time, borrowed and outliving the scheduler.
+     * @param market how the market's pace moves.
+     * @param run_seed the seed every stream of the run is keyed by.
      */
-    std::size_t add(ores::analytics::quant::domain::i_arrival_process& arrivals,
-                    ores::analytics::quant::domain::market_link link,
-                    stream_body body) {
-        const auto guard = std::lock_guard(mutex_);
-        const auto id = next_id_++;
-        streams_.emplace(id, stream{&arrivals, link, std::move(body), 0.0, 0.0, false});
-        waiting_.notify_one();
-        return id;
-    }
+    tick_scheduler(i_run_clock& clock, const domain::market_config& market, std::uint64_t run_seed);
 
-    /// @brief Stop ticking a series. Safe while the scheduler runs.
-    void remove(std::size_t id) {
-        const auto guard = std::lock_guard(mutex_);
-        streams_.erase(id);
-    }
+    /**
+     * @brief Schedule a series. Its law is built here, so a bad spec throws in
+     * the caller's thread.
+     */
+    std::size_t add(const series_spec& spec, stream_body body);
 
-    [[nodiscard]] std::size_t size() const {
-        const auto guard = std::lock_guard(mutex_);
-        return streams_.size();
+    /// Stop ticking a series. On return its body is not running and never will.
+    void remove(std::size_t id);
+
+    /// Pin the market to a state, or hand it back to the chain with nothing. On
+    /// return the pin is in force.
+    void pin(std::optional<domain::market_state> state);
+
+    [[nodiscard]] market_snapshot snapshot() const;
+
+    /// The heat readings taken since @p from, oldest first.
+    [[nodiscard]] std::vector<heat_reading>
+    readings_since(std::chrono::system_clock::time_point from) const;
+
+    [[nodiscard]] std::size_t size() const;
+
+    [[nodiscard]] std::uint64_t run_seed() const {
+        return run_seed_;
     }
 
     /**
-     * @brief Advance to the next stream's tick, run its body, and report which
-     * stream ticked and how long it waited, or nothing when there is no stream.
+     * @brief Take the next tick now, without waiting for its time.
      *
-     * Public so a test can drive the order without sleeping.
+     * For a test, which reads the time it was due from the result. Nothing when
+     * no series is scheduled.
      */
-    std::optional<std::pair<std::size_t, double>> step() {
-        return tick_once(false, 0.0);
-    }
+    std::optional<fired_tick> step();
 
-    /**
-     * @brief Re-rate every series from its current rate, so a change in the
-     * shared factors reaches a gap that was already in flight.
-     */
-    void refresh() {
-        const auto guard = std::lock_guard(mutex_);
-        for (auto& [id, s] : streams_)
-            re_rate(s);
-    }
+    /// Run until stop(), waiting on the clock for each tick.
+    void run();
 
-    /**
-     * @brief Run until stop(), sleeping until each tick is due.
-     *
-     * @param refresh_period how often every series is re-armed. One period of the
-     *        market's owner is the natural choice: beyond it the factors are
-     *        stale anyway.
-     */
-    void run(std::chrono::milliseconds refresh_period = std::chrono::milliseconds(100)) {
-        const double period = std::chrono::duration<double>(refresh_period).count();
-        while (!stop_flag_.load(std::memory_order_relaxed)) {
-            {
-                // A run starts before its feeds do, so an empty registry means
-                // "nothing to do yet", not "finished".
-                std::unique_lock lock(mutex_);
-                waiting_.wait_for(lock, refresh_period, [this] {
-                    return !streams_.empty() || stop_flag_.load(std::memory_order_relaxed);
-                });
-                if (stop_flag_.load(std::memory_order_relaxed))
-                    return;
-                if (streams_.empty())
-                    continue;
-            }
-            tick_once(true, period);
-        }
-    }
+    void stop();
 
-    void stop() {
-        stop_flag_.store(true, std::memory_order_relaxed);
-    }
-
-    void set_hooks(published_hook on_published, failure_hook on_failed) {
-        const auto guard = std::lock_guard(mutex_);
-        on_published_ = std::move(on_published);
-        on_failed_ = std::move(on_failed);
-    }
+    void set_hooks(published_hook on_published, failure_hook on_failed);
 
     [[nodiscard]] std::uint64_t publish_count() const {
         return published_.load(std::memory_order_relaxed);
     }
 
 private:
-    std::optional<std::pair<std::size_t, double>> tick_once(bool should_sleep, double period) {
-        std::size_t winner = 0;
-        double earliest = std::numeric_limits<double>::infinity();
+    struct series final {
+        series_spec spec;
+        domain::arrival_law law;
+        math::rng_stream stream;
         stream_body body;
-
-        {
-            const auto guard = std::lock_guard(mutex_);
-            if (streams_.empty())
-                return std::nullopt;
-
-            for (auto& [id, s] : streams_) {
-                if (!s.armed)
-                    arm(s);
-                if (s.pending < earliest) {
-                    earliest = s.pending;
-                    winner = id;
-                }
-            }
-
-            for (auto& [id, s] : streams_) {
-                s.pending -= earliest;
-                if (s.pending < 0.0)
-                    s.pending = 0.0;
-            }
-
-            const auto it = streams_.find(winner);
-            if (it == streams_.end())
-                return std::nullopt;
-            body = it->second.body;
-        }
-
-        if (should_sleep) {
-            sleep_for(earliest);
-            if (stop_flag_.load(std::memory_order_relaxed))
-                return std::nullopt;
-        }
-
-        {
-            // The series may have stopped while the scheduler slept, and a
-            // stopped feed has destroyed the object its body points at.
-            const auto guard = std::lock_guard(mutex_);
-            if (streams_.find(winner) == streams_.end())
-                return std::nullopt;
-        }
-
-        try {
-            const auto summary = body(earliest);
-            const auto n = published_.fetch_add(1, std::memory_order_relaxed) + 1;
-            if (on_published_)
-                on_published_(n, summary);
-        } catch (const std::exception& ex) {
-            if (on_failed_)
-                on_failed_(ex);
-        }
-
-        {
-            const auto guard = std::lock_guard(mutex_);
-            const auto it = streams_.find(winner);
-            if (it != streams_.end())
-                arm(it->second);
-
-            if (period > 0.0) {
-                since_refresh_ += earliest;
-                if (since_refresh_ >= period) {
-                    for (auto& [id, s] : streams_)
-                        re_rate(s);
-                    since_refresh_ = 0.0;
-                }
-            }
-        }
-        dispatch_error();
-        return std::pair{winner, earliest};
-    }
-
-    struct stream final {
-        ores::analytics::quant::domain::i_arrival_process* arrivals;
-        ores::analytics::quant::domain::market_link link;
-        stream_body body;
-        double pending;
-        /// The gap the pending time was drawn from, so a re-rate can keep the share of it that
-        /// this series has still to wait.
         double gap;
-        bool armed;
+        double mark;
+        double last_fired;
     };
 
-    void arm(stream& s) {
-        try {
-            s.arrivals->set_baseline_multiplier(s.link.rate_multiplier());
-            const double gap = s.arrivals->next_gap();
-            s.pending = std::isfinite(gap) && gap > 0.0 ? gap : 0.0;
-        } catch (const std::exception& ex) {
-            // A process that cannot draw a gap is reported and set aside for a
-            // second rather than re-armed at once, which would spin the loop.
-            defer_error(ex);
-            s.pending = 1.0;
+    struct pending final {
+        double mark;
+        std::size_t id;
+        bool operator>(const pending& other) const {
+            return mark != other.mark ? mark > other.mark : id > other.id;
         }
-        s.gap = s.pending;
-        s.armed = true;
-    }
+    };
 
-    /**
-     * @brief Draw this series' next gap at its current rate, keeping the part of the wait the
-     * series has already served.
-     *
-     * A refresh that redrew the whole gap would put a series back at the start of its interval,
-     * and a series slower than the refresh would never reach its turn: a minute-long gap redrawn
-     * every tenth of a second is a minute that never passes. So the time still to wait keeps its
-     * share of the interval, and the rate the process now carries is what that share scales to.
-     */
-    void re_rate(stream& s) {
-        if (!s.armed) {
-            arm(s);
-            return;
-        }
-        const double before = s.gap;
-        const double waited_share = before > 0.0 ? std::clamp(s.pending / before, 0.0, 1.0) : 1.0;
-        arm(s);
-        if (before > 0.0 && s.gap > 0.0)
-            s.pending = s.gap * waited_share;
-    }
+    using command = std::function<void()>;
 
-    void defer_error(const std::exception& ex) {
-        pending_error_ = ex.what();
-    }
+    /// Apply @p c on the loop, now if the loop is not running or this is it.
+    void post(command c, bool wait);
+    void drain(std::unique_lock<std::mutex>& lock);
 
-    void dispatch_error() {
-        if (!pending_error_)
-            return;
-        const auto message = *pending_error_;
-        pending_error_.reset();
-        if (on_failed_)
-            on_failed_(std::runtime_error(message));
-    }
+    [[nodiscard]] double seconds_at(i_run_clock::time_point t) const;
+    [[nodiscard]] i_run_clock::time_point time_at(double seconds) const;
+    void advance_to(double seconds);
+    void schedule(std::size_t id, series& s);
+    void sample(i_run_clock::time_point t);
 
-    static void sleep_for(double seconds) {
-        if (!(seconds > 0.0))
-            return;
-        std::this_thread::sleep_for(std::chrono::duration_cast<std::chrono::microseconds>(
-            std::chrono::duration<double>(seconds)));
-    }
+    /// The run time at which the next series is due, or nothing.
+    [[nodiscard]] std::optional<double> next_due();
+
+    /// Fire the series at the top of the heap. Releases the lock around its body.
+    std::optional<fired_tick> fire(std::unique_lock<std::mutex>& lock);
+
+    i_run_clock& clock_;
+    i_run_clock::time_point origin_;
+    std::uint64_t run_seed_;
 
     mutable std::mutex mutex_;
-    std::map<std::size_t, stream> streams_;
+    domain::operational_clock market_;
+    std::map<std::size_t, series> series_;
+    std::priority_queue<pending, std::vector<pending>, std::greater<>> heap_;
+    std::deque<heat_reading> history_;
+    std::vector<command> commands_;
+    std::condition_variable applied_;
+    std::uint64_t applied_count_ = 0;
+    std::uint64_t posted_count_ = 0;
+    bool running_ = false;
+    std::thread::id loop_thread_;
     std::size_t next_id_ = 0;
-    std::condition_variable waiting_;
-    std::optional<std::string> pending_error_;
+
     std::atomic<bool> stop_flag_{false};
     std::atomic<std::uint64_t> published_{0};
     published_hook on_published_;
     failure_hook on_failed_;
-    double since_refresh_ = 0.0;
 };
 
 }

@@ -42,7 +42,7 @@ import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
-import { PATHS, configurationPath, reportPath } from '../shell/paths.js';
+import { PATHS, configurationPath, curveConfigurationPath, reportPath } from '../shell/paths.js';
 import { AccessMark } from '../ui/AccessMark.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
 import { Notice, Tag } from '../ui/Primitives.js';
@@ -62,6 +62,9 @@ const CONFIGURATION_EVENTS = [
     { component: 'reporting', entity: 'report_configurations' },
     { component: 'reporting', entity: 'configuration_analytics' },
 ] as const;
+
+/** The kind code of a configuration filled by an ORE curve configuration document. */
+const CURVE_CONFIGURATION_KIND = 'curve_configuration';
 
 /** The eight characters a person reads to tell one identifier from another. */
 function shortId(id: string): string {
@@ -187,6 +190,22 @@ export function ConfigurationPage(): ReactNode {
                         ],
                     ]}
                 />
+                {configuration.typeCode === CURVE_CONFIGURATION_KIND && (
+                    <section className="card space-y-3 p-4">
+                        <h2 className="text-sm font-medium">
+                            {t('reporting.configurations.curveDocument')}
+                        </h2>
+                        <p className="text-sm text-ink-muted">
+                            {t('reporting.configurations.curveDocumentLead')}
+                        </p>
+                        <Link
+                            to={curveConfigurationPath(configuration.id)}
+                            className="text-sm text-accent hover:text-accent-bright"
+                        >
+                            {t('reporting.configurations.openCurveDocument')}
+                        </Link>
+                    </section>
+                )}
                 <section className="card space-y-3 p-4">
                     <header className="flex flex-wrap items-baseline justify-between gap-2">
                         <h2 className="text-sm font-medium">
@@ -315,7 +334,11 @@ function BindingList({
                     <dt className="text-xs text-ink-faint">{binding.typeName}</dt>
                     <dd className="mt-0.5 text-sm">
                         <Link
-                            to={configurationPath(binding.configurationId)}
+                            to={
+                                binding.typeCode === CURVE_CONFIGURATION_KIND
+                                    ? curveConfigurationPath(binding.configurationId)
+                                    : configurationPath(binding.configurationId)
+                            }
                             className="text-accent hover:text-accent-bright"
                         >
                             {binding.name === '' ? shortId(binding.configurationId) : binding.name}

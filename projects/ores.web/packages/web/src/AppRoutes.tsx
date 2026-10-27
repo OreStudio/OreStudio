@@ -113,6 +113,7 @@ import { BookPage } from './refdata/BookPage.js';
 import { CounterpartyPage } from './refdata/CounterpartyPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
 import { ConfigurationPage } from './reporting/ConfigurationPage.js';
+import { CurveConfigurationPage } from './curveConfiguration/CurveConfigurationPage.js';
 import { EngineSettingsPage } from './engineSettings/EngineSettingsPage.js';
 import { EngineSettingsRecordPage } from './engineSettings/EngineSettingsRecordPage.js';
 import { PricingEnginesPage } from './pricingEngines/PricingEnginesPage.js';
@@ -892,6 +893,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <PricingEnginePage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.curveConfigurations}/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CurveConfigurationPage />
                     ),
                     'workspace',
                 )}

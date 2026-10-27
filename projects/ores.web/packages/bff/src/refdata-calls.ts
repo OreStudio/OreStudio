@@ -140,6 +140,21 @@ export function text(value: unknown): string {
     return typeof value === 'string' ? value : '';
 }
 
+/** A value as the text a control shows: null when the row holds none. */
+export function valueText(value: unknown): string | null {
+    if (value === null || value === undefined) {
+        return null;
+    }
+    if (typeof value === 'boolean') {
+        return value ? 'true' : 'false';
+    }
+    if (typeof value === 'number') {
+        return String(value);
+    }
+    const asText = text(value);
+    return asText === '' ? null : asText;
+}
+
 /** The id the address names, or a 400. */
 export function paramId(request: FastifyRequest): string {
     return input(idSchema, (request.params as { id: string }).id);

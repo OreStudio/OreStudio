@@ -52,7 +52,8 @@ export interface ValueFields {
 }
 
 /** A parameter whose setting names no value set carries these fields empty. */
-const NO_VALUE_SET: ValueFields = {
+/** The fields a parameter carries when its setting names no value set. */
+export const NO_VALUE_SET: ValueFields = {
     valueSet: '',
     sourceKind: '',
     choices: [],

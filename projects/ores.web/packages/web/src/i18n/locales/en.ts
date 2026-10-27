@@ -5737,6 +5737,10 @@ export const en: SourceCatalogue = {
             off: 'Off',
             usedBy: 'Reports that use it',
             noReports: 'No report that you may see uses this configuration.',
+            curveDocument: 'Curve configuration',
+            curveDocumentLead:
+                'This configuration is filled by an ORE curve configuration document. Its sections and their curves are drawn leaf by leaf.',
+            openCurveDocument: 'Open the curve configuration',
             none: 'This report binds no configuration.',
             refused: 'You may not see the configurations of this report.',
         },
@@ -5901,6 +5905,66 @@ export const en: SourceCatalogue = {
         retry: 'Retry',
         cancel: 'Cancel',
     },
+    curveConfiguration: {
+        title: 'Curve configurations',
+        lead: 'How each curve is defined and bootstrapped, as the ORE curve configuration document states it.',
+        recordLead:
+            'Version {version}. {documented} of {total} parameters carry documentation from the ORE parameter contract.',
+        tabs: {
+            label: 'Curve configuration sections',
+            details: 'Details',
+            usedBy: 'Used by',
+            history: 'History',
+        },
+        details: {
+            lead: 'What the configuration is, who holds it, and how much of it the one documentation contract describes.',
+            decides:
+                'It decides how each curve is defined and bootstrapped: its quotes, its segments and its interpolation. It does not decide the market a run reads, nor the trade data.',
+            related: 'Related configurations',
+            relatedLead:
+                'The report configuration this curve configuration fills. A report binds that row, and a change here reaches its next run.',
+        },
+        fields: {
+            name: 'Name',
+            party: 'Party',
+            version: 'Version',
+            sections: 'Sections',
+            entries: 'Curves',
+            documented: 'Documented',
+            documentedValue: '{documented} of {total} parameters',
+            lastChanged: 'Last changed',
+            description: 'Description',
+            boundBy: 'Used by reports',
+            boundByValue: '{count} reports',
+            configuration: 'Report configuration',
+        },
+        section: {
+            title: '{section}, holding {entry} entries',
+            unmapped:
+                'The columns of this section are not mapped yet, so its curves show their identifier alone.',
+            empty: 'This section holds no curve.',
+        },
+        entry: {
+            noDescription: 'One {entry} of the document.',
+            parameters: '{count} parameters',
+            gaps: '{count} without documentation',
+            blocks: 'Held as its own element:',
+            blockStated: 'stated',
+            blockAbsent: 'not stated',
+            blockNotRecorded: 'not recorded here',
+        },
+        usedBy: {
+            lead: 'A change reaches the next run of each report below. A run already produced keeps what it ran with.',
+            none: 'No report binds this configuration.',
+            refused: 'You may not see the reports that bind this configuration.',
+            unread: 'The reports that bind this configuration could not be read. {message}',
+        },
+        history: {
+            lead: 'Every version of the configuration, newest first, with what changed in each.',
+        },
+        missing: 'No curve configuration document fills this configuration.',
+        readFailed: 'The curve configuration could not be read. {message}',
+    },
     oreParameter: {
         mode: {
             label: 'How much to show',
@@ -5910,6 +5974,8 @@ export const en: SourceCatalogue = {
         showAllDocumentation: 'Show all documentation',
         hideAllDocumentation: 'Hide all documentation',
         required: 'Required',
+        yes: 'Yes',
+        no: 'No',
         nouns: {
             parameters: 'parameters',
             settings: 'settings',

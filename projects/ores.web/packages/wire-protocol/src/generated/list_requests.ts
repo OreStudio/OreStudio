@@ -3938,6 +3938,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'reporting.v1.report_result_rows.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['report_result_rows'],
+    },
     'reporting.v1.report_trigger_types.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -5176,6 +5181,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['settlement_types'],
     },
     'trading.v1.settlement_types_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.structure_identifiers.list': {
+        asOf: true,
+        filter: ['structure_id', 'structure_id_one_of'],
+        rows: ['identifiers'],
+    },
+    'trading.v1.structure_identifiers.list_by_structure_id': {
+        asOf: false,
+        filter: ['structure_id', 'structure_id_one_of'],
+        rows: ['identifiers'],
+    },
+    'trading.v1.structure_identifiers_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

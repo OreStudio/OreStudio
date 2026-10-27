@@ -47,6 +47,7 @@ import {
     readAll,
     resultSchema,
     text,
+    valueText,
 } from './refdata-calls.js';
 import { readValueSets } from './ore-value-sets.js';
 import type { LiveSession } from './sessions.js';
@@ -204,13 +205,6 @@ function zipParts(
         merged = { ...merged, ...flattenPart(part) };
     }
     return merged;
-}
-
-/** The text form a term's value takes on the wire: null when the row holds none. */
-function valueText(value: unknown): string | null {
-    if (value === null || value === undefined || value === '') return null;
-    if (typeof value === 'boolean' || typeof value === 'number') return String(value);
-    return typeof value === 'string' ? value : JSON.stringify(value);
 }
 
 /**

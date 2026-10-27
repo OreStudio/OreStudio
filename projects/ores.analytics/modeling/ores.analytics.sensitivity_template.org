@@ -101,9 +101,9 @@ Soft FK to ores_refdata_asset_class_codes_tbl, through
 be no class and validates anything else against the reference data.
 
 #+begin_src cpp :name generator
-[&r] -> std::optional<std::string> {
+[&r] {
     if (r.method_code == "Trade")
-        return std::nullopt;
+        return std::string();
     static constexpr std::string_view method_codes[] = {
         "Analytical", "Semianalytical", "FD", "MC"};
     static constexpr std::string_view classes[] = {
@@ -194,7 +194,6 @@ no class, and is otherwise checked against the reference data's catalogue.
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include <optional>
 #include <string>
 #+end_src
 

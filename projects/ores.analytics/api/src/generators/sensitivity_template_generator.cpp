@@ -52,9 +52,9 @@ generate_synthetic_sensitivity_template(utility::generation::generation_context&
             "Analytical", "Semianalytical", "FD", "MC", "Trade"};
         return std::string(codes[static_cast<std::size_t>(idx) % std::size(codes)]);
     }();
-    r.asset_class_code = [&r] -> std::optional<std::string> {
+    r.asset_class_code = [&r] {
         if (r.method_code == "Trade")
-            return std::nullopt;
+            return std::string();
         static constexpr std::string_view method_codes[] = {
             "Analytical", "Semianalytical", "FD", "MC"};
         static constexpr std::string_view classes[] = {

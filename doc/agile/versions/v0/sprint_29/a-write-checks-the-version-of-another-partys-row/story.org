@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: F80820E4-2608-4B25-92E7-C6BC189024E1
+:END:
+#+title: Story: A write checks the version of another party's row
+#+description: The generated refdata service reads the current row of a write by id alone, so a session that sees several parties checks the claimed version against whichever party's row comes first, and a write to the acting party's own row gets a false version conflict.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A write from a party that sees other parties is checked against its own row. Today the generated refdata service reads the current row of a write by its key alone. A session of a parent party sees its subsidiaries' rows too, and a convention id is held by every party, so the claimed version is checked against whichever party's row comes first. The person gets a false version conflict:
+
+#+begin_example
+The swap_convention for id is at version 1, and this write states version 2.
+#+end_example
+
+Measured on 2026-10-26 from the Acme login party, on the record page of a convention (PR #3898). From a party that sees only itself the same write lands. The fix restores the check to the acting party's row, as the write itself lands under the acting party.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Done: a write's claim is checked against the acting party's row. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-10-26                               |
+
+* Acceptance
+
+- From a party that sees other parties, a write to the acting party's row with the version it read lands, and a stale version is still a conflict.
+- The reply of a put carries the row the write produced, not another party's row of the same key.
+- A write from a party that sees only itself is unchanged.
+- The build passes and the service suites pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3A6B22F4-EE4A-477D-B616-C18B5B3E7980][Scaffold story: A write checks the version of another party's row]] | DONE | 2026-10-26 | 2026-10-27 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:FCBAD65E-95D6-418D-8ECF-ADD428D3C97B][Implement A write checks the version of another party's row]] | DONE | 2026-10-27 | 2026-10-27 | Initial task for: A write checks the version of another party's row |
+
+* Decisions
+
+- *A separate hotfix, decided by the owner on 2026-10-26.* The fix is in the service template and reaches every service, so it is reviewed on its own rather than inside the convention edit (PR #3898).
+
+* Out of scope
+
+- A delete by key, and a write with no precondition, read the current row by key too. A delete may close another visible party's row of the same id and version; an unclaimed write gets a false conflict. The capture /Scope a delete and an unclaimed write to the acting party/ records both.
+
+-

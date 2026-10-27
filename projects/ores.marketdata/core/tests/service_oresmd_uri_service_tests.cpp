@@ -40,8 +40,6 @@
 
 namespace {
 
-const std::string tags("[marketdata][service][oresmd_uri_service]");
-
 using namespace ores::marketdata;
 using namespace ores::marketdata::datum;
 using ores::marketdata::service::oresmd_uri_service;
@@ -118,7 +116,7 @@ std::set<std::string> index_uris() {
 
 }
 
-TEST_CASE("every URI the codec writes for the catalogue parses and composes back to itself", tags) {
+TEST_CASE("every URI the codec writes for the catalogue parses and composes back to itself", "[marketdata][service][oresmd_uri_service]") {
     const auto uris = catalogue_uris();
     REQUIRE(uris.size() > 100);
     std::vector<std::string> failures;
@@ -137,7 +135,7 @@ TEST_CASE("every URI the codec writes for the catalogue parses and composes back
     CHECK(failures.empty());
 }
 
-TEST_CASE("every fixing URI the codec writes for the catalogue parses and composes back", tags) {
+TEST_CASE("every fixing URI the codec writes for the catalogue parses and composes back", "[marketdata][service][oresmd_uri_service]") {
     const auto uris = index_uris();
     REQUIRE(uris.size() > 40);
     std::vector<std::string> failures;
@@ -157,7 +155,7 @@ TEST_CASE("every fixing URI the codec writes for the catalogue parses and compos
 }
 
 TEST_CASE("parse names the kind, the instrument, the quote, the subject and the other fields",
-          tags) {
+          "[marketdata][service][oresmd_uri_service]") {
     const auto parts = parse("oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate"
                              "&index_name=EUR-EURIBOR-6M&fwd_start=0D&tenor=6M&term=10Y");
     REQUIRE(parts.success);
@@ -172,7 +170,7 @@ TEST_CASE("parse names the kind, the instrument, the quote, the subject and the 
     CHECK(parts.fields[3].text == "10Y");
 }
 
-TEST_CASE("parse of a series leaves out the coordinate fields", tags) {
+TEST_CASE("parse of a series leaves out the coordinate fields", "[marketdata][service][oresmd_uri_service]") {
     const auto parts =
         parse("oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR");
     REQUIRE(parts.success);
@@ -181,7 +179,7 @@ TEST_CASE("parse of a series leaves out the coordinate fields", tags) {
         CHECK(field.name != "term");
 }
 
-TEST_CASE("parse refuses with the codec's own words", tags) {
+TEST_CASE("parse refuses with the codec's own words", "[marketdata][service][oresmd_uri_service]") {
     const std::vector<std::string> bad{
         "http://example.org/",
         "oresmd://ir/EUR?type=quote&instrument=ir_swap&quote=rate",
@@ -200,14 +198,14 @@ TEST_CASE("parse refuses with the codec's own words", tags) {
     }
 }
 
-TEST_CASE("parse of a refused fixing gives the index reader's words", tags) {
+TEST_CASE("parse of a refused fixing gives the index reader's words", "[marketdata][service][oresmd_uri_service]") {
     const std::string uri = "oresmd://ir/EUR?type=fixing&index=ibor&tenor=6M";
     const auto parts = parse(uri);
     CHECK_FALSE(parts.success);
     CHECK(parts.message == oresmd_uri_codec::read_index(uri).error());
 }
 
-TEST_CASE("only the type key makes a URI a fixing when the reader's words are chosen", tags) {
+TEST_CASE("only the type key makes a URI a fixing when the reader's words are chosen", "[marketdata][service][oresmd_uri_service]") {
     const std::string fixing = "oresmd://ir/EUR?type=fixing&index=ibor&tenor=6M";
     CHECK(parse(fixing).message == oresmd_uri_codec::read_index(fixing).error());
     const std::string not_a_fixing =
@@ -217,7 +215,7 @@ TEST_CASE("only the type key makes a URI a fixing when the reader's words are ch
     CHECK(parse(other_key).message == oresmd_uri_codec::read(other_key).error());
 }
 
-TEST_CASE("compose writes the URI in the codec's order whatever order the fields come in", tags) {
+TEST_CASE("compose writes the URI in the codec's order whatever order the fields come in", "[marketdata][service][oresmd_uri_service]") {
     const auto forward = oresmd_uri_service::compose(quote_request(
         "ir_swap",
         "rate",
@@ -233,7 +231,7 @@ TEST_CASE("compose writes the URI in the codec's order whatever order the fields
     CHECK(oresmd_uri_codec::read(forward.uri).has_value());
 }
 
-TEST_CASE("compose treats a field with no text as a field the URI leaves out", tags) {
+TEST_CASE("compose treats a field with no text as a field the URI leaves out", "[marketdata][service][oresmd_uri_service]") {
     const auto without = oresmd_uri_service::compose(quote_request(
         "ir_swap", "rate", "EUR", {{"fwd_start", "0D"}, {"tenor", "6M"}, {"term", "10Y"}}));
     const auto blank = oresmd_uri_service::compose(
@@ -245,7 +243,7 @@ TEST_CASE("compose treats a field with no text as a field the URI leaves out", t
     CHECK(blank.uri == without.uri);
 }
 
-TEST_CASE("compose says why the parts make no URI", tags) {
+TEST_CASE("compose says why the parts make no URI", "[marketdata][service][oresmd_uri_service]") {
     const auto required = oresmd_uri_service::compose(
         quote_request("ir_swap", "rate", "EUR", {{"tenor", "6M"}, {"term", "10Y"}}));
     CHECK_FALSE(required.success);
@@ -281,7 +279,7 @@ TEST_CASE("compose says why the parts make no URI", tags) {
     CHECK_FALSE(oresmd_uri_service::compose(kind).success);
 }
 
-TEST_CASE("compose of a series refuses a coordinate field", tags) {
+TEST_CASE("compose of a series refuses a coordinate field", "[marketdata][service][oresmd_uri_service]") {
     auto request = quote_request("discount", "rate", "USD", {{"curve_id", "USD-SOFR"}});
     request.kind = "series";
     const auto series = oresmd_uri_service::compose(request);
@@ -291,7 +289,7 @@ TEST_CASE("compose of a series refuses a coordinate field", tags) {
     CHECK_FALSE(oresmd_uri_service::compose(request).success);
 }
 
-TEST_CASE("compose of a fixing is as strict as the codec", tags) {
+TEST_CASE("compose of a fixing is as strict as the codec", "[marketdata][service][oresmd_uri_service]") {
     messaging::compose_oresmd_uri_request request;
     request.kind = "fixing";
     request.instrument = "ibor";
@@ -308,7 +306,7 @@ TEST_CASE("compose of a fixing is as strict as the codec", tags) {
     CHECK_FALSE(oresmd_uri_service::compose(request).success);
 }
 
-TEST_CASE("an input over the limits is refused before the codec sees it", tags) {
+TEST_CASE("an input over the limits is refused before the codec sees it", "[marketdata][service][oresmd_uri_service]") {
     const auto long_uri = parse(std::string(oresmd_uri_service::max_text + 1, 'a'));
     CHECK_FALSE(long_uri.success);
     auto request = quote_request("ir_swap", "rate", "EUR", {});

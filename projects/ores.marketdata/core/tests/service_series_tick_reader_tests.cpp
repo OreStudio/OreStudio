@@ -42,8 +42,6 @@
 
 namespace {
 
-const std::string tags("[service][ticks]");
-
 using namespace ores::marketdata::generators;
 using namespace std::chrono_literals;
 using ores::marketdata::messaging::get_series_ticks_request;
@@ -138,7 +136,7 @@ void insert_many_ticks(const owned_series& o,
 
 }
 
-TEST_CASE("a_span_returns_every_tick_in_one_reply_with_the_gaps_between_them", tags) {
+TEST_CASE("a_span_returns_every_tick_in_one_reply_with_the_gaps_between_them", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto other = "oresmd://test/" + boost::uuids::to_string(o.series.id) + "/1Y";
@@ -163,7 +161,7 @@ TEST_CASE("a_span_returns_every_tick_in_one_reply_with_the_gaps_between_them", t
     CHECK(reply.values == std::vector<double>{1.5, 2.5, 3.5});
 }
 
-TEST_CASE("a_span_holds_its_first_instant_and_not_its_last", tags) {
+TEST_CASE("a_span_holds_its_first_instant_and_not_its_last", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
@@ -176,7 +174,7 @@ TEST_CASE("a_span_holds_its_first_instant_and_not_its_last", tags) {
     CHECK(reply.values == std::vector<double>{1.0, 2.0});
 }
 
-TEST_CASE("a_span_with_no_end_reads_up_to_now", tags) {
+TEST_CASE("a_span_with_no_end_reads_up_to_now", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
@@ -190,7 +188,7 @@ TEST_CASE("a_span_with_no_end_reads_up_to_now", tags) {
     CHECK(reply.values == std::vector<double>{1.0});
 }
 
-TEST_CASE("a_coordinate_filter_reads_that_coordinate_only", tags) {
+TEST_CASE("a_coordinate_filter_reads_that_coordinate_only", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto other = "oresmd://test/" + boost::uuids::to_string(o.series.id) + "/1Y";
@@ -209,7 +207,7 @@ TEST_CASE("a_coordinate_filter_reads_that_coordinate_only", tags) {
     CHECK(reply.values == std::vector<double>{2.0});
 }
 
-TEST_CASE("a_span_with_no_tick_gives_an_empty_reply_and_success", tags) {
+TEST_CASE("a_span_with_no_tick_gives_an_empty_reply_and_success", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
@@ -223,7 +221,7 @@ TEST_CASE("a_span_with_no_tick_gives_an_empty_reply_and_success", tags) {
     CHECK(reply.values.empty());
 }
 
-TEST_CASE("a_tick_of_another_party_is_not_in_the_reply", tags) {
+TEST_CASE("a_tick_of_another_party_is_not_in_the_reply", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
@@ -237,7 +235,7 @@ TEST_CASE("a_tick_of_another_party_is_not_in_the_reply", tags) {
     CHECK(reply.values.empty());
 }
 
-TEST_CASE("a_session_with_no_party_is_refused_and_not_answered_with_an_empty_reply", tags) {
+TEST_CASE("a_session_with_no_party_is_refused_and_not_answered_with_an_empty_reply", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
@@ -250,7 +248,7 @@ TEST_CASE("a_session_with_no_party_is_refused_and_not_answered_with_an_empty_rep
     CHECK(reply.values.empty());
 }
 
-TEST_CASE("a_span_that_ends_before_it_starts_is_refused", tags) {
+TEST_CASE("a_span_that_ends_before_it_starts_is_refused", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
@@ -261,7 +259,7 @@ TEST_CASE("a_span_that_ends_before_it_starts_is_refused", tags) {
     CHECK(reply.result.code == "range_inverted");
 }
 
-TEST_CASE("a_span_that_starts_and_ends_at_one_instant_is_empty_and_not_refused", tags) {
+TEST_CASE("a_span_that_starts_and_ends_at_one_instant_is_empty_and_not_refused", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
@@ -273,7 +271,7 @@ TEST_CASE("a_span_that_starts_and_ends_at_one_instant_is_empty_and_not_refused",
     CHECK(reply.values.empty());
 }
 
-TEST_CASE("a_span_at_the_ceiling_is_answered_and_a_span_over_it_is_refused_naming_it", tags) {
+TEST_CASE("a_span_at_the_ceiling_is_answered_and_a_span_over_it_is_refused_naming_it", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
@@ -293,7 +291,7 @@ TEST_CASE("a_span_at_the_ceiling_is_answered_and_a_span_over_it_is_refused_namin
     CHECK(over.values.empty());
 }
 
-TEST_CASE("ticks_of_one_instant_come_in_the_order_of_their_coordinates", tags) {
+TEST_CASE("ticks_of_one_instant_come_in_the_order_of_their_coordinates", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto other = "oresmd://test/" + boost::uuids::to_string(o.series.id) + "/1Y";
@@ -309,7 +307,7 @@ TEST_CASE("ticks_of_one_instant_come_in_the_order_of_their_coordinates", tags) {
     CHECK(reply.values == std::vector<double>{1.0, 2.0});
 }
 
-TEST_CASE("a_span_with_no_end_that_starts_after_now_is_empty_and_not_refused", tags) {
+TEST_CASE("a_span_with_no_end_that_starts_after_now_is_empty_and_not_refused", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
@@ -322,7 +320,7 @@ TEST_CASE("a_span_with_no_end_that_starts_after_now_is_empty_and_not_refused", t
     CHECK(reply.values.empty());
 }
 
-TEST_CASE("a_request_that_names_too_many_coordinates_is_refused", tags) {
+TEST_CASE("a_request_that_names_too_many_coordinates_is_refused", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
@@ -337,7 +335,7 @@ TEST_CASE("a_request_that_names_too_many_coordinates_is_refused", tags) {
     CHECK(reply.result.message.find("coordinates") != std::string::npos);
 }
 
-TEST_CASE("a_reply_of_ticks_and_its_request_survive_the_wire_codec", tags) {
+TEST_CASE("a_reply_of_ticks_and_its_request_survive_the_wire_codec", "[service][ticks]") {
     const auto t0 = now_second();
     get_series_ticks_request request;
     request.identity = zero_identity("curve");
@@ -373,7 +371,7 @@ TEST_CASE("a_reply_of_ticks_and_its_request_survive_the_wire_codec", tags) {
     CHECK(received->values == reply.values);
 }
 
-TEST_CASE("an_identity_no_series_carries_gives_an_empty_reply_and_success", tags) {
+TEST_CASE("an_identity_no_series_carries_gives_an_empty_reply_and_success", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     auto request = span(o, now_second() - 1min, now_second() + 1min);
@@ -385,7 +383,7 @@ TEST_CASE("an_identity_no_series_carries_gives_an_empty_reply_and_success", tags
     CHECK(reply.values.empty());
 }
 
-TEST_CASE("an_identity_that_two_parties_carry_is_refused_and_not_resolved_to_one", tags) {
+TEST_CASE("an_identity_that_two_parties_carry_is_refused_and_not_resolved_to_one", "[service][ticks]") {
     database_helper h;
     const auto curve = fresh_curve_id();
     const auto first = make_series(h, curve);
@@ -404,7 +402,7 @@ TEST_CASE("an_identity_that_two_parties_carry_is_refused_and_not_resolved_to_one
     CHECK(reply.values.empty());
 }
 
-TEST_CASE("an_identity_that_states_the_party_names_that_partys_series", tags) {
+TEST_CASE("an_identity_that_states_the_party_names_that_partys_series", "[service][ticks]") {
     database_helper h;
     const auto curve = fresh_curve_id();
     const auto first = make_series(h, curve);
@@ -421,7 +419,7 @@ TEST_CASE("an_identity_that_states_the_party_names_that_partys_series", tags) {
     CHECK(reply.values == std::vector<double>{2.0});
 }
 
-TEST_CASE("an_identity_that_two_providers_of_one_party_carry_is_refused_and_names_both", tags) {
+TEST_CASE("an_identity_that_two_providers_of_one_party_carry_is_refused_and_names_both", "[service][ticks]") {
     database_helper h;
     const auto curve = fresh_curve_id();
     const auto ore = make_series(h, curve, boost::uuids::nil_uuid(), "ore");
@@ -440,7 +438,7 @@ TEST_CASE("an_identity_that_two_providers_of_one_party_carry_is_refused_and_name
     CHECK(reply.values.empty());
 }
 
-TEST_CASE("a_provider_states_which_series_of_one_party_is_read", tags) {
+TEST_CASE("a_provider_states_which_series_of_one_party_is_read", "[service][ticks]") {
     database_helper h;
     const auto curve = fresh_curve_id();
     const auto ore = make_series(h, curve, boost::uuids::nil_uuid(), "ore");
@@ -458,7 +456,7 @@ TEST_CASE("a_provider_states_which_series_of_one_party_is_read", tags) {
     CHECK(reply.values == std::vector<double>{2.0});
 }
 
-TEST_CASE("a_provider_that_holds_no_series_of_the_identity_gives_an_empty_reply", tags) {
+TEST_CASE("a_provider_that_holds_no_series_of_the_identity_gives_an_empty_reply", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h, fresh_curve_id(), boost::uuids::nil_uuid(), "ore");
     const auto t0 = now_second();

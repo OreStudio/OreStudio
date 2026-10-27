@@ -76,33 +76,42 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_balance_guaranteed_swap_tranches_response list_balance_guaranteed_swap_tranches(
-        const messaging::list_balance_guaranteed_swap_tranches_request& request);
-    messaging::get_balance_guaranteed_swap_tranche_response get_balance_guaranteed_swap_tranche(
-        const messaging::get_balance_guaranteed_swap_tranche_request& request);
-    messaging::get_many_balance_guaranteed_swap_tranches_response
+    ::ores::trading::messaging::list_balance_guaranteed_swap_tranches_response
+    list_balance_guaranteed_swap_tranches(
+        const ::ores::trading::messaging::list_balance_guaranteed_swap_tranches_request& request);
+    ::ores::trading::messaging::get_balance_guaranteed_swap_tranche_response
+    get_balance_guaranteed_swap_tranche(
+        const ::ores::trading::messaging::get_balance_guaranteed_swap_tranche_request& request);
+    ::ores::trading::messaging::get_many_balance_guaranteed_swap_tranches_response
     get_many_balance_guaranteed_swap_tranches(
-        const messaging::get_many_balance_guaranteed_swap_tranches_request& request);
-    messaging::put_balance_guaranteed_swap_tranche_response put_balance_guaranteed_swap_tranche(
-        const messaging::put_balance_guaranteed_swap_tranche_request& request);
-    messaging::put_many_balance_guaranteed_swap_tranches_response
+        const ::ores::trading::messaging::get_many_balance_guaranteed_swap_tranches_request&
+            request);
+    ::ores::trading::messaging::put_balance_guaranteed_swap_tranche_response
+    put_balance_guaranteed_swap_tranche(
+        const ::ores::trading::messaging::put_balance_guaranteed_swap_tranche_request& request);
+    ::ores::trading::messaging::put_many_balance_guaranteed_swap_tranches_response
     put_many_balance_guaranteed_swap_tranches(
-        const messaging::put_many_balance_guaranteed_swap_tranches_request& request);
-    messaging::delete_balance_guaranteed_swap_tranche_response
+        const ::ores::trading::messaging::put_many_balance_guaranteed_swap_tranches_request&
+            request);
+    ::ores::trading::messaging::delete_balance_guaranteed_swap_tranche_response
     delete_balance_guaranteed_swap_tranche(
-        const messaging::delete_balance_guaranteed_swap_tranche_request& request);
-    messaging::delete_many_balance_guaranteed_swap_tranches_response
+        const ::ores::trading::messaging::delete_balance_guaranteed_swap_tranche_request& request);
+    ::ores::trading::messaging::delete_many_balance_guaranteed_swap_tranches_response
     delete_many_balance_guaranteed_swap_tranches(
-        const messaging::delete_many_balance_guaranteed_swap_tranches_request& request);
-    messaging::list_by_trade_id_balance_guaranteed_swap_tranches_response
+        const ::ores::trading::messaging::delete_many_balance_guaranteed_swap_tranches_request&
+            request);
+    ::ores::trading::messaging::list_by_trade_id_balance_guaranteed_swap_tranches_response
     list_by_trade_id_balance_guaranteed_swap_tranches(
-        const messaging::list_by_trade_id_balance_guaranteed_swap_tranches_request& request);
-    messaging::list_balance_guaranteed_swap_tranche_versions_response
+        const ::ores::trading::messaging::list_by_trade_id_balance_guaranteed_swap_tranches_request&
+            request);
+    ::ores::trading::messaging::list_balance_guaranteed_swap_tranche_versions_response
     list_balance_guaranteed_swap_tranche_versions(
-        const messaging::list_balance_guaranteed_swap_tranche_versions_request& request);
-    messaging::get_balance_guaranteed_swap_tranche_version_response
+        const ::ores::trading::messaging::list_balance_guaranteed_swap_tranche_versions_request&
+            request);
+    ::ores::trading::messaging::get_balance_guaranteed_swap_tranche_version_response
     get_balance_guaranteed_swap_tranche_version(
-        const messaging::get_balance_guaranteed_swap_tranche_version_request& request);
+        const ::ores::trading::messaging::get_balance_guaranteed_swap_tranche_version_request&
+            request);
     /**@}*/
 
     /**
@@ -233,7 +242,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::balance_guaranteed_swap_tranche_change& change,
+    prepare_change(const ::ores::trading::messaging::balance_guaranteed_swap_tranche_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::balance_guaranteed_swap_tranche& out);
 };

@@ -30,6 +30,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -38,13 +39,6 @@
 #include <string>
 #include <string_view>
 
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
-
-}
-
 using namespace ores::refdata::generators;
 using ores::refdata::domain::party_contact_information;
 using ores::refdata::repository::party_contact_information_repository;
@@ -52,7 +46,7 @@ using ores::refdata::repository::party_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_party_contact_information", tags) {
+TEST_CASE("write_single_party_contact_information", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -84,7 +78,7 @@ TEST_CASE("write_single_party_contact_information", tags) {
     CHECK(read_party_contact_informations[0].city == pci.city);
 }
 
-TEST_CASE("write_multiple_party_contact_informations", tags) {
+TEST_CASE("write_multiple_party_contact_informations", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -122,7 +116,7 @@ TEST_CASE("write_multiple_party_contact_informations", tags) {
     }
 }
 
-TEST_CASE("read_latest_party_contact_informations", tags) {
+TEST_CASE("read_latest_party_contact_informations", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -164,7 +158,7 @@ TEST_CASE("read_latest_party_contact_informations", tags) {
     }
 }
 
-TEST_CASE("read_latest_party_contact_information_by_id", tags) {
+TEST_CASE("read_latest_party_contact_information_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -204,7 +198,7 @@ TEST_CASE("read_latest_party_contact_information_by_id", tags) {
     CHECK(read_party_contact_informations[0].city == original_city + " v2");
 }
 
-TEST_CASE("read_nonexistent_party_contact_information_id", tags) {
+TEST_CASE("read_nonexistent_party_contact_information_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -250,7 +244,7 @@ TEST_CASE("read_nonexistent_party_contact_information_id", tags) {
     CHECK(keeper_rows[0].city == keeper.city);
 }
 
-TEST_CASE("the_history_of_a_contact_is_its_own_when_another_party_holds_the_same_type", tags) {
+TEST_CASE("the_history_of_a_contact_is_its_own_when_another_party_holds_the_same_type", "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     party_repository party_repo;

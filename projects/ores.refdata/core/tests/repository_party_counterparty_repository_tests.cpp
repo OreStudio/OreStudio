@@ -31,6 +31,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -51,9 +52,6 @@ using ores::refdata::repository::counterparty_repository;
 using ores::testing::scoped_database_helper;
 
 namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository][party_counterparty]");
 
 boost::uuids::uuid find_system_party_id(party_repository& repo,
                                         ores::database::context ctx,
@@ -81,7 +79,7 @@ party_counterparty make_party_counterparty(scoped_database_helper& h,
 
 }
 
-TEST_CASE("write_single_party_counterparty", tags) {
+TEST_CASE("write_single_party_counterparty", "[repository][party_counterparty]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -106,7 +104,7 @@ TEST_CASE("write_single_party_counterparty", tags) {
     CHECK(read_pcs[0].change_commentary == pc.change_commentary);
 }
 
-TEST_CASE("write_multiple_party_counterparties", tags) {
+TEST_CASE("write_multiple_party_counterparties", "[repository][party_counterparty]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -140,7 +138,7 @@ TEST_CASE("write_multiple_party_counterparties", tags) {
     }
 }
 
-TEST_CASE("read_latest_party_counterparties_by_party", tags) {
+TEST_CASE("read_latest_party_counterparties_by_party", "[repository][party_counterparty]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -173,7 +171,7 @@ TEST_CASE("read_latest_party_counterparties_by_party", tags) {
     CHECK(found);
 }
 
-TEST_CASE("read_latest_party_counterparties_by_counterparty", tags) {
+TEST_CASE("read_latest_party_counterparties_by_counterparty", "[repository][party_counterparty]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -199,7 +197,7 @@ TEST_CASE("read_latest_party_counterparties_by_counterparty", tags) {
     CHECK(read_pcs[0].party_id == system_party_id);
 }
 
-TEST_CASE("remove_party_counterparty", tags) {
+TEST_CASE("remove_party_counterparty", "[repository][party_counterparty]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -235,7 +233,7 @@ TEST_CASE("remove_party_counterparty", tags) {
     CHECK(keeper_rows[0].change_commentary == keeper.change_commentary);
 }
 
-TEST_CASE("read_nonexistent_party_counterparty", tags) {
+TEST_CASE("read_nonexistent_party_counterparty", "[repository][party_counterparty]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

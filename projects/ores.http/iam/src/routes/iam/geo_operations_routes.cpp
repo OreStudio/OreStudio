@@ -73,7 +73,7 @@ http_response geo_operations_error_response(const std::string& error) {
  */
 template <typename Request>
 boost::asio::awaitable<http_response>
-forward(const http_request& req, nats_client& session, const Request& msg) {
+geo_operations_forward(const http_request& req, nats_client& session, const Request& msg) {
     auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
     try {
         const auto reply =
@@ -108,7 +108,7 @@ geo_operations_routes::handle_lookup_country(const http_request& req, nats_clien
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await geo_operations_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }

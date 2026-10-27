@@ -27,17 +27,11 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-
-namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::dq::generators;
@@ -46,7 +40,7 @@ using ores::testing::database_helper;
 using ores::dq::repository::change_reason_repository;
 using ores::utility::generation::generation_context;
 
-TEST_CASE("write_single_change_reason", tags) {
+TEST_CASE("write_single_change_reason", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -75,7 +69,7 @@ TEST_CASE("write_single_change_reason", tags) {
     CHECK(read_change_reasons[0].description == change_reason.description);
 }
 
-TEST_CASE("write_multiple_change_reasons", tags) {
+TEST_CASE("write_multiple_change_reasons", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -113,7 +107,7 @@ TEST_CASE("write_multiple_change_reasons", tags) {
     }
 }
 
-TEST_CASE("read_latest_change_reasons", tags) {
+TEST_CASE("read_latest_change_reasons", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -151,7 +145,7 @@ TEST_CASE("read_latest_change_reasons", tags) {
     }
 }
 
-TEST_CASE("read_latest_change_reason_by_code", tags) {
+TEST_CASE("read_latest_change_reason_by_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

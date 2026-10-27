@@ -24,8 +24,6 @@
 
 namespace {
 
-const std::string tags("[authorization][grants]");
-
 using ores::security::authorization::grants;
 
 bool covers(std::vector<std::string> granted, std::string_view required) {
@@ -34,36 +32,36 @@ bool covers(std::vector<std::string> granted, std::string_view required) {
 
 }
 
-TEST_CASE("a_grant_covers_its_own_code", tags) {
+TEST_CASE("a_grant_covers_its_own_code", "[authorization][grants]") {
     CHECK(covers({"refdata::parties:read"}, "refdata::parties:read"));
     CHECK_FALSE(covers({"refdata::parties:read"}, "refdata::parties:write"));
 }
 
-TEST_CASE("the_wildcard_covers_every_code", tags) {
+TEST_CASE("the_wildcard_covers_every_code", "[authorization][grants]") {
     CHECK(covers({"*"}, "iam::tenants:create"));
 }
 
-TEST_CASE("a_component_wildcard_covers_that_component_only", tags) {
+TEST_CASE("a_component_wildcard_covers_that_component_only", "[authorization][grants]") {
     CHECK(covers({"refdata::*"}, "refdata::parties:write"));
     CHECK_FALSE(covers({"refdata::*"}, "iam::accounts:create"));
     CHECK_FALSE(covers({"refdata::*"}, "refdatax::parties:read"));
 }
 
-TEST_CASE("an_empty_grant_covers_nothing", tags) {
+TEST_CASE("an_empty_grant_covers_nothing", "[authorization][grants]") {
     CHECK_FALSE(covers({}, "refdata::parties:read"));
 }
 
-TEST_CASE("the_grants_need_no_order", tags) {
+TEST_CASE("the_grants_need_no_order", "[authorization][grants]") {
     CHECK(covers({"trading::trades:read", "*"}, "iam::accounts:create"));
     CHECK(covers({"z::x:read", "refdata::*"}, "refdata::parties:read"));
 }
 
-TEST_CASE("the_wildcard_does_not_cover_an_installation_code", tags) {
+TEST_CASE("the_wildcard_does_not_cover_an_installation_code", "[authorization][grants]") {
     CHECK_FALSE(covers({"*"}, "installation::deployment:read"));
     CHECK_FALSE(covers({"*", "refdata::*"}, "installation::deployment:read"));
 }
 
-TEST_CASE("an_installation_code_is_covered_by_itself_and_by_its_component_wildcard", tags) {
+TEST_CASE("an_installation_code_is_covered_by_itself_and_by_its_component_wildcard", "[authorization][grants]") {
     CHECK(covers({"installation::deployment:read"}, "installation::deployment:read"));
     CHECK(covers({"installation::*"}, "installation::deployment:read"));
     CHECK_FALSE(covers({"installation::*"}, "iam::accounts:read"));

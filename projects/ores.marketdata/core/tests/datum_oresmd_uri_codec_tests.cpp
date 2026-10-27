@@ -45,8 +45,6 @@
 
 namespace {
 
-const std::string tags("[marketdata][datum][oresmd_uri_codec]");
-
 using namespace ores::marketdata::datum;
 using ores::marketdata::test::accepted_by_ore;
 using ores::marketdata::test::canonical_key;
@@ -157,20 +155,20 @@ std::vector<market_datum> form_datums() {
 
 }
 
-TEST_CASE("every_documented_form_round_trips_through_its_uri", tags) {
+TEST_CASE("every_documented_form_round_trips_through_its_uri", "[marketdata][datum][oresmd_uri_codec]") {
     const auto t = check(catalogue_forms());
     CHECK(t.datums >= 120);
     report(t);
 }
 
-TEST_CASE("every_corpus_key_round_trips_through_its_uri", tags) {
+TEST_CASE("every_corpus_key_round_trips_through_its_uri", "[marketdata][datum][oresmd_uri_codec]") {
     const auto t = check(catalogue_corpus());
     const auto accepted = std::ranges::count_if(catalogue_corpus(), accepted_by_ore);
     CHECK(t.datums == static_cast<std::size_t>(accepted));
     report(t);
 }
 
-TEST_CASE("every_quote_type_ore_admits_round_trips_through_its_uri", tags) {
+TEST_CASE("every_quote_type_ore_admits_round_trips_through_its_uri", "[marketdata][datum][oresmd_uri_codec]") {
     const auto t = check(catalogue_quote_matrix());
     CHECK(t.datums > 0);
     report(t);
@@ -181,7 +179,7 @@ TEST_CASE("every_quote_type_ore_admits_round_trips_through_its_uri", tags) {
           "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=null&ccy=USD");
 }
 
-TEST_CASE("a_quote_type_no_ore_key_can_name_is_refused", tags) {
+TEST_CASE("a_quote_type_no_ore_key_can_name_is_refused", "[marketdata][datum][oresmd_uri_codec]") {
     const auto uri = oresmd_uri_codec::read(
         "oresmd://credit/ACME?type=quote&instrument=hazard_rate&quote=hazard_rate"
         "&seniority=SNRFOR&ccy=USD&term=5Y");
@@ -189,7 +187,7 @@ TEST_CASE("a_quote_type_no_ore_key_can_name_is_refused", tags) {
     CHECK(uri.error().contains("no ORE key names this datum"));
 }
 
-TEST_CASE("a_quote_uri_has_the_agreed_shape", tags) {
+TEST_CASE("a_quote_uri_has_the_agreed_shape", "[marketdata][datum][oresmd_uri_codec]") {
     const auto cds = ore_key_codec::read("CDS/CREDIT_SPREAD/ACME/SNRFOR/USD/XR14/5Y");
     REQUIRE(cds);
     CHECK(oresmd_uri_codec::write(*cds) ==
@@ -203,7 +201,7 @@ TEST_CASE("a_quote_uri_has_the_agreed_shape", tags) {
           "&expiry=5Y&term=2Y&dimension=ATM");
 }
 
-TEST_CASE("an_fx_option_strike_label_uri_carries_the_canonical_spelling", tags) {
+TEST_CASE("an_fx_option_strike_label_uri_carries_the_canonical_spelling", "[marketdata][datum][oresmd_uri_codec]") {
     // The label is a component of the surface, so two spellings of one
     // component must be one axis value whatever the key said.
     const auto canonical = ore_key_codec::read("FX_OPTION/RATE_LNVOL/EUR/USD/1Y/25RR");
@@ -222,7 +220,7 @@ TEST_CASE("an_fx_option_strike_label_uri_carries_the_canonical_spelling", tags) 
     }
 }
 
-TEST_CASE("a_strike_label_ore_refuses_is_refused_by_the_key_reader", tags) {
+TEST_CASE("a_strike_label_ore_refuses_is_refused_by_the_key_reader", "[marketdata][datum][oresmd_uri_codec]") {
     for (const auto* key : {"FX_OPTION/RATE_LNVOL/EUR/USD/1Y/ATMF",
                             "FX_OPTION/RATE_LNVOL/EUR/USD/1Y/25D",
                             "FX_OPTION/RATE_LNVOL/EUR/USD/1Y/FLY",
@@ -232,7 +230,7 @@ TEST_CASE("a_strike_label_ore_refuses_is_refused_by_the_key_reader", tags) {
     }
 }
 
-TEST_CASE("a_series_uri_holds_the_identity_fields_only", tags) {
+TEST_CASE("a_series_uri_holds_the_identity_fields_only", "[marketdata][datum][oresmd_uri_codec]") {
     const auto cds = ore_key_codec::read("CDS/CREDIT_SPREAD/ACME/SNRFOR/USD/XR14/5Y");
     REQUIRE(cds);
     CHECK(oresmd_uri_codec::write(series_of(*cds)) ==
@@ -240,7 +238,7 @@ TEST_CASE("a_series_uri_holds_the_identity_fields_only", tags) {
           "&seniority=SNRFOR&ccy=USD&doc_clause=XR14");
 }
 
-TEST_CASE("the_reader_refuses_any_spelling_but_the_writers", tags) {
+TEST_CASE("the_reader_refuses_any_spelling_but_the_writers", "[marketdata][datum][oresmd_uri_codec]") {
     for (const auto* uri :
          {"oresmd://credit/ACME?term=5Y&quote=credit_spread&doc_clause=XR14&type=quote"
           "&ccy=USD&instrument=cds&seniority=SNRFOR",
@@ -255,7 +253,7 @@ TEST_CASE("the_reader_refuses_any_spelling_but_the_writers", tags) {
     }
 }
 
-TEST_CASE("a_series_with_empty_text_has_no_uri", tags) {
+TEST_CASE("a_series_with_empty_text_has_no_uri", "[marketdata][datum][oresmd_uri_codec]") {
     const auto series = market_datum::make_series(
         instrument_type::equity_spot,
         quote_type::price,
@@ -263,7 +261,7 @@ TEST_CASE("a_series_with_empty_text_has_no_uri", tags) {
     CHECK_FALSE(series);
 }
 
-TEST_CASE("the_reader_refuses_a_uri_that_breaks_the_contract", tags) {
+TEST_CASE("the_reader_refuses_a_uri_that_breaks_the_contract", "[marketdata][datum][oresmd_uri_codec]") {
     const std::string base = "oresmd://credit/ACME?type=quote&instrument=cds&quote=credit_spread";
     for (const auto& uri : std::vector<std::string>{
              base + "&seniority=SNRFOR&doc_clause=XR14&term=5Y",
@@ -292,7 +290,7 @@ TEST_CASE("the_reader_refuses_a_uri_that_breaks_the_contract", tags) {
     }
 }
 
-TEST_CASE("free_text_with_reserved_characters_round_trips", tags) {
+TEST_CASE("free_text_with_reserved_characters_round_trips", "[marketdata][datum][oresmd_uri_codec]") {
     std::mt19937 rng(20261002);
     std::size_t tried = 0;
     std::size_t exercised = 0;
@@ -319,7 +317,7 @@ TEST_CASE("free_text_with_reserved_characters_round_trips", tags) {
     CHECK(exercised * 2 > tried);
 }
 
-TEST_CASE("every_code_in_a_fields_vocabulary_round_trips", tags) {
+TEST_CASE("every_code_in_a_fields_vocabulary_round_trips", "[marketdata][datum][oresmd_uri_codec]") {
     std::size_t exercised = 0;
     std::vector<std::string> failures;
     for (const auto& d : form_datums()) {
@@ -340,7 +338,7 @@ TEST_CASE("every_code_in_a_fields_vocabulary_round_trips", tags) {
     CHECK(exercised > 0);
 }
 
-TEST_CASE("reserved_characters_are_percent_encoded_and_case_is_kept", tags) {
+TEST_CASE("reserved_characters_are_percent_encoded_and_case_is_kept", "[marketdata][datum][oresmd_uri_codec]") {
     const auto spot = ore_key_codec::read("COMMODITY/PRICE/ICE:Brent/USD");
     REQUIRE(spot);
     CHECK(oresmd_uri_codec::write(*spot) ==
@@ -361,14 +359,14 @@ TEST_CASE("reserved_characters_are_percent_encoded_and_case_is_kept", tags) {
     CHECK(*back == *odd);
 }
 
-TEST_CASE("no_field_is_named_like_a_reserved_query_key", tags) {
+TEST_CASE("no_field_is_named_like_a_reserved_query_key", "[marketdata][datum][oresmd_uri_codec]") {
     for (const auto* key : {"type", "instrument", "quote"}) {
         INFO("key: " << key);
         CHECK_FALSE(field_named(key));
     }
 }
 
-TEST_CASE("every_quote_uri_the_sql_seeds_hold_is_the_codecs_spelling", tags) {
+TEST_CASE("every_quote_uri_the_sql_seeds_hold_is_the_codecs_spelling", "[marketdata][datum][oresmd_uri_codec]") {
     // The seeds state URIs in SQL, which cannot call the codec, so a seed written
     // in another spelling would name a series no reader finds.
     const auto root = ores::testing::project_root::resolve("projects/ores.sql/populate");
@@ -405,7 +403,7 @@ TEST_CASE("every_quote_uri_the_sql_seeds_hold_is_the_codecs_spelling", tags) {
     CHECK(checked > 0);
 }
 
-TEST_CASE("the_sql_seed_spelling_of_an_fx_spot_uri_is_the_codecs", tags) {
+TEST_CASE("the_sql_seed_spelling_of_an_fx_spot_uri_is_the_codecs", "[marketdata][datum][oresmd_uri_codec]") {
     // The FX driver rate seeds build both URIs from a pair such as EUR/USD as
     // 'oresmd://fx/' || base || '?type=<type>&instrument=fx_spot&quote=rate&ccy=' || quote.
     const auto d = ore_key_codec::read("FX/RATE/EUR/USD");

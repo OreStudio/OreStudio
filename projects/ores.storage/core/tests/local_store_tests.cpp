@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/filesystem/scoped_temp_directory.hpp"
 #include "ores.storage.core/filesystem/local_store.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <string_view>
@@ -29,14 +30,7 @@ using ores::storage::filesystem::local_store;
 using ores::storage::filesystem::object_not_found;
 using namespace ores::logging;
 
-namespace {
-
-const std::string_view test_suite("ores.storage.tests");
-const std::string tags("[filesystem]");
-
-}
-
-TEST_CASE("a local store keeps the bytes it is given", tags) {
+TEST_CASE("a local store keeps the bytes it is given", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_directory root;
@@ -52,7 +46,7 @@ TEST_CASE("a local store keeps the bytes it is given", tags) {
     CHECK(store.size("ores", "ore/imports/instance/trades.msgpack") == payload.size());
 }
 
-TEST_CASE("a local store reports an absent object distinctly", tags) {
+TEST_CASE("a local store reports an absent object distinctly", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_directory root;
@@ -66,7 +60,7 @@ TEST_CASE("a local store reports an absent object distinctly", tags) {
     BOOST_LOG_SEV(lg, debug) << "Absent object reported as absent";
 }
 
-TEST_CASE("a local store refuses a key that would leave its bucket", tags) {
+TEST_CASE("a local store refuses a key that would leave its bucket", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_directory root;
@@ -85,7 +79,7 @@ TEST_CASE("a local store refuses a key that would leave its bucket", tags) {
     BOOST_LOG_SEV(lg, debug) << "Traversal refused";
 }
 
-TEST_CASE("a local store lists a bucket by prefix", tags) {
+TEST_CASE("a local store lists a bucket by prefix", "[filesystem]") {
     auto lg(make_logger(test_suite));
 
     scoped_temp_directory root;

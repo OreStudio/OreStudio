@@ -30,6 +30,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_message.hpp>
@@ -43,20 +44,13 @@
 #include <thread>
 #include <vector>
 
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
-
-}
-
 using namespace ores::refdata::generators;
 using ores::refdata::domain::currency;
 using ores::refdata::repository::currency_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_currency", tags) {
+TEST_CASE("write_single_currency", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -72,7 +66,7 @@ TEST_CASE("write_single_currency", tags) {
     CHECK(read_currencies[0].name == currency.name);
 }
 
-TEST_CASE("write_multiple_currencies", tags) {
+TEST_CASE("write_multiple_currencies", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -92,7 +86,7 @@ TEST_CASE("write_multiple_currencies", tags) {
     }
 }
 
-TEST_CASE("read_latest_currencies", tags) {
+TEST_CASE("read_latest_currencies", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -116,7 +110,7 @@ TEST_CASE("read_latest_currencies", tags) {
     }
 }
 
-TEST_CASE("read_latest_currency_by_iso_code", tags) {
+TEST_CASE("read_latest_currency_by_iso_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -139,7 +133,7 @@ TEST_CASE("read_latest_currency_by_iso_code", tags) {
     CHECK(read_currencies[0].name == original_name + " v2");
 }
 
-TEST_CASE("read_all_currencies", tags) {
+TEST_CASE("read_all_currencies", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -162,7 +156,7 @@ TEST_CASE("read_all_currencies", tags) {
     }
 }
 
-TEST_CASE("read_all_currencies_multiple_versions", tags) {
+TEST_CASE("read_all_currencies_multiple_versions", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -210,7 +204,7 @@ TEST_CASE("read_all_currencies_multiple_versions", tags) {
     CHECK(found_v2);
 }
 
-TEST_CASE("read_nonexistent_iso_code", tags) {
+TEST_CASE("read_nonexistent_iso_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -238,7 +232,7 @@ TEST_CASE("read_nonexistent_iso_code", tags) {
     CHECK(keeper_rows[0].name == keeper.name);
 }
 
-TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
+TEST_CASE("write_and_read_currency_with_unicode_symbols", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -271,7 +265,7 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
     }
 }
 
-TEST_CASE("write_and_read_currency_with_no_fractions", tags) {
+TEST_CASE("write_and_read_currency_with_no_fractions", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -298,7 +292,7 @@ TEST_CASE("write_and_read_currency_with_no_fractions", tags) {
     CHECK(read_currencies[0].rounding_precision == 0);
 }
 
-TEST_CASE("read_currencies_versions_by_key", tags) {
+TEST_CASE("read_currencies_versions_by_key", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -315,7 +309,7 @@ TEST_CASE("read_currencies_versions_by_key", tags) {
     CHECK(versions[0].iso_code == currency.iso_code);
 }
 
-TEST_CASE("read_currencies_versions_resolve_each_version", tags) {
+TEST_CASE("read_currencies_versions_resolve_each_version", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -345,7 +339,7 @@ TEST_CASE("read_currencies_versions_resolve_each_version", tags) {
     CHECK(at_v2->name == original_name + " v2");
 }
 
-TEST_CASE("read_latest_currencies_includes_the_written_row", tags) {
+TEST_CASE("read_latest_currencies_includes_the_written_row", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -362,7 +356,7 @@ TEST_CASE("read_latest_currencies_includes_the_written_row", tags) {
     CHECK(found);
 }
 
-TEST_CASE("list_currencies_as_of_returns_the_version_valid_then", tags) {
+TEST_CASE("list_currencies_as_of_returns_the_version_valid_then", "[repository]") {
     using namespace std::chrono_literals;
     // To the microsecond: a version can be valid for less than a second.
     const auto instant = [](std::chrono::system_clock::time_point tp) {
@@ -423,7 +417,7 @@ TEST_CASE("list_currencies_as_of_returns_the_version_valid_then", tags) {
     }
 }
 
-TEST_CASE("list_currencies_refuses_an_as_of_that_is_not_a_timestamp", tags) {
+TEST_CASE("list_currencies_refuses_an_as_of_that_is_not_a_timestamp", "[repository]") {
     scoped_database_helper h;
     ores::refdata::service::currency_service svc(h.context());
 

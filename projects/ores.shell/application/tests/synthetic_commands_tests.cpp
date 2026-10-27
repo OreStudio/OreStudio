@@ -28,6 +28,7 @@
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -45,9 +46,6 @@ using ores::shell::app::commands::synthetic_commands;
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.shell.application.tests");
-const std::string tags("[commands][synthetic]");
 
 namespace synthetic = ores::synthetic::domain;
 namespace messaging = ores::synthetic::messaging;
@@ -240,7 +238,7 @@ private:
 
 }
 
-TEST_CASE("a_feed_line_shows_its_class_source_enabled_auto_start_and_running_state", tags) {
+TEST_CASE("a_feed_line_shows_its_class_source_enabled_auto_start_and_running_state", "[commands][synthetic]") {
     auto lg(make_logger(test_suite));
 
     feed_state feed;
@@ -265,7 +263,7 @@ TEST_CASE("a_feed_line_shows_its_class_source_enabled_auto_start_and_running_sta
           "  fx_spot  synthetic.eurusd                 [off] [auto]   [stopped] [partial] gmm 0");
 }
 
-TEST_CASE("the_listing_states_every_configured_feed_and_marks_the_partial_ones", tags) {
+TEST_CASE("the_listing_states_every_configured_feed_and_marks_the_partial_ones", "[commands][synthetic]") {
     auto lg(make_logger(test_suite));
 
     const auto feeds = synthetic_commands::feed_states(two_class_listing());
@@ -283,7 +281,7 @@ TEST_CASE("the_listing_states_every_configured_feed_and_marks_the_partial_ones",
     CHECK_FALSE(feeds[2].partial);
 }
 
-TEST_CASE("setup_plans_one_container_one_folder_chain_and_the_fx_rows", tags) {
+TEST_CASE("setup_plans_one_container_one_folder_chain_and_the_fx_rows", "[commands][synthetic]") {
     auto lg(make_logger(test_suite));
 
     const auto rows =
@@ -331,7 +329,7 @@ TEST_CASE("setup_plans_one_container_one_folder_chain_and_the_fx_rows", tags) {
     CHECK(second->change.write.stdev == 0.02);
 }
 
-TEST_CASE("setup_plans_the_ir_rows_a_curve_needs", tags) {
+TEST_CASE("setup_plans_the_ir_rows_a_curve_needs", "[commands][synthetic]") {
     auto lg(make_logger(test_suite));
 
     synthetic::yield_curve_process_parameter_definition kappa;
@@ -398,7 +396,7 @@ TEST_CASE("setup_plans_the_ir_rows_a_curve_needs", tags) {
           "99999999-0000-4000-8000-000000000001");
 }
 
-TEST_CASE("a_process_parameter_with_no_definition_is_left_unwritable", tags) {
+TEST_CASE("a_process_parameter_with_no_definition_is_left_unwritable", "[commands][synthetic]") {
     auto lg(make_logger(test_suite));
 
     const auto rows =
@@ -423,7 +421,7 @@ TEST_CASE("a_process_parameter_with_no_definition_is_left_unwritable", tags) {
     CHECK(rows[2].subject.empty());
 }
 
-TEST_CASE("process_setup_writes_the_container_id_as_the_fx_configs_parent", tags) {
+TEST_CASE("process_setup_writes_the_container_id_as_the_fx_configs_parent", "[commands][synthetic]") {
     auto lg(make_logger(test_suite));
 
     stub_setup_session session(two_class_listing());
@@ -446,7 +444,7 @@ TEST_CASE("process_setup_writes_the_container_id_as_the_fx_configs_parent", tags
     CHECK(config->change.write.config_id != config->change.write.id);
 }
 
-TEST_CASE("process_setup_kinds_the_asset_and_instrument_folders", tags) {
+TEST_CASE("process_setup_kinds_the_asset_and_instrument_folders", "[commands][synthetic]") {
     auto lg(make_logger(test_suite));
 
     stub_setup_session session(two_class_listing());
@@ -466,7 +464,7 @@ TEST_CASE("process_setup_kinds_the_asset_and_instrument_folders", tags) {
     CHECK(instrument->change.write.name == "FX Rates");
 }
 
-TEST_CASE("process_setup_writes_the_container_id_and_required_ir_fields", tags) {
+TEST_CASE("process_setup_writes_the_container_id_and_required_ir_fields", "[commands][synthetic]") {
     auto lg(make_logger(test_suite));
 
     stub_setup_session session(ir_setup_listing());
@@ -511,7 +509,7 @@ TEST_CASE("process_setup_writes_the_container_id_and_required_ir_fields", tags) 
     CHECK(ir_instrument->change.write.name == "IR Curves");
 }
 
-TEST_CASE("process_setup_refuses_a_bad_ticks_per_hour_value", tags) {
+TEST_CASE("process_setup_refuses_a_bad_ticks_per_hour_value", "[commands][synthetic]") {
     auto lg(make_logger(test_suite));
 
     stub_setup_session session(two_class_listing());

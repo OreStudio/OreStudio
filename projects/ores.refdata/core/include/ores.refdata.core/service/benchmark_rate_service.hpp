@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_benchmark_rates_response
-    list_benchmark_rates(const messaging::list_benchmark_rates_request& request);
-    messaging::get_benchmark_rate_response
-    get_benchmark_rate(const messaging::get_benchmark_rate_request& request);
-    messaging::get_many_benchmark_rates_response
-    get_many_benchmark_rates(const messaging::get_many_benchmark_rates_request& request);
-    messaging::put_benchmark_rate_response
-    put_benchmark_rate(const messaging::put_benchmark_rate_request& request);
-    messaging::put_many_benchmark_rates_response
-    put_many_benchmark_rates(const messaging::put_many_benchmark_rates_request& request);
-    messaging::delete_benchmark_rate_response
-    delete_benchmark_rate(const messaging::delete_benchmark_rate_request& request);
-    messaging::delete_many_benchmark_rates_response
-    delete_many_benchmark_rates(const messaging::delete_many_benchmark_rates_request& request);
-    messaging::list_benchmark_rate_versions_response
-    list_benchmark_rate_versions(const messaging::list_benchmark_rate_versions_request& request);
-    messaging::get_benchmark_rate_version_response
-    get_benchmark_rate_version(const messaging::get_benchmark_rate_version_request& request);
+    ::ores::refdata::messaging::list_benchmark_rates_response
+    list_benchmark_rates(const ::ores::refdata::messaging::list_benchmark_rates_request& request);
+    ::ores::refdata::messaging::get_benchmark_rate_response
+    get_benchmark_rate(const ::ores::refdata::messaging::get_benchmark_rate_request& request);
+    ::ores::refdata::messaging::get_many_benchmark_rates_response get_many_benchmark_rates(
+        const ::ores::refdata::messaging::get_many_benchmark_rates_request& request);
+    ::ores::refdata::messaging::put_benchmark_rate_response
+    put_benchmark_rate(const ::ores::refdata::messaging::put_benchmark_rate_request& request);
+    ::ores::refdata::messaging::put_many_benchmark_rates_response put_many_benchmark_rates(
+        const ::ores::refdata::messaging::put_many_benchmark_rates_request& request);
+    ::ores::refdata::messaging::delete_benchmark_rate_response
+    delete_benchmark_rate(const ::ores::refdata::messaging::delete_benchmark_rate_request& request);
+    ::ores::refdata::messaging::delete_many_benchmark_rates_response delete_many_benchmark_rates(
+        const ::ores::refdata::messaging::delete_many_benchmark_rates_request& request);
+    ::ores::refdata::messaging::list_benchmark_rate_versions_response list_benchmark_rate_versions(
+        const ::ores::refdata::messaging::list_benchmark_rate_versions_request& request);
+    ::ores::refdata::messaging::get_benchmark_rate_version_response get_benchmark_rate_version(
+        const ::ores::refdata::messaging::get_benchmark_rate_version_request& request);
     /**@}*/
 
     /**
@@ -192,9 +192,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::benchmark_rate_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::benchmark_rate& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::benchmark_rate_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::benchmark_rate& out);
 };
 
 }

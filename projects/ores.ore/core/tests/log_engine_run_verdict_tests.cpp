@@ -25,8 +25,6 @@
 
 namespace {
 
-const std::string tags("[ore][log][engine_run_verdict]");
-
 using ores::ore::log::judge_engine_run;
 
 /** One line in the engine's own format. */
@@ -37,28 +35,28 @@ std::string line(std::string_view level, const std::string& message) {
 
 }
 
-TEST_CASE("a run that wrote analytics is accepted", tags) {
+TEST_CASE("a run that wrote analytics is accepted", "[ore][log][engine_run_verdict]") {
     const auto outcome = judge_engine_run({"log.txt", "portfolio.xml", "reports"}, "");
 
     CHECK(outcome.succeeded);
     CHECK(outcome.failure.empty());
 }
 
-TEST_CASE("a run that wrote only its log is refused", tags) {
+TEST_CASE("a run that wrote only its log is refused", "[ore][log][engine_run_verdict]") {
     const auto outcome = judge_engine_run({"log.txt"}, "");
 
     CHECK_FALSE(outcome.succeeded);
     CHECK(outcome.failure == "The engine produced no analytics.");
 }
 
-TEST_CASE("an empty output directory is refused", tags) {
+TEST_CASE("an empty output directory is refused", "[ore][log][engine_run_verdict]") {
     const auto outcome = judge_engine_run({}, "");
 
     CHECK_FALSE(outcome.succeeded);
     CHECK(outcome.failure == "The engine produced no analytics.");
 }
 
-TEST_CASE("the engine's own error reaches the refusal", tags) {
+TEST_CASE("the engine's own error reaches the refusal", "[ore][log][engine_run_verdict]") {
     const auto log =
         line("DATA", "starting up") + line("ERROR",
                                            "Error in ORE analytics: error opening file "
@@ -72,7 +70,7 @@ TEST_CASE("the engine's own error reaches the refusal", tags) {
           "  Error in ORE analytics: error opening file Input/market_20160205_flat.txt");
 }
 
-TEST_CASE("a run that wrote nothing but its log still states why it failed", tags) {
+TEST_CASE("a run that wrote nothing but its log still states why it failed", "[ore][log][engine_run_verdict]") {
     const auto log = line("ALERT", "Error in ORE analytics: Failed to run analytics NPV");
 
     const auto outcome = judge_engine_run({"log.txt"}, log);
@@ -82,7 +80,7 @@ TEST_CASE("a run that wrote nothing but its log still states why it failed", tag
                              "  Error in ORE analytics: Failed to run analytics NPV");
 }
 
-TEST_CASE("an error does not fail a run that still wrote analytics", tags) {
+TEST_CASE("an error does not fail a run that still wrote analytics", "[ore][log][engine_run_verdict]") {
     const auto log = line("ERROR", "a leg priced with a fallback curve");
 
     const auto outcome = judge_engine_run({"log.txt", "portfolio.xml"}, log);
@@ -91,7 +89,7 @@ TEST_CASE("an error does not fail a run that still wrote analytics", tags) {
     CHECK(outcome.failure.empty());
 }
 
-TEST_CASE("the engine's own failed-analytic verdict outranks the files it wrote", tags) {
+TEST_CASE("the engine's own failed-analytic verdict outranks the files it wrote", "[ore][log][engine_run_verdict]") {
     // ORE writes its calibration and timing reports even when the analytic it
     // was asked for produced nothing, so the files alone say the run worked.
     // It states the failure on an ALERT line, repeats it inside the structured
@@ -116,7 +114,7 @@ TEST_CASE("the engine's own failed-analytic verdict outranks the files it wrote"
           "The engine's analytic failed. The engine reported:\n  " + std::string(failure));
 }
 
-TEST_CASE("a failed analytic names the quote and the trade it could not build", tags) {
+TEST_CASE("a failed analytic names the quote and the trade it could not build", "[ore][log][engine_run_verdict]") {
     // The engine states the failure it stops on, then attributes it to a trade
     // in its structured message. A reader needs both to act on it.
     const auto log =
@@ -141,7 +139,7 @@ TEST_CASE("a failed analytic names the quote and the trade it could not build", 
           "  Cannot build all required curves (trade 28e6d1c3, Bond)");
 }
 
-TEST_CASE("a refusal says how many errors it left out", tags) {
+TEST_CASE("a refusal says how many errors it left out", "[ore][log][engine_run_verdict]") {
     std::string log;
     for (int i = 1; i <= 7; ++i)
         log += line("ERROR", "trade " + std::to_string(i) + " would not price");
@@ -158,7 +156,7 @@ TEST_CASE("a refusal says how many errors it left out", tags) {
           "  trade 7 would not price");
 }
 
-TEST_CASE("a log with no error in it says so", tags) {
+TEST_CASE("a log with no error in it says so", "[ore][log][engine_run_verdict]") {
     const auto log = line("DATA", "loading inputs") + line("NOTICE", "building portfolio") +
                      line("WARNING", "a series was quoted stale");
 

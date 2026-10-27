@@ -35,19 +35,13 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-namespace {
-
-const std::string_view test_suite("ores.marketdata.core.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::marketdata::generators;
@@ -57,7 +51,7 @@ using ores::marketdata::repository::market_series_repository;
 using ores::marketdata::repository::market_observation_repository;
 using ores::marketdata::messaging::market_observations_filter;
 
-TEST_CASE("insert_single_market_observation", tags) {
+TEST_CASE("insert_single_market_observation", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -74,7 +68,7 @@ TEST_CASE("insert_single_market_observation", tags) {
     CHECK_NOTHROW(obs_repo.insert(h.context(), obs));
 }
 
-TEST_CASE("insert_multiple_market_observations", tags) {
+TEST_CASE("insert_multiple_market_observations", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -92,7 +86,7 @@ TEST_CASE("insert_multiple_market_observations", tags) {
     CHECK_NOTHROW(obs_repo.insert(h.context(), observations));
 }
 
-TEST_CASE("read_latest_market_observations_by_series", tags) {
+TEST_CASE("read_latest_market_observations_by_series", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -116,7 +110,7 @@ TEST_CASE("read_latest_market_observations_by_series", tags) {
         CHECK(r.series_id == s.id);
 }
 
-TEST_CASE("a_series_keeps_one_history_across_the_sources_that_produced_it", tags) {
+TEST_CASE("a_series_keeps_one_history_across_the_sources_that_produced_it", "[repository]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -213,7 +207,7 @@ reported_source_kind(ores::marketdata::repository::observation_lineage_repositor
 
 }
 
-TEST_CASE("read_as_of_synchronous_publish", tags) {
+TEST_CASE("read_as_of_synchronous_publish", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -238,7 +232,7 @@ TEST_CASE("read_as_of_synchronous_publish", tags) {
         CHECK(o.series_id == s.id);
 }
 
-TEST_CASE("read_as_of_staggered_timestamps", tags) {
+TEST_CASE("read_as_of_staggered_timestamps", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -304,7 +298,7 @@ TEST_CASE("read_as_of_staggered_timestamps", tags) {
     }
 }
 
-TEST_CASE("read_as_of_buckets_curve_evolution", tags) {
+TEST_CASE("read_as_of_buckets_curve_evolution", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -338,7 +332,7 @@ TEST_CASE("read_as_of_buckets_curve_evolution", tags) {
     CHECK(buckets[2].front().value == "0.040200");
 }
 
-TEST_CASE("read_as_of_manual_point_is_readable_and_reports_manual", tags) {
+TEST_CASE("read_as_of_manual_point_is_readable_and_reports_manual", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -376,7 +370,7 @@ TEST_CASE("read_as_of_manual_point_is_readable_and_reports_manual", tags) {
     CHECK(read->source_series_ids == "[]");
 }
 
-TEST_CASE("read_as_of_derived_point_reports_derived", tags) {
+TEST_CASE("read_as_of_derived_point_reports_derived", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -401,7 +395,7 @@ TEST_CASE("read_as_of_derived_point_reports_derived", tags) {
     CHECK(reported_source_kind(lineage_repo, h.context(), s.id, derived) == "derived");
 }
 
-TEST_CASE("read_as_of_quoted_point_without_annex_row_reports_quoted", tags) {
+TEST_CASE("read_as_of_quoted_point_without_annex_row_reports_quoted", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -430,7 +424,7 @@ TEST_CASE("read_as_of_quoted_point_without_annex_row_reports_quoted", tags) {
     CHECK(reported_source_kind(lineage_repo, h.context(), s.id, quoted) == "quoted");
 }
 
-TEST_CASE("read_as_of_manual_point_wins_over_a_later_feed_write", tags) {
+TEST_CASE("read_as_of_manual_point_wins_over_a_later_feed_write", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -480,7 +474,7 @@ TEST_CASE("read_as_of_manual_point_wins_over_a_later_feed_write", tags) {
     CHECK(buckets[3].front().value == "0.050000");
 }
 
-TEST_CASE("read_as_of_all_gives_the_manual_point_the_read_for_one_series_gives", tags) {
+TEST_CASE("read_as_of_all_gives_the_manual_point_the_read_for_one_series_gives", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -529,7 +523,7 @@ ores::database::context operator_context(database_helper& h, const boost::uuids:
 
 }
 
-TEST_CASE("write_manual_point_is_readable_and_reports_manual", tags) {
+TEST_CASE("write_manual_point_is_readable_and_reports_manual", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -575,7 +569,7 @@ TEST_CASE("write_manual_point_is_readable_and_reports_manual", tags) {
     CHECK(read->source_series_ids == "[]");
 }
 
-TEST_CASE("clear_manual_point_restores_the_fed_value", tags) {
+TEST_CASE("clear_manual_point_restores_the_fed_value", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -622,7 +616,7 @@ TEST_CASE("clear_manual_point_restores_the_fed_value", tags) {
     CHECK(after.front().value != before.front().value);
 }
 
-TEST_CASE("clear_manual_point_keeps_the_manual_row_in_history", tags) {
+TEST_CASE("clear_manual_point_keeps_the_manual_row_in_history", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -666,7 +660,7 @@ TEST_CASE("clear_manual_point_keeps_the_manual_row_in_history", tags) {
     CHECK(history.front().change_commentary == "operator over-key");
 }
 
-TEST_CASE("write_manual_point_leaves_neither_row_when_the_annex_write_fails", tags) {
+TEST_CASE("write_manual_point_leaves_neither_row_when_the_annex_write_fails", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -715,7 +709,7 @@ bool near(std::chrono::system_clock::time_point a, std::chrono::system_clock::ti
 
 }
 
-TEST_CASE("read_as_of_records_carries_the_row_record_time", tags) {
+TEST_CASE("read_as_of_records_carries_the_row_record_time", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -746,7 +740,7 @@ TEST_CASE("read_as_of_records_carries_the_row_record_time", tags) {
     }
 }
 
-TEST_CASE("read_as_of_records_takes_the_record_time_of_the_manual_row", tags) {
+TEST_CASE("read_as_of_records_takes_the_record_time_of_the_manual_row", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -786,7 +780,7 @@ TEST_CASE("read_as_of_records_takes_the_record_time_of_the_manual_row", tags) {
     CHECK(records.front().recorded_at <= after_manual + std::chrono::seconds(2));
 }
 
-TEST_CASE("read_as_of_is_the_observations_of_read_as_of_records", tags) {
+TEST_CASE("read_as_of_is_the_observations_of_read_as_of_records", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -813,7 +807,7 @@ TEST_CASE("read_as_of_is_the_observations_of_read_as_of_records", tags) {
     }
 }
 
-TEST_CASE("read_latest_by_series_id_takes_an_observed_since_filter", tags) {
+TEST_CASE("read_latest_by_series_id_takes_an_observed_since_filter", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -851,7 +845,7 @@ TEST_CASE("read_latest_by_series_id_takes_an_observed_since_filter", tags) {
     CHECK(obs_repo.get_total_market_observation_count_by_series_id(h.context(), sid, filter) == 2);
 }
 
-TEST_CASE("read_latest_by_series_id_refuses_a_bound_it_cannot_read", tags) {
+TEST_CASE("read_latest_by_series_id_refuses_a_bound_it_cannot_read", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

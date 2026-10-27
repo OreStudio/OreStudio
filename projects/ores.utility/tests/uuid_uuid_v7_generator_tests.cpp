@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <bitset>
 #include <catch2/catch_test_macros.hpp>
@@ -26,17 +27,10 @@
 #include <set>
 #include <thread>
 
-namespace {
-
-const std::string_view test_suite("ores.utility.tests");
-const std::string tags("[uuid]");
-
-}
-
 using ores::utility::uuid::uuid_v7_generator;
 using namespace ores::logging;
 
-TEST_CASE("generate_uuid_v7_is_not_nil", tags) {
+TEST_CASE("generate_uuid_v7_is_not_nil", "[uuid]") {
     auto lg(make_logger(test_suite));
 
     uuid_v7_generator generator;
@@ -47,7 +41,7 @@ TEST_CASE("generate_uuid_v7_is_not_nil", tags) {
     CHECK(!uuid.is_nil());
 }
 
-TEST_CASE("generate_multiple_unique_uuids", tags) {
+TEST_CASE("generate_multiple_unique_uuids", "[uuid]") {
     auto lg(make_logger(test_suite));
 
     uuid_v7_generator generator;
@@ -64,7 +58,7 @@ TEST_CASE("generate_multiple_unique_uuids", tags) {
     CHECK(uuids.size() == count);
 }
 
-TEST_CASE("uuid_v7_has_correct_version", tags) {
+TEST_CASE("uuid_v7_has_correct_version", "[uuid]") {
     auto lg(make_logger(test_suite));
 
     uuid_v7_generator generator;
@@ -83,7 +77,7 @@ TEST_CASE("uuid_v7_has_correct_version", tags) {
     CHECK(version == 0x7);
 }
 
-TEST_CASE("uuid_v7_has_correct_variant", tags) {
+TEST_CASE("uuid_v7_has_correct_variant", "[uuid]") {
     auto lg(make_logger(test_suite));
 
     uuid_v7_generator generator;
@@ -103,7 +97,7 @@ TEST_CASE("uuid_v7_has_correct_variant", tags) {
     CHECK(variant == 0x02);
 }
 
-TEST_CASE("uuid_v7_preserves_time_ordering", tags) {
+TEST_CASE("uuid_v7_preserves_time_ordering", "[uuid]") {
     auto lg(make_logger(test_suite));
 
     uuid_v7_generator generator;
@@ -122,7 +116,7 @@ TEST_CASE("uuid_v7_preserves_time_ordering", tags) {
     CHECK(uuid1 < uuid2);
 }
 
-TEST_CASE("uuid_v7_string_format_is_valid", tags) {
+TEST_CASE("uuid_v7_string_format_is_valid", "[uuid]") {
     auto lg(make_logger(test_suite));
 
     uuid_v7_generator generator;
@@ -139,7 +133,7 @@ TEST_CASE("uuid_v7_string_format_is_valid", tags) {
     CHECK(uuid_str[23] == '-');
 }
 
-TEST_CASE("uuid_v7_timestamp_extraction", tags) {
+TEST_CASE("uuid_v7_timestamp_extraction", "[uuid]") {
     auto lg(make_logger(test_suite));
 
     uuid_v7_generator generator;
@@ -168,7 +162,7 @@ TEST_CASE("uuid_v7_timestamp_extraction", tags) {
     CHECK(std::abs(static_cast<int64_t>(timestamp - now_ms)) <= static_cast<int64_t>(tolerance_ms));
 }
 
-TEST_CASE("generate_batch_of_time_ordered_uuids", tags) {
+TEST_CASE("generate_batch_of_time_ordered_uuids", "[uuid]") {
     auto lg(make_logger(test_suite));
 
     uuid_v7_generator generator;
@@ -195,7 +189,7 @@ TEST_CASE("generate_batch_of_time_ordered_uuids", tags) {
     }
 }
 
-TEST_CASE("uuid_v7_format_components", tags) {
+TEST_CASE("uuid_v7_format_components", "[uuid]") {
     auto lg(make_logger(test_suite));
 
     uuid_v7_generator generator;

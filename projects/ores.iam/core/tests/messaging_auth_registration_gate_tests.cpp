@@ -24,8 +24,6 @@
 
 namespace {
 
-const std::string tags("[signup]");
-
 using ores::iam::messaging::auth_registration_refusal;
 using ores::iam::messaging::auth_registration_destination_refusal;
 using ores::utility::serialization::error_code;
@@ -39,7 +37,7 @@ using ores::utility::serialization::to_string;
  * by the HTTP recipe that captures a refused registration.
  */
 
-TEST_CASE("registration_is_refused_when_the_deployment_does_not_accept_signups", tags) {
+TEST_CASE("registration_is_refused_when_the_deployment_does_not_accept_signups", "[signup]") {
     const auto refusal = auth_registration_refusal(false, false);
 
     REQUIRE(refusal.has_value());
@@ -47,7 +45,7 @@ TEST_CASE("registration_is_refused_when_the_deployment_does_not_accept_signups",
     CHECK_FALSE(refusal->second.empty());
 }
 
-TEST_CASE("registration_is_refused_when_the_deployment_approves_accounts_by_hand", tags) {
+TEST_CASE("registration_is_refused_when_the_deployment_approves_accounts_by_hand", "[signup]") {
     const auto refusal = auth_registration_refusal(true, true);
 
     REQUIRE(refusal.has_value());
@@ -55,11 +53,11 @@ TEST_CASE("registration_is_refused_when_the_deployment_approves_accounts_by_hand
     CHECK_FALSE(refusal->second.empty());
 }
 
-TEST_CASE("registration_is_admitted_when_the_deployment_accepts_it", tags) {
+TEST_CASE("registration_is_admitted_when_the_deployment_accepts_it", "[signup]") {
     CHECK_FALSE(auth_registration_refusal(true, false).has_value());
 }
 
-TEST_CASE("a_deployment_that_does_not_accept_signups_answers_the_same_either_way", tags) {
+TEST_CASE("a_deployment_that_does_not_accept_signups_answers_the_same_either_way", "[signup]") {
     const auto without_approval = auth_registration_refusal(false, false);
     const auto with_approval = auth_registration_refusal(false, true);
 
@@ -73,7 +71,7 @@ TEST_CASE("a_deployment_that_does_not_accept_signups_answers_the_same_either_way
  * are exercised by the running deployment.
  */
 
-TEST_CASE("registration_is_refused_when_the_address_names_no_tenant_and_none_is_nominated", tags) {
+TEST_CASE("registration_is_refused_when_the_address_names_no_tenant_and_none_is_nominated", "[signup]") {
     const auto refusal = auth_registration_destination_refusal(false, false);
 
     REQUIRE(refusal.has_value());
@@ -81,7 +79,7 @@ TEST_CASE("registration_is_refused_when_the_address_names_no_tenant_and_none_is_
     CHECK_FALSE(refusal->second.empty());
 }
 
-TEST_CASE("registration_is_refused_when_the_tenant_nominates_no_role", tags) {
+TEST_CASE("registration_is_refused_when_the_tenant_nominates_no_role", "[signup]") {
     const auto refusal = auth_registration_destination_refusal(true, false);
 
     REQUIRE(refusal.has_value());
@@ -89,7 +87,7 @@ TEST_CASE("registration_is_refused_when_the_tenant_nominates_no_role", tags) {
     CHECK_FALSE(refusal->second.empty());
 }
 
-TEST_CASE("registration_has_a_destination_when_the_tenant_and_the_role_are_known", tags) {
+TEST_CASE("registration_has_a_destination_when_the_tenant_and_the_role_are_known", "[signup]") {
     CHECK_FALSE(auth_registration_destination_refusal(true, true).has_value());
 }
 
@@ -99,7 +97,7 @@ TEST_CASE("registration_has_a_destination_when_the_tenant_and_the_role_are_known
  * breaking change.
  */
 
-TEST_CASE("every_registration_and_sign_in_refusal_names_the_code_a_client_branches_on", tags) {
+TEST_CASE("every_registration_and_sign_in_refusal_names_the_code_a_client_branches_on", "[signup]") {
     CHECK(to_string(error_code::signup_disabled) == "signup_disabled");
     CHECK(to_string(error_code::signup_requires_authorization) == "signup_requires_authorization");
     CHECK(to_string(error_code::username_taken) == "username_taken");

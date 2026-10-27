@@ -75,20 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_routes_response list_routes(const messaging::list_routes_request& request);
-    messaging::get_route_response get_route(const messaging::get_route_request& request);
-    messaging::get_many_routes_response
-    get_many_routes(const messaging::get_many_routes_request& request);
-    messaging::put_route_response put_route(const messaging::put_route_request& request);
-    messaging::put_many_routes_response
-    put_many_routes(const messaging::put_many_routes_request& request);
-    messaging::delete_route_response delete_route(const messaging::delete_route_request& request);
-    messaging::delete_many_routes_response
-    delete_many_routes(const messaging::delete_many_routes_request& request);
-    messaging::list_route_versions_response
-    list_route_versions(const messaging::list_route_versions_request& request);
-    messaging::get_route_version_response
-    get_route_version(const messaging::get_route_version_request& request);
+    ::ores::marketdata::messaging::list_routes_response
+    list_routes(const ::ores::marketdata::messaging::list_routes_request& request);
+    ::ores::marketdata::messaging::get_route_response
+    get_route(const ::ores::marketdata::messaging::get_route_request& request);
+    ::ores::marketdata::messaging::get_many_routes_response
+    get_many_routes(const ::ores::marketdata::messaging::get_many_routes_request& request);
+    ::ores::marketdata::messaging::put_route_response
+    put_route(const ::ores::marketdata::messaging::put_route_request& request);
+    ::ores::marketdata::messaging::put_many_routes_response
+    put_many_routes(const ::ores::marketdata::messaging::put_many_routes_request& request);
+    ::ores::marketdata::messaging::delete_route_response
+    delete_route(const ::ores::marketdata::messaging::delete_route_request& request);
+    ::ores::marketdata::messaging::delete_many_routes_response
+    delete_many_routes(const ::ores::marketdata::messaging::delete_many_routes_request& request);
+    ::ores::marketdata::messaging::list_route_versions_response
+    list_route_versions(const ::ores::marketdata::messaging::list_route_versions_request& request);
+    ::ores::marketdata::messaging::get_route_version_response
+    get_route_version(const ::ores::marketdata::messaging::get_route_version_request& request);
     /**@}*/
 
     /**
@@ -199,9 +203,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::route_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::route& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::marketdata::messaging::route_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::route& out);
 };
 
 }

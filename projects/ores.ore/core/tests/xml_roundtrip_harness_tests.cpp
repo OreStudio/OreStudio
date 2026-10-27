@@ -38,8 +38,6 @@
 
 namespace {
 
-const std::string tags("[ore][xml][roundtrip][harness]");
-
 using ores::ore::domain::conventions;
 using ores::ore::domain::conventions_mapper;
 using ores::ore::domain::conventions_package;
@@ -60,12 +58,12 @@ conventions rebuild_nothing(const conventions_package&) {
 
 }
 
-TEST_CASE("roundtrip_harness_first_difference_is_empty_for_equal_documents", tags) {
+TEST_CASE("roundtrip_harness_first_difference_is_empty_for_equal_documents", "[ore][xml][roundtrip][harness]") {
     CHECK(ores::ore::xml::first_difference("<ORE/>", "<ORE/>").empty());
     CHECK(ores::ore::xml::first_difference("", "").empty());
 }
 
-TEST_CASE("roundtrip_harness_first_difference_names_the_byte_and_the_line", tags) {
+TEST_CASE("roundtrip_harness_first_difference_names_the_byte_and_the_line", "[ore][xml][roundtrip][harness]") {
     const std::string lhs = "<ORE>\n  <Setup/>\n</ORE>\n";
     const std::string rhs = "<ORE>\n  <Setap/>\n</ORE>\n";
 
@@ -77,13 +75,13 @@ TEST_CASE("roundtrip_harness_first_difference_names_the_byte_and_the_line", tags
     CHECK(difference.find("<Setap/>") != std::string::npos);
 }
 
-TEST_CASE("roundtrip_harness_names_the_difference_when_one_document_is_a_prefix", tags) {
+TEST_CASE("roundtrip_harness_names_the_difference_when_one_document_is_a_prefix", "[ore][xml][roundtrip][harness]") {
     const auto difference = ores::ore::xml::first_difference("<ORE/>", "<ORE/>\n");
 
     CHECK(difference.find("(end of document)") != std::string::npos);
 }
 
-TEST_CASE("roundtrip_harness_walks_only_the_kind_it_is_given", tags) {
+TEST_CASE("roundtrip_harness_walks_only_the_kind_it_is_given", "[ore][xml][roundtrip][harness]") {
     const auto kind = ores::ore::xml::make_roundtrip_kind<conventions, conventions_package>(
         "conventions",
         "conventions",
@@ -99,7 +97,7 @@ TEST_CASE("roundtrip_harness_walks_only_the_kind_it_is_given", tags) {
     CHECK(walk.files == 72);
 }
 
-TEST_CASE("roundtrip_harness_reports_a_mapper_that_loses_the_document", tags) {
+TEST_CASE("roundtrip_harness_reports_a_mapper_that_loses_the_document", "[ore][xml][roundtrip][harness]") {
     const auto kind = ores::ore::xml::make_roundtrip_kind<conventions, conventions_package>(
         "conventions, lossy",
         "conventions",
@@ -116,7 +114,7 @@ TEST_CASE("roundtrip_harness_reports_a_mapper_that_loses_the_document", tags) {
     CHECK(walk.failures.size() == static_cast<std::size_t>(walk.files));
 }
 
-TEST_CASE("roundtrip_harness_finds_no_files_for_a_kind_the_corpus_does_not_hold", tags) {
+TEST_CASE("roundtrip_harness_finds_no_files_for_a_kind_the_corpus_does_not_hold", "[ore][xml][roundtrip][harness]") {
     const auto kind = ores::ore::xml::make_roundtrip_kind<conventions, conventions_package>(
         "basel traffic light",
         "baselTrafficLight",

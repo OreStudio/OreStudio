@@ -22,6 +22,7 @@
 #include "ores.trading.api/domain/fpml_event_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/fpml_event_type_table.hpp"
 #include "ores.trading.api/domain/fpml_event_type_table_io.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
@@ -29,9 +30,6 @@
 namespace {
 
 using ores::trading::domain::fpml_event_type;
-
-const std::string_view test_suite("ores.trading.tests");
-const std::string tags("[domain]");
 
 fpml_event_type make_fpml_event_type(const std::string& code, const std::string& description = "") {
     fpml_event_type et;
@@ -51,7 +49,7 @@ fpml_event_type make_fpml_event_type(const std::string& code, const std::string&
 using ores::trading::domain::fpml_event_type;
 using namespace ores::logging;
 
-TEST_CASE("create_fpml_event_type_with_valid_fields", tags) {
+TEST_CASE("create_fpml_event_type_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_fpml_event_type("New", "New trade creation event");
@@ -66,7 +64,7 @@ TEST_CASE("create_fpml_event_type_with_valid_fields", tags) {
     CHECK(sut.change_reason_code == "system.new");
 }
 
-TEST_CASE("fpml_event_type_insertion_operator", tags) {
+TEST_CASE("fpml_event_type_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_fpml_event_type("Amendment", "Trade amendment event");
@@ -80,7 +78,7 @@ TEST_CASE("fpml_event_type_insertion_operator", tags) {
     CHECK(json_output.find("Amendment") != std::string::npos);
 }
 
-TEST_CASE("create_fpml_event_type_with_faker", tags) {
+TEST_CASE("create_fpml_event_type_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     fpml_event_type sut;
@@ -99,7 +97,7 @@ TEST_CASE("create_fpml_event_type_with_faker", tags) {
     CHECK(!sut.description.empty());
 }
 
-TEST_CASE("create_multiple_random_fpml_event_types", tags) {
+TEST_CASE("create_multiple_random_fpml_event_types", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::string> codes = {
@@ -111,7 +109,7 @@ TEST_CASE("create_multiple_random_fpml_event_types", tags) {
     }
 }
 
-TEST_CASE("fpml_event_type_convert_single_to_table", tags) {
+TEST_CASE("fpml_event_type_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<fpml_event_type> items = {make_fpml_event_type("Novation", "Trade novation event")};
@@ -123,7 +121,7 @@ TEST_CASE("fpml_event_type_convert_single_to_table", tags) {
     CHECK(table.find("Novation") != std::string::npos);
 }
 
-TEST_CASE("fpml_event_type_convert_multiple_to_table", tags) {
+TEST_CASE("fpml_event_type_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<fpml_event_type> items;
@@ -140,7 +138,7 @@ TEST_CASE("fpml_event_type_convert_multiple_to_table", tags) {
     CHECK(table.find("Event2") != std::string::npos);
 }
 
-TEST_CASE("fpml_event_type_convert_empty_vector_to_table", tags) {
+TEST_CASE("fpml_event_type_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<fpml_event_type> items;
@@ -151,7 +149,7 @@ TEST_CASE("fpml_event_type_convert_empty_vector_to_table", tags) {
     CHECK(table.find("Version") != std::string::npos);
 }
 
-TEST_CASE("fpml_event_type_table_with_faker_data", tags) {
+TEST_CASE("fpml_event_type_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<fpml_event_type> items;

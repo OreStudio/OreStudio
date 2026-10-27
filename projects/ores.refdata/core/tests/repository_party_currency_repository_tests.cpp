@@ -31,6 +31,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -51,9 +52,6 @@ using ores::refdata::repository::currency_repository;
 using ores::testing::scoped_database_helper;
 
 namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository][party_currency]");
 
 boost::uuids::uuid find_system_party_id(party_repository& repo,
                                         ores::database::context ctx,
@@ -81,7 +79,7 @@ party_currency make_party_currency(scoped_database_helper& h,
 
 }
 
-TEST_CASE("write_single_party_currency", tags) {
+TEST_CASE("write_single_party_currency", "[repository][party_currency]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -109,7 +107,7 @@ TEST_CASE("write_single_party_currency", tags) {
     CHECK(read_pcs[0].change_commentary == pc.change_commentary);
 }
 
-TEST_CASE("write_multiple_party_currencies", tags) {
+TEST_CASE("write_multiple_party_currencies", "[repository][party_currency]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -144,7 +142,7 @@ TEST_CASE("write_multiple_party_currencies", tags) {
     }
 }
 
-TEST_CASE("read_latest_party_currencies_by_party", tags) {
+TEST_CASE("read_latest_party_currencies_by_party", "[repository][party_currency]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -178,7 +176,7 @@ TEST_CASE("read_latest_party_currencies_by_party", tags) {
     CHECK(found);
 }
 
-TEST_CASE("read_latest_party_currencies_by_currency", tags) {
+TEST_CASE("read_latest_party_currencies_by_currency", "[repository][party_currency]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -205,7 +203,7 @@ TEST_CASE("read_latest_party_currencies_by_currency", tags) {
     CHECK(read_pcs[0].party_id == system_party_id);
 }
 
-TEST_CASE("remove_party_currency", tags) {
+TEST_CASE("remove_party_currency", "[repository][party_currency]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -240,7 +238,7 @@ TEST_CASE("remove_party_currency", tags) {
     CHECK(keeper_rows[0].change_commentary == keeper.change_commentary);
 }
 
-TEST_CASE("read_nonexistent_party_currency", tags) {
+TEST_CASE("read_nonexistent_party_currency", "[repository][party_currency]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

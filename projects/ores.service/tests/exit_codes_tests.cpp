@@ -20,18 +20,12 @@
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
-namespace {
-
-const std::string tags("[exit_codes]");
-
-}
-
 using ores::service::service::exit_code;
 
 // Every service launcher returns these values as the process exit status, and
 // the deployment reads the number rather than the enumerator. Renumbering an
 // entry compiles and passes every other test, so the numbers are pinned here.
-TEST_CASE("exit codes keep the values the service launchers report", tags) {
+TEST_CASE("exit codes keep the values the service launchers report", "[exit_codes]") {
     REQUIRE(static_cast<int>(exit_code::ok) == 0);
     REQUIRE(static_cast<int>(exit_code::general_error) == 1);
     REQUIRE(static_cast<int>(exit_code::config_error) == 2);

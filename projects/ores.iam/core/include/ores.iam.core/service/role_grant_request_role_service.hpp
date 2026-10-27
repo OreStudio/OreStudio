@@ -75,23 +75,26 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_role_grant_request_roles_response
-    list_role_grant_request_roles(const messaging::list_role_grant_request_roles_request& request);
-    messaging::get_role_grant_request_role_response
-    get_role_grant_request_role(const messaging::get_role_grant_request_role_request& request);
-    messaging::get_many_role_grant_request_roles_response get_many_role_grant_request_roles(
-        const messaging::get_many_role_grant_request_roles_request& request);
-    messaging::put_role_grant_request_role_response
-    put_role_grant_request_role(const messaging::put_role_grant_request_role_request& request);
-    messaging::put_many_role_grant_request_roles_response put_many_role_grant_request_roles(
-        const messaging::put_many_role_grant_request_roles_request& request);
-    messaging::delete_role_grant_request_role_response delete_role_grant_request_role(
-        const messaging::delete_role_grant_request_role_request& request);
-    messaging::delete_many_role_grant_request_roles_response delete_many_role_grant_request_roles(
-        const messaging::delete_many_role_grant_request_roles_request& request);
-    messaging::list_by_request_id_role_grant_request_roles_response
+    ::ores::iam::messaging::list_role_grant_request_roles_response list_role_grant_request_roles(
+        const ::ores::iam::messaging::list_role_grant_request_roles_request& request);
+    ::ores::iam::messaging::get_role_grant_request_role_response get_role_grant_request_role(
+        const ::ores::iam::messaging::get_role_grant_request_role_request& request);
+    ::ores::iam::messaging::get_many_role_grant_request_roles_response
+    get_many_role_grant_request_roles(
+        const ::ores::iam::messaging::get_many_role_grant_request_roles_request& request);
+    ::ores::iam::messaging::put_role_grant_request_role_response put_role_grant_request_role(
+        const ::ores::iam::messaging::put_role_grant_request_role_request& request);
+    ::ores::iam::messaging::put_many_role_grant_request_roles_response
+    put_many_role_grant_request_roles(
+        const ::ores::iam::messaging::put_many_role_grant_request_roles_request& request);
+    ::ores::iam::messaging::delete_role_grant_request_role_response delete_role_grant_request_role(
+        const ::ores::iam::messaging::delete_role_grant_request_role_request& request);
+    ::ores::iam::messaging::delete_many_role_grant_request_roles_response
+    delete_many_role_grant_request_roles(
+        const ::ores::iam::messaging::delete_many_role_grant_request_roles_request& request);
+    ::ores::iam::messaging::list_by_request_id_role_grant_request_roles_response
     list_by_request_id_role_grant_request_roles(
-        const messaging::list_by_request_id_role_grant_request_roles_request& request);
+        const ::ores::iam::messaging::list_by_request_id_role_grant_request_roles_request& request);
     /**@}*/
 
 private:
@@ -112,7 +115,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::role_grant_request_role_change& change,
+    prepare_change(const ::ores::iam::messaging::role_grant_request_role_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::role_grant_request_role& out);
 };

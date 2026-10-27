@@ -27,8 +27,6 @@
 
 namespace {
 
-const std::string tags("[app][usage_planner]");
-
 using namespace std::chrono_literals;
 using ores::marketdata::service::app::demand_catalogue;
 using ores::marketdata::service::app::demand_state;
@@ -93,7 +91,7 @@ struct fixture {
 
 }
 
-TEST_CASE("a_new_route_with_a_subscription_opens_an_interval", tags) {
+TEST_CASE("a_new_route_with_a_subscription_opens_an_interval", "[app][usage_planner]") {
     fixture f;
 
     const auto plan = plan_subscription_intervals({f.state(f.sim)}, {}, f.now, f.actor);
@@ -106,7 +104,7 @@ TEST_CASE("a_new_route_with_a_subscription_opens_an_interval", tags) {
     CHECK(plan.to_open.front().display);
 }
 
-TEST_CASE("an_interval_that_still_holds_is_left_alone", tags) {
+TEST_CASE("an_interval_that_still_holds_is_left_alone", "[app][usage_planner]") {
     fixture f;
     const auto s = f.state(f.sim);
 
@@ -116,7 +114,7 @@ TEST_CASE("an_interval_that_still_holds_is_left_alone", tags) {
     CHECK(plan.to_close.empty());
 }
 
-TEST_CASE("a_route_that_ended_closes_its_interval", tags) {
+TEST_CASE("a_route_that_ended_closes_its_interval", "[app][usage_planner]") {
     fixture f;
     const auto open = f.open_interval(f.state(f.sim));
 
@@ -129,7 +127,7 @@ TEST_CASE("a_route_that_ended_closes_its_interval", tags) {
     CHECK(plan.to_close.front().interval_from == open.interval_from);
 }
 
-TEST_CASE("a_change_of_source_closes_one_interval_and_opens_the_next", tags) {
+TEST_CASE("a_change_of_source_closes_one_interval_and_opens_the_next", "[app][usage_planner]") {
     fixture f;
     const auto open = f.open_interval(f.state(f.sim));
 
@@ -142,7 +140,7 @@ TEST_CASE("a_change_of_source_closes_one_interval_and_opens_the_next", tags) {
     CHECK(plan.to_open.front().interval_from == plan.to_close.front().interval_to);
 }
 
-TEST_CASE("a_change_of_rights_closes_one_interval_and_opens_the_next", tags) {
+TEST_CASE("a_change_of_rights_closes_one_interval_and_opens_the_next", "[app][usage_planner]") {
     fixture f;
     const auto open = f.open_interval(f.state(f.sim));
 
@@ -154,7 +152,7 @@ TEST_CASE("a_change_of_rights_closes_one_interval_and_opens_the_next", tags) {
     CHECK(plan.to_open.front().derived);
 }
 
-TEST_CASE("an_interval_that_is_already_closed_is_not_closed_again", tags) {
+TEST_CASE("an_interval_that_is_already_closed_is_not_closed_again", "[app][usage_planner]") {
     fixture f;
     auto closed = f.open_interval(f.state(f.sim));
     closed.interval_to = f.now - 30min;
@@ -165,7 +163,7 @@ TEST_CASE("an_interval_that_is_already_closed_is_not_closed_again", tags) {
     CHECK(plan.to_open.empty());
 }
 
-TEST_CASE("every_interval_carries_the_actor_and_a_reason", tags) {
+TEST_CASE("every_interval_carries_the_actor_and_a_reason", "[app][usage_planner]") {
     fixture f;
     const auto open = f.open_interval(f.state(f.sim));
 
@@ -184,7 +182,7 @@ TEST_CASE("every_interval_carries_the_actor_and_a_reason", tags) {
     }
 }
 
-TEST_CASE("an_item_that_enters_the_demand_opens_an_interval_and_one_that_leaves_closes_it", tags) {
+TEST_CASE("an_item_that_enters_the_demand_opens_an_interval_and_one_that_leaves_closes_it", "[app][usage_planner]") {
     fixture f;
     const auto eur = f.item("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
     const auto gbp = f.item("oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
@@ -198,7 +196,7 @@ TEST_CASE("an_item_that_enters_the_demand_opens_an_interval_and_one_that_leaves_
     CHECK(plan.to_close.front().interval_to == f.now);
 }
 
-TEST_CASE("an_item_that_stays_in_the_demand_keeps_its_interval", tags) {
+TEST_CASE("an_item_that_stays_in_the_demand_keeps_its_interval", "[app][usage_planner]") {
     fixture f;
     const auto eur = f.item("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
 
@@ -208,7 +206,7 @@ TEST_CASE("an_item_that_stays_in_the_demand_keeps_its_interval", tags) {
     CHECK(plan.to_close.empty());
 }
 
-TEST_CASE("the_states_come_from_the_routes_that_hold_a_subscription_with_a_right", tags) {
+TEST_CASE("the_states_come_from_the_routes_that_hold_a_subscription_with_a_right", "[app][usage_planner]") {
     fixture f;
     demand_catalogue c;
     ores::marketdata::domain::route routed;
@@ -235,7 +233,7 @@ TEST_CASE("the_states_come_from_the_routes_that_hold_a_subscription_with_a_right
     CHECK_FALSE(states.front().non_display);
 }
 
-TEST_CASE("a_tenant_whose_close_fails_opens_nothing_until_the_next_sync", tags) {
+TEST_CASE("a_tenant_whose_close_fails_opens_nothing_until_the_next_sync", "[app][usage_planner]") {
     using ores::marketdata::domain::subscription_interval;
     using ores::marketdata::service::app::interval_plan;
     using ores::marketdata::service::app::write_plan;

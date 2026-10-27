@@ -40,6 +40,7 @@
 #include "ores.refdata.api/messaging/csa_eligible_currency_protocol.hpp"
 #include "ores.refdata.core/repository/csa_eligible_currency_repository.hpp"
 #include "ores.refdata.core/service/csa_eligible_currency_service.hpp"
+#include "test_suite.hpp"
 // Party seeds (mandatory party_id soft FKs, direct or via a parent's own
 // mandatory party_id FK): the party generator and repository are used
 // regardless of the child's generator facet, hence the fully-qualified
@@ -77,13 +78,6 @@
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
-namespace {
-
-const std::string_view test_suite("refdata.tests");
-const std::string tags("[eventing][integration]");
-
-
-}
 
 using namespace ores::refdata::generators;
 using ores::refdata::domain::csa_eligible_currency;
@@ -91,7 +85,7 @@ using ores::refdata::repository::csa_eligible_currency_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_csa_eligible_currency_publishes_an_event", tags) {
+TEST_CASE("write_csa_eligible_currency_publishes_an_event", "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

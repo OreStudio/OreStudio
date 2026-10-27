@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_trade_links_response
-    list_trade_links(const messaging::list_trade_links_request& request);
-    messaging::get_trade_link_response
-    get_trade_link(const messaging::get_trade_link_request& request);
-    messaging::get_many_trade_links_response
-    get_many_trade_links(const messaging::get_many_trade_links_request& request);
-    messaging::put_trade_link_response
-    put_trade_link(const messaging::put_trade_link_request& request);
-    messaging::put_many_trade_links_response
-    put_many_trade_links(const messaging::put_many_trade_links_request& request);
-    messaging::delete_trade_link_response
-    delete_trade_link(const messaging::delete_trade_link_request& request);
-    messaging::delete_many_trade_links_response
-    delete_many_trade_links(const messaging::delete_many_trade_links_request& request);
-    messaging::list_trade_link_versions_response
-    list_trade_link_versions(const messaging::list_trade_link_versions_request& request);
-    messaging::get_trade_link_version_response
-    get_trade_link_version(const messaging::get_trade_link_version_request& request);
+    ::ores::trading::messaging::list_trade_links_response
+    list_trade_links(const ::ores::trading::messaging::list_trade_links_request& request);
+    ::ores::trading::messaging::get_trade_link_response
+    get_trade_link(const ::ores::trading::messaging::get_trade_link_request& request);
+    ::ores::trading::messaging::get_many_trade_links_response
+    get_many_trade_links(const ::ores::trading::messaging::get_many_trade_links_request& request);
+    ::ores::trading::messaging::put_trade_link_response
+    put_trade_link(const ::ores::trading::messaging::put_trade_link_request& request);
+    ::ores::trading::messaging::put_many_trade_links_response
+    put_many_trade_links(const ::ores::trading::messaging::put_many_trade_links_request& request);
+    ::ores::trading::messaging::delete_trade_link_response
+    delete_trade_link(const ::ores::trading::messaging::delete_trade_link_request& request);
+    ::ores::trading::messaging::delete_many_trade_links_response delete_many_trade_links(
+        const ::ores::trading::messaging::delete_many_trade_links_request& request);
+    ::ores::trading::messaging::list_trade_link_versions_response list_trade_link_versions(
+        const ::ores::trading::messaging::list_trade_link_versions_request& request);
+    ::ores::trading::messaging::get_trade_link_version_response get_trade_link_version(
+        const ::ores::trading::messaging::get_trade_link_version_request& request);
     /**@}*/
 
     /**
@@ -198,9 +198,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::trade_link_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::trade_link& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::trading::messaging::trade_link_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::trade_link& out);
 };
 
 }

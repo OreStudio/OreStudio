@@ -27,6 +27,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "report_instance_test_fixture.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -43,9 +44,6 @@
 // search narrows the tally exactly as it narrows the list.
 
 namespace {
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[service][database]");
 
 using ores::testing::scoped_database_helper;
 
@@ -73,7 +71,7 @@ by_word(const ores::reporting::messaging::count_report_definitions_by_health_res
 
 }
 
-TEST_CASE("the tally counts each definition at the word its latest run reads as", tags) {
+TEST_CASE("the tally counts each definition at the word its latest run reads as", "[service][database]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;
@@ -121,7 +119,7 @@ TEST_CASE("the tally counts each definition at the word its latest run reads as"
     CHECK(response.total == 5);
 }
 
-TEST_CASE("a search and a party narrow the tally as they narrow the list", tags) {
+TEST_CASE("a search and a party narrow the tally as they narrow the list", "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = ores::reporting::tests::write_party_and_scope_context(h, gen);

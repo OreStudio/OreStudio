@@ -81,14 +81,18 @@ public:
      * deciding anything.
      */
     /**@{*/
-    messaging::get_tenor_basis_swap_convention_response get_tenor_basis_swap_convention(
-        const messaging::get_tenor_basis_swap_convention_request& request);
-    messaging::get_many_tenor_basis_swap_conventions_response get_many_tenor_basis_swap_conventions(
-        const messaging::get_many_tenor_basis_swap_conventions_request& request);
-    messaging::put_tenor_basis_swap_convention_response put_tenor_basis_swap_convention(
-        const messaging::put_tenor_basis_swap_convention_request& request);
-    messaging::put_many_tenor_basis_swap_conventions_response put_many_tenor_basis_swap_conventions(
-        const messaging::put_many_tenor_basis_swap_conventions_request& request);
+    ::ores::refdata::messaging::get_tenor_basis_swap_convention_response
+    get_tenor_basis_swap_convention(
+        const ::ores::refdata::messaging::get_tenor_basis_swap_convention_request& request);
+    ::ores::refdata::messaging::get_many_tenor_basis_swap_conventions_response
+    get_many_tenor_basis_swap_conventions(
+        const ::ores::refdata::messaging::get_many_tenor_basis_swap_conventions_request& request);
+    ::ores::refdata::messaging::put_tenor_basis_swap_convention_response
+    put_tenor_basis_swap_convention(
+        const ::ores::refdata::messaging::put_tenor_basis_swap_convention_request& request);
+    ::ores::refdata::messaging::put_many_tenor_basis_swap_conventions_response
+    put_many_tenor_basis_swap_conventions(
+        const ::ores::refdata::messaging::put_many_tenor_basis_swap_conventions_request& request);
     /**@}*/
 
 private:
@@ -101,9 +105,9 @@ private:
      * @brief Assembles the family item: the central row and every part live
      * at the same instant.
      */
-    messaging::tenor_basis_swap_convention_item
+    ::ores::refdata::messaging::tenor_basis_swap_convention_item
     assemble(const context& ctx,
-             const messaging::tenor_basis_swap_convention_key& key,
+             const ::ores::refdata::messaging::tenor_basis_swap_convention_key& key,
              const std::optional<domain::convention>& central);
 
     /**
@@ -113,7 +117,7 @@ private:
      * stamp are one decision made in one place.
      */
     ores::utility::domain::result
-    prepare_convention(const messaging::convention_change& change,
+    prepare_convention(const ::ores::refdata::messaging::convention_change& change,
                        const ores::utility::domain::change_intent& intent,
                        const context& ctx,
                        domain::convention& out);
@@ -121,11 +125,11 @@ private:
     /**
      * @brief Checks one part change against the row it names, and stamps it.
      */
-    ores::utility::domain::result
-    prepare_pay_receive(const messaging::tenor_basis_swap_pay_receive_change& change,
-                        const ores::utility::domain::change_intent& intent,
-                        const context& ctx,
-                        domain::tenor_basis_swap_pay_receive& out);
+    ores::utility::domain::result prepare_pay_receive(
+        const ::ores::refdata::messaging::tenor_basis_swap_pay_receive_change& change,
+        const ores::utility::domain::change_intent& intent,
+        const context& ctx,
+        domain::tenor_basis_swap_pay_receive& out);
 
     /**
      * @brief Makes this part's rows for one central row exactly the rows the
@@ -138,14 +142,15 @@ private:
     ores::utility::domain::result reconcile_pay_receive(
         const context& ctx,
         const domain::convention& central,
-        const std::vector<messaging::tenor_basis_swap_pay_receive_change>& requested,
+        const std::vector<::ores::refdata::messaging::tenor_basis_swap_pay_receive_change>&
+            requested,
         const ores::utility::domain::change_intent& intent);
 
     /**
      * @brief Checks one part change against the row it names, and stamps it.
      */
     ores::utility::domain::result
-    prepare_long_short(const messaging::tenor_basis_swap_long_short_change& change,
+    prepare_long_short(const ::ores::refdata::messaging::tenor_basis_swap_long_short_change& change,
                        const ores::utility::domain::change_intent& intent,
                        const context& ctx,
                        domain::tenor_basis_swap_long_short& out);
@@ -161,7 +166,8 @@ private:
     ores::utility::domain::result reconcile_long_short(
         const context& ctx,
         const domain::convention& central,
-        const std::vector<messaging::tenor_basis_swap_long_short_change>& requested,
+        const std::vector<::ores::refdata::messaging::tenor_basis_swap_long_short_change>&
+            requested,
         const ores::utility::domain::change_intent& intent);
 };
 

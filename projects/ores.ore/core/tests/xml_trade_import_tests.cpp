@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
@@ -29,9 +30,6 @@
 #include <fstream>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][trade_import]");
 
 std::filesystem::path ore_path(const std::string& relative) {
     return ores::testing::project_root::resolve("external/ore/" + relative);
@@ -56,7 +54,7 @@ using namespace ores::logging;
 // import_portfolio tests
 // =============================================================================
 
-TEST_CASE("import_portfolio_from_minimal_swap", tags) {
+TEST_CASE("import_portfolio_from_minimal_swap", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
     const auto f = ore_path("examples/MinimalSetup/Input/portfolio_swap.xml");
@@ -75,7 +73,7 @@ TEST_CASE("import_portfolio_from_minimal_swap", tags) {
     CHECK(item.activity_type_code == "new_booking");
 }
 
-TEST_CASE("import_portfolio_leaves_the_ids_to_the_planner", tags) {
+TEST_CASE("import_portfolio_leaves_the_ids_to_the_planner", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
     const auto items = importer::import_portfolio_with_context(
@@ -91,7 +89,7 @@ TEST_CASE("import_portfolio_leaves_the_ids_to_the_planner", tags) {
     CHECK(item.booking.book_id == nil);
 }
 
-TEST_CASE("import_portfolio_from_example_1", tags) {
+TEST_CASE("import_portfolio_from_example_1", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
     const auto f = ore_path("examples/Legacy/Example_1/Input/portfolio.xml");
@@ -114,7 +112,7 @@ TEST_CASE("import_portfolio_from_example_1", tags) {
     }
 }
 
-TEST_CASE("import_portfolio_from_minimal_swaptions", tags) {
+TEST_CASE("import_portfolio_from_minimal_swaptions", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
     const auto f = ore_path("examples/MinimalSetup/Input/portfolio_swaptions.xml");
@@ -131,7 +129,7 @@ TEST_CASE("import_portfolio_from_minimal_swaptions", tags) {
     }
 }
 
-TEST_CASE("import_portfolio_gives_every_trade_an_ore_id_and_type", tags) {
+TEST_CASE("import_portfolio_gives_every_trade_an_ore_id_and_type", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
     const auto f = ore_path("examples/Legacy/Example_1/Input/portfolio.xml");
@@ -147,7 +145,7 @@ TEST_CASE("import_portfolio_gives_every_trade_an_ore_id_and_type", tags) {
     BOOST_LOG_SEV(lg, debug) << "All " << items.size() << " imported trades pass validation";
 }
 
-TEST_CASE("import_portfolio_all_ore_example_files_can_be_parsed", tags) {
+TEST_CASE("import_portfolio_all_ore_example_files_can_be_parsed", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
     const auto root = ores::testing::project_root::resolve("external/ore/examples");
@@ -210,7 +208,7 @@ TEST_CASE("import_portfolio_all_ore_example_files_can_be_parsed", tags) {
 // import_portfolio_with_context instrument mapping tests
 // =============================================================================
 
-TEST_CASE("import_portfolio_with_context_swap_has_instrument", tags) {
+TEST_CASE("import_portfolio_with_context_swap_has_instrument", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
     const auto f = example_path("IR_Swap_Vanilla.xml");
@@ -237,7 +235,7 @@ TEST_CASE("import_portfolio_with_context_swap_has_instrument", tags) {
     BOOST_LOG_SEV(lg, info) << "Swap instrument mapped. Legs: " << r.legs.size();
 }
 
-TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", tags) {
+TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
     const auto f = example_path("FX_Forward.xml");
@@ -265,7 +263,7 @@ TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", tags) {
                             << instr.sold_currency;
 }
 
-TEST_CASE("import_portfolio_with_context_bond_has_instrument", tags) {
+TEST_CASE("import_portfolio_with_context_bond_has_instrument", "[ore][xml][trade_import]") {
     auto lg(make_logger(test_suite));
 
     const auto f = example_path("Cash_Bonds.xml");

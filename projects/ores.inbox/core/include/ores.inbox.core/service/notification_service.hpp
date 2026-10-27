@@ -75,26 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_notifications_response
-    list_notifications(const messaging::list_notifications_request& request);
-    messaging::get_notification_response
-    get_notification(const messaging::get_notification_request& request);
-    messaging::get_many_notifications_response
-    get_many_notifications(const messaging::get_many_notifications_request& request);
-    messaging::put_notification_response
-    put_notification(const messaging::put_notification_request& request);
-    messaging::put_many_notifications_response
-    put_many_notifications(const messaging::put_many_notifications_request& request);
-    messaging::delete_notification_response
-    delete_notification(const messaging::delete_notification_request& request);
-    messaging::delete_many_notifications_response
-    delete_many_notifications(const messaging::delete_many_notifications_request& request);
-    messaging::list_by_kind_code_notifications_response list_by_kind_code_notifications(
-        const messaging::list_by_kind_code_notifications_request& request);
-    messaging::list_notification_versions_response
-    list_notification_versions(const messaging::list_notification_versions_request& request);
-    messaging::get_notification_version_response
-    get_notification_version(const messaging::get_notification_version_request& request);
+    ::ores::inbox::messaging::list_notifications_response
+    list_notifications(const ::ores::inbox::messaging::list_notifications_request& request);
+    ::ores::inbox::messaging::get_notification_response
+    get_notification(const ::ores::inbox::messaging::get_notification_request& request);
+    ::ores::inbox::messaging::get_many_notifications_response
+    get_many_notifications(const ::ores::inbox::messaging::get_many_notifications_request& request);
+    ::ores::inbox::messaging::put_notification_response
+    put_notification(const ::ores::inbox::messaging::put_notification_request& request);
+    ::ores::inbox::messaging::put_many_notifications_response
+    put_many_notifications(const ::ores::inbox::messaging::put_many_notifications_request& request);
+    ::ores::inbox::messaging::delete_notification_response
+    delete_notification(const ::ores::inbox::messaging::delete_notification_request& request);
+    ::ores::inbox::messaging::delete_many_notifications_response delete_many_notifications(
+        const ::ores::inbox::messaging::delete_many_notifications_request& request);
+    ::ores::inbox::messaging::list_by_kind_code_notifications_response
+    list_by_kind_code_notifications(
+        const ::ores::inbox::messaging::list_by_kind_code_notifications_request& request);
+    ::ores::inbox::messaging::list_notification_versions_response list_notification_versions(
+        const ::ores::inbox::messaging::list_notification_versions_request& request);
+    ::ores::inbox::messaging::get_notification_version_response get_notification_version(
+        const ::ores::inbox::messaging::get_notification_version_request& request);
     /**@}*/
 
     /**
@@ -212,9 +213,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::notification_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::notification& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::inbox::messaging::notification_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::notification& out);
 };
 
 }

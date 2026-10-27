@@ -75,24 +75,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_curve_global_reports_response
-    list_curve_global_reports(const messaging::list_curve_global_reports_request& request);
-    messaging::get_curve_global_report_response
-    get_curve_global_report(const messaging::get_curve_global_report_request& request);
-    messaging::get_many_curve_global_reports_response
-    get_many_curve_global_reports(const messaging::get_many_curve_global_reports_request& request);
-    messaging::put_curve_global_report_response
-    put_curve_global_report(const messaging::put_curve_global_report_request& request);
-    messaging::put_many_curve_global_reports_response
-    put_many_curve_global_reports(const messaging::put_many_curve_global_reports_request& request);
-    messaging::delete_curve_global_report_response
-    delete_curve_global_report(const messaging::delete_curve_global_report_request& request);
-    messaging::delete_many_curve_global_reports_response delete_many_curve_global_reports(
-        const messaging::delete_many_curve_global_reports_request& request);
-    messaging::list_curve_global_report_versions_response list_curve_global_report_versions(
-        const messaging::list_curve_global_report_versions_request& request);
-    messaging::get_curve_global_report_version_response get_curve_global_report_version(
-        const messaging::get_curve_global_report_version_request& request);
+    ::ores::refdata::messaging::list_curve_global_reports_response list_curve_global_reports(
+        const ::ores::refdata::messaging::list_curve_global_reports_request& request);
+    ::ores::refdata::messaging::get_curve_global_report_response get_curve_global_report(
+        const ::ores::refdata::messaging::get_curve_global_report_request& request);
+    ::ores::refdata::messaging::get_many_curve_global_reports_response
+    get_many_curve_global_reports(
+        const ::ores::refdata::messaging::get_many_curve_global_reports_request& request);
+    ::ores::refdata::messaging::put_curve_global_report_response put_curve_global_report(
+        const ::ores::refdata::messaging::put_curve_global_report_request& request);
+    ::ores::refdata::messaging::put_many_curve_global_reports_response
+    put_many_curve_global_reports(
+        const ::ores::refdata::messaging::put_many_curve_global_reports_request& request);
+    ::ores::refdata::messaging::delete_curve_global_report_response delete_curve_global_report(
+        const ::ores::refdata::messaging::delete_curve_global_report_request& request);
+    ::ores::refdata::messaging::delete_many_curve_global_reports_response
+    delete_many_curve_global_reports(
+        const ::ores::refdata::messaging::delete_many_curve_global_reports_request& request);
+    ::ores::refdata::messaging::list_curve_global_report_versions_response
+    list_curve_global_report_versions(
+        const ::ores::refdata::messaging::list_curve_global_report_versions_request& request);
+    ::ores::refdata::messaging::get_curve_global_report_version_response
+    get_curve_global_report_version(
+        const ::ores::refdata::messaging::get_curve_global_report_version_request& request);
     /**@}*/
 
     /**
@@ -192,7 +197,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::curve_global_report_change& change,
+    prepare_change(const ::ores::refdata::messaging::curve_global_report_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::curve_global_report& out);
 };

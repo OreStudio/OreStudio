@@ -21,19 +21,13 @@
 #include "ores.dq.api/domain/coding_scheme_authority_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/coding_scheme_authority_type_table.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[domain]");
-
-}
 
 using ores::dq::domain::coding_scheme_authority_type;
 using namespace ores::logging;
 
-TEST_CASE("create_coding_scheme_authority_type_with_valid_fields", tags) {
+TEST_CASE("create_coding_scheme_authority_type_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     coding_scheme_authority_type sut;
@@ -51,7 +45,7 @@ TEST_CASE("create_coding_scheme_authority_type_with_valid_fields", tags) {
     CHECK(sut.change_commentary == "Initial creation");
 }
 
-TEST_CASE("coding_scheme_authority_type_convert_single_to_table", tags) {
+TEST_CASE("coding_scheme_authority_type_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     coding_scheme_authority_type csat;

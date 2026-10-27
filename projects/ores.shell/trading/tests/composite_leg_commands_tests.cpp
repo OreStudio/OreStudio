@@ -26,6 +26,8 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/trading/composite_leg_commands.hpp"
+#include "ores.testing/party_fixture.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -34,17 +36,13 @@
 #include <string_view>
 #include <vector>
 
+using ores::testing::valid_party_id;
 using ores::nats::service::nats_client;
 using ores::shell::app::command_feedback;
 using ores::shell::app::commands::composite_leg_commands;
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.shell.trading.tests");
-const std::string tags("[commands]");
-
-const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
 void composite_leg_log_in(nats_client& session) {
     nats_client::login_info info;
@@ -62,7 +60,7 @@ std::vector<std::string> composite_leg_tokens(const std::size_t count) {
 
 }
 
-TEST_CASE("composite_leg_commands_registers_every_derived_verb", tags) {
+TEST_CASE("composite_leg_commands_registers_every_derived_verb", "[commands]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -91,7 +89,7 @@ TEST_CASE("composite_leg_commands_registers_every_derived_verb", tags) {
     BOOST_LOG_SEV(lg, debug) << "Registered 11 command(s).";
 }
 
-TEST_CASE("composite_leg_commands_process_list_requires_a_session", tags) {
+TEST_CASE("composite_leg_commands_process_list_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -105,7 +103,7 @@ TEST_CASE("composite_leg_commands_process_list_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_get_requires_a_session", tags) {
+TEST_CASE("composite_leg_commands_process_get_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -119,7 +117,7 @@ TEST_CASE("composite_leg_commands_process_get_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_get_reports_the_expected_count", tags) {
+TEST_CASE("composite_leg_commands_process_get_reports_the_expected_count", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -139,7 +137,7 @@ TEST_CASE("composite_leg_commands_process_get_reports_the_expected_count", tags)
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_get_many_requires_a_session", tags) {
+TEST_CASE("composite_leg_commands_process_get_many_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -153,7 +151,7 @@ TEST_CASE("composite_leg_commands_process_get_many_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_add_requires_a_session", tags) {
+TEST_CASE("composite_leg_commands_process_add_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -167,7 +165,7 @@ TEST_CASE("composite_leg_commands_process_add_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_add_reports_the_expected_count", tags) {
+TEST_CASE("composite_leg_commands_process_add_reports_the_expected_count", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -187,7 +185,7 @@ TEST_CASE("composite_leg_commands_process_add_reports_the_expected_count", tags)
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_set_requires_a_session", tags) {
+TEST_CASE("composite_leg_commands_process_set_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -201,7 +199,7 @@ TEST_CASE("composite_leg_commands_process_set_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_set_reports_the_expected_count", tags) {
+TEST_CASE("composite_leg_commands_process_set_reports_the_expected_count", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -221,7 +219,7 @@ TEST_CASE("composite_leg_commands_process_set_reports_the_expected_count", tags)
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_put_many_requires_a_session", tags) {
+TEST_CASE("composite_leg_commands_process_put_many_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -235,7 +233,7 @@ TEST_CASE("composite_leg_commands_process_put_many_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_delete_requires_a_session", tags) {
+TEST_CASE("composite_leg_commands_process_delete_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -249,7 +247,7 @@ TEST_CASE("composite_leg_commands_process_delete_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_delete_reports_the_expected_count", tags) {
+TEST_CASE("composite_leg_commands_process_delete_reports_the_expected_count", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -269,7 +267,7 @@ TEST_CASE("composite_leg_commands_process_delete_reports_the_expected_count", ta
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_delete_many_requires_a_session", tags) {
+TEST_CASE("composite_leg_commands_process_delete_many_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -283,7 +281,7 @@ TEST_CASE("composite_leg_commands_process_delete_many_requires_a_session", tags)
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_by_trade_id_requires_a_session", tags) {
+TEST_CASE("composite_leg_commands_process_by_trade_id_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -297,7 +295,7 @@ TEST_CASE("composite_leg_commands_process_by_trade_id_requires_a_session", tags)
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_by_trade_id_reports_the_expected_count", tags) {
+TEST_CASE("composite_leg_commands_process_by_trade_id_reports_the_expected_count", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -317,7 +315,7 @@ TEST_CASE("composite_leg_commands_process_by_trade_id_reports_the_expected_count
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_versions_requires_a_session", tags) {
+TEST_CASE("composite_leg_commands_process_versions_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -331,7 +329,7 @@ TEST_CASE("composite_leg_commands_process_versions_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_versions_reports_the_expected_count", tags) {
+TEST_CASE("composite_leg_commands_process_versions_reports_the_expected_count", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -351,7 +349,7 @@ TEST_CASE("composite_leg_commands_process_versions_reports_the_expected_count", 
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_version_requires_a_session", tags) {
+TEST_CASE("composite_leg_commands_process_version_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -365,7 +363,7 @@ TEST_CASE("composite_leg_commands_process_version_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("composite_leg_commands_process_version_reports_the_expected_count", tags) {
+TEST_CASE("composite_leg_commands_process_version_reports_the_expected_count", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;

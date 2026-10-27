@@ -40,6 +40,7 @@
 #include "ores.refdata.api/messaging/calendar_event_protocol.hpp"
 #include "ores.refdata.core/repository/calendar_event_repository.hpp"
 #include "ores.refdata.core/service/calendar_event_service.hpp"
+#include "test_suite.hpp"
 // FK-parent sentinel seed: a seeded calendar parent's insert trigger
 // validates country_code against the countries table for the write
 // tenant, and the synthetic calendar generator always emits the ZZ
@@ -78,13 +79,6 @@
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
-namespace {
-
-const std::string_view test_suite("refdata.tests");
-const std::string tags("[eventing][integration]");
-
-
-}
 
 using namespace ores::refdata::generators;
 using ores::refdata::domain::calendar_event;
@@ -93,7 +87,7 @@ using ores::refdata::repository::country_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_calendar_event_publishes_an_event", tags) {
+TEST_CASE("write_calendar_event_publishes_an_event", "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

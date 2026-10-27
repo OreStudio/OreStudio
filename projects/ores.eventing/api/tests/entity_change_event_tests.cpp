@@ -26,24 +26,17 @@
 #include <rfl/json.hpp>
 #include <sstream>
 
-namespace {
-
-const std::string test_suite("ores.eventing.tests");
-const std::string tags("[domain]");
-
-}
-
 using namespace ores::eventing::domain;
 using namespace ores::eventing::generators;
 
-TEST_CASE("entity_change_event_json_serialization", tags) {
+TEST_CASE("entity_change_event_json_serialization", "[domain]") {
     auto n = entity_change_event_generator::generate();
     std::stringstream ss;
     ss << n;
     REQUIRE_FALSE(ss.str().empty());
 }
 
-TEST_CASE("entity_change_event_table_serialization", tags) {
+TEST_CASE("entity_change_event_table_serialization", "[domain]") {
     auto notifications = entity_change_event_generator::generate_set(3);
     std::stringstream ss;
     ss << notifications;
@@ -52,7 +45,7 @@ TEST_CASE("entity_change_event_table_serialization", tags) {
     REQUIRE(ss.str().find("Timestamp") != std::string::npos);
 }
 
-TEST_CASE("entity_change_event_generator", tags) {
+TEST_CASE("entity_change_event_generator", "[domain]") {
     auto n = entity_change_event_generator::generate();
     REQUIRE_FALSE(n.entity.empty());
     REQUIRE_FALSE(n.tenant_id.empty());
@@ -70,7 +63,7 @@ TEST_CASE("entity_change_event_generator", tags) {
 // Parses a literal payload in the exact format emitted by the DB notify trigger
 // (ISO 8601 UTC, T separator, Z suffix). If this test fails after a SQL change,
 // the trigger timestamp format has regressed.
-TEST_CASE("entity_change_event_db_payload_roundtrip", tags) {
+TEST_CASE("entity_change_event_db_payload_roundtrip", "[domain]") {
     const std::string payload =
         R"({"entity":"ores.refdata.currency","timestamp":"2026-05-27T12:34:56Z",)"
         R"("entity_ids":["USD"],"tenant_id":"ffffffff-ffff-ffff-ffff-ffffffffffff"})";
@@ -86,7 +79,7 @@ TEST_CASE("entity_change_event_db_payload_roundtrip", tags) {
 
 // The broken format (space separator, no UTC designator) must NOT parse cleanly.
 // This is a regression guard: if rfl ever accepts it silently we need to know.
-TEST_CASE("entity_change_event_broken_timestamp_rejected", tags) {
+TEST_CASE("entity_change_event_broken_timestamp_rejected", "[domain]") {
     const std::string payload =
         R"({"entity":"ores.refdata.currency","timestamp":"2026-05-27 12:34:56",)"
         R"("entity_ids":["USD"],"tenant_id":"ffffffff-ffff-ffff-ffff-ffffffffffff"})";

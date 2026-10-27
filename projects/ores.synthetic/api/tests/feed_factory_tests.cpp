@@ -42,8 +42,6 @@
 
 namespace {
 
-const std::string tags("[feed_factory]");
-
 using ores::synthetic::domain::fx_spot_generation_config;
 using ores::synthetic::domain::gmm_component;
 using ores::synthetic::domain::ir_curve_generation_config;
@@ -222,13 +220,13 @@ private:
 
 }
 
-TEST_CASE("make_default_feed_factory registers both kinds", tags) {
+TEST_CASE("make_default_feed_factory registers both kinds", "[feed_factory]") {
     const auto factory = make_default_feed_factory();
     CHECK(factory.kinds() == std::vector<std::string>{std::string(fx_spot_feed_kind),
                                                       std::string(ir_curve_feed_kind)});
 }
 
-TEST_CASE("factory::make constructs an fx_spot_feed from its persisted config", tags) {
+TEST_CASE("factory::make constructs an fx_spot_feed from its persisted config", "[feed_factory]") {
     const auto factory = make_default_feed_factory();
     auto input = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};
 
@@ -245,7 +243,7 @@ TEST_CASE("factory::make constructs an fx_spot_feed from its persisted config", 
     CHECK(fx->publish_count() == 0);
 }
 
-TEST_CASE("factory::make refuses an fx_spot config whose URI is not the quote of its pair", tags) {
+TEST_CASE("factory::make refuses an fx_spot config whose URI is not the quote of its pair", "[feed_factory]") {
     const auto factory = make_default_feed_factory();
 
     auto other_pair = make_fx_config();
@@ -273,7 +271,7 @@ TEST_CASE("factory::make refuses an fx_spot config whose URI is not the quote of
         std::invalid_argument);
 }
 
-TEST_CASE("factory::make constructs an ir_curve_feed from its persisted config", tags) {
+TEST_CASE("factory::make constructs an ir_curve_feed from its persisted config", "[feed_factory]") {
     const auto factory = make_default_feed_factory();
     const auto f = make_ir_fixture();
     const auto input =
@@ -294,7 +292,7 @@ TEST_CASE("factory::make constructs an ir_curve_feed from its persisted config",
 
 TEST_CASE("an ir_curve_feed's series carries the tenor of its index, so two index tenors are "
           "two series that can run together",
-          tags) {
+          "[feed_factory]") {
     const auto factory = make_default_feed_factory();
 
     auto six_month = make_ir_fixture();
@@ -322,7 +320,7 @@ TEST_CASE("an ir_curve_feed's series carries the tenor of its index, so two inde
     CHECK(six->series_uris() != three->series_uris());
 }
 
-TEST_CASE("an overnight ir_curve_feed, FOMC variant included, has the index tenor 1D", tags) {
+TEST_CASE("an overnight ir_curve_feed, FOMC variant included, has the index tenor 1D", "[feed_factory]") {
     const auto factory = make_default_feed_factory();
     auto f = make_ir_fixture();
     f.config.tenor = "FOMC";
@@ -337,7 +335,7 @@ TEST_CASE("an overnight ir_curve_feed, FOMC variant included, has the index teno
               "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"});
 }
 
-TEST_CASE("factory::make derives the producer subject from the source name, for every kind", tags) {
+TEST_CASE("factory::make derives the producer subject from the source name, for every kind", "[feed_factory]") {
     const auto factory = make_default_feed_factory();
     const auto f = make_ir_fixture();
 
@@ -350,13 +348,13 @@ TEST_CASE("factory::make derives the producer subject from the source name, for 
           "synthetic.v1.ops.tick.usd_sofr_test");
 }
 
-TEST_CASE("factory::make rejects an unknown kind", tags) {
+TEST_CASE("factory::make rejects an unknown kind", "[feed_factory]") {
     const auto factory = make_default_feed_factory();
     const auto input = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};
     CHECK_THROWS_AS(factory.make("equities", make_build_context(), input), std::invalid_argument);
 }
 
-TEST_CASE("factory::make rejects a build input that is not the kind's own", tags) {
+TEST_CASE("factory::make rejects a build input that is not the kind's own", "[feed_factory]") {
     const auto factory = make_default_feed_factory();
     const auto f = make_ir_fixture();
     const auto input =
@@ -365,7 +363,7 @@ TEST_CASE("factory::make rejects a build input that is not the kind's own", tags
                     std::invalid_argument);
 }
 
-TEST_CASE("factory::make dispatches to a replacement registration for a kind", tags) {
+TEST_CASE("factory::make dispatches to a replacement registration for a kind", "[feed_factory]") {
     feed_factory factory;
     factory.register_kind(
         std::string(fx_spot_feed_kind), [](const feed_build_context&, const feed_build_input&) {
@@ -379,7 +377,7 @@ TEST_CASE("factory::make dispatches to a replacement registration for a kind", t
     CHECK(feed->source_name() == "stub");
 }
 
-TEST_CASE("a config row's arrival mode reaches the feed it builds", tags) {
+TEST_CASE("a config row's arrival mode reaches the feed it builds", "[feed_factory]") {
     const auto factory = make_default_feed_factory();
 
     auto hawkes_config = make_fx_config();
@@ -398,7 +396,7 @@ TEST_CASE("a config row's arrival mode reaches the feed it builds", tags) {
                     std::invalid_argument);
 }
 
-TEST_CASE("a process that cannot step by elapsed time is refused a non-periodic arrival", tags) {
+TEST_CASE("a process that cannot step by elapsed time is refused a non-periodic arrival", "[feed_factory]") {
     const auto factory = make_default_feed_factory();
     auto f = make_ir_fixture();
     f.config.arrival_mode = "poisson";
@@ -416,7 +414,7 @@ TEST_CASE("a process that cannot step by elapsed time is refused a non-periodic 
     CHECK(factory.make(std::string(ir_curve_feed_kind), make_build_context(), accepted));
 }
 
-TEST_CASE("two feeds register with one scheduler and leave it on stop", tags) {
+TEST_CASE("two feeds register with one scheduler and leave it on stop", "[feed_factory]") {
     // The run has one clock: starting a feed registers its tick body, and
     // stopping it takes the body out again.
     ores::analytics::quant::service::tick_scheduler scheduler;
@@ -450,7 +448,7 @@ TEST_CASE("two feeds register with one scheduler and leave it on stop", tags) {
     CHECK(scheduler.size() == 0);
 }
 
-TEST_CASE("one clock drives every feed and each counts what it ticks", tags) {
+TEST_CASE("one clock drives every feed and each counts what it ticks", "[feed_factory]") {
     // The defect this pins: a feed's publish count used to come from a clock it
     // no longer runs, so it read zero however many ticks the scheduler made.
     ores::analytics::quant::service::tick_scheduler scheduler;

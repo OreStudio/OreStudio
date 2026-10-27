@@ -101,7 +101,7 @@ http_response role_error_response(const std::string& error) {
  */
 template <typename Request>
 boost::asio::awaitable<http_response>
-forward(const http_request& req, nats_client& session, const Request& msg) {
+role_forward(const http_request& req, nats_client& session, const Request& msg) {
     auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
     try {
         const auto reply =
@@ -155,7 +155,7 @@ boost::asio::awaitable<http_response> role_routes::handle_list(const http_reques
     try {
         request_type msg;
         role_apply_page(msg, req);
-        co_return co_await forward(req, session, msg);
+        co_return co_await role_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -167,7 +167,7 @@ boost::asio::awaitable<http_response> role_routes::handle_get(const http_request
     try {
         request_type msg;
         msg.key.name = role_read_param<std::string>(req.get_path_param("name"), "name");
-        co_return co_await forward(req, session, msg);
+        co_return co_await role_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -181,7 +181,7 @@ boost::asio::awaitable<http_response> role_routes::handle_get_many(const http_re
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await role_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -197,7 +197,7 @@ boost::asio::awaitable<http_response> role_routes::handle_add(const http_request
         }
         // The route states whether the row may exist; the body states the rest.
         parsed->change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await role_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -218,7 +218,7 @@ boost::asio::awaitable<http_response> role_routes::handle_set(const http_request
                 ores::utility::domain::precondition_kind::must_match_version;
             parsed->change.precondition.version = role_read_param<std::uint32_t>(raw, "version");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await role_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -232,7 +232,7 @@ boost::asio::awaitable<http_response> role_routes::handle_put_many(const http_re
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await role_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -258,7 +258,7 @@ boost::asio::awaitable<http_response> role_routes::handle_delete(const http_requ
                 ores::utility::domain::precondition_kind::must_match_version;
             msg.removal.precondition.version = role_read_param<std::uint32_t>(raw, "version");
         }
-        co_return co_await forward(req, session, msg);
+        co_return co_await role_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -272,7 +272,7 @@ boost::asio::awaitable<http_response> role_routes::handle_delete_many(const http
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await role_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -285,7 +285,7 @@ boost::asio::awaitable<http_response> role_routes::handle_versions(const http_re
         request_type msg;
         msg.key.name = role_read_param<std::string>(req.get_path_param("name"), "name");
         role_apply_page(msg, req);
-        co_return co_await forward(req, session, msg);
+        co_return co_await role_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -298,7 +298,7 @@ boost::asio::awaitable<http_response> role_routes::handle_version(const http_req
         request_type msg;
         msg.key.role.name = role_read_param<std::string>(req.get_path_param("name"), "name");
         msg.key.version = role_read_param<std::uint32_t>(req.get_path_param("version"), "version");
-        co_return co_await forward(req, session, msg);
+        co_return co_await role_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }

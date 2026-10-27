@@ -22,14 +22,12 @@
 #include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/currency_table.hpp"
 #include "ores.utility/faker/datetime.hpp"
+#include "test_suite.hpp"
 #include <array>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[domain]");
 
 using ores::utility::faker::datetime;
 
@@ -38,7 +36,7 @@ using ores::utility::faker::datetime;
 using ores::refdata::domain::currency;
 using namespace ores::logging;
 
-TEST_CASE("create_currency_with_valid_fields", tags) {
+TEST_CASE("create_currency_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     currency ccy;
@@ -66,7 +64,7 @@ TEST_CASE("create_currency_with_valid_fields", tags) {
     CHECK(ccy.rounding_precision == 2);
 }
 
-TEST_CASE("create_currency_with_faker", tags) {
+TEST_CASE("create_currency_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     currency ccy;
@@ -96,7 +94,7 @@ TEST_CASE("create_currency_with_faker", tags) {
     CHECK(ccy.rounding_precision >= 0);
 }
 
-TEST_CASE("create_multiple_random_currencies", tags) {
+TEST_CASE("create_multiple_random_currencies", "[domain]") {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 5; ++i) {
@@ -127,7 +125,7 @@ TEST_CASE("create_multiple_random_currencies", tags) {
     }
 }
 
-TEST_CASE("create_currency_with_high_precision", tags) {
+TEST_CASE("create_currency_with_high_precision", "[domain]") {
     auto lg(make_logger(test_suite));
 
     currency ccy;
@@ -152,7 +150,7 @@ TEST_CASE("create_currency_with_high_precision", tags) {
     CHECK(ccy.rounding_precision == 8);
 }
 
-TEST_CASE("create_currency_with_no_fractions", tags) {
+TEST_CASE("create_currency_with_no_fractions", "[domain]") {
     auto lg(make_logger(test_suite));
 
     currency ccy;
@@ -177,7 +175,7 @@ TEST_CASE("create_currency_with_no_fractions", tags) {
     CHECK(ccy.rounding_precision == 0);
 }
 
-TEST_CASE("create_currency_with_three_decimal_places", tags) {
+TEST_CASE("create_currency_with_three_decimal_places", "[domain]") {
     auto lg(make_logger(test_suite));
 
     currency ccy;
@@ -202,7 +200,7 @@ TEST_CASE("create_currency_with_three_decimal_places", tags) {
     CHECK(ccy.rounding_precision == 3);
 }
 
-TEST_CASE("create_currencies_with_different_symbols", tags) {
+TEST_CASE("create_currencies_with_different_symbols", "[domain]") {
     auto lg(make_logger(test_suite));
 
     using Currency = std::tuple<std::string, std::string, std::string>;
@@ -238,7 +236,7 @@ TEST_CASE("create_currencies_with_different_symbols", tags) {
     }
 }
 
-TEST_CASE("currency_convert_single_to_table", tags) {
+TEST_CASE("currency_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     currency ccy;
@@ -265,7 +263,7 @@ TEST_CASE("currency_convert_single_to_table", tags) {
     CHECK(table.find("United States Dollar") != std::string::npos);
 }
 
-TEST_CASE("currency_convert_multiple_to_table", tags) {
+TEST_CASE("currency_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<currency> currencies;
@@ -297,7 +295,7 @@ TEST_CASE("currency_convert_multiple_to_table", tags) {
     CHECK(table.find("XX2") != std::string::npos);
 }
 
-TEST_CASE("currency_table_with_faker_data", tags) {
+TEST_CASE("currency_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<currency> currencies;

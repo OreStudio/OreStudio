@@ -76,27 +76,34 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_trade_additional_fields_response
-    list_trade_additional_fields(const messaging::list_trade_additional_fields_request& request);
-    messaging::get_trade_additional_field_response
-    get_trade_additional_field(const messaging::get_trade_additional_field_request& request);
-    messaging::get_many_trade_additional_fields_response get_many_trade_additional_fields(
-        const messaging::get_many_trade_additional_fields_request& request);
-    messaging::put_trade_additional_field_response
-    put_trade_additional_field(const messaging::put_trade_additional_field_request& request);
-    messaging::put_many_trade_additional_fields_response put_many_trade_additional_fields(
-        const messaging::put_many_trade_additional_fields_request& request);
-    messaging::delete_trade_additional_field_response
-    delete_trade_additional_field(const messaging::delete_trade_additional_field_request& request);
-    messaging::delete_many_trade_additional_fields_response delete_many_trade_additional_fields(
-        const messaging::delete_many_trade_additional_fields_request& request);
-    messaging::list_by_trade_id_trade_additional_fields_response
+    ::ores::trading::messaging::list_trade_additional_fields_response list_trade_additional_fields(
+        const ::ores::trading::messaging::list_trade_additional_fields_request& request);
+    ::ores::trading::messaging::get_trade_additional_field_response get_trade_additional_field(
+        const ::ores::trading::messaging::get_trade_additional_field_request& request);
+    ::ores::trading::messaging::get_many_trade_additional_fields_response
+    get_many_trade_additional_fields(
+        const ::ores::trading::messaging::get_many_trade_additional_fields_request& request);
+    ::ores::trading::messaging::put_trade_additional_field_response put_trade_additional_field(
+        const ::ores::trading::messaging::put_trade_additional_field_request& request);
+    ::ores::trading::messaging::put_many_trade_additional_fields_response
+    put_many_trade_additional_fields(
+        const ::ores::trading::messaging::put_many_trade_additional_fields_request& request);
+    ::ores::trading::messaging::delete_trade_additional_field_response
+    delete_trade_additional_field(
+        const ::ores::trading::messaging::delete_trade_additional_field_request& request);
+    ::ores::trading::messaging::delete_many_trade_additional_fields_response
+    delete_many_trade_additional_fields(
+        const ::ores::trading::messaging::delete_many_trade_additional_fields_request& request);
+    ::ores::trading::messaging::list_by_trade_id_trade_additional_fields_response
     list_by_trade_id_trade_additional_fields(
-        const messaging::list_by_trade_id_trade_additional_fields_request& request);
-    messaging::list_trade_additional_field_versions_response list_trade_additional_field_versions(
-        const messaging::list_trade_additional_field_versions_request& request);
-    messaging::get_trade_additional_field_version_response get_trade_additional_field_version(
-        const messaging::get_trade_additional_field_version_request& request);
+        const ::ores::trading::messaging::list_by_trade_id_trade_additional_fields_request&
+            request);
+    ::ores::trading::messaging::list_trade_additional_field_versions_response
+    list_trade_additional_field_versions(
+        const ::ores::trading::messaging::list_trade_additional_field_versions_request& request);
+    ::ores::trading::messaging::get_trade_additional_field_version_response
+    get_trade_additional_field_version(
+        const ::ores::trading::messaging::get_trade_additional_field_version_request& request);
     /**@}*/
 
     /**
@@ -220,7 +227,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::trade_additional_field_change& change,
+    prepare_change(const ::ores::trading::messaging::trade_additional_field_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::trade_additional_field& out);
 };

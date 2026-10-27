@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_account_statuses_response
-    list_account_statuses(const messaging::list_account_statuses_request& request);
-    messaging::get_account_status_response
-    get_account_status(const messaging::get_account_status_request& request);
-    messaging::get_many_account_statuses_response
-    get_many_account_statuses(const messaging::get_many_account_statuses_request& request);
-    messaging::put_account_status_response
-    put_account_status(const messaging::put_account_status_request& request);
-    messaging::put_many_account_statuses_response
-    put_many_account_statuses(const messaging::put_many_account_statuses_request& request);
-    messaging::delete_account_status_response
-    delete_account_status(const messaging::delete_account_status_request& request);
-    messaging::delete_many_account_statuses_response
-    delete_many_account_statuses(const messaging::delete_many_account_statuses_request& request);
-    messaging::list_account_status_versions_response
-    list_account_status_versions(const messaging::list_account_status_versions_request& request);
-    messaging::get_account_status_version_response
-    get_account_status_version(const messaging::get_account_status_version_request& request);
+    ::ores::iam::messaging::list_account_statuses_response
+    list_account_statuses(const ::ores::iam::messaging::list_account_statuses_request& request);
+    ::ores::iam::messaging::get_account_status_response
+    get_account_status(const ::ores::iam::messaging::get_account_status_request& request);
+    ::ores::iam::messaging::get_many_account_statuses_response get_many_account_statuses(
+        const ::ores::iam::messaging::get_many_account_statuses_request& request);
+    ::ores::iam::messaging::put_account_status_response
+    put_account_status(const ::ores::iam::messaging::put_account_status_request& request);
+    ::ores::iam::messaging::put_many_account_statuses_response put_many_account_statuses(
+        const ::ores::iam::messaging::put_many_account_statuses_request& request);
+    ::ores::iam::messaging::delete_account_status_response
+    delete_account_status(const ::ores::iam::messaging::delete_account_status_request& request);
+    ::ores::iam::messaging::delete_many_account_statuses_response delete_many_account_statuses(
+        const ::ores::iam::messaging::delete_many_account_statuses_request& request);
+    ::ores::iam::messaging::list_account_status_versions_response list_account_status_versions(
+        const ::ores::iam::messaging::list_account_status_versions_request& request);
+    ::ores::iam::messaging::get_account_status_version_response get_account_status_version(
+        const ::ores::iam::messaging::get_account_status_version_request& request);
     /**@}*/
 
     /**
@@ -186,9 +186,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::account_status_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::account_status& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::iam::messaging::account_status_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::account_status& out);
 };
 
 }

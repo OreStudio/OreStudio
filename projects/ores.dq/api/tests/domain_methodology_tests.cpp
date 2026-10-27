@@ -21,20 +21,14 @@
 #include "ores.dq.api/domain/methodology_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/methodology_table.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[domain]");
-
-}
 
 using ores::dq::domain::methodology;
 using namespace ores::logging;
 
-TEST_CASE("create_methodology_with_valid_fields", tags) {
+TEST_CASE("create_methodology_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     methodology sut;
@@ -57,7 +51,7 @@ TEST_CASE("create_methodology_with_valid_fields", tags) {
     CHECK(sut.change_commentary == "Initial creation");
 }
 
-TEST_CASE("methodology_convert_single_to_table", tags) {
+TEST_CASE("methodology_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     methodology m;

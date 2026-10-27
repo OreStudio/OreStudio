@@ -76,34 +76,43 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_equity_position_option_underlyings_response
+    ::ores::trading::messaging::list_equity_position_option_underlyings_response
     list_equity_position_option_underlyings(
-        const messaging::list_equity_position_option_underlyings_request& request);
-    messaging::get_equity_position_option_underlying_response get_equity_position_option_underlying(
-        const messaging::get_equity_position_option_underlying_request& request);
-    messaging::get_many_equity_position_option_underlyings_response
+        const ::ores::trading::messaging::list_equity_position_option_underlyings_request& request);
+    ::ores::trading::messaging::get_equity_position_option_underlying_response
+    get_equity_position_option_underlying(
+        const ::ores::trading::messaging::get_equity_position_option_underlying_request& request);
+    ::ores::trading::messaging::get_many_equity_position_option_underlyings_response
     get_many_equity_position_option_underlyings(
-        const messaging::get_many_equity_position_option_underlyings_request& request);
-    messaging::put_equity_position_option_underlying_response put_equity_position_option_underlying(
-        const messaging::put_equity_position_option_underlying_request& request);
-    messaging::put_many_equity_position_option_underlyings_response
+        const ::ores::trading::messaging::get_many_equity_position_option_underlyings_request&
+            request);
+    ::ores::trading::messaging::put_equity_position_option_underlying_response
+    put_equity_position_option_underlying(
+        const ::ores::trading::messaging::put_equity_position_option_underlying_request& request);
+    ::ores::trading::messaging::put_many_equity_position_option_underlyings_response
     put_many_equity_position_option_underlyings(
-        const messaging::put_many_equity_position_option_underlyings_request& request);
-    messaging::delete_equity_position_option_underlying_response
+        const ::ores::trading::messaging::put_many_equity_position_option_underlyings_request&
+            request);
+    ::ores::trading::messaging::delete_equity_position_option_underlying_response
     delete_equity_position_option_underlying(
-        const messaging::delete_equity_position_option_underlying_request& request);
-    messaging::delete_many_equity_position_option_underlyings_response
+        const ::ores::trading::messaging::delete_equity_position_option_underlying_request&
+            request);
+    ::ores::trading::messaging::delete_many_equity_position_option_underlyings_response
     delete_many_equity_position_option_underlyings(
-        const messaging::delete_many_equity_position_option_underlyings_request& request);
-    messaging::list_by_trade_id_equity_position_option_underlyings_response
+        const ::ores::trading::messaging::delete_many_equity_position_option_underlyings_request&
+            request);
+    ::ores::trading::messaging::list_by_trade_id_equity_position_option_underlyings_response
     list_by_trade_id_equity_position_option_underlyings(
-        const messaging::list_by_trade_id_equity_position_option_underlyings_request& request);
-    messaging::list_equity_position_option_underlying_versions_response
+        const ::ores::trading::messaging::
+            list_by_trade_id_equity_position_option_underlyings_request& request);
+    ::ores::trading::messaging::list_equity_position_option_underlying_versions_response
     list_equity_position_option_underlying_versions(
-        const messaging::list_equity_position_option_underlying_versions_request& request);
-    messaging::get_equity_position_option_underlying_version_response
+        const ::ores::trading::messaging::list_equity_position_option_underlying_versions_request&
+            request);
+    ::ores::trading::messaging::get_equity_position_option_underlying_version_response
     get_equity_position_option_underlying_version(
-        const messaging::get_equity_position_option_underlying_version_request& request);
+        const ::ores::trading::messaging::get_equity_position_option_underlying_version_request&
+            request);
     /**@}*/
 
     /**
@@ -236,10 +245,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result
-    prepare_change(const messaging::equity_position_option_underlying_change& change,
-                   const ores::utility::domain::change_intent& intent,
-                   domain::equity_position_option_underlying& out);
+    ores::utility::domain::result prepare_change(
+        const ::ores::trading::messaging::equity_position_option_underlying_change& change,
+        const ores::utility::domain::change_intent& intent,
+        domain::equity_position_option_underlying& out);
 };
 
 }

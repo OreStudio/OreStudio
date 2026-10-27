@@ -75,21 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_tenants_response list_tenants(const messaging::list_tenants_request& request);
-    messaging::get_tenant_response get_tenant(const messaging::get_tenant_request& request);
-    messaging::get_many_tenants_response
-    get_many_tenants(const messaging::get_many_tenants_request& request);
-    messaging::put_tenant_response put_tenant(const messaging::put_tenant_request& request);
-    messaging::put_many_tenants_response
-    put_many_tenants(const messaging::put_many_tenants_request& request);
-    messaging::delete_tenant_response
-    delete_tenant(const messaging::delete_tenant_request& request);
-    messaging::delete_many_tenants_response
-    delete_many_tenants(const messaging::delete_many_tenants_request& request);
-    messaging::list_tenant_versions_response
-    list_tenant_versions(const messaging::list_tenant_versions_request& request);
-    messaging::get_tenant_version_response
-    get_tenant_version(const messaging::get_tenant_version_request& request);
+    ::ores::iam::messaging::list_tenants_response
+    list_tenants(const ::ores::iam::messaging::list_tenants_request& request);
+    ::ores::iam::messaging::get_tenant_response
+    get_tenant(const ::ores::iam::messaging::get_tenant_request& request);
+    ::ores::iam::messaging::get_many_tenants_response
+    get_many_tenants(const ::ores::iam::messaging::get_many_tenants_request& request);
+    ::ores::iam::messaging::put_tenant_response
+    put_tenant(const ::ores::iam::messaging::put_tenant_request& request);
+    ::ores::iam::messaging::put_many_tenants_response
+    put_many_tenants(const ::ores::iam::messaging::put_many_tenants_request& request);
+    ::ores::iam::messaging::delete_tenant_response
+    delete_tenant(const ::ores::iam::messaging::delete_tenant_request& request);
+    ::ores::iam::messaging::delete_many_tenants_response
+    delete_many_tenants(const ::ores::iam::messaging::delete_many_tenants_request& request);
+    ::ores::iam::messaging::list_tenant_versions_response
+    list_tenant_versions(const ::ores::iam::messaging::list_tenant_versions_request& request);
+    ::ores::iam::messaging::get_tenant_version_response
+    get_tenant_version(const ::ores::iam::messaging::get_tenant_version_request& request);
     /**@}*/
 
     /**
@@ -200,9 +203,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::tenant_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::tenant& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::iam::messaging::tenant_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::tenant& out);
 };
 
 }

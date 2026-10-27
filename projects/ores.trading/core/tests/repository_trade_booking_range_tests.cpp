@@ -51,8 +51,6 @@
 
 namespace {
 
-const std::string tags("[repository][list_filter][range]");
-
 using ores::trading::messaging::trade_bookings_filter;
 using ores::trading::repository::trade_booking_repository;
 using uuid = boost::uuids::uuid;
@@ -134,7 +132,7 @@ system_clock::time_point at(int y, unsigned m, unsigned d, int hour, int minute 
 
 }
 
-TEST_CASE("a date range holds the bookings whose trade date lies in it, bounds included", tags) {
+TEST_CASE("a date range holds the bookings whose trade date lies in it, bounds included", "[repository][list_filter][range]") {
     fixture f;
     const auto first = f.write_booking(ymd(2026, 3, 1), std::nullopt);
     const auto middle = f.write_booking(ymd(2026, 3, 15), std::nullopt);
@@ -154,7 +152,7 @@ TEST_CASE("a date range holds the bookings whose trade date lies in it, bounds i
     CHECK(f.read(range) == sorted({middle, last}));
 }
 
-TEST_CASE("a range excludes a booking that has no trade date", tags) {
+TEST_CASE("a range excludes a booking that has no trade date", "[repository][list_filter][range]") {
     fixture f;
     const auto dated = f.write_booking(ymd(2026, 3, 10), std::nullopt);
     f.write_booking(std::nullopt, std::nullopt);
@@ -164,7 +162,7 @@ TEST_CASE("a range excludes a booking that has no trade date", tags) {
     CHECK(f.read(range) == std::vector<uuid>{dated});
 }
 
-TEST_CASE("a date as the upper bound of a timestamp range holds the whole of that day", tags) {
+TEST_CASE("a date as the upper bound of a timestamp range holds the whole of that day", "[repository][list_filter][range]") {
     fixture f;
     const auto morning = f.write_booking(std::nullopt, at(2026, 3, 5, 10));
     const auto late = f.write_booking(std::nullopt, at(2026, 3, 5, 23, 59));
@@ -184,7 +182,7 @@ TEST_CASE("a date as the upper bound of a timestamp range holds the whole of tha
     CHECK(f.read(range) == sorted({morning, late}));
 }
 
-TEST_CASE("a UTC timestamp bound is the instant itself, included", tags) {
+TEST_CASE("a UTC timestamp bound is the instant itself, included", "[repository][list_filter][range]") {
     fixture f;
     const auto early = f.write_booking(std::nullopt, at(2026, 3, 5, 9));
     const auto exact = f.write_booking(std::nullopt, at(2026, 3, 5, 10));
@@ -199,7 +197,7 @@ TEST_CASE("a UTC timestamp bound is the instant itself, included", tags) {
     CHECK(f.read(range) == sorted({early, exact}));
 }
 
-TEST_CASE("a range combines with another member by AND", tags) {
+TEST_CASE("a range combines with another member by AND", "[repository][list_filter][range]") {
     fixture f;
     const auto in = f.write_booking(ymd(2026, 3, 10), std::nullopt);
     const auto out = f.write_booking(ymd(2026, 4, 10), std::nullopt);
@@ -212,7 +210,7 @@ TEST_CASE("a range combines with another member by AND", tags) {
     static_cast<void>(out);
 }
 
-TEST_CASE("a bound the repository cannot read is refused", tags) {
+TEST_CASE("a bound the repository cannot read is refused", "[repository][list_filter][range]") {
     fixture f;
     f.write_booking(ymd(2026, 3, 10), std::nullopt);
 

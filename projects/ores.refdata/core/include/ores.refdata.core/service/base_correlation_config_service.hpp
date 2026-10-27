@@ -76,24 +76,31 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_base_correlation_configs_response
-    list_base_correlation_configs(const messaging::list_base_correlation_configs_request& request);
-    messaging::get_base_correlation_config_response
-    get_base_correlation_config(const messaging::get_base_correlation_config_request& request);
-    messaging::get_many_base_correlation_configs_response get_many_base_correlation_configs(
-        const messaging::get_many_base_correlation_configs_request& request);
-    messaging::put_base_correlation_config_response
-    put_base_correlation_config(const messaging::put_base_correlation_config_request& request);
-    messaging::put_many_base_correlation_configs_response put_many_base_correlation_configs(
-        const messaging::put_many_base_correlation_configs_request& request);
-    messaging::delete_base_correlation_config_response delete_base_correlation_config(
-        const messaging::delete_base_correlation_config_request& request);
-    messaging::delete_many_base_correlation_configs_response delete_many_base_correlation_configs(
-        const messaging::delete_many_base_correlation_configs_request& request);
-    messaging::list_base_correlation_config_versions_response list_base_correlation_config_versions(
-        const messaging::list_base_correlation_config_versions_request& request);
-    messaging::get_base_correlation_config_version_response get_base_correlation_config_version(
-        const messaging::get_base_correlation_config_version_request& request);
+    ::ores::refdata::messaging::list_base_correlation_configs_response
+    list_base_correlation_configs(
+        const ::ores::refdata::messaging::list_base_correlation_configs_request& request);
+    ::ores::refdata::messaging::get_base_correlation_config_response get_base_correlation_config(
+        const ::ores::refdata::messaging::get_base_correlation_config_request& request);
+    ::ores::refdata::messaging::get_many_base_correlation_configs_response
+    get_many_base_correlation_configs(
+        const ::ores::refdata::messaging::get_many_base_correlation_configs_request& request);
+    ::ores::refdata::messaging::put_base_correlation_config_response put_base_correlation_config(
+        const ::ores::refdata::messaging::put_base_correlation_config_request& request);
+    ::ores::refdata::messaging::put_many_base_correlation_configs_response
+    put_many_base_correlation_configs(
+        const ::ores::refdata::messaging::put_many_base_correlation_configs_request& request);
+    ::ores::refdata::messaging::delete_base_correlation_config_response
+    delete_base_correlation_config(
+        const ::ores::refdata::messaging::delete_base_correlation_config_request& request);
+    ::ores::refdata::messaging::delete_many_base_correlation_configs_response
+    delete_many_base_correlation_configs(
+        const ::ores::refdata::messaging::delete_many_base_correlation_configs_request& request);
+    ::ores::refdata::messaging::list_base_correlation_config_versions_response
+    list_base_correlation_config_versions(
+        const ::ores::refdata::messaging::list_base_correlation_config_versions_request& request);
+    ::ores::refdata::messaging::get_base_correlation_config_version_response
+    get_base_correlation_config_version(
+        const ::ores::refdata::messaging::get_base_correlation_config_version_request& request);
     /**@}*/
 
     /**
@@ -197,7 +204,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::base_correlation_config_change& change,
+    prepare_change(const ::ores::refdata::messaging::base_correlation_config_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::base_correlation_config& out);
 };

@@ -52,8 +52,6 @@ using ores::analytics::quant::service::tenor_resolution_engine;
 
 using namespace std::chrono;
 
-const std::string tags("[tenor_resolution_engine]");
-
 /// The two calendars every case indexes: a real one with holidays, and one
 /// that only knows about weekends.
 constexpr std::size_t target_calendar = 0;
@@ -102,7 +100,7 @@ tenor_resolution_request request_for(tenor_spec tenor,
 
 }
 
-TEST_CASE("a period tenor resolves from its spot anchor by its own unit", tags) {
+TEST_CASE("a period tenor resolves from its spot anchor by its own unit", "[tenor_resolution_engine]") {
     // 1M counts one month from the spot date, which is the anchor the
     // convention measures from.
     const auto requests = std::vector<tenor_resolution_request>{
@@ -121,7 +119,7 @@ TEST_CASE("a period tenor resolves from its spot anchor by its own unit", tags) 
     CHECK(results[0].resolved_date == year{2026} / February / 19);
 }
 
-TEST_CASE("the rule's business day convention decides where a weekend date lands", tags) {
+TEST_CASE("the rule's business day convention decides where a weekend date lands", "[tenor_resolution_engine]") {
     // One month from 31 January 2026 is 28 February, a Saturday. Following
     // takes it into March; ModifiedFollowing will not leave February and
     // takes it back to Friday the 27th instead.
@@ -148,7 +146,7 @@ TEST_CASE("the rule's business day convention decides where a weekend date lands
     CHECK(results[1].resolved_date == year{2026} / March / 2);
 }
 
-TEST_CASE("a holiday calendar is consulted and a weekends-only one is not", tags) {
+TEST_CASE("a holiday calendar is consulted and a weekends-only one is not", "[tenor_resolution_engine]") {
     // 1 May 2026 is a Friday and a TARGET holiday. A rule resolving to that
     // day moves to the Monday under TARGET, and stays put on a calendar that
     // only knows about weekends.
@@ -176,7 +174,7 @@ TEST_CASE("a holiday calendar is consulted and a weekends-only one is not", tags
     CHECK(results[1].resolved_date == year{2026} / May / 1);
 }
 
-TEST_CASE("a special tenor takes its duration from the rule rather than from itself", tags) {
+TEST_CASE("a special tenor takes its duration from the rule rather than from itself", "[tenor_resolution_engine]") {
     // O/N has no period of its own: a one-day offset from the horizon, which
     // a day-counted walk spends as a business day.
     const auto requests = std::vector<tenor_resolution_request>{
@@ -194,7 +192,7 @@ TEST_CASE("a special tenor takes its duration from the rule rather than from its
     CHECK(results[0].resolved_date == year{2026} / January / 16);
 }
 
-TEST_CASE("the same special tenor resolves differently under different rules", tags) {
+TEST_CASE("the same special tenor resolves differently under different rules", "[tenor_resolution_engine]") {
     // Spot/forward O/N is tomorrow; the near leg of an FX swap is today. The
     // same code, a different date, purely because the rules differ.
     const auto horizon = year{2026} / January / 15;
@@ -217,7 +215,7 @@ TEST_CASE("the same special tenor resolves differently under different rules", t
     CHECK(results[1].resolved_date == year{2026} / January / 15);
 }
 
-TEST_CASE("a tenor with no resolution row under the convention is refused, not thrown", tags) {
+TEST_CASE("a tenor with no resolution row under the convention is refused, not thrown", "[tenor_resolution_engine]") {
     const auto requests = std::vector<tenor_resolution_request>{
         request_for(period_tenor(period_unit::month, 1), std::nullopt, year{2026} / January / 15),
     };
@@ -228,7 +226,7 @@ TEST_CASE("a tenor with no resolution row under the convention is refused, not t
     CHECK(results[0].status == resolution_status::tenor_not_in_convention);
 }
 
-TEST_CASE("a period tenor that states no period of its own is refused", tags) {
+TEST_CASE("a period tenor that states no period of its own is refused", "[tenor_resolution_engine]") {
     const auto requests = std::vector<tenor_resolution_request>{
         request_for(period_tenor(period_unit::none, 0),
                     tenor_rule{.anchor = tenor_anchor::today},
@@ -241,7 +239,7 @@ TEST_CASE("a period tenor that states no period of its own is refused", tags) {
     CHECK(results[0].status == resolution_status::period_tenor_without_period);
 }
 
-TEST_CASE("a special tenor whose rule states no offset is refused", tags) {
+TEST_CASE("a special tenor whose rule states no offset is refused", "[tenor_resolution_engine]") {
     // A SPECIAL tenor has no duration of its own, so a rule without an offset
     // leaves it with none at all.
     const auto requests = std::vector<tenor_resolution_request>{
@@ -255,7 +253,7 @@ TEST_CASE("a special tenor whose rule states no offset is refused", tags) {
     CHECK(results[0].status == resolution_status::special_tenor_without_offset);
 }
 
-TEST_CASE("an anchor whose meaning is unsettled is refused rather than guessed", tags) {
+TEST_CASE("an anchor whose meaning is unsettled is refused rather than guessed", "[tenor_resolution_engine]") {
     const auto horizon = year{2026} / January / 15;
 
     const auto requests = std::vector<tenor_resolution_request>{
@@ -276,7 +274,7 @@ TEST_CASE("an anchor whose meaning is unsettled is refused rather than guessed",
         CHECK(result.status == resolution_status::unsupported_anchor);
 }
 
-TEST_CASE("spot is an input and is never derived from the horizon", tags) {
+TEST_CASE("spot is an input and is never derived from the horizon", "[tenor_resolution_engine]") {
     const auto requests = std::vector<tenor_resolution_request>{
         request_for(period_tenor(period_unit::month, 1),
                     tenor_rule{.anchor = tenor_anchor::spot},
@@ -289,7 +287,7 @@ TEST_CASE("spot is an input and is never derived from the horizon", tags) {
     CHECK(results[0].status == resolution_status::missing_spot_date);
 }
 
-TEST_CASE("a calendar the set was not built with is reported, not assumed open", tags) {
+TEST_CASE("a calendar the set was not built with is reported, not assumed open", "[tenor_resolution_engine]") {
     const auto requests = std::vector<tenor_resolution_request>{
         request_for(period_tenor(period_unit::month, 1),
                     tenor_rule{.anchor = tenor_anchor::today},
@@ -303,7 +301,7 @@ TEST_CASE("a calendar the set was not built with is reported, not assumed open",
     CHECK(results[0].status == resolution_status::calendar_index_out_of_range);
 }
 
-TEST_CASE("the cds quarterly roll walks to the twentieth of a quarter month", tags) {
+TEST_CASE("the cds quarterly roll walks to the twentieth of a quarter month", "[tenor_resolution_engine]") {
     // CREDIT_CDS_IMM: a one-year tenor from spot, then one step along the
     // closed-form quarterly roll. 2 January 2026 plus a year is 2 January
     // 2027, whose first roll date is 20 March 2027 -- a Saturday, which
@@ -327,7 +325,7 @@ TEST_CASE("the cds quarterly roll walks to the twentieth of a quarter month", ta
     CHECK(results[0].resolved_date == year{2027} / March / 22);
 }
 
-TEST_CASE("a cds roll that lands on a business day is left where the schedule put it", tags) {
+TEST_CASE("a cds roll that lands on a business day is left where the schedule put it", "[tenor_resolution_engine]") {
     // 20 March 2026 is a Friday, so the first roll date from a walk start
     // inside the first quarter is the 20th itself.
     const auto requests = std::vector<tenor_resolution_request>{
@@ -348,7 +346,7 @@ TEST_CASE("a cds roll that lands on a business day is left where the schedule pu
     CHECK(results[0].resolved_date == year{2026} / March / 20);
 }
 
-TEST_CASE("a schedule step that names no axis resolves on the calendar axis", tags) {
+TEST_CASE("a schedule step that names no axis resolves on the calendar axis", "[tenor_resolution_engine]") {
     // A membership-only row: the tenor belongs to the convention but walks no
     // schedule, so it resolves exactly as ANCHOR_OFFSET resolves it.
     const auto requests = std::vector<tenor_resolution_request>{
@@ -366,7 +364,7 @@ TEST_CASE("a schedule step that names no axis resolves on the calendar axis", ta
     CHECK(results[0].resolved_date == year{2026} / February / 16);
 }
 
-TEST_CASE("a schedule step that names exactly one of axis and step count is refused", tags) {
+TEST_CASE("a schedule step that names exactly one of axis and step count is refused", "[tenor_resolution_engine]") {
     const auto horizon = year{2026} / January / 15;
 
     const auto requests = std::vector<tenor_resolution_request>{
@@ -398,7 +396,7 @@ TEST_CASE("a schedule step that names exactly one of axis and step count is refu
         CHECK(result.status == resolution_status::inconsistent_schedule_declaration);
 }
 
-TEST_CASE("an event lookup schedule walks the dates the caller supplies", tags) {
+TEST_CASE("an event lookup schedule walks the dates the caller supplies", "[tenor_resolution_engine]") {
     // A central bank's meeting diary: the row asks for the second meeting on
     // or after the walk start, which is 18 March 2026.
     const auto schedule = std::vector<schedule_date>{
@@ -425,7 +423,7 @@ TEST_CASE("an event lookup schedule walks the dates the caller supplies", tags) 
     CHECK(results[0].resolved_date == year{2026} / March / 18);
 }
 
-TEST_CASE("a schedule step counts the walk start's own date when the schedule holds it", tags) {
+TEST_CASE("a schedule step counts the walk start's own date when the schedule holds it", "[tenor_resolution_engine]") {
     const auto schedule = std::vector<schedule_date>{
         {0, year{2026} / January / 15},
         {0, year{2026} / February / 11},
@@ -448,7 +446,7 @@ TEST_CASE("a schedule step counts the walk start's own date when the schedule ho
     CHECK(results[0].resolved_date == year{2026} / February / 11);
 }
 
-TEST_CASE("the schedule walk starts from the unadjusted anchor, not from the rolled one", tags) {
+TEST_CASE("the schedule walk starts from the unadjusted anchor, not from the rolled one", "[tenor_resolution_engine]") {
     // The schedule holds Saturday 3 January 2026, which only an unadjusted
     // walk start can reach: rolling first would step past it to the 7th.
     const auto schedule = std::vector<schedule_date>{
@@ -473,7 +471,7 @@ TEST_CASE("the schedule walk starts from the unadjusted anchor, not from the rol
     CHECK(results[0].resolved_date == year{2026} / January / 5);
 }
 
-TEST_CASE("a schedule with no dates at all is reported as such", tags) {
+TEST_CASE("a schedule with no dates at all is reported as such", "[tenor_resolution_engine]") {
     const auto requests = std::vector<tenor_resolution_request>{
         request_for(special_tenor(),
                     tenor_rule{.anchor = tenor_anchor::today,
@@ -490,7 +488,7 @@ TEST_CASE("a schedule with no dates at all is reported as such", tags) {
     CHECK(results[0].status == resolution_status::schedule_without_dates);
 }
 
-TEST_CASE("a schedule with too few remaining dates is reported as exhausted", tags) {
+TEST_CASE("a schedule with too few remaining dates is reported as exhausted", "[tenor_resolution_engine]") {
     const auto schedule = std::vector<schedule_date>{
         {0, year{2026} / January / 20},
     };
@@ -512,7 +510,7 @@ TEST_CASE("a schedule with too few remaining dates is reported as exhausted", ta
     CHECK(results[0].status == resolution_status::schedule_exhausted);
 }
 
-TEST_CASE("schedule dates the caller left out of order are reported, not mis-stepped", tags) {
+TEST_CASE("schedule dates the caller left out of order are reported, not mis-stepped", "[tenor_resolution_engine]") {
     // A walk reads forward from its start, so rows out of order answer with a
     // different date than the one asked for. That has to be an error, not a
     // quiet wrong answer.
@@ -538,7 +536,7 @@ TEST_CASE("schedule dates the caller left out of order are reported, not mis-ste
     CHECK(results[0].status == resolution_status::schedule_dates_not_ordered);
 }
 
-TEST_CASE("a batch answers every row in order, and one bad row does not spoil the rest", tags) {
+TEST_CASE("a batch answers every row in order, and one bad row does not spoil the rest", "[tenor_resolution_engine]") {
     const auto requests = std::vector<tenor_resolution_request>{
         request_for(period_tenor(period_unit::month, 1),
                     tenor_rule{.anchor = tenor_anchor::spot},
@@ -567,7 +565,7 @@ TEST_CASE("a batch answers every row in order, and one bad row does not spoil th
     CHECK(results[3].status == resolution_status::tenor_not_in_convention);
 }
 
-TEST_CASE("an unadjusted rule leaves a weekend date exactly where the period put it", tags) {
+TEST_CASE("an unadjusted rule leaves a weekend date exactly where the period put it", "[tenor_resolution_engine]") {
     // The persisted default is ModifiedFollowing, but a rule may say
     // Unadjusted, and then the answer is a Sunday.
     const auto requests = std::vector<tenor_resolution_request>{
@@ -583,7 +581,7 @@ TEST_CASE("an unadjusted rule leaves a weekend date exactly where the period put
     CHECK(results[0].resolved_date == year{2026} / February / 15);
 }
 
-TEST_CASE("end of month on the rule snaps a month counted period to the month's end", tags) {
+TEST_CASE("end of month on the rule snaps a month counted period to the month's end", "[tenor_resolution_engine]") {
     // 31 January 2026 is the last business day of its month, so a one-month
     // period snaps to the end of February and then back to the Friday,
     // because the snap carries its own Preceding and the 28th is a Saturday.
@@ -599,14 +597,14 @@ TEST_CASE("end of month on the rule snaps a month counted period to the month's 
     CHECK(results[0].resolved_date == year{2026} / February / 27);
 }
 
-TEST_CASE("an empty batch is an empty answer rather than an error", tags) {
+TEST_CASE("an empty batch is an empty answer rather than an error", "[tenor_resolution_engine]") {
     const auto results = tenor_resolution_engine::resolve_batch(
         std::span<const tenor_resolution_request>{}, make_calendars());
 
     CHECK(results.empty());
 }
 
-TEST_CASE("an answer reports the date the roll rule moved", tags) {
+TEST_CASE("an answer reports the date the roll rule moved", "[tenor_resolution_engine]") {
     // One month from 31 January 2026 is 28 February, a Saturday, which
     // ModifiedFollowing takes back to the 27th. Both dates are the answer's,
     // because a screen that shows only the last one cannot show what moved.
@@ -625,7 +623,7 @@ TEST_CASE("an answer reports the date the roll rule moved", tags) {
     CHECK(results[0].resolved_date == year{2026} / February / 27);
 }
 
-TEST_CASE("a business day walk has no pre-roll date, so it reports the one date twice", tags) {
+TEST_CASE("a business day walk has no pre-roll date, so it reports the one date twice", "[tenor_resolution_engine]") {
     // A day-counted period is walked onto a business day, so the convention
     // never sees it. Reporting a different unadjusted date here would be
     // reporting a date the arithmetic never produced.
@@ -643,7 +641,7 @@ TEST_CASE("a business day walk has no pre-roll date, so it reports the one date 
     CHECK(results[0].resolved_date == year{2026} / January / 16);
 }
 
-TEST_CASE("a schedule step reports the date the schedule gave, before the roll", tags) {
+TEST_CASE("a schedule step reports the date the schedule gave, before the roll", "[tenor_resolution_engine]") {
     // The CDS roll date is stated as the 20th, unadjusted, and the convention
     // moves it: 20 March 2027 is a Saturday and ModifiedFollowing takes it to
     // the Monday. Both dates travel, because the schedule's own answer and the

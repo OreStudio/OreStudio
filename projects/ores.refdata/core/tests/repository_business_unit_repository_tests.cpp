@@ -31,6 +31,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -41,9 +42,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository]");
 
 // business_unit.party_id is a soft FK to ores_refdata_parties_tbl, and reads
 // are further restricted by party-isolation RLS (party_id must be in the
@@ -78,7 +76,7 @@ using ores::refdata::repository::business_unit_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_business_unit", tags) {
+TEST_CASE("write_single_business_unit", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -98,7 +96,7 @@ TEST_CASE("write_single_business_unit", tags) {
     CHECK(rows[0].unit_name == bu.unit_name);
 }
 
-TEST_CASE("write_multiple_business_units", tags) {
+TEST_CASE("write_multiple_business_units", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -123,7 +121,7 @@ TEST_CASE("write_multiple_business_units", tags) {
     }
 }
 
-TEST_CASE("read_latest_business_units", tags) {
+TEST_CASE("read_latest_business_units", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -150,7 +148,7 @@ TEST_CASE("read_latest_business_units", tags) {
     }
 }
 
-TEST_CASE("read_latest_business_units_paginated", tags) {
+TEST_CASE("read_latest_business_units_paginated", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -177,7 +175,7 @@ TEST_CASE("read_latest_business_units_paginated", tags) {
     }
 }
 
-TEST_CASE("get_total_business_unit_count", tags) {
+TEST_CASE("get_total_business_unit_count", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -198,7 +196,7 @@ TEST_CASE("get_total_business_unit_count", tags) {
     CHECK(count >= written.size());
 }
 
-TEST_CASE("read_latest_business_unit_by_id", tags) {
+TEST_CASE("read_latest_business_unit_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -225,7 +223,7 @@ TEST_CASE("read_latest_business_unit_by_id", tags) {
     CHECK(read[0].unit_name == original_name + " v2");
 }
 
-TEST_CASE("read_all_business_unit_versions", tags) {
+TEST_CASE("read_all_business_unit_versions", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -258,7 +256,7 @@ TEST_CASE("read_all_business_unit_versions", tags) {
     CHECK(v2->unit_name == original_name + " v2");
 }
 
-TEST_CASE("read_business_unit_at_version", tags) {
+TEST_CASE("read_business_unit_at_version", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -286,7 +284,7 @@ TEST_CASE("read_business_unit_at_version", tags) {
     CHECK(v1->version == 1);
 }
 
-TEST_CASE("remove_business_unit", tags) {
+TEST_CASE("remove_business_unit", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -325,7 +323,7 @@ TEST_CASE("remove_business_unit", tags) {
     CHECK(keeper_rows[0].unit_name == keeper.unit_name);
 }
 
-TEST_CASE("remove_multiple_business_units", tags) {
+TEST_CASE("remove_multiple_business_units", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

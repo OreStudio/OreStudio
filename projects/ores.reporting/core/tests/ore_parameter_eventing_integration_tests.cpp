@@ -40,6 +40,7 @@
 #include "ores.reporting.api/messaging/ore_parameter_protocol.hpp"
 #include "ores.reporting.core/repository/ore_parameter_repository.hpp"
 #include "ores.reporting.core/service/ore_parameter_service.hpp"
+#include "test_suite.hpp"
 // Soft-FK parent seeding (ores_reporting_ore_parameter_value_domains_tbl): the parent may live in
 // another component, so its own component names the headers. A system-tenant parent is read rather
 // than generated, so it needs no generator.
@@ -64,13 +65,6 @@
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
-namespace {
-
-const std::string_view test_suite("reporting.tests");
-const std::string tags("[eventing][integration]");
-
-
-}
 
 using namespace ores::reporting::generators;
 using ores::reporting::domain::ore_parameter;
@@ -78,7 +72,7 @@ using ores::reporting::repository::ore_parameter_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_ore_parameter_publishes_an_event", tags) {
+TEST_CASE("write_ore_parameter_publishes_an_event", "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

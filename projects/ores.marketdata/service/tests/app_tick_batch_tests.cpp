@@ -31,8 +31,6 @@
 
 namespace {
 
-const std::string tags("[app][tick_batch]");
-
 using ores::marketdata::service::app::batch_handoff;
 using ores::marketdata::service::app::drop_oldest_queue;
 using ores::marketdata::messaging::market_tick;
@@ -44,7 +42,7 @@ constexpr auto no_wait = std::chrono::milliseconds(0);
 
 }
 
-TEST_CASE("a_full_queue_drops_its_oldest_entry_and_counts_the_drop", tags) {
+TEST_CASE("a_full_queue_drops_its_oldest_entry_and_counts_the_drop", "[app][tick_batch]") {
     drop_oldest_queue<int> queue(3);
     for (int i = 1; i <= 5; ++i)
         queue.push(i);
@@ -56,7 +54,7 @@ TEST_CASE("a_full_queue_drops_its_oldest_entry_and_counts_the_drop", tags) {
     CHECK(queue.size() == 0);
 }
 
-TEST_CASE("a_queue_gives_up_at_most_the_asked_number_of_entries_oldest_first", tags) {
+TEST_CASE("a_queue_gives_up_at_most_the_asked_number_of_entries_oldest_first", "[app][tick_batch]") {
     drop_oldest_queue<int> queue(10);
     for (int i = 1; i <= 6; ++i)
         queue.push(i);
@@ -70,14 +68,14 @@ TEST_CASE("a_queue_gives_up_at_most_the_asked_number_of_entries_oldest_first", t
     CHECK(rest == std::vector<int>{5, 6});
 }
 
-TEST_CASE("an_empty_queue_returns_nothing_when_the_wait_ends", tags) {
+TEST_CASE("an_empty_queue_returns_nothing_when_the_wait_ends", "[app][tick_batch]") {
     drop_oldest_queue<int> queue(3);
     std::vector<int> out;
     CHECK(queue.take_all(out, 10, std::chrono::milliseconds(20)) == 0);
     CHECK(out.empty());
 }
 
-TEST_CASE("a_push_wakes_a_waiting_worker", tags) {
+TEST_CASE("a_push_wakes_a_waiting_worker", "[app][tick_batch]") {
     drop_oldest_queue<int> queue(3);
     std::vector<int> out;
     std::thread worker([&] { queue.take_all(out, 10, std::chrono::seconds(10)); });
@@ -87,7 +85,7 @@ TEST_CASE("a_push_wakes_a_waiting_worker", tags) {
     CHECK(out == std::vector<int>{7});
 }
 
-TEST_CASE("closing_a_queue_wakes_a_waiting_worker_with_nothing", tags) {
+TEST_CASE("closing_a_queue_wakes_a_waiting_worker_with_nothing", "[app][tick_batch]") {
     drop_oldest_queue<int> queue(3);
     std::vector<int> out;
     std::thread worker([&] { queue.take_all(out, 10, std::chrono::seconds(10)); });
@@ -97,7 +95,7 @@ TEST_CASE("closing_a_queue_wakes_a_waiting_worker_with_nothing", tags) {
     CHECK(out.empty());
 }
 
-TEST_CASE("a_tick_older_than_the_limit_is_removed_and_the_others_keep_their_order", tags) {
+TEST_CASE("a_tick_older_than_the_limit_is_removed_and_the_others_keep_their_order", "[app][tick_batch]") {
     using namespace std::chrono;
     const auto now = system_clock::now();
     const auto tick_at = [&](milliseconds age, const std::string& value) {
@@ -121,13 +119,13 @@ TEST_CASE("a_tick_older_than_the_limit_is_removed_and_the_others_keep_their_orde
     CHECK(ticks[2].value == "at_the_limit");
 }
 
-TEST_CASE("a_store_that_is_up_may_be_tried_at_any_time", tags) {
+TEST_CASE("a_store_that_is_up_may_be_tried_at_any_time", "[app][tick_batch]") {
     const store_backoff backoff;
     CHECK_FALSE(backoff.down());
     CHECK(backoff.may_try(store_backoff::clock::now()));
 }
 
-TEST_CASE("a_failed_store_is_left_alone_until_its_wait_ends", tags) {
+TEST_CASE("a_failed_store_is_left_alone_until_its_wait_ends", "[app][tick_batch]") {
     using namespace std::chrono;
     store_backoff backoff(seconds(1), seconds(30));
     const auto t0 = store_backoff::clock::now();
@@ -138,7 +136,7 @@ TEST_CASE("a_failed_store_is_left_alone_until_its_wait_ends", tags) {
     CHECK(backoff.may_try(t0 + seconds(1)));
 }
 
-TEST_CASE("the_wait_doubles_at_each_failure_up_to_the_longest_wait", tags) {
+TEST_CASE("the_wait_doubles_at_each_failure_up_to_the_longest_wait", "[app][tick_batch]") {
     using namespace std::chrono;
     store_backoff backoff(seconds(1), seconds(4));
     auto now = store_backoff::clock::now();
@@ -160,7 +158,7 @@ TEST_CASE("the_wait_doubles_at_each_failure_up_to_the_longest_wait", tags) {
     CHECK(backoff.may_try(now + seconds(4)));
 }
 
-TEST_CASE("a_success_ends_the_outage_and_restores_the_first_wait", tags) {
+TEST_CASE("a_success_ends_the_outage_and_restores_the_first_wait", "[app][tick_batch]") {
     using namespace std::chrono;
     store_backoff backoff(seconds(1), seconds(30));
     const auto t0 = store_backoff::clock::now();
@@ -175,24 +173,24 @@ TEST_CASE("a_success_ends_the_outage_and_restores_the_first_wait", tags) {
     CHECK(backoff.may_try(t0 + seconds(11)));
 }
 
-TEST_CASE("a_fast_batch_grows_the_next_one_and_a_slow_batch_shrinks_it", tags) {
+TEST_CASE("a_fast_batch_grows_the_next_one_and_a_slow_batch_shrinks_it", "[app][tick_batch]") {
     // 500 ticks in 250 ms is 2,000 ticks in a second.
     CHECK(next_batch_ticks(500, 250, 1000, 50, 20000) == 2000);
     // 1,000 ticks in 4,000 ms is 250 ticks in a second.
     CHECK(next_batch_ticks(1000, 4000, 1000, 50, 20000) == 250);
 }
 
-TEST_CASE("the_next_batch_stays_between_the_lowest_and_the_highest_size", tags) {
+TEST_CASE("the_next_batch_stays_between_the_lowest_and_the_highest_size", "[app][tick_batch]") {
     CHECK(next_batch_ticks(1, 10, 1000, 50, 20000) == 100);
     CHECK(next_batch_ticks(1, 1000, 1000, 50, 20000) == 50);
     CHECK(next_batch_ticks(5000, 1, 1000, 50, 20000) == 20000);
 }
 
-TEST_CASE("a_batch_that_took_no_time_does_not_divide_by_zero", tags) {
+TEST_CASE("a_batch_that_took_no_time_does_not_divide_by_zero", "[app][tick_batch]") {
     CHECK(next_batch_ticks(100, 0, 1000, 50, 20000) == 20000);
 }
 
-TEST_CASE("a_handoff_gives_the_batches_back_in_the_order_they_were_pushed", tags) {
+TEST_CASE("a_handoff_gives_the_batches_back_in_the_order_they_were_pushed", "[app][tick_batch]") {
     batch_handoff<int> handoff(2);
     REQUIRE(handoff.push(1));
     REQUIRE(handoff.push(2));
@@ -202,7 +200,7 @@ TEST_CASE("a_handoff_gives_the_batches_back_in_the_order_they_were_pushed", tags
     CHECK(handoff.pop() == 3);
 }
 
-TEST_CASE("a_push_to_a_full_handoff_waits_until_a_batch_is_taken", tags) {
+TEST_CASE("a_push_to_a_full_handoff_waits_until_a_batch_is_taken", "[app][tick_batch]") {
     batch_handoff<int> handoff(1);
     REQUIRE(handoff.push(1));
 
@@ -220,7 +218,7 @@ TEST_CASE("a_push_to_a_full_handoff_waits_until_a_batch_is_taken", tags) {
     CHECK(handoff.pop() == 2);
 }
 
-TEST_CASE("closing_a_handoff_wakes_a_waiting_pop_with_nothing", tags) {
+TEST_CASE("closing_a_handoff_wakes_a_waiting_pop_with_nothing", "[app][tick_batch]") {
     batch_handoff<int> handoff(1);
     std::optional<int> taken = 0;
     std::thread consumer([&] { taken = handoff.pop(); });
@@ -230,7 +228,7 @@ TEST_CASE("closing_a_handoff_wakes_a_waiting_pop_with_nothing", tags) {
     CHECK_FALSE(taken.has_value());
 }
 
-TEST_CASE("closing_a_handoff_wakes_a_waiting_push_and_drops_its_batch", tags) {
+TEST_CASE("closing_a_handoff_wakes_a_waiting_push_and_drops_its_batch", "[app][tick_batch]") {
     batch_handoff<int> handoff(1);
     REQUIRE(handoff.push(1));
     bool accepted = true;
@@ -243,7 +241,7 @@ TEST_CASE("closing_a_handoff_wakes_a_waiting_push_and_drops_its_batch", tags) {
     CHECK_FALSE(handoff.pop().has_value());
 }
 
-TEST_CASE("a_closed_handoff_keeps_what_is_queued_and_refuses_more", tags) {
+TEST_CASE("a_closed_handoff_keeps_what_is_queued_and_refuses_more", "[app][tick_batch]") {
     batch_handoff<int> handoff(3);
     REQUIRE(handoff.push(1));
     REQUIRE(handoff.push(2));

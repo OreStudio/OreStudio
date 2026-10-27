@@ -41,8 +41,6 @@
 
 namespace {
 
-const std::string tags("[service][app_version]");
-
 using ores::compute::messaging::put_app_version_request;
 using ores::compute::service::app_version_service;
 using ores::testing::database_helper;
@@ -77,7 +75,7 @@ outcome write(app_version_service& service, put_app_version_request r, std::uint
 
 } // namespace
 
-TEST_CASE("two versions that share a wrapper version republish each on its own row", tags) {
+TEST_CASE("two versions that share a wrapper version republish each on its own row", "[service][app_version]") {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
     auto app = ores::compute::generators::generate_synthetic_app(gen_ctx);
@@ -98,7 +96,7 @@ TEST_CASE("two versions that share a wrapper version republish each on its own r
           outcome::ok);
 }
 
-TEST_CASE("a stale version is still refused for the row it names", tags) {
+TEST_CASE("a stale version is still refused for the row it names", "[service][app_version]") {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
     auto app = ores::compute::generators::generate_synthetic_app(gen_ctx);
@@ -113,7 +111,7 @@ TEST_CASE("a stale version is still refused for the row it names", tags) {
     CHECK(write(service, request_for(id, app.id, "1.8.16.0", "stale"), 1) == outcome::conflict);
 }
 
-TEST_CASE("the versions of an app are listed without the versions of another app", tags) {
+TEST_CASE("the versions of an app are listed without the versions of another app", "[service][app_version]") {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
     auto first_app = ores::compute::generators::generate_synthetic_app(gen_ctx);
@@ -145,7 +143,7 @@ TEST_CASE("the versions of an app are listed without the versions of another app
 }
 
 TEST_CASE("the list of the versions of an app refuses a subtree and an order it cannot serve",
-          tags) {
+          "[service][app_version]") {
     database_helper h;
     app_version_service service(h.context());
 

@@ -44,6 +44,7 @@
 #include "ores.workflow.api/messaging/workflow_instance_protocol.hpp"
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include "ores.workflow.core/service/workflow_instance_service.hpp"
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -59,13 +60,6 @@
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
-namespace {
-
-const std::string_view test_suite("workflow.tests");
-const std::string tags("[eventing][integration]");
-
-
-}
 
 using namespace ores::workflow::generators;
 using ores::workflow::domain::workflow_instance;
@@ -73,7 +67,7 @@ using ores::workflow::repository::workflow_instance_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_workflow_instance_publishes_an_event", tags) {
+TEST_CASE("write_workflow_instance_publishes_an_event", "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

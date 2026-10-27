@@ -36,7 +36,6 @@ using ores::utility::uuid::tenant_id;
 
 namespace {
 
-const std::string tags("[service][tenant_session]");
 const std::string test_secret("super-secret-key-for-testing-purposes-only-32bytes!");
 
 auto signer() {
@@ -71,7 +70,7 @@ std::vector<std::string> events_for(scoped_database_helper& h,
 
 }
 
-TEST_CASE("an_administrator_enters_a_tenant_reading_only_as_its_system_party", tags) {
+TEST_CASE("an_administrator_enters_a_tenant_reading_only_as_its_system_party", "[service][tenant_session]") {
     scoped_database_helper h;
     auto sign = signer();
     tenant_session_service svc(h.context(), sign, std::chrono::seconds{600});
@@ -96,7 +95,7 @@ TEST_CASE("an_administrator_enters_a_tenant_reading_only_as_its_system_party", t
     CHECK(events_for(h, caller.account_id) == std::vector<std::string>{"tenant_entered"});
 }
 
-TEST_CASE("the_tenant_session_carries_only_the_reads_the_administrator_holds", tags) {
+TEST_CASE("the_tenant_session_carries_only_the_reads_the_administrator_holds", "[service][tenant_session]") {
     const std::vector<std::string> catalogue{"iam::accounts:read",
                                              "iam::accounts:write",
                                              "refdata::parties:delete",
@@ -110,7 +109,7 @@ TEST_CASE("the_tenant_session_carries_only_the_reads_the_administrator_holds", t
     CHECK(tenant_session_service::read_only({"iam::accounts:write"}, catalogue).empty());
 }
 
-TEST_CASE("an_entry_is_refused_for_each_rule_it_breaks", tags) {
+TEST_CASE("an_entry_is_refused_for_each_rule_it_breaks", "[service][tenant_session]") {
     scoped_database_helper h;
     tenant_session_service svc(h.context(), signer(), std::chrono::seconds{600});
     const auto target = enter_tenant_request{.tenant_id = h.tenant_id().to_string()};
@@ -147,7 +146,7 @@ TEST_CASE("an_entry_is_refused_for_each_rule_it_breaks", tags) {
                        tenant_session_refusal::no_read_permissions));
 }
 
-TEST_CASE("leaving_records_the_exit_and_is_refused_outside_a_tenant", tags) {
+TEST_CASE("leaving_records_the_exit_and_is_refused_outside_a_tenant", "[service][tenant_session]") {
     scoped_database_helper h;
     tenant_session_service svc(h.context(), signer(), std::chrono::seconds{600});
 

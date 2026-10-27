@@ -23,23 +23,17 @@
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <set>
 
-namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[generators]");
-
-}
-
 using namespace ores::refdata::generators;
 using namespace ores::logging;
 using ores::utility::generation::generation_context;
 
-TEST_CASE("generate_single_currency", tags) {
+TEST_CASE("generate_single_currency", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -53,7 +47,7 @@ TEST_CASE("generate_single_currency", tags) {
     CHECK(currency.recorded_at != std::chrono::system_clock::time_point{});
 }
 
-TEST_CASE("generate_multiple_currencies", tags) {
+TEST_CASE("generate_multiple_currencies", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -72,7 +66,7 @@ TEST_CASE("generate_multiple_currencies", tags) {
     CHECK(codes.size() == currencies.size());
 }
 
-TEST_CASE("generate_unique_currencies", tags) {
+TEST_CASE("generate_unique_currencies", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -92,7 +86,7 @@ TEST_CASE("generate_unique_currencies", tags) {
     CHECK(codes.size() == currencies.size());
 }
 
-TEST_CASE("generate_unicode_currencies", tags) {
+TEST_CASE("generate_unicode_currencies", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -113,7 +107,7 @@ TEST_CASE("generate_unicode_currencies", tags) {
     CHECK(symbols.count("₿") == 1); // BTC-like
 }
 
-TEST_CASE("generate_fictional_currencies_returns_all_when_no_count", tags) {
+TEST_CASE("generate_fictional_currencies_returns_all_when_no_count", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -135,7 +129,7 @@ TEST_CASE("generate_fictional_currencies_returns_all_when_no_count", tags) {
     CHECK(last->numeric_code == "10050");
 }
 
-TEST_CASE("generate_fictional_currencies_returns_requested_count", tags) {
+TEST_CASE("generate_fictional_currencies_returns_requested_count", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -149,7 +143,7 @@ TEST_CASE("generate_fictional_currencies_returns_requested_count", tags) {
     CHECK(currencies[4].name == "Calandrian Crown");
 }
 
-TEST_CASE("generate_fictional_currencies_returns_all_when_count_exceeds_available", tags) {
+TEST_CASE("generate_fictional_currencies_returns_all_when_count_exceeds_available", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -165,7 +159,7 @@ TEST_CASE("generate_fictional_currencies_returns_all_when_count_exceeds_availabl
     CHECK(last->numeric_code == "10050");
 }
 
-TEST_CASE("generate_fictional_currencies_has_unique_iso_codes", tags) {
+TEST_CASE("generate_fictional_currencies_has_unique_iso_codes", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -180,7 +174,7 @@ TEST_CASE("generate_fictional_currencies_has_unique_iso_codes", tags) {
     CHECK(codes.count("XZE") == 1); // Zephyrian Zephyr
 }
 
-TEST_CASE("generate_fictional_currencies_has_unique_numeric_codes", tags) {
+TEST_CASE("generate_fictional_currencies_has_unique_numeric_codes", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -195,7 +189,7 @@ TEST_CASE("generate_fictional_currencies_has_unique_numeric_codes", tags) {
     CHECK(codes.count("10050") == 1);
 }
 
-TEST_CASE("generate_fictional_currencies_has_expected_first_currency", tags) {
+TEST_CASE("generate_fictional_currencies_has_expected_first_currency", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -209,7 +203,7 @@ TEST_CASE("generate_fictional_currencies_has_expected_first_currency", tags) {
     CHECK(currencies[0].recorded_at != std::chrono::system_clock::time_point{});
 }
 
-TEST_CASE("generate_fictional_currencies_contains_known_currencies", tags) {
+TEST_CASE("generate_fictional_currencies_contains_known_currencies", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 
@@ -225,7 +219,7 @@ TEST_CASE("generate_fictional_currencies_contains_known_currencies", tags) {
     CHECK(codes.count("XKR") == 1); // Krynnish Krynn
 }
 
-TEST_CASE("generate_random_fictional_currency_returns_known_currency", tags) {
+TEST_CASE("generate_random_fictional_currency_returns_known_currency", "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 

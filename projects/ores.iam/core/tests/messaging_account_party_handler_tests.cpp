@@ -28,6 +28,7 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -39,9 +40,6 @@ using ores::testing::database_helper;
 using ores::refdata::repository::party_repository;
 
 namespace {
-
-const std::string_view test_suite("ores.iam.tests.account_party_handler");
-const std::string tags("[messaging]");
 
 boost::uuids::uuid find_system_party_id(party_repository& repo,
                                         ores::database::context ctx,
@@ -62,7 +60,7 @@ boost::uuids::uuid find_system_party_id(party_repository& repo,
  * current party from the context, instead of leaving it as requested.
  * stamp_account_party() must preserve it.
  */
-TEST_CASE("stamp_account_party_preserves_target_party_id", tags) {
+TEST_CASE("stamp_account_party_preserves_target_party_id", "[messaging]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -109,7 +107,7 @@ TEST_CASE("stamp_account_party_preserves_target_party_id", tags) {
  * name states the gap rather than a half-read row.
  */
 
-TEST_CASE("a_members_party_is_named_from_the_party_behind_the_association", tags) {
+TEST_CASE("a_members_party_is_named_from_the_party_behind_the_association", "[messaging]") {
     auto lg(make_logger(test_suite));
 
     const auto party_id = boost::uuids::random_generator()();
@@ -129,7 +127,7 @@ TEST_CASE("a_members_party_is_named_from_the_party_behind_the_association", tags
     CHECK(summary.business_center_code == "GBLO");
 }
 
-TEST_CASE("a_party_the_cache_cannot_name_states_the_gap_and_invents_nothing", tags) {
+TEST_CASE("a_party_the_cache_cannot_name_states_the_gap_and_invents_nothing", "[messaging]") {
     auto lg(make_logger(test_suite));
 
     const auto party_id = boost::uuids::random_generator()();

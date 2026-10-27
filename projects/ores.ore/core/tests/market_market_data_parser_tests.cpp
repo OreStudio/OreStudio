@@ -26,8 +26,6 @@
 
 namespace {
 
-const std::string tags("[ore][market][market_data_parser]");
-
 std::chrono::year_month_day ymd(int y, unsigned m, unsigned d) {
     return std::chrono::year_month_day{
         std::chrono::year{y}, std::chrono::month{m}, std::chrono::day{d}};
@@ -42,7 +40,7 @@ using ores::ore::market::parse_fixings;
 // parse_market_data — date formats
 // =============================================================================
 
-TEST_CASE("parse_market_data_accepts_yyyymmdd_date", tags) {
+TEST_CASE("parse_market_data_accepts_yyyymmdd_date", "[ore][market][market_data_parser]") {
     std::istringstream in("20160205 ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y 0.0024\n");
     const auto result = parse_market_data(in);
 
@@ -52,7 +50,7 @@ TEST_CASE("parse_market_data_accepts_yyyymmdd_date", tags) {
     CHECK(result[0].value == "0.0024");
 }
 
-TEST_CASE("parse_market_data_accepts_yyyy_mm_dd_date", tags) {
+TEST_CASE("parse_market_data_accepts_yyyy_mm_dd_date", "[ore][market][market_data_parser]") {
     std::istringstream in("2022-01-31 BASIS_SWAP/BASIS_SPREAD/3M/1D/USD/10Y 0.0027750000\n");
     const auto result = parse_market_data(in);
 
@@ -66,7 +64,7 @@ TEST_CASE("parse_market_data_accepts_yyyy_mm_dd_date", tags) {
 // parse_market_data — value precision
 // =============================================================================
 
-TEST_CASE("parse_market_data_preserves_trailing_zeros_in_value", tags) {
+TEST_CASE("parse_market_data_preserves_trailing_zeros_in_value", "[ore][market][market_data_parser]") {
     std::istringstream in("20160205 FX/RATE/EUR/CHF 0.0074600000\n");
     const auto result = parse_market_data(in);
 
@@ -74,7 +72,7 @@ TEST_CASE("parse_market_data_preserves_trailing_zeros_in_value", tags) {
     CHECK(result[0].value == "0.0074600000");
 }
 
-TEST_CASE("parse_market_data_preserves_integer_value", tags) {
+TEST_CASE("parse_market_data_preserves_integer_value", "[ore][market][market_data_parser]") {
     std::istringstream in("20160205 EQUITY/PRICE/SP5/USD 2023.81\n");
     const auto result = parse_market_data(in);
 
@@ -82,7 +80,7 @@ TEST_CASE("parse_market_data_preserves_integer_value", tags) {
     CHECK(result[0].value == "2023.81");
 }
 
-TEST_CASE("parse_market_data_preserves_negative_value", tags) {
+TEST_CASE("parse_market_data_preserves_negative_value", "[ore][market][market_data_parser]") {
     std::istringstream in("20160205 ZERO/RATE/EUR/BANK_EUR_BORROW/A365/3M -0.006119\n");
     const auto result = parse_market_data(in);
 
@@ -94,7 +92,7 @@ TEST_CASE("parse_market_data_preserves_negative_value", tags) {
 // parse_market_data — whitespace and comments
 // =============================================================================
 
-TEST_CASE("parse_market_data_skips_blank_lines", tags) {
+TEST_CASE("parse_market_data_skips_blank_lines", "[ore][market][market_data_parser]") {
     std::istringstream in("20160205 FX/RATE/EUR/CHF 1.0947\n"
                           "\n"
                           "   \n"
@@ -106,7 +104,7 @@ TEST_CASE("parse_market_data_skips_blank_lines", tags) {
     CHECK(result[1].key == "FX/RATE/EUR/USD");
 }
 
-TEST_CASE("parse_market_data_skips_comment_lines", tags) {
+TEST_CASE("parse_market_data_skips_comment_lines", "[ore][market][market_data_parser]") {
     std::istringstream in("# This is a comment\n"
                           "20160205 FX/RATE/EUR/CHF 1.0947\n"
                           "# Another comment\n"
@@ -118,19 +116,19 @@ TEST_CASE("parse_market_data_skips_comment_lines", tags) {
     CHECK(result[1].key == "FX/RATE/EUR/USD");
 }
 
-TEST_CASE("parse_market_data_comment_only_file_returns_empty", tags) {
+TEST_CASE("parse_market_data_comment_only_file_returns_empty", "[ore][market][market_data_parser]") {
     std::istringstream in("# just a comment\n# another comment\n");
     const auto result = parse_market_data(in);
     CHECK(result.empty());
 }
 
-TEST_CASE("parse_market_data_empty_stream_returns_empty", tags) {
+TEST_CASE("parse_market_data_empty_stream_returns_empty", "[ore][market][market_data_parser]") {
     std::istringstream in("");
     const auto result = parse_market_data(in);
     CHECK(result.empty());
 }
 
-TEST_CASE("parse_market_data_accepts_tab_separated_line", tags) {
+TEST_CASE("parse_market_data_accepts_tab_separated_line", "[ore][market][market_data_parser]") {
     std::istringstream in("20160205\tFX/RATE/EUR/CHF\t1.0947\n");
     const auto result = parse_market_data(in);
 
@@ -139,7 +137,7 @@ TEST_CASE("parse_market_data_accepts_tab_separated_line", tags) {
     CHECK(result[0].value == "1.0947");
 }
 
-TEST_CASE("parse_market_data_accepts_comma_separated_line", tags) {
+TEST_CASE("parse_market_data_accepts_comma_separated_line", "[ore][market][market_data_parser]") {
     std::istringstream in("2022-09-26,BOND/YIELD_SPREAD/ISIN:US15135BAW19,0.02080707597\n");
     const auto result = parse_market_data(in);
 
@@ -149,7 +147,7 @@ TEST_CASE("parse_market_data_accepts_comma_separated_line", tags) {
     CHECK(result[0].value == "0.02080707597");
 }
 
-TEST_CASE("parse_market_data_handles_mixed_delimiter_file", tags) {
+TEST_CASE("parse_market_data_handles_mixed_delimiter_file", "[ore][market][market_data_parser]") {
     std::istringstream in("2022-09-26 BASIS_SWAP/BASIS_SPREAD/3M/1D/USD/10Y 0.0026500000\n"
                           "2022-09-26,BOND/YIELD_SPREAD/ISIN:US15135BAW19,0.02080707597\n");
     const auto result = parse_market_data(in);
@@ -163,17 +161,17 @@ TEST_CASE("parse_market_data_handles_mixed_delimiter_file", tags) {
 // parse_market_data — error handling
 // =============================================================================
 
-TEST_CASE("parse_market_data_throws_on_one_token_line", tags) {
+TEST_CASE("parse_market_data_throws_on_one_token_line", "[ore][market][market_data_parser]") {
     std::istringstream in("20160205\n");
     CHECK_THROWS_AS(parse_market_data(in), std::invalid_argument);
 }
 
-TEST_CASE("parse_market_data_throws_on_two_token_line", tags) {
+TEST_CASE("parse_market_data_throws_on_two_token_line", "[ore][market][market_data_parser]") {
     std::istringstream in("20160205 FX/RATE/EUR/CHF\n");
     CHECK_THROWS_AS(parse_market_data(in), std::invalid_argument);
 }
 
-TEST_CASE("parse_market_data_error_message_contains_line_number", tags) {
+TEST_CASE("parse_market_data_error_message_contains_line_number", "[ore][market][market_data_parser]") {
     std::istringstream in("20160205 FX/RATE/EUR/CHF\n");
     try {
         parse_market_data(in);
@@ -184,7 +182,7 @@ TEST_CASE("parse_market_data_error_message_contains_line_number", tags) {
     }
 }
 
-TEST_CASE("parse_market_data_throws_on_unrecognised_date_format", tags) {
+TEST_CASE("parse_market_data_throws_on_unrecognised_date_format", "[ore][market][market_data_parser]") {
     std::istringstream in("2016/02/05 FX/RATE/EUR/CHF 1.0947\n");
     CHECK_THROWS_AS(parse_market_data(in), std::invalid_argument);
 }
@@ -193,7 +191,7 @@ TEST_CASE("parse_market_data_throws_on_unrecognised_date_format", tags) {
 // parse_market_data — multiple entries
 // =============================================================================
 
-TEST_CASE("parse_market_data_parses_multiple_entries_in_order", tags) {
+TEST_CASE("parse_market_data_parses_multiple_entries_in_order", "[ore][market][market_data_parser]") {
     std::istringstream in("20160205 ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y 0.0024\n"
                           "20160205 FX/RATE/EUR/CHF 1.0947\n"
                           "20160205 EQUITY/PRICE/SP5/USD 2023.81\n");
@@ -209,7 +207,7 @@ TEST_CASE("parse_market_data_parses_multiple_entries_in_order", tags) {
 // parse_market_data — duplicate (date, key) handling
 // =============================================================================
 
-TEST_CASE("parse_market_data_dedupes_repeated_key_keeping_last_value", tags) {
+TEST_CASE("parse_market_data_dedupes_repeated_key_keeping_last_value", "[ore][market][market_data_parser]") {
     using ores::ore::market::duplicate_policy;
     std::istringstream in("20160205 FX/RATE/EUR/CHF 1.0\n"
                           "20160205 EQUITY/PRICE/SP5/USD 2023.81\n"
@@ -222,7 +220,7 @@ TEST_CASE("parse_market_data_dedupes_repeated_key_keeping_last_value", tags) {
     CHECK(result[1].value == "1.5");
 }
 
-TEST_CASE("parse_market_data_reports_duplicate_as_warning_by_default", tags) {
+TEST_CASE("parse_market_data_reports_duplicate_as_warning_by_default", "[ore][market][market_data_parser]") {
     using ores::ore::market::parse_report;
     std::istringstream in("20160205 FX/RATE/EUR/CHF 1.0\n"
                           "20160205 FX/RATE/EUR/CHF 1.5\n");
@@ -237,7 +235,7 @@ TEST_CASE("parse_market_data_reports_duplicate_as_warning_by_default", tags) {
     CHECK(report.warnings[0].message.find("line 2") != std::string::npos);
 }
 
-TEST_CASE("parse_market_data_reports_duplicate_as_error_when_requested", tags) {
+TEST_CASE("parse_market_data_reports_duplicate_as_error_when_requested", "[ore][market][market_data_parser]") {
     using ores::ore::market::parse_report;
     std::istringstream in("20160205 FX/RATE/EUR/CHF 1.0\n"
                           "20160205 FX/RATE/EUR/CHF 1.5\n");
@@ -250,7 +248,7 @@ TEST_CASE("parse_market_data_reports_duplicate_as_error_when_requested", tags) {
     CHECK(report.errors[0].line_no == 1);
 }
 
-TEST_CASE("parse_market_data_same_key_different_date_is_not_a_duplicate", tags) {
+TEST_CASE("parse_market_data_same_key_different_date_is_not_a_duplicate", "[ore][market][market_data_parser]") {
     std::istringstream in("20160205 FX/RATE/EUR/CHF 1.0\n"
                           "20160206 FX/RATE/EUR/CHF 1.5\n");
     ores::ore::market::parse_report report;
@@ -264,7 +262,7 @@ TEST_CASE("parse_market_data_same_key_different_date_is_not_a_duplicate", tags) 
 // parse_fixings — date formats
 // =============================================================================
 
-TEST_CASE("parse_fixings_accepts_yyyy_mm_dd_date", tags) {
+TEST_CASE("parse_fixings_accepts_yyyy_mm_dd_date", "[ore][market][market_data_parser]") {
     std::istringstream in("2021-09-30 EUR-EONIA 0.0074600000\n");
     const auto result = parse_fixings(in);
 
@@ -274,7 +272,7 @@ TEST_CASE("parse_fixings_accepts_yyyy_mm_dd_date", tags) {
     CHECK(result[0].value == "0.0074600000");
 }
 
-TEST_CASE("parse_fixings_accepts_yyyymmdd_date", tags) {
+TEST_CASE("parse_fixings_accepts_yyyymmdd_date", "[ore][market][market_data_parser]") {
     std::istringstream in("20160205 EUR-EONIA -0.003560\n");
     const auto result = parse_fixings(in);
 
@@ -284,7 +282,7 @@ TEST_CASE("parse_fixings_accepts_yyyymmdd_date", tags) {
     CHECK(result[0].value == "-0.003560");
 }
 
-TEST_CASE("parse_fixings_accepts_a_semicolon_separated_line", tags) {
+TEST_CASE("parse_fixings_accepts_a_semicolon_separated_line", "[ore][market][market_data_parser]") {
     // The three lines of CurveBuilding/Input/fixings_bondyieldshifted.csv, the
     // fixing file ore_bondyieldshifted.xml names. It separates with semicolons and
     // dates with DD.MM.YY, and both have to be read for its rows to arrive. The
@@ -307,7 +305,7 @@ TEST_CASE("parse_fixings_accepts_a_semicolon_separated_line", tags) {
 // parse_fixings — duplicate (date, index_name) handling
 // =============================================================================
 
-TEST_CASE("parse_fixings_dedupes_repeated_index_keeping_last_value", tags) {
+TEST_CASE("parse_fixings_dedupes_repeated_index_keeping_last_value", "[ore][market][market_data_parser]") {
     std::istringstream in("2016-01-28 EUR-EONIA 0.001\n"
                           "2016-01-28 EUR-EONIA 0.002\n");
     ores::ore::market::parse_report report;
@@ -323,7 +321,7 @@ TEST_CASE("parse_fixings_dedupes_repeated_index_keeping_last_value", tags) {
 // parse_fixings — whitespace, comments, errors
 // =============================================================================
 
-TEST_CASE("parse_fixings_skips_blank_and_comment_lines", tags) {
+TEST_CASE("parse_fixings_skips_blank_and_comment_lines", "[ore][market][market_data_parser]") {
     std::istringstream in("# fixings file\n"
                           "\n"
                           "2016-01-28 EQ-SP5 2244.2\n"
@@ -336,7 +334,7 @@ TEST_CASE("parse_fixings_skips_blank_and_comment_lines", tags) {
     CHECK(result[1].value == "2210");
 }
 
-TEST_CASE("parse_fixings_preserves_trailing_zeros_in_value", tags) {
+TEST_CASE("parse_fixings_preserves_trailing_zeros_in_value", "[ore][market][market_data_parser]") {
     std::istringstream in("2021-09-30 EUR-EONIA 0.0074600000\n");
     const auto result = parse_fixings(in);
 
@@ -344,7 +342,7 @@ TEST_CASE("parse_fixings_preserves_trailing_zeros_in_value", tags) {
     CHECK(result[0].value == "0.0074600000");
 }
 
-TEST_CASE("parse_fixings_throws_on_fewer_than_three_tokens", tags) {
+TEST_CASE("parse_fixings_throws_on_fewer_than_three_tokens", "[ore][market][market_data_parser]") {
     std::istringstream in("2021-09-30 EUR-EONIA\n");
     CHECK_THROWS_AS(parse_fixings(in), std::invalid_argument);
 }

@@ -42,8 +42,6 @@
 
 namespace {
 
-const std::string tags("[repository][collection_kinds][database]");
-
 using kind_facts = std::tuple<std::string, std::string, std::string>;
 
 std::string read_schema() {
@@ -90,7 +88,7 @@ std::map<std::string, kind_facts> schema_kinds() {
 
 }
 
-TEST_CASE("the seeded collection kinds are the schema's, with their entries and keys", tags) {
+TEST_CASE("the seeded collection kinds are the schema's, with their entries and keys", "[repository][collection_kinds][database]") {
     ores::testing::scoped_database_helper h;
     const auto expected = schema_kinds();
     INFO("Kinds are read from the schema by text patterns that expect a collection's "

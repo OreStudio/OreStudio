@@ -33,8 +33,6 @@
 
 namespace {
 
-const std::string tags("[repository][work_ledger]");
-
 using ores::compute::repository::ledger_entry;
 using ores::compute::repository::work_ledger_repository;
 using ores::testing::database_helper;
@@ -96,7 +94,7 @@ private:
 
 }
 
-TEST_CASE("claim_takes_a_queued_entry_for_the_platform_and_counts_the_attempt", tags) {
+TEST_CASE("claim_takes_a_queued_entry_for_the_platform_and_counts_the_attempt", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -114,7 +112,7 @@ TEST_CASE("claim_takes_a_queued_entry_for_the_platform_and_counts_the_attempt", 
     CHECK(ledger.holder(cleanup.system(), queued.result_id) == host);
 }
 
-TEST_CASE("claim_takes_nothing_for_a_platform_with_no_waiting_entry", tags) {
+TEST_CASE("claim_takes_nothing_for_a_platform_with_no_waiting_entry", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     cleanup.add(entry_for(unique_platform(), random_uuid()));
@@ -125,7 +123,7 @@ TEST_CASE("claim_takes_nothing_for_a_platform_with_no_waiting_entry", tags) {
     CHECK(!claimed.has_value());
 }
 
-TEST_CASE("two_claims_never_take_one_entry", tags) {
+TEST_CASE("two_claims_never_take_one_entry", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -144,7 +142,7 @@ TEST_CASE("two_claims_never_take_one_entry", tags) {
     CHECK((a->result_id == first.result_id || a->result_id == second.result_id));
 }
 
-TEST_CASE("claim_prefers_the_tenant_with_the_fewest_entries_claimed", tags) {
+TEST_CASE("claim_prefers_the_tenant_with_the_fewest_entries_claimed", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -172,7 +170,7 @@ TEST_CASE("claim_prefers_the_tenant_with_the_fewest_entries_claimed", tags) {
     CHECK(third->work_tenant_id == deep);
 }
 
-TEST_CASE("claim_prefers_the_higher_priority_among_tenants_with_equal_load", tags) {
+TEST_CASE("claim_prefers_the_higher_priority_among_tenants_with_equal_load", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -187,7 +185,7 @@ TEST_CASE("claim_prefers_the_higher_priority_among_tenants_with_equal_load", tag
     CHECK(claimed->result_id == urgent.result_id);
 }
 
-TEST_CASE("release_returns_a_claimed_entry_to_the_queue_and_gives_the_attempt_back", tags) {
+TEST_CASE("release_returns_a_claimed_entry_to_the_queue_and_gives_the_attempt_back", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -206,7 +204,7 @@ TEST_CASE("release_returns_a_claimed_entry_to_the_queue_and_gives_the_attempt_ba
     CHECK(again->attempts == 1);
 }
 
-TEST_CASE("concurrent_claims_never_take_the_same_entry", tags) {
+TEST_CASE("concurrent_claims_never_take_the_same_entry", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -233,7 +231,7 @@ TEST_CASE("concurrent_claims_never_take_the_same_entry", tags) {
     CHECK(std::ranges::adjacent_find(taken) == taken.end());
 }
 
-TEST_CASE("requeue_expired_returns_an_expired_claim_that_has_attempts_left", tags) {
+TEST_CASE("requeue_expired_returns_an_expired_claim_that_has_attempts_left", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -250,7 +248,7 @@ TEST_CASE("requeue_expired_returns_an_expired_claim_that_has_attempts_left", tag
     CHECK(again->attempts == 2);
 }
 
-TEST_CASE("requeue_expired_leaves_a_live_lease_alone", tags) {
+TEST_CASE("requeue_expired_leaves_a_live_lease_alone", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -264,7 +262,7 @@ TEST_CASE("requeue_expired_leaves_a_live_lease_alone", tags) {
     CHECK(ledger.holder(cleanup.system(), queued.result_id) == host);
 }
 
-TEST_CASE("an_expired_claim_with_no_attempts_left_is_exhausted_and_not_requeued", tags) {
+TEST_CASE("an_expired_claim_with_no_attempts_left_is_exhausted_and_not_requeued", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -286,7 +284,7 @@ TEST_CASE("an_expired_claim_with_no_attempts_left_is_exhausted_and_not_requeued"
     CHECK(!ledger.remove_expired(cleanup.system(), queued.result_id));
 }
 
-TEST_CASE("remove_expired_keeps_an_entry_whose_lease_was_renewed", tags) {
+TEST_CASE("remove_expired_keeps_an_entry_whose_lease_was_renewed", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -300,7 +298,7 @@ TEST_CASE("remove_expired_keeps_an_entry_whose_lease_was_renewed", tags) {
     CHECK(ledger.holder(cleanup.system(), queued.result_id) == host);
 }
 
-TEST_CASE("waiting_counts_the_queued_entries_of_one_tenant", tags) {
+TEST_CASE("waiting_counts_the_queued_entries_of_one_tenant", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto tenant = random_uuid();
@@ -319,7 +317,7 @@ TEST_CASE("waiting_counts_the_queued_entries_of_one_tenant", tags) {
     CHECK(ledger.waiting(cleanup.system(), tenant) == 2);
 }
 
-TEST_CASE("remove_deletes_an_entry_so_it_is_not_claimed", tags) {
+TEST_CASE("remove_deletes_an_entry_so_it_is_not_claimed", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -331,7 +329,7 @@ TEST_CASE("remove_deletes_an_entry_so_it_is_not_claimed", tags) {
     CHECK(!ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300)).has_value());
 }
 
-TEST_CASE("holder_is_nothing_for_an_entry_that_waits_and_for_one_not_in_the_ledger", tags) {
+TEST_CASE("holder_is_nothing_for_an_entry_that_waits_and_for_one_not_in_the_ledger", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto queued = cleanup.add(entry_for(unique_platform(), random_uuid()));
@@ -341,7 +339,7 @@ TEST_CASE("holder_is_nothing_for_an_entry_that_waits_and_for_one_not_in_the_ledg
     CHECK(!ledger.holder(cleanup.system(), random_uuid()).has_value());
 }
 
-TEST_CASE("extend_lease_extends_only_the_job_the_host_names", tags) {
+TEST_CASE("extend_lease_extends_only_the_job_the_host_names", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -365,7 +363,7 @@ TEST_CASE("extend_lease_extends_only_the_job_the_host_names", tags) {
     CHECK(!ledger.holder(cleanup.system(), first->result_id).has_value());
 }
 
-TEST_CASE("requeue_held_returns_what_a_host_abandoned_and_keeps_the_attempts", tags) {
+TEST_CASE("requeue_held_returns_what_a_host_abandoned_and_keeps_the_attempts", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -382,7 +380,7 @@ TEST_CASE("requeue_held_returns_what_a_host_abandoned_and_keeps_the_attempts", t
     CHECK(again->attempts == 2);
 }
 
-TEST_CASE("requeue_held_leaves_an_entry_with_no_attempts_left_and_another_hosts_entries", tags) {
+TEST_CASE("requeue_held_leaves_an_entry_with_no_attempts_left_and_another_hosts_entries", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -403,7 +401,7 @@ TEST_CASE("requeue_held_leaves_an_entry_with_no_attempts_left_and_another_hosts_
     CHECK(ledger.requeue_held(cleanup.system(), random_uuid()) == 0);
 }
 
-TEST_CASE("enqueue_leaves_an_entry_already_in_the_ledger_as_it_is", tags) {
+TEST_CASE("enqueue_leaves_an_entry_already_in_the_ledger_as_it_is", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -418,7 +416,7 @@ TEST_CASE("enqueue_leaves_an_entry_already_in_the_ledger_as_it_is", tags) {
     CHECK(ledger.holder(cleanup.system(), queued.result_id) == host);
 }
 
-TEST_CASE("a_tenant_session_reads_none_of_the_ledger_and_writes_none_of_it", tags) {
+TEST_CASE("a_tenant_session_reads_none_of_the_ledger_and_writes_none_of_it", "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();

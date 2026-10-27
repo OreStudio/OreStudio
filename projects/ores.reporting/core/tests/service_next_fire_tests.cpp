@@ -41,6 +41,7 @@
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -65,8 +66,6 @@
 
 namespace {
 
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[service][database]");
 const std::string failure_tags("[service][database][nats]");
 
 /**
@@ -117,7 +116,7 @@ next_fire_of(const std::vector<ores::reporting::messaging::definition_next_fire>
 
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("a definition's schedule reads the next fire the scheduler states for its job", tags) {
+TEST_CASE("a definition's schedule reads the next fire the scheduler states for its job", "[service][database]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;

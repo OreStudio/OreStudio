@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_badge_severities_response
-    list_badge_severities(const messaging::list_badge_severities_request& request);
-    messaging::get_badge_severity_response
-    get_badge_severity(const messaging::get_badge_severity_request& request);
-    messaging::get_many_badge_severities_response
-    get_many_badge_severities(const messaging::get_many_badge_severities_request& request);
-    messaging::put_badge_severity_response
-    put_badge_severity(const messaging::put_badge_severity_request& request);
-    messaging::put_many_badge_severities_response
-    put_many_badge_severities(const messaging::put_many_badge_severities_request& request);
-    messaging::delete_badge_severity_response
-    delete_badge_severity(const messaging::delete_badge_severity_request& request);
-    messaging::delete_many_badge_severities_response
-    delete_many_badge_severities(const messaging::delete_many_badge_severities_request& request);
-    messaging::list_badge_severity_versions_response
-    list_badge_severity_versions(const messaging::list_badge_severity_versions_request& request);
-    messaging::get_badge_severity_version_response
-    get_badge_severity_version(const messaging::get_badge_severity_version_request& request);
+    ::ores::dq::messaging::list_badge_severities_response
+    list_badge_severities(const ::ores::dq::messaging::list_badge_severities_request& request);
+    ::ores::dq::messaging::get_badge_severity_response
+    get_badge_severity(const ::ores::dq::messaging::get_badge_severity_request& request);
+    ::ores::dq::messaging::get_many_badge_severities_response get_many_badge_severities(
+        const ::ores::dq::messaging::get_many_badge_severities_request& request);
+    ::ores::dq::messaging::put_badge_severity_response
+    put_badge_severity(const ::ores::dq::messaging::put_badge_severity_request& request);
+    ::ores::dq::messaging::put_many_badge_severities_response put_many_badge_severities(
+        const ::ores::dq::messaging::put_many_badge_severities_request& request);
+    ::ores::dq::messaging::delete_badge_severity_response
+    delete_badge_severity(const ::ores::dq::messaging::delete_badge_severity_request& request);
+    ::ores::dq::messaging::delete_many_badge_severities_response delete_many_badge_severities(
+        const ::ores::dq::messaging::delete_many_badge_severities_request& request);
+    ::ores::dq::messaging::list_badge_severity_versions_response list_badge_severity_versions(
+        const ::ores::dq::messaging::list_badge_severity_versions_request& request);
+    ::ores::dq::messaging::get_badge_severity_version_response get_badge_severity_version(
+        const ::ores::dq::messaging::get_badge_severity_version_request& request);
     /**@}*/
 
     /**
@@ -186,9 +186,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::badge_severity_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::badge_severity& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::dq::messaging::badge_severity_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::badge_severity& out);
 };
 
 }

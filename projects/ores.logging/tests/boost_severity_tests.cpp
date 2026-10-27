@@ -19,25 +19,19 @@
  */
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 
-namespace {
-
-const std::string_view test_suite("ores.logging.tests");
-const std::string tags("[logging]");
-
-}
-
 using ores::logging::boost_severity;
 using ores::logging::severity_level;
 using ores::logging::to_boost_severity;
 using ores::logging::to_domain_severity;
 
-TEST_CASE("to_boost_severity_maps_every_lower_case_name", tags) {
+TEST_CASE("to_boost_severity_maps_every_lower_case_name", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const boost_severity trace_level(to_boost_severity("trace"));
@@ -57,28 +51,28 @@ TEST_CASE("to_boost_severity_maps_every_lower_case_name", tags) {
     CHECK(error_level == boost_severity::error);
 }
 
-TEST_CASE("to_boost_severity_rejects_fatal", tags) {
+TEST_CASE("to_boost_severity_rejects_fatal", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, ores::logging::info) << "converting the literal fatal";
 
     CHECK_THROWS_AS(to_boost_severity("fatal"), std::invalid_argument);
 }
 
-TEST_CASE("to_boost_severity_rejects_mixed_case_name", tags) {
+TEST_CASE("to_boost_severity_rejects_mixed_case_name", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, ores::logging::info) << "converting the literal INFO";
 
     CHECK_THROWS_AS(to_boost_severity("INFO"), std::invalid_argument);
 }
 
-TEST_CASE("to_boost_severity_rejects_empty_name", tags) {
+TEST_CASE("to_boost_severity_rejects_empty_name", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, ores::logging::info) << "converting the empty string";
 
     CHECK_THROWS_AS(to_boost_severity(""), std::invalid_argument);
 }
 
-TEST_CASE("to_boost_severity_maps_every_domain_level_to_itself", tags) {
+TEST_CASE("to_boost_severity_maps_every_domain_level_to_itself", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, ores::logging::info) << "converting domain levels";
 
@@ -89,14 +83,14 @@ TEST_CASE("to_boost_severity_maps_every_domain_level_to_itself", tags) {
     CHECK(to_boost_severity(severity_level::error) == boost_severity::error);
 }
 
-TEST_CASE("to_boost_severity_maps_fatal_to_error", tags) {
+TEST_CASE("to_boost_severity_maps_fatal_to_error", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, ores::logging::info) << "converting severity_level::fatal";
 
     CHECK(to_boost_severity(severity_level::fatal) == boost_severity::error);
 }
 
-TEST_CASE("to_domain_severity_round_trips_every_boost_level", tags) {
+TEST_CASE("to_domain_severity_round_trips_every_boost_level", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
     BOOST_LOG_SEV(lg, ores::logging::info) << "round-tripping boost severities";
 
@@ -107,7 +101,7 @@ TEST_CASE("to_domain_severity_round_trips_every_boost_level", tags) {
     CHECK(to_domain_severity(boost_severity::error) == severity_level::error);
 }
 
-TEST_CASE("stream_operator_renders_upper_case_level_names", tags) {
+TEST_CASE("stream_operator_renders_upper_case_level_names", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     std::ostringstream trace_stream;

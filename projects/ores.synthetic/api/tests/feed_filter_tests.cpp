@@ -25,8 +25,6 @@
 
 namespace {
 
-const std::string tags("[feed_filter]");
-
 using Catch::Matchers::ContainsSubstring;
 using ores::synthetic::feed::feed_filter;
 using ores::synthetic::feed::filter_problem;
@@ -39,7 +37,7 @@ const std::string other = "1c8a7a1f-9d6f-4d4c-8e4f-7b1a6b2d3e4f";
 
 }
 
-TEST_CASE("feed_filter accepts an empty filter and every word it knows", tags) {
+TEST_CASE("feed_filter accepts an empty filter and every word it knows", "[feed_filter]") {
     CHECK(filter_problem({}).empty());
     feed_filter f;
     f.folder_id = folder;
@@ -50,7 +48,7 @@ TEST_CASE("feed_filter accepts an empty filter and every word it knows", tags) {
     CHECK(filter_problem(f).empty());
 }
 
-TEST_CASE("feed_filter refuses what a query must not be given", tags) {
+TEST_CASE("feed_filter refuses what a query must not be given", "[feed_filter]") {
     feed_filter f;
     f.folder_id = "x'; drop table t; --";
     CHECK_FALSE(filter_problem(f).empty());
@@ -71,7 +69,7 @@ TEST_CASE("feed_filter refuses what a query must not be given", tags) {
     CHECK_FALSE(filter_problem(f).empty());
 }
 
-TEST_CASE("feed_filter limits how many feeds a request names", tags) {
+TEST_CASE("feed_filter limits how many feeds a request names", "[feed_filter]") {
     feed_filter f;
     f.feed_ids.assign(ores::synthetic::feed::most_named_feeds, folder);
     CHECK(filter_problem(f).empty());
@@ -79,16 +77,16 @@ TEST_CASE("feed_filter limits how many feeds a request names", tags) {
     CHECK_FALSE(filter_problem(f).empty());
 }
 
-TEST_CASE("feed_filter doubles a quote and a backslash in a literal", tags) {
+TEST_CASE("feed_filter doubles a quote and a backslash in a literal", "[feed_filter]") {
     CHECK(sql_literal("it's") == "E'it''s'");
     CHECK(sql_literal("a\\b") == "E'a\\\\b'");
 }
 
-TEST_CASE("feed_filter matches every feed when nothing narrows it", tags) {
+TEST_CASE("feed_filter matches every feed when nothing narrows it", "[feed_filter]") {
     CHECK(where_clause({}, {}, true) == "true");
 }
 
-TEST_CASE("feed_filter reads a folder with the folders under it", tags) {
+TEST_CASE("feed_filter reads a folder with the folders under it", "[feed_filter]") {
     feed_filter f;
     f.folder_id = folder;
     const auto where = where_clause(f, {}, true);
@@ -96,7 +94,7 @@ TEST_CASE("feed_filter reads a folder with the folders under it", tags) {
     CHECK_THAT(where, ContainsSubstring("E'" + folder + "'::uuid"));
 }
 
-TEST_CASE("feed_filter narrows by provider and asset class", tags) {
+TEST_CASE("feed_filter narrows by provider and asset class", "[feed_filter]") {
     feed_filter f;
     f.provider_code = "bloomberg";
     f.asset_class = "fx";
@@ -105,7 +103,7 @@ TEST_CASE("feed_filter narrows by provider and asset class", tags) {
     CHECK_THAT(where, ContainsSubstring("asset_class_code = E'fx'"));
 }
 
-TEST_CASE("feed_filter decides started and stopped by the running names", tags) {
+TEST_CASE("feed_filter decides started and stopped by the running names", "[feed_filter]") {
     feed_filter f;
     f.state = "started";
     CHECK_THAT(where_clause(f, {"synthetic.a", "synthetic.b"}, true),
@@ -119,7 +117,7 @@ TEST_CASE("feed_filter decides started and stopped by the running names", tags) 
     CHECK(where_clause(f, {"synthetic.a"}, true) == "true");
 }
 
-TEST_CASE("feed_filter searches each word and escapes the pattern", tags) {
+TEST_CASE("feed_filter searches each word and escapes the pattern", "[feed_filter]") {
     feed_filter f;
     f.search = "usd 100%_x";
     const auto where = where_clause(f, {}, true);
@@ -127,7 +125,7 @@ TEST_CASE("feed_filter searches each word and escapes the pattern", tags) {
     CHECK_THAT(where, ContainsSubstring("ilike E'%100\\\\%\\\\_x%'"));
 }
 
-TEST_CASE("feed_filter leaves out the excluded feeds", tags) {
+TEST_CASE("feed_filter leaves out the excluded feeds", "[feed_filter]") {
     feed_filter f;
     f.excluded_ids = {folder, other};
     CHECK_THAT(
@@ -135,7 +133,7 @@ TEST_CASE("feed_filter leaves out the excluded feeds", tags) {
         ContainsSubstring("id::uuid not in (E'" + folder + "'::uuid, E'" + other + "'::uuid)"));
 }
 
-TEST_CASE("feed_filter names only the picked feeds and ignores the filter", tags) {
+TEST_CASE("feed_filter names only the picked feeds and ignores the filter", "[feed_filter]") {
     feed_filter f;
     f.feed_ids = {folder};
     f.provider_code = "bloomberg";
@@ -144,7 +142,7 @@ TEST_CASE("feed_filter names only the picked feeds and ignores the filter", tags
     CHECK(where_clause(f, {"synthetic.a"}, true) == "id::uuid in (E'" + folder + "'::uuid)");
 }
 
-TEST_CASE("feed_filter keeps the feeds that should run: enabled, automatic and stopped", tags) {
+TEST_CASE("feed_filter keeps the feeds that should run: enabled, automatic and stopped", "[feed_filter]") {
     feed_filter f;
     f.should_run = true;
     CHECK_THAT(where_clause(f, {"synthetic.a"}, true),
@@ -156,7 +154,7 @@ TEST_CASE("feed_filter keeps the feeds that should run: enabled, automatic and s
                ContainsSubstring("source_name not in (E'synthetic.a')"));
 }
 
-TEST_CASE("feed_filter refuses a selection that names nothing and narrows nothing", tags) {
+TEST_CASE("feed_filter refuses a selection that names nothing and narrows nothing", "[feed_filter]") {
     CHECK_FALSE(selection_problem({}).empty());
     feed_filter f;
     f.state = "all";
@@ -183,13 +181,13 @@ TEST_CASE("feed_filter refuses a selection that names nothing and narrows nothin
     CHECK_FALSE(selection_problem(f).empty());
 }
 
-TEST_CASE("feed_filter names the cap in its message", tags) {
+TEST_CASE("feed_filter names the cap in its message", "[feed_filter]") {
     feed_filter f;
     f.feed_ids.assign(ores::synthetic::feed::most_named_feeds + 1, folder);
     CHECK_THAT(filter_problem(f), ContainsSubstring("2000"));
 }
 
-TEST_CASE("feed_filter leaves the system feeds out of those another tenant should run", tags) {
+TEST_CASE("feed_filter leaves the system feeds out of those another tenant should run", "[feed_filter]") {
     feed_filter f;
     f.should_run = true;
     CHECK_THAT(where_clause(f, {}, false),

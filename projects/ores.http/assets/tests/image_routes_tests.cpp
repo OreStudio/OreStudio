@@ -27,6 +27,7 @@
 #include "ores.http/routes/assets/image_routes.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
@@ -42,11 +43,8 @@ using ores::nats::service::nats_client;
 
 namespace {
 
-const std::string_view test_suite("ores.http.assets.tests");
-const std::string tags("[routes]");
-
 /// One route the unit must register, as the derivation states it.
-struct expected_route {
+struct image_expected_route {
     http_method method;
     std::string pattern;
     bool requires_auth;
@@ -65,7 +63,7 @@ std::shared_ptr<router> image_registered_routes(nats_client& session) {
 
 }
 
-TEST_CASE("image_routes_registers_every_derived_route", tags) {
+TEST_CASE("image_routes_registers_every_derived_route", "[routes]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -77,21 +75,24 @@ TEST_CASE("image_routes_registers_every_derived_route", tags) {
     // The router's own list is the only public view of what was registered,
     // so a route that is missing from it was never registered.
     for (const auto& expected : {
-             expected_route{http_method::get, std::string{"/api/v1/assets/images"}, true},
-             expected_route{http_method::get, std::string{"/api/v1/assets/images/{code}"}, true},
-             expected_route{http_method::post, std::string{"/api/v1/assets/images/get-many"}, true},
-             expected_route{http_method::post, std::string{"/api/v1/assets/images"}, true},
-             expected_route{http_method::put, std::string{"/api/v1/assets/images"}, true},
-             expected_route{http_method::post, std::string{"/api/v1/assets/images/put-many"}, true},
-             expected_route{
+             image_expected_route{http_method::get, std::string{"/api/v1/assets/images"}, true},
+             image_expected_route{
+                 http_method::get, std::string{"/api/v1/assets/images/{code}"}, true},
+             image_expected_route{
+                 http_method::post, std::string{"/api/v1/assets/images/get-many"}, true},
+             image_expected_route{http_method::post, std::string{"/api/v1/assets/images"}, true},
+             image_expected_route{http_method::put, std::string{"/api/v1/assets/images"}, true},
+             image_expected_route{
+                 http_method::post, std::string{"/api/v1/assets/images/put-many"}, true},
+             image_expected_route{
                  http_method::delete_, std::string{"/api/v1/assets/images/{code}"}, true},
-             expected_route{
+             image_expected_route{
                  http_method::post, std::string{"/api/v1/assets/images/delete-many"}, true},
-             expected_route{
+             image_expected_route{
                  http_method::get, std::string{"/api/v1/assets/images/{code}/versions"}, true},
-             expected_route{http_method::get,
-                            std::string{"/api/v1/assets/images/{code}/versions/{version}"},
-                            true},
+             image_expected_route{http_method::get,
+                                  std::string{"/api/v1/assets/images/{code}/versions/{version}"},
+                                  true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;
@@ -102,7 +103,7 @@ TEST_CASE("image_routes_registers_every_derived_route", tags) {
     BOOST_LOG_SEV(lg, debug) << "Registered 10 route(s).";
 }
 
-TEST_CASE("image_routes_requires_a_session_where_the_operation_does", tags) {
+TEST_CASE("image_routes_requires_a_session_where_the_operation_does", "[routes]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -113,21 +114,24 @@ TEST_CASE("image_routes_requires_a_session_where_the_operation_does", tags) {
     // a session cannot be registered without one, and one that does not is
     // not made unreachable by a flag the model never asked for.
     for (const auto& expected : {
-             expected_route{http_method::get, std::string{"/api/v1/assets/images"}, true},
-             expected_route{http_method::get, std::string{"/api/v1/assets/images/{code}"}, true},
-             expected_route{http_method::post, std::string{"/api/v1/assets/images/get-many"}, true},
-             expected_route{http_method::post, std::string{"/api/v1/assets/images"}, true},
-             expected_route{http_method::put, std::string{"/api/v1/assets/images"}, true},
-             expected_route{http_method::post, std::string{"/api/v1/assets/images/put-many"}, true},
-             expected_route{
+             image_expected_route{http_method::get, std::string{"/api/v1/assets/images"}, true},
+             image_expected_route{
+                 http_method::get, std::string{"/api/v1/assets/images/{code}"}, true},
+             image_expected_route{
+                 http_method::post, std::string{"/api/v1/assets/images/get-many"}, true},
+             image_expected_route{http_method::post, std::string{"/api/v1/assets/images"}, true},
+             image_expected_route{http_method::put, std::string{"/api/v1/assets/images"}, true},
+             image_expected_route{
+                 http_method::post, std::string{"/api/v1/assets/images/put-many"}, true},
+             image_expected_route{
                  http_method::delete_, std::string{"/api/v1/assets/images/{code}"}, true},
-             expected_route{
+             image_expected_route{
                  http_method::post, std::string{"/api/v1/assets/images/delete-many"}, true},
-             expected_route{
+             image_expected_route{
                  http_method::get, std::string{"/api/v1/assets/images/{code}/versions"}, true},
-             expected_route{http_method::get,
-                            std::string{"/api/v1/assets/images/{code}/versions/{version}"},
-                            true},
+             image_expected_route{http_method::get,
+                                  std::string{"/api/v1/assets/images/{code}/versions/{version}"},
+                                  true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;

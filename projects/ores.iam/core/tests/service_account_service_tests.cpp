@@ -44,6 +44,7 @@
 #include "ores.utility/faker/internet.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -54,9 +55,6 @@
 #include <set>
 
 namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[service]");
 
 /** The depth the tree states for one account, or a value no depth can be. */
 int tree_depth(const ores::iam::messaging::get_reporting_tree_response& tree,
@@ -165,7 +163,7 @@ using ores::utility::faker::internet;
 using ores::testing::scoped_database_helper;
 using namespace ores::iam::generators;
 
-TEST_CASE("create_account_with_valid_data", tags) {
+TEST_CASE("create_account_with_valid_data", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -191,7 +189,7 @@ TEST_CASE("create_account_with_valid_data", tags) {
  * one: the request carries no account id, so there is nothing to name another
  * account with. It checks no permission, because it is a self read.
  */
-TEST_CASE("get_my_account_reads_the_callers_own_account_and_no_other", tags) {
+TEST_CASE("get_my_account_reads_the_callers_own_account_and_no_other", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -215,7 +213,7 @@ TEST_CASE("get_my_account_reads_the_callers_own_account_and_no_other", tags) {
     CHECK(response.account->id != b.id);
 }
 
-TEST_CASE("get_my_account_states_no_account_for_a_session_that_names_none", tags) {
+TEST_CASE("get_my_account_states_no_account_for_a_session_that_names_none", "[service]") {
     scoped_database_helper h;
     service::account_operations_service sut(h.context());
 
@@ -229,7 +227,7 @@ TEST_CASE("get_my_account_states_no_account_for_a_session_that_names_none", tags
  * The own sign-in read answers the state of the account the session names and
  * no other, and checks no permission, because it is a self read.
  */
-TEST_CASE("get_my_login_info_reads_the_callers_own_state_and_no_other", tags) {
+TEST_CASE("get_my_login_info_reads_the_callers_own_state_and_no_other", "[service]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     service::account_operations_service sut(h.context());
@@ -267,7 +265,7 @@ TEST_CASE("get_my_login_info_reads_the_callers_own_state_and_no_other", tags) {
     CHECK(!response.login_info->locked);
 }
 
-TEST_CASE("get_my_login_info_states_nothing_for_an_account_that_never_signed_in", tags) {
+TEST_CASE("get_my_login_info_states_nothing_for_an_account_that_never_signed_in", "[service]") {
     scoped_database_helper h;
     service::account_operations_service sut(h.context());
 
@@ -282,7 +280,7 @@ TEST_CASE("get_my_login_info_states_nothing_for_an_account_that_never_signed_in"
  * nobody else's: an ended session is history, and another account's session is
  * not the caller's to see.
  */
-TEST_CASE("get_my_sessions_returns_only_the_callers_open_sessions", tags) {
+TEST_CASE("get_my_sessions_returns_only_the_callers_open_sessions", "[service]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     service::account_operations_service sut(h.context());
@@ -312,7 +310,7 @@ TEST_CASE("get_my_sessions_returns_only_the_callers_open_sessions", tags) {
     CHECK(response.sessions.front().id == open_mine.id);
 }
 
-TEST_CASE("create_multiple_accounts", tags) {
+TEST_CASE("create_multiple_accounts", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -335,7 +333,7 @@ TEST_CASE("create_multiple_accounts", tags) {
     }
 }
 
-TEST_CASE("create_account_with_empty_username_throws", tags) {
+TEST_CASE("create_account_with_empty_username_throws", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -351,7 +349,7 @@ TEST_CASE("create_account_with_empty_username_throws", tags) {
                     std::invalid_argument);
 }
 
-TEST_CASE("create_account_with_empty_email_throws", tags) {
+TEST_CASE("create_account_with_empty_email_throws", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -367,7 +365,7 @@ TEST_CASE("create_account_with_empty_email_throws", tags) {
                     std::invalid_argument);
 }
 
-TEST_CASE("create_account_with_empty_password_throws", tags) {
+TEST_CASE("create_account_with_empty_password_throws", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -382,7 +380,7 @@ TEST_CASE("create_account_with_empty_password_throws", tags) {
                     std::invalid_argument);
 }
 
-TEST_CASE("list_accounts_returns_existing_accounts", tags) {
+TEST_CASE("list_accounts_returns_existing_accounts", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -394,7 +392,7 @@ TEST_CASE("list_accounts_returns_existing_accounts", tags) {
     INFO("Number of accounts: " << a.size());
 }
 
-TEST_CASE("list_accounts_returns_created_accounts", tags) {
+TEST_CASE("list_accounts_returns_created_accounts", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -419,7 +417,7 @@ TEST_CASE("list_accounts_returns_created_accounts", tags) {
     CHECK(actual_list.size() == initial_count + new_accounts);
 }
 
-TEST_CASE("login_with_valid_credentials", tags) {
+TEST_CASE("login_with_valid_credentials", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -439,7 +437,7 @@ TEST_CASE("login_with_valid_credentials", tags) {
     CHECK(a.id == account.id);
 }
 
-TEST_CASE("login_with_invalid_password_throws", tags) {
+TEST_CASE("login_with_invalid_password_throws", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -456,7 +454,7 @@ TEST_CASE("login_with_invalid_password_throws", tags) {
     CHECK_THROWS_AS(sut.login(e.username, "wrong_password", ip), std::runtime_error);
 }
 
-TEST_CASE("login_with_nonexistent_username_throws", tags) {
+TEST_CASE("login_with_nonexistent_username_throws", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -472,7 +470,7 @@ TEST_CASE("login_with_nonexistent_username_throws", tags) {
     CHECK_THROWS_AS(sut.login(username, password, ip), std::runtime_error);
 }
 
-TEST_CASE("login_with_empty_username_throws", tags) {
+TEST_CASE("login_with_empty_username_throws", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -488,7 +486,7 @@ TEST_CASE("login_with_empty_username_throws", tags) {
     CHECK_THROWS_AS(sut.login(username, password, ip), std::invalid_argument);
 }
 
-TEST_CASE("login_with_empty_password_throws", tags) {
+TEST_CASE("login_with_empty_password_throws", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -508,7 +506,7 @@ TEST_CASE("login_with_empty_password_throws", tags) {
     CHECK_THROWS_AS(sut.login(account.username, empty_password, ip), std::invalid_argument);
 }
 
-TEST_CASE("account_locks_after_multiple_failed_logins", tags) {
+TEST_CASE("account_locks_after_multiple_failed_logins", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -542,7 +540,7 @@ TEST_CASE("account_locks_after_multiple_failed_logins", tags) {
     }
 }
 
-TEST_CASE("lock_account_successful", tags) {
+TEST_CASE("lock_account_successful", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -565,7 +563,7 @@ TEST_CASE("lock_account_successful", tags) {
     CHECK_THROWS_AS(sut.login(generated.username, password, ip), std::runtime_error);
 }
 
-TEST_CASE("lock_nonexistent_account_returns_false", tags) {
+TEST_CASE("lock_nonexistent_account_returns_false", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -578,7 +576,7 @@ TEST_CASE("lock_nonexistent_account_returns_false", tags) {
     CHECK(sut.lock_account(non_existent_id) == false);
 }
 
-TEST_CASE("unlock_account_successful", tags) {
+TEST_CASE("unlock_account_successful", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -613,7 +611,7 @@ TEST_CASE("unlock_account_successful", tags) {
     CHECK(logged_in_account.username == account.username);
 }
 
-TEST_CASE("unlock_nonexistent_account_returns_false", tags) {
+TEST_CASE("unlock_nonexistent_account_returns_false", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -644,7 +642,7 @@ std::vector<repository::auth_event_entity> lock_events(const ores::database::con
 
 }
 
-TEST_CASE("lock_account_records_an_event_with_its_reason", tags) {
+TEST_CASE("lock_account_records_an_event_with_its_reason", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -663,7 +661,7 @@ TEST_CASE("lock_account_records_an_event_with_its_reason", tags) {
     CHECK(events.front().error_detail == "Locked by an administrator");
 }
 
-TEST_CASE("locking_a_locked_account_records_nothing_more", tags) {
+TEST_CASE("locking_a_locked_account_records_nothing_more", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -680,7 +678,7 @@ TEST_CASE("locking_a_locked_account_records_nothing_more", tags) {
     CHECK(lock_events(h.context(), generated.id, "account_locked").size() == 1);
 }
 
-TEST_CASE("failed_attempts_that_lock_an_account_record_the_lock", tags) {
+TEST_CASE("failed_attempts_that_lock_an_account_record_the_lock", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -704,7 +702,7 @@ TEST_CASE("failed_attempts_that_lock_an_account_record_the_lock", tags) {
     CHECK(events.front().error_detail == "5 failed login attempts");
 }
 
-TEST_CASE("unlock_account_records_an_event_with_the_attempts_it_cleared", tags) {
+TEST_CASE("unlock_account_records_an_event_with_the_attempts_it_cleared", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -730,7 +728,7 @@ TEST_CASE("unlock_account_records_an_event_with_the_attempts_it_cleared", tags) 
     CHECK(events.front().error_detail == "Unlocked by an administrator; 5 failed attempts cleared");
 }
 
-TEST_CASE("unlock_after_a_manual_lock_leaves_the_attempt_count_out", tags) {
+TEST_CASE("unlock_after_a_manual_lock_leaves_the_attempt_count_out", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -749,7 +747,7 @@ TEST_CASE("unlock_after_a_manual_lock_leaves_the_attempt_count_out", tags) {
     CHECK(events.front().error_detail == "Unlocked by an administrator");
 }
 
-TEST_CASE("unlocking_an_account_that_is_not_locked_records_nothing", tags) {
+TEST_CASE("unlocking_an_account_that_is_not_locked_records_nothing", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -765,7 +763,7 @@ TEST_CASE("unlocking_an_account_that_is_not_locked_records_nothing", tags) {
     CHECK(lock_events(h.context(), generated.id, "account_unlocked").empty());
 }
 
-TEST_CASE("delete_nonexistent_account_throws", tags) {
+TEST_CASE("delete_nonexistent_account_throws", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -778,7 +776,7 @@ TEST_CASE("delete_nonexistent_account_throws", tags) {
     CHECK_THROWS_AS(sut.delete_account(non_existent_id), std::invalid_argument);
 }
 
-TEST_CASE("login_with_different_ip_addresses", tags) {
+TEST_CASE("login_with_different_ip_addresses", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -802,7 +800,7 @@ TEST_CASE("login_with_different_ip_addresses", tags) {
     }
 }
 
-TEST_CASE("set_my_default_party_persists_the_new_default", tags) {
+TEST_CASE("set_my_default_party_persists_the_new_default", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -825,7 +823,7 @@ TEST_CASE("set_my_default_party_persists_the_new_default", tags) {
     CHECK(*reloaded->default_party_id == party_id);
 }
 
-TEST_CASE("set_my_default_party_is_idempotent_when_already_the_default", tags) {
+TEST_CASE("set_my_default_party_is_idempotent_when_already_the_default", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -846,7 +844,7 @@ TEST_CASE("set_my_default_party_is_idempotent_when_already_the_default", tags) {
     CHECK(sut.set_my_default_party(a.id, party_id).empty());
 }
 
-TEST_CASE("set_my_default_party_clears_the_default_when_no_party_is_stated", tags) {
+TEST_CASE("set_my_default_party_clears_the_default_when_no_party_is_stated", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -871,7 +869,7 @@ TEST_CASE("set_my_default_party_clears_the_default_when_no_party_is_stated", tag
     CHECK(sut.set_my_default_party(a.id, std::nullopt).empty());
 }
 
-TEST_CASE("set_my_default_party_for_nonexistent_account_returns_error", tags) {
+TEST_CASE("set_my_default_party_for_nonexistent_account_returns_error", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -885,7 +883,7 @@ TEST_CASE("set_my_default_party_for_nonexistent_account_returns_error", tags) {
     CHECK(!err.empty());
 }
 
-TEST_CASE("set_reporting_line_writes_one_field_and_records_the_reason", tags) {
+TEST_CASE("set_reporting_line_writes_one_field_and_records_the_reason", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -922,7 +920,7 @@ TEST_CASE("set_reporting_line_writes_one_field_and_records_the_reason", tags) {
     CHECK(response.account->job_title == before->job_title);
 }
 
-TEST_CASE("set_reporting_line_refuses_a_version_the_caller_has_not_seen", tags) {
+TEST_CASE("set_reporting_line_refuses_a_version_the_caller_has_not_seen", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -952,7 +950,7 @@ TEST_CASE("set_reporting_line_refuses_a_version_the_caller_has_not_seen", tags) 
     CHECK_FALSE(unchanged->reports_to_account_id.has_value());
 }
 
-TEST_CASE("set_reporting_line_clears_the_line_and_refuses_self_reporting", tags) {
+TEST_CASE("set_reporting_line_clears_the_line_and_refuses_self_reporting", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -985,7 +983,7 @@ TEST_CASE("set_reporting_line_clears_the_line_and_refuses_self_reporting", tags)
     CHECK(self.result.code == "self_reporting");
 }
 
-TEST_CASE("get_reporting_tree_answers_depth_and_the_direct_reports", tags) {
+TEST_CASE("get_reporting_tree_answers_depth_and_the_direct_reports", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -1033,7 +1031,7 @@ TEST_CASE("get_reporting_tree_answers_depth_and_the_direct_reports", tags) {
  * A member sees the people of the parties they work in, and nobody else's. The
  * tenant holds more people than that, and the read must not answer them.
  */
-TEST_CASE("the_reporting_tree_of_a_viewer_holds_the_people_of_their_parties_only", tags) {
+TEST_CASE("the_reporting_tree_of_a_viewer_holds_the_people_of_their_parties_only", "[service]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     service::account_operations_service sut(h.context());
@@ -1055,7 +1053,7 @@ TEST_CASE("the_reporting_tree_of_a_viewer_holds_the_people_of_their_parties_only
     CHECK(tree.parties.front().party_id == text(north));
 }
 
-TEST_CASE("a_viewer_who_works_in_several_parties_sees_all_of_them", tags) {
+TEST_CASE("a_viewer_who_works_in_several_parties_sees_all_of_them", "[service]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     service::account_operations_service sut(h.context());
@@ -1086,7 +1084,7 @@ TEST_CASE("a_viewer_who_works_in_several_parties_sees_all_of_them", tags) {
  * The head of a group sees everyone under them, including people who work in a
  * party the head is not linked to: who reports to you is yours to see.
  */
-TEST_CASE("a_viewer_sees_everyone_who_reports_to_them_whatever_their_party", tags) {
+TEST_CASE("a_viewer_sees_everyone_who_reports_to_them_whatever_their_party", "[service]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     service::account_operations_service sut(h.context());
@@ -1119,7 +1117,7 @@ TEST_CASE("a_viewer_sees_everyone_who_reports_to_them_whatever_their_party", tag
  * A colleague who shares one of the viewer's parties and works in another one
  * must not make that other party visible to the viewer.
  */
-TEST_CASE("a_peers_other_party_is_not_named_to_the_viewer", tags) {
+TEST_CASE("a_peers_other_party_is_not_named_to_the_viewer", "[service]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     service::account_operations_service sut(h.context());
@@ -1146,7 +1144,7 @@ TEST_CASE("a_peers_other_party_is_not_named_to_the_viewer", tags) {
  * A person with a manager is never drawn as one without. A manager the viewer
  * may not see is not named, and the person carries a marker saying so.
  */
-TEST_CASE("a_manager_the_viewer_may_not_see_is_marked_and_not_dropped", tags) {
+TEST_CASE("a_manager_the_viewer_may_not_see_is_marked_and_not_dropped", "[service]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     service::account_operations_service sut(h.context());
@@ -1173,7 +1171,7 @@ TEST_CASE("a_manager_the_viewer_may_not_see_is_marked_and_not_dropped", tags) {
     CHECK(tree_node(tree, boss) == nullptr);
 }
 
-TEST_CASE("the_tenants_reporting_tree_lists_every_party_and_each_accounts_parties", tags) {
+TEST_CASE("the_tenants_reporting_tree_lists_every_party_and_each_accounts_parties", "[service]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     service::account_operations_service sut(h.context());
@@ -1199,7 +1197,7 @@ TEST_CASE("the_tenants_reporting_tree_lists_every_party_and_each_accounts_partie
     CHECK(!node->reports_outside_scope);
 }
 
-TEST_CASE("get_reporting_tree_answers_one_branch_from_a_stated_root", tags) {
+TEST_CASE("get_reporting_tree_answers_one_branch_from_a_stated_root", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -1235,7 +1233,7 @@ TEST_CASE("get_reporting_tree_answers_one_branch_from_a_stated_root", tags) {
     CHECK(tree_depth(tree, other.id) == -100);
 }
 
-TEST_CASE("get_reporting_tree_counts_an_account_whose_manager_is_gone", tags) {
+TEST_CASE("get_reporting_tree_counts_an_account_whose_manager_is_gone", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -1267,7 +1265,7 @@ TEST_CASE("get_reporting_tree_counts_an_account_whose_manager_is_gone", tags) {
     CHECK(tree_depth(tree, report.id) == -1);
 }
 
-TEST_CASE("a_reporting_line_may_not_close_a_cycle", tags) {
+TEST_CASE("a_reporting_line_may_not_close_a_cycle", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -1322,7 +1320,7 @@ TEST_CASE("a_reporting_line_may_not_close_a_cycle", tags) {
                                     ""));
 }
 
-TEST_CASE("update_account_sets_and_clears_default_party_id", tags) {
+TEST_CASE("update_account_sets_and_clears_default_party_id", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -1368,7 +1366,7 @@ TEST_CASE("update_account_sets_and_clears_default_party_id", tags) {
     CHECK(!reloaded->default_party_id.has_value());
 }
 
-TEST_CASE("update_self_account_writes_the_fields_a_member_owns", tags) {
+TEST_CASE("update_self_account_writes_the_fields_a_member_owns", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -1406,7 +1404,7 @@ TEST_CASE("update_self_account_writes_the_fields_a_member_owns", tags) {
     CHECK(reloaded->email == a.email);
 }
 
-TEST_CASE("update_self_account_refuses_a_field_only_an_administrator_owns", tags) {
+TEST_CASE("update_self_account_refuses_a_field_only_an_administrator_owns", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -1441,7 +1439,7 @@ TEST_CASE("update_self_account_refuses_a_field_only_an_administrator_owns", tags
     CHECK(reloaded->email == before->email);
 }
 
-TEST_CASE("update_self_account_contact_information_creates_the_record_when_missing", tags) {
+TEST_CASE("update_self_account_contact_information_creates_the_record_when_missing", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -1489,7 +1487,7 @@ TEST_CASE("update_self_account_contact_information_creates_the_record_when_missi
     CHECK(stored.front().city == "Cambridge");
 }
 
-TEST_CASE("update_self_account_reports_an_account_that_is_not_there", tags) {
+TEST_CASE("update_self_account_reports_an_account_that_is_not_there", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -1505,7 +1503,7 @@ TEST_CASE("update_self_account_reports_an_account_that_is_not_there", tags) {
     CHECK(!response.account.has_value());
 }
 
-TEST_CASE("update_self_account_refuses_an_image_id_that_is_not_a_uuid", tags) {
+TEST_CASE("update_self_account_refuses_an_image_id_that_is_not_a_uuid", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -1534,7 +1532,7 @@ TEST_CASE("update_self_account_refuses_an_image_id_that_is_not_a_uuid", tags) {
     CHECK(!reloaded->image_id.has_value());
 }
 
-TEST_CASE("update_self_account_contact_information_updates_a_record_that_already_exists", tags) {
+TEST_CASE("update_self_account_contact_information_updates_a_record_that_already_exists", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -1570,7 +1568,7 @@ TEST_CASE("update_self_account_contact_information_updates_a_record_that_already
     REQUIRE(stored.size() == 1);
 }
 
-TEST_CASE("update_self_account_contact_information_refuses_a_bad_email_and_country_code", tags) {
+TEST_CASE("update_self_account_contact_information_refuses_a_bad_email_and_country_code", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -1602,7 +1600,7 @@ TEST_CASE("update_self_account_contact_information_refuses_a_bad_email_and_count
     CHECK(stored.empty());
 }
 
-TEST_CASE("login_refused_when_the_accounts_tenant_is_suspended", tags) {
+TEST_CASE("login_refused_when_the_accounts_tenant_is_suspended", "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

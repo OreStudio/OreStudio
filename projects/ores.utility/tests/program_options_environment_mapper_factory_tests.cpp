@@ -23,29 +23,27 @@
 
 namespace {
 
-const std::string tags("[environment_mapper_factory]");
-
 using ores::utility::program_options::environment_mapper_factory;
 using ores::utility::program_options::shared_domain_registry;
 
 }
 
-TEST_CASE("app_prefixed_variable_maps_to_kebab_case_option", tags) {
+TEST_CASE("app_prefixed_variable_maps_to_kebab_case_option", "[environment_mapper_factory]") {
     const auto mapper(environment_mapper_factory::make_mapper("IAM_SERVICE"));
     REQUIRE(mapper("ORES_IAM_SERVICE_DB_PASSWORD") == "db-password");
 }
 
-TEST_CASE("unrelated_variable_returns_empty", tags) {
+TEST_CASE("unrelated_variable_returns_empty", "[environment_mapper_factory]") {
     const auto mapper(environment_mapper_factory::make_mapper("IAM_SERVICE"));
     REQUIRE(mapper("SOME_OTHER_VAR").empty());
 }
 
-TEST_CASE("unregistered_domain_variable_returns_empty", tags) {
+TEST_CASE("unregistered_domain_variable_returns_empty", "[environment_mapper_factory]") {
     const auto mapper(environment_mapper_factory::make_mapper("IAM_SERVICE"));
     REQUIRE(mapper("ORES_TOTALLY_UNREGISTERED_DOMAIN_OPTION").empty());
 }
 
-TEST_CASE("registered_shared_domain_variable_falls_back_generically", tags) {
+TEST_CASE("registered_shared_domain_variable_falls_back_generically", "[environment_mapper_factory]") {
     shared_domain_registry::register_domain("WIDGET", {"COLOUR"});
     const auto mapper(environment_mapper_factory::make_mapper("IAM_SERVICE"));
 
@@ -55,7 +53,7 @@ TEST_CASE("registered_shared_domain_variable_falls_back_generically", tags) {
     REQUIRE(mapper("ORES_WIDGET_COLOUR") == "widget-colour");
 }
 
-TEST_CASE("shared_domain_variable_outside_allowed_suffixes_returns_empty", tags) {
+TEST_CASE("shared_domain_variable_outside_allowed_suffixes_returns_empty", "[environment_mapper_factory]") {
     // A domain's raw environment namespace can contain variables that are
     // not options at all (e.g. a server-side setting alongside client
     // options) -- only explicitly registered suffixes should resolve, or
@@ -65,7 +63,7 @@ TEST_CASE("shared_domain_variable_outside_allowed_suffixes_returns_empty", tags)
     REQUIRE(mapper("ORES_SPROCKET_LISTEN_PORT").empty());
 }
 
-TEST_CASE("app_prefix_wins_over_shared_domain_when_both_match", tags) {
+TEST_CASE("app_prefix_wins_over_shared_domain_when_both_match", "[environment_mapper_factory]") {
     shared_domain_registry::register_domain("IAM_SERVICE", {"FOO"});
     const auto mapper(environment_mapper_factory::make_mapper("IAM_SERVICE"));
 
@@ -75,7 +73,7 @@ TEST_CASE("app_prefix_wins_over_shared_domain_when_both_match", tags) {
     REQUIRE(mapper("ORES_IAM_SERVICE_FOO") == "foo");
 }
 
-TEST_CASE("a_second_shared_domain_resolves_without_mapper_changes", tags) {
+TEST_CASE("a_second_shared_domain_resolves_without_mapper_changes", "[environment_mapper_factory]") {
     shared_domain_registry::register_domain("GADGET", {"SIZE"});
     const auto mapper(environment_mapper_factory::make_mapper("SOME_APP"));
     REQUIRE(mapper("ORES_GADGET_SIZE") == "gadget-size");

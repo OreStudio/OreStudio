@@ -75,24 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_activity_categories_response
-    list_activity_categories(const messaging::list_activity_categories_request& request);
-    messaging::get_activity_category_response
-    get_activity_category(const messaging::get_activity_category_request& request);
-    messaging::get_many_activity_categories_response
-    get_many_activity_categories(const messaging::get_many_activity_categories_request& request);
-    messaging::put_activity_category_response
-    put_activity_category(const messaging::put_activity_category_request& request);
-    messaging::put_many_activity_categories_response
-    put_many_activity_categories(const messaging::put_many_activity_categories_request& request);
-    messaging::delete_activity_category_response
-    delete_activity_category(const messaging::delete_activity_category_request& request);
-    messaging::delete_many_activity_categories_response delete_many_activity_categories(
-        const messaging::delete_many_activity_categories_request& request);
-    messaging::list_activity_category_versions_response list_activity_category_versions(
-        const messaging::list_activity_category_versions_request& request);
-    messaging::get_activity_category_version_response
-    get_activity_category_version(const messaging::get_activity_category_version_request& request);
+    ::ores::trading::messaging::list_activity_categories_response list_activity_categories(
+        const ::ores::trading::messaging::list_activity_categories_request& request);
+    ::ores::trading::messaging::get_activity_category_response
+    get_activity_category(const ::ores::trading::messaging::get_activity_category_request& request);
+    ::ores::trading::messaging::get_many_activity_categories_response get_many_activity_categories(
+        const ::ores::trading::messaging::get_many_activity_categories_request& request);
+    ::ores::trading::messaging::put_activity_category_response
+    put_activity_category(const ::ores::trading::messaging::put_activity_category_request& request);
+    ::ores::trading::messaging::put_many_activity_categories_response put_many_activity_categories(
+        const ::ores::trading::messaging::put_many_activity_categories_request& request);
+    ::ores::trading::messaging::delete_activity_category_response delete_activity_category(
+        const ::ores::trading::messaging::delete_activity_category_request& request);
+    ::ores::trading::messaging::delete_many_activity_categories_response
+    delete_many_activity_categories(
+        const ::ores::trading::messaging::delete_many_activity_categories_request& request);
+    ::ores::trading::messaging::list_activity_category_versions_response
+    list_activity_category_versions(
+        const ::ores::trading::messaging::list_activity_category_versions_request& request);
+    ::ores::trading::messaging::get_activity_category_version_response
+    get_activity_category_version(
+        const ::ores::trading::messaging::get_activity_category_version_request& request);
     /**@}*/
 
     /**
@@ -189,9 +192,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::activity_category_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::activity_category& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::trading::messaging::activity_category_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::activity_category& out);
 };
 
 }

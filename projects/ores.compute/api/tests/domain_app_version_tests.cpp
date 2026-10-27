@@ -21,23 +21,17 @@
 #include "ores.compute.api/domain/app_version_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/app_version_table.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
 
-namespace {
-
-const std::string_view test_suite("ores.compute.tests");
-const std::string tags("[domain]");
-
-}
-
 using ores::compute::domain::app_version;
 using namespace ores::compute::domain;
 using namespace ores::logging;
 
-TEST_CASE("create_app_version_with_valid_fields", tags) {
+TEST_CASE("create_app_version_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     app_version sut;
@@ -58,7 +52,7 @@ TEST_CASE("create_app_version_with_valid_fields", tags) {
     CHECK(sut.min_ram_mb == 4096);
 }
 
-TEST_CASE("create_app_version_with_specific_uuid", tags) {
+TEST_CASE("create_app_version_with_specific_uuid", "[domain]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -80,7 +74,7 @@ TEST_CASE("create_app_version_with_specific_uuid", tags) {
     CHECK(sut.wrapper_version == "v2.0.0");
 }
 
-TEST_CASE("app_version_insertion_operator", tags) {
+TEST_CASE("app_version_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     app_version sut;
@@ -102,7 +96,7 @@ TEST_CASE("app_version_insertion_operator", tags) {
     CHECK(json_output.find("v1.0.0") != std::string::npos);
 }
 
-TEST_CASE("app_version_convert_single_to_table", tags) {
+TEST_CASE("app_version_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     app_version av;
@@ -123,7 +117,7 @@ TEST_CASE("app_version_convert_single_to_table", tags) {
     CHECK(table.find("v1.2.0") != std::string::npos);
 }
 
-TEST_CASE("app_version_convert_multiple_to_table", tags) {
+TEST_CASE("app_version_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<app_version> versions;
@@ -149,7 +143,7 @@ TEST_CASE("app_version_convert_multiple_to_table", tags) {
     CHECK(table.find("v1.2.0") != std::string::npos);
 }
 
-TEST_CASE("app_version_convert_empty_vector_to_table", tags) {
+TEST_CASE("app_version_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<app_version> versions;
@@ -161,7 +155,7 @@ TEST_CASE("app_version_convert_empty_vector_to_table", tags) {
     CHECK(!table.empty());
 }
 
-TEST_CASE("create_app_version_with_faker", tags) {
+TEST_CASE("create_app_version_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     app_version sut;

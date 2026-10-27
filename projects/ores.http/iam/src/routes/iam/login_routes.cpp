@@ -73,7 +73,7 @@ http_response login_error_response(const std::string& error) {
  */
 template <typename Request>
 boost::asio::awaitable<http_response>
-forward(const http_request& req, nats_client& session, const Request& msg) {
+login_forward(const http_request& req, nats_client& session, const Request& msg) {
     auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
     try {
         const auto reply =
@@ -108,7 +108,7 @@ boost::asio::awaitable<http_response> login_routes::handle_login(const http_requ
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await login_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -118,7 +118,7 @@ boost::asio::awaitable<http_response> login_routes::handle_logout(const http_req
                                                                   nats_client& session) {
     using request_type = messaging::logout_request;
     try {
-        co_return co_await forward(req, session, request_type{});
+        co_return co_await login_forward(req, session, request_type{});
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }

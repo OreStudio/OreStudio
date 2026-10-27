@@ -23,8 +23,6 @@
 
 namespace {
 
-const std::string tags("[logging_configuration]");
-
 namespace po = boost::program_options;
 using namespace ores::logging;
 
@@ -38,7 +36,7 @@ po::variables_map parse_args(const po::options_description& desc,
 
 }
 
-TEST_CASE("logging_make_options_description_has_expected_options", tags) {
+TEST_CASE("logging_make_options_description_has_expected_options", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("test.log");
 
     REQUIRE(desc.find_nothrow("log-enabled", false) != nullptr);
@@ -49,7 +47,7 @@ TEST_CASE("logging_make_options_description_has_expected_options", tags) {
     REQUIRE(desc.find_nothrow("log-include-pid", false) != nullptr);
 }
 
-TEST_CASE("logging_read_options_returns_nullopt_when_disabled", tags) {
+TEST_CASE("logging_read_options_returns_nullopt_when_disabled", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("test.log");
     std::vector<const char*> args = {"test"};
     auto vm = parse_args(desc, args);
@@ -59,7 +57,7 @@ TEST_CASE("logging_read_options_returns_nullopt_when_disabled", tags) {
     REQUIRE_FALSE(opts.has_value());
 }
 
-TEST_CASE("logging_read_options_returns_value_when_enabled", tags) {
+TEST_CASE("logging_read_options_returns_value_when_enabled", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("test.log");
     std::vector<const char*> args = {"test", "--log-enabled"};
     auto vm = parse_args(desc, args);
@@ -76,7 +74,7 @@ TEST_CASE("logging_read_options_returns_value_when_enabled", tags) {
     REQUIRE(opts->tag.empty());
 }
 
-TEST_CASE("logging_read_options_writes_no_file_without_a_filename", tags) {
+TEST_CASE("logging_read_options_writes_no_file_without_a_filename", "[logging_configuration]") {
     /* File logging is opt-in. The caller's suggested name is no longer a
      * default, so asking for logging alone writes no file. */
     auto desc = logging_configuration::make_options_description("my-app.log");
@@ -89,7 +87,7 @@ TEST_CASE("logging_read_options_writes_no_file_without_a_filename", tags) {
     REQUIRE(opts->filename.empty());
 }
 
-TEST_CASE("logging_read_options_parses_custom_filename", tags) {
+TEST_CASE("logging_read_options_parses_custom_filename", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("default.log");
     std::vector<const char*> args = {"test", "--log-enabled", "--log-filename", "custom.log"};
     auto vm = parse_args(desc, args);
@@ -100,7 +98,7 @@ TEST_CASE("logging_read_options_parses_custom_filename", tags) {
     REQUIRE(opts->filename == "custom.log");
 }
 
-TEST_CASE("logging_read_options_has_no_default_directory", tags) {
+TEST_CASE("logging_read_options_has_no_default_directory", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("test.log");
     std::vector<const char*> args = {"test", "--log-enabled"};
     auto vm = parse_args(desc, args);
@@ -111,7 +109,7 @@ TEST_CASE("logging_read_options_has_no_default_directory", tags) {
     REQUIRE(opts->output_directory.empty());
 }
 
-TEST_CASE("logging_read_options_parses_custom_directory", tags) {
+TEST_CASE("logging_read_options_parses_custom_directory", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("test.log");
     std::vector<const char*> args = {"test", "--log-enabled", "--log-directory", "/var/log/myapp"};
     auto vm = parse_args(desc, args);
@@ -122,7 +120,7 @@ TEST_CASE("logging_read_options_parses_custom_directory", tags) {
     REQUIRE(opts->output_directory == "/var/log/myapp");
 }
 
-TEST_CASE("logging_read_options_uses_default_level", tags) {
+TEST_CASE("logging_read_options_uses_default_level", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("test.log");
     std::vector<const char*> args = {"test", "--log-enabled"};
     auto vm = parse_args(desc, args);
@@ -133,7 +131,7 @@ TEST_CASE("logging_read_options_uses_default_level", tags) {
     REQUIRE(opts->severity == "info");
 }
 
-TEST_CASE("logging_read_options_parses_log_level", tags) {
+TEST_CASE("logging_read_options_parses_log_level", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("test.log");
     std::vector<const char*> args = {"test", "--log-enabled", "--log-level", "debug"};
     auto vm = parse_args(desc, args);
@@ -144,7 +142,7 @@ TEST_CASE("logging_read_options_parses_log_level", tags) {
     REQUIRE(opts->severity == "debug");
 }
 
-TEST_CASE("logging_read_options_parses_short_log_level", tags) {
+TEST_CASE("logging_read_options_parses_short_log_level", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("test.log");
     std::vector<const char*> args = {"test", "-e", "-l", "warn"};
     auto vm = parse_args(desc, args);
@@ -155,7 +153,7 @@ TEST_CASE("logging_read_options_parses_short_log_level", tags) {
     REQUIRE(opts->severity == "warn");
 }
 
-TEST_CASE("logging_read_options_console_is_implied", tags) {
+TEST_CASE("logging_read_options_console_is_implied", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("test.log");
     std::vector<const char*> args = {"test", "--log-enabled"};
     auto vm = parse_args(desc, args);
@@ -166,7 +164,7 @@ TEST_CASE("logging_read_options_console_is_implied", tags) {
     REQUIRE(opts->output_to_console);
 }
 
-TEST_CASE("logging_read_options_enables_console_output", tags) {
+TEST_CASE("logging_read_options_enables_console_output", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("test.log");
     std::vector<const char*> args = {"test", "--log-enabled", "--log-to-console"};
     auto vm = parse_args(desc, args);
@@ -177,7 +175,7 @@ TEST_CASE("logging_read_options_enables_console_output", tags) {
     REQUIRE(opts->output_to_console);
 }
 
-TEST_CASE("logging_read_options_include_pid_disabled_by_default", tags) {
+TEST_CASE("logging_read_options_include_pid_disabled_by_default", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("test.log");
     std::vector<const char*> args = {"test", "--log-enabled"};
     auto vm = parse_args(desc, args);
@@ -188,7 +186,7 @@ TEST_CASE("logging_read_options_include_pid_disabled_by_default", tags) {
     REQUIRE_FALSE(opts->include_pid);
 }
 
-TEST_CASE("logging_read_options_enables_include_pid", tags) {
+TEST_CASE("logging_read_options_enables_include_pid", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("test.log");
     std::vector<const char*> args = {"test", "--log-enabled", "--log-include-pid"};
     auto vm = parse_args(desc, args);
@@ -199,7 +197,7 @@ TEST_CASE("logging_read_options_enables_include_pid", tags) {
     REQUIRE(opts->include_pid);
 }
 
-TEST_CASE("logging_read_options_throws_on_invalid_level", tags) {
+TEST_CASE("logging_read_options_throws_on_invalid_level", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("test.log");
     std::vector<const char*> args = {"test", "--log-enabled", "--log-level", "invalid"};
     auto vm = parse_args(desc, args);
@@ -207,7 +205,7 @@ TEST_CASE("logging_read_options_throws_on_invalid_level", tags) {
     REQUIRE_THROWS(logging_configuration::read_options(vm));
 }
 
-TEST_CASE("logging_read_options_parses_all_options", tags) {
+TEST_CASE("logging_read_options_parses_all_options", "[logging_configuration]") {
     auto desc = logging_configuration::make_options_description("default.log");
     std::vector<const char*> args = {"test",
                                      "--log-enabled",

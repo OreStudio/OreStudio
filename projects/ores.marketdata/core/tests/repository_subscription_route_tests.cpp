@@ -36,7 +36,6 @@
 
 namespace {
 
-const std::string tags("[repository][subscription]");
 const std::string route_tags("[repository][route]");
 
 constexpr auto unique_violation = "duplicate key value violates unique constraint";
@@ -67,7 +66,7 @@ subscribed(database_helper& h,
 
 }
 
-TEST_CASE("write_and_read_a_subscription", tags) {
+TEST_CASE("write_and_read_a_subscription", "[repository][subscription]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -81,7 +80,7 @@ TEST_CASE("write_and_read_a_subscription", tags) {
     CHECK(read.front().display);
 }
 
-TEST_CASE("a_subscription_holds_at_least_one_right", tags) {
+TEST_CASE("a_subscription_holds_at_least_one_right", "[repository][subscription]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -94,7 +93,7 @@ TEST_CASE("a_subscription_holds_at_least_one_right", tags) {
                       Catch::Matchers::ContainsSubstring(check_violation));
 }
 
-TEST_CASE("a_party_holds_one_subscription_to_a_provider", tags) {
+TEST_CASE("a_party_holds_one_subscription_to_a_provider", "[repository][subscription]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 
@@ -112,7 +111,7 @@ TEST_CASE("a_party_holds_one_subscription_to_a_provider", tags) {
                       Catch::Matchers::ContainsSubstring(unique_violation));
 }
 
-TEST_CASE("a_subscription_names_a_provider_in_the_catalogue", tags) {
+TEST_CASE("a_subscription_names_a_provider_in_the_catalogue", "[repository][subscription]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 

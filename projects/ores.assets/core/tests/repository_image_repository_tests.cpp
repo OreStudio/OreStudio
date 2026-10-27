@@ -26,17 +26,11 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-
-namespace {
-
-const std::string_view test_suite("ores.assets.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::assets::generators;
 using ores::assets::domain::image;
@@ -44,7 +38,7 @@ using ores::assets::repository::image_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_single_image", tags) {
+TEST_CASE("write_single_image", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -56,7 +50,7 @@ TEST_CASE("write_single_image", tags) {
     CHECK_NOTHROW(repo.write(h.context(), img));
 }
 
-TEST_CASE("write_multiple_images", tags) {
+TEST_CASE("write_multiple_images", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -68,7 +62,7 @@ TEST_CASE("write_multiple_images", tags) {
     CHECK_NOTHROW(repo.write(h.context(), images));
 }
 
-TEST_CASE("read_latest_images", tags) {
+TEST_CASE("read_latest_images", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -91,7 +85,7 @@ TEST_CASE("read_latest_images", tags) {
     }
 }
 
-TEST_CASE("read_latest_image_by_id", tags) {
+TEST_CASE("read_latest_image_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -116,7 +110,7 @@ TEST_CASE("read_latest_image_by_id", tags) {
     CHECK(read_images[0].data == img.data);
 }
 
-TEST_CASE("write_and_read_image_preserves_every_byte", tags) {
+TEST_CASE("write_and_read_image_preserves_every_byte", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -139,7 +133,7 @@ TEST_CASE("write_and_read_image_preserves_every_byte", tags) {
     CHECK(read_images[0].data == img.data);
 }
 
-TEST_CASE("read_latest_image_by_code", tags) {
+TEST_CASE("read_latest_image_by_code", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -158,7 +152,7 @@ TEST_CASE("read_latest_image_by_code", tags) {
     CHECK(read_images[0].id == img.id);
 }
 
-TEST_CASE("read_all_image_versions", tags) {
+TEST_CASE("read_all_image_versions", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -185,7 +179,7 @@ TEST_CASE("read_all_image_versions", tags) {
     CHECK(read_images[1].description == original_description);
 }
 
-TEST_CASE("read_nonexistent_image_id", tags) {
+TEST_CASE("read_nonexistent_image_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

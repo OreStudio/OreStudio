@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_json_io.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
@@ -28,9 +29,6 @@
 namespace {
 
 using ores::marketdata::domain::market_series;
-
-const std::string_view test_suite("ores.marketdata.api.tests");
-const std::string tags("[domain]");
 
 market_series make_eur_discount_series() {
     market_series s;
@@ -49,7 +47,7 @@ market_series make_eur_discount_series() {
 
 using namespace ores::logging;
 
-TEST_CASE("create_market_series_with_valid_fields", tags) {
+TEST_CASE("create_market_series_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_eur_discount_series();
@@ -60,7 +58,7 @@ TEST_CASE("create_market_series_with_valid_fields", tags) {
     CHECK(sut.series_subclass == "yield");
 }
 
-TEST_CASE("create_fx_spot_series", tags) {
+TEST_CASE("create_fx_spot_series", "[domain]") {
     auto lg(make_logger(test_suite));
 
     market_series sut;
@@ -78,7 +76,7 @@ TEST_CASE("create_fx_spot_series", tags) {
     CHECK(sut.series_subclass == "spot");
 }
 
-TEST_CASE("market_series_json_serialisation", tags) {
+TEST_CASE("market_series_json_serialisation", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_eur_discount_series();
@@ -93,7 +91,7 @@ TEST_CASE("market_series_json_serialisation", tags) {
     CHECK(json_output.find("quote=discount") != std::string::npos);
 }
 
-TEST_CASE("create_swaption_vol_series", tags) {
+TEST_CASE("create_swaption_vol_series", "[domain]") {
     auto lg(make_logger(test_suite));
 
     market_series sut;
@@ -113,7 +111,7 @@ TEST_CASE("create_swaption_vol_series", tags) {
     CHECK(sut.series_subclass == "volatility");
 }
 
-TEST_CASE("create_market_series_with_faker", tags) {
+TEST_CASE("create_market_series_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     market_series sut;

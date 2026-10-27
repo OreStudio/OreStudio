@@ -40,6 +40,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -62,9 +63,6 @@ using ores::refdata::repository::country_repository;
 using ores::testing::scoped_database_helper;
 
 namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository][currency_pair_convention_calendar]");
 
 // Total number of test cases that write currency_pair_convention_calendar
 // records. Each test uses a different slice of the synthetic
@@ -150,7 +148,7 @@ void write_synthetic_pair(scoped_database_helper& h,
 
 }
 
-TEST_CASE("write_single_currency_pair_convention_calendar", tags) {
+TEST_CASE("write_single_currency_pair_convention_calendar", "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -176,7 +174,7 @@ TEST_CASE("write_single_currency_pair_convention_calendar", tags) {
     CHECK(read_pccs[0].change_commentary == pcc.change_commentary);
 }
 
-TEST_CASE("write_multiple_currency_pair_convention_calendars", tags) {
+TEST_CASE("write_multiple_currency_pair_convention_calendars", "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -213,7 +211,7 @@ TEST_CASE("write_multiple_currency_pair_convention_calendars", tags) {
     }
 }
 
-TEST_CASE("read_latest_currency_pair_convention_calendars_by_pair", tags) {
+TEST_CASE("read_latest_currency_pair_convention_calendars_by_pair", "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -252,7 +250,7 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_by_pair", tags) {
 // conventions_mapper::reverse_fx, which never touches this table) is
 // correctly resolvable at export time from the junction table alone: read
 // back exactly the set of calendars written, no more, no less.
-TEST_CASE("read_latest_currency_pair_convention_calendars_returns_full_set_for_pair", tags) {
+TEST_CASE("read_latest_currency_pair_convention_calendars_returns_full_set_for_pair", "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -290,7 +288,7 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_returns_full_set_for_p
     CHECK(read_codes == expected_codes);
 }
 
-TEST_CASE("read_latest_currency_pair_convention_calendars_by_calendar", tags) {
+TEST_CASE("read_latest_currency_pair_convention_calendars_by_calendar", "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -317,7 +315,7 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_by_calendar", tags) {
     CHECK(read_pccs[0].pair_code == conventions[4].pair_code);
 }
 
-TEST_CASE("remove_currency_pair_convention_calendar", tags) {
+TEST_CASE("remove_currency_pair_convention_calendar", "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -354,7 +352,7 @@ TEST_CASE("remove_currency_pair_convention_calendar", tags) {
     CHECK(keeper_it->change_commentary == keeper.change_commentary);
 }
 
-TEST_CASE("remove_by_pair_currency_pair_convention_calendar", tags) {
+TEST_CASE("remove_by_pair_currency_pair_convention_calendar", "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -390,7 +388,7 @@ TEST_CASE("remove_by_pair_currency_pair_convention_calendar", tags) {
     CHECK(keeper_it->change_commentary == keeper.change_commentary);
 }
 
-TEST_CASE("read_nonexistent_currency_pair_convention_calendar", tags) {
+TEST_CASE("read_nonexistent_currency_pair_convention_calendar", "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

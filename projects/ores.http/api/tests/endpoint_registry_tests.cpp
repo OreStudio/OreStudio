@@ -20,12 +20,10 @@
 #include "ores.http.api/domain/route.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
-
-const std::string test_suite("ores.http.tests");
-const std::string tags("[endpoint_registry]");
 
 ores::http::domain::route make_test_route(ores::http::domain::http_method method,
                                           const std::string& pattern,
@@ -48,7 +46,7 @@ using namespace ores::http::openapi;
 using namespace ores::http::domain;
 using namespace ores::logging;
 
-TEST_CASE("endpoint_registry_generates_minimal_openapi_spec", tags) {
+TEST_CASE("endpoint_registry_generates_minimal_openapi_spec", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing minimal OpenAPI spec generation";
 
@@ -59,7 +57,7 @@ TEST_CASE("endpoint_registry_generates_minimal_openapi_spec", tags) {
     REQUIRE(json.find("\"openapi\":\"3.0.3\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_generates_spec_with_info", tags) {
+TEST_CASE("endpoint_registry_generates_spec_with_info", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing OpenAPI spec with info";
 
@@ -77,7 +75,7 @@ TEST_CASE("endpoint_registry_generates_spec_with_info", tags) {
     REQUIRE(json.find("\"version\":\"2.0.0\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_generates_spec_with_contact", tags) {
+TEST_CASE("endpoint_registry_generates_spec_with_contact", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing OpenAPI spec with contact info";
 
@@ -94,7 +92,7 @@ TEST_CASE("endpoint_registry_generates_spec_with_contact", tags) {
     REQUIRE(json.find("\"email\":\"john@example.com\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_generates_spec_with_license", tags) {
+TEST_CASE("endpoint_registry_generates_spec_with_license", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing OpenAPI spec with license info";
 
@@ -111,7 +109,7 @@ TEST_CASE("endpoint_registry_generates_spec_with_license", tags) {
     REQUIRE(json.find("https://opensource.org/licenses/MIT") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_generates_spec_with_servers", tags) {
+TEST_CASE("endpoint_registry_generates_spec_with_servers", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing OpenAPI spec with servers";
 
@@ -127,7 +125,7 @@ TEST_CASE("endpoint_registry_generates_spec_with_servers", tags) {
     REQUIRE(json.find("Staging server") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_generates_default_server_when_none_added", tags) {
+TEST_CASE("endpoint_registry_generates_default_server_when_none_added", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing OpenAPI spec with default server";
 
@@ -138,7 +136,7 @@ TEST_CASE("endpoint_registry_generates_default_server_when_none_added", tags) {
     REQUIRE(json.find("Default server") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_registers_get_route", tags) {
+TEST_CASE("endpoint_registry_registers_get_route", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing GET route registration";
 
@@ -152,7 +150,7 @@ TEST_CASE("endpoint_registry_registers_get_route", tags) {
     REQUIRE(json.find("\"summary\":\"Health check\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_registers_post_route", tags) {
+TEST_CASE("endpoint_registry_registers_post_route", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing POST route registration";
 
@@ -165,7 +163,7 @@ TEST_CASE("endpoint_registry_registers_post_route", tags) {
     REQUIRE(json.find("\"post\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_registers_put_route", tags) {
+TEST_CASE("endpoint_registry_registers_put_route", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing PUT route registration";
 
@@ -178,7 +176,7 @@ TEST_CASE("endpoint_registry_registers_put_route", tags) {
     REQUIRE(json.find("\"put\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_registers_patch_route", tags) {
+TEST_CASE("endpoint_registry_registers_patch_route", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing PATCH route registration";
 
@@ -190,7 +188,7 @@ TEST_CASE("endpoint_registry_registers_patch_route", tags) {
     REQUIRE(json.find("\"patch\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_registers_delete_route", tags) {
+TEST_CASE("endpoint_registry_registers_delete_route", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing DELETE route registration";
 
@@ -202,7 +200,7 @@ TEST_CASE("endpoint_registry_registers_delete_route", tags) {
     REQUIRE(json.find("\"delete\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_registers_head_route", tags) {
+TEST_CASE("endpoint_registry_registers_head_route", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing HEAD route registration";
 
@@ -214,7 +212,7 @@ TEST_CASE("endpoint_registry_registers_head_route", tags) {
     REQUIRE(json.find("\"head\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_registers_options_route", tags) {
+TEST_CASE("endpoint_registry_registers_options_route", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing OPTIONS route registration";
 
@@ -226,7 +224,7 @@ TEST_CASE("endpoint_registry_registers_options_route", tags) {
     REQUIRE(json.find("\"options\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_includes_path_parameters", tags) {
+TEST_CASE("endpoint_registry_includes_path_parameters", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing path parameter inclusion";
 
@@ -246,7 +244,7 @@ TEST_CASE("endpoint_registry_includes_path_parameters", tags) {
     REQUIRE(json.find("\"required\":true") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_includes_authentication_requirement", tags) {
+TEST_CASE("endpoint_registry_includes_authentication_requirement", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing authentication requirement inclusion";
 
@@ -261,7 +259,7 @@ TEST_CASE("endpoint_registry_includes_authentication_requirement", tags) {
     REQUIRE(json.find("\"403\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_includes_tags", tags) {
+TEST_CASE("endpoint_registry_includes_tags", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing tags inclusion";
 
@@ -280,7 +278,7 @@ TEST_CASE("endpoint_registry_includes_tags", tags) {
     REQUIRE(json.find("\"Admin\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_includes_description", tags) {
+TEST_CASE("endpoint_registry_includes_description", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing description inclusion";
 
@@ -296,7 +294,7 @@ TEST_CASE("endpoint_registry_includes_description", tags) {
             std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_includes_standard_responses", tags) {
+TEST_CASE("endpoint_registry_includes_standard_responses", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing standard response inclusion";
 
@@ -309,7 +307,7 @@ TEST_CASE("endpoint_registry_includes_standard_responses", tags) {
     REQUIRE(json.find("\"500\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_generates_security_components", tags) {
+TEST_CASE("endpoint_registry_generates_security_components", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing security components generation";
 
@@ -323,7 +321,7 @@ TEST_CASE("endpoint_registry_generates_security_components", tags) {
     REQUIRE(json.find("\"bearerFormat\":\"JWT\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_multiple_methods_same_path", tags) {
+TEST_CASE("endpoint_registry_multiple_methods_same_path", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing multiple methods on same path";
 
@@ -338,7 +336,7 @@ TEST_CASE("endpoint_registry_multiple_methods_same_path", tags) {
     REQUIRE(json.find("\"post\"") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_generates_swagger_ui_html", tags) {
+TEST_CASE("endpoint_registry_generates_swagger_ui_html", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing Swagger UI HTML generation";
 
@@ -356,7 +354,7 @@ TEST_CASE("endpoint_registry_generates_swagger_ui_html", tags) {
     REQUIRE(html.find("My Test API") != std::string::npos);
 }
 
-TEST_CASE("endpoint_registry_generates_swagger_ui_html_default_spec_url", tags) {
+TEST_CASE("endpoint_registry_generates_swagger_ui_html_default_spec_url", "[endpoint_registry]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing Swagger UI HTML with default spec URL";
 

@@ -38,8 +38,6 @@
 
 namespace {
 
-const std::string tags("[counterparty_gate]");
-
 using namespace ores::refdata::tests;
 using ores::refdata::service::counterparty_identifier_service;
 using ores::refdata::service::counterparty_proposal_service;
@@ -105,7 +103,7 @@ bool linked(const world& w, const domain::party_counterparty_change& l) {
 
 }
 
-TEST_CASE("a_counterparty_put_with_no_request_writes_nothing_and_answers_approval_required", tags) {
+TEST_CASE("a_counterparty_put_with_no_request_writes_nothing_and_answers_approval_required", "[counterparty_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto line = new_counterparty_line(h);
@@ -117,7 +115,7 @@ TEST_CASE("a_counterparty_put_with_no_request_writes_nothing_and_answers_approva
     CHECK_FALSE(exists(w, line.entity_id));
 }
 
-TEST_CASE("an_identifier_put_with_no_request_writes_nothing_and_answers_approval_required", tags) {
+TEST_CASE("an_identifier_put_with_no_request_writes_nothing_and_answers_approval_required", "[counterparty_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto owner = make_live(w, new_counterparty_line(h));
@@ -132,7 +130,7 @@ TEST_CASE("an_identifier_put_with_no_request_writes_nothing_and_answers_approval
                     .has_value());
 }
 
-TEST_CASE("a_link_put_and_a_link_removal_with_no_request_write_nothing", tags) {
+TEST_CASE("a_link_put_and_a_link_removal_with_no_request_write_nothing", "[counterparty_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto live = make_live(w, new_counterparty_line(h));
@@ -147,7 +145,7 @@ TEST_CASE("a_link_put_and_a_link_removal_with_no_request_write_nothing", tags) {
     CHECK(linked(w, line));
 }
 
-TEST_CASE("a_request_that_is_not_yet_approved_opens_nothing", tags) {
+TEST_CASE("a_request_that_is_not_yet_approved_opens_nothing", "[counterparty_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     counterparty_lines lines;
@@ -163,7 +161,7 @@ TEST_CASE("a_request_that_is_not_yet_approved_opens_nothing", tags) {
     CHECK_FALSE(exists(w, lines.counterparties.front().entity_id));
 }
 
-TEST_CASE("an_approved_request_opens_the_gate_only_for_the_lines_it_holds", tags) {
+TEST_CASE("an_approved_request_opens_the_gate_only_for_the_lines_it_holds", "[counterparty_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     counterparty_lines lines;
@@ -181,7 +179,7 @@ TEST_CASE("an_approved_request_opens_the_gate_only_for_the_lines_it_holds", tags
     CHECK_FALSE(exists(w, other.entity_id));
 }
 
-TEST_CASE("an_approved_request_opens_a_link_put_and_a_link_removal", tags) {
+TEST_CASE("an_approved_request_opens_a_link_put_and_a_link_removal", "[counterparty_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto live = make_live(w, new_counterparty_line(h));
@@ -197,7 +195,7 @@ TEST_CASE("an_approved_request_opens_a_link_put_and_a_link_removal", tags) {
     CHECK(linked(w, lines.links.front()));
 }
 
-TEST_CASE("a_contact_change_is_written_directly", tags) {
+TEST_CASE("a_contact_change_is_written_directly", "[counterparty_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto live = make_live(w, new_counterparty_line(h));
@@ -228,7 +226,7 @@ TEST_CASE("a_contact_change_is_written_directly", tags) {
     CHECK(response.result.outcome == outcome::ok);
 }
 
-TEST_CASE("a_batch_link_removal_opens_only_for_the_link_the_request_holds", tags) {
+TEST_CASE("a_batch_link_removal_opens_only_for_the_link_the_request_holds", "[counterparty_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto held = make_live(w, new_counterparty_line(h));
@@ -261,7 +259,7 @@ TEST_CASE("a_batch_link_removal_opens_only_for_the_link_the_request_holds", tags
     CHECK_FALSE(linked(w, removal));
 }
 
-TEST_CASE("a_link_line_opens_the_gate_once", tags) {
+TEST_CASE("a_link_line_opens_the_gate_once", "[counterparty_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto live = make_live(w, new_counterparty_line(h));

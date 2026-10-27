@@ -27,6 +27,7 @@
 #include "ores.http/routes/iam/login_routes.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
@@ -42,11 +43,8 @@ using ores::nats::service::nats_client;
 
 namespace {
 
-const std::string_view test_suite("ores.http.iam.tests");
-const std::string tags("[routes]");
-
 /// One route the unit must register, as the projection states it.
-struct expected_route {
+struct login_expected_route {
     http_method method;
     std::string pattern;
     bool requires_auth;
@@ -65,7 +63,7 @@ std::shared_ptr<router> login_registered_routes(nats_client& session) {
 
 }
 
-TEST_CASE("login_routes_registers_every_declared_operation", tags) {
+TEST_CASE("login_routes_registers_every_declared_operation", "[routes]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -77,8 +75,8 @@ TEST_CASE("login_routes_registers_every_declared_operation", tags) {
     // The router's own list is the only public view of what was registered,
     // so a route that is missing from it was never registered.
     for (const auto& expected : {
-             expected_route{http_method::post, std::string{"/api/v1/iam/ops/login"}, false},
-             expected_route{http_method::post, std::string{"/api/v1/iam/ops/logout"}, true},
+             login_expected_route{http_method::post, std::string{"/api/v1/iam/ops/login"}, false},
+             login_expected_route{http_method::post, std::string{"/api/v1/iam/ops/logout"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;
@@ -89,7 +87,7 @@ TEST_CASE("login_routes_registers_every_declared_operation", tags) {
     BOOST_LOG_SEV(lg, debug) << "Registered 2 route(s).";
 }
 
-TEST_CASE("login_routes_requires_a_session_where_the_message_does", tags) {
+TEST_CASE("login_routes_requires_a_session_where_the_message_does", "[routes]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -100,8 +98,8 @@ TEST_CASE("login_routes_requires_a_session_where_the_message_does", tags) {
     // session cannot be registered without one, and one the model declares
     // public is not made unreachable by a flag it never asked for.
     for (const auto& expected : {
-             expected_route{http_method::post, std::string{"/api/v1/iam/ops/login"}, false},
-             expected_route{http_method::post, std::string{"/api/v1/iam/ops/logout"}, true},
+             login_expected_route{http_method::post, std::string{"/api/v1/iam/ops/login"}, false},
+             login_expected_route{http_method::post, std::string{"/api/v1/iam/ops/logout"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;

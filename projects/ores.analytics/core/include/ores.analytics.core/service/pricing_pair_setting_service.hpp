@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_pricing_pair_settings_response
-    list_pricing_pair_settings(const messaging::list_pricing_pair_settings_request& request);
-    messaging::get_pricing_pair_setting_response
-    get_pricing_pair_setting(const messaging::get_pricing_pair_setting_request& request);
-    messaging::get_many_pricing_pair_settings_response get_many_pricing_pair_settings(
-        const messaging::get_many_pricing_pair_settings_request& request);
-    messaging::put_pricing_pair_setting_response
-    put_pricing_pair_setting(const messaging::put_pricing_pair_setting_request& request);
-    messaging::put_many_pricing_pair_settings_response put_many_pricing_pair_settings(
-        const messaging::put_many_pricing_pair_settings_request& request);
-    messaging::delete_pricing_pair_setting_response
-    delete_pricing_pair_setting(const messaging::delete_pricing_pair_setting_request& request);
-    messaging::delete_many_pricing_pair_settings_response delete_many_pricing_pair_settings(
-        const messaging::delete_many_pricing_pair_settings_request& request);
-    messaging::list_pricing_pair_setting_versions_response list_pricing_pair_setting_versions(
-        const messaging::list_pricing_pair_setting_versions_request& request);
-    messaging::get_pricing_pair_setting_version_response get_pricing_pair_setting_version(
-        const messaging::get_pricing_pair_setting_version_request& request);
+    ::ores::analytics::messaging::list_pricing_pair_settings_response list_pricing_pair_settings(
+        const ::ores::analytics::messaging::list_pricing_pair_settings_request& request);
+    ::ores::analytics::messaging::get_pricing_pair_setting_response get_pricing_pair_setting(
+        const ::ores::analytics::messaging::get_pricing_pair_setting_request& request);
+    ::ores::analytics::messaging::get_many_pricing_pair_settings_response
+    get_many_pricing_pair_settings(
+        const ::ores::analytics::messaging::get_many_pricing_pair_settings_request& request);
+    ::ores::analytics::messaging::put_pricing_pair_setting_response put_pricing_pair_setting(
+        const ::ores::analytics::messaging::put_pricing_pair_setting_request& request);
+    ::ores::analytics::messaging::put_many_pricing_pair_settings_response
+    put_many_pricing_pair_settings(
+        const ::ores::analytics::messaging::put_many_pricing_pair_settings_request& request);
+    ::ores::analytics::messaging::delete_pricing_pair_setting_response delete_pricing_pair_setting(
+        const ::ores::analytics::messaging::delete_pricing_pair_setting_request& request);
+    ::ores::analytics::messaging::delete_many_pricing_pair_settings_response
+    delete_many_pricing_pair_settings(
+        const ::ores::analytics::messaging::delete_many_pricing_pair_settings_request& request);
+    ::ores::analytics::messaging::list_pricing_pair_setting_versions_response
+    list_pricing_pair_setting_versions(
+        const ::ores::analytics::messaging::list_pricing_pair_setting_versions_request& request);
+    ::ores::analytics::messaging::get_pricing_pair_setting_version_response
+    get_pricing_pair_setting_version(
+        const ::ores::analytics::messaging::get_pricing_pair_setting_version_request& request);
     /**@}*/
 
     /**
@@ -189,7 +194,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::pricing_pair_setting_change& change,
+    prepare_change(const ::ores::analytics::messaging::pricing_pair_setting_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::pricing_pair_setting& out);
 };

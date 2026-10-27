@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.core/service/trade_batcher.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -32,9 +33,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.trading.service.trade_batcher.tests");
-const std::string tags("[trading][service][batcher]");
 
 using namespace ores::trading::service;
 using namespace ores::logging;
@@ -164,7 +162,7 @@ public:
 
 }
 
-TEST_CASE("batch_by_book gives one set per book named for the report and the date", tags) {
+TEST_CASE("batch_by_book gives one set per book named for the report and the date", "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     const auto population = population_of({
@@ -186,7 +184,7 @@ TEST_CASE("batch_by_book gives one set per book named for the report and the dat
     CHECK(sets[1].as_of == the_eighth());
 }
 
-TEST_CASE("batch_by_book covers the population exactly once", tags) {
+TEST_CASE("batch_by_book covers the population exactly once", "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     const auto population = population_of({
@@ -202,7 +200,7 @@ TEST_CASE("batch_by_book covers the population exactly once", tags) {
           std::vector<std::string>{"trade-1", "trade-2", "trade-3", "trade-4"});
 }
 
-TEST_CASE("a book whose trades exceed the limit splits into bounded sets", tags) {
+TEST_CASE("a book whose trades exceed the limit splits into bounded sets", "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     const auto population = population_of({
@@ -236,7 +234,7 @@ TEST_CASE("a book whose trades exceed the limit splits into bounded sets", tags)
           std::vector<std::string>{"trade-1", "trade-2", "trade-3", "trade-4"});
 }
 
-TEST_CASE("a composed strategy says which strategies it ran", tags) {
+TEST_CASE("a composed strategy says which strategies it ran", "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     const auto strategy =
@@ -246,7 +244,7 @@ TEST_CASE("a composed strategy says which strategies it ran", tags) {
     CHECK(strategy.name() == "batch-by-book,at-most-trades");
 }
 
-TEST_CASE("a strategy that partitions on another attribute needs no other change", tags) {
+TEST_CASE("a strategy that partitions on another attribute needs no other change", "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     const auto population = population_of({
@@ -264,7 +262,7 @@ TEST_CASE("a strategy that partitions on another attribute needs no other change
     CHECK(sets[1].trade_ids == std::vector<std::string>{"trade-1", "trade-3"});
 }
 
-TEST_CASE("a set within the limit keeps its own batch key", tags) {
+TEST_CASE("a set within the limit keeps its own batch key", "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     const auto population = population_of({{"trade-1", "BOOK-A"}});
@@ -279,7 +277,7 @@ TEST_CASE("a set within the limit keeps its own batch key", tags) {
     CHECK(sets[0].name == "Headline Position");
 }
 
-TEST_CASE("a population that leaves a trade out of every set is refused", tags) {
+TEST_CASE("a population that leaves a trade out of every set is refused", "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     const auto population = population_of({
@@ -290,7 +288,7 @@ TEST_CASE("a population that leaves a trade out of every set is refused", tags) 
     CHECK_THROWS(trade_batcher(std::make_shared<drops_a_trade>()).partition(population));
 }
 
-TEST_CASE("a population that puts a trade in two sets is refused", tags) {
+TEST_CASE("a population that puts a trade in two sets is refused", "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     const auto population = population_of({
@@ -301,7 +299,7 @@ TEST_CASE("a population that puts a trade in two sets is refused", tags) {
     CHECK_THROWS(trade_batcher(std::make_shared<duplicates_a_trade>()).partition(population));
 }
 
-TEST_CASE("two sets under one batch key are refused", tags) {
+TEST_CASE("two sets under one batch key are refused", "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     const auto population = population_of({
@@ -312,14 +310,14 @@ TEST_CASE("two sets under one batch key are refused", tags) {
     CHECK_THROWS(trade_batcher(std::make_shared<reuses_a_key>()).partition(population));
 }
 
-TEST_CASE("a batch holding more than zero trades is required", tags) {
+TEST_CASE("a batch holding more than zero trades is required", "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     CHECK_THROWS(at_most_trades(0));
     CHECK_NOTHROW(at_most_trades(1));
 }
 
-TEST_CASE("a batcher without a strategy is refused", tags) {
+TEST_CASE("a batcher without a strategy is refused", "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     CHECK_THROWS(trade_batcher(nullptr));

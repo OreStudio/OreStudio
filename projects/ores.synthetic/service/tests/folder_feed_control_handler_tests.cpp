@@ -82,8 +82,6 @@
 
 namespace {
 
-const std::string tags("[folder_feed_control_handler][integration]");
-
 const std::string test_secret("folder-cascade-test-secret");
 const std::string test_issuer("ores.iam.test");
 const std::string test_audience("ores.synthetic.service");
@@ -441,7 +439,7 @@ struct cascade_fixture {
 
 using namespace ores::marketdata::messaging;
 
-TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts", tags) {
+TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts", "[folder_feed_control_handler][integration]") {
     cascade_fixture f;
     const auto test_party = resolve_test_party(f.db);
     const auto seeds = seed_cascade(f.db, test_party);
@@ -511,7 +509,7 @@ TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts", tag
     CHECK(f.fleet.running_count() == 0);
 }
 
-TEST_CASE("folder_cascade_rejects_without_the_ir_curve_permission", tags) {
+TEST_CASE("folder_cascade_rejects_without_the_ir_curve_permission", "[folder_feed_control_handler][integration]") {
     cascade_fixture f;
     const auto test_party = resolve_test_party(f.db);
     const auto seeds = seed_cascade(f.db, test_party);
@@ -531,7 +529,7 @@ TEST_CASE("folder_cascade_rejects_without_the_ir_curve_permission", tags) {
     CHECK(f.fleet.running_count() == 0);
 }
 
-TEST_CASE("folder_cascade_rejects_a_malformed_folder_id", tags) {
+TEST_CASE("folder_cascade_rejects_a_malformed_folder_id", "[folder_feed_control_handler][integration]") {
     cascade_fixture f;
     const auto test_party = resolve_test_party(f.db);
     const auto token = mint_token(f.db.tenant_id().to_string(),
@@ -549,7 +547,7 @@ TEST_CASE("folder_cascade_rejects_a_malformed_folder_id", tags) {
     CHECK_FALSE(resp.success);
 }
 
-TEST_CASE("selection_starts_the_feeds_a_filter_matches_and_stops_a_pick", tags) {
+TEST_CASE("selection_starts_the_feeds_a_filter_matches_and_stops_a_pick", "[folder_feed_control_handler][integration]") {
     using ores::synthetic::messaging::start_selected_feeds_request;
     using ores::synthetic::messaging::start_selected_feeds_response;
     using ores::synthetic::messaging::stop_selected_feeds_request;
@@ -611,7 +609,7 @@ TEST_CASE("selection_starts_the_feeds_a_filter_matches_and_stops_a_pick", tags) 
 }
 
 TEST_CASE("selection_refuses_what_a_query_must_not_be_given_and_what_the_caller_may_not_read",
-          tags) {
+          "[folder_feed_control_handler][integration]") {
     using ores::synthetic::messaging::start_selected_feeds_request;
     using ores::synthetic::messaging::start_selected_feeds_response;
 
@@ -649,7 +647,7 @@ TEST_CASE("selection_refuses_what_a_query_must_not_be_given_and_what_the_caller_
     CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
 }
 
-TEST_CASE("feed_verbs_refuse_a_caller_who_may_read_the_feeds_but_not_run_them", tags) {
+TEST_CASE("feed_verbs_refuse_a_caller_who_may_read_the_feeds_but_not_run_them", "[folder_feed_control_handler][integration]") {
     using ores::synthetic::messaging::start_selected_feeds_request;
     using ores::synthetic::messaging::stop_selected_feeds_request;
 

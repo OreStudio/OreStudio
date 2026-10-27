@@ -77,29 +77,38 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_todays_market_collections_response list_todays_market_collections(
-        const messaging::list_todays_market_collections_request& request);
-    messaging::get_todays_market_collection_response
-    get_todays_market_collection(const messaging::get_todays_market_collection_request& request);
-    messaging::get_many_todays_market_collections_response get_many_todays_market_collections(
-        const messaging::get_many_todays_market_collections_request& request);
-    messaging::put_todays_market_collection_response
-    put_todays_market_collection(const messaging::put_todays_market_collection_request& request);
-    messaging::put_many_todays_market_collections_response put_many_todays_market_collections(
-        const messaging::put_many_todays_market_collections_request& request);
-    messaging::delete_todays_market_collection_response delete_todays_market_collection(
-        const messaging::delete_todays_market_collection_request& request);
-    messaging::delete_many_todays_market_collections_response delete_many_todays_market_collections(
-        const messaging::delete_many_todays_market_collections_request& request);
-    messaging::list_by_todays_market_config_id_todays_market_collections_response
+    ::ores::analytics::messaging::list_todays_market_collections_response
+    list_todays_market_collections(
+        const ::ores::analytics::messaging::list_todays_market_collections_request& request);
+    ::ores::analytics::messaging::get_todays_market_collection_response
+    get_todays_market_collection(
+        const ::ores::analytics::messaging::get_todays_market_collection_request& request);
+    ::ores::analytics::messaging::get_many_todays_market_collections_response
+    get_many_todays_market_collections(
+        const ::ores::analytics::messaging::get_many_todays_market_collections_request& request);
+    ::ores::analytics::messaging::put_todays_market_collection_response
+    put_todays_market_collection(
+        const ::ores::analytics::messaging::put_todays_market_collection_request& request);
+    ::ores::analytics::messaging::put_many_todays_market_collections_response
+    put_many_todays_market_collections(
+        const ::ores::analytics::messaging::put_many_todays_market_collections_request& request);
+    ::ores::analytics::messaging::delete_todays_market_collection_response
+    delete_todays_market_collection(
+        const ::ores::analytics::messaging::delete_todays_market_collection_request& request);
+    ::ores::analytics::messaging::delete_many_todays_market_collections_response
+    delete_many_todays_market_collections(
+        const ::ores::analytics::messaging::delete_many_todays_market_collections_request& request);
+    ::ores::analytics::messaging::list_by_todays_market_config_id_todays_market_collections_response
     list_by_todays_market_config_id_todays_market_collections(
-        const messaging::list_by_todays_market_config_id_todays_market_collections_request&
-            request);
-    messaging::list_todays_market_collection_versions_response
+        const ::ores::analytics::messaging::
+            list_by_todays_market_config_id_todays_market_collections_request& request);
+    ::ores::analytics::messaging::list_todays_market_collection_versions_response
     list_todays_market_collection_versions(
-        const messaging::list_todays_market_collection_versions_request& request);
-    messaging::get_todays_market_collection_version_response get_todays_market_collection_version(
-        const messaging::get_todays_market_collection_version_request& request);
+        const ::ores::analytics::messaging::list_todays_market_collection_versions_request&
+            request);
+    ::ores::analytics::messaging::get_todays_market_collection_version_response
+    get_todays_market_collection_version(
+        const ::ores::analytics::messaging::get_todays_market_collection_version_request& request);
     /**@}*/
 
     /**
@@ -257,7 +266,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::todays_market_collection_change& change,
+    prepare_change(const ::ores::analytics::messaging::todays_market_collection_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::todays_market_collection& out);
 };

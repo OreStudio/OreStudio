@@ -75,27 +75,28 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_ore_parameters_response
-    list_ore_parameters(const messaging::list_ore_parameters_request& request);
-    messaging::get_ore_parameter_response
-    get_ore_parameter(const messaging::get_ore_parameter_request& request);
-    messaging::get_many_ore_parameters_response
-    get_many_ore_parameters(const messaging::get_many_ore_parameters_request& request);
-    messaging::put_ore_parameter_response
-    put_ore_parameter(const messaging::put_ore_parameter_request& request);
-    messaging::put_many_ore_parameters_response
-    put_many_ore_parameters(const messaging::put_many_ore_parameters_request& request);
-    messaging::delete_ore_parameter_response
-    delete_ore_parameter(const messaging::delete_ore_parameter_request& request);
-    messaging::delete_many_ore_parameters_response
-    delete_many_ore_parameters(const messaging::delete_many_ore_parameters_request& request);
-    messaging::list_by_ore_parameter_value_domain_code_ore_parameters_response
+    ::ores::reporting::messaging::list_ore_parameters_response
+    list_ore_parameters(const ::ores::reporting::messaging::list_ore_parameters_request& request);
+    ::ores::reporting::messaging::get_ore_parameter_response
+    get_ore_parameter(const ::ores::reporting::messaging::get_ore_parameter_request& request);
+    ::ores::reporting::messaging::get_many_ore_parameters_response get_many_ore_parameters(
+        const ::ores::reporting::messaging::get_many_ore_parameters_request& request);
+    ::ores::reporting::messaging::put_ore_parameter_response
+    put_ore_parameter(const ::ores::reporting::messaging::put_ore_parameter_request& request);
+    ::ores::reporting::messaging::put_many_ore_parameters_response put_many_ore_parameters(
+        const ::ores::reporting::messaging::put_many_ore_parameters_request& request);
+    ::ores::reporting::messaging::delete_ore_parameter_response
+    delete_ore_parameter(const ::ores::reporting::messaging::delete_ore_parameter_request& request);
+    ::ores::reporting::messaging::delete_many_ore_parameters_response delete_many_ore_parameters(
+        const ::ores::reporting::messaging::delete_many_ore_parameters_request& request);
+    ::ores::reporting::messaging::list_by_ore_parameter_value_domain_code_ore_parameters_response
     list_by_ore_parameter_value_domain_code_ore_parameters(
-        const messaging::list_by_ore_parameter_value_domain_code_ore_parameters_request& request);
-    messaging::list_ore_parameter_versions_response
-    list_ore_parameter_versions(const messaging::list_ore_parameter_versions_request& request);
-    messaging::get_ore_parameter_version_response
-    get_ore_parameter_version(const messaging::get_ore_parameter_version_request& request);
+        const ::ores::reporting::messaging::
+            list_by_ore_parameter_value_domain_code_ore_parameters_request& request);
+    ::ores::reporting::messaging::list_ore_parameter_versions_response list_ore_parameter_versions(
+        const ::ores::reporting::messaging::list_ore_parameter_versions_request& request);
+    ::ores::reporting::messaging::get_ore_parameter_version_response get_ore_parameter_version(
+        const ::ores::reporting::messaging::get_ore_parameter_version_request& request);
     /**@}*/
 
     /**
@@ -230,9 +231,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::ore_parameter_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::ore_parameter& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::reporting::messaging::ore_parameter_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::ore_parameter& out);
 };
 
 }

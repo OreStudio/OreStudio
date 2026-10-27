@@ -68,9 +68,9 @@ std::vector<ores::nats::service::subscription> register_report_error_event_handl
                                  h->list_by_report_instance_id_report_error_events(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
-        get_report_error_counts_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_report_error_counts(std::move(msg));
-        }));
+        get_report_error_counts_request::nats_subject,
+        report_error_event_queue_group,
+        [h](ores::nats::message msg) { h->get_report_error_counts(std::move(msg)); }));
     return subs;
 }
 

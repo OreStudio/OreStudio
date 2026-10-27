@@ -101,7 +101,7 @@ http_response account_credential_error_response(const std::string& error) {
  */
 template <typename Request>
 boost::asio::awaitable<http_response>
-forward(const http_request& req, nats_client& session, const Request& msg) {
+account_credential_forward(const http_request& req, nats_client& session, const Request& msg) {
     auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
     try {
         const auto reply =
@@ -155,7 +155,7 @@ account_credential_routes::handle_list(const http_request& req, nats_client& ses
     try {
         request_type msg;
         account_credential_apply_page(msg, req);
-        co_return co_await forward(req, session, msg);
+        co_return co_await account_credential_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -168,7 +168,7 @@ boost::asio::awaitable<http_response> account_credential_routes::handle_get(cons
         request_type msg;
         msg.key.id =
             account_credential_read_param<boost::uuids::uuid>(req.get_path_param("id"), "id");
-        co_return co_await forward(req, session, msg);
+        co_return co_await account_credential_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -182,7 +182,7 @@ account_credential_routes::handle_get_many(const http_request& req, nats_client&
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await account_credential_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -200,7 +200,7 @@ account_credential_routes::handle_by_account_id(const http_request& req, nats_cl
                                            ores::utility::domain::scope::direct;
         }
         account_credential_apply_page(msg, req);
-        co_return co_await forward(req, session, msg);
+        co_return co_await account_credential_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -214,7 +214,7 @@ account_credential_routes::handle_versions(const http_request& req, nats_client&
         msg.key.id =
             account_credential_read_param<boost::uuids::uuid>(req.get_path_param("id"), "id");
         account_credential_apply_page(msg, req);
-        co_return co_await forward(req, session, msg);
+        co_return co_await account_credential_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -229,7 +229,7 @@ account_credential_routes::handle_version(const http_request& req, nats_client& 
             account_credential_read_param<boost::uuids::uuid>(req.get_path_param("id"), "id");
         msg.key.version =
             account_credential_read_param<std::uint32_t>(req.get_path_param("version"), "version");
-        co_return co_await forward(req, session, msg);
+        co_return co_await account_credential_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }

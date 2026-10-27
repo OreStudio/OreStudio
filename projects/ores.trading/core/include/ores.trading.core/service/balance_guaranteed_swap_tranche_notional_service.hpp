@@ -76,37 +76,46 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_balance_guaranteed_swap_tranche_notionals_response
+    ::ores::trading::messaging::list_balance_guaranteed_swap_tranche_notionals_response
     list_balance_guaranteed_swap_tranche_notionals(
-        const messaging::list_balance_guaranteed_swap_tranche_notionals_request& request);
-    messaging::get_balance_guaranteed_swap_tranche_notional_response
-    get_balance_guaranteed_swap_tranche_notional(
-        const messaging::get_balance_guaranteed_swap_tranche_notional_request& request);
-    messaging::get_many_balance_guaranteed_swap_tranche_notionals_response
-    get_many_balance_guaranteed_swap_tranche_notionals(
-        const messaging::get_many_balance_guaranteed_swap_tranche_notionals_request& request);
-    messaging::put_balance_guaranteed_swap_tranche_notional_response
-    put_balance_guaranteed_swap_tranche_notional(
-        const messaging::put_balance_guaranteed_swap_tranche_notional_request& request);
-    messaging::put_many_balance_guaranteed_swap_tranche_notionals_response
-    put_many_balance_guaranteed_swap_tranche_notionals(
-        const messaging::put_many_balance_guaranteed_swap_tranche_notionals_request& request);
-    messaging::delete_balance_guaranteed_swap_tranche_notional_response
-    delete_balance_guaranteed_swap_tranche_notional(
-        const messaging::delete_balance_guaranteed_swap_tranche_notional_request& request);
-    messaging::delete_many_balance_guaranteed_swap_tranche_notionals_response
-    delete_many_balance_guaranteed_swap_tranche_notionals(
-        const messaging::delete_many_balance_guaranteed_swap_tranche_notionals_request& request);
-    messaging::list_by_trade_id_balance_guaranteed_swap_tranche_notionals_response
-    list_by_trade_id_balance_guaranteed_swap_tranche_notionals(
-        const messaging::list_by_trade_id_balance_guaranteed_swap_tranche_notionals_request&
+        const ::ores::trading::messaging::list_balance_guaranteed_swap_tranche_notionals_request&
             request);
-    messaging::list_balance_guaranteed_swap_tranche_notional_versions_response
+    ::ores::trading::messaging::get_balance_guaranteed_swap_tranche_notional_response
+    get_balance_guaranteed_swap_tranche_notional(
+        const ::ores::trading::messaging::get_balance_guaranteed_swap_tranche_notional_request&
+            request);
+    ::ores::trading::messaging::get_many_balance_guaranteed_swap_tranche_notionals_response
+    get_many_balance_guaranteed_swap_tranche_notionals(
+        const ::ores::trading::messaging::
+            get_many_balance_guaranteed_swap_tranche_notionals_request& request);
+    ::ores::trading::messaging::put_balance_guaranteed_swap_tranche_notional_response
+    put_balance_guaranteed_swap_tranche_notional(
+        const ::ores::trading::messaging::put_balance_guaranteed_swap_tranche_notional_request&
+            request);
+    ::ores::trading::messaging::put_many_balance_guaranteed_swap_tranche_notionals_response
+    put_many_balance_guaranteed_swap_tranche_notionals(
+        const ::ores::trading::messaging::
+            put_many_balance_guaranteed_swap_tranche_notionals_request& request);
+    ::ores::trading::messaging::delete_balance_guaranteed_swap_tranche_notional_response
+    delete_balance_guaranteed_swap_tranche_notional(
+        const ::ores::trading::messaging::delete_balance_guaranteed_swap_tranche_notional_request&
+            request);
+    ::ores::trading::messaging::delete_many_balance_guaranteed_swap_tranche_notionals_response
+    delete_many_balance_guaranteed_swap_tranche_notionals(
+        const ::ores::trading::messaging::
+            delete_many_balance_guaranteed_swap_tranche_notionals_request& request);
+    ::ores::trading::messaging::list_by_trade_id_balance_guaranteed_swap_tranche_notionals_response
+    list_by_trade_id_balance_guaranteed_swap_tranche_notionals(
+        const ::ores::trading::messaging::
+            list_by_trade_id_balance_guaranteed_swap_tranche_notionals_request& request);
+    ::ores::trading::messaging::list_balance_guaranteed_swap_tranche_notional_versions_response
     list_balance_guaranteed_swap_tranche_notional_versions(
-        const messaging::list_balance_guaranteed_swap_tranche_notional_versions_request& request);
-    messaging::get_balance_guaranteed_swap_tranche_notional_version_response
+        const ::ores::trading::messaging::
+            list_balance_guaranteed_swap_tranche_notional_versions_request& request);
+    ::ores::trading::messaging::get_balance_guaranteed_swap_tranche_notional_version_response
     get_balance_guaranteed_swap_tranche_notional_version(
-        const messaging::get_balance_guaranteed_swap_tranche_notional_version_request& request);
+        const ::ores::trading::messaging::
+            get_balance_guaranteed_swap_tranche_notional_version_request& request);
     /**@}*/
 
     /**
@@ -249,10 +258,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result
-    prepare_change(const messaging::balance_guaranteed_swap_tranche_notional_change& change,
-                   const ores::utility::domain::change_intent& intent,
-                   domain::balance_guaranteed_swap_tranche_notional& out);
+    ores::utility::domain::result prepare_change(
+        const ::ores::trading::messaging::balance_guaranteed_swap_tranche_notional_change& change,
+        const ores::utility::domain::change_intent& intent,
+        domain::balance_guaranteed_swap_tranche_notional& out);
 };
 
 }

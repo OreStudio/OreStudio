@@ -75,24 +75,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_swaption_instruments_response
-    list_swaption_instruments(const messaging::list_swaption_instruments_request& request);
-    messaging::get_swaption_instrument_response
-    get_swaption_instrument(const messaging::get_swaption_instrument_request& request);
-    messaging::get_many_swaption_instruments_response
-    get_many_swaption_instruments(const messaging::get_many_swaption_instruments_request& request);
-    messaging::put_swaption_instrument_response
-    put_swaption_instrument(const messaging::put_swaption_instrument_request& request);
-    messaging::put_many_swaption_instruments_response
-    put_many_swaption_instruments(const messaging::put_many_swaption_instruments_request& request);
-    messaging::delete_swaption_instrument_response
-    delete_swaption_instrument(const messaging::delete_swaption_instrument_request& request);
-    messaging::delete_many_swaption_instruments_response delete_many_swaption_instruments(
-        const messaging::delete_many_swaption_instruments_request& request);
-    messaging::list_swaption_instrument_versions_response list_swaption_instrument_versions(
-        const messaging::list_swaption_instrument_versions_request& request);
-    messaging::get_swaption_instrument_version_response get_swaption_instrument_version(
-        const messaging::get_swaption_instrument_version_request& request);
+    ::ores::trading::messaging::list_swaption_instruments_response list_swaption_instruments(
+        const ::ores::trading::messaging::list_swaption_instruments_request& request);
+    ::ores::trading::messaging::get_swaption_instrument_response get_swaption_instrument(
+        const ::ores::trading::messaging::get_swaption_instrument_request& request);
+    ::ores::trading::messaging::get_many_swaption_instruments_response
+    get_many_swaption_instruments(
+        const ::ores::trading::messaging::get_many_swaption_instruments_request& request);
+    ::ores::trading::messaging::put_swaption_instrument_response put_swaption_instrument(
+        const ::ores::trading::messaging::put_swaption_instrument_request& request);
+    ::ores::trading::messaging::put_many_swaption_instruments_response
+    put_many_swaption_instruments(
+        const ::ores::trading::messaging::put_many_swaption_instruments_request& request);
+    ::ores::trading::messaging::delete_swaption_instrument_response delete_swaption_instrument(
+        const ::ores::trading::messaging::delete_swaption_instrument_request& request);
+    ::ores::trading::messaging::delete_many_swaption_instruments_response
+    delete_many_swaption_instruments(
+        const ::ores::trading::messaging::delete_many_swaption_instruments_request& request);
+    ::ores::trading::messaging::list_swaption_instrument_versions_response
+    list_swaption_instrument_versions(
+        const ::ores::trading::messaging::list_swaption_instrument_versions_request& request);
+    ::ores::trading::messaging::get_swaption_instrument_version_response
+    get_swaption_instrument_version(
+        const ::ores::trading::messaging::get_swaption_instrument_version_request& request);
     /**@}*/
 
     /**
@@ -195,7 +200,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::swaption_instrument_change& change,
+    prepare_change(const ::ores::trading::messaging::swaption_instrument_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::swaption_instrument& out);
 };

@@ -75,22 +75,23 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_party_currencies_response
-    list_party_currencies(const messaging::list_party_currencies_request& request);
-    messaging::get_party_currency_response
-    get_party_currency(const messaging::get_party_currency_request& request);
-    messaging::get_many_party_currencies_response
-    get_many_party_currencies(const messaging::get_many_party_currencies_request& request);
-    messaging::put_party_currency_response
-    put_party_currency(const messaging::put_party_currency_request& request);
-    messaging::put_many_party_currencies_response
-    put_many_party_currencies(const messaging::put_many_party_currencies_request& request);
-    messaging::delete_party_currency_response
-    delete_party_currency(const messaging::delete_party_currency_request& request);
-    messaging::delete_many_party_currencies_response
-    delete_many_party_currencies(const messaging::delete_many_party_currencies_request& request);
-    messaging::list_by_party_id_party_currencies_response list_by_party_id_party_currencies(
-        const messaging::list_by_party_id_party_currencies_request& request);
+    ::ores::refdata::messaging::list_party_currencies_response
+    list_party_currencies(const ::ores::refdata::messaging::list_party_currencies_request& request);
+    ::ores::refdata::messaging::get_party_currency_response
+    get_party_currency(const ::ores::refdata::messaging::get_party_currency_request& request);
+    ::ores::refdata::messaging::get_many_party_currencies_response get_many_party_currencies(
+        const ::ores::refdata::messaging::get_many_party_currencies_request& request);
+    ::ores::refdata::messaging::put_party_currency_response
+    put_party_currency(const ::ores::refdata::messaging::put_party_currency_request& request);
+    ::ores::refdata::messaging::put_many_party_currencies_response put_many_party_currencies(
+        const ::ores::refdata::messaging::put_many_party_currencies_request& request);
+    ::ores::refdata::messaging::delete_party_currency_response
+    delete_party_currency(const ::ores::refdata::messaging::delete_party_currency_request& request);
+    ::ores::refdata::messaging::delete_many_party_currencies_response delete_many_party_currencies(
+        const ::ores::refdata::messaging::delete_many_party_currencies_request& request);
+    ::ores::refdata::messaging::list_by_party_id_party_currencies_response
+    list_by_party_id_party_currencies(
+        const ::ores::refdata::messaging::list_by_party_id_party_currencies_request& request);
     /**@}*/
 
 private:
@@ -110,9 +111,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::party_currency_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::party_currency& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::party_currency_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::party_currency& out);
 };
 
 }

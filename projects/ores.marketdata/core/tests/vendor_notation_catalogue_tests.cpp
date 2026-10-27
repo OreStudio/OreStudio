@@ -36,11 +36,9 @@ namespace {
 
 namespace vendor = ores::marketdata::vendor;
 
-const std::string tags("[vendor_notation][catalogue]");
-
 } // namespace
 
-TEST_CASE("every_installed_vendor_instrument_roundtrips_through_its_providers_notation", tags) {
+TEST_CASE("every_installed_vendor_instrument_roundtrips_through_its_providers_notation", "[vendor_notation][catalogue]") {
     ores::testing::scoped_database_helper h;
     const auto& tenant_ctx = h.context();
 

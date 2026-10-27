@@ -26,8 +26,6 @@
 
 namespace {
 
-const std::string tags("[counterparty_apply][workflow]");
-
 using ores::workflow::service::failure_policy;
 using ores::workflow::service::workflow_registry;
 
@@ -39,7 +37,7 @@ const ores::workflow::service::workflow_definition* registered(workflow_registry
 }
 
 TEST_CASE("the_counterparty_apply_workflow_stops_on_a_failure_and_keeps_its_completed_steps",
-          tags) {
+          "[counterparty_apply][workflow]") {
     workflow_registry registry;
     const auto* def = registered(registry);
     REQUIRE(def != nullptr);
@@ -47,7 +45,7 @@ TEST_CASE("the_counterparty_apply_workflow_stops_on_a_failure_and_keeps_its_comp
     CHECK_FALSE(def->steps_depend_on_request);
 }
 
-TEST_CASE("the_counterparty_apply_workflow_rechecks_then_applies_then_tells", tags) {
+TEST_CASE("the_counterparty_apply_workflow_rechecks_then_applies_then_tells", "[counterparty_apply][workflow]") {
     workflow_registry registry;
     const auto* def = registered(registry);
     REQUIRE(def != nullptr);
@@ -67,7 +65,7 @@ TEST_CASE("the_counterparty_apply_workflow_rechecks_then_applies_then_tells", ta
 }
 
 TEST_CASE("every_step_of_the_counterparty_apply_workflow_states_a_deadline_and_no_compensation",
-          tags) {
+          "[counterparty_apply][workflow]") {
     workflow_registry registry;
     const auto* def = registered(registry);
     REQUIRE(def != nullptr);
@@ -81,7 +79,7 @@ TEST_CASE("every_step_of_the_counterparty_apply_workflow_states_a_deadline_and_n
     }
 }
 
-TEST_CASE("every_step_is_told_the_request_it_acts_on", tags) {
+TEST_CASE("every_step_is_told_the_request_it_acts_on", "[counterparty_apply][workflow]") {
     workflow_registry registry;
     const auto* def = registered(registry);
     REQUIRE(def != nullptr);
@@ -95,7 +93,7 @@ TEST_CASE("every_step_is_told_the_request_it_acts_on", tags) {
     }
 }
 
-TEST_CASE("a_start_that_names_no_request_builds_no_steps", tags) {
+TEST_CASE("a_start_that_names_no_request_builds_no_steps", "[counterparty_apply][workflow]") {
     workflow_registry registry;
     const auto* def = registered(registry);
     REQUIRE(def != nullptr);

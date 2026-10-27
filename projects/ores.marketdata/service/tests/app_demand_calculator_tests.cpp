@@ -25,8 +25,6 @@
 
 namespace {
 
-const std::string tags("[app][demand_calculator]");
-
 using namespace std::chrono_literals;
 using ores::marketdata::service::app::compute_demand;
 using ores::marketdata::service::app::demand_catalogue;
@@ -96,7 +94,7 @@ struct world {
 
 }
 
-TEST_CASE("the_demand_of_an_adapter_is_the_mapped_ids_of_its_provider", tags) {
+TEST_CASE("the_demand_of_an_adapter_is_the_mapped_ids_of_its_provider", "[app][demand_calculator]") {
     world w;
     w.party_routed_to(w.sim);
 
@@ -110,7 +108,7 @@ TEST_CASE("the_demand_of_an_adapter_is_the_mapped_ids_of_its_provider", tags) {
     CHECK(result.refused.empty());
 }
 
-TEST_CASE("the_demand_holds_no_id_of_another_provider", tags) {
+TEST_CASE("the_demand_holds_no_id_of_another_provider", "[app][demand_calculator]") {
     world w;
     w.party_routed_to(w.sim);
 
@@ -120,7 +118,7 @@ TEST_CASE("the_demand_holds_no_id_of_another_provider", tags) {
         CHECK(id.id_scheme == "bbg_ticker");
 }
 
-TEST_CASE("the_demand_is_the_union_over_the_parties_and_holds_no_id_twice", tags) {
+TEST_CASE("the_demand_is_the_union_over_the_parties_and_holds_no_id_twice", "[app][demand_calculator]") {
     world w;
     w.party_routed_to(w.sim);
     w.party_routed_to(w.sim);
@@ -130,7 +128,7 @@ TEST_CASE("the_demand_is_the_union_over_the_parties_and_holds_no_id_twice", tags
     CHECK(result.by_adapter.at("bloomberg-sim").size() == 2);
 }
 
-TEST_CASE("parties_of_two_sources_give_each_adapter_its_own_set", tags) {
+TEST_CASE("parties_of_two_sources_give_each_adapter_its_own_set", "[app][demand_calculator]") {
     world w;
     w.party_routed_to(w.sim);
     w.party_routed_to(w.live);
@@ -145,7 +143,7 @@ TEST_CASE("parties_of_two_sources_give_each_adapter_its_own_set", tags) {
     CHECK(result.by_adapter.size() == 2);
 }
 
-TEST_CASE("a_route_without_a_subscription_is_refused_as_not_entitled", tags) {
+TEST_CASE("a_route_without_a_subscription_is_refused_as_not_entitled", "[app][demand_calculator]") {
     world w;
     const auto party = w.party_routed_to(w.sim, false);
 
@@ -159,7 +157,7 @@ TEST_CASE("a_route_without_a_subscription_is_refused_as_not_entitled", tags) {
     CHECK(result.by_adapter.at("bloomberg-sim").empty());
 }
 
-TEST_CASE("a_subscription_with_only_the_derived_right_still_entitles_a_party", tags) {
+TEST_CASE("a_subscription_with_only_the_derived_right_still_entitles_a_party", "[app][demand_calculator]") {
     world w;
     w.party_routed_to(w.sim, true, true);
 
@@ -169,7 +167,7 @@ TEST_CASE("a_subscription_with_only_the_derived_right_still_entitles_a_party", t
     CHECK(result.by_adapter.at("bloomberg-sim").size() == 2);
 }
 
-TEST_CASE("a_subscription_with_no_right_does_not_entitle_a_party", tags) {
+TEST_CASE("a_subscription_with_no_right_does_not_entitle_a_party", "[app][demand_calculator]") {
     world w;
     w.party_routed_to(w.sim);
     w.c.subscriptions.front().display = false;
@@ -179,7 +177,7 @@ TEST_CASE("a_subscription_with_no_right_does_not_entitle_a_party", tags) {
     CHECK(result.refused.size() == 1);
 }
 
-TEST_CASE("a_mapping_that_does_not_hold_now_adds_no_id", tags) {
+TEST_CASE("a_mapping_that_does_not_hold_now_adds_no_id", "[app][demand_calculator]") {
     world w;
     w.party_routed_to(w.sim);
     w.c.mappings.front().effective_to = w.now - 1h;
@@ -190,7 +188,7 @@ TEST_CASE("a_mapping_that_does_not_hold_now_adds_no_id", tags) {
     CHECK(result.by_adapter.at("bloomberg-sim").front().external_id == "GBPUSD Curncy");
 }
 
-TEST_CASE("a_party_restricted_to_an_item_demands_only_its_ids", tags) {
+TEST_CASE("a_party_restricted_to_an_item_demands_only_its_ids", "[app][demand_calculator]") {
     world w;
     w.party_routed_to(w.sim);
     demand_policy policy;
@@ -204,7 +202,7 @@ TEST_CASE("a_party_restricted_to_an_item_demands_only_its_ids", tags) {
     CHECK(result.by_adapter.at("bloomberg-sim").front().external_id == "EURUSD Curncy");
 }
 
-TEST_CASE("the_inputs_of_a_composite_join_the_demand", tags) {
+TEST_CASE("the_inputs_of_a_composite_join_the_demand", "[app][demand_calculator]") {
     world w;
     w.party_routed_to(w.sim);
     demand_policy policy;
@@ -221,7 +219,7 @@ TEST_CASE("the_inputs_of_a_composite_join_the_demand", tags) {
     CHECK(result.by_adapter.at("bloomberg-sim").size() == 2);
 }
 
-TEST_CASE("a_route_to_a_source_the_catalogue_lacks_adds_nothing", tags) {
+TEST_CASE("a_route_to_a_source_the_catalogue_lacks_adds_nothing", "[app][demand_calculator]") {
     world w;
     w.party_routed_to(w.sim);
     w.c.routes.front().source_id = w.gen();

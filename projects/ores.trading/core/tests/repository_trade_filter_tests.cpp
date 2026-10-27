@@ -53,8 +53,6 @@
 
 namespace {
 
-const std::string tags("[repository][list_filter]");
-
 using ores::trading::messaging::trades_filter;
 using ores::trading::repository::trade_repository;
 using uuid = boost::uuids::uuid;
@@ -169,7 +167,7 @@ std::vector<uuid> sorted(std::vector<uuid> v) {
 
 }
 
-TEST_CASE("a counterparty narrows the trade list, and the total follows", tags) {
+TEST_CASE("a counterparty narrows the trade list, and the total follows", "[repository][list_filter]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("FxForward", f.counterparty);
@@ -179,7 +177,7 @@ TEST_CASE("a counterparty narrows the trade list, and the total follows", tags) 
     CHECK(trade_repository().get_total_trade_count(f.ctx, on(f.counterparty)) == 2);
 }
 
-TEST_CASE("an empty counterparty member reads the trades that have no counterparty", tags) {
+TEST_CASE("an empty counterparty member reads the trades that have no counterparty", "[repository][list_filter]") {
     fixture f;
     const auto internal = f.write_intra_entity("Swap");
     f.write("Swap", f.counterparty);
@@ -189,7 +187,7 @@ TEST_CASE("an empty counterparty member reads the trades that have no counterpar
     CHECK(ids(f.read(filter)) == std::vector<uuid>{internal});
 }
 
-TEST_CASE("a trade type narrows the list, and the members that are set must all hold", tags) {
+TEST_CASE("a trade type narrows the list, and the members that are set must all hold", "[repository][list_filter]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     f.write("FxForward", f.counterparty);
@@ -200,7 +198,7 @@ TEST_CASE("a trade type narrows the list, and the members that are set must all 
     CHECK(ids(f.read(filter)) == std::vector<uuid>{a});
 }
 
-TEST_CASE("a one-of member reads the trades of the types it lists", tags) {
+TEST_CASE("a one-of member reads the trades of the types it lists", "[repository][list_filter]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("FxForward", f.counterparty);
@@ -214,7 +212,7 @@ TEST_CASE("a one-of member reads the trades of the types it lists", tags) {
     CHECK(f.read(filter).empty());
 }
 
-TEST_CASE("a counterparty one-of member reads the trades of the counterparties it lists", tags) {
+TEST_CASE("a counterparty one-of member reads the trades of the counterparties it lists", "[repository][list_filter]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.other_counterparty);
@@ -224,7 +222,7 @@ TEST_CASE("a counterparty one-of member reads the trades of the counterparties i
     CHECK(ids(f.read(filter)) == sorted({a, b}));
 }
 
-TEST_CASE("a search matches the trade type, ignoring case, and literally", tags) {
+TEST_CASE("a search matches the trade type, ignoring case, and literally", "[repository][list_filter]") {
     fixture f;
     f.write("Swap", f.counterparty);
     const auto b = f.write("FxForward", f.counterparty);
@@ -240,7 +238,7 @@ TEST_CASE("a search matches the trade type, ignoring case, and literally", tags)
     CHECK(f.read(filter).size() == 2);
 }
 
-TEST_CASE("the trade type is sortable and nothing else is", tags) {
+TEST_CASE("the trade type is sortable and nothing else is", "[repository][list_filter]") {
     fixture f;
     const auto swap = f.write("Swap", f.counterparty);
     const auto forward = f.write("FxForward", f.counterparty);
@@ -258,7 +256,7 @@ TEST_CASE("the trade type is sortable and nothing else is", tags) {
                     std::invalid_argument);
 }
 
-TEST_CASE("an enum member narrows the list by the enum's text", tags) {
+TEST_CASE("an enum member narrows the list by the enum's text", "[repository][list_filter]") {
     using ores::trading::domain::counterparty_scope;
     fixture f;
     const auto external = f.write_scoped(counterparty_scope::external);
@@ -275,7 +273,7 @@ TEST_CASE("an enum member narrows the list by the enum's text", tags) {
     CHECK(ids(f.read(filter)) == sorted({external, inter}));
 }
 
-TEST_CASE("a child table reads the rows of one trade by its trade id", tags) {
+TEST_CASE("a child table reads the rows of one trade by its trade id", "[repository][list_filter]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
@@ -302,7 +300,7 @@ TEST_CASE("a child table reads the rows of one trade by its trade id", tags) {
     CHECK(repo.read_latest_by_trade_id(f.ctx, key, 0, 100, {}, other).size() == 2);
 }
 
-TEST_CASE("every child of a trade reads by its trade id", tags) {
+TEST_CASE("every child of a trade reads by its trade id", "[repository][list_filter]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);

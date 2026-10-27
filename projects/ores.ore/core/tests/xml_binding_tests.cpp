@@ -25,6 +25,7 @@
 #include "ores.ore.core/xml/generated/ibor_fallback_config.hpp"
 #include "ores.ore.core/xml/generated/netting_set_definitions.hpp"
 #include "ores.ore.core/xml/generated/todays_market.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <expected>
 #include <filesystem>
@@ -33,9 +34,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][binding]");
 
 namespace fs = std::filesystem;
 using namespace ores::logging;
@@ -155,7 +153,7 @@ const record_type reading_type{"Reading", reading_fields, 1};
 
 }
 
-TEST_CASE("content_the_schema_does_not_name_is_captured", tags) {
+TEST_CASE("content_the_schema_does_not_name_is_captured", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     notes record;
@@ -169,7 +167,7 @@ TEST_CASE("content_the_schema_does_not_name_is_captured", tags) {
     CHECK(record.extras[0].text == "hello");
 }
 
-TEST_CASE("content_the_schema_does_not_name_and_cannot_represent_is_refused", tags) {
+TEST_CASE("content_the_schema_does_not_name_and_cannot_represent_is_refused", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     notes record;
@@ -180,7 +178,7 @@ TEST_CASE("content_the_schema_does_not_name_and_cannot_represent_is_refused", ta
     CHECK(diagnose(bound).find("children") != std::string::npos);
 }
 
-TEST_CASE("a_repeated_numeric_leaf_fills_a_vector", tags) {
+TEST_CASE("a_repeated_numeric_leaf_fills_a_vector", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     level_list record;
@@ -195,7 +193,7 @@ TEST_CASE("a_repeated_numeric_leaf_fills_a_vector", tags) {
     CHECK(record.levels[1] == 2.5);
 }
 
-TEST_CASE("a_number_written_on_its_own_line_binds", tags) {
+TEST_CASE("a_number_written_on_its_own_line_binds", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     // ORE writes a value on its own indented line in places, and the number's
@@ -261,7 +259,7 @@ TEST_CASE("a_number_written_on_its_own_line_binds", tags) {
     CHECK(diagnose(none_bound).find("does not hold one") != std::string::npos);
 }
 
-TEST_CASE("a_nested_document_binds_into_one_record", tags) {
+TEST_CASE("a_nested_document_binds_into_one_record", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     const std::string text =
@@ -290,7 +288,7 @@ TEST_CASE("a_nested_document_binds_into_one_record", tags) {
     CHECK((record.calendar[0].present & 0x2u) != 0u);
 }
 
-TEST_CASE("a_missing_required_attribute_is_refused", tags) {
+TEST_CASE("a_missing_required_attribute_is_refused", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     calendaradjustment record;
@@ -302,7 +300,7 @@ TEST_CASE("a_missing_required_attribute_is_refused", tags) {
     CHECK(diagnose(bound).find("name") != std::string::npos);
 }
 
-TEST_CASE("an_unknown_element_is_refused_rather_than_dropped", tags) {
+TEST_CASE("an_unknown_element_is_refused_rather_than_dropped", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     calendaradjustment record;
@@ -314,7 +312,7 @@ TEST_CASE("an_unknown_element_is_refused_rather_than_dropped", tags) {
     CHECK(diagnose(bound).find("Holiday") != std::string::npos);
 }
 
-TEST_CASE("every_calendar_adjustment_in_the_corpus_binds", tags) {
+TEST_CASE("every_calendar_adjustment_in_the_corpus_binds", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";
@@ -345,7 +343,7 @@ TEST_CASE("every_calendar_adjustment_in_the_corpus_binds", tags) {
     CHECK(calendars > 40);
 }
 
-TEST_CASE("the_generated_currency_tables_bind_a_document", tags) {
+TEST_CASE("the_generated_currency_tables_bind_a_document", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     // An enumeration, two integers and an xs:all, so the table exercises the
@@ -373,7 +371,7 @@ TEST_CASE("the_generated_currency_tables_bind_a_document", tags) {
     CHECK(record.currency[0].currency_type.empty());
 }
 
-TEST_CASE("every_currency_config_in_the_corpus_binds", tags) {
+TEST_CASE("every_currency_config_in_the_corpus_binds", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";
@@ -407,7 +405,7 @@ TEST_CASE("every_currency_config_in_the_corpus_binds", tags) {
     CHECK(currencies > 1000);
 }
 
-TEST_CASE("a_generated_money_field_keeps_the_documents_digits", tags) {
+TEST_CASE("a_generated_money_field_keeps_the_documents_digits", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     // Spread is xs:float in the schema and money in our model. The document
@@ -431,7 +429,7 @@ TEST_CASE("a_generated_money_field_keeps_the_documents_digits", tags) {
     CHECK(record.fallbacks.fallback[0].spread.to_string() == "-0.00055099999999999995");
 }
 
-TEST_CASE("every_ibor_fallback_document_in_the_corpus_binds", tags) {
+TEST_CASE("every_ibor_fallback_document_in_the_corpus_binds", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";
@@ -462,7 +460,7 @@ TEST_CASE("every_ibor_fallback_document_in_the_corpus_binds", tags) {
     CHECK(fallbacks > 10);
 }
 
-TEST_CASE("a_generated_element_with_text_and_attributes_binds_both", tags) {
+TEST_CASE("a_generated_element_with_text_and_attributes_binds_both", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     // Correlation is xs:simpleContent: the element carries a value of its own
@@ -494,7 +492,7 @@ TEST_CASE("a_generated_element_with_text_and_attributes_binds_both", tags) {
     CHECK(record.correlations.correlation[0].value == 0.75);
 }
 
-TEST_CASE("every_counterparty_document_in_the_corpus_binds", tags) {
+TEST_CASE("every_counterparty_document_in_the_corpus_binds", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";
@@ -525,7 +523,7 @@ TEST_CASE("every_counterparty_document_in_the_corpus_binds", tags) {
     CHECK(parties > 3);
 }
 
-TEST_CASE("the_generated_todays_market_tables_bind_the_corpus", tags) {
+TEST_CASE("the_generated_todays_market_tables_bind_the_corpus", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";
@@ -555,7 +553,7 @@ TEST_CASE("the_generated_todays_market_tables_bind_the_corpus", tags) {
     CHECK(configurations > 100);
 }
 
-TEST_CASE("an_abstract_element_with_substitution_members_binds", tags) {
+TEST_CASE("an_abstract_element_with_substitution_members_binds", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     // nettingSetGroup is abstract and two elements stand in for it. A document
@@ -579,7 +577,7 @@ TEST_CASE("an_abstract_element_with_substitution_members_binds", tags) {
     CHECK((record.netting_set[0].present & 0x2u) == 0u);
 }
 
-TEST_CASE("every_netting_set_document_in_the_corpus_binds", tags) {
+TEST_CASE("every_netting_set_document_in_the_corpus_binds", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";
@@ -610,7 +608,7 @@ TEST_CASE("every_netting_set_document_in_the_corpus_binds", tags) {
     CHECK(sets > 50);
 }
 
-TEST_CASE("the_generated_conventions_tables_bind_the_corpus", tags) {
+TEST_CASE("the_generated_conventions_tables_bind_the_corpus", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";
@@ -640,7 +638,7 @@ TEST_CASE("the_generated_conventions_tables_bind_the_corpus", tags) {
     CHECK(report.empty());
 }
 
-TEST_CASE("an_element_with_no_text_states_a_value", tags) {
+TEST_CASE("an_element_with_no_text_states_a_value", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     // The bool type in ore_types.xsd is an enumeration whose last spelling is
@@ -660,7 +658,7 @@ TEST_CASE("an_element_with_no_text_states_a_value", tags) {
     CHECK(bound.error().message.find("spelling") != std::string::npos);
 }
 
-TEST_CASE("a_leaf_element_cannot_contain_another_element", tags) {
+TEST_CASE("a_leaf_element_cannot_contain_another_element", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     // A leaf is a frame, so a child under it is refused rather than popping
@@ -675,7 +673,7 @@ TEST_CASE("a_leaf_element_cannot_contain_another_element", tags) {
     CHECK(diagnose(bound).find("children") != std::string::npos);
 }
 
-TEST_CASE("text_split_by_a_comment_is_one_value", tags) {
+TEST_CASE("text_split_by_a_comment_is_one_value", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     const std::string text = "<IborFallbackConfig><Fallbacks><Fallback>"
@@ -693,7 +691,7 @@ TEST_CASE("text_split_by_a_comment_is_one_value", tags) {
     CHECK(record.fallbacks.fallback[0].ibor_index == "CHF-LIBOR-SN");
 }
 
-TEST_CASE("a_blank_run_before_a_cdata_section_is_part_of_the_value", tags) {
+TEST_CASE("a_blank_run_before_a_cdata_section_is_part_of_the_value", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     // ORE writes a script as a blank text run, then its body in CDATA. The
@@ -714,7 +712,7 @@ TEST_CASE("a_blank_run_before_a_cdata_section_is_part_of_the_value", tags) {
     CHECK(record.fallbacks.fallback[0].ibor_index == "  CHF-LIBOR-SN");
 }
 
-TEST_CASE("a_document_without_a_root_or_with_two_is_refused", tags) {
+TEST_CASE("a_document_without_a_root_or_with_two_is_refused", "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     calendaradjustment record;

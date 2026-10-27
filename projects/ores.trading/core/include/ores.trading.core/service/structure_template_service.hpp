@@ -75,24 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_structure_templates_response
-    list_structure_templates(const messaging::list_structure_templates_request& request);
-    messaging::get_structure_template_response
-    get_structure_template(const messaging::get_structure_template_request& request);
-    messaging::get_many_structure_templates_response
-    get_many_structure_templates(const messaging::get_many_structure_templates_request& request);
-    messaging::put_structure_template_response
-    put_structure_template(const messaging::put_structure_template_request& request);
-    messaging::put_many_structure_templates_response
-    put_many_structure_templates(const messaging::put_many_structure_templates_request& request);
-    messaging::delete_structure_template_response
-    delete_structure_template(const messaging::delete_structure_template_request& request);
-    messaging::delete_many_structure_templates_response delete_many_structure_templates(
-        const messaging::delete_many_structure_templates_request& request);
-    messaging::list_structure_template_versions_response list_structure_template_versions(
-        const messaging::list_structure_template_versions_request& request);
-    messaging::get_structure_template_version_response get_structure_template_version(
-        const messaging::get_structure_template_version_request& request);
+    ::ores::trading::messaging::list_structure_templates_response list_structure_templates(
+        const ::ores::trading::messaging::list_structure_templates_request& request);
+    ::ores::trading::messaging::get_structure_template_response get_structure_template(
+        const ::ores::trading::messaging::get_structure_template_request& request);
+    ::ores::trading::messaging::get_many_structure_templates_response get_many_structure_templates(
+        const ::ores::trading::messaging::get_many_structure_templates_request& request);
+    ::ores::trading::messaging::put_structure_template_response put_structure_template(
+        const ::ores::trading::messaging::put_structure_template_request& request);
+    ::ores::trading::messaging::put_many_structure_templates_response put_many_structure_templates(
+        const ::ores::trading::messaging::put_many_structure_templates_request& request);
+    ::ores::trading::messaging::delete_structure_template_response delete_structure_template(
+        const ::ores::trading::messaging::delete_structure_template_request& request);
+    ::ores::trading::messaging::delete_many_structure_templates_response
+    delete_many_structure_templates(
+        const ::ores::trading::messaging::delete_many_structure_templates_request& request);
+    ::ores::trading::messaging::list_structure_template_versions_response
+    list_structure_template_versions(
+        const ::ores::trading::messaging::list_structure_template_versions_request& request);
+    ::ores::trading::messaging::get_structure_template_version_response
+    get_structure_template_version(
+        const ::ores::trading::messaging::get_structure_template_version_request& request);
     /**@}*/
 
     /**
@@ -189,9 +192,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::structure_template_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::structure_template& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::trading::messaging::structure_template_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::structure_template& out);
 };
 
 }

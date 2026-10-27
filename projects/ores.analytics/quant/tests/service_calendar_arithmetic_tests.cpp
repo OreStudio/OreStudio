@@ -41,7 +41,6 @@ using ores::analytics::quant::service::quantlib_calendar_rulesets;
 
 using namespace std::chrono;
 
-const std::string tags("[calendar_arithmetic]");
 constexpr std::size_t south_africa = 0;
 constexpr std::size_t target = 0;
 
@@ -87,7 +86,7 @@ date_period y(int n) {
 
 }
 
-TEST_CASE("the SouthAfrica ruleset materialises the calendar QuantLib computes for 2015", tags) {
+TEST_CASE("the SouthAfrica ruleset materialises the calendar QuantLib computes for 2015", "[calendar_arithmetic]") {
     // Transcribed from ql/time/calendars/southafrica.cpp, so the holiday list
     // is checked against the year on its own before any convention is driven
     // through it. A Saturday holiday -- 21 March, 26 December -- is a weekend
@@ -116,7 +115,7 @@ TEST_CASE("the SouthAfrica ruleset materialises the calendar QuantLib computes f
     CHECK(dates == expected);
 }
 
-TEST_CASE("QuantLib's own business day convention cases all resolve as it states", tags) {
+TEST_CASE("QuantLib's own business day convention cases all resolve as it states", "[calendar_arithmetic]") {
     struct convention_case final {
         business_day_convention convention;
         year_month_day start;
@@ -325,7 +324,7 @@ TEST_CASE("QuantLib's own business day convention cases all resolve as it states
     }
 }
 
-TEST_CASE("a period added as calendar time is not the same as one walked in business days", tags) {
+TEST_CASE("a period added as calendar time is not the same as one walked in business days", "[calendar_arithmetic]") {
     const auto calendars = make_south_africa();
 
     // Friday 6 February 2015. Four calendar days later is Tuesday the 10th;
@@ -339,7 +338,7 @@ TEST_CASE("a period added as calendar time is not the same as one walked in busi
           year{2015} / February / 12);
 }
 
-TEST_CASE("a day counted period lands on a business day whatever the convention says", tags) {
+TEST_CASE("a day counted period lands on a business day whatever the convention says", "[calendar_arithmetic]") {
     const auto calendars = make_south_africa();
 
     // A day-counted walk skips holidays itself, so Unadjusted cannot put it
@@ -352,7 +351,7 @@ TEST_CASE("a day counted period lands on a business day whatever the convention 
         year{2015} / January / 5);
 }
 
-TEST_CASE("a month end that has no matching day clamps once, against the target month", tags) {
+TEST_CASE("a month end that has no matching day clamps once, against the target month", "[calendar_arithmetic]") {
     // 31 January plus one month has no 31 February, so it clamps to the 28th;
     // plus two months there is a 31 March, so it does not. Clamping is against
     // the total months, not applied a month at a time.
@@ -362,7 +361,7 @@ TEST_CASE("a month end that has no matching day clamps once, against the target 
           year{2026} / March / 31);
 }
 
-TEST_CASE("a clamped month end is sticky on the next addition", tags) {
+TEST_CASE("a clamped month end is sticky on the next addition", "[calendar_arithmetic]") {
     // February has no 31st, so the 28th is where a January month end lands;
     // adding another month counts from there, not from the 31st it came from.
     const auto clamped = calendar_arithmetic::add_period(year{2026} / January / 31, m(1));
@@ -370,22 +369,22 @@ TEST_CASE("a clamped month end is sticky on the next addition", tags) {
     CHECK(calendar_arithmetic::add_period(clamped, m(1)) == year{2026} / March / 28);
 }
 
-TEST_CASE("a year added to a leap day clamps to the twenty eighth", tags) {
+TEST_CASE("a year added to a leap day clamps to the twenty eighth", "[calendar_arithmetic]") {
     CHECK(calendar_arithmetic::add_period(year{2024} / February / 29, y(1)) ==
           year{2025} / February / 28);
 }
 
-TEST_CASE("a negative month period clamps the same way a positive one does", tags) {
+TEST_CASE("a negative month period clamps the same way a positive one does", "[calendar_arithmetic]") {
     CHECK(calendar_arithmetic::add_period(year{2026} / March / 31, m(-1)) ==
           year{2026} / February / 28);
 }
 
-TEST_CASE("a period with no unit has no length and cannot be added", tags) {
+TEST_CASE("a period with no unit has no length and cannot be added", "[calendar_arithmetic]") {
     CHECK_THROWS_AS(calendar_arithmetic::add_period(year{2026} / January / 31, date_period{}),
                     std::invalid_argument);
 }
 
-TEST_CASE("end of month means at or after the last business day, not is the last one", tags) {
+TEST_CASE("end of month means at or after the last business day, not is the last one", "[calendar_arithmetic]") {
     const auto calendars = make_target();
 
     // 31 January 2026 is a Saturday, so no business day is left in the month
@@ -397,7 +396,7 @@ TEST_CASE("end of month means at or after the last business day, not is the last
     CHECK_FALSE(calendar_arithmetic::is_end_of_month(year{2026} / January / 29, target, calendars));
 }
 
-TEST_CASE("the last business day of a month stays inside the month it was asked about", tags) {
+TEST_CASE("the last business day of a month stays inside the month it was asked about", "[calendar_arithmetic]") {
     const auto calendars = make_target();
 
     for (unsigned month_index = 1; month_index <= 12; ++month_index) {
@@ -413,7 +412,7 @@ TEST_CASE("the last business day of a month stays inside the month it was asked 
     }
 }
 
-TEST_CASE("end of month turns a month counted period into the month's last business day", tags) {
+TEST_CASE("end of month turns a month counted period into the month's last business day", "[calendar_arithmetic]") {
     const auto calendars = make_target();
 
     // 31 January 2026 is the last business day of its month, so a one-month
@@ -428,7 +427,7 @@ TEST_CASE("end of month turns a month counted period into the month's last busin
                                        calendars) == year{2026} / February / 27);
 }
 
-TEST_CASE("the nth weekday of a month counts from one", tags) {
+TEST_CASE("the nth weekday of a month counts from one", "[calendar_arithmetic]") {
     // March 2015 begins on a Sunday, so its Wednesdays are the 4th, 11th and
     // 18th.
     CHECK(calendar_arithmetic::nth_weekday(3, Wednesday, March, year{2015}) ==
@@ -438,14 +437,14 @@ TEST_CASE("the nth weekday of a month counts from one", tags) {
     CHECK(calendar_arithmetic::nth_weekday(1, Sunday, March, year{2015}) == year{2015} / March / 1);
 }
 
-TEST_CASE("an nth weekday outside one to five is refused", tags) {
+TEST_CASE("an nth weekday outside one to five is refused", "[calendar_arithmetic]") {
     CHECK_THROWS_AS(calendar_arithmetic::nth_weekday(0, Wednesday, March, year{2015}),
                     std::invalid_argument);
     CHECK_THROWS_AS(calendar_arithmetic::nth_weekday(6, Wednesday, March, year{2015}),
                     std::invalid_argument);
 }
 
-TEST_CASE("an IMM date is the third Wednesday of a quarter month", tags) {
+TEST_CASE("an IMM date is the third Wednesday of a quarter month", "[calendar_arithmetic]") {
     CHECK(calendar_arithmetic::imm_date(March, year{2015}) == year{2015} / March / 18);
     CHECK(calendar_arithmetic::imm_date(June, year{2020}) == year{2020} / June / 17);
     CHECK(calendar_arithmetic::imm_date(March, year{2026}) == year{2026} / March / 18);
@@ -460,7 +459,7 @@ TEST_CASE("an IMM date is the third Wednesday of a quarter month", tags) {
     CHECK_FALSE(calendar_arithmetic::is_imm_date(year{2015} / January / 21, true));
 }
 
-TEST_CASE("the next IMM date is strictly after the one asked about", tags) {
+TEST_CASE("the next IMM date is strictly after the one asked about", "[calendar_arithmetic]") {
     // QuantLib's own invariant, over a decade either side of the contract
     // dates this is used for.
     for (auto day = sys_days{year{2015} / January / 1}; day <= sys_days{year{2025} / December / 31};
@@ -480,7 +479,7 @@ TEST_CASE("the next IMM date is strictly after the one asked about", tags) {
     }
 }
 
-TEST_CASE("the main IMM cycle steps a quarter at a time", tags) {
+TEST_CASE("the main IMM cycle steps a quarter at a time", "[calendar_arithmetic]") {
     auto imm = calendar_arithmetic::imm_date(March, year{2020});
     CHECK(imm == year{2020} / March / 18);
 
@@ -494,7 +493,7 @@ TEST_CASE("the main IMM cycle steps a quarter at a time", tags) {
     CHECK(imm == year{2021} / March / 17);
 }
 
-TEST_CASE("a calendar the set was not built with is refused rather than assumed open", tags) {
+TEST_CASE("a calendar the set was not built with is refused rather than assumed open", "[calendar_arithmetic]") {
     const auto calendars = make_target();
 
     CHECK_THROWS_AS(
@@ -505,7 +504,7 @@ TEST_CASE("a calendar the set was not built with is refused rather than assumed 
                     std::invalid_argument);
 }
 
-TEST_CASE("rolling an already business day leaves it where it is", tags) {
+TEST_CASE("rolling an already business day leaves it where it is", "[calendar_arithmetic]") {
     const auto calendars = make_target();
 
     // Thursday 15 January 2026 is a TARGET business day under every
@@ -524,7 +523,7 @@ TEST_CASE("rolling an already business day leaves it where it is", tags) {
     }
 }
 
-TEST_CASE("an ASX date is the second Friday of a quarter month", tags) {
+TEST_CASE("an ASX date is the second Friday of a quarter month", "[calendar_arithmetic]") {
     CHECK(calendar_arithmetic::asx_date(March, year{2015}) == year{2015} / March / 13);
     CHECK(calendar_arithmetic::asx_date(June, year{2020}) == year{2020} / June / 12);
 
@@ -538,7 +537,7 @@ TEST_CASE("an ASX date is the second Friday of a quarter month", tags) {
     CHECK_FALSE(calendar_arithmetic::is_asx_date(year{2020} / January / 10, true));
 }
 
-TEST_CASE("the next ASX date is strictly after the one asked about", tags) {
+TEST_CASE("the next ASX date is strictly after the one asked about", "[calendar_arithmetic]") {
     // QuantLib's own invariant, over the same decade it states it for.
     for (auto day = sys_days{year{2015} / January / 1}; day <= sys_days{year{2025} / December / 31};
          day += days{1}) {
@@ -555,7 +554,7 @@ TEST_CASE("the next ASX date is strictly after the one asked about", tags) {
     }
 }
 
-TEST_CASE("the main ASX cycle steps a quarter at a time", tags) {
+TEST_CASE("the main ASX cycle steps a quarter at a time", "[calendar_arithmetic]") {
     auto asx = calendar_arithmetic::asx_date(March, year{2020});
     CHECK(asx == year{2020} / March / 13);
 
@@ -569,7 +568,7 @@ TEST_CASE("the main ASX cycle steps a quarter at a time", tags) {
     CHECK(asx == year{2021} / March / 12);
 }
 
-TEST_CASE("an ASX date and an IMM date are different dates on the same cycle", tags) {
+TEST_CASE("an ASX date and an IMM date are different dates on the same cycle", "[calendar_arithmetic]") {
     // The two exchanges standardise on different weekdays, and a reader who
     // treats them as one convention gets the other's contracts.
     for (unsigned month_index : {3u, 6u, 9u, 12u}) {

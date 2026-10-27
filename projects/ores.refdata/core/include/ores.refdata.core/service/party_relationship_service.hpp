@@ -75,24 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_party_relationships_response
-    list_party_relationships(const messaging::list_party_relationships_request& request);
-    messaging::get_party_relationship_response
-    get_party_relationship(const messaging::get_party_relationship_request& request);
-    messaging::get_many_party_relationships_response
-    get_many_party_relationships(const messaging::get_many_party_relationships_request& request);
-    messaging::put_party_relationship_response
-    put_party_relationship(const messaging::put_party_relationship_request& request);
-    messaging::put_many_party_relationships_response
-    put_many_party_relationships(const messaging::put_many_party_relationships_request& request);
-    messaging::delete_party_relationship_response
-    delete_party_relationship(const messaging::delete_party_relationship_request& request);
-    messaging::delete_many_party_relationships_response delete_many_party_relationships(
-        const messaging::delete_many_party_relationships_request& request);
-    messaging::list_party_relationship_versions_response list_party_relationship_versions(
-        const messaging::list_party_relationship_versions_request& request);
-    messaging::get_party_relationship_version_response get_party_relationship_version(
-        const messaging::get_party_relationship_version_request& request);
+    ::ores::refdata::messaging::list_party_relationships_response list_party_relationships(
+        const ::ores::refdata::messaging::list_party_relationships_request& request);
+    ::ores::refdata::messaging::get_party_relationship_response get_party_relationship(
+        const ::ores::refdata::messaging::get_party_relationship_request& request);
+    ::ores::refdata::messaging::get_many_party_relationships_response get_many_party_relationships(
+        const ::ores::refdata::messaging::get_many_party_relationships_request& request);
+    ::ores::refdata::messaging::put_party_relationship_response put_party_relationship(
+        const ::ores::refdata::messaging::put_party_relationship_request& request);
+    ::ores::refdata::messaging::put_many_party_relationships_response put_many_party_relationships(
+        const ::ores::refdata::messaging::put_many_party_relationships_request& request);
+    ::ores::refdata::messaging::delete_party_relationship_response delete_party_relationship(
+        const ::ores::refdata::messaging::delete_party_relationship_request& request);
+    ::ores::refdata::messaging::delete_many_party_relationships_response
+    delete_many_party_relationships(
+        const ::ores::refdata::messaging::delete_many_party_relationships_request& request);
+    ::ores::refdata::messaging::list_party_relationship_versions_response
+    list_party_relationship_versions(
+        const ::ores::refdata::messaging::list_party_relationship_versions_request& request);
+    ::ores::refdata::messaging::get_party_relationship_version_response
+    get_party_relationship_version(
+        const ::ores::refdata::messaging::get_party_relationship_version_request& request);
     /**@}*/
 
     /**
@@ -192,9 +195,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::party_relationship_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::party_relationship& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::party_relationship_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::party_relationship& out);
 };
 
 }

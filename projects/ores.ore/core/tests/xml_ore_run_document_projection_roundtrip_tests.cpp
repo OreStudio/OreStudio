@@ -21,6 +21,7 @@
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.testing/project_root.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <filesystem>
@@ -38,9 +39,6 @@
  */
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][roundtrip][ore][run_document]");
 
 using namespace ores::logging;
 using namespace ores::ore::domain;
@@ -150,7 +148,7 @@ std::string round_trip(const std::string& text, const std::string& path) {
 
 }
 
-TEST_CASE("every_run_document_in_the_corpus_round_trips", tags) {
+TEST_CASE("every_run_document_in_the_corpus_round_trips", "[ore][xml][roundtrip][ore][run_document]") {
     auto lg(make_logger(test_suite));
 
     std::size_t documents = 0;
@@ -172,7 +170,7 @@ TEST_CASE("every_run_document_in_the_corpus_round_trips", tags) {
     CHECK(failures.empty());
 }
 
-TEST_CASE("the_projection_states_the_positions_the_database_sorts_by", tags) {
+TEST_CASE("the_projection_states_the_positions_the_database_sorts_by", "[ore][xml][roundtrip][ore][run_document]") {
     auto lg(make_logger(test_suite));
 
     const auto original = run_document_projection::read(R"(
@@ -232,7 +230,7 @@ TEST_CASE("the_projection_states_the_positions_the_database_sorts_by", tags) {
     CHECK(active_at < next_at);
 }
 
-TEST_CASE("a_setup_parameter_the_model_does_not_hold_is_dropped_with_a_warning", tags) {
+TEST_CASE("a_setup_parameter_the_model_does_not_hold_is_dropped_with_a_warning", "[ore][xml][roundtrip][ore][run_document]") {
     auto lg(make_logger(test_suite));
 
     const auto original = run_document_projection::read(R"(<ORE>
@@ -258,7 +256,7 @@ TEST_CASE("a_setup_parameter_the_model_does_not_hold_is_dropped_with_a_warning",
     CHECK_THAT(warnings[2], Catch::Matchers::ContainsSubstring("'dateCalendar'"));
 }
 
-TEST_CASE("an_engine_setting_with_a_value_ore_does_not_read_is_refused", tags) {
+TEST_CASE("an_engine_setting_with_a_value_ore_does_not_read_is_refused", "[ore][xml][roundtrip][ore][run_document]") {
     auto lg(make_logger(test_suite));
 
     const auto document = [](std::string_view parameter) {
@@ -280,7 +278,7 @@ TEST_CASE("an_engine_setting_with_a_value_ore_does_not_read_is_refused", tags) {
                       Catch::Matchers::ContainsSubstring("is not a flag"));
 }
 
-TEST_CASE("a_setup_parameter_that_is_not_a_number_is_refused", tags) {
+TEST_CASE("a_setup_parameter_that_is_not_a_number_is_refused", "[ore][xml][roundtrip][ore][run_document]") {
     auto lg(make_logger(test_suite));
 
     const auto document = [](std::string_view parameter) {

@@ -22,8 +22,6 @@
 
 namespace {
 
-const std::string tags("[ir_curve_feed][vintage]");
-
 using ores::synthetic::feed::ir_curve_resolved_entry;
 using ores::synthetic::feed::select_vintage_anchor_entry;
 
@@ -39,7 +37,7 @@ ir_curve_resolved_entry make_entry(const std::string& point_id,
 
 }
 
-TEST_CASE("select_vintage_anchor_entry picks the shortest-tenor DEPOSIT entry", tags) {
+TEST_CASE("select_vintage_anchor_entry picks the shortest-tenor DEPOSIT entry", "[ir_curve_feed][vintage]") {
     const std::vector<ir_curve_resolved_entry> resolved{
         make_entry("3M", "DEPOSIT", 90),
         make_entry("1M", "DEPOSIT", 30),
@@ -54,7 +52,7 @@ TEST_CASE("select_vintage_anchor_entry picks the shortest-tenor DEPOSIT entry", 
     CHECK(anchor->curve_role == "DEPOSIT");
 }
 
-TEST_CASE("select_vintage_anchor_entry ignores non-DEPOSIT entries entirely", tags) {
+TEST_CASE("select_vintage_anchor_entry ignores non-DEPOSIT entries entirely", "[ir_curve_feed][vintage]") {
     const std::vector<ir_curve_resolved_entry> resolved{
         make_entry("1M", "FRA", 30),
         make_entry("2M", "SWAP", 60),
@@ -63,12 +61,12 @@ TEST_CASE("select_vintage_anchor_entry ignores non-DEPOSIT entries entirely", ta
     CHECK(select_vintage_anchor_entry(resolved) == nullptr);
 }
 
-TEST_CASE("select_vintage_anchor_entry returns nullptr for an empty template", tags) {
+TEST_CASE("select_vintage_anchor_entry returns nullptr for an empty template", "[ir_curve_feed][vintage]") {
     const std::vector<ir_curve_resolved_entry> resolved{};
     CHECK(select_vintage_anchor_entry(resolved) == nullptr);
 }
 
-TEST_CASE("select_vintage_anchor_entry is stable when several DEPOSIT entries tie on tenor", tags) {
+TEST_CASE("select_vintage_anchor_entry is stable when several DEPOSIT entries tie on tenor", "[ir_curve_feed][vintage]") {
     // Ties should not throw or crash; either candidate is an acceptable anchor. This just
     // documents that behaviour is deterministic (first-seen wins, since strictly-less-than never
     // replaces an equal ticks_ahead_end).

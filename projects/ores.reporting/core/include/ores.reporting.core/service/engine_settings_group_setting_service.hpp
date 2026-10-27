@@ -76,29 +76,38 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_engine_settings_group_settings_response list_engine_settings_group_settings(
-        const messaging::list_engine_settings_group_settings_request& request);
-    messaging::get_engine_settings_group_setting_response get_engine_settings_group_setting(
-        const messaging::get_engine_settings_group_setting_request& request);
-    messaging::get_many_engine_settings_group_settings_response
+    ::ores::reporting::messaging::list_engine_settings_group_settings_response
+    list_engine_settings_group_settings(
+        const ::ores::reporting::messaging::list_engine_settings_group_settings_request& request);
+    ::ores::reporting::messaging::get_engine_settings_group_setting_response
+    get_engine_settings_group_setting(
+        const ::ores::reporting::messaging::get_engine_settings_group_setting_request& request);
+    ::ores::reporting::messaging::get_many_engine_settings_group_settings_response
     get_many_engine_settings_group_settings(
-        const messaging::get_many_engine_settings_group_settings_request& request);
-    messaging::put_engine_settings_group_setting_response put_engine_settings_group_setting(
-        const messaging::put_engine_settings_group_setting_request& request);
-    messaging::put_many_engine_settings_group_settings_response
+        const ::ores::reporting::messaging::get_many_engine_settings_group_settings_request&
+            request);
+    ::ores::reporting::messaging::put_engine_settings_group_setting_response
+    put_engine_settings_group_setting(
+        const ::ores::reporting::messaging::put_engine_settings_group_setting_request& request);
+    ::ores::reporting::messaging::put_many_engine_settings_group_settings_response
     put_many_engine_settings_group_settings(
-        const messaging::put_many_engine_settings_group_settings_request& request);
-    messaging::delete_engine_settings_group_setting_response delete_engine_settings_group_setting(
-        const messaging::delete_engine_settings_group_setting_request& request);
-    messaging::delete_many_engine_settings_group_settings_response
+        const ::ores::reporting::messaging::put_many_engine_settings_group_settings_request&
+            request);
+    ::ores::reporting::messaging::delete_engine_settings_group_setting_response
+    delete_engine_settings_group_setting(
+        const ::ores::reporting::messaging::delete_engine_settings_group_setting_request& request);
+    ::ores::reporting::messaging::delete_many_engine_settings_group_settings_response
     delete_many_engine_settings_group_settings(
-        const messaging::delete_many_engine_settings_group_settings_request& request);
-    messaging::list_engine_settings_group_setting_versions_response
+        const ::ores::reporting::messaging::delete_many_engine_settings_group_settings_request&
+            request);
+    ::ores::reporting::messaging::list_engine_settings_group_setting_versions_response
     list_engine_settings_group_setting_versions(
-        const messaging::list_engine_settings_group_setting_versions_request& request);
-    messaging::get_engine_settings_group_setting_version_response
+        const ::ores::reporting::messaging::list_engine_settings_group_setting_versions_request&
+            request);
+    ::ores::reporting::messaging::get_engine_settings_group_setting_version_response
     get_engine_settings_group_setting_version(
-        const messaging::get_engine_settings_group_setting_version_request& request);
+        const ::ores::reporting::messaging::get_engine_settings_group_setting_version_request&
+            request);
     /**@}*/
 
     /**
@@ -195,7 +204,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::engine_settings_group_setting_change& change,
+    prepare_change(const ::ores::reporting::messaging::engine_settings_group_setting_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::engine_settings_group_setting& out);
 };

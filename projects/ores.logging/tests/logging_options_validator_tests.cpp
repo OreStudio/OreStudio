@@ -21,6 +21,7 @@
 #include "ores.logging/logging_options.hpp"
 #include "ores.logging/logging_options_validator.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <stdexcept>
@@ -28,9 +29,6 @@
 #include <string_view>
 
 namespace {
-
-const std::string_view test_suite("ores.logging.tests");
-const std::string tags("[logging]");
 
 ores::logging::logging_options make_console_only_options() {
     ores::logging::logging_options r;
@@ -45,7 +43,7 @@ using ores::logging::logging_exception;
 using ores::logging::logging_options;
 using ores::logging::logging_options_validator;
 
-TEST_CASE("validate_accepts_console_only_options", tags) {
+TEST_CASE("validate_accepts_console_only_options", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const logging_options cfg(make_console_only_options());
@@ -58,7 +56,7 @@ TEST_CASE("validate_accepts_console_only_options", tags) {
     CHECK_THROWS_AS(logging_options_validator::validate(no_sink), logging_exception);
 }
 
-TEST_CASE("validate_accepts_file_only_options", tags) {
+TEST_CASE("validate_accepts_file_only_options", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     logging_options cfg;
@@ -74,7 +72,7 @@ TEST_CASE("validate_accepts_file_only_options", tags) {
     CHECK_THROWS_AS(logging_options_validator::validate(no_sink), logging_exception);
 }
 
-TEST_CASE("validate_rejects_options_with_no_output", tags) {
+TEST_CASE("validate_rejects_options_with_no_output", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     logging_options cfg;
@@ -87,7 +85,7 @@ TEST_CASE("validate_rejects_options_with_no_output", tags) {
                       Catch::Matchers::Equals("Must log to file and/or console"));
 }
 
-TEST_CASE("validate_rejects_output_directory_without_filename", tags) {
+TEST_CASE("validate_rejects_output_directory_without_filename", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     logging_options cfg(make_console_only_options());
@@ -99,7 +97,7 @@ TEST_CASE("validate_rejects_output_directory_without_filename", tags) {
                       Catch::Matchers::Equals("Output directory supplied without a file name."));
 }
 
-TEST_CASE("validate_rejects_unknown_severity_with_invalid_argument", tags) {
+TEST_CASE("validate_rejects_unknown_severity_with_invalid_argument", "[logging]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     logging_options cfg(make_console_only_options());

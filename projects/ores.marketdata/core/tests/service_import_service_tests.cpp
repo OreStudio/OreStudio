@@ -33,18 +33,12 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <utility>
-
-namespace {
-
-const std::string_view test_suite("ores.marketdata.core.tests");
-const std::string tags("[service][import_service]");
-
-}
 
 using namespace ores::logging;
 using ores::marketdata::service::import_service;
@@ -105,7 +99,7 @@ std::vector<std::string> term_values(const boost::uuids::uuid& series_id,
 
 }
 
-TEST_CASE("import_dedupes_duplicate_observation_and_reports_warning", tags) {
+TEST_CASE("import_dedupes_duplicate_observation_and_reports_warning", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -126,7 +120,7 @@ TEST_CASE("import_dedupes_duplicate_observation_and_reports_warning", tags) {
     CHECK(resp.warnings[0].find("FX/RATE/EUR/CHF") != std::string::npos);
 }
 
-TEST_CASE("import_with_duplicates_are_errors_skips_only_the_affected_section", tags) {
+TEST_CASE("import_with_duplicates_are_errors_skips_only_the_affected_section", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -155,7 +149,7 @@ TEST_CASE("import_with_duplicates_are_errors_skips_only_the_affected_section", t
     CHECK(resp.fixing_count == 1);
 }
 
-TEST_CASE("import_defaults_point_id_to_spot_for_fx_rate", tags) {
+TEST_CASE("import_defaults_point_id_to_spot_for_fx_rate", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -188,7 +182,7 @@ TEST_CASE("import_defaults_point_id_to_spot_for_fx_rate", tags) {
                   .value()) == "FX/RATE/EUR/USD");
 }
 
-TEST_CASE("import_skips_a_short_key_oresmd_cannot_name", tags) {
+TEST_CASE("import_skips_a_short_key_oresmd_cannot_name", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -211,7 +205,7 @@ TEST_CASE("import_skips_a_short_key_oresmd_cannot_name", tags) {
     CHECK(resp.warnings[0].find("skipped") != std::string::npos);
 }
 
-TEST_CASE("import_skips_a_one_segment_key_and_keeps_the_rest_of_the_file", tags) {
+TEST_CASE("import_skips_a_one_segment_key_and_keeps_the_rest_of_the_file", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -235,7 +229,7 @@ TEST_CASE("import_skips_a_one_segment_key_and_keeps_the_rest_of_the_file", tags)
     CHECK(resp.warnings[0].contains("skipped"));
 }
 
-TEST_CASE("import_warns_when_refdata_says_an_fx_pair_is_reversed", tags) {
+TEST_CASE("import_warns_when_refdata_says_an_fx_pair_is_reversed", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     // Reference data named here rather than fetched. This branch is the reason
@@ -273,7 +267,7 @@ TEST_CASE("import_warns_when_refdata_says_an_fx_pair_is_reversed", tags) {
                 .size() == 1);
 }
 
-TEST_CASE("import_keeps_the_ir_swap_settlement_segment_the_file_carried", tags) {
+TEST_CASE("import_keeps_the_ir_swap_settlement_segment_the_file_carried", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     // The settlement segment is an identity field of the swap, stored as the file
@@ -307,7 +301,7 @@ TEST_CASE("import_keeps_the_ir_swap_settlement_segment_the_file_carried", tags) 
                 .size() == 1);
 }
 
-TEST_CASE("import_stores_an_alias_under_its_canonical_spelling_and_says_so", tags) {
+TEST_CASE("import_stores_an_alias_under_its_canonical_spelling_and_says_so", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     // ORE reads FX_SPOT as FX, so the two spellings name one datum: the row is
@@ -342,7 +336,7 @@ TEST_CASE("import_stores_an_alias_under_its_canonical_spelling_and_says_so", tag
                   .value()) == "FX/RATE/EUR/USD");
 }
 
-TEST_CASE("import_stores_a_key_in_the_case_it_was_written", tags) {
+TEST_CASE("import_stores_a_key_in_the_case_it_was_written", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     // The datum keeps every token as ORE reads it, and ORE does not change the case
@@ -368,7 +362,7 @@ TEST_CASE("import_stores_a_key_in_the_case_it_was_written", tags) {
                 .size() == 1);
 }
 
-TEST_CASE("import_leaves_fx_qualifier_untouched_when_currency_pairs_unreachable", tags) {
+TEST_CASE("import_leaves_fx_qualifier_untouched_when_currency_pairs_unreachable", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     // auth_nats is unconnected (no live refdata to fetch currency_pair
@@ -399,7 +393,7 @@ TEST_CASE("import_leaves_fx_qualifier_untouched_when_currency_pairs_unreachable"
     REQUIRE(series.size() == 1);
 }
 
-TEST_CASE("import_gives_a_series_the_identity_its_key_projects_to", tags) {
+TEST_CASE("import_gives_a_series_the_identity_its_key_projects_to", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     // A market-data key and a fixing index name are different key spaces, each
@@ -436,7 +430,7 @@ TEST_CASE("import_gives_a_series_the_identity_its_key_projects_to", tags) {
     CHECK(inflation.front().oresmd_uri == "oresmd://inflation/UKRPI?type=fixing&index=inflation");
 }
 
-TEST_CASE("a_series_is_read_by_the_identity_its_key_projects_to", tags) {
+TEST_CASE("a_series_is_read_by_the_identity_its_key_projects_to", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     // The identity is a lookup in its own right, so a reader finds a series without
@@ -459,7 +453,7 @@ TEST_CASE("a_series_is_read_by_the_identity_its_key_projects_to", tags) {
           "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
 }
 
-TEST_CASE("a_series_carries_its_instruments_identity_not_one_of_its_points", tags) {
+TEST_CASE("a_series_carries_its_instruments_identity_not_one_of_its_points", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     // A file's key names one datum, and the payload below carries two points of one
@@ -489,7 +483,7 @@ TEST_CASE("a_series_carries_its_instruments_identity_not_one_of_its_points", tag
     CHECK(by_identity.front().oresmd_uri == uri);
 }
 
-TEST_CASE("import_skips_a_market_data_key_oresmd_cannot_name", tags) {
+TEST_CASE("import_skips_a_market_data_key_oresmd_cannot_name", "[service][import_service]") {
     database_helper h;
     ores::nats::service::nats_client auth_nats;
     import_service svc(h.context(), auth_nats);
@@ -514,7 +508,7 @@ TEST_CASE("import_skips_a_market_data_key_oresmd_cannot_name", tags) {
                 .size() == 1);
 }
 
-TEST_CASE("import_skips_an_index_name_oresmd_cannot_name", tags) {
+TEST_CASE("import_skips_an_index_name_oresmd_cannot_name", "[service][import_service]") {
     database_helper h;
     ores::nats::service::nats_client auth_nats;
     import_service svc(h.context(), auth_nats);
@@ -537,7 +531,7 @@ TEST_CASE("import_skips_an_index_name_oresmd_cannot_name", tags) {
     // has no identity, so it files no series and reports itself instead.
 }
 
-TEST_CASE("import_declares_the_shape_of_a_series_it_creates", tags) {
+TEST_CASE("import_declares_the_shape_of_a_series_it_creates", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -573,7 +567,7 @@ TEST_CASE("import_declares_the_shape_of_a_series_it_creates", tags) {
     CHECK(term_values(series.front().id, h.context()) == std::vector<std::string>{"1Y", "2Y"});
 }
 
-TEST_CASE("import_declares_a_surfaces_strike_axis_as_canonical_components", tags) {
+TEST_CASE("import_declares_a_surfaces_strike_axis_as_canonical_components", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -618,7 +612,7 @@ TEST_CASE("import_declares_a_surfaces_strike_axis_as_canonical_components", tags
           std::vector<std::string>{"ATM", "25RR"});
 }
 
-TEST_CASE("import_re_declares_the_same_shape_without_adding_rows", tags) {
+TEST_CASE("import_re_declares_the_same_shape_without_adding_rows", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -653,7 +647,7 @@ TEST_CASE("import_re_declares_the_same_shape_without_adding_rows", tags) {
     CHECK(term_values(series.front().id, h.context()) == std::vector<std::string>{"1Y", "2Y"});
 }
 
-TEST_CASE("import_records_a_term_the_reference_tenor_table_does_not_hold", tags) {
+TEST_CASE("import_records_a_term_the_reference_tenor_table_does_not_hold", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -681,7 +675,7 @@ TEST_CASE("import_records_a_term_the_reference_tenor_table_does_not_hold", tags)
     CHECK(term_values(series.front().id, h.context()) == std::vector<std::string>{"13Y"});
 }
 
-TEST_CASE("import_keeps_the_shape_of_a_series_it_does_not_name", tags) {
+TEST_CASE("import_keeps_the_shape_of_a_series_it_does_not_name", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -716,7 +710,7 @@ TEST_CASE("import_keeps_the_shape_of_a_series_it_does_not_name", tags) {
     CHECK(term_values(bseries.front().id, h.context()) == std::vector<std::string>{"3Y"});
 }
 
-TEST_CASE("import_appends_a_term_a_later_file_states", tags) {
+TEST_CASE("import_appends_a_term_a_later_file_states", "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

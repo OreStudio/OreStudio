@@ -75,24 +75,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_cds_volatility_terms_response
-    list_cds_volatility_terms(const messaging::list_cds_volatility_terms_request& request);
-    messaging::get_cds_volatility_term_response
-    get_cds_volatility_term(const messaging::get_cds_volatility_term_request& request);
-    messaging::get_many_cds_volatility_terms_response
-    get_many_cds_volatility_terms(const messaging::get_many_cds_volatility_terms_request& request);
-    messaging::put_cds_volatility_term_response
-    put_cds_volatility_term(const messaging::put_cds_volatility_term_request& request);
-    messaging::put_many_cds_volatility_terms_response
-    put_many_cds_volatility_terms(const messaging::put_many_cds_volatility_terms_request& request);
-    messaging::delete_cds_volatility_term_response
-    delete_cds_volatility_term(const messaging::delete_cds_volatility_term_request& request);
-    messaging::delete_many_cds_volatility_terms_response delete_many_cds_volatility_terms(
-        const messaging::delete_many_cds_volatility_terms_request& request);
-    messaging::list_cds_volatility_term_versions_response list_cds_volatility_term_versions(
-        const messaging::list_cds_volatility_term_versions_request& request);
-    messaging::get_cds_volatility_term_version_response get_cds_volatility_term_version(
-        const messaging::get_cds_volatility_term_version_request& request);
+    ::ores::refdata::messaging::list_cds_volatility_terms_response list_cds_volatility_terms(
+        const ::ores::refdata::messaging::list_cds_volatility_terms_request& request);
+    ::ores::refdata::messaging::get_cds_volatility_term_response get_cds_volatility_term(
+        const ::ores::refdata::messaging::get_cds_volatility_term_request& request);
+    ::ores::refdata::messaging::get_many_cds_volatility_terms_response
+    get_many_cds_volatility_terms(
+        const ::ores::refdata::messaging::get_many_cds_volatility_terms_request& request);
+    ::ores::refdata::messaging::put_cds_volatility_term_response put_cds_volatility_term(
+        const ::ores::refdata::messaging::put_cds_volatility_term_request& request);
+    ::ores::refdata::messaging::put_many_cds_volatility_terms_response
+    put_many_cds_volatility_terms(
+        const ::ores::refdata::messaging::put_many_cds_volatility_terms_request& request);
+    ::ores::refdata::messaging::delete_cds_volatility_term_response delete_cds_volatility_term(
+        const ::ores::refdata::messaging::delete_cds_volatility_term_request& request);
+    ::ores::refdata::messaging::delete_many_cds_volatility_terms_response
+    delete_many_cds_volatility_terms(
+        const ::ores::refdata::messaging::delete_many_cds_volatility_terms_request& request);
+    ::ores::refdata::messaging::list_cds_volatility_term_versions_response
+    list_cds_volatility_term_versions(
+        const ::ores::refdata::messaging::list_cds_volatility_term_versions_request& request);
+    ::ores::refdata::messaging::get_cds_volatility_term_version_response
+    get_cds_volatility_term_version(
+        const ::ores::refdata::messaging::get_cds_volatility_term_version_request& request);
     /**@}*/
 
     /**
@@ -190,7 +195,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::cds_volatility_term_change& change,
+    prepare_change(const ::ores::refdata::messaging::cds_volatility_term_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::cds_volatility_term& out);
 };

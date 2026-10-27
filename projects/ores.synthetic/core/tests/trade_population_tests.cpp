@@ -40,8 +40,6 @@
 
 namespace {
 
-const std::string tags("[trade_population]");
-
 using namespace ores::synthetic;
 using namespace ores::synthetic::service;
 
@@ -69,7 +67,6 @@ const domain::rate_terms& rate_of(const domain::trade_population_slot& slot) {
 const domain::fx_terms& fx_of(const domain::trade_population_slot& slot) {
     return std::get<domain::fx_terms>(slot.terms);
 }
-
 
 const boost::uuids::uuid config_id =
     boost::uuids::string_generator()("0cd68b09-6ebc-4180-a298-0cc386590f31");
@@ -185,7 +182,7 @@ std::optional<std::uint32_t> version_of(const recording_writer& writer,
 
 }
 
-TEST_CASE("the_population_size_is_the_configs_and_not_the_generators", tags) {
+TEST_CASE("the_population_size_is_the_configs_and_not_the_generators", "[trade_population]") {
     auto narrower = bond_scope();
     narrower.trades_per_book = 2;
 
@@ -210,7 +207,7 @@ domain::trade_generation_scope commodity_scope() {
     return scope;
 }
 
-TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", tags) {
+TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_population]") {
     auto wide = commodity_scope();
     wide.trades_per_book = 25;
 
@@ -228,7 +225,7 @@ TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", tags) {
     REQUIRE(types.size() == 25u);
 }
 
-TEST_CASE("a_commodity_slot_states_its_own_terms_and_names_a_catalogue_commodity", tags) {
+TEST_CASE("a_commodity_slot_states_its_own_terms_and_names_a_catalogue_commodity", "[trade_population]") {
     const auto plan = plan_of(commodity_scope());
 
     std::set<std::string> commodities;
@@ -246,21 +243,21 @@ TEST_CASE("a_commodity_slot_states_its_own_terms_and_names_a_catalogue_commodity
         REQUIRE((code == "NYMEX:CL" || code == "NYMEX:NG"));
 }
 
-TEST_CASE("a_commodity_population_with_no_catalogue_is_refused", tags) {
+TEST_CASE("a_commodity_population_with_no_catalogue_is_refused", "[trade_population]") {
     auto empty = commodity_scope();
     empty.commodities.clear();
 
     CHECK_THROWS_WITH(plan_of(empty), Catch::Matchers::ContainsSubstring("catalogue"));
 }
 
-TEST_CASE("a_bond_slot_still_states_bond_terms", tags) {
+TEST_CASE("a_bond_slot_still_states_bond_terms", "[trade_population]") {
     const auto plan = plan_of(bond_scope());
 
     for (const auto& slot : plan.slots)
         REQUIRE(std::holds_alternative<domain::bond_terms>(slot.terms));
 }
 
-TEST_CASE("a_bond_scope_states_one_trade_per_slot_across_its_books", tags) {
+TEST_CASE("a_bond_scope_states_one_trade_per_slot_across_its_books", "[trade_population]") {
     const auto plan = plan_of(bond_scope());
 
     REQUIRE(plan.slots.size() == scene_trades_per_book * 2);
@@ -270,7 +267,7 @@ TEST_CASE("a_bond_scope_states_one_trade_per_slot_across_its_books", tags) {
     REQUIRE(plan.slots.front().currency == "EUR");
 }
 
-TEST_CASE("the_same_scope_states_the_same_population_twice", tags) {
+TEST_CASE("the_same_scope_states_the_same_population_twice", "[trade_population]") {
     const auto once = plan_of(bond_scope());
     const auto twice = plan_of(bond_scope());
 
@@ -285,7 +282,7 @@ TEST_CASE("the_same_scope_states_the_same_population_twice", tags) {
     }
 }
 
-TEST_CASE("a_different_seed_states_a_different_population", tags) {
+TEST_CASE("a_different_seed_states_a_different_population", "[trade_population]") {
     auto other = bond_scope();
     other.seed = 8;
 
@@ -295,7 +292,7 @@ TEST_CASE("a_different_seed_states_a_different_population", tags) {
     REQUIRE(once.slots.front().trade_id != twice.slots.front().trade_id);
 }
 
-TEST_CASE("every_trade_date_derives_from_the_as_of_anchor", tags) {
+TEST_CASE("every_trade_date_derives_from_the_as_of_anchor", "[trade_population]") {
     auto earlier = bond_scope();
     earlier.as_of_date = std::chrono::year{2026} / 1 / 2;
     auto later = bond_scope();
@@ -310,7 +307,7 @@ TEST_CASE("every_trade_date_derives_from_the_as_of_anchor", tags) {
             bond_of(second.slots.front()).maturity_date);
 }
 
-TEST_CASE("a_tenor_or_notional_band_that_does_not_order_is_refused", tags) {
+TEST_CASE("a_tenor_or_notional_band_that_does_not_order_is_refused", "[trade_population]") {
     auto inverted_tenor = bond_scope();
     inverted_tenor.min_tenor_code = "10Y";
     inverted_tenor.max_tenor_code = "1Y";
@@ -322,7 +319,7 @@ TEST_CASE("a_tenor_or_notional_band_that_does_not_order_is_refused", tags) {
     CHECK_THROWS_AS(plan_of(inverted_notional), trade_population_error);
 }
 
-TEST_CASE("a_scope_naming_no_book_counterparty_or_trader_is_refused", tags) {
+TEST_CASE("a_scope_naming_no_book_counterparty_or_trader_is_refused", "[trade_population]") {
     auto no_book = bond_scope();
     no_book.book_ids.clear();
     CHECK_THROWS_AS(plan_of(no_book), trade_population_error);
@@ -340,7 +337,7 @@ TEST_CASE("a_scope_naming_no_book_counterparty_or_trader_is_refused", tags) {
     CHECK_THROWS_AS(plan_of(no_trader), trade_population_error);
 }
 
-TEST_CASE("a_family_the_generator_does_not_cover_is_refused_by_name", tags) {
+TEST_CASE("a_family_the_generator_does_not_cover_is_refused_by_name", "[trade_population]") {
     // Equity has no planner, so it is the class the registry refuses by name.
     auto equity = bond_scope();
     equity.asset_class_code = "equity";
@@ -380,13 +377,13 @@ std::uint64_t envelope_hash(const std::string& rendered) {
     return hash;
 }
 
-TEST_CASE("the_envelope_of_a_bond_plan_is_the_one_that_was_agreed", tags) {
+TEST_CASE("the_envelope_of_a_bond_plan_is_the_one_that_was_agreed", "[trade_population]") {
     // Recorded from the planner as it stood before the envelope was extracted,
     // so this case fails if the extraction changed anything a slot states.
     CHECK(envelope_hash(render_envelope(plan_of(bond_scope()))) == 9368398884618711992ULL);
 }
 
-TEST_CASE("a_rate_population_states_two_legs_of_one_currency", tags) {
+TEST_CASE("a_rate_population_states_two_legs_of_one_currency", "[trade_population]") {
     const auto scope = rate_scope();
     const auto plan = plan_of(scope);
 
@@ -414,7 +411,7 @@ TEST_CASE("a_rate_population_states_two_legs_of_one_currency", tags) {
     }
 }
 
-TEST_CASE("every_routed_rate_type_appears_in_a_population_of_that_length", tags) {
+TEST_CASE("every_routed_rate_type_appears_in_a_population_of_that_length", "[trade_population]") {
     const auto scope = rate_scope();
     const auto plan = plan_of(scope);
 
@@ -426,14 +423,14 @@ TEST_CASE("every_routed_rate_type_appears_in_a_population_of_that_length", tags)
     CHECK(types.size() == 9);
 }
 
-TEST_CASE("a_rate_population_without_an_index_catalogue_is_refused", tags) {
+TEST_CASE("a_rate_population_without_an_index_catalogue_is_refused", "[trade_population]") {
     auto scope = rate_scope();
     scope.floating_index_codes.clear();
 
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
 
-TEST_CASE("an_fx_population_states_the_idiom_its_type_needs", tags) {
+TEST_CASE("an_fx_population_states_the_idiom_its_type_needs", "[trade_population]") {
     const auto scope = fx_scope();
     const auto plan = plan_of(scope);
 
@@ -472,7 +469,7 @@ TEST_CASE("an_fx_population_states_the_idiom_its_type_needs", tags) {
     }
 }
 
-TEST_CASE("every_routed_fx_type_appears_in_a_population_of_that_length", tags) {
+TEST_CASE("every_routed_fx_type_appears_in_a_population_of_that_length", "[trade_population]") {
     const auto plan = plan_of(fx_scope());
 
     std::set<std::string> types;
@@ -482,7 +479,7 @@ TEST_CASE("every_routed_fx_type_appears_in_a_population_of_that_length", tags) {
     CHECK(types.size() == 16);
 }
 
-TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", tags) {
+TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", "[trade_population]") {
     const auto scope = fx_scope();
     const auto plan = plan_of(scope);
 
@@ -498,14 +495,14 @@ TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", tags
     }
 }
 
-TEST_CASE("an_fx_population_without_a_pair_catalogue_is_refused", tags) {
+TEST_CASE("an_fx_population_without_a_pair_catalogue_is_refused", "[trade_population]") {
     auto scope = fx_scope();
     scope.currency_pairs.clear();
 
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
 
-TEST_CASE("the_notional_of_every_slot_sits_in_the_band", tags) {
+TEST_CASE("the_notional_of_every_slot_sits_in_the_band", "[trade_population]") {
     const auto scope = bond_scope();
     const auto plan = plan_of(scope);
 
@@ -517,7 +514,7 @@ TEST_CASE("the_notional_of_every_slot_sits_in_the_band", tags) {
     }
 }
 
-TEST_CASE("every_trade_of_a_security_states_the_terms_of_that_security", tags) {
+TEST_CASE("every_trade_of_a_security_states_the_terms_of_that_security", "[trade_population]") {
     const auto plan = plan_of(bond_scope());
 
     std::map<std::string, domain::trade_population_slot> first_of;
@@ -533,7 +530,7 @@ TEST_CASE("every_trade_of_a_security_states_the_terms_of_that_security", tags) {
     }
 }
 
-TEST_CASE("a_securitys_maturity_is_its_issue_date_plus_its_term", tags) {
+TEST_CASE("a_securitys_maturity_is_its_issue_date_plus_its_term", "[trade_population]") {
     const auto plan = plan_of(bond_scope());
 
     for (const auto& slot : plan.slots) {
@@ -545,7 +542,7 @@ TEST_CASE("a_securitys_maturity_is_its_issue_date_plus_its_term", tags) {
     }
 }
 
-TEST_CASE("the_tenor_band_reaches_the_maturities_of_the_securities", tags) {
+TEST_CASE("the_tenor_band_reaches_the_maturities_of_the_securities", "[trade_population]") {
     const auto plan = plan_of(bond_scope());
 
     std::set<std::string> securities;
@@ -559,7 +556,7 @@ TEST_CASE("the_tenor_band_reaches_the_maturities_of_the_securities", tags) {
     REQUIRE(terms.size() > 1);
 }
 
-TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", tags) {
+TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", "[trade_population]") {
     auto euro = bond_scope();
     euro.currency_code = "EUR";
     auto dollar = bond_scope();
@@ -569,7 +566,7 @@ TEST_CASE("a_security_states_the_currency_of_the_books_that_hold_it", tags) {
     REQUIRE(security_id_for(euro, 5) == security_id_for(euro, 5));
 }
 
-TEST_CASE("a_security_is_not_tied_to_a_book", tags) {
+TEST_CASE("a_security_is_not_tied_to_a_book", "[trade_population]") {
     const auto plan = plan_of(bond_scope());
 
     std::map<std::string, std::set<boost::uuids::uuid>> books_of;
@@ -581,7 +578,7 @@ TEST_CASE("a_security_is_not_tied_to_a_book", tags) {
     REQUIRE(shared);
 }
 
-TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", tags) {
+TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", "[trade_population]") {
     recording_writer writer(bond_scope());
     trade_population_service service(writer);
 
@@ -615,7 +612,7 @@ TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", tags) {
     REQUIRE(writer.versions == versions_after_first);
 }
 
-TEST_CASE("a_security_has_the_same_issuer_whatever_counterparties_a_config_scopes", tags) {
+TEST_CASE("a_security_has_the_same_issuer_whatever_counterparties_a_config_scopes", "[trade_population]") {
     const auto wide = bond_scope();
     auto narrow = bond_scope();
     narrow.counterparty_ids = {second_bank};

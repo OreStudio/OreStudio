@@ -30,14 +30,12 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[repository]");
 
 using ores::iam::domain::role_permission;
 
@@ -66,7 +64,7 @@ void state_the_tail(database_helper& h, role_permission& link) {
 
 }
 
-TEST_CASE("write_single_role_permission", tags) {
+TEST_CASE("write_single_role_permission", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -92,7 +90,7 @@ TEST_CASE("write_single_role_permission", tags) {
     CHECK_NOTHROW(repo.write(rp));
 }
 
-TEST_CASE("read_latest_role_permissions", tags) {
+TEST_CASE("read_latest_role_permissions", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -120,7 +118,7 @@ TEST_CASE("read_latest_role_permissions", tags) {
     CHECK(!read_rps.empty());
 }
 
-TEST_CASE("read_latest_role_permissions_by_role", tags) {
+TEST_CASE("read_latest_role_permissions_by_role", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

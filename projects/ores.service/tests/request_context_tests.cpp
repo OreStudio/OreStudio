@@ -32,7 +32,6 @@
 
 namespace {
 
-const std::string tags("[request_context]");
 const std::string secret("ores-service-request-context-test-secret-32b");
 const std::string issuer("ores.service.tests");
 const std::string audience("ores.service.tests");
@@ -63,7 +62,7 @@ std::string bearer(std::string token) {
 using ores::service::error_code;
 using ores::service::service::make_request_context;
 
-TEST_CASE("a request without a verifier keeps the base context", tags) {
+TEST_CASE("a request without a verifier keeps the base context", "[request_context]") {
     ores::testing::database_helper h;
     ores::nats::message msg;
     // A base context with known values, so an implementation that returned a
@@ -79,7 +78,7 @@ TEST_CASE("a request without a verifier keeps the base context", tags) {
     REQUIRE(result->roles() == std::vector<std::string>{"r1", "r2"});
 }
 
-TEST_CASE("a request without an authorization header is unauthorized", tags) {
+TEST_CASE("a request without an authorization header is unauthorized", "[request_context]") {
     ores::testing::database_helper h;
     ores::nats::message msg;
 
@@ -89,7 +88,7 @@ TEST_CASE("a request without an authorization header is unauthorized", tags) {
     REQUIRE(result.error() == error_code::unauthorized);
 }
 
-TEST_CASE("an authorization header that is not a bearer token is unauthorized", tags) {
+TEST_CASE("an authorization header that is not a bearer token is unauthorized", "[request_context]") {
     ores::testing::database_helper h;
     ores::nats::message msg;
     msg.headers[std::string(ores::nats::headers::authorization)] =
@@ -101,7 +100,7 @@ TEST_CASE("an authorization header that is not a bearer token is unauthorized", 
     REQUIRE(result.error() == error_code::unauthorized);
 }
 
-TEST_CASE("an expired bearer token reports the token as expired", tags) {
+TEST_CASE("an expired bearer token reports the token as expired", "[request_context]") {
     ores::testing::database_helper h;
     ores::nats::message msg;
     msg.headers[std::string(ores::nats::headers::authorization)] =
@@ -113,7 +112,7 @@ TEST_CASE("an expired bearer token reports the token as expired", tags) {
     REQUIRE(result.error() == error_code::token_expired);
 }
 
-TEST_CASE("a token signed with another key is unauthorized", tags) {
+TEST_CASE("a token signed with another key is unauthorized", "[request_context]") {
     ores::testing::database_helper h;
     ores::nats::message msg;
     msg.headers[std::string(ores::nats::headers::authorization)] =
@@ -125,7 +124,7 @@ TEST_CASE("a token signed with another key is unauthorized", tags) {
     REQUIRE(result.error() == error_code::unauthorized);
 }
 
-TEST_CASE("a valid bearer token scopes the context to its tenant, actor and permissions", tags) {
+TEST_CASE("a valid bearer token scopes the context to its tenant, actor and permissions", "[request_context]") {
     ores::testing::database_helper h;
     ores::nats::message msg;
     msg.headers[std::string(ores::nats::headers::authorization)] =
@@ -140,7 +139,7 @@ TEST_CASE("a valid bearer token scopes the context to its tenant, actor and perm
     REQUIRE_FALSE(result->party_id().has_value());
 }
 
-TEST_CASE("a token naming a party scopes the context to that party", tags) {
+TEST_CASE("a token naming a party scopes the context to that party", "[request_context]") {
     ores::testing::database_helper h;
     auto claims = ores::security::jwt::jwt_claims::with_ttl(std::chrono::minutes(5));
     claims.issuer = issuer;
@@ -164,7 +163,7 @@ TEST_CASE("a token naming a party scopes the context to that party", tags) {
     REQUIRE(result->actor() == "alice");
 }
 
-TEST_CASE("a token with an unparseable party falls back to tenant scope", tags) {
+TEST_CASE("a token with an unparseable party falls back to tenant scope", "[request_context]") {
     ores::testing::database_helper h;
     auto claims = ores::security::jwt::jwt_claims::with_ttl(std::chrono::minutes(5));
     claims.issuer = issuer;
@@ -186,7 +185,7 @@ TEST_CASE("a token with an unparseable party falls back to tenant scope", tags) 
     REQUIRE(result->actor() == "alice");
 }
 
-TEST_CASE("a token with no tenant is unauthorized", tags) {
+TEST_CASE("a token with no tenant is unauthorized", "[request_context]") {
     ores::testing::database_helper h;
     auto claims = ores::security::jwt::jwt_claims::with_ttl(std::chrono::minutes(5));
     claims.issuer = issuer;
@@ -208,7 +207,7 @@ TEST_CASE("a token with no tenant is unauthorized", tags) {
  * only lets a person choose a party would otherwise pass as an ordinary one.
  * The verifier here sets none, as the services' verifiers do.
  */
-TEST_CASE("a token that only chooses a party is unauthorized", tags) {
+TEST_CASE("a token that only chooses a party is unauthorized", "[request_context]") {
     ores::testing::database_helper h;
     const auto verifier = ores::security::jwt::jwt_authenticator::create_hs256(secret);
     auto claims = ores::security::jwt::jwt_claims::with_ttl(std::chrono::minutes(5));
@@ -230,7 +229,7 @@ TEST_CASE("a token that only chooses a party is unauthorized", tags) {
     CHECK(request("").has_value());
 }
 
-TEST_CASE("a delegated bearer token builds the original user's context", tags) {
+TEST_CASE("a delegated bearer token builds the original user's context", "[request_context]") {
     ores::testing::database_helper h;
     ores::nats::message msg;
     msg.headers[std::string(ores::nats::headers::delegated_authorization)] =
@@ -243,7 +242,7 @@ TEST_CASE("a delegated bearer token builds the original user's context", tags) {
     REQUIRE(result->actor() == "alice");
 }
 
-TEST_CASE("a delegated header that is not a bearer token is unauthorized", tags) {
+TEST_CASE("a delegated header that is not a bearer token is unauthorized", "[request_context]") {
     ores::testing::database_helper h;
     ores::nats::message msg;
     msg.headers[std::string(ores::nats::headers::delegated_authorization)] =

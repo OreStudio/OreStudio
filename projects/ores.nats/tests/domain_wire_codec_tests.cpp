@@ -25,8 +25,6 @@
 
 namespace {
 
-const std::string tags("[domain][wire_codec]");
-
 struct sample {
     std::string name;
     int value = 0;
@@ -35,7 +33,7 @@ struct sample {
 
 }
 
-TEST_CASE("wire_codec round-trips a reflectable struct under json", tags) {
+TEST_CASE("wire_codec round-trips a reflectable struct under json", "[domain][wire_codec]") {
     const ores::nats::wire_codec codec(ores::nats::wire_format::json);
 
     const sample original{"alpha", 42, {std::uint8_t{1}, std::uint8_t{2}, std::uint8_t{3}}};
@@ -48,7 +46,7 @@ TEST_CASE("wire_codec round-trips a reflectable struct under json", tags) {
     CHECK(decoded->payload == original.payload);
 }
 
-TEST_CASE("wire_codec round-trips a reflectable struct under msgpack", tags) {
+TEST_CASE("wire_codec round-trips a reflectable struct under msgpack", "[domain][wire_codec]") {
     const ores::nats::wire_codec codec(ores::nats::wire_format::msgpack);
 
     const sample original{"beta", -7, {std::uint8_t{9}, std::uint8_t{8}, std::uint8_t{7}}};
@@ -61,7 +59,7 @@ TEST_CASE("wire_codec round-trips a reflectable struct under msgpack", tags) {
     CHECK(decoded->payload == original.payload);
 }
 
-TEST_CASE("wire_codec msgpack round-trips a byte-vector field natively, not as base64", tags) {
+TEST_CASE("wire_codec msgpack round-trips a byte-vector field natively, not as base64", "[domain][wire_codec]") {
     // This is the property the whole story exists to exploit: msgpack's
     // native binary type carries std::vector<uint8_t> as raw bytes, not
     // a base64-inflated string -- so the msgpack encoding of a
@@ -84,7 +82,7 @@ TEST_CASE("wire_codec msgpack round-trips a byte-vector field natively, not as b
     CHECK(decoded->payload == original.payload);
 }
 
-TEST_CASE("wire_codec msgpack reads a whole number into a double field", tags) {
+TEST_CASE("wire_codec msgpack reads a whole number into a double field", "[domain][wire_codec]") {
     // A JavaScript client has one number type, so it writes a weight of 1 or
     // a mean of -2 as a msgpack integer, never as a float.
     struct whole_numbers {
@@ -105,14 +103,14 @@ TEST_CASE("wire_codec msgpack reads a whole number into a double field", tags) {
     CHECK(decoded->mean == -2.0);
 }
 
-TEST_CASE("wire_codec::format returns the format fixed at construction", tags) {
+TEST_CASE("wire_codec::format returns the format fixed at construction", "[domain][wire_codec]") {
     CHECK(ores::nats::wire_codec(ores::nats::wire_format::json).format() ==
           ores::nats::wire_format::json);
     CHECK(ores::nats::wire_codec(ores::nats::wire_format::msgpack).format() ==
           ores::nats::wire_format::msgpack);
 }
 
-TEST_CASE("wire_codec decode surfaces a parse error for malformed json input", tags) {
+TEST_CASE("wire_codec decode surfaces a parse error for malformed json input", "[domain][wire_codec]") {
     const ores::nats::wire_codec codec(ores::nats::wire_format::json);
     const std::string garbage = "not json";
     const std::span<const std::byte> bytes(reinterpret_cast<const std::byte*>(garbage.data()),
@@ -123,7 +121,7 @@ TEST_CASE("wire_codec decode surfaces a parse error for malformed json input", t
     CHECK_FALSE(decoded.has_value());
 }
 
-TEST_CASE("wire_codec decode surfaces a parse error for malformed msgpack input", tags) {
+TEST_CASE("wire_codec decode surfaces a parse error for malformed msgpack input", "[domain][wire_codec]") {
     const ores::nats::wire_codec codec(ores::nats::wire_format::msgpack);
     const std::string garbage = "not msgpack";
     const std::span<const std::byte> bytes(reinterpret_cast<const std::byte*>(garbage.data()),
@@ -134,7 +132,7 @@ TEST_CASE("wire_codec decode surfaces a parse error for malformed msgpack input"
     CHECK_FALSE(decoded.has_value());
 }
 
-TEST_CASE("default_wire_codec defaults to msgpack and reflects set_default_wire_codec", tags) {
+TEST_CASE("default_wire_codec defaults to msgpack and reflects set_default_wire_codec", "[domain][wire_codec]") {
     // No ores::nats::service::client has been constructed in this test
     // binary, so the process-wide default is still whatever it was left
     // at by construction (msgpack) -- verify that, then verify

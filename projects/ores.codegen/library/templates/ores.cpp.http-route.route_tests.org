@@ -53,6 +53,7 @@ The full template source. Edit here and re-tangle with
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
@@ -68,11 +69,8 @@ using ores::nats::service::nats_client;
 
 namespace {
 
-const std::string_view test_suite("ores.http.{{component}}.tests");
-const std::string tags("[routes]");
-
 /// One route the unit must register, as the derivation states it.
-struct expected_route {
+struct {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_expected_route {
     http_method method;
     std::string pattern;
     bool requires_auth;
@@ -91,7 +89,7 @@ std::shared_ptr<router> {{entity_singular}}{{^entity_singular}}{{name_singular}}
 
 }
 
-TEST_CASE("{{entity_singular}}_routes_registers_every_derived_route", tags) {
+TEST_CASE("{{entity_singular}}_routes_registers_every_derived_route", "[routes]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -104,7 +102,7 @@ TEST_CASE("{{entity_singular}}_routes_registers_every_derived_route", tags) {
     // so a route that is missing from it was never registered.
     for (const auto& expected : {
 {{#http_route.routes}}
-             expected_route{http_method::{{method}}, std::string{"{{pattern}}"},
+             {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_expected_route{http_method::{{method}}, std::string{"{{pattern}}"},
 {{#requires_session}}
                             true},
 {{/requires_session}}
@@ -124,7 +122,7 @@ TEST_CASE("{{entity_singular}}_routes_registers_every_derived_route", tags) {
     BOOST_LOG_SEV(lg, debug) << "Registered {{http_route.route_count}} route(s).";
 }
 
-TEST_CASE("{{entity_singular}}_routes_requires_a_session_where_the_operation_does", tags) {
+TEST_CASE("{{entity_singular}}_routes_requires_a_session_where_the_operation_does", "[routes]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -136,7 +134,7 @@ TEST_CASE("{{entity_singular}}_routes_requires_a_session_where_the_operation_doe
     // not made unreachable by a flag the model never asked for.
     for (const auto& expected : {
 {{#http_route.routes}}
-         expected_route{http_method::{{method}}, std::string{"{{pattern}}"},
+         {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_expected_route{http_method::{{method}}, std::string{"{{pattern}}"},
 {{#requires_session}}
                         true},
 {{/requires_session}}

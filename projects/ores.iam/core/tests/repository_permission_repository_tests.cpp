@@ -26,16 +26,10 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::iam::generators;
@@ -43,7 +37,7 @@ using namespace ores::iam::generators;
 using ores::testing::database_helper;
 using ores::iam::repository::permission_repository;
 
-TEST_CASE("write_single_permission", tags) {
+TEST_CASE("write_single_permission", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -56,7 +50,7 @@ TEST_CASE("write_single_permission", tags) {
     CHECK_NOTHROW(repo.write(h.context(), p));
 }
 
-TEST_CASE("read_latest_permissions", tags) {
+TEST_CASE("read_latest_permissions", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -74,7 +68,7 @@ TEST_CASE("read_latest_permissions", tags) {
     CHECK(!read_perms.empty());
 }
 
-TEST_CASE("read_latest_permission_by_id", tags) {
+TEST_CASE("read_latest_permission_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -96,7 +90,7 @@ TEST_CASE("read_latest_permission_by_id", tags) {
     CHECK(read_perms[0] == p);
 }
 
-TEST_CASE("read_nonexistent_permission", tags) {
+TEST_CASE("read_nonexistent_permission", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

@@ -76,29 +76,36 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_inflation_seasonality_factors_response list_inflation_seasonality_factors(
-        const messaging::list_inflation_seasonality_factors_request& request);
-    messaging::get_inflation_seasonality_factor_response get_inflation_seasonality_factor(
-        const messaging::get_inflation_seasonality_factor_request& request);
-    messaging::get_many_inflation_seasonality_factors_response
+    ::ores::refdata::messaging::list_inflation_seasonality_factors_response
+    list_inflation_seasonality_factors(
+        const ::ores::refdata::messaging::list_inflation_seasonality_factors_request& request);
+    ::ores::refdata::messaging::get_inflation_seasonality_factor_response
+    get_inflation_seasonality_factor(
+        const ::ores::refdata::messaging::get_inflation_seasonality_factor_request& request);
+    ::ores::refdata::messaging::get_many_inflation_seasonality_factors_response
     get_many_inflation_seasonality_factors(
-        const messaging::get_many_inflation_seasonality_factors_request& request);
-    messaging::put_inflation_seasonality_factor_response put_inflation_seasonality_factor(
-        const messaging::put_inflation_seasonality_factor_request& request);
-    messaging::put_many_inflation_seasonality_factors_response
+        const ::ores::refdata::messaging::get_many_inflation_seasonality_factors_request& request);
+    ::ores::refdata::messaging::put_inflation_seasonality_factor_response
+    put_inflation_seasonality_factor(
+        const ::ores::refdata::messaging::put_inflation_seasonality_factor_request& request);
+    ::ores::refdata::messaging::put_many_inflation_seasonality_factors_response
     put_many_inflation_seasonality_factors(
-        const messaging::put_many_inflation_seasonality_factors_request& request);
-    messaging::delete_inflation_seasonality_factor_response delete_inflation_seasonality_factor(
-        const messaging::delete_inflation_seasonality_factor_request& request);
-    messaging::delete_many_inflation_seasonality_factors_response
+        const ::ores::refdata::messaging::put_many_inflation_seasonality_factors_request& request);
+    ::ores::refdata::messaging::delete_inflation_seasonality_factor_response
+    delete_inflation_seasonality_factor(
+        const ::ores::refdata::messaging::delete_inflation_seasonality_factor_request& request);
+    ::ores::refdata::messaging::delete_many_inflation_seasonality_factors_response
     delete_many_inflation_seasonality_factors(
-        const messaging::delete_many_inflation_seasonality_factors_request& request);
-    messaging::list_inflation_seasonality_factor_versions_response
+        const ::ores::refdata::messaging::delete_many_inflation_seasonality_factors_request&
+            request);
+    ::ores::refdata::messaging::list_inflation_seasonality_factor_versions_response
     list_inflation_seasonality_factor_versions(
-        const messaging::list_inflation_seasonality_factor_versions_request& request);
-    messaging::get_inflation_seasonality_factor_version_response
+        const ::ores::refdata::messaging::list_inflation_seasonality_factor_versions_request&
+            request);
+    ::ores::refdata::messaging::get_inflation_seasonality_factor_version_response
     get_inflation_seasonality_factor_version(
-        const messaging::get_inflation_seasonality_factor_version_request& request);
+        const ::ores::refdata::messaging::get_inflation_seasonality_factor_version_request&
+            request);
     /**@}*/
 
     /**
@@ -201,7 +208,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::inflation_seasonality_factor_change& change,
+    prepare_change(const ::ores::refdata::messaging::inflation_seasonality_factor_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::inflation_seasonality_factor& out);
 };

@@ -663,7 +663,7 @@ report_error_event_service::get_report_error_counts(
 #+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
     subs.push_back(nats.queue_subscribe(
         get_report_error_counts_request::nats_subject,
-        queue_group,
+        report_error_event_queue_group,
         [h](ores::nats::message msg) { h->get_report_error_counts(std::move(msg)); }));
 #+end_src
 

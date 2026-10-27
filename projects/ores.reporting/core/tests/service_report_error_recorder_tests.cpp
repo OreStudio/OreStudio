@@ -45,8 +45,6 @@ namespace {
 
 using ores::testing::scoped_database_helper;
 
-const std::string tags("[service][database]");
-
 /**
  * @brief A party of this test's own, with the session scoped to it.
  *
@@ -142,7 +140,7 @@ errors_of(const ores::database::context& ctx, const std::string& instance_id) {
 }
 
 TEST_CASE("a run that failed its analytics carries one error row per trade it could not build",
-          tags) {
+          "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = write_test_party_and_scope_context(h, gen);
@@ -200,7 +198,7 @@ TEST_CASE("a run that failed its analytics carries one error row per trade it co
 }
 
 TEST_CASE("an error about a trade carries the version the run read and the date it read it at",
-          tags) {
+          "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = write_test_party_and_scope_context(h, gen);
@@ -232,7 +230,7 @@ TEST_CASE("an error about a trade carries the version the run read and the date 
           "2026-05-05 00:00:00.000000");
 }
 
-TEST_CASE("an error about a trade the manifest does not name is recorded with no version", tags) {
+TEST_CASE("an error about a trade the manifest does not name is recorded with no version", "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = write_test_party_and_scope_context(h, gen);
@@ -264,7 +262,7 @@ TEST_CASE("an error about a trade the manifest does not name is recorded with no
 }
 
 TEST_CASE("a run the platform could not complete carries a report-scoped error and no subject",
-          tags) {
+          "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = write_test_party_and_scope_context(h, gen);
@@ -289,7 +287,7 @@ TEST_CASE("a run the platform could not complete carries a report-scoped error a
     CHECK(rows.front().party_id == *ctx.party_id());
 }
 
-TEST_CASE("a run that succeeded records no error at all", tags) {
+TEST_CASE("a run that succeeded records no error at all", "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = write_test_party_and_scope_context(h, gen);
@@ -301,7 +299,7 @@ TEST_CASE("a run that succeeded records no error at all", tags) {
     CHECK(errors_of(ctx, instance_id).empty());
 }
 
-TEST_CASE("an error whose scope the vocabulary does not hold costs its own row only", tags) {
+TEST_CASE("an error whose scope the vocabulary does not hold costs its own row only", "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = write_test_party_and_scope_context(h, gen);
@@ -342,7 +340,7 @@ TEST_CASE("an error whose scope the vocabulary does not hold costs its own row o
     CHECK(warning->message.find("Something the engine grew") != std::string::npos);
 }
 
-TEST_CASE("the run's failure row points at the reasons when they are there", tags) {
+TEST_CASE("the run's failure row points at the reasons when they are there", "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = write_test_party_and_scope_context(h, gen);
@@ -369,7 +367,7 @@ TEST_CASE("the run's failure row points at the reasons when they are there", tag
     CHECK(failure->message == "The run failed. Its reasons are the errors recorded against it.");
 }
 
-TEST_CASE("the run's failure row carries the whole reason when it is the only account", tags) {
+TEST_CASE("the run's failure row carries the whole reason when it is the only account", "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = write_test_party_and_scope_context(h, gen);
@@ -387,7 +385,7 @@ TEST_CASE("the run's failure row carries the whole reason when it is the only ac
     CHECK(rows.front().message == account);
 }
 
-TEST_CASE("the run-level failure is stored beside the engine's own errors", tags) {
+TEST_CASE("the run-level failure is stored beside the engine's own errors", "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = write_test_party_and_scope_context(h, gen);
@@ -418,7 +416,7 @@ TEST_CASE("the run-level failure is stored beside the engine's own errors", tags
     CHECK(failure != rows.end());
 }
 
-TEST_CASE("a batch whose scopes were all unplaceable does not block the next one", tags) {
+TEST_CASE("a batch whose scopes were all unplaceable does not block the next one", "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = write_test_party_and_scope_context(h, gen);
@@ -448,7 +446,7 @@ TEST_CASE("a batch whose scopes were all unplaceable does not block the next one
     CHECK(std::ranges::any_of(rows, [](const auto& row) { return row.scope_code == "Curve"; }));
 }
 
-TEST_CASE("a run's errors are stored once however often its output is read", tags) {
+TEST_CASE("a run's errors are stored once however often its output is read", "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = write_test_party_and_scope_context(h, gen);
@@ -470,7 +468,7 @@ TEST_CASE("a run's errors are stored once however often its output is read", tag
     CHECK(errors_of(ctx, instance_id).size() == 1);
 }
 
-TEST_CASE("an error carries the party of its run and not the party of the caller", tags) {
+TEST_CASE("an error carries the party of its run and not the party of the caller", "[service][database]") {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
 

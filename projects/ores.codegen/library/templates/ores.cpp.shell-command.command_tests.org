@@ -69,6 +69,8 @@ The full template source. Edit here and re-tangle with
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/{{component}}/{{entity_singular}}_commands.hpp"
+#include "ores.testing/party_fixture.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
 #include <algorithm>
@@ -77,17 +79,13 @@ The full template source. Edit here and re-tangle with
 #include <string_view>
 #include <vector>
 
+using ores::testing::valid_party_id;
 using ores::nats::service::nats_client;
 using ores::shell::app::command_feedback;
 using ores::shell::app::commands::{{entity_singular}}_commands;
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.shell.{{component}}.tests");
-const std::string tags("[commands]");
-
-const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
 void {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_log_in(nats_client& session) {
     nats_client::login_info info;
@@ -105,7 +103,7 @@ std::vector<std::string> {{entity_singular}}{{^entity_singular}}{{name_singular}
 
 }
 
-TEST_CASE("{{entity_singular}}_commands_registers_every_derived_verb", tags) {
+TEST_CASE("{{entity_singular}}_commands_registers_every_derived_verb", "[commands]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -128,7 +126,7 @@ TEST_CASE("{{entity_singular}}_commands_registers_every_derived_verb", tags) {
 }
 {{#shell.commands}}
 
-TEST_CASE("{{entity_singular}}_commands_process_{{identifier}}_requires_a_session", tags) {
+TEST_CASE("{{entity_singular}}_commands_process_{{identifier}}_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -146,7 +144,7 @@ TEST_CASE("{{entity_singular}}_commands_process_{{identifier}}_requires_a_sessio
 {{#exact_count}}
 
 TEST_CASE("{{entity_singular}}_commands_process_{{identifier}}_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;

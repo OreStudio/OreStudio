@@ -37,8 +37,6 @@
 
 namespace {
 
-const std::string tags("[ore][session][database]");
-
 ores::reporting::domain::configuration make_header(const boost::uuids::uuid& party) {
     ores::reporting::domain::configuration header;
     header.id = boost::uuids::random_generator()();
@@ -51,7 +49,7 @@ ores::reporting::domain::configuration make_header(const boost::uuids::uuid& par
 
 }
 
-TEST_CASE("a context without a party does not inherit a pooled connection's party", tags) {
+TEST_CASE("a context without a party does not inherit a pooled connection's party", "[ore][session][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     ores::reporting::repository::configuration_repository repo;
@@ -69,7 +67,7 @@ TEST_CASE("a context without a party does not inherit a pooled connection's part
     }
 }
 
-TEST_CASE("an actor holding a quote reaches a pooled session", tags) {
+TEST_CASE("an actor holding a quote reaches a pooled session", "[ore][session][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     const auto ctx = h.context().with_party(h.tenant_id(), parties.a, {parties.a}, "o'brien");

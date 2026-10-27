@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/commands/trading/ore_commands.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -35,9 +36,6 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.shell.application.tests");
-const std::string tags("[commands][ore]");
-
 /**
  * @brief Every case below refuses before the transport is touched.
  *
@@ -48,7 +46,7 @@ const std::string tags("[commands][ore]");
  */
 } // anonymous namespace
 
-TEST_CASE("ore_commands registers the package verbs", tags) {
+TEST_CASE("ore_commands registers the package verbs", "[commands][ore]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -65,7 +63,7 @@ TEST_CASE("ore_commands registers the package verbs", tags) {
     }
 }
 
-TEST_CASE("ore clean-packages refuses without a session", tags) {
+TEST_CASE("ore clean-packages refuses without a session", "[commands][ore]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -76,7 +74,7 @@ TEST_CASE("ore clean-packages refuses without a session", tags) {
     CHECK(out.str().find("Not logged in.") != std::string::npos);
 }
 
-TEST_CASE("ore clean-packages refuses without a session when only reporting", tags) {
+TEST_CASE("ore clean-packages refuses without a session when only reporting", "[commands][ore]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;

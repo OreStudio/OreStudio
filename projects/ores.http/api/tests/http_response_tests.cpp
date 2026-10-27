@@ -19,19 +19,13 @@
  */
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string test_suite("ores.http.tests");
-const std::string tags("[http_response]");
-
-}
 
 using namespace ores::http::domain;
 using namespace ores::logging;
 
-TEST_CASE("http_response_json_creates_json_response", tags) {
+TEST_CASE("http_response_json_creates_json_response", "[http_response]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing json() creates proper JSON response";
 
@@ -42,7 +36,7 @@ TEST_CASE("http_response_json_creates_json_response", tags) {
     CHECK(sut.content_type == "application/json");
 }
 
-TEST_CASE("http_response_json_with_custom_status", tags) {
+TEST_CASE("http_response_json_with_custom_status", "[http_response]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing json() with custom status code";
 
@@ -53,7 +47,7 @@ TEST_CASE("http_response_json_with_custom_status", tags) {
     CHECK(sut.content_type == "application/json");
 }
 
-TEST_CASE("http_response_error_creates_error_response", tags) {
+TEST_CASE("http_response_error_creates_error_response", "[http_response]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing error() creates error response with JSON body";
 
@@ -64,7 +58,7 @@ TEST_CASE("http_response_error_creates_error_response", tags) {
     CHECK(sut.body == R"({"error":"Invalid input"})");
 }
 
-TEST_CASE("http_response_not_found_creates_404", tags) {
+TEST_CASE("http_response_not_found_creates_404", "[http_response]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing not_found() creates 404 response";
 
@@ -75,7 +69,7 @@ TEST_CASE("http_response_not_found_creates_404", tags) {
     CHECK(sut.body == R"({"error":"Resource not found"})");
 }
 
-TEST_CASE("http_response_not_found_with_default_message", tags) {
+TEST_CASE("http_response_not_found_with_default_message", "[http_response]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing not_found() with default message";
 
@@ -85,7 +79,7 @@ TEST_CASE("http_response_not_found_with_default_message", tags) {
     CHECK(sut.body == R"({"error":"Not Found"})");
 }
 
-TEST_CASE("http_response_unauthorized_creates_401", tags) {
+TEST_CASE("http_response_unauthorized_creates_401", "[http_response]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing unauthorized() creates 401 response";
 
@@ -96,7 +90,7 @@ TEST_CASE("http_response_unauthorized_creates_401", tags) {
     CHECK(sut.body == R"({"error":"Token expired"})");
 }
 
-TEST_CASE("http_response_unauthorized_with_default_message", tags) {
+TEST_CASE("http_response_unauthorized_with_default_message", "[http_response]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing unauthorized() with default message";
 
@@ -106,7 +100,7 @@ TEST_CASE("http_response_unauthorized_with_default_message", tags) {
     CHECK(sut.body == R"({"error":"Unauthorized"})");
 }
 
-TEST_CASE("http_response_forbidden_creates_403", tags) {
+TEST_CASE("http_response_forbidden_creates_403", "[http_response]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing forbidden() creates 403 response";
 
@@ -117,7 +111,7 @@ TEST_CASE("http_response_forbidden_creates_403", tags) {
     CHECK(sut.body == R"({"error":"Access denied"})");
 }
 
-TEST_CASE("http_response_forbidden_with_default_message", tags) {
+TEST_CASE("http_response_forbidden_with_default_message", "[http_response]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing forbidden() with default message";
 
@@ -127,7 +121,7 @@ TEST_CASE("http_response_forbidden_with_default_message", tags) {
     CHECK(sut.body == R"({"error":"Forbidden"})");
 }
 
-TEST_CASE("http_response_bad_request_creates_400", tags) {
+TEST_CASE("http_response_bad_request_creates_400", "[http_response]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing bad_request() creates 400 response";
 
@@ -138,7 +132,7 @@ TEST_CASE("http_response_bad_request_creates_400", tags) {
     CHECK(sut.body == R"({"error":"Missing required field"})");
 }
 
-TEST_CASE("http_response_internal_error_creates_500", tags) {
+TEST_CASE("http_response_internal_error_creates_500", "[http_response]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing internal_error() creates 500 response";
 
@@ -149,7 +143,7 @@ TEST_CASE("http_response_internal_error_creates_500", tags) {
     CHECK(sut.body == R"({"error":"Database connection failed"})");
 }
 
-TEST_CASE("http_response_set_header_adds_header", tags) {
+TEST_CASE("http_response_set_header_adds_header", "[http_response]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing set_header() adds header";
 
@@ -160,7 +154,7 @@ TEST_CASE("http_response_set_header_adds_header", tags) {
     CHECK(sut.headers["X-Custom-Header"] == "custom-value");
 }
 
-TEST_CASE("http_response_set_header_returns_self_for_chaining", tags) {
+TEST_CASE("http_response_set_header_returns_self_for_chaining", "[http_response]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing set_header() returns self for method chaining";
 
@@ -175,7 +169,7 @@ TEST_CASE("http_response_set_header_returns_self_for_chaining", tags) {
     CHECK(sut.headers["Header3"] == "value3");
 }
 
-TEST_CASE("http_response_default_construction", tags) {
+TEST_CASE("http_response_default_construction", "[http_response]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing http_response default construction";
 

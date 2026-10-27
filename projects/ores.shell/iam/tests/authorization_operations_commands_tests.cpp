@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/iam/authorization_operations_commands.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -41,15 +42,12 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.shell.iam.tests");
-const std::string tags("[commands]");
-
 // One token per positional argument the command takes, in declaration order,
 // spelled for the type the command parses it with.
 
 }
 
-TEST_CASE("authorization_operations_registers_every_declared_command", tags) {
+TEST_CASE("authorization_operations_registers_every_declared_command", "[commands]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -81,7 +79,7 @@ TEST_CASE("authorization_operations_registers_every_declared_command", tags) {
     BOOST_LOG_SEV(lg, debug) << "Registered 14 command(s).";
 }
 
-TEST_CASE("authorization_operations_process_assign_role_requires_a_session", tags) {
+TEST_CASE("authorization_operations_process_assign_role_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -102,7 +100,7 @@ TEST_CASE("authorization_operations_process_assign_role_requires_a_session", tag
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_assign_role_reports_the_expected_count", tags) {
+TEST_CASE("authorization_operations_process_assign_role_reports_the_expected_count", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -120,7 +118,7 @@ TEST_CASE("authorization_operations_process_assign_role_reports_the_expected_cou
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_assign_role_reaches_the_transport", tags) {
+TEST_CASE("authorization_operations_process_assign_role_reaches_the_transport", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -147,7 +145,7 @@ TEST_CASE("authorization_operations_process_assign_role_reaches_the_transport", 
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_assign_role_by_name_requires_a_session", tags) {
+TEST_CASE("authorization_operations_process_assign_role_by_name_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -166,7 +164,8 @@ TEST_CASE("authorization_operations_process_assign_role_by_name_requires_a_sessi
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_assign_role_by_name_reports_the_expected_count", tags) {
+TEST_CASE("authorization_operations_process_assign_role_by_name_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -184,7 +183,8 @@ TEST_CASE("authorization_operations_process_assign_role_by_name_reports_the_expe
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_assign_role_by_name_reaches_the_transport", tags) {
+TEST_CASE("authorization_operations_process_assign_role_by_name_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -209,7 +209,7 @@ TEST_CASE("authorization_operations_process_assign_role_by_name_reaches_the_tran
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_revoke_role_requires_a_session", tags) {
+TEST_CASE("authorization_operations_process_revoke_role_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -228,7 +228,7 @@ TEST_CASE("authorization_operations_process_revoke_role_requires_a_session", tag
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_revoke_role_reports_the_expected_count", tags) {
+TEST_CASE("authorization_operations_process_revoke_role_reports_the_expected_count", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -246,7 +246,7 @@ TEST_CASE("authorization_operations_process_revoke_role_reports_the_expected_cou
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_revoke_role_reaches_the_transport", tags) {
+TEST_CASE("authorization_operations_process_revoke_role_reaches_the_transport", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -271,7 +271,7 @@ TEST_CASE("authorization_operations_process_revoke_role_reaches_the_transport", 
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_revoke_role_by_name_requires_a_session", tags) {
+TEST_CASE("authorization_operations_process_revoke_role_by_name_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -290,7 +290,8 @@ TEST_CASE("authorization_operations_process_revoke_role_by_name_requires_a_sessi
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_revoke_role_by_name_reports_the_expected_count", tags) {
+TEST_CASE("authorization_operations_process_revoke_role_by_name_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -308,7 +309,8 @@ TEST_CASE("authorization_operations_process_revoke_role_by_name_reports_the_expe
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_revoke_role_by_name_reaches_the_transport", tags) {
+TEST_CASE("authorization_operations_process_revoke_role_by_name_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -333,7 +335,7 @@ TEST_CASE("authorization_operations_process_revoke_role_by_name_reaches_the_tran
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_get_account_roles_requires_a_session", tags) {
+TEST_CASE("authorization_operations_process_get_account_roles_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -351,7 +353,8 @@ TEST_CASE("authorization_operations_process_get_account_roles_requires_a_session
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_get_account_roles_reports_the_expected_count", tags) {
+TEST_CASE("authorization_operations_process_get_account_roles_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -369,7 +372,8 @@ TEST_CASE("authorization_operations_process_get_account_roles_reports_the_expect
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_get_account_roles_reaches_the_transport", tags) {
+TEST_CASE("authorization_operations_process_get_account_roles_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -393,7 +397,7 @@ TEST_CASE("authorization_operations_process_get_account_roles_reaches_the_transp
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_get_my_roles_requires_a_session", tags) {
+TEST_CASE("authorization_operations_process_get_my_roles_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -408,7 +412,7 @@ TEST_CASE("authorization_operations_process_get_my_roles_requires_a_session", ta
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_get_my_roles_reaches_the_transport", tags) {
+TEST_CASE("authorization_operations_process_get_my_roles_reaches_the_transport", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -429,7 +433,8 @@ TEST_CASE("authorization_operations_process_get_my_roles_reaches_the_transport",
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_list_account_permissions_requires_a_session", tags) {
+TEST_CASE("authorization_operations_process_list_account_permissions_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -450,7 +455,7 @@ TEST_CASE("authorization_operations_process_list_account_permissions_requires_a_
 }
 
 TEST_CASE("authorization_operations_process_list_account_permissions_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -468,7 +473,8 @@ TEST_CASE("authorization_operations_process_list_account_permissions_reports_the
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_list_account_permissions_reaches_the_transport", tags) {
+TEST_CASE("authorization_operations_process_list_account_permissions_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -494,7 +500,7 @@ TEST_CASE("authorization_operations_process_list_account_permissions_reaches_the
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_list_my_permissions_requires_a_session", tags) {
+TEST_CASE("authorization_operations_process_list_my_permissions_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -513,7 +519,8 @@ TEST_CASE("authorization_operations_process_list_my_permissions_requires_a_sessi
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_list_my_permissions_reports_the_expected_count", tags) {
+TEST_CASE("authorization_operations_process_list_my_permissions_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -531,7 +538,8 @@ TEST_CASE("authorization_operations_process_list_my_permissions_reports_the_expe
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_list_my_permissions_reaches_the_transport", tags) {
+TEST_CASE("authorization_operations_process_list_my_permissions_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -556,7 +564,8 @@ TEST_CASE("authorization_operations_process_list_my_permissions_reaches_the_tran
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_list_role_permissions_requires_a_session", tags) {
+TEST_CASE("authorization_operations_process_list_role_permissions_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -577,7 +586,7 @@ TEST_CASE("authorization_operations_process_list_role_permissions_requires_a_ses
 }
 
 TEST_CASE("authorization_operations_process_list_role_permissions_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -595,7 +604,8 @@ TEST_CASE("authorization_operations_process_list_role_permissions_reports_the_ex
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_list_role_permissions_reaches_the_transport", tags) {
+TEST_CASE("authorization_operations_process_list_role_permissions_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -621,7 +631,7 @@ TEST_CASE("authorization_operations_process_list_role_permissions_reaches_the_tr
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_list_roles_page_requires_a_session", tags) {
+TEST_CASE("authorization_operations_process_list_roles_page_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -641,7 +651,8 @@ TEST_CASE("authorization_operations_process_list_roles_page_requires_a_session",
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_list_roles_page_reports_the_expected_count", tags) {
+TEST_CASE("authorization_operations_process_list_roles_page_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -659,7 +670,7 @@ TEST_CASE("authorization_operations_process_list_roles_page_reports_the_expected
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_list_roles_page_reaches_the_transport", tags) {
+TEST_CASE("authorization_operations_process_list_roles_page_reaches_the_transport", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -685,7 +696,7 @@ TEST_CASE("authorization_operations_process_list_roles_page_reaches_the_transpor
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_list_role_holders_requires_a_session", tags) {
+TEST_CASE("authorization_operations_process_list_role_holders_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -703,7 +714,8 @@ TEST_CASE("authorization_operations_process_list_role_holders_requires_a_session
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_list_role_holders_reports_the_expected_count", tags) {
+TEST_CASE("authorization_operations_process_list_role_holders_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -721,7 +733,8 @@ TEST_CASE("authorization_operations_process_list_role_holders_reports_the_expect
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_list_role_holders_reaches_the_transport", tags) {
+TEST_CASE("authorization_operations_process_list_role_holders_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -745,7 +758,8 @@ TEST_CASE("authorization_operations_process_list_role_holders_reaches_the_transp
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_get_role_permissions_requires_a_session", tags) {
+TEST_CASE("authorization_operations_process_get_role_permissions_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -764,7 +778,7 @@ TEST_CASE("authorization_operations_process_get_role_permissions_requires_a_sess
 }
 
 TEST_CASE("authorization_operations_process_get_role_permissions_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -782,7 +796,8 @@ TEST_CASE("authorization_operations_process_get_role_permissions_reports_the_exp
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_get_role_permissions_reaches_the_transport", tags) {
+TEST_CASE("authorization_operations_process_get_role_permissions_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -806,7 +821,8 @@ TEST_CASE("authorization_operations_process_get_role_permissions_reaches_the_tra
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_put_role_permissions_requires_a_session", tags) {
+TEST_CASE("authorization_operations_process_put_role_permissions_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -828,7 +844,7 @@ TEST_CASE("authorization_operations_process_put_role_permissions_requires_a_sess
 }
 
 TEST_CASE("authorization_operations_process_put_role_permissions_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -846,7 +862,8 @@ TEST_CASE("authorization_operations_process_put_role_permissions_reports_the_exp
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_put_role_permissions_reaches_the_transport", tags) {
+TEST_CASE("authorization_operations_process_put_role_permissions_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -873,7 +890,8 @@ TEST_CASE("authorization_operations_process_put_role_permissions_reaches_the_tra
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_suggest_role_commands_requires_a_session", tags) {
+TEST_CASE("authorization_operations_process_suggest_role_commands_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -894,7 +912,7 @@ TEST_CASE("authorization_operations_process_suggest_role_commands_requires_a_ses
 }
 
 TEST_CASE("authorization_operations_process_suggest_role_commands_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -912,7 +930,8 @@ TEST_CASE("authorization_operations_process_suggest_role_commands_reports_the_ex
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("authorization_operations_process_suggest_role_commands_reaches_the_transport", tags) {
+TEST_CASE("authorization_operations_process_suggest_role_commands_reaches_the_transport",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;

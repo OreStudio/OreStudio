@@ -35,8 +35,6 @@ using ores::ore::tests::rows_of;
 
 namespace {
 
-const std::string tags("[ore][conventions][party]");
-
 std::vector<ores::refdata::domain::deposit_convention> corpus_deposits() {
     const auto c = ores::ore::domain::conventions_mapper::read(
         ores::platform::filesystem::file::read_content(ores::testing::project_root::resolve(
@@ -56,7 +54,7 @@ std::set<std::string> ids_of(const std::vector<ores::refdata::domain::deposit_co
 
 }
 
-TEST_CASE("two parties each hold conventions with the same ids", tags) {
+TEST_CASE("two parties each hold conventions with the same ids", "[ore][conventions][party]") {
     ores::testing::scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
 

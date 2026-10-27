@@ -26,8 +26,6 @@
 
 namespace {
 
-const std::string tags("[tenant]");
-
 using ores::iam::domain::tenant;
 using ores::iam::service::has_tenant_of_its_own;
 using ores::utility::uuid::tenant_id;
@@ -54,12 +52,12 @@ const std::string set_up_tenant_row_id("719e8f00-aa85-456e-a43b-735a6f1ce4e0");
 
 }
 
-TEST_CASE("has_tenant_of_its_own_is_false_for_a_deployment_with_only_the_system_tenant", tags) {
+TEST_CASE("has_tenant_of_its_own_is_false_for_a_deployment_with_only_the_system_tenant", "[tenant]") {
     CHECK_FALSE(has_tenant_of_its_own({}));
     CHECK_FALSE(has_tenant_of_its_own({registry_row(system_row_id, "system")}));
 }
 
-TEST_CASE("has_tenant_of_its_own_is_true_for_a_tenant_somebody_set_up", tags) {
+TEST_CASE("has_tenant_of_its_own_is_true_for_a_tenant_somebody_set_up", "[tenant]") {
     const std::vector<tenant> registry = {
         registry_row(system_row_id, "system"),
         registry_row(set_up_tenant_row_id, "barclays_plc"),

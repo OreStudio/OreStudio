@@ -19,20 +19,19 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_environment_override.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
 namespace {
 
-const std::string test_suite("ores.testing.tests");
-const std::string tags("[testing]");
 const std::string probe("ORES_TESTING_SCOPED_ENVIRONMENT_PROBE");
 
 using ores::platform::environment::environment;
 
 }
 
-TEST_CASE("overrides_a_value_for_its_lifetime_only", tags) {
+TEST_CASE("overrides_a_value_for_its_lifetime_only", "[testing]") {
     auto lg(ores::logging::make_logger(test_suite));
     environment::set_value(probe, "outer");
 
@@ -48,7 +47,7 @@ TEST_CASE("overrides_a_value_for_its_lifetime_only", tags) {
     environment::unset_value(probe);
 }
 
-TEST_CASE("hides_a_stripped_key_for_its_lifetime_only", tags) {
+TEST_CASE("hides_a_stripped_key_for_its_lifetime_only", "[testing]") {
     auto lg(ores::logging::make_logger(test_suite));
     environment::set_value(probe, "outer");
 
@@ -64,7 +63,7 @@ TEST_CASE("hides_a_stripped_key_for_its_lifetime_only", tags) {
     environment::unset_value(probe);
 }
 
-TEST_CASE("hides_every_key_it_does_not_carry", tags) {
+TEST_CASE("hides_every_key_it_does_not_carry", "[testing]") {
     auto lg(ores::logging::make_logger(test_suite));
     environment::set_value(probe, "outer");
 

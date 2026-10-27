@@ -29,6 +29,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -36,9 +37,7 @@
 
 namespace {
 
-const std::string_view test_suite("ores.iam.tests");
 const std::string database_table("ores_iam_accounts_tbl");
-const std::string tags("[repository]");
 
 }
 
@@ -49,8 +48,7 @@ using ores::testing::database_helper;
 using ores::iam::domain::account;
 using ores::iam::repository::account_repository;
 
-
-TEST_CASE("write_single_account", tags) {
+TEST_CASE("write_single_account", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -63,7 +61,7 @@ TEST_CASE("write_single_account", tags) {
     CHECK_NOTHROW(repo.write(h.context(), account));
 }
 
-TEST_CASE("write_multiple_accounts", tags) {
+TEST_CASE("write_multiple_accounts", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -76,7 +74,7 @@ TEST_CASE("write_multiple_accounts", tags) {
     CHECK_NOTHROW(repo.write(h.context(), accounts));
 }
 
-TEST_CASE("read_latest_accounts", tags) {
+TEST_CASE("read_latest_accounts", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -95,7 +93,7 @@ TEST_CASE("read_latest_accounts", tags) {
     CHECK(read_accounts.size() >= written_accounts.size());
 }
 
-TEST_CASE("read_latest_account_by_id", tags) {
+TEST_CASE("read_latest_account_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -119,7 +117,7 @@ TEST_CASE("read_latest_account_by_id", tags) {
     CHECK(read_accounts[0].email == target.email);
 }
 
-TEST_CASE("read_all_accounts", tags) {
+TEST_CASE("read_all_accounts", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -138,7 +136,7 @@ TEST_CASE("read_all_accounts", tags) {
     CHECK(read_accounts.size() >= written_accounts.size());
 }
 
-TEST_CASE("read_all_accounts_by_id", tags) {
+TEST_CASE("read_all_accounts_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -178,7 +176,7 @@ TEST_CASE("read_all_accounts_by_id", tags) {
     CHECK(found_v2);
 }
 
-TEST_CASE("read_latest_by_username", tags) {
+TEST_CASE("read_latest_by_username", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -202,7 +200,7 @@ TEST_CASE("read_latest_by_username", tags) {
     CHECK(read_accounts[0].email == acc.email);
 }
 
-TEST_CASE("read_nonexistent_account_by_id", tags) {
+TEST_CASE("read_nonexistent_account_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -219,7 +217,7 @@ TEST_CASE("read_nonexistent_account_by_id", tags) {
     CHECK(read_accounts.size() == 0);
 }
 
-TEST_CASE("read_nonexistent_username", tags) {
+TEST_CASE("read_nonexistent_username", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -235,7 +233,7 @@ TEST_CASE("read_nonexistent_username", tags) {
     CHECK(read_accounts.size() == 0);
 }
 
-TEST_CASE("write_and_read_account_by_id", tags) {
+TEST_CASE("write_and_read_account_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -259,7 +257,7 @@ TEST_CASE("write_and_read_account_by_id", tags) {
     CHECK(read_accounts[0].email == acc.email);
 }
 
-TEST_CASE("write_and_read_account_with_image_id", tags) {
+TEST_CASE("write_and_read_account_with_image_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -285,7 +283,7 @@ TEST_CASE("write_and_read_account_with_image_id", tags) {
     CHECK(read_accounts[0].image_id == image.id);
 }
 
-TEST_CASE("write_account_with_nonexistent_image_id_throws", tags) {
+TEST_CASE("write_account_with_nonexistent_image_id_throws", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -299,7 +297,7 @@ TEST_CASE("write_account_with_nonexistent_image_id_throws", tags) {
     CHECK_THROWS(repo.write(h.context(), acc));
 }
 
-TEST_CASE("write_account_with_itself_as_modified_by", tags) {
+TEST_CASE("write_account_with_itself_as_modified_by", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -339,7 +337,7 @@ TEST_CASE("write_account_with_itself_as_modified_by", tags) {
     CHECK(read_accounts[0].full_name == second.full_name);
 }
 
-TEST_CASE("a_username_or_email_lookup_never_returns_a_shared_account_of_the_system_tenant", tags) {
+TEST_CASE("a_username_or_email_lookup_never_returns_a_shared_account_of_the_system_tenant", "[repository]") {
     database_helper h;
     account_repository repo;
 

@@ -25,8 +25,6 @@
 
 namespace {
 
-const std::string tags("[stated_order]");
-
 using column_t = std::pair<std::string, bool>;
 
 std::vector<column_t> columns(const sqlgen::dynamic::OrderBy& order) {
@@ -40,22 +38,22 @@ std::vector<column_t> columns(const sqlgen::dynamic::OrderBy& order) {
 
 using ores::database::repository::make_order;
 
-TEST_CASE("an order by a column ends in the key, ascending", tags) {
+TEST_CASE("an order by a column ends in the key, ascending", "[stated_order]") {
     const auto order = make_order({"name"}, false, {"id"});
     CHECK(columns(order) == std::vector<column_t>{{"name", false}, {"id", false}});
 }
 
-TEST_CASE("a descending order keeps the key ascending", tags) {
+TEST_CASE("a descending order keeps the key ascending", "[stated_order]") {
     const auto order = make_order({"name"}, true, {"id"});
     CHECK(columns(order) == std::vector<column_t>{{"name", true}, {"id", false}});
 }
 
-TEST_CASE("an order by the key takes the stated direction and no tie-break", tags) {
+TEST_CASE("an order by the key takes the stated direction and no tie-break", "[stated_order]") {
     const auto order = make_order({"id"}, true, {"id"});
     CHECK(columns(order) == std::vector<column_t>{{"id", true}});
 }
 
-TEST_CASE("an order by part of a compound key ends in the rest of it", tags) {
+TEST_CASE("an order by part of a compound key ends in the rest of it", "[stated_order]") {
     const auto order = make_order({"b"}, true, {"a", "b"});
     CHECK(columns(order) == std::vector<column_t>{{"b", true}, {"a", false}});
 }

@@ -19,19 +19,13 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/synthetic_catalog.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.synthetic.tests");
-const std::string tags("[domain][synthetic_catalog]");
-
-}
 
 using ores::synthetic::domain::synthetic_catalog;
 using namespace ores::logging;
 
-TEST_CASE("default_constructed_synthetic_catalog_has_zero_seed_and_empty_vectors", tags) {
+TEST_CASE("default_constructed_synthetic_catalog_has_zero_seed_and_empty_vectors", "[domain][synthetic_catalog]") {
     auto lg(make_logger(test_suite));
 
     const synthetic_catalog sut;
@@ -49,7 +43,7 @@ TEST_CASE("default_constructed_synthetic_catalog_has_zero_seed_and_empty_vectors
     CHECK(sut.dependencies.empty());
 }
 
-TEST_CASE("synthetic_catalog_seed_can_be_set", tags) {
+TEST_CASE("synthetic_catalog_seed_can_be_set", "[domain][synthetic_catalog]") {
     auto lg(make_logger(test_suite));
 
     synthetic_catalog sut;
@@ -59,7 +53,7 @@ TEST_CASE("synthetic_catalog_seed_can_be_set", tags) {
     CHECK(sut.seed == 777ULL);
 }
 
-TEST_CASE("synthetic_catalog_dependency_can_be_added", tags) {
+TEST_CASE("synthetic_catalog_dependency_can_be_added", "[domain][synthetic_catalog]") {
     auto lg(make_logger(test_suite));
 
     synthetic_catalog sut;

@@ -20,14 +20,8 @@
 #include "ores.iam.core/repository/database_info_lookups.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 
@@ -39,7 +33,7 @@ using namespace ores::logging;
  * the row leaves every field empty and fails here, which is the whole point:
  * the login handler has no seam of its own, so this read is what is tested.
  */
-TEST_CASE("read_database_info_carries_the_recorded_build", tags) {
+TEST_CASE("read_database_info_carries_the_recorded_build", "[repository]") {
     auto lg(make_logger(test_suite));
 
     ores::testing::database_helper h;

@@ -24,13 +24,7 @@
 #include <chrono>
 #include <string>
 
-namespace {
-
-const std::string tags("[service][entity_event_publisher]");
-
-}
-
-TEST_CASE("publish_entity_event_rethrows_on_nats_failure", tags) {
+TEST_CASE("publish_entity_event_rethrows_on_nats_failure", "[service][entity_event_publisher]") {
     // A client that was never connected fails every publish with
     // NATS_NOT_CONNECTED. The publisher must surface that failure, not
     // swallow it: the event_bus handler-error path is what makes it visible.
@@ -44,7 +38,7 @@ TEST_CASE("publish_entity_event_rethrows_on_nats_failure", tags) {
         std::runtime_error);
 }
 
-TEST_CASE("entity_event_headers_carry_the_tenant_and_the_party", tags) {
+TEST_CASE("entity_event_headers_carry_the_tenant_and_the_party", "[service][entity_event_publisher]") {
     const auto headers = ores::eventing::service::entity_event_headers("tenant-1", "party-1");
 
     REQUIRE(headers.size() == 2);
@@ -52,7 +46,7 @@ TEST_CASE("entity_event_headers_carry_the_tenant_and_the_party", tags) {
     REQUIRE(headers.at("X-Party-Id") == "party-1");
 }
 
-TEST_CASE("entity_event_headers_leave_the_party_out_of_a_tenant_wide_event", tags) {
+TEST_CASE("entity_event_headers_leave_the_party_out_of_a_tenant_wide_event", "[service][entity_event_publisher]") {
     const auto headers = ores::eventing::service::entity_event_headers("tenant-1", std::nullopt);
 
     REQUIRE(headers.size() == 1);
@@ -60,7 +54,7 @@ TEST_CASE("entity_event_headers_leave_the_party_out_of_a_tenant_wide_event", tag
     REQUIRE_FALSE(headers.contains("X-Party-Id"));
 }
 
-TEST_CASE("entity_event_headers_send_no_tenant_that_is_unknown", tags) {
+TEST_CASE("entity_event_headers_send_no_tenant_that_is_unknown", "[service][entity_event_publisher]") {
     const auto headers = ores::eventing::service::entity_event_headers("", std::nullopt);
 
     REQUIRE(headers.empty());

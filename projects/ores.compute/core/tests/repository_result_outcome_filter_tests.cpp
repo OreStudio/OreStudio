@@ -50,8 +50,6 @@
 
 namespace {
 
-const std::string tags("[repository][filter]");
-
 using ores::compute::messaging::results_filter;
 using ores::compute::repository::result_repository;
 using ores::testing::scoped_database_helper;
@@ -133,7 +131,7 @@ std::size_t count_marked(const ores::database::context& ctx,
 
 } // namespace
 
-TEST_CASE("a result list narrows by outcome and finds the runs that failed", tags) {
+TEST_CASE("a result list narrows by outcome and finds the runs that failed", "[repository][filter]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto m = unique_marker();

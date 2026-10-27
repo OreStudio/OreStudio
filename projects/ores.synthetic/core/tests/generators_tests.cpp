@@ -22,11 +22,11 @@
 #include "ores.synthetic.core/generators/catalog_generator.hpp"
 #include "ores.synthetic.core/generators/dataset_generator.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
 
-const std::string test_suite("ores.synthetic.tests");
 const std::string generators_tags("[generators]");
 
 }

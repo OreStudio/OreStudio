@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cctype>
@@ -28,9 +29,6 @@
 namespace {
 
 using ores::marketdata::domain::market_observation;
-
-const std::string_view test_suite("ores.marketdata.api.tests");
-const std::string tags("[domain]");
 
 // The observation's own URI: the series' identity plus this row's coordinate
 // keys. The helper spells a USD par-swap series and varies only the maturity.
@@ -62,7 +60,7 @@ market_observation make_curve_observation(const std::string& maturity = "1y",
 
 using namespace ores::logging;
 
-TEST_CASE("create_curve_observation_with_tenor", tags) {
+TEST_CASE("create_curve_observation_with_tenor", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_curve_observation("1Y", "0.034567");
@@ -81,7 +79,7 @@ TEST_CASE("create_curve_observation_with_tenor", tags) {
     CHECK(sut.source == "BLOOMBERG");
 }
 
-TEST_CASE("create_observation_without_a_coordinate", tags) {
+TEST_CASE("create_observation_without_a_coordinate", "[domain]") {
     auto lg(make_logger(test_suite));
 
     static boost::uuids::random_generator gen;
@@ -98,7 +96,7 @@ TEST_CASE("create_observation_without_a_coordinate", tags) {
     CHECK(sut.source.empty());
 }
 
-TEST_CASE("create_surface_observation_with_a_compound_coordinate", tags) {
+TEST_CASE("create_surface_observation_with_a_compound_coordinate", "[domain]") {
     auto lg(make_logger(test_suite));
 
     // A surface's coordinate is several keys, and the row keeps them the way the
@@ -112,7 +110,7 @@ TEST_CASE("create_surface_observation_with_a_compound_coordinate", tags) {
     CHECK(sut.oresmd_uri.find("delta=ATM") != std::string::npos);
 }
 
-TEST_CASE("market_observation_json_serialisation", tags) {
+TEST_CASE("market_observation_json_serialisation", "[domain]") {
     auto lg(make_logger(test_suite));
 
     auto sut = make_curve_observation("5y", "0.041200");
@@ -128,7 +126,7 @@ TEST_CASE("market_observation_json_serialisation", tags) {
     CHECK(json_output.find("2024-03-20 00:00:00.000000Z") != std::string::npos);
 }
 
-TEST_CASE("create_multiple_observations_for_curve", tags) {
+TEST_CASE("create_multiple_observations_for_curve", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::string> tenors = {"1m", "3m", "6m", "1y", "2y", "5y", "10y"};

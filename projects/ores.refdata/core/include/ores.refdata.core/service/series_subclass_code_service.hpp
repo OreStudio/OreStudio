@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_series_subclass_codes_response
-    list_series_subclass_codes(const messaging::list_series_subclass_codes_request& request);
-    messaging::get_series_subclass_code_response
-    get_series_subclass_code(const messaging::get_series_subclass_code_request& request);
-    messaging::get_many_series_subclass_codes_response get_many_series_subclass_codes(
-        const messaging::get_many_series_subclass_codes_request& request);
-    messaging::put_series_subclass_code_response
-    put_series_subclass_code(const messaging::put_series_subclass_code_request& request);
-    messaging::put_many_series_subclass_codes_response put_many_series_subclass_codes(
-        const messaging::put_many_series_subclass_codes_request& request);
-    messaging::delete_series_subclass_code_response
-    delete_series_subclass_code(const messaging::delete_series_subclass_code_request& request);
-    messaging::delete_many_series_subclass_codes_response delete_many_series_subclass_codes(
-        const messaging::delete_many_series_subclass_codes_request& request);
-    messaging::list_series_subclass_code_versions_response list_series_subclass_code_versions(
-        const messaging::list_series_subclass_code_versions_request& request);
-    messaging::get_series_subclass_code_version_response get_series_subclass_code_version(
-        const messaging::get_series_subclass_code_version_request& request);
+    ::ores::refdata::messaging::list_series_subclass_codes_response list_series_subclass_codes(
+        const ::ores::refdata::messaging::list_series_subclass_codes_request& request);
+    ::ores::refdata::messaging::get_series_subclass_code_response get_series_subclass_code(
+        const ::ores::refdata::messaging::get_series_subclass_code_request& request);
+    ::ores::refdata::messaging::get_many_series_subclass_codes_response
+    get_many_series_subclass_codes(
+        const ::ores::refdata::messaging::get_many_series_subclass_codes_request& request);
+    ::ores::refdata::messaging::put_series_subclass_code_response put_series_subclass_code(
+        const ::ores::refdata::messaging::put_series_subclass_code_request& request);
+    ::ores::refdata::messaging::put_many_series_subclass_codes_response
+    put_many_series_subclass_codes(
+        const ::ores::refdata::messaging::put_many_series_subclass_codes_request& request);
+    ::ores::refdata::messaging::delete_series_subclass_code_response delete_series_subclass_code(
+        const ::ores::refdata::messaging::delete_series_subclass_code_request& request);
+    ::ores::refdata::messaging::delete_many_series_subclass_codes_response
+    delete_many_series_subclass_codes(
+        const ::ores::refdata::messaging::delete_many_series_subclass_codes_request& request);
+    ::ores::refdata::messaging::list_series_subclass_code_versions_response
+    list_series_subclass_code_versions(
+        const ::ores::refdata::messaging::list_series_subclass_code_versions_request& request);
+    ::ores::refdata::messaging::get_series_subclass_code_version_response
+    get_series_subclass_code_version(
+        const ::ores::refdata::messaging::get_series_subclass_code_version_request& request);
     /**@}*/
 
     /**
@@ -190,7 +195,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::series_subclass_code_change& change,
+    prepare_change(const ::ores::refdata::messaging::series_subclass_code_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::series_subclass_code& out);
 };

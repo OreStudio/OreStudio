@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 #include <string>
@@ -29,21 +30,18 @@ using namespace ores::logging;
 
 namespace {
 
-const std::string_view test_suite("ores.storage.tests");
-const std::string tags("[net]");
-
 const std::string run_id("0b6f1b2c-3d4e-5f60-7182-93a4b5c6d7e8");
 
 }
 
-TEST_CASE("the_platform_has_one_bucket", tags) {
+TEST_CASE("the_platform_has_one_bucket", "[net]") {
     auto lg(make_logger(test_suite));
 
     BOOST_LOG_SEV(lg, info) << "Bucket: " << object_keys::ores_bucket;
     CHECK(object_keys::ores_bucket == "ores");
 }
 
-TEST_CASE("make_builds_a_key_from_service_purpose_and_id", tags) {
+TEST_CASE("make_builds_a_key_from_service_purpose_and_id", "[net]") {
     auto lg(make_logger(test_suite));
 
     const auto key = object_keys::make("compute", "packages", run_id);
@@ -52,7 +50,7 @@ TEST_CASE("make_builds_a_key_from_service_purpose_and_id", tags) {
     CHECK(key == "compute/packages/0b6f1b2c-3d4e-5f60-7182-93a4b5c6d7e8");
 }
 
-TEST_CASE("make_appends_the_file_name_when_one_is_given", tags) {
+TEST_CASE("make_appends_the_file_name_when_one_is_given", "[net]") {
     auto lg(make_logger(test_suite));
 
     const auto key = object_keys::make("reporting", "runs", run_id, "trades.msgpack");
@@ -62,7 +60,7 @@ TEST_CASE("make_appends_the_file_name_when_one_is_given", tags) {
                  "trades.msgpack");
 }
 
-TEST_CASE("parse_is_the_inverse_of_make", tags) {
+TEST_CASE("parse_is_the_inverse_of_make", "[net]") {
     auto lg(make_logger(test_suite));
 
     const auto key = object_keys::make("ore", "imports", run_id, "ore_package.tar.gz");
@@ -77,7 +75,7 @@ TEST_CASE("parse_is_the_inverse_of_make", tags) {
     CHECK(parsed->name == "ore_package.tar.gz");
 }
 
-TEST_CASE("parse_leaves_the_name_empty_when_the_key_names_no_file", tags) {
+TEST_CASE("parse_leaves_the_name_empty_when_the_key_names_no_file", "[net]") {
     auto lg(make_logger(test_suite));
 
     const auto parsed = object_keys::parse("compute/input/" + run_id);
@@ -89,7 +87,7 @@ TEST_CASE("parse_leaves_the_name_empty_when_the_key_names_no_file", tags) {
     CHECK(parsed->name.empty());
 }
 
-TEST_CASE("an_id_may_carry_its_own_extension", tags) {
+TEST_CASE("an_id_may_carry_its_own_extension", "[net]") {
     auto lg(make_logger(test_suite));
 
     const auto key = "compute/input/" + run_id + ".tar.gz";
@@ -102,7 +100,7 @@ TEST_CASE("an_id_may_carry_its_own_extension", tags) {
     CHECK(object_keys::make("compute", "input", run_id + ".tar.gz") == key);
 }
 
-TEST_CASE("parse_refuses_a_key_that_leaves_the_protocol", tags) {
+TEST_CASE("parse_refuses_a_key_that_leaves_the_protocol", "[net]") {
     auto lg(make_logger(test_suite));
 
     // Too few segments, too many, an empty segment, a segment that walks up
@@ -116,7 +114,7 @@ TEST_CASE("parse_refuses_a_key_that_leaves_the_protocol", tags) {
     BOOST_LOG_SEV(lg, info) << "Malformed keys refused";
 }
 
-TEST_CASE("make_refuses_a_part_that_is_not_a_valid_segment", tags) {
+TEST_CASE("make_refuses_a_part_that_is_not_a_valid_segment", "[net]") {
     auto lg(make_logger(test_suite));
 
     CHECK_THROWS_AS(object_keys::make("compute service", "packages", run_id),

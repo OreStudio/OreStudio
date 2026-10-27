@@ -20,20 +20,14 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <optional>
 #include <string>
 
-namespace {
-
-const std::string test_suite("ores.database.tests");
-const std::string tags("[session_settings]");
-
-}
-
 using ores::database::repository::execute_raw_multi_column_query;
 
-TEST_CASE("a raw query's setting holding a quote reaches the session unchanged", tags) {
+TEST_CASE("a raw query's setting holding a quote reaches the session unchanged", "[session_settings]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
     const auto ctx = h.context().with_tenant(h.tenant_id(), "o'brien");

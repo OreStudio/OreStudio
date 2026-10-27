@@ -31,17 +31,11 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::iam::generators;
@@ -51,7 +45,7 @@ using ores::iam::repository::account_role_repository;
 using ores::iam::repository::account_repository;
 using ores::iam::repository::role_repository;
 
-TEST_CASE("write_single_account_role", tags) {
+TEST_CASE("write_single_account_role", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -75,7 +69,7 @@ TEST_CASE("write_single_account_role", tags) {
     CHECK_NOTHROW(repo.write(ar));
 }
 
-TEST_CASE("read_latest_account_roles", tags) {
+TEST_CASE("read_latest_account_roles", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -101,7 +95,7 @@ TEST_CASE("read_latest_account_roles", tags) {
     CHECK(!read_ars.empty());
 }
 
-TEST_CASE("read_latest_account_roles_by_account", tags) {
+TEST_CASE("read_latest_account_roles_by_account", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -139,7 +133,7 @@ TEST_CASE("read_latest_account_roles_by_account", tags) {
     }
 }
 
-TEST_CASE("a_role_taken_away_is_in_the_history_of_the_account_with_the_time_it_ended", tags) {
+TEST_CASE("a_role_taken_away_is_in_the_history_of_the_account_with_the_time_it_ended", "[repository]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 

@@ -35,8 +35,6 @@
 
 namespace {
 
-const std::string tags("[repository][app_version_platform]");
-
 using ores::testing::database_helper;
 using ores::compute::domain::app_version_platform;
 using ores::compute::repository::app_version_platform_repository;
@@ -67,7 +65,7 @@ app_version_platform make_row(database_helper& h,
 
 } // namespace
 
-TEST_CASE("read_latest_by_app_version_returns_empty_for_unknown_id", tags) {
+TEST_CASE("read_latest_by_app_version_returns_empty_for_unknown_id", "[repository][app_version_platform]") {
     database_helper h;
     const auto unknown = boost::uuids::random_generator()();
 
@@ -75,7 +73,7 @@ TEST_CASE("read_latest_by_app_version_returns_empty_for_unknown_id", tags) {
     CHECK(repo.read_latest_by_app_version(unknown).empty());
 }
 
-TEST_CASE("read_latest_by_app_version_reports_the_rows_written_for_each_parent", tags) {
+TEST_CASE("read_latest_by_app_version_reports_the_rows_written_for_each_parent", "[repository][app_version_platform]") {
     database_helper h;
     const auto platforms = seeded_platforms(h);
     const auto av_a = boost::uuids::random_generator()();
@@ -97,7 +95,7 @@ TEST_CASE("read_latest_by_app_version_reports_the_rows_written_for_each_parent",
         CHECK(r.package_uri.find("/b") != std::string::npos);
 }
 
-TEST_CASE("remove_by_app_version_leaves_the_other_parent_alone", tags) {
+TEST_CASE("remove_by_app_version_leaves_the_other_parent_alone", "[repository][app_version_platform]") {
     database_helper h;
     const auto platforms = seeded_platforms(h);
     const auto av_a = boost::uuids::random_generator()();

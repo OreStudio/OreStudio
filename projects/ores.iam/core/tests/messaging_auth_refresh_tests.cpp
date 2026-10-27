@@ -29,8 +29,6 @@
 
 namespace {
 
-const std::string tags("[refresh]");
-
 using ores::iam::messaging::auth_refresh_refusal;
 using ores::iam::messaging::auth_refreshed_permissions;
 using ores::iam::messaging::auth_tenant_refusal;
@@ -51,30 +49,30 @@ jwt_claims person() {
  * it should not renew would come back carrying a full list.
  */
 
-TEST_CASE("a_persons_token_is_refreshed", tags) {
+TEST_CASE("a_persons_token_is_refreshed", "[refresh]") {
     CHECK_FALSE(auth_refresh_refusal(person()).has_value());
 }
 
-TEST_CASE("a_services_token_names_no_party_and_is_refreshed", tags) {
+TEST_CASE("a_services_token_names_no_party_and_is_refreshed", "[refresh]") {
     auto service = person();
     service.party_id.reset();
     CHECK_FALSE(auth_refresh_refusal(service).has_value());
 }
 
-TEST_CASE("a_token_that_only_chooses_a_party_is_not_refreshed", tags) {
+TEST_CASE("a_token_that_only_chooses_a_party_is_not_refreshed", "[refresh]") {
     auto choosing = person();
     choosing.party_id.reset();
     choosing.audience = "select_party_only";
     CHECK(auth_refresh_refusal(choosing) == "A token that only chooses a party is not refreshed.");
 }
 
-TEST_CASE("a_session_inside_a_tenant_is_not_refreshed", tags) {
+TEST_CASE("a_session_inside_a_tenant_is_not_refreshed", "[refresh]") {
     auto inside = person();
     inside.acting_from_tenant_id = "ffffffff-ffff-ffff-ffff-ffffffffffff";
     CHECK(auth_refresh_refusal(inside) == "A session inside a tenant is not refreshed.");
 }
 
-TEST_CASE("refresh_refuses_to_read_permissions_for_a_token_it_cannot_place", tags) {
+TEST_CASE("refresh_refuses_to_read_permissions_for_a_token_it_cannot_place", "[refresh]") {
     ores::testing::scoped_database_helper h;
 
     auto no_tenant = person();
@@ -91,12 +89,12 @@ TEST_CASE("refresh_refuses_to_read_permissions_for_a_token_it_cannot_place", tag
  * tenant that has since closed cannot renew their access.
  */
 
-TEST_CASE("refresh_admits_a_token_of_an_active_tenant", tags) {
+TEST_CASE("refresh_admits_a_token_of_an_active_tenant", "[refresh]") {
     ores::testing::scoped_database_helper h;
     CHECK_FALSE(auth_tenant_refusal(h.context(), person()).has_value());
 }
 
-TEST_CASE("refresh_refuses_a_token_of_a_tenant_that_is_not_active", tags) {
+TEST_CASE("refresh_refuses_a_token_of_a_tenant_that_is_not_active", "[refresh]") {
     ores::testing::scoped_database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
     auto suspended = ores::iam::generators::generate_synthetic_tenant(gen_ctx);
@@ -109,7 +107,7 @@ TEST_CASE("refresh_refuses_a_token_of_a_tenant_that_is_not_active", tags) {
     CHECK(auth_tenant_refusal(h.context(), claims) == "The tenant is not active.");
 }
 
-TEST_CASE("refresh_refuses_a_token_of_a_removed_tenant", tags) {
+TEST_CASE("refresh_refuses_a_token_of_a_removed_tenant", "[refresh]") {
     ores::testing::scoped_database_helper h;
     const auto system_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);

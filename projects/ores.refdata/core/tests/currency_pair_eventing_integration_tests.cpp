@@ -40,6 +40,7 @@
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.refdata.core/repository/currency_pair_repository.hpp"
 #include "ores.refdata.core/service/currency_pair_service.hpp"
+#include "test_suite.hpp"
 // Soft-FK parent seeding (ores_refdata_currencies_tbl): the parent may live in another
 // component, so its own component names the headers. A system-tenant parent
 // is read rather than generated, so it needs no generator.
@@ -73,13 +74,6 @@
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
-namespace {
-
-const std::string_view test_suite("refdata.tests");
-const std::string tags("[eventing][integration]");
-
-
-}
 
 using namespace ores::refdata::generators;
 using ores::refdata::domain::currency_pair;
@@ -87,7 +81,7 @@ using ores::refdata::repository::currency_pair_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_currency_pair_publishes_an_event", tags) {
+TEST_CASE("write_currency_pair_publishes_an_event", "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

@@ -76,18 +76,19 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_run_grants_response
-    list_run_grants(const messaging::list_run_grants_request& request);
-    messaging::get_run_grant_response
-    get_run_grant(const messaging::get_run_grant_request& request);
-    messaging::get_many_run_grants_response
-    get_many_run_grants(const messaging::get_many_run_grants_request& request);
-    messaging::list_by_grantor_account_id_run_grants_response list_by_grantor_account_id_run_grants(
-        const messaging::list_by_grantor_account_id_run_grants_request& request);
-    messaging::list_run_grant_versions_response
-    list_run_grant_versions(const messaging::list_run_grant_versions_request& request);
-    messaging::get_run_grant_version_response
-    get_run_grant_version(const messaging::get_run_grant_version_request& request);
+    ::ores::iam::messaging::list_run_grants_response
+    list_run_grants(const ::ores::iam::messaging::list_run_grants_request& request);
+    ::ores::iam::messaging::get_run_grant_response
+    get_run_grant(const ::ores::iam::messaging::get_run_grant_request& request);
+    ::ores::iam::messaging::get_many_run_grants_response
+    get_many_run_grants(const ::ores::iam::messaging::get_many_run_grants_request& request);
+    ::ores::iam::messaging::list_by_grantor_account_id_run_grants_response
+    list_by_grantor_account_id_run_grants(
+        const ::ores::iam::messaging::list_by_grantor_account_id_run_grants_request& request);
+    ::ores::iam::messaging::list_run_grant_versions_response
+    list_run_grant_versions(const ::ores::iam::messaging::list_run_grant_versions_request& request);
+    ::ores::iam::messaging::get_run_grant_version_response
+    get_run_grant_version(const ::ores::iam::messaging::get_run_grant_version_request& request);
     /**@}*/
 
     /**

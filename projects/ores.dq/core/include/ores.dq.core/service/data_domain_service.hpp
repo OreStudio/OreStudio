@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_data_domains_response
-    list_data_domains(const messaging::list_data_domains_request& request);
-    messaging::get_data_domain_response
-    get_data_domain(const messaging::get_data_domain_request& request);
-    messaging::get_many_data_domains_response
-    get_many_data_domains(const messaging::get_many_data_domains_request& request);
-    messaging::put_data_domain_response
-    put_data_domain(const messaging::put_data_domain_request& request);
-    messaging::put_many_data_domains_response
-    put_many_data_domains(const messaging::put_many_data_domains_request& request);
-    messaging::delete_data_domain_response
-    delete_data_domain(const messaging::delete_data_domain_request& request);
-    messaging::delete_many_data_domains_response
-    delete_many_data_domains(const messaging::delete_many_data_domains_request& request);
-    messaging::list_data_domain_versions_response
-    list_data_domain_versions(const messaging::list_data_domain_versions_request& request);
-    messaging::get_data_domain_version_response
-    get_data_domain_version(const messaging::get_data_domain_version_request& request);
+    ::ores::dq::messaging::list_data_domains_response
+    list_data_domains(const ::ores::dq::messaging::list_data_domains_request& request);
+    ::ores::dq::messaging::get_data_domain_response
+    get_data_domain(const ::ores::dq::messaging::get_data_domain_request& request);
+    ::ores::dq::messaging::get_many_data_domains_response
+    get_many_data_domains(const ::ores::dq::messaging::get_many_data_domains_request& request);
+    ::ores::dq::messaging::put_data_domain_response
+    put_data_domain(const ::ores::dq::messaging::put_data_domain_request& request);
+    ::ores::dq::messaging::put_many_data_domains_response
+    put_many_data_domains(const ::ores::dq::messaging::put_many_data_domains_request& request);
+    ::ores::dq::messaging::delete_data_domain_response
+    delete_data_domain(const ::ores::dq::messaging::delete_data_domain_request& request);
+    ::ores::dq::messaging::delete_many_data_domains_response delete_many_data_domains(
+        const ::ores::dq::messaging::delete_many_data_domains_request& request);
+    ::ores::dq::messaging::list_data_domain_versions_response list_data_domain_versions(
+        const ::ores::dq::messaging::list_data_domain_versions_request& request);
+    ::ores::dq::messaging::get_data_domain_version_response
+    get_data_domain_version(const ::ores::dq::messaging::get_data_domain_version_request& request);
     /**@}*/
 
     /**
@@ -186,9 +186,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::data_domain_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::data_domain& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::dq::messaging::data_domain_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::data_domain& out);
 };
 
 }

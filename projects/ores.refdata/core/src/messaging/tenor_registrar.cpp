@@ -85,15 +85,15 @@ register_tenor_handlers(ores::nats::service::client& nats,
             h->get_tenor_version(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        resolve_tenor_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        resolve_tenor_request::nats_subject, tenor_queue_group, [h](ores::nats::message msg) {
             h->resolve_tenor(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        preview_tenor_resolution_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->preview_tenor_resolution(std::move(msg));
-        }));
+        preview_tenor_resolution_request::nats_subject,
+        tenor_queue_group,
+        [h](ores::nats::message msg) { h->preview_tenor_resolution(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        resolve_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        resolve_convention_request::nats_subject, tenor_queue_group, [h](ores::nats::message msg) {
             h->resolve_convention(std::move(msg));
         }));
     return subs;

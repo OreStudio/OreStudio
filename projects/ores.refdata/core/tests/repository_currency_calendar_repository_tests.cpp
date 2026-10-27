@@ -34,6 +34,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -53,9 +54,6 @@ using ores::refdata::repository::country_repository;
 using ores::testing::scoped_database_helper;
 
 namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository][currency_calendar]");
 
 // Total number of test cases that write currency_calendar records. Each
 // test uses a different slice of the fictional currencies/calendars
@@ -89,7 +87,7 @@ void write_zz_country_sentinel(scoped_database_helper& h,
 
 }
 
-TEST_CASE("write_single_currency_calendar", tags) {
+TEST_CASE("write_single_currency_calendar", "[repository][currency_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -115,7 +113,7 @@ TEST_CASE("write_single_currency_calendar", tags) {
     CHECK(read_ccs[0].change_commentary == cc.change_commentary);
 }
 
-TEST_CASE("write_multiple_currency_calendars", tags) {
+TEST_CASE("write_multiple_currency_calendars", "[repository][currency_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -151,7 +149,7 @@ TEST_CASE("write_multiple_currency_calendars", tags) {
     }
 }
 
-TEST_CASE("read_latest_currency_calendars_by_currency", tags) {
+TEST_CASE("read_latest_currency_calendars_by_currency", "[repository][currency_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -184,7 +182,7 @@ TEST_CASE("read_latest_currency_calendars_by_currency", tags) {
     CHECK(found);
 }
 
-TEST_CASE("read_latest_currency_calendars_by_calendar", tags) {
+TEST_CASE("read_latest_currency_calendars_by_calendar", "[repository][currency_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -210,7 +208,7 @@ TEST_CASE("read_latest_currency_calendars_by_calendar", tags) {
     CHECK(read_ccs[0].currency_iso_code == currencies[4].iso_code);
 }
 
-TEST_CASE("remove_currency_calendar", tags) {
+TEST_CASE("remove_currency_calendar", "[repository][currency_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -248,7 +246,7 @@ TEST_CASE("remove_currency_calendar", tags) {
     CHECK(keeper_rows[0].calendar_code == keeper.calendar_code);
 }
 
-TEST_CASE("remove_by_currency_currency_calendar", tags) {
+TEST_CASE("remove_by_currency_currency_calendar", "[repository][currency_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -286,7 +284,7 @@ TEST_CASE("remove_by_currency_currency_calendar", tags) {
     CHECK(keeper_rows[0].calendar_code == keeper.calendar_code);
 }
 
-TEST_CASE("read_nonexistent_currency_calendar", tags) {
+TEST_CASE("read_nonexistent_currency_calendar", "[repository][currency_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

@@ -71,7 +71,6 @@
 
 namespace {
 
-const std::string tags("[ore][xml][roundtrip][rates][corpus][external]");
 namespace fs = std::filesystem;
 
 using ores::ore::xml::exporter;
@@ -183,7 +182,7 @@ const std::set<std::string>& known_row_differences() {
 
 } // namespace
 
-TEST_CASE("every rates trade in the corpus comes back as the same family rows", tags) {
+TEST_CASE("every rates trade in the corpus comes back as the same family rows", "[ore][xml][roundtrip][rates][corpus][external]") {
     const auto dir =
         ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades");
     REQUIRE(fs::exists(dir));

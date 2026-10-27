@@ -27,6 +27,7 @@
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -35,9 +36,6 @@
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.marketdata.core.tests");
-const std::string tags("[service][import_service][party]");
 
 using ores::marketdata::messaging::import_market_data_request;
 using ores::marketdata::messaging::list_series_identities_request;
@@ -107,7 +105,7 @@ std::vector<listed_series> surfaces_seen_by(const ores::database::context& ctx) 
 
 }
 
-TEST_CASE("two_parties_each_import_the_same_surface_into_series_of_their_own", tags) {
+TEST_CASE("two_parties_each_import_the_same_surface_into_series_of_their_own", "[service][import_service][party]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -137,7 +135,7 @@ TEST_CASE("two_parties_each_import_the_same_surface_into_series_of_their_own", t
     CHECK(seen_by_b[0].axes == std::vector<std::string>{"expiry", "strike_label"});
 }
 
-TEST_CASE("a_party_importing_again_updates_its_own_series_and_adds_none", tags) {
+TEST_CASE("a_party_importing_again_updates_its_own_series_and_adds_none", "[service][import_service][party]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

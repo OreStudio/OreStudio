@@ -76,27 +76,34 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_tenor_resolution_algorithms_response list_tenor_resolution_algorithms(
-        const messaging::list_tenor_resolution_algorithms_request& request);
-    messaging::get_tenor_resolution_algorithm_response get_tenor_resolution_algorithm(
-        const messaging::get_tenor_resolution_algorithm_request& request);
-    messaging::get_many_tenor_resolution_algorithms_response get_many_tenor_resolution_algorithms(
-        const messaging::get_many_tenor_resolution_algorithms_request& request);
-    messaging::put_tenor_resolution_algorithm_response put_tenor_resolution_algorithm(
-        const messaging::put_tenor_resolution_algorithm_request& request);
-    messaging::put_many_tenor_resolution_algorithms_response put_many_tenor_resolution_algorithms(
-        const messaging::put_many_tenor_resolution_algorithms_request& request);
-    messaging::delete_tenor_resolution_algorithm_response delete_tenor_resolution_algorithm(
-        const messaging::delete_tenor_resolution_algorithm_request& request);
-    messaging::delete_many_tenor_resolution_algorithms_response
+    ::ores::refdata::messaging::list_tenor_resolution_algorithms_response
+    list_tenor_resolution_algorithms(
+        const ::ores::refdata::messaging::list_tenor_resolution_algorithms_request& request);
+    ::ores::refdata::messaging::get_tenor_resolution_algorithm_response
+    get_tenor_resolution_algorithm(
+        const ::ores::refdata::messaging::get_tenor_resolution_algorithm_request& request);
+    ::ores::refdata::messaging::get_many_tenor_resolution_algorithms_response
+    get_many_tenor_resolution_algorithms(
+        const ::ores::refdata::messaging::get_many_tenor_resolution_algorithms_request& request);
+    ::ores::refdata::messaging::put_tenor_resolution_algorithm_response
+    put_tenor_resolution_algorithm(
+        const ::ores::refdata::messaging::put_tenor_resolution_algorithm_request& request);
+    ::ores::refdata::messaging::put_many_tenor_resolution_algorithms_response
+    put_many_tenor_resolution_algorithms(
+        const ::ores::refdata::messaging::put_many_tenor_resolution_algorithms_request& request);
+    ::ores::refdata::messaging::delete_tenor_resolution_algorithm_response
+    delete_tenor_resolution_algorithm(
+        const ::ores::refdata::messaging::delete_tenor_resolution_algorithm_request& request);
+    ::ores::refdata::messaging::delete_many_tenor_resolution_algorithms_response
     delete_many_tenor_resolution_algorithms(
-        const messaging::delete_many_tenor_resolution_algorithms_request& request);
-    messaging::list_tenor_resolution_algorithm_versions_response
+        const ::ores::refdata::messaging::delete_many_tenor_resolution_algorithms_request& request);
+    ::ores::refdata::messaging::list_tenor_resolution_algorithm_versions_response
     list_tenor_resolution_algorithm_versions(
-        const messaging::list_tenor_resolution_algorithm_versions_request& request);
-    messaging::get_tenor_resolution_algorithm_version_response
+        const ::ores::refdata::messaging::list_tenor_resolution_algorithm_versions_request&
+            request);
+    ::ores::refdata::messaging::get_tenor_resolution_algorithm_version_response
     get_tenor_resolution_algorithm_version(
-        const messaging::get_tenor_resolution_algorithm_version_request& request);
+        const ::ores::refdata::messaging::get_tenor_resolution_algorithm_version_request& request);
     /**@}*/
 
     /**
@@ -193,7 +200,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::tenor_resolution_algorithm_change& change,
+    prepare_change(const ::ores::refdata::messaging::tenor_resolution_algorithm_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::tenor_resolution_algorithm& out);
 };

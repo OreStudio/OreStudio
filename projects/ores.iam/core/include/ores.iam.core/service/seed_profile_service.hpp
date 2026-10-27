@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_seed_profiles_response
-    list_seed_profiles(const messaging::list_seed_profiles_request& request);
-    messaging::get_seed_profile_response
-    get_seed_profile(const messaging::get_seed_profile_request& request);
-    messaging::get_many_seed_profiles_response
-    get_many_seed_profiles(const messaging::get_many_seed_profiles_request& request);
-    messaging::put_seed_profile_response
-    put_seed_profile(const messaging::put_seed_profile_request& request);
-    messaging::put_many_seed_profiles_response
-    put_many_seed_profiles(const messaging::put_many_seed_profiles_request& request);
-    messaging::delete_seed_profile_response
-    delete_seed_profile(const messaging::delete_seed_profile_request& request);
-    messaging::delete_many_seed_profiles_response
-    delete_many_seed_profiles(const messaging::delete_many_seed_profiles_request& request);
-    messaging::list_seed_profile_versions_response
-    list_seed_profile_versions(const messaging::list_seed_profile_versions_request& request);
-    messaging::get_seed_profile_version_response
-    get_seed_profile_version(const messaging::get_seed_profile_version_request& request);
+    ::ores::iam::messaging::list_seed_profiles_response
+    list_seed_profiles(const ::ores::iam::messaging::list_seed_profiles_request& request);
+    ::ores::iam::messaging::get_seed_profile_response
+    get_seed_profile(const ::ores::iam::messaging::get_seed_profile_request& request);
+    ::ores::iam::messaging::get_many_seed_profiles_response
+    get_many_seed_profiles(const ::ores::iam::messaging::get_many_seed_profiles_request& request);
+    ::ores::iam::messaging::put_seed_profile_response
+    put_seed_profile(const ::ores::iam::messaging::put_seed_profile_request& request);
+    ::ores::iam::messaging::put_many_seed_profiles_response
+    put_many_seed_profiles(const ::ores::iam::messaging::put_many_seed_profiles_request& request);
+    ::ores::iam::messaging::delete_seed_profile_response
+    delete_seed_profile(const ::ores::iam::messaging::delete_seed_profile_request& request);
+    ::ores::iam::messaging::delete_many_seed_profiles_response delete_many_seed_profiles(
+        const ::ores::iam::messaging::delete_many_seed_profiles_request& request);
+    ::ores::iam::messaging::list_seed_profile_versions_response list_seed_profile_versions(
+        const ::ores::iam::messaging::list_seed_profile_versions_request& request);
+    ::ores::iam::messaging::get_seed_profile_version_response get_seed_profile_version(
+        const ::ores::iam::messaging::get_seed_profile_version_request& request);
     /**@}*/
 
     /**
@@ -189,9 +189,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::seed_profile_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::seed_profile& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::iam::messaging::seed_profile_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::seed_profile& out);
 };
 
 }

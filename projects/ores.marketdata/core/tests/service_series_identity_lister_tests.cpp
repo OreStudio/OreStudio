@@ -29,6 +29,7 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -41,9 +42,6 @@
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.marketdata.core.tests");
-const std::string tags("[service][series_identity_lister]");
 
 using ores::marketdata::messaging::list_series_identities_request;
 using ores::marketdata::messaging::listed_series;
@@ -142,7 +140,7 @@ two_parties make_two_parties(scoped_database_helper& h) {
 
 }
 
-TEST_CASE("a_listed_identity_names_the_series_it_was_listed_for", tags) {
+TEST_CASE("a_listed_identity_names_the_series_it_was_listed_for", "[service][series_identity_lister]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -170,7 +168,7 @@ TEST_CASE("a_listed_identity_names_the_series_it_was_listed_for", tags) {
     CHECK(resolved[0].id == written.id);
 }
 
-TEST_CASE("each_provider_of_one_identity_is_listed_and_resolves_to_its_own_series", tags) {
+TEST_CASE("each_provider_of_one_identity_is_listed_and_resolves_to_its_own_series", "[service][series_identity_lister]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -195,7 +193,7 @@ TEST_CASE("each_provider_of_one_identity_is_listed_and_resolves_to_its_own_serie
     }
 }
 
-TEST_CASE("a_party_is_listed_its_own_series_and_not_another_partys", tags) {
+TEST_CASE("a_party_is_listed_its_own_series_and_not_another_partys", "[service][series_identity_lister]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -222,7 +220,7 @@ TEST_CASE("a_party_is_listed_its_own_series_and_not_another_partys", tags) {
     CHECK(seen_by_b[0].identity.party_id == boost::uuids::to_string(parties.b));
 }
 
-TEST_CASE("naming_a_party_narrows_the_list_to_it", tags) {
+TEST_CASE("naming_a_party_narrows_the_list_to_it", "[service][series_identity_lister]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -244,7 +242,7 @@ TEST_CASE("naming_a_party_narrows_the_list_to_it", tags) {
     CHECK(found[0].identity.party_id == boost::uuids::to_string(second));
 }
 
-TEST_CASE("a_party_is_named_whatever_way_its_uuid_is_spelled", tags) {
+TEST_CASE("a_party_is_named_whatever_way_its_uuid_is_spelled", "[service][series_identity_lister]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -265,7 +263,7 @@ TEST_CASE("a_party_is_named_whatever_way_its_uuid_is_spelled", tags) {
     }
 }
 
-TEST_CASE("a_party_that_is_no_uuid_is_refused_and_not_answered_with_nothing", tags) {
+TEST_CASE("a_party_that_is_no_uuid_is_refused_and_not_answered_with_nothing", "[service][series_identity_lister]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -274,7 +272,7 @@ TEST_CASE("a_party_that_is_no_uuid_is_refused_and_not_answered_with_nothing", ta
     CHECK_THROWS_AS(series_identity_lister::list(h.context(), request), std::invalid_argument);
 }
 
-TEST_CASE("a_fixing_series_is_not_listed", tags) {
+TEST_CASE("a_fixing_series_is_not_listed", "[service][series_identity_lister]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -293,7 +291,7 @@ TEST_CASE("a_fixing_series_is_not_listed", tags) {
     }
 }
 
-TEST_CASE("a_series_lists_the_axes_its_shape_declares", tags) {
+TEST_CASE("a_series_lists_the_axes_its_shape_declares", "[service][series_identity_lister]") {
     auto lg(make_logger(test_suite));
 
     // A currency pair no other suite reads, because the tests share one tenant and

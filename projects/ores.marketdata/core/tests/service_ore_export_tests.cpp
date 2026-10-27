@@ -33,6 +33,7 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include "tick_test_support.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -43,13 +44,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
-namespace {
-
-const std::string_view test_suite("ores.marketdata.core.tests");
-const std::string tags("[service][ore_export]");
-
-}
 
 using namespace ores::logging;
 using ores::marketdata::service::import_service;
@@ -137,7 +131,7 @@ std::string content_of(const std::string& relative_path) {
 
 }
 
-TEST_CASE("export_reproduces_the_market_data_file_it_imported", tags) {
+TEST_CASE("export_reproduces_the_market_data_file_it_imported", "[service][ore_export]") {
     auto lg(make_logger(test_suite));
 
     export_tenant t;
@@ -187,7 +181,7 @@ TEST_CASE("export_reproduces_the_market_data_file_it_imported", tags) {
     CHECK(actual == expected);
 }
 
-TEST_CASE("export_reproduces_the_fixings_file_it_imported", tags) {
+TEST_CASE("export_reproduces_the_fixings_file_it_imported", "[service][ore_export]") {
     auto lg(make_logger(test_suite));
 
     export_tenant t;
@@ -276,7 +270,7 @@ void write_fx_row(export_tenant& t, const std::string& series_uri, const std::st
 
 }
 
-TEST_CASE("export_writes_each_key_from_the_datum_uri_the_row_stores", tags) {
+TEST_CASE("export_writes_each_key_from_the_datum_uri_the_row_stores", "[service][ore_export]") {
     auto lg(make_logger(test_suite));
 
     export_tenant t;
@@ -290,7 +284,7 @@ TEST_CASE("export_writes_each_key_from_the_datum_uri_the_row_stores", tags) {
     CHECK(result.market_data.contains("FX/RATE/EUR/USD"));
 }
 
-TEST_CASE("export_refuses_an_observation_whose_uri_names_no_datum", tags) {
+TEST_CASE("export_refuses_an_observation_whose_uri_names_no_datum", "[service][ore_export]") {
     auto lg(make_logger(test_suite));
 
     export_tenant t;
@@ -303,7 +297,7 @@ TEST_CASE("export_refuses_an_observation_whose_uri_names_no_datum", tags) {
 }
 
 TEST_CASE("export_with_a_date_keeps_the_history_and_writes_the_value_at_the_close_of_that_day",
-          tags) {
+          "[service][ore_export]") {
     export_tenant t;
     ores::nats::service::nats_client auth_nats;
     import_service importer(t.ctx, auth_nats);
@@ -371,7 +365,7 @@ TEST_CASE("export_with_a_date_keeps_the_history_and_writes_the_value_at_the_clos
     CHECK(lines_of(exporter.write_all().market_data) == lines{"20160204 1.05", "20160205 1.10"});
 }
 
-TEST_CASE("the_reads_for_every_series_give_what_the_reads_for_each_series_give", tags) {
+TEST_CASE("the_reads_for_every_series_give_what_the_reads_for_each_series_give", "[service][ore_export]") {
     export_tenant t;
     ores::nats::service::nats_client auth_nats;
     import_service importer(t.ctx, auth_nats);
@@ -425,7 +419,7 @@ TEST_CASE("the_reads_for_every_series_give_what_the_reads_for_each_series_give",
     CHECK(every.size() == 5);
 }
 
-TEST_CASE("export_with_a_date_leaves_out_a_datum_whose_value_is_older_than_the_limit", tags) {
+TEST_CASE("export_with_a_date_leaves_out_a_datum_whose_value_is_older_than_the_limit", "[service][ore_export]") {
     export_tenant t;
     ores::nats::service::nats_client auth_nats;
     import_service importer(t.ctx, auth_nats);

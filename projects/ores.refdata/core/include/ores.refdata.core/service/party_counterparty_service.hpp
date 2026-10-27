@@ -76,25 +76,30 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_party_counterparties_response
-    list_party_counterparties(const messaging::list_party_counterparties_request& request);
-    messaging::get_party_counterparty_response
-    get_party_counterparty(const messaging::get_party_counterparty_request& request);
-    messaging::get_many_party_counterparties_response
-    get_many_party_counterparties(const messaging::get_many_party_counterparties_request& request);
-    messaging::put_party_counterparty_response
-    put_party_counterparty(const messaging::put_party_counterparty_request& request);
-    messaging::put_many_party_counterparties_response
-    put_many_party_counterparties(const messaging::put_many_party_counterparties_request& request);
-    messaging::delete_party_counterparty_response
-    delete_party_counterparty(const messaging::delete_party_counterparty_request& request);
-    messaging::delete_many_party_counterparties_response delete_many_party_counterparties(
-        const messaging::delete_many_party_counterparties_request& request);
-    messaging::list_by_party_id_party_counterparties_response list_by_party_id_party_counterparties(
-        const messaging::list_by_party_id_party_counterparties_request& request);
-    messaging::list_by_counterparty_id_party_counterparties_response
+    ::ores::refdata::messaging::list_party_counterparties_response list_party_counterparties(
+        const ::ores::refdata::messaging::list_party_counterparties_request& request);
+    ::ores::refdata::messaging::get_party_counterparty_response get_party_counterparty(
+        const ::ores::refdata::messaging::get_party_counterparty_request& request);
+    ::ores::refdata::messaging::get_many_party_counterparties_response
+    get_many_party_counterparties(
+        const ::ores::refdata::messaging::get_many_party_counterparties_request& request);
+    ::ores::refdata::messaging::put_party_counterparty_response put_party_counterparty(
+        const ::ores::refdata::messaging::put_party_counterparty_request& request);
+    ::ores::refdata::messaging::put_many_party_counterparties_response
+    put_many_party_counterparties(
+        const ::ores::refdata::messaging::put_many_party_counterparties_request& request);
+    ::ores::refdata::messaging::delete_party_counterparty_response delete_party_counterparty(
+        const ::ores::refdata::messaging::delete_party_counterparty_request& request);
+    ::ores::refdata::messaging::delete_many_party_counterparties_response
+    delete_many_party_counterparties(
+        const ::ores::refdata::messaging::delete_many_party_counterparties_request& request);
+    ::ores::refdata::messaging::list_by_party_id_party_counterparties_response
+    list_by_party_id_party_counterparties(
+        const ::ores::refdata::messaging::list_by_party_id_party_counterparties_request& request);
+    ::ores::refdata::messaging::list_by_counterparty_id_party_counterparties_response
     list_by_counterparty_id_party_counterparties(
-        const messaging::list_by_counterparty_id_party_counterparties_request& request);
+        const ::ores::refdata::messaging::list_by_counterparty_id_party_counterparties_request&
+            request);
     /**@}*/
 
     /**
@@ -132,9 +137,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::party_counterparty_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::party_counterparty& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::party_counterparty_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::party_counterparty& out);
 
     ores::service::messaging::write_pass pass_;
 

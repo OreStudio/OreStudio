@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
@@ -28,8 +29,6 @@
 
 namespace {
 
-const std::string test_suite("ores.security.tests");
-const std::string tags("[jwt_authenticator]");
 const std::string test_secret("super-secret-key-for-testing-purposes-only-32bytes!");
 const std::string test_issuer("test-issuer");
 const std::string test_audience("test-audience");
@@ -87,7 +86,7 @@ using namespace ores::logging;
 // HS256 tests
 // ---------------------------------------------------------------------------
 
-TEST_CASE("jwt_authenticator_create_hs256_configured", tags) {
+TEST_CASE("jwt_authenticator_create_hs256_configured", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing HS256 authenticator creation";
 
@@ -96,7 +95,7 @@ TEST_CASE("jwt_authenticator_create_hs256_configured", tags) {
     REQUIRE(auth.is_configured());
 }
 
-TEST_CASE("jwt_authenticator_create_hs256_empty_secret_not_configured", tags) {
+TEST_CASE("jwt_authenticator_create_hs256_empty_secret_not_configured", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing HS256 with empty secret";
 
@@ -105,7 +104,7 @@ TEST_CASE("jwt_authenticator_create_hs256_empty_secret_not_configured", tags) {
     REQUIRE_FALSE(auth.is_configured());
 }
 
-TEST_CASE("jwt_authenticator_create_and_validate_hs256_token", tags) {
+TEST_CASE("jwt_authenticator_create_and_validate_hs256_token", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing HS256 token creation and validation";
 
@@ -137,7 +136,7 @@ TEST_CASE("jwt_authenticator_create_and_validate_hs256_token", tags) {
     REQUIRE(*validated->email == "test@example.com");
 }
 
-TEST_CASE("jwt_authenticator_validate_expired_token", tags) {
+TEST_CASE("jwt_authenticator_validate_expired_token", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing expired token validation";
 
@@ -156,7 +155,7 @@ TEST_CASE("jwt_authenticator_validate_expired_token", tags) {
     REQUIRE(validated.error() == jwt_error::expired_token);
 }
 
-TEST_CASE("jwt_authenticator_validate_invalid_hs256_signature", tags) {
+TEST_CASE("jwt_authenticator_validate_invalid_hs256_signature", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing invalid HS256 signature detection";
 
@@ -179,7 +178,7 @@ TEST_CASE("jwt_authenticator_validate_invalid_hs256_signature", tags) {
     CHECK(validated.error() == jwt_error::invalid_signature);
 }
 
-TEST_CASE("jwt_authenticator_validate_malformed_token", tags) {
+TEST_CASE("jwt_authenticator_validate_malformed_token", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing malformed token detection";
 
@@ -190,7 +189,7 @@ TEST_CASE("jwt_authenticator_validate_malformed_token", tags) {
     REQUIRE(validated.error() == jwt_error::invalid_token);
 }
 
-TEST_CASE("jwt_authenticator_unconfigured_validate_fails", tags) {
+TEST_CASE("jwt_authenticator_unconfigured_validate_fails", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing unconfigured authenticator validation";
 
@@ -205,7 +204,7 @@ TEST_CASE("jwt_authenticator_unconfigured_validate_fails", tags) {
 // RS256 tests
 // ---------------------------------------------------------------------------
 
-TEST_CASE("jwt_authenticator_create_rs256_verifier_configured", tags) {
+TEST_CASE("jwt_authenticator_create_rs256_verifier_configured", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing RS256 verifier creation";
 
@@ -215,7 +214,7 @@ TEST_CASE("jwt_authenticator_create_rs256_verifier_configured", tags) {
     REQUIRE(auth.is_configured());
 }
 
-TEST_CASE("jwt_authenticator_create_rs256_verifier_empty_key_not_configured", tags) {
+TEST_CASE("jwt_authenticator_create_rs256_verifier_empty_key_not_configured", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing RS256 verifier with empty key";
 
@@ -224,7 +223,7 @@ TEST_CASE("jwt_authenticator_create_rs256_verifier_empty_key_not_configured", ta
     REQUIRE_FALSE(auth.is_configured());
 }
 
-TEST_CASE("jwt_authenticator_rs256_verifier_cannot_create_token", tags) {
+TEST_CASE("jwt_authenticator_rs256_verifier_cannot_create_token", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing RS256 verifier cannot create tokens";
 
@@ -240,7 +239,7 @@ TEST_CASE("jwt_authenticator_rs256_verifier_cannot_create_token", tags) {
     REQUIRE_FALSE(token.has_value());
 }
 
-TEST_CASE("jwt_authenticator_rs256_round_trip", tags) {
+TEST_CASE("jwt_authenticator_rs256_round_trip", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing RS256 sign/verify round-trip";
 
@@ -278,7 +277,7 @@ TEST_CASE("jwt_authenticator_rs256_round_trip", tags) {
     REQUIRE(*validated->party_id == "party-uuid-000");
 }
 
-TEST_CASE("jwt_authenticator_round_trips_the_tenant_a_session_acts_from", tags) {
+TEST_CASE("jwt_authenticator_round_trips_the_tenant_a_session_acts_from", "[jwt_authenticator]") {
     auto signer = jwt_authenticator::create_hs256(test_secret);
 
     jwt_claims claims;
@@ -305,7 +304,7 @@ TEST_CASE("jwt_authenticator_round_trips_the_tenant_a_session_acts_from", tags) 
     CHECK_FALSE(own->acting_from_tenant_id.has_value());
 }
 
-TEST_CASE("jwt_authenticator_round_trips_the_run_token_claims", tags) {
+TEST_CASE("jwt_authenticator_round_trips_the_run_token_claims", "[jwt_authenticator]") {
     auto signer = jwt_authenticator::create_hs256(test_secret);
 
     jwt_claims claims;
@@ -343,7 +342,7 @@ TEST_CASE("jwt_authenticator_round_trips_the_run_token_claims", tags) {
     CHECK_FALSE(own->run_id.has_value());
 }
 
-TEST_CASE("jwt_authenticator_round_trips_a_storage_capability", tags) {
+TEST_CASE("jwt_authenticator_round_trips_a_storage_capability", "[jwt_authenticator]") {
     auto signer = jwt_authenticator::create_hs256(test_secret);
 
     jwt_claims claims;
@@ -381,7 +380,7 @@ TEST_CASE("jwt_authenticator_round_trips_a_storage_capability", tags) {
     CHECK(plain->storage_grants.empty());
 }
 
-TEST_CASE("jwt_authenticator_rs256_tamper_rejected", tags) {
+TEST_CASE("jwt_authenticator_rs256_tamper_rejected", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing RS256 tampered token rejected";
 
@@ -410,7 +409,7 @@ TEST_CASE("jwt_authenticator_rs256_tamper_rejected", tags) {
     REQUIRE_FALSE(validated.has_value());
 }
 
-TEST_CASE("jwt_authenticator_rs256_expired_token", tags) {
+TEST_CASE("jwt_authenticator_rs256_expired_token", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing RS256 expired token rejected";
 
@@ -433,7 +432,7 @@ TEST_CASE("jwt_authenticator_rs256_expired_token", tags) {
     REQUIRE(validated.error() == jwt_error::expired_token);
 }
 
-TEST_CASE("jwt_error_to_string", tags) {
+TEST_CASE("jwt_error_to_string", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing jwt_error to_string";
 
@@ -457,7 +456,7 @@ jwt_claims claims_expiring_in_an_hour() {
 
 }
 
-TEST_CASE("jwt_authenticator_rejects_a_token_from_another_issuer", tags) {
+TEST_CASE("jwt_authenticator_rejects_a_token_from_another_issuer", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing issuer mismatch";
 
@@ -472,7 +471,7 @@ TEST_CASE("jwt_authenticator_rejects_a_token_from_another_issuer", tags) {
     CHECK(validated.error() == jwt_error::invalid_issuer);
 }
 
-TEST_CASE("jwt_authenticator_rejects_a_token_for_another_audience", tags) {
+TEST_CASE("jwt_authenticator_rejects_a_token_for_another_audience", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing audience mismatch";
 
@@ -487,7 +486,7 @@ TEST_CASE("jwt_authenticator_rejects_a_token_for_another_audience", tags) {
     CHECK(validated.error() == jwt_error::invalid_audience);
 }
 
-TEST_CASE("jwt_authenticator_allow_expired_accepts_what_validate_rejects", tags) {
+TEST_CASE("jwt_authenticator_allow_expired_accepts_what_validate_rejects", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing the refresh path's leeway";
 
@@ -510,7 +509,7 @@ TEST_CASE("jwt_authenticator_allow_expired_accepts_what_validate_rejects", tags)
     CHECK(allowed->subject == "user123");
 }
 
-TEST_CASE("jwt_authenticator_allow_expired_still_rejects_a_bad_signature", tags) {
+TEST_CASE("jwt_authenticator_allow_expired_still_rejects_a_bad_signature", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing the leeway's signature check";
 
@@ -534,7 +533,7 @@ TEST_CASE("jwt_authenticator_allow_expired_still_rejects_a_bad_signature", tags)
     CHECK(allowed.error() == jwt_error::invalid_signature);
 }
 
-TEST_CASE("jwt_authenticator_rs256_verifier_rejects_an_hs256_token", tags) {
+TEST_CASE("jwt_authenticator_rs256_verifier_rejects_an_hs256_token", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing the algorithm confusion case";
 
@@ -554,7 +553,7 @@ TEST_CASE("jwt_authenticator_rs256_verifier_rejects_an_hs256_token", tags) {
     CHECK_FALSE(validated.has_value());
 }
 
-TEST_CASE("jwt_authenticator_reports_missing_claims", tags) {
+TEST_CASE("jwt_authenticator_reports_missing_claims", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing a token that omits a required claim";
 
@@ -571,7 +570,7 @@ TEST_CASE("jwt_authenticator_reports_missing_claims", tags) {
     CHECK(validated.error() == jwt_error::missing_claims);
 }
 
-TEST_CASE("jwt_authenticator_allow_expired_still_checks_the_audience", tags) {
+TEST_CASE("jwt_authenticator_allow_expired_still_checks_the_audience", "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing the leeway's audience check";
 

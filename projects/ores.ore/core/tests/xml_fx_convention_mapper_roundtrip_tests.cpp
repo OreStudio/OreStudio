@@ -23,6 +23,7 @@
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <map>
@@ -45,9 +46,6 @@ using Catch::Approx;
  */
 
 namespace {
-
-const std::string_view test_suite("ores.ore.fx_convention.mapper.roundtrip.tests");
-const std::string tags("[ore][xml][mapper][roundtrip][fx_convention]");
 
 using ores::ore::domain::conventions;
 using ores::ore::domain::conventions_mapper;
@@ -90,7 +88,7 @@ conventions roundtrip_single(const record_reader& original) {
 // Real example file: field-by-field round-trip for every <FX> entry
 // =============================================================================
 
-TEST_CASE("fx_convention_roundtrip_real_example_file_field_values", tags) {
+TEST_CASE("fx_convention_roundtrip_real_example_file_field_values", "[ore][xml][mapper][roundtrip][fx_convention]") {
     auto lg(make_logger(test_suite));
     const auto original = load_conventions();
     const auto entries = root_of(original).children("FX");
@@ -132,7 +130,7 @@ TEST_CASE("fx_convention_roundtrip_real_example_file_field_values", tags) {
 // Documented data-loss case: multiple <FX> entries per pair collide
 // =============================================================================
 
-TEST_CASE("fx_convention_roundtrip_duplicate_pair_collision_is_documented", tags) {
+TEST_CASE("fx_convention_roundtrip_duplicate_pair_collision_is_documented", "[ore][xml][mapper][roundtrip][fx_convention]") {
     auto lg(make_logger(test_suite));
     const auto original = load_conventions();
     const auto entries = root_of(original).children("FX");
@@ -167,7 +165,7 @@ TEST_CASE("fx_convention_roundtrip_duplicate_pair_collision_is_documented", tags
 // Synthetic case: EOM and Convention fields (not exercised by the real file)
 // =============================================================================
 
-TEST_CASE("fx_convention_roundtrip_synthetic_eom_and_business_day_convention", tags) {
+TEST_CASE("fx_convention_roundtrip_synthetic_eom_and_business_day_convention", "[ore][xml][mapper][roundtrip][fx_convention]") {
     const auto original = conventions_mapper::read("<Conventions>"
                                                    "<FX>"
                                                    "<Id>EUR-USD-FX-CONVENTIONS</Id>"

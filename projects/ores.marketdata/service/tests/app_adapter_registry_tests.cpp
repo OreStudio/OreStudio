@@ -24,8 +24,6 @@
 
 namespace {
 
-const std::string tags("[app][adapter_registry]");
-
 using namespace std::chrono_literals;
 using ores::marketdata::messaging::adapter_announce_request;
 using ores::marketdata::messaging::adapter_demand_response;
@@ -60,7 +58,7 @@ const auto t0 = std::chrono::system_clock::now();
 
 }
 
-TEST_CASE("an_adapter_of_a_known_provider_is_ready_after_its_announce", tags) {
+TEST_CASE("an_adapter_of_a_known_provider_is_ready_after_its_announce", "[app][adapter_registry]") {
     adapter_registry sut;
 
     const auto response = sut.announce(announce(), catalogue(), t0);
@@ -72,7 +70,7 @@ TEST_CASE("an_adapter_of_a_known_provider_is_ready_after_its_announce", tags) {
     CHECK(sut.provider_of("bloomberg-sim") == "bloomberg");
 }
 
-TEST_CASE("an_adapter_of_an_unknown_provider_is_rejected", tags) {
+TEST_CASE("an_adapter_of_an_unknown_provider_is_rejected", "[app][adapter_registry]") {
     adapter_registry sut;
 
     const auto response = sut.announce(announce("nobody"), catalogue(), t0);
@@ -83,7 +81,7 @@ TEST_CASE("an_adapter_of_an_unknown_provider_is_rejected", tags) {
     CHECK(sut.demandable().empty());
 }
 
-TEST_CASE("an_announce_with_no_adapter_id_is_refused", tags) {
+TEST_CASE("an_announce_with_no_adapter_id_is_refused", "[app][adapter_registry]") {
     adapter_registry sut;
     auto request = announce();
     request.adapter_id.clear();
@@ -92,7 +90,7 @@ TEST_CASE("an_announce_with_no_adapter_id_is_refused", tags) {
     CHECK(sut.status().empty());
 }
 
-TEST_CASE("an_accepted_demand_makes_an_adapter_serve_and_an_empty_one_makes_it_ready", tags) {
+TEST_CASE("an_accepted_demand_makes_an_adapter_serve_and_an_empty_one_makes_it_ready", "[app][adapter_registry]") {
     adapter_registry sut;
     sut.announce(announce(), catalogue(), t0);
 
@@ -106,7 +104,7 @@ TEST_CASE("an_accepted_demand_makes_an_adapter_serve_and_an_empty_one_makes_it_r
     CHECK(sut.state_of("bloomberg-sim") == adapter_state::ready);
 }
 
-TEST_CASE("the_status_shows_the_accepted_and_rejected_ids_of_the_last_reply", tags) {
+TEST_CASE("the_status_shows_the_accepted_and_rejected_ids_of_the_last_reply", "[app][adapter_registry]") {
     adapter_registry sut;
     sut.announce(announce(), catalogue(), t0);
     adapter_demand_response reply;
@@ -126,7 +124,7 @@ TEST_CASE("the_status_shows_the_accepted_and_rejected_ids_of_the_last_reply", ta
     CHECK(status.front().unknown_count == 1);
 }
 
-TEST_CASE("a_missed_heartbeat_makes_an_adapter_stale", tags) {
+TEST_CASE("a_missed_heartbeat_makes_an_adapter_stale", "[app][adapter_registry]") {
     adapter_registry sut(15s);
     sut.announce(announce(), catalogue(), t0);
     adapter_demand_response accepted;
@@ -143,7 +141,7 @@ TEST_CASE("a_missed_heartbeat_makes_an_adapter_stale", tags) {
     CHECK(sut.expire(t0 + 30s).empty());
 }
 
-TEST_CASE("a_heartbeat_keeps_an_adapter_from_going_stale", tags) {
+TEST_CASE("a_heartbeat_keeps_an_adapter_from_going_stale", "[app][adapter_registry]") {
     adapter_registry sut(15s);
     sut.announce(announce(), catalogue(), t0);
 
@@ -155,7 +153,7 @@ TEST_CASE("a_heartbeat_keeps_an_adapter_from_going_stale", tags) {
     CHECK(sut.expire(t0 + 26s).size() == 1);
 }
 
-TEST_CASE("a_returning_heartbeat_makes_a_stale_adapter_ready_and_asks_for_demand", tags) {
+TEST_CASE("a_returning_heartbeat_makes_a_stale_adapter_ready_and_asks_for_demand", "[app][adapter_registry]") {
     adapter_registry sut(15s);
     sut.announce(announce(), catalogue(), t0);
     (void)sut.expire(t0 + 20s);
@@ -169,7 +167,7 @@ TEST_CASE("a_returning_heartbeat_makes_a_stale_adapter_ready_and_asks_for_demand
     CHECK(sut.status().front().heartbeat_counter == 7);
 }
 
-TEST_CASE("a_heartbeat_of_an_unknown_adapter_changes_nothing", tags) {
+TEST_CASE("a_heartbeat_of_an_unknown_adapter_changes_nothing", "[app][adapter_registry]") {
     adapter_registry sut;
 
     const auto outcome = sut.heartbeat("nobody", 1, t0);
@@ -178,7 +176,7 @@ TEST_CASE("a_heartbeat_of_an_unknown_adapter_changes_nothing", tags) {
     CHECK(sut.status().empty());
 }
 
-TEST_CASE("a_rejected_adapter_never_goes_stale_or_serves", tags) {
+TEST_CASE("a_rejected_adapter_never_goes_stale_or_serves", "[app][adapter_registry]") {
     adapter_registry sut(15s);
     sut.announce(announce("nobody"), catalogue(), t0);
 
@@ -190,7 +188,7 @@ TEST_CASE("a_rejected_adapter_never_goes_stale_or_serves", tags) {
     CHECK(sut.state_of("bloomberg-sim") == adapter_state::rejected);
 }
 
-TEST_CASE("a_stale_adapter_keeps_its_last_reply", tags) {
+TEST_CASE("a_stale_adapter_keeps_its_last_reply", "[app][adapter_registry]") {
     adapter_registry sut(15s);
     sut.announce(announce(), catalogue(), t0);
     adapter_demand_response accepted;
@@ -204,7 +202,7 @@ TEST_CASE("a_stale_adapter_keeps_its_last_reply", tags) {
     CHECK(sut.status().front().accepted.size() == 1);
 }
 
-TEST_CASE("a_second_announce_starts_the_adapter_again", tags) {
+TEST_CASE("a_second_announce_starts_the_adapter_again", "[app][adapter_registry]") {
     adapter_registry sut;
     sut.announce(announce(), catalogue(), t0);
     adapter_demand_response accepted;

@@ -42,8 +42,6 @@
 
 namespace {
 
-const std::string tags("[repository][filter]");
-
 using ores::compute::messaging::batches_filter;
 using ores::compute::repository::batch_repository;
 using ores::testing::scoped_database_helper;
@@ -96,7 +94,7 @@ refs(const ores::database::context& ctx, const std::string& marker, const batche
 
 } // namespace
 
-TEST_CASE("a batch list narrows by status and counts only the matches", tags) {
+TEST_CASE("a batch list narrows by status and counts only the matches", "[repository][filter]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto m = unique_marker();
@@ -111,7 +109,7 @@ TEST_CASE("a batch list narrows by status and counts only the matches", tags) {
     CHECK(batch_repository{}.get_total_batch_count(ctx, std::optional(closed)) >= 2);
 }
 
-TEST_CASE("a batch list narrows by a part of the reference, ignoring case", tags) {
+TEST_CASE("a batch list narrows by a part of the reference, ignoring case", "[repository][filter]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto m = unique_marker();
@@ -124,7 +122,7 @@ TEST_CASE("a batch list narrows by a part of the reference, ignoring case", tags
     CHECK(refs(ctx, m, find) == std::vector<std::string>{m + "_soak_1"});
 }
 
-TEST_CASE("a party filter cannot widen a read past the party of the session", tags) {
+TEST_CASE("a party filter cannot widen a read past the party of the session", "[repository][filter]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto m = unique_marker();
@@ -139,7 +137,7 @@ TEST_CASE("a party filter cannot widen a read past the party of the session", ta
     CHECK(refs(ctx, m, mine) == std::vector<std::string>{m + "_mine"});
 }
 
-TEST_CASE("every condition of a filter must hold", tags) {
+TEST_CASE("every condition of a filter must hold", "[repository][filter]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto m = unique_marker();

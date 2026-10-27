@@ -76,33 +76,42 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_inflation_cap_floor_volatility_configs_response
+    ::ores::refdata::messaging::list_inflation_cap_floor_volatility_configs_response
     list_inflation_cap_floor_volatility_configs(
-        const messaging::list_inflation_cap_floor_volatility_configs_request& request);
-    messaging::get_inflation_cap_floor_volatility_config_response
+        const ::ores::refdata::messaging::list_inflation_cap_floor_volatility_configs_request&
+            request);
+    ::ores::refdata::messaging::get_inflation_cap_floor_volatility_config_response
     get_inflation_cap_floor_volatility_config(
-        const messaging::get_inflation_cap_floor_volatility_config_request& request);
-    messaging::get_many_inflation_cap_floor_volatility_configs_response
+        const ::ores::refdata::messaging::get_inflation_cap_floor_volatility_config_request&
+            request);
+    ::ores::refdata::messaging::get_many_inflation_cap_floor_volatility_configs_response
     get_many_inflation_cap_floor_volatility_configs(
-        const messaging::get_many_inflation_cap_floor_volatility_configs_request& request);
-    messaging::put_inflation_cap_floor_volatility_config_response
+        const ::ores::refdata::messaging::get_many_inflation_cap_floor_volatility_configs_request&
+            request);
+    ::ores::refdata::messaging::put_inflation_cap_floor_volatility_config_response
     put_inflation_cap_floor_volatility_config(
-        const messaging::put_inflation_cap_floor_volatility_config_request& request);
-    messaging::put_many_inflation_cap_floor_volatility_configs_response
+        const ::ores::refdata::messaging::put_inflation_cap_floor_volatility_config_request&
+            request);
+    ::ores::refdata::messaging::put_many_inflation_cap_floor_volatility_configs_response
     put_many_inflation_cap_floor_volatility_configs(
-        const messaging::put_many_inflation_cap_floor_volatility_configs_request& request);
-    messaging::delete_inflation_cap_floor_volatility_config_response
+        const ::ores::refdata::messaging::put_many_inflation_cap_floor_volatility_configs_request&
+            request);
+    ::ores::refdata::messaging::delete_inflation_cap_floor_volatility_config_response
     delete_inflation_cap_floor_volatility_config(
-        const messaging::delete_inflation_cap_floor_volatility_config_request& request);
-    messaging::delete_many_inflation_cap_floor_volatility_configs_response
+        const ::ores::refdata::messaging::delete_inflation_cap_floor_volatility_config_request&
+            request);
+    ::ores::refdata::messaging::delete_many_inflation_cap_floor_volatility_configs_response
     delete_many_inflation_cap_floor_volatility_configs(
-        const messaging::delete_many_inflation_cap_floor_volatility_configs_request& request);
-    messaging::list_inflation_cap_floor_volatility_config_versions_response
+        const ::ores::refdata::messaging::
+            delete_many_inflation_cap_floor_volatility_configs_request& request);
+    ::ores::refdata::messaging::list_inflation_cap_floor_volatility_config_versions_response
     list_inflation_cap_floor_volatility_config_versions(
-        const messaging::list_inflation_cap_floor_volatility_config_versions_request& request);
-    messaging::get_inflation_cap_floor_volatility_config_version_response
+        const ::ores::refdata::messaging::
+            list_inflation_cap_floor_volatility_config_versions_request& request);
+    ::ores::refdata::messaging::get_inflation_cap_floor_volatility_config_version_response
     get_inflation_cap_floor_volatility_config_version(
-        const messaging::get_inflation_cap_floor_volatility_config_version_request& request);
+        const ::ores::refdata::messaging::get_inflation_cap_floor_volatility_config_version_request&
+            request);
     /**@}*/
 
     /**
@@ -210,10 +219,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result
-    prepare_change(const messaging::inflation_cap_floor_volatility_config_change& change,
-                   const ores::utility::domain::change_intent& intent,
-                   domain::inflation_cap_floor_volatility_config& out);
+    ores::utility::domain::result prepare_change(
+        const ::ores::refdata::messaging::inflation_cap_floor_volatility_config_change& change,
+        const ores::utility::domain::change_intent& intent,
+        domain::inflation_cap_floor_volatility_config& out);
 };
 
 }

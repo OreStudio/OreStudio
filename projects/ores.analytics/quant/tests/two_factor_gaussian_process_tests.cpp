@@ -28,8 +28,6 @@
 
 namespace {
 
-const std::string tags("[two_factor_gaussian_process]");
-
 // Parameter set A: moderate mean-reversion, moderate vol, zero correlation.
 // This is the simplest two-factor setup — two independent OU processes.
 struct independent_params {
@@ -58,7 +56,7 @@ struct correlated_params {
 
 } // anonymous namespace
 
-TEST_CASE("two_factor_gaussian_process constructs with valid parameters", tags) {
+TEST_CASE("two_factor_gaussian_process constructs with valid parameters", "[two_factor_gaussian_process]") {
     CHECK_NOTHROW(ores::analytics::quant::service::two_factor_gaussian_process(
         independent_params::kappa_x,
         independent_params::kappa_y,
@@ -70,7 +68,7 @@ TEST_CASE("two_factor_gaussian_process constructs with valid parameters", tags) 
         independent_params::dt));
 }
 
-TEST_CASE("two_factor_gaussian_process rejects negative kappa", tags) {
+TEST_CASE("two_factor_gaussian_process rejects negative kappa", "[two_factor_gaussian_process]") {
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
                         -0.1, 0.3, 0.01, 0.005, 0.0, 0.03, 42, 1.0),
                     std::invalid_argument);
@@ -79,7 +77,7 @@ TEST_CASE("two_factor_gaussian_process rejects negative kappa", tags) {
                     std::invalid_argument);
 }
 
-TEST_CASE("two_factor_gaussian_process rejects negative sigma", tags) {
+TEST_CASE("two_factor_gaussian_process rejects negative sigma", "[two_factor_gaussian_process]") {
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
                         0.5, 0.3, -0.01, 0.005, 0.0, 0.03, 42, 1.0),
                     std::invalid_argument);
@@ -88,7 +86,7 @@ TEST_CASE("two_factor_gaussian_process rejects negative sigma", tags) {
                     std::invalid_argument);
 }
 
-TEST_CASE("two_factor_gaussian_process rejects rho outside [-1, 1]", tags) {
+TEST_CASE("two_factor_gaussian_process rejects rho outside [-1, 1]", "[two_factor_gaussian_process]") {
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
                         0.5, 0.3, 0.01, 0.005, 1.5, 0.03, 42, 1.0),
                     std::invalid_argument);
@@ -97,7 +95,7 @@ TEST_CASE("two_factor_gaussian_process rejects rho outside [-1, 1]", tags) {
                     std::invalid_argument);
 }
 
-TEST_CASE("two_factor_gaussian_process rejects non-positive dt", tags) {
+TEST_CASE("two_factor_gaussian_process rejects non-positive dt", "[two_factor_gaussian_process]") {
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
                         0.5, 0.3, 0.01, 0.005, 0.0, 0.03, 42, 0.0),
                     std::invalid_argument);
@@ -106,7 +104,7 @@ TEST_CASE("two_factor_gaussian_process rejects non-positive dt", tags) {
                     std::invalid_argument);
 }
 
-TEST_CASE("two_factor_gaussian_process current returns initial_rate at construction", tags) {
+TEST_CASE("two_factor_gaussian_process current returns initial_rate at construction", "[two_factor_gaussian_process]") {
     ores::analytics::quant::service::two_factor_gaussian_process p(independent_params::kappa_x,
                                                                    independent_params::kappa_y,
                                                                    independent_params::sigma_x,
@@ -120,7 +118,7 @@ TEST_CASE("two_factor_gaussian_process current returns initial_rate at construct
     CHECK(p.current() == independent_params::initial_rate);
 }
 
-TEST_CASE("two_factor_gaussian_process next advances and current changes", tags) {
+TEST_CASE("two_factor_gaussian_process next advances and current changes", "[two_factor_gaussian_process]") {
     ores::analytics::quant::service::two_factor_gaussian_process p(independent_params::kappa_x,
                                                                    independent_params::kappa_y,
                                                                    independent_params::sigma_x,
@@ -137,7 +135,7 @@ TEST_CASE("two_factor_gaussian_process next advances and current changes", tags)
     CHECK(r1 == p.current());
 }
 
-TEST_CASE("two_factor_gaussian_process discount_factor zero ticks ahead returns 1", tags) {
+TEST_CASE("two_factor_gaussian_process discount_factor zero ticks ahead returns 1", "[two_factor_gaussian_process]") {
     ores::analytics::quant::service::two_factor_gaussian_process p(independent_params::kappa_x,
                                                                    independent_params::kappa_y,
                                                                    independent_params::sigma_x,
@@ -152,7 +150,7 @@ TEST_CASE("two_factor_gaussian_process discount_factor zero ticks ahead returns 
 }
 
 TEST_CASE("two_factor_gaussian_process discount_factor decreases with maturity for positive rates",
-          tags) {
+          "[two_factor_gaussian_process]") {
     // Use zero vol to keep the short rate deterministically positive
     // (it decays from initial_rate toward zero, never going negative).
     ores::analytics::quant::service::two_factor_gaussian_process p(
@@ -164,7 +162,7 @@ TEST_CASE("two_factor_gaussian_process discount_factor decreases with maturity f
     CHECK(df_long < df_short);
 }
 
-TEST_CASE("two_factor_gaussian_process zero sigma means deterministic evolution", tags) {
+TEST_CASE("two_factor_gaussian_process zero sigma means deterministic evolution", "[two_factor_gaussian_process]") {
     // With zero volatility, the process is deterministic:
     // factor_x decays toward zero at rate kappa_x from initial_rate
     // factor_y stays at zero (starts at 0, zero vol)
@@ -186,7 +184,7 @@ TEST_CASE("two_factor_gaussian_process zero sigma means deterministic evolution"
 }
 
 TEST_CASE("two_factor_gaussian_process deterministic discount_factor matches discrete recursion",
-          tags) {
+          "[two_factor_gaussian_process]") {
     // Zero vol, zero correlation: the backward recursion is exact for the
     // discrete-time model. We compute the expected B_y factor analytically
     // from the geometric sum produced by the recursion and verify.
@@ -224,7 +222,7 @@ TEST_CASE("two_factor_gaussian_process deterministic discount_factor matches dis
 }
 
 TEST_CASE("two_factor_gaussian_process discount_factor approaches continuous limit as dt shrinks",
-          tags) {
+          "[two_factor_gaussian_process]") {
     // As dt -> 0, the discrete recursion should converge to the
     // continuous-time closed form. initial_rate goes into factor_x.
     const double kx = 0.5, ky = 0.3, rate = 0.04, T = 1.0;
@@ -243,7 +241,7 @@ TEST_CASE("two_factor_gaussian_process discount_factor approaches continuous lim
     CHECK_THAT(df_discrete, Catch::Matchers::WithinRel(df_continuous, 1e-4));
 }
 
-TEST_CASE("two_factor_gaussian_process discount_factor consistency with next for zero vol", tags) {
+TEST_CASE("two_factor_gaussian_process discount_factor consistency with next for zero vol", "[two_factor_gaussian_process]") {
     // For zero vol, discount_factor at T should equal
     // the ratio of the bond price computed from the evolved state.
     // This is a consistency check: simulate forward, then verify
@@ -275,7 +273,7 @@ TEST_CASE("two_factor_gaussian_process discount_factor consistency with next for
     CHECK(df_2_to_4 < 1.0);
 }
 
-TEST_CASE("two_factor_gaussian_process produces plausible short rate paths", tags) {
+TEST_CASE("two_factor_gaussian_process produces plausible short rate paths", "[two_factor_gaussian_process]") {
     // Statistical sanity check: simulate many paths and verify
     // the mean short rate stays within reasonable bounds given
     // the mean-reverting dynamics (factors revert toward zero).
@@ -311,7 +309,7 @@ TEST_CASE("two_factor_gaussian_process produces plausible short rate paths", tag
     CHECK(std::abs(avg_rate) < 0.02);
 }
 
-TEST_CASE("two_factor_gaussian_process rho = 1 gives perfectly correlated factors", tags) {
+TEST_CASE("two_factor_gaussian_process rho = 1 gives perfectly correlated factors", "[two_factor_gaussian_process]") {
     // With rho = 1.0, both factors use the same random shock (Z_x = Z_y = U1).
     // The processes are independent in their mean-reversion but share
     // the same innovation — they should move in the same direction.
@@ -334,7 +332,7 @@ TEST_CASE("two_factor_gaussian_process rho = 1 gives perfectly correlated factor
     CHECK(moved); // The process should have moved from its initial state.
 }
 
-TEST_CASE("two_factor_gaussian_process reproducibility: same seed same path", tags) {
+TEST_CASE("two_factor_gaussian_process reproducibility: same seed same path", "[two_factor_gaussian_process]") {
     ores::analytics::quant::service::two_factor_gaussian_process p1(
         independent_params::kappa_x,
         independent_params::kappa_y,
@@ -360,7 +358,7 @@ TEST_CASE("two_factor_gaussian_process reproducibility: same seed same path", ta
     }
 }
 
-TEST_CASE("two_factor_gaussian_process different seeds give different paths", tags) {
+TEST_CASE("two_factor_gaussian_process different seeds give different paths", "[two_factor_gaussian_process]") {
     ores::analytics::quant::service::two_factor_gaussian_process p1(
         independent_params::kappa_x,
         independent_params::kappa_y,
@@ -448,7 +446,7 @@ double discount_bond(double t,
 
 TEST_CASE(
     "two_factor_gaussian_process zero-vol discount_factor matches QuantLib closed-form bond price",
-    tags) {
+    "[two_factor_gaussian_process]") {
     // With zero vol (sigma=eta=0), V(t) = 0 for all t, so A(t,T) = 1.
     // discountBond = exp(-B(a,τ)*x - B(b,τ)*y)
     // initial_rate goes into factor_x, factor_y starts at 0.
@@ -472,7 +470,7 @@ TEST_CASE(
 
 TEST_CASE(
     "two_factor_gaussian_process closed-form V(t) with non-zero vol is positive and monotonic",
-    tags) {
+    "[two_factor_gaussian_process]") {
     // The integrated variance V(t) should be positive for t > 0 and
     // increase with t. This catches transcription errors in the
     // correlation cross-term (the most error-prone part of V).
@@ -487,7 +485,7 @@ TEST_CASE(
     CHECK(v_long > v_short);
 }
 
-TEST_CASE("two_factor_gaussian_process zero-correlation bond price factorizes", tags) {
+TEST_CASE("two_factor_gaussian_process zero-correlation bond price factorizes", "[two_factor_gaussian_process]") {
     // With rho = 0 and sigma = eta, the two factors are independent
     // and the bond price should be P = P_x * P_y where each P_i
     // is a one-factor Vasicek bond price.
@@ -519,7 +517,7 @@ TEST_CASE("two_factor_gaussian_process zero-correlation bond price factorizes", 
 
 TEST_CASE("two_factor_gaussian_process one-factor reduction: large kappa_y, zero sigma_y matches "
           "hull_white",
-          tags) {
+          "[two_factor_gaussian_process]") {
     // When sigma_y = 0 and kappa_y -> infinity, factor_y is pinned to zero
     // and G2 reduces to a one-factor Gaussian process for factor_x:
     //   r(t) = x(t), dx = -kappa_x * x * dt + sigma_x * dW

@@ -45,6 +45,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 // Soft-FK parent seeding (ores_inbox_notification_kinds_tbl): the parent may live in another
 // component, so its own component names the headers. A system-tenant parent
 // is read rather than generated, so it needs no generator.
@@ -73,13 +74,6 @@
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
-namespace {
-
-const std::string_view test_suite("inbox.tests");
-const std::string tags("[eventing][integration]");
-
-
-}
 
 using namespace ores::inbox::generators;
 using ores::inbox::domain::notification;
@@ -87,7 +81,7 @@ using ores::inbox::repository::notification_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_notification_publishes_an_event", tags) {
+TEST_CASE("write_notification_publishes_an_event", "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

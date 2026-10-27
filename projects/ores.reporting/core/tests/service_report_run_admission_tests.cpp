@@ -34,6 +34,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -47,9 +48,6 @@
 // what the store holds rather than what the service returned.
 
 namespace {
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[admission][service][integration]");
 
 ores::database::context
 write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
@@ -78,7 +76,7 @@ using ores::reporting::service::report_run_admission_service;
 using ores::testing::scoped_database_helper;
 using ores::workflow::service::load_fsm_states;
 
-TEST_CASE("an on-demand run is admitted by the trigger it records", tags) {
+TEST_CASE("an on-demand run is admitted by the trigger it records", "[admission][service][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -127,7 +125,7 @@ TEST_CASE("an on-demand run is admitted by the trigger it records", tags) {
     CHECK(instances.front().name == plan.name);
 }
 
-TEST_CASE("a plan that is not one of the two trigger types is refused", tags) {
+TEST_CASE("a plan that is not one of the two trigger types is refused", "[admission][service][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -157,7 +155,7 @@ TEST_CASE("a plan that is not one of the two trigger types is refused", tags) {
 // with the definition's own scheduler job named. The body the scheduler
 // publishes is guarded in service_scheduler_trigger_contract_tests.cpp, which
 // decodes the bytes the scheduler's handler actually sends.
-TEST_CASE("a scheduled run is admitted by the trigger that names its firing", tags) {
+TEST_CASE("a scheduled run is admitted by the trigger that names its firing", "[admission][service][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

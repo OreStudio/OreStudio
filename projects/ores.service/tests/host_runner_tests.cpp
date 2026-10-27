@@ -18,6 +18,7 @@
  */
 #include "ores.logging/logging_options.hpp"
 #include "ores.service/service/host_runner.hpp"
+#include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/this_coro.hpp>
@@ -31,9 +32,6 @@
 #include <string>
 
 namespace {
-
-const std::string tags("[host_runner]");
-const std::string test_suite("ores.service.tests");
 
 // The runners only read cfg.logging, and a null optional turns logging off for
 // the run, so the tests never need a configured logging_options.
@@ -83,7 +81,7 @@ using ores::service::service::host_runner_options;
 using ores::service::service::run_host_async;
 using ores::service::service::run_host_sync;
 
-TEST_CASE("sync host run follows the parse result", tags) {
+TEST_CASE("sync host run follows the parse result", "[host_runner]") {
     std::ostringstream output;
     auto lg(ores::logging::make_logger(test_suite));
     bool ran = false;
@@ -133,7 +131,7 @@ TEST_CASE("sync host run follows the parse result", tags) {
     REQUIRE(accepting_runs == 1);
 }
 
-TEST_CASE("sync host run returns the early exit code without running the application", tags) {
+TEST_CASE("sync host run returns the early exit code without running the application", "[host_runner]") {
     std::ostringstream output;
     auto lg(ores::logging::make_logger(test_suite));
     bool ran = false;
@@ -150,7 +148,7 @@ TEST_CASE("sync host run returns the early exit code without running the applica
     REQUIRE_FALSE(ran);
 }
 
-TEST_CASE("sync host run runs the application once and reports success", tags) {
+TEST_CASE("sync host run runs the application once and reports success", "[host_runner]") {
     std::ostringstream output;
     auto lg(ores::logging::make_logger(test_suite));
     int runs = 0;
@@ -179,7 +177,7 @@ TEST_CASE("sync host run runs the application once and reports success", tags) {
     REQUIRE(successes == 1);
 }
 
-TEST_CASE("sync host run rethrows what the application threw", tags) {
+TEST_CASE("sync host run rethrows what the application threw", "[host_runner]") {
     std::ostringstream output;
     auto lg(ores::logging::make_logger(test_suite));
 
@@ -193,7 +191,7 @@ TEST_CASE("sync host run rethrows what the application threw", tags) {
                       std::runtime_error);
 }
 
-TEST_CASE("async host run reports success after the application runs once", tags) {
+TEST_CASE("async host run reports success after the application runs once", "[host_runner]") {
     std::ostringstream output;
     auto lg(ores::logging::make_logger(test_suite));
     boost::asio::io_context io;
@@ -215,7 +213,7 @@ TEST_CASE("async host run reports success after the application runs once", tags
     REQUIRE(successes == 1);
 }
 
-TEST_CASE("async host run rethrows what the application threw", tags) {
+TEST_CASE("async host run rethrows what the application threw", "[host_runner]") {
     std::ostringstream output;
     auto lg(ores::logging::make_logger(test_suite));
     boost::asio::io_context io;

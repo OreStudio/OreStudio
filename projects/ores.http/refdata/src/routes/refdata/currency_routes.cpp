@@ -101,7 +101,7 @@ http_response currency_error_response(const std::string& error) {
  */
 template <typename Request>
 boost::asio::awaitable<http_response>
-forward(const http_request& req, nats_client& session, const Request& msg) {
+currency_forward(const http_request& req, nats_client& session, const Request& msg) {
     auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
     try {
         const auto reply =
@@ -155,7 +155,7 @@ boost::asio::awaitable<http_response> currency_routes::handle_list(const http_re
     try {
         request_type msg;
         currency_apply_page(msg, req);
-        co_return co_await forward(req, session, msg);
+        co_return co_await currency_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -168,7 +168,7 @@ boost::asio::awaitable<http_response> currency_routes::handle_get(const http_req
         request_type msg;
         msg.key.iso_code =
             currency_read_param<std::string>(req.get_path_param("iso_code"), "iso_code");
-        co_return co_await forward(req, session, msg);
+        co_return co_await currency_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -182,7 +182,7 @@ boost::asio::awaitable<http_response> currency_routes::handle_get_many(const htt
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await currency_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -198,7 +198,7 @@ boost::asio::awaitable<http_response> currency_routes::handle_add(const http_req
         }
         // The route states whether the row may exist; the body states the rest.
         parsed->change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await currency_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -220,7 +220,7 @@ boost::asio::awaitable<http_response> currency_routes::handle_set(const http_req
             parsed->change.precondition.version =
                 currency_read_param<std::uint32_t>(raw, "version");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await currency_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -234,7 +234,7 @@ boost::asio::awaitable<http_response> currency_routes::handle_put_many(const htt
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await currency_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -261,7 +261,7 @@ boost::asio::awaitable<http_response> currency_routes::handle_delete(const http_
                 ores::utility::domain::precondition_kind::must_match_version;
             msg.removal.precondition.version = currency_read_param<std::uint32_t>(raw, "version");
         }
-        co_return co_await forward(req, session, msg);
+        co_return co_await currency_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -275,7 +275,7 @@ boost::asio::awaitable<http_response> currency_routes::handle_delete_many(const 
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await currency_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -289,7 +289,7 @@ boost::asio::awaitable<http_response> currency_routes::handle_versions(const htt
         msg.key.iso_code =
             currency_read_param<std::string>(req.get_path_param("iso_code"), "iso_code");
         currency_apply_page(msg, req);
-        co_return co_await forward(req, session, msg);
+        co_return co_await currency_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -304,7 +304,7 @@ boost::asio::awaitable<http_response> currency_routes::handle_version(const http
             currency_read_param<std::string>(req.get_path_param("iso_code"), "iso_code");
         msg.key.version =
             currency_read_param<std::uint32_t>(req.get_path_param("version"), "version");
-        co_return co_await forward(req, session, msg);
+        co_return co_await currency_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }

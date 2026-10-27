@@ -21,23 +21,17 @@
 #include "ores.compute.api/domain/host_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/host_table.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
 
-namespace {
-
-const std::string_view test_suite("ores.compute.tests");
-const std::string tags("[domain]");
-
-}
-
 using ores::compute::domain::host;
 using namespace ores::compute::domain;
 using namespace ores::logging;
 
-TEST_CASE("create_host_with_valid_fields", tags) {
+TEST_CASE("create_host_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     host sut;
@@ -63,7 +57,7 @@ TEST_CASE("create_host_with_valid_fields", tags) {
     CHECK(sut.credit_total == 1234.5);
 }
 
-TEST_CASE("create_host_without_gpu", tags) {
+TEST_CASE("create_host_without_gpu", "[domain]") {
     auto lg(make_logger(test_suite));
 
     host sut;
@@ -84,7 +78,7 @@ TEST_CASE("create_host_without_gpu", tags) {
     CHECK(sut.credit_total == 0.0);
 }
 
-TEST_CASE("create_host_with_specific_uuid", tags) {
+TEST_CASE("create_host_with_specific_uuid", "[domain]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -107,7 +101,7 @@ TEST_CASE("create_host_with_specific_uuid", tags) {
     CHECK(sut.external_id == "worker-node-99");
 }
 
-TEST_CASE("host_insertion_operator", tags) {
+TEST_CASE("host_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     host sut;
@@ -131,7 +125,7 @@ TEST_CASE("host_insertion_operator", tags) {
     CHECK(json_output.find("test-node-01") != std::string::npos);
 }
 
-TEST_CASE("host_convert_single_to_table", tags) {
+TEST_CASE("host_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     host h;
@@ -154,7 +148,7 @@ TEST_CASE("host_convert_single_to_table", tags) {
     CHECK(table.find("compute-node-01") != std::string::npos);
 }
 
-TEST_CASE("host_convert_multiple_to_table", tags) {
+TEST_CASE("host_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<host> hosts;
@@ -182,7 +176,7 @@ TEST_CASE("host_convert_multiple_to_table", tags) {
     CHECK(table.find("node-2") != std::string::npos);
 }
 
-TEST_CASE("host_convert_empty_vector_to_table", tags) {
+TEST_CASE("host_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<host> hosts;
@@ -194,7 +188,7 @@ TEST_CASE("host_convert_empty_vector_to_table", tags) {
     CHECK(!table.empty());
 }
 
-TEST_CASE("create_host_with_faker", tags) {
+TEST_CASE("create_host_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     host sut;
@@ -219,7 +213,7 @@ TEST_CASE("create_host_with_faker", tags) {
     CHECK(sut.ram_mb >= 8192);
 }
 
-TEST_CASE("host_table_with_faker_data", tags) {
+TEST_CASE("host_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<host> hosts;

@@ -76,24 +76,31 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_counterparty_scope_types_response
-    list_counterparty_scope_types(const messaging::list_counterparty_scope_types_request& request);
-    messaging::get_counterparty_scope_type_response
-    get_counterparty_scope_type(const messaging::get_counterparty_scope_type_request& request);
-    messaging::get_many_counterparty_scope_types_response get_many_counterparty_scope_types(
-        const messaging::get_many_counterparty_scope_types_request& request);
-    messaging::put_counterparty_scope_type_response
-    put_counterparty_scope_type(const messaging::put_counterparty_scope_type_request& request);
-    messaging::put_many_counterparty_scope_types_response put_many_counterparty_scope_types(
-        const messaging::put_many_counterparty_scope_types_request& request);
-    messaging::delete_counterparty_scope_type_response delete_counterparty_scope_type(
-        const messaging::delete_counterparty_scope_type_request& request);
-    messaging::delete_many_counterparty_scope_types_response delete_many_counterparty_scope_types(
-        const messaging::delete_many_counterparty_scope_types_request& request);
-    messaging::list_counterparty_scope_type_versions_response list_counterparty_scope_type_versions(
-        const messaging::list_counterparty_scope_type_versions_request& request);
-    messaging::get_counterparty_scope_type_version_response get_counterparty_scope_type_version(
-        const messaging::get_counterparty_scope_type_version_request& request);
+    ::ores::trading::messaging::list_counterparty_scope_types_response
+    list_counterparty_scope_types(
+        const ::ores::trading::messaging::list_counterparty_scope_types_request& request);
+    ::ores::trading::messaging::get_counterparty_scope_type_response get_counterparty_scope_type(
+        const ::ores::trading::messaging::get_counterparty_scope_type_request& request);
+    ::ores::trading::messaging::get_many_counterparty_scope_types_response
+    get_many_counterparty_scope_types(
+        const ::ores::trading::messaging::get_many_counterparty_scope_types_request& request);
+    ::ores::trading::messaging::put_counterparty_scope_type_response put_counterparty_scope_type(
+        const ::ores::trading::messaging::put_counterparty_scope_type_request& request);
+    ::ores::trading::messaging::put_many_counterparty_scope_types_response
+    put_many_counterparty_scope_types(
+        const ::ores::trading::messaging::put_many_counterparty_scope_types_request& request);
+    ::ores::trading::messaging::delete_counterparty_scope_type_response
+    delete_counterparty_scope_type(
+        const ::ores::trading::messaging::delete_counterparty_scope_type_request& request);
+    ::ores::trading::messaging::delete_many_counterparty_scope_types_response
+    delete_many_counterparty_scope_types(
+        const ::ores::trading::messaging::delete_many_counterparty_scope_types_request& request);
+    ::ores::trading::messaging::list_counterparty_scope_type_versions_response
+    list_counterparty_scope_type_versions(
+        const ::ores::trading::messaging::list_counterparty_scope_type_versions_request& request);
+    ::ores::trading::messaging::get_counterparty_scope_type_version_response
+    get_counterparty_scope_type_version(
+        const ::ores::trading::messaging::get_counterparty_scope_type_version_request& request);
     /**@}*/
 
     /**
@@ -194,7 +201,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::counterparty_scope_type_change& change,
+    prepare_change(const ::ores::trading::messaging::counterparty_scope_type_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::counterparty_scope_type& out);
 };

@@ -24,6 +24,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -34,9 +35,6 @@
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.marketdata.core.tests");
-const std::string tags("[service][series_slice_reader]");
 
 using ores::marketdata::messaging::get_series_slice_request;
 using ores::marketdata::messaging::get_series_slice_response;
@@ -102,7 +100,7 @@ get_series_slice_request slice_request(resolve_series_identity_request identity,
 
 }
 
-TEST_CASE("a_slice_returns_one_component_as_a_ladder_at_each_instant", tags) {
+TEST_CASE("a_slice_returns_one_component_as_a_ladder_at_each_instant", "[service][series_slice_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -138,7 +136,7 @@ TEST_CASE("a_slice_returns_one_component_as_a_ladder_at_each_instant", tags) {
     CHECK(resp.instants[2].values == std::vector<std::string>{"", ""});
 }
 
-TEST_CASE("a_slice_names_a_node_the_shape_declares_and_no_point_fills_as_a_hole", tags) {
+TEST_CASE("a_slice_names_a_node_the_shape_declares_and_no_point_fills_as_a_hole", "[service][series_slice_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -161,7 +159,7 @@ TEST_CASE("a_slice_names_a_node_the_shape_declares_and_no_point_fills_as_a_hole"
     CHECK(resp.instants[0].values == std::vector<std::string>{"0.011", ""});
 }
 
-TEST_CASE("a_slice_of_a_one_axis_object_is_the_whole_object", tags) {
+TEST_CASE("a_slice_of_a_one_axis_object_is_the_whole_object", "[service][series_slice_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -184,7 +182,7 @@ TEST_CASE("a_slice_of_a_one_axis_object_is_the_whole_object", tags) {
     CHECK(resp.instants[0].values == std::vector<std::string>{"0.010", "0.020"});
 }
 
-TEST_CASE("a_slice_refuses_a_component_the_shape_does_not_declare", tags) {
+TEST_CASE("a_slice_refuses_a_component_the_shape_does_not_declare", "[service][series_slice_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -222,7 +220,7 @@ TEST_CASE("a_slice_refuses_a_component_the_shape_does_not_declare", tags) {
     CHECK(reversed.message.find("range") != std::string::npos);
 }
 
-TEST_CASE("a_slice_of_an_identity_no_series_carries_is_empty_and_not_an_error", tags) {
+TEST_CASE("a_slice_of_an_identity_no_series_carries_is_empty_and_not_an_error", "[service][series_slice_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

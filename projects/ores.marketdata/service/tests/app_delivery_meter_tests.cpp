@@ -25,8 +25,6 @@
 
 namespace {
 
-const std::string tags("[app][delivery_meter]");
-
 using namespace std::chrono_literals;
 using ores::marketdata::service::app::delivery_entry;
 using ores::marketdata::service::app::delivery_key;
@@ -45,7 +43,7 @@ delivery_key key(const boost::uuids::uuid& party,
 
 }
 
-TEST_CASE("deliveries_of_one_party_item_and_hour_are_added", tags) {
+TEST_CASE("deliveries_of_one_party_item_and_hour_are_added", "[app][delivery_meter]") {
     delivery_meter sut;
     const auto party = boost::uuids::random_generator{}();
     const auto hour = delivery_meter::hour_of(std::chrono::system_clock::now());
@@ -58,7 +56,7 @@ TEST_CASE("deliveries_of_one_party_item_and_hour_are_added", tags) {
     CHECK(counts.front().deliveries == 5);
 }
 
-TEST_CASE("each_party_item_and_hour_has_a_count_of_its_own", tags) {
+TEST_CASE("each_party_item_and_hour_has_a_count_of_its_own", "[app][delivery_meter]") {
     delivery_meter sut;
     boost::uuids::random_generator gen;
     const auto a = gen();
@@ -74,7 +72,7 @@ TEST_CASE("each_party_item_and_hour_has_a_count_of_its_own", tags) {
     CHECK(sut.drain().size() == 4);
 }
 
-TEST_CASE("a_drain_gives_the_counts_once_and_starts_again_from_zero", tags) {
+TEST_CASE("a_drain_gives_the_counts_once_and_starts_again_from_zero", "[app][delivery_meter]") {
     delivery_meter sut;
     const auto party = boost::uuids::random_generator{}();
     const auto hour = delivery_meter::hour_of(std::chrono::system_clock::now());
@@ -85,7 +83,7 @@ TEST_CASE("a_drain_gives_the_counts_once_and_starts_again_from_zero", tags) {
     CHECK(sut.pending() == 0);
 }
 
-TEST_CASE("a_batch_of_counts_is_added_under_one_call", tags) {
+TEST_CASE("a_batch_of_counts_is_added_under_one_call", "[app][delivery_meter]") {
     delivery_meter sut;
     const auto party = boost::uuids::random_generator{}();
     const auto hour = delivery_meter::hour_of(std::chrono::system_clock::now());
@@ -102,7 +100,7 @@ TEST_CASE("a_batch_of_counts_is_added_under_one_call", tags) {
     CHECK(total == 6);
 }
 
-TEST_CASE("a_count_that_is_not_positive_adds_nothing", tags) {
+TEST_CASE("a_count_that_is_not_positive_adds_nothing", "[app][delivery_meter]") {
     delivery_meter sut;
     const auto party = boost::uuids::random_generator{}();
     const auto hour = delivery_meter::hour_of(std::chrono::system_clock::now());
@@ -113,7 +111,7 @@ TEST_CASE("a_count_that_is_not_positive_adds_nothing", tags) {
     CHECK(sut.pending() == 0);
 }
 
-TEST_CASE("the_hour_of_a_time_is_the_start_of_its_hour", tags) {
+TEST_CASE("the_hour_of_a_time_is_the_start_of_its_hour", "[app][delivery_meter]") {
     using namespace std::chrono;
     const auto t = sys_days{2026y / October / 23} + 10h + 37min + 12s;
 

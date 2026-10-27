@@ -75,26 +75,32 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_instrument_schedules_response
-    list_instrument_schedules(const messaging::list_instrument_schedules_request& request);
-    messaging::get_instrument_schedule_response
-    get_instrument_schedule(const messaging::get_instrument_schedule_request& request);
-    messaging::get_many_instrument_schedules_response
-    get_many_instrument_schedules(const messaging::get_many_instrument_schedules_request& request);
-    messaging::put_instrument_schedule_response
-    put_instrument_schedule(const messaging::put_instrument_schedule_request& request);
-    messaging::put_many_instrument_schedules_response
-    put_many_instrument_schedules(const messaging::put_many_instrument_schedules_request& request);
-    messaging::delete_instrument_schedule_response
-    delete_instrument_schedule(const messaging::delete_instrument_schedule_request& request);
-    messaging::delete_many_instrument_schedules_response delete_many_instrument_schedules(
-        const messaging::delete_many_instrument_schedules_request& request);
-    messaging::list_by_trade_id_instrument_schedules_response list_by_trade_id_instrument_schedules(
-        const messaging::list_by_trade_id_instrument_schedules_request& request);
-    messaging::list_instrument_schedule_versions_response list_instrument_schedule_versions(
-        const messaging::list_instrument_schedule_versions_request& request);
-    messaging::get_instrument_schedule_version_response get_instrument_schedule_version(
-        const messaging::get_instrument_schedule_version_request& request);
+    ::ores::trading::messaging::list_instrument_schedules_response list_instrument_schedules(
+        const ::ores::trading::messaging::list_instrument_schedules_request& request);
+    ::ores::trading::messaging::get_instrument_schedule_response get_instrument_schedule(
+        const ::ores::trading::messaging::get_instrument_schedule_request& request);
+    ::ores::trading::messaging::get_many_instrument_schedules_response
+    get_many_instrument_schedules(
+        const ::ores::trading::messaging::get_many_instrument_schedules_request& request);
+    ::ores::trading::messaging::put_instrument_schedule_response put_instrument_schedule(
+        const ::ores::trading::messaging::put_instrument_schedule_request& request);
+    ::ores::trading::messaging::put_many_instrument_schedules_response
+    put_many_instrument_schedules(
+        const ::ores::trading::messaging::put_many_instrument_schedules_request& request);
+    ::ores::trading::messaging::delete_instrument_schedule_response delete_instrument_schedule(
+        const ::ores::trading::messaging::delete_instrument_schedule_request& request);
+    ::ores::trading::messaging::delete_many_instrument_schedules_response
+    delete_many_instrument_schedules(
+        const ::ores::trading::messaging::delete_many_instrument_schedules_request& request);
+    ::ores::trading::messaging::list_by_trade_id_instrument_schedules_response
+    list_by_trade_id_instrument_schedules(
+        const ::ores::trading::messaging::list_by_trade_id_instrument_schedules_request& request);
+    ::ores::trading::messaging::list_instrument_schedule_versions_response
+    list_instrument_schedule_versions(
+        const ::ores::trading::messaging::list_instrument_schedule_versions_request& request);
+    ::ores::trading::messaging::get_instrument_schedule_version_response
+    get_instrument_schedule_version(
+        const ::ores::trading::messaging::get_instrument_schedule_version_request& request);
     /**@}*/
 
     /**
@@ -239,7 +245,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::instrument_schedule_change& change,
+    prepare_change(const ::ores::trading::messaging::instrument_schedule_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::instrument_schedule& out);
 };

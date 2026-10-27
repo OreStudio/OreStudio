@@ -29,8 +29,6 @@
 
 namespace {
 
-const std::string tags("[workflow]");
-
 const std::string tenant_id("11111111-1111-4111-8111-111111111111");
 // The tenant the run provisions, which is not the run's own: a run belongs to
 // the tenant that asked for it, so the two are stated apart and the steps are
@@ -104,7 +102,7 @@ workflow_definition setup_definition() {
 
 }
 
-TEST_CASE("the system definition registers under its workflow type", tags) {
+TEST_CASE("the system definition registers under its workflow type", "[workflow]") {
     workflow_registry registry;
     register_provision_tenant_workflow(registry);
 
@@ -113,7 +111,7 @@ TEST_CASE("the system definition registers under its workflow type", tags) {
     CHECK_FALSE(found->description.empty());
 }
 
-TEST_CASE("the setup definition registers under its workflow type", tags) {
+TEST_CASE("the setup definition registers under its workflow type", "[workflow]") {
     workflow_registry registry;
     register_tenant_setup_workflow(registry);
 
@@ -122,18 +120,18 @@ TEST_CASE("the setup definition registers under its workflow type", tags) {
     CHECK_FALSE(found->description.empty());
 }
 
-TEST_CASE("the catalogue knows every declared kind", tags) {
+TEST_CASE("the catalogue knows every declared kind", "[workflow]") {
     for (const auto kind : provision_step_kinds)
         CHECK(is_declared_step_kind(kind));
 }
 
-TEST_CASE("the catalogue refuses the steps a run appends and an unknown kind", tags) {
+TEST_CASE("the catalogue refuses the steps a run appends and an unknown kind", "[workflow]") {
     CHECK_FALSE(is_declared_step_kind(complete_provisioning_step_kind));
     CHECK_FALSE(is_declared_step_kind(start_tenant_setup_step_kind));
     CHECK_FALSE(is_declared_step_kind("publish_everything"));
 }
 
-TEST_CASE("only the system step is system-scoped", tags) {
+TEST_CASE("only the system step is system-scoped", "[workflow]") {
     for (const auto kind : provision_step_kinds)
         CHECK(is_system_scoped_step_kind(kind) == (kind == system_provision_step_kind));
 
@@ -142,7 +140,7 @@ TEST_CASE("only the system step is system-scoped", tags) {
     CHECK_FALSE(is_system_scoped_step_kind(complete_provisioning_step_kind));
 }
 
-TEST_CASE("a step name is made unique within its run", tags) {
+TEST_CASE("a step name is made unique within its run", "[workflow]") {
     std::unordered_map<std::string, int> seen;
 
     CHECK(unique_step_name("provision_party", seen) == "provision_party");
@@ -151,7 +149,7 @@ TEST_CASE("a step name is made unique within its run", tags) {
     CHECK(unique_step_name("provision_party", seen) == "provision_party_3");
 }
 
-TEST_CASE("the system run takes the system-scoped kinds and the handing step", tags) {
+TEST_CASE("the system run takes the system-scoped kinds and the handing step", "[workflow]") {
     const auto def = definition();
     const auto steps =
         def.build_steps(request_json({declared("publish_bundle", R"({"bundles":["acme_group"]})"),
@@ -179,7 +177,7 @@ TEST_CASE("the system run takes the system-scoped kinds and the handing step", t
     }
 }
 
-TEST_CASE("the setup run's kinds become steps in order, with the completing step last", tags) {
+TEST_CASE("the setup run's kinds become steps in order, with the completing step last", "[workflow]") {
     const auto def = setup_definition();
     const auto steps =
         def.build_steps(request_json({declared("publish_bundle", R"({"bundles":["acme_group"]})"),
@@ -205,7 +203,7 @@ TEST_CASE("the setup run's kinds become steps in order, with the completing step
     }
 }
 
-TEST_CASE("the setup run's steps declare which steps must answer first", tags) {
+TEST_CASE("the setup run's steps declare which steps must answer first", "[workflow]") {
     const auto def = setup_definition();
     const auto steps = def.build_steps(
         request_json({declared("system_provision"),
@@ -245,7 +243,7 @@ TEST_CASE("the setup run's steps declare which steps must answer first", tags) {
     CHECK(inputs_of(std::string(complete_provisioning_step_kind)).size() == 7);
 }
 
-TEST_CASE("the trade generation waits for the books, the staff and the feeds", tags) {
+TEST_CASE("the trade generation waits for the books, the staff and the feeds", "[workflow]") {
     const auto def = setup_definition();
     const auto steps = def.build_steps(request_json({declared("publish_bundle"),
                                                      declared("provision_party"),
@@ -273,7 +271,7 @@ TEST_CASE("the trade generation waits for the books, the staff and the feeds", t
     CHECK(steps.back().name == complete_provisioning_step_kind);
 }
 
-TEST_CASE("a need the run did not order is answered by the step that did", tags) {
+TEST_CASE("a need the run did not order is answered by the step that did", "[workflow]") {
     const auto def = setup_definition();
     // A run that orders no import step still waits for whatever published the
     // reference data before it provisions a party from it.
@@ -293,7 +291,7 @@ TEST_CASE("a need the run did not order is answered by the step that did", tags)
     CHECK(inputs_of("provision_party") == std::vector<std::string>{"publish_bundle"});
 }
 
-TEST_CASE("a step that needs two kinds reads one step when both resolve to it", tags) {
+TEST_CASE("a step that needs two kinds reads one step when both resolve to it", "[workflow]") {
     const auto def = setup_definition();
     // With no staff step, both of the photograph step's needs are met by the
     // party step, and a step reads a step once however many needs found it.
@@ -313,7 +311,7 @@ TEST_CASE("a step that needs two kinds reads one step when both resolve to it", 
     CHECK(inputs_of("attach_photos") == std::vector<std::string>{"provision_party"});
 }
 
-TEST_CASE("a profile that orders nothing still runs the step that finishes each run", tags) {
+TEST_CASE("a profile that orders nothing still runs the step that finishes each run", "[workflow]") {
     const auto setup_steps =
         setup_definition().build_steps(request_json({}), tenant_id, correlation_id);
     REQUIRE(setup_steps.size() == 1);
@@ -327,7 +325,7 @@ TEST_CASE("a profile that orders nothing still runs the step that finishes each 
     CHECK(system_steps.front().consumes.empty());
 }
 
-TEST_CASE("a repeated kind yields a distinct step name", tags) {
+TEST_CASE("a repeated kind yields a distinct step name", "[workflow]") {
     const auto def = setup_definition();
     const auto steps =
         def.build_steps(request_json({declared("provision_party"), declared("provision_party")}),
@@ -342,7 +340,7 @@ TEST_CASE("a repeated kind yields a distinct step name", tags) {
 
 TEST_CASE("a step command carries the tenant it provisions, its administrator and the run's "
           "parameters",
-          tags) {
+          "[workflow]") {
     const auto def = setup_definition();
     const auto steps = def.build_steps(
         request_json({declared("provision_party", R"({"party_bundle":"acme_group"})")}),
@@ -366,7 +364,7 @@ TEST_CASE("a step command carries the tenant it provisions, its administrator an
     CHECK(command->parameters[0].value == "529900T8BM49AURSDO55");
 }
 
-TEST_CASE("the handing step's command carries the whole run request", tags) {
+TEST_CASE("the handing step's command carries the whole run request", "[workflow]") {
     const auto def = definition();
     const auto request = request_json({declared("system_provision"), declared("provision_party")});
     const auto steps = def.build_steps(request, tenant_id, correlation_id);
@@ -383,7 +381,7 @@ TEST_CASE("the handing step's command carries the whole run request", tags) {
     CHECK(command->arguments_json == request);
 }
 
-TEST_CASE("the step list is the same on every call", tags) {
+TEST_CASE("the step list is the same on every call", "[workflow]") {
     const auto def = setup_definition();
     const auto request = request_json({declared("publish_bundle"), declared("provision_party")});
 
@@ -398,7 +396,7 @@ TEST_CASE("the step list is the same on every call", tags) {
     }
 }
 
-TEST_CASE("a kind the catalogue does not know is refused by either run", tags) {
+TEST_CASE("a kind the catalogue does not know is refused by either run", "[workflow]") {
     CHECK_THROWS_AS(definition().build_steps(
                         request_json({declared("publish_everything")}), tenant_id, correlation_id),
                     std::runtime_error);
@@ -407,7 +405,7 @@ TEST_CASE("a kind the catalogue does not know is refused by either run", tags) {
                     std::runtime_error);
 }
 
-TEST_CASE("every kind the catalogue declares has a runner in this build", tags) {
+TEST_CASE("every kind the catalogue declares has a runner in this build", "[workflow]") {
     for (const auto kind : provision_executed_step_kinds)
         CHECK(is_executed_step_kind(kind));
 
@@ -425,7 +423,7 @@ TEST_CASE("every kind the catalogue declares has a runner in this build", tags) 
     CHECK_FALSE(is_executed_step_kind("publish_everything"));
 }
 
-TEST_CASE("the demo card's kinds become steps in the profile's order", tags) {
+TEST_CASE("the demo card's kinds become steps in the profile's order", "[workflow]") {
     const auto def = setup_definition();
     const auto steps = def.build_steps(
         request_json(
@@ -446,7 +444,7 @@ TEST_CASE("the demo card's kinds become steps in the profile's order", tags) {
     CHECK(steps[3].name == complete_provisioning_step_kind);
 }
 
-TEST_CASE("a profile may not order a step a run appends", tags) {
+TEST_CASE("a profile may not order a step a run appends", "[workflow]") {
     const auto def = definition();
 
     try {
@@ -468,14 +466,14 @@ TEST_CASE("a profile may not order a step a run appends", tags) {
     }
 }
 
-TEST_CASE("a request this deployment cannot read is refused by either run", tags) {
+TEST_CASE("a request this deployment cannot read is refused by either run", "[workflow]") {
     CHECK_THROWS_AS(definition().build_steps("not a request", tenant_id, correlation_id),
                     std::runtime_error);
     CHECK_THROWS_AS(setup_definition().build_steps("not a request", tenant_id, correlation_id),
                     std::runtime_error);
 }
 
-TEST_CASE("a request that names no tenant to provision is refused by either run", tags) {
+TEST_CASE("a request that names no tenant to provision is refused by either run", "[workflow]") {
     provision_tenant_workflow_request request;
     request.profile_code = "acme_demo";
     request.tenant_code = "acme";
@@ -507,7 +505,7 @@ workflow_definition party_definition() {
 
 }
 
-TEST_CASE("the party definition registers under its own workflow type", tags) {
+TEST_CASE("the party definition registers under its own workflow type", "[workflow]") {
     workflow_registry registry;
     register_provision_party_workflow(registry);
 
@@ -516,7 +514,7 @@ TEST_CASE("the party definition registers under its own workflow type", tags) {
     CHECK_FALSE(found->description.empty());
 }
 
-TEST_CASE("a party run is its declared steps and nothing that completes the tenant", tags) {
+TEST_CASE("a party run is its declared steps and nothing that completes the tenant", "[workflow]") {
     const auto def = party_definition();
     const auto steps = def.build_steps(
         request_json({declared(std::string(provision_party_step_kind),
@@ -535,7 +533,7 @@ TEST_CASE("a party run is its declared steps and nothing that completes the tena
     CHECK(command->admin_account_id == admin_account_id);
 }
 
-TEST_CASE("a party run that orders a kind this build cannot execute is refused", tags) {
+TEST_CASE("a party run that orders a kind this build cannot execute is refused", "[workflow]") {
     const auto def = party_definition();
 
     CHECK_THROWS_AS(

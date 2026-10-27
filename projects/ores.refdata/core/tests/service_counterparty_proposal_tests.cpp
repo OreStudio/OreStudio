@@ -47,8 +47,6 @@
 
 namespace {
 
-const std::string tags("[counterparty_proposal]");
-
 using namespace ores::refdata::tests;
 using ores::refdata::service::counterparty_lines;
 using ores::refdata::service::counterparty_proposal_service;
@@ -60,7 +58,7 @@ using ores::utility::domain::precondition_kind;
 
 }
 
-TEST_CASE("a_preview_accepts_a_new_counterparty_and_names_the_part_that_decides_it", tags) {
+TEST_CASE("a_preview_accepts_a_new_counterparty_and_names_the_part_that_decides_it", "[counterparty_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     counterparty_proposal_service svc(w.ctx);
@@ -77,7 +75,7 @@ TEST_CASE("a_preview_accepts_a_new_counterparty_and_names_the_part_that_decides_
     CHECK(preview.lines[0].part_codes == std::vector<std::string>{"operations"});
 }
 
-TEST_CASE("a_preview_of_every_kind_numbers_the_lines_across_the_kinds_and_writes_nothing", tags) {
+TEST_CASE("a_preview_of_every_kind_numbers_the_lines_across_the_kinds_and_writes_nothing", "[counterparty_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     counterparty_proposal_service svc(w.ctx);
@@ -98,7 +96,7 @@ TEST_CASE("a_preview_of_every_kind_numbers_the_lines_across_the_kinds_and_writes
     CHECK_FALSE(exists(w, lines.counterparties.front().entity_id));
 }
 
-TEST_CASE("a_refused_line_does_not_stop_the_next_line_being_checked", tags) {
+TEST_CASE("a_refused_line_does_not_stop_the_next_line_being_checked", "[counterparty_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     counterparty_proposal_service svc(w.ctx);
@@ -114,7 +112,7 @@ TEST_CASE("a_refused_line_does_not_stop_the_next_line_being_checked", tags) {
     CHECK(preview.refused());
 }
 
-TEST_CASE("a_preview_names_the_columns_a_put_changes", tags) {
+TEST_CASE("a_preview_names_the_columns_a_put_changes", "[counterparty_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     counterparty_proposal_service svc(w.ctx);
@@ -129,7 +127,7 @@ TEST_CASE("a_preview_names_the_columns_a_put_changes", tags) {
     CHECK(preview.lines[0].columns == std::vector<std::string>{"full_name"});
 }
 
-TEST_CASE("a_raise_writes_one_request_with_every_line_in_the_order_of_the_kinds", tags) {
+TEST_CASE("a_raise_writes_one_request_with_every_line_in_the_order_of_the_kinds", "[counterparty_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     counterparty_proposal_service svc(w.ctx);
@@ -149,7 +147,7 @@ TEST_CASE("a_raise_writes_one_request_with_every_line_in_the_order_of_the_kinds"
     CHECK_FALSE(exists(w, lines.counterparties.front().entity_id));
 }
 
-TEST_CASE("a_raise_is_refused_when_a_line_is_refused_or_nothing_is_asked_or_said", tags) {
+TEST_CASE("a_raise_is_refused_when_a_line_is_refused_or_nothing_is_asked_or_said", "[counterparty_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     counterparty_proposal_service svc(w.ctx);
@@ -165,7 +163,7 @@ TEST_CASE("a_raise_is_refused_when_a_line_is_refused_or_nothing_is_asked_or_said
     CHECK(refused.preview.refused());
 }
 
-TEST_CASE("an_apply_writes_every_line_once_in_order_and_marks_each_applied", tags) {
+TEST_CASE("an_apply_writes_every_line_once_in_order_and_marks_each_applied", "[counterparty_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     counterparty_proposal_service svc(w.ctx);
@@ -198,7 +196,7 @@ TEST_CASE("an_apply_writes_every_line_once_in_order_and_marks_each_applied", tag
     CHECK(again.lines_applied == 0);
 }
 
-TEST_CASE("an_apply_refused_on_a_late_line_writes_nothing_and_moves_the_request", tags) {
+TEST_CASE("an_apply_refused_on_a_late_line_writes_nothing_and_moves_the_request", "[counterparty_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     counterparty_proposal_service svc(w.ctx);
@@ -226,7 +224,7 @@ TEST_CASE("an_apply_refused_on_a_late_line_writes_nothing_and_moves_the_request"
     CHECK(lifecycle.request(id)->state_code == "apply_failed");
 }
 
-TEST_CASE("a_delta_shows_a_put_against_the_row_the_maker_read_even_after_it_applies", tags) {
+TEST_CASE("a_delta_shows_a_put_against_the_row_the_maker_read_even_after_it_applies", "[counterparty_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     counterparty_proposal_service svc(w.ctx);
@@ -255,7 +253,7 @@ TEST_CASE("a_delta_shows_a_put_against_the_row_the_maker_read_even_after_it_appl
     CHECK_FALSE(code->changed);
 }
 
-TEST_CASE("a_recheck_runs_the_stored_lines_against_the_rows_as_they_are_now", tags) {
+TEST_CASE("a_recheck_runs_the_stored_lines_against_the_rows_as_they_are_now", "[counterparty_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     counterparty_proposal_service svc(w.ctx);
@@ -272,7 +270,7 @@ TEST_CASE("a_recheck_runs_the_stored_lines_against_the_rows_as_they_are_now", ta
     CHECK(svc.recheck(id).refused());
 }
 
-TEST_CASE("a_delete_line_for_a_live_link_previews_and_names_operations", tags) {
+TEST_CASE("a_delete_line_for_a_live_link_previews_and_names_operations", "[counterparty_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     counterparty_proposal_service svc(w.ctx);
@@ -291,7 +289,7 @@ TEST_CASE("a_delete_line_for_a_live_link_previews_and_names_operations", tags) {
     CHECK(preview.part_codes == std::vector<std::string>{"operations"});
 }
 
-TEST_CASE("a_request_that_removes_a_counterparty_and_its_link_removes_the_link_first", tags) {
+TEST_CASE("a_request_that_removes_a_counterparty_and_its_link_removes_the_link_first", "[counterparty_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     counterparty_proposal_service svc(w.ctx);

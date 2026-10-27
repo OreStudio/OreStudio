@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_trade_bookings_response
-    list_trade_bookings(const messaging::list_trade_bookings_request& request);
-    messaging::get_trade_booking_response
-    get_trade_booking(const messaging::get_trade_booking_request& request);
-    messaging::get_many_trade_bookings_response
-    get_many_trade_bookings(const messaging::get_many_trade_bookings_request& request);
-    messaging::put_trade_booking_response
-    put_trade_booking(const messaging::put_trade_booking_request& request);
-    messaging::put_many_trade_bookings_response
-    put_many_trade_bookings(const messaging::put_many_trade_bookings_request& request);
-    messaging::delete_trade_booking_response
-    delete_trade_booking(const messaging::delete_trade_booking_request& request);
-    messaging::delete_many_trade_bookings_response
-    delete_many_trade_bookings(const messaging::delete_many_trade_bookings_request& request);
-    messaging::list_trade_booking_versions_response
-    list_trade_booking_versions(const messaging::list_trade_booking_versions_request& request);
-    messaging::get_trade_booking_version_response
-    get_trade_booking_version(const messaging::get_trade_booking_version_request& request);
+    ::ores::trading::messaging::list_trade_bookings_response
+    list_trade_bookings(const ::ores::trading::messaging::list_trade_bookings_request& request);
+    ::ores::trading::messaging::get_trade_booking_response
+    get_trade_booking(const ::ores::trading::messaging::get_trade_booking_request& request);
+    ::ores::trading::messaging::get_many_trade_bookings_response get_many_trade_bookings(
+        const ::ores::trading::messaging::get_many_trade_bookings_request& request);
+    ::ores::trading::messaging::put_trade_booking_response
+    put_trade_booking(const ::ores::trading::messaging::put_trade_booking_request& request);
+    ::ores::trading::messaging::put_many_trade_bookings_response put_many_trade_bookings(
+        const ::ores::trading::messaging::put_many_trade_bookings_request& request);
+    ::ores::trading::messaging::delete_trade_booking_response
+    delete_trade_booking(const ::ores::trading::messaging::delete_trade_booking_request& request);
+    ::ores::trading::messaging::delete_many_trade_bookings_response delete_many_trade_bookings(
+        const ::ores::trading::messaging::delete_many_trade_bookings_request& request);
+    ::ores::trading::messaging::list_trade_booking_versions_response list_trade_booking_versions(
+        const ::ores::trading::messaging::list_trade_booking_versions_request& request);
+    ::ores::trading::messaging::get_trade_booking_version_response get_trade_booking_version(
+        const ::ores::trading::messaging::get_trade_booking_version_request& request);
     /**@}*/
 
     /**
@@ -191,9 +191,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::trade_booking_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::trade_booking& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::trading::messaging::trade_booking_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::trade_booking& out);
 };
 
 }

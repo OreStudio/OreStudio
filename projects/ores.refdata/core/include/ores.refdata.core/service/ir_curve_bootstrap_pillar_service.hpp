@@ -76,26 +76,33 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_ir_curve_bootstrap_pillars_response list_ir_curve_bootstrap_pillars(
-        const messaging::list_ir_curve_bootstrap_pillars_request& request);
-    messaging::get_ir_curve_bootstrap_pillar_response
-    get_ir_curve_bootstrap_pillar(const messaging::get_ir_curve_bootstrap_pillar_request& request);
-    messaging::get_many_ir_curve_bootstrap_pillars_response get_many_ir_curve_bootstrap_pillars(
-        const messaging::get_many_ir_curve_bootstrap_pillars_request& request);
-    messaging::put_ir_curve_bootstrap_pillar_response
-    put_ir_curve_bootstrap_pillar(const messaging::put_ir_curve_bootstrap_pillar_request& request);
-    messaging::put_many_ir_curve_bootstrap_pillars_response put_many_ir_curve_bootstrap_pillars(
-        const messaging::put_many_ir_curve_bootstrap_pillars_request& request);
-    messaging::delete_ir_curve_bootstrap_pillar_response delete_ir_curve_bootstrap_pillar(
-        const messaging::delete_ir_curve_bootstrap_pillar_request& request);
-    messaging::delete_many_ir_curve_bootstrap_pillars_response
+    ::ores::refdata::messaging::list_ir_curve_bootstrap_pillars_response
+    list_ir_curve_bootstrap_pillars(
+        const ::ores::refdata::messaging::list_ir_curve_bootstrap_pillars_request& request);
+    ::ores::refdata::messaging::get_ir_curve_bootstrap_pillar_response
+    get_ir_curve_bootstrap_pillar(
+        const ::ores::refdata::messaging::get_ir_curve_bootstrap_pillar_request& request);
+    ::ores::refdata::messaging::get_many_ir_curve_bootstrap_pillars_response
+    get_many_ir_curve_bootstrap_pillars(
+        const ::ores::refdata::messaging::get_many_ir_curve_bootstrap_pillars_request& request);
+    ::ores::refdata::messaging::put_ir_curve_bootstrap_pillar_response
+    put_ir_curve_bootstrap_pillar(
+        const ::ores::refdata::messaging::put_ir_curve_bootstrap_pillar_request& request);
+    ::ores::refdata::messaging::put_many_ir_curve_bootstrap_pillars_response
+    put_many_ir_curve_bootstrap_pillars(
+        const ::ores::refdata::messaging::put_many_ir_curve_bootstrap_pillars_request& request);
+    ::ores::refdata::messaging::delete_ir_curve_bootstrap_pillar_response
+    delete_ir_curve_bootstrap_pillar(
+        const ::ores::refdata::messaging::delete_ir_curve_bootstrap_pillar_request& request);
+    ::ores::refdata::messaging::delete_many_ir_curve_bootstrap_pillars_response
     delete_many_ir_curve_bootstrap_pillars(
-        const messaging::delete_many_ir_curve_bootstrap_pillars_request& request);
-    messaging::list_ir_curve_bootstrap_pillar_versions_response
+        const ::ores::refdata::messaging::delete_many_ir_curve_bootstrap_pillars_request& request);
+    ::ores::refdata::messaging::list_ir_curve_bootstrap_pillar_versions_response
     list_ir_curve_bootstrap_pillar_versions(
-        const messaging::list_ir_curve_bootstrap_pillar_versions_request& request);
-    messaging::get_ir_curve_bootstrap_pillar_version_response get_ir_curve_bootstrap_pillar_version(
-        const messaging::get_ir_curve_bootstrap_pillar_version_request& request);
+        const ::ores::refdata::messaging::list_ir_curve_bootstrap_pillar_versions_request& request);
+    ::ores::refdata::messaging::get_ir_curve_bootstrap_pillar_version_response
+    get_ir_curve_bootstrap_pillar_version(
+        const ::ores::refdata::messaging::get_ir_curve_bootstrap_pillar_version_request& request);
     /**@}*/
 
     /**
@@ -194,7 +201,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::ir_curve_bootstrap_pillar_change& change,
+    prepare_change(const ::ores::refdata::messaging::ir_curve_bootstrap_pillar_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::ir_curve_bootstrap_pillar& out);
 };

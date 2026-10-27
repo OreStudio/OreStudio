@@ -43,8 +43,6 @@
 
 namespace {
 
-const std::string tags("[refdata][configuration_document][handler]");
-
 // Every row is party-scoped and the token carries the test tenant's system
 // party, so the handler's reads see what the case wrote.
 boost::uuids::uuid system_party(ores::testing::scoped_database_helper& h) {
@@ -103,7 +101,7 @@ using ores::testing::error_of;
 using ores::testing::request;
 
 TEST_CASE("a curve configuration document saves, reads back and deletes by its configuration",
-          tags) {
+          "[refdata][configuration_document][handler]") {
     fixture f;
     const auto token = f.token({"refdata::curve_configurations:read",
                                 "refdata::curve_configurations:write",
@@ -152,7 +150,7 @@ TEST_CASE("a curve configuration document saves, reads back and deletes by its c
     CHECK_FALSE(gone->success);
 }
 
-TEST_CASE("a caller without the permission is refused", tags) {
+TEST_CASE("a caller without the permission is refused", "[refdata][configuration_document][handler]") {
     fixture f;
     const auto token = f.token({"refdata::curve_configurations:read"});
     const auto reply = request(f.nats,
@@ -162,7 +160,7 @@ TEST_CASE("a caller without the permission is refused", tags) {
     CHECK(error_of(reply) == "forbidden");
 }
 
-TEST_CASE("a session that acts for no party cannot save a document", tags) {
+TEST_CASE("a session that acts for no party cannot save a document", "[refdata][configuration_document][handler]") {
     fixture f;
     const auto token = f.keys.token_without_party(f.db.tenant_id().to_string(),
                                                   {"refdata::curve_configurations:write"});
@@ -180,7 +178,7 @@ TEST_CASE("a session that acts for no party cannot save a document", tags) {
     CHECK(saved->message.find("acts for no party") != std::string::npos);
 }
 
-TEST_CASE("deleting a configuration no document fills succeeds", tags) {
+TEST_CASE("deleting a configuration no document fills succeeds", "[refdata][configuration_document][handler]") {
     fixture f;
     const auto token = f.token({"refdata::curve_configurations:delete"});
     const auto deleted = decode_reply<delete_curve_configuration_document_response>(request(

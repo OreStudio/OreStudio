@@ -18,13 +18,11 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/document.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][document]");
 
 using ores::ore::xml::document;
 using namespace ores::logging;
@@ -43,7 +41,7 @@ auto round_trip(const std::string& text) -> std::string {
 
 }
 
-TEST_CASE("an_element_with_text_survives_a_round_trip", tags) {
+TEST_CASE("an_element_with_text_survives_a_round_trip", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     const std::string original = "<CurrencyConfig><Currency><ISOCode>USD</ISOCode></Currency>"
@@ -55,7 +53,7 @@ TEST_CASE("an_element_with_text_survives_a_round_trip", tags) {
     CHECK(read_ok(original) == read_ok(written));
 }
 
-TEST_CASE("an_empty_element_is_written_self_closing_and_still_reads_back", tags) {
+TEST_CASE("an_empty_element_is_written_self_closing_and_still_reads_back", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     const auto written = round_trip("<a><b></b></a>");
@@ -64,7 +62,7 @@ TEST_CASE("an_empty_element_is_written_self_closing_and_still_reads_back", tags)
     CHECK(read_ok("<a><b></b></a>") == read_ok(written));
 }
 
-TEST_CASE("whitespace_between_elements_is_formatting_and_is_dropped", tags) {
+TEST_CASE("whitespace_between_elements_is_formatting_and_is_dropped", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     const auto written = round_trip("<a>\n\n   <b/>\t</a>");
@@ -73,7 +71,7 @@ TEST_CASE("whitespace_between_elements_is_formatting_and_is_dropped", tags) {
     CHECK(read_ok("<a><b/></a>") == read_ok(written));
 }
 
-TEST_CASE("whitespace_that_is_the_content_of_an_element_is_kept", tags) {
+TEST_CASE("whitespace_that_is_the_content_of_an_element_is_kept", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     const auto written = round_trip("<a><b> </b></a>");
@@ -82,7 +80,7 @@ TEST_CASE("whitespace_that_is_the_content_of_an_element_is_kept", tags) {
     CHECK(read_ok("<a><b> </b></a>") == read_ok(written));
 }
 
-TEST_CASE("markup_characters_in_text_are_escaped_and_read_back", tags) {
+TEST_CASE("markup_characters_in_text_are_escaped_and_read_back", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     const auto written = round_trip("<a>x &lt; y &amp; z</a>");
@@ -91,7 +89,7 @@ TEST_CASE("markup_characters_in_text_are_escaped_and_read_back", tags) {
     CHECK(read_ok("<a>x &lt; y &amp; z</a>") == read_ok(written));
 }
 
-TEST_CASE("an_attribute_keeps_a_quote_that_was_a_character_reference", tags) {
+TEST_CASE("an_attribute_keeps_a_quote_that_was_a_character_reference", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     const auto written = round_trip("<a x=\"1&quot;2\"/>");
@@ -100,7 +98,7 @@ TEST_CASE("an_attribute_keeps_a_quote_that_was_a_character_reference", tags) {
     CHECK(read_ok("<a x=\"1&quot;2\"/>") == read_ok(written));
 }
 
-TEST_CASE("a_tab_in_an_attribute_is_normalised_to_a_space", tags) {
+TEST_CASE("a_tab_in_an_attribute_is_normalised_to_a_space", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     // A literal tab is a space once the document is normalised, so a tab can
@@ -112,7 +110,7 @@ TEST_CASE("a_tab_in_an_attribute_is_normalised_to_a_space", tags) {
     CHECK(read_ok(written) == read_ok("<a x=\"p q\"/>"));
 }
 
-TEST_CASE("a_tab_written_as_a_character_reference_survives", tags) {
+TEST_CASE("a_tab_written_as_a_character_reference_survives", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     const auto written = round_trip("<a x=\"p&#9;q\"/>");
@@ -121,7 +119,7 @@ TEST_CASE("a_tab_written_as_a_character_reference_survives", tags) {
     CHECK(read_ok(written) == read_ok("<a x=\"p&#9;q\"/>"));
 }
 
-TEST_CASE("a_carriage_return_is_normalised_and_can_be_written_back", tags) {
+TEST_CASE("a_carriage_return_is_normalised_and_can_be_written_back", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     // A literal carriage return is a line feed after normalisation, so only a
@@ -132,14 +130,14 @@ TEST_CASE("a_carriage_return_is_normalised_and_can_be_written_back", tags) {
     CHECK(read_ok(written) == read_ok("<a>p&#13;q</a>"));
 }
 
-TEST_CASE("a_numeric_character_reference_is_read_as_its_character", tags) {
+TEST_CASE("a_numeric_character_reference_is_read_as_its_character", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     const auto parsed = read_ok("<a>&#65;&#x42;</a>");
     CHECK(parsed.value(parsed.tokens()[1]) == "AB");
 }
 
-TEST_CASE("mixed_content_is_not_indented", tags) {
+TEST_CASE("mixed_content_is_not_indented", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     const auto written = round_trip("<a>before<b>inner</b>after</a>");
@@ -148,7 +146,7 @@ TEST_CASE("mixed_content_is_not_indented", tags) {
     CHECK(read_ok("<a>before<b>inner</b>after</a>") == read_ok(written));
 }
 
-TEST_CASE("a_cdata_section_survives_the_trip_as_escaped_text", tags) {
+TEST_CASE("a_cdata_section_survives_the_trip_as_escaped_text", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     const std::string original = "<a><![CDATA[if (x < 1 && y > 2) {}]]></a>";
@@ -158,7 +156,7 @@ TEST_CASE("a_cdata_section_survives_the_trip_as_escaped_text", tags) {
     CHECK(read_ok(original) == read_ok(written));
 }
 
-TEST_CASE("a_number_keeps_every_digit_it_arrived_with", tags) {
+TEST_CASE("a_number_keeps_every_digit_it_arrived_with", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     for (const std::string value : {"1000000.00",
@@ -172,7 +170,7 @@ TEST_CASE("a_number_keeps_every_digit_it_arrived_with", tags) {
     }
 }
 
-TEST_CASE("documents_that_differ_in_a_value_are_not_equal", tags) {
+TEST_CASE("documents_that_differ_in_a_value_are_not_equal", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     CHECK_FALSE(read_ok("<a>1</a>") == read_ok("<a>2</a>"));
@@ -180,7 +178,7 @@ TEST_CASE("documents_that_differ_in_a_value_are_not_equal", tags) {
     CHECK_FALSE(read_ok("<a><b/></a>") == read_ok("<a><c/></a>"));
 }
 
-TEST_CASE("a_document_needs_exactly_one_root_element", tags) {
+TEST_CASE("a_document_needs_exactly_one_root_element", "[ore][xml][document]") {
     auto lg(make_logger(test_suite));
 
     CHECK_FALSE(document::read("hello").has_value());

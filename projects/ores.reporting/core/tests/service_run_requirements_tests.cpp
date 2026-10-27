@@ -30,20 +30,18 @@ using namespace ores::reporting::service;
 
 namespace {
 
-const std::string tags("[service][run_requirements]");
-
 const std::vector<std::string> risk_requires{
     "pricing_engines", "todays_market", "curve_configuration", "conventions"};
 
 }
 
-TEST_CASE("a definition binding every required type misses nothing", tags) {
+TEST_CASE("a definition binding every required type misses nothing", "[service][run_requirements]") {
     const std::vector<std::string> bound{
         "conventions", "curve_configuration", "todays_market", "pricing_engines"};
     CHECK(missing_configuration_types(risk_requires, bound).empty());
 }
 
-TEST_CASE("extra bound types do not count as missing", tags) {
+TEST_CASE("extra bound types do not count as missing", "[service][run_requirements]") {
     const std::vector<std::string> bound{"pricing_engines",
                                          "todays_market",
                                          "curve_configuration",
@@ -53,24 +51,24 @@ TEST_CASE("extra bound types do not count as missing", tags) {
     CHECK(missing_configuration_types(risk_requires, bound).empty());
 }
 
-TEST_CASE("a definition binding nothing misses every required type, sorted", tags) {
+TEST_CASE("a definition binding nothing misses every required type, sorted", "[service][run_requirements]") {
     const std::vector<std::string> expected{
         "conventions", "curve_configuration", "pricing_engines", "todays_market"};
     CHECK(missing_configuration_types(risk_requires, {}) == expected);
 }
 
-TEST_CASE("only the unbound required types are reported", tags) {
+TEST_CASE("only the unbound required types are reported", "[service][run_requirements]") {
     const std::vector<std::string> bound{"pricing_engines", "conventions", "simulation"};
     const std::vector<std::string> expected{"curve_configuration", "todays_market"};
     CHECK(missing_configuration_types(risk_requires, bound) == expected);
 }
 
-TEST_CASE("a requirement stated twice is reported once", tags) {
+TEST_CASE("a requirement stated twice is reported once", "[service][run_requirements]") {
     const std::vector<std::string> required{"conventions", "conventions"};
     const std::vector<std::string> expected{"conventions"};
     CHECK(missing_configuration_types(required, {}) == expected);
 }
 
-TEST_CASE("a report type with no requirements misses nothing", tags) {
+TEST_CASE("a report type with no requirements misses nothing", "[service][run_requirements]") {
     CHECK(missing_configuration_types({}, {"pricing_engines"}).empty());
 }

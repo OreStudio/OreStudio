@@ -76,24 +76,31 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_commodity_price_segments_response
-    list_commodity_price_segments(const messaging::list_commodity_price_segments_request& request);
-    messaging::get_commodity_price_segment_response
-    get_commodity_price_segment(const messaging::get_commodity_price_segment_request& request);
-    messaging::get_many_commodity_price_segments_response get_many_commodity_price_segments(
-        const messaging::get_many_commodity_price_segments_request& request);
-    messaging::put_commodity_price_segment_response
-    put_commodity_price_segment(const messaging::put_commodity_price_segment_request& request);
-    messaging::put_many_commodity_price_segments_response put_many_commodity_price_segments(
-        const messaging::put_many_commodity_price_segments_request& request);
-    messaging::delete_commodity_price_segment_response delete_commodity_price_segment(
-        const messaging::delete_commodity_price_segment_request& request);
-    messaging::delete_many_commodity_price_segments_response delete_many_commodity_price_segments(
-        const messaging::delete_many_commodity_price_segments_request& request);
-    messaging::list_commodity_price_segment_versions_response list_commodity_price_segment_versions(
-        const messaging::list_commodity_price_segment_versions_request& request);
-    messaging::get_commodity_price_segment_version_response get_commodity_price_segment_version(
-        const messaging::get_commodity_price_segment_version_request& request);
+    ::ores::refdata::messaging::list_commodity_price_segments_response
+    list_commodity_price_segments(
+        const ::ores::refdata::messaging::list_commodity_price_segments_request& request);
+    ::ores::refdata::messaging::get_commodity_price_segment_response get_commodity_price_segment(
+        const ::ores::refdata::messaging::get_commodity_price_segment_request& request);
+    ::ores::refdata::messaging::get_many_commodity_price_segments_response
+    get_many_commodity_price_segments(
+        const ::ores::refdata::messaging::get_many_commodity_price_segments_request& request);
+    ::ores::refdata::messaging::put_commodity_price_segment_response put_commodity_price_segment(
+        const ::ores::refdata::messaging::put_commodity_price_segment_request& request);
+    ::ores::refdata::messaging::put_many_commodity_price_segments_response
+    put_many_commodity_price_segments(
+        const ::ores::refdata::messaging::put_many_commodity_price_segments_request& request);
+    ::ores::refdata::messaging::delete_commodity_price_segment_response
+    delete_commodity_price_segment(
+        const ::ores::refdata::messaging::delete_commodity_price_segment_request& request);
+    ::ores::refdata::messaging::delete_many_commodity_price_segments_response
+    delete_many_commodity_price_segments(
+        const ::ores::refdata::messaging::delete_many_commodity_price_segments_request& request);
+    ::ores::refdata::messaging::list_commodity_price_segment_versions_response
+    list_commodity_price_segment_versions(
+        const ::ores::refdata::messaging::list_commodity_price_segment_versions_request& request);
+    ::ores::refdata::messaging::get_commodity_price_segment_version_response
+    get_commodity_price_segment_version(
+        const ::ores::refdata::messaging::get_commodity_price_segment_version_request& request);
     /**@}*/
 
     /**
@@ -193,7 +200,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::commodity_price_segment_change& change,
+    prepare_change(const ::ores::refdata::messaging::commodity_price_segment_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::commodity_price_segment& out);
 };

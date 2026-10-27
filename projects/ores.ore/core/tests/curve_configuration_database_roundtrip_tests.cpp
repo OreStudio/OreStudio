@@ -61,8 +61,6 @@ using ores::ore::tests::rows_of;
 
 namespace {
 
-const std::string tags("[curveconfig][database][roundtrip]");
-
 using namespace ores::ore::domain;
 using namespace ores::refdata::repository;
 using ores::platform::filesystem::file;
@@ -97,7 +95,6 @@ compare_documents(const curve_document& lhs, const curve_document& rhs, const st
         return {};
     return path + ": " + difference->path + ": " + difference->detail;
 }
-
 
 conventions load_conventions(const std::string& path) {
     return conventions_mapper::read(file::read_content(ores::testing::project_root::resolve(path)),
@@ -184,7 +181,7 @@ read_back(const ores::database::context& ctx,
 
 }
 
-TEST_CASE("curve_configuration_roundtrip_through_the_database", tags) {
+TEST_CASE("curve_configuration_roundtrip_through_the_database", "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
     write_conventions(h.context());
 
@@ -210,7 +207,7 @@ TEST_CASE("curve_configuration_roundtrip_through_the_database", tags) {
     CHECK(difference.empty());
 }
 
-TEST_CASE("a segment naming a convention the tenant does not hold is refused", tags) {
+TEST_CASE("a segment naming a convention the tenant does not hold is refused", "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
     write_conventions(h.context());
 
@@ -223,7 +220,7 @@ TEST_CASE("a segment naming a convention the tenant does not hold is refused", t
     CHECK_THROWS(curve_segment_repository().write(h.context(), mapped.segments.front()));
 }
 
-TEST_CASE("a yield curve naming a day counter ORE does not spell is refused", tags) {
+TEST_CASE("a yield curve naming a day counter ORE does not spell is refused", "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
 
     auto mapped = curve_configuration_projection::map(load_document(example + "curveconfig.xml"));
@@ -235,7 +232,7 @@ TEST_CASE("a yield curve naming a day counter ORE does not spell is refused", ta
     CHECK_THROWS(yield_curve_config_repository().write(h.context(), mapped.yield_curves.front()));
 }
 
-TEST_CASE("a segment of a type the vocabulary does not hold is refused", tags) {
+TEST_CASE("a segment of a type the vocabulary does not hold is refused", "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
     write_conventions(h.context());
 
@@ -249,7 +246,7 @@ TEST_CASE("a segment of a type the vocabulary does not hold is refused", tags) {
 }
 
 TEST_CASE("default, equity and inflation curves and securities round trip through the database",
-          tags) {
+          "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
     write_input_conventions(h.context());
 
@@ -297,7 +294,7 @@ TEST_CASE("default, equity and inflation curves and securities round trip throug
 
 TEST_CASE("equity and commodity volatility configurations and the report configuration round trip "
           "through the database",
-          tags) {
+          "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
 
     const auto c = load_conventions("external/ore/examples/Products/Input/conventions.xml");
@@ -332,7 +329,7 @@ TEST_CASE("equity and commodity volatility configurations and the report configu
     CHECK(difference.empty());
 }
 
-TEST_CASE("swaption and cap and floor proxies and smiles round trip through the database", tags) {
+TEST_CASE("swaption and cap and floor proxies and smiles round trip through the database", "[curveconfig][database][roundtrip]") {
     for (const std::string path :
          {"external/ore/examples/Legacy/Example_63/Input/curveconfig.xml",
           "external/ore/examples/CurveBuilding/Input/curveconfig_sabr.xml"}) {
@@ -363,7 +360,7 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
     }
 }
 
-TEST_CASE("a CDS volatility's terms and strike surface round trip through the database", tags) {
+TEST_CASE("a CDS volatility's terms and strike surface round trip through the database", "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
 
     const auto full = load_document(products_example);
@@ -386,7 +383,7 @@ TEST_CASE("a CDS volatility's terms and strike surface round trip through the da
     CHECK(difference.empty());
 }
 
-TEST_CASE("an FX volatility's report configuration round trips through the database", tags) {
+TEST_CASE("an FX volatility's report configuration round trips through the database", "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
     write_input_conventions(h.context());
 
@@ -421,7 +418,7 @@ TEST_CASE("an FX volatility's report configuration round trips through the datab
     CHECK(difference.empty());
 }
 
-TEST_CASE("an equity curve naming a calendar ORE does not accept is refused", tags) {
+TEST_CASE("an equity curve naming a calendar ORE does not accept is refused", "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
 
     auto mapped = curve_configuration_projection::map(equity_and_securities());
@@ -433,7 +430,7 @@ TEST_CASE("an equity curve naming a calendar ORE does not accept is refused", ta
     CHECK_THROWS(equity_curve_config_repository().write(h.context(), mapped.equity_curves.front()));
 }
 
-TEST_CASE("an equity curve naming a joined calendar ORE accepts is stored", tags) {
+TEST_CASE("an equity curve naming a joined calendar ORE accepts is stored", "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
 
     auto mapped = curve_configuration_projection::map(equity_and_securities());
@@ -447,7 +444,7 @@ TEST_CASE("an equity curve naming a joined calendar ORE accepts is stored", tags
         equity_curve_config_repository().write(h.context(), mapped.equity_curves.front()));
 }
 
-TEST_CASE("a party sees only its own curve configuration", tags) {
+TEST_CASE("a party sees only its own curve configuration", "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
     auto mapped = curve_configuration_projection::map(equity_and_securities());

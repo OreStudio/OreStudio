@@ -75,24 +75,26 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_system_settings_response
-    list_system_settings(const messaging::list_system_settings_request& request);
-    messaging::get_system_setting_response
-    get_system_setting(const messaging::get_system_setting_request& request);
-    messaging::get_many_system_settings_response
-    get_many_system_settings(const messaging::get_many_system_settings_request& request);
-    messaging::put_system_setting_response
-    put_system_setting(const messaging::put_system_setting_request& request);
-    messaging::put_many_system_settings_response
-    put_many_system_settings(const messaging::put_many_system_settings_request& request);
-    messaging::delete_system_setting_response
-    delete_system_setting(const messaging::delete_system_setting_request& request);
-    messaging::delete_many_system_settings_response
-    delete_many_system_settings(const messaging::delete_many_system_settings_request& request);
-    messaging::list_system_setting_versions_response
-    list_system_setting_versions(const messaging::list_system_setting_versions_request& request);
-    messaging::get_system_setting_version_response
-    get_system_setting_version(const messaging::get_system_setting_version_request& request);
+    ::ores::variability::messaging::list_system_settings_response list_system_settings(
+        const ::ores::variability::messaging::list_system_settings_request& request);
+    ::ores::variability::messaging::get_system_setting_response
+    get_system_setting(const ::ores::variability::messaging::get_system_setting_request& request);
+    ::ores::variability::messaging::get_many_system_settings_response get_many_system_settings(
+        const ::ores::variability::messaging::get_many_system_settings_request& request);
+    ::ores::variability::messaging::put_system_setting_response
+    put_system_setting(const ::ores::variability::messaging::put_system_setting_request& request);
+    ::ores::variability::messaging::put_many_system_settings_response put_many_system_settings(
+        const ::ores::variability::messaging::put_many_system_settings_request& request);
+    ::ores::variability::messaging::delete_system_setting_response delete_system_setting(
+        const ::ores::variability::messaging::delete_system_setting_request& request);
+    ::ores::variability::messaging::delete_many_system_settings_response
+    delete_many_system_settings(
+        const ::ores::variability::messaging::delete_many_system_settings_request& request);
+    ::ores::variability::messaging::list_system_setting_versions_response
+    list_system_setting_versions(
+        const ::ores::variability::messaging::list_system_setting_versions_request& request);
+    ::ores::variability::messaging::get_system_setting_version_response get_system_setting_version(
+        const ::ores::variability::messaging::get_system_setting_version_request& request);
     /**@}*/
 
     /**
@@ -203,9 +205,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::system_setting_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::system_setting& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::variability::messaging::system_setting_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::system_setting& out);
 };
 
 }

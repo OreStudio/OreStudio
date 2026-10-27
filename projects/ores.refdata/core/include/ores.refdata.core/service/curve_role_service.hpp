@@ -75,24 +75,24 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_curve_roles_response
-    list_curve_roles(const messaging::list_curve_roles_request& request);
-    messaging::get_curve_role_response
-    get_curve_role(const messaging::get_curve_role_request& request);
-    messaging::get_many_curve_roles_response
-    get_many_curve_roles(const messaging::get_many_curve_roles_request& request);
-    messaging::put_curve_role_response
-    put_curve_role(const messaging::put_curve_role_request& request);
-    messaging::put_many_curve_roles_response
-    put_many_curve_roles(const messaging::put_many_curve_roles_request& request);
-    messaging::delete_curve_role_response
-    delete_curve_role(const messaging::delete_curve_role_request& request);
-    messaging::delete_many_curve_roles_response
-    delete_many_curve_roles(const messaging::delete_many_curve_roles_request& request);
-    messaging::list_curve_role_versions_response
-    list_curve_role_versions(const messaging::list_curve_role_versions_request& request);
-    messaging::get_curve_role_version_response
-    get_curve_role_version(const messaging::get_curve_role_version_request& request);
+    ::ores::refdata::messaging::list_curve_roles_response
+    list_curve_roles(const ::ores::refdata::messaging::list_curve_roles_request& request);
+    ::ores::refdata::messaging::get_curve_role_response
+    get_curve_role(const ::ores::refdata::messaging::get_curve_role_request& request);
+    ::ores::refdata::messaging::get_many_curve_roles_response
+    get_many_curve_roles(const ::ores::refdata::messaging::get_many_curve_roles_request& request);
+    ::ores::refdata::messaging::put_curve_role_response
+    put_curve_role(const ::ores::refdata::messaging::put_curve_role_request& request);
+    ::ores::refdata::messaging::put_many_curve_roles_response
+    put_many_curve_roles(const ::ores::refdata::messaging::put_many_curve_roles_request& request);
+    ::ores::refdata::messaging::delete_curve_role_response
+    delete_curve_role(const ::ores::refdata::messaging::delete_curve_role_request& request);
+    ::ores::refdata::messaging::delete_many_curve_roles_response delete_many_curve_roles(
+        const ::ores::refdata::messaging::delete_many_curve_roles_request& request);
+    ::ores::refdata::messaging::list_curve_role_versions_response list_curve_role_versions(
+        const ::ores::refdata::messaging::list_curve_role_versions_request& request);
+    ::ores::refdata::messaging::get_curve_role_version_response get_curve_role_version(
+        const ::ores::refdata::messaging::get_curve_role_version_request& request);
     /**@}*/
 
     /**
@@ -186,9 +186,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::curve_role_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::curve_role& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::curve_role_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::curve_role& out);
 };
 
 }

@@ -38,8 +38,6 @@ using time_point = std::chrono::system_clock::time_point;
 
 namespace {
 
-const std::string tags("[run_token_cache]");
-
 run_token_key key_of(const std::string& grant, const std::string& run) {
     return run_token_key{.grant_id = grant, .run_id = run};
 }
@@ -64,7 +62,7 @@ struct counting_minter {
 
 }
 
-TEST_CASE("a miss mints a token and a fresh token is reused", tags) {
+TEST_CASE("a miss mints a token and a fresh token is reused", "[run_token_cache]") {
     std::vector<run_token_key> asked;
     time_point now{};
     bool refuse = false;
@@ -79,7 +77,7 @@ TEST_CASE("a miss mints a token and a fresh token is reused", tags) {
     CHECK(asked.size() == 1);
 }
 
-TEST_CASE("a token close to expiry is exchanged again", tags) {
+TEST_CASE("a token close to expiry is exchanged again", "[run_token_cache]") {
     std::vector<run_token_key> asked;
     time_point now{};
     bool refuse = false;
@@ -99,7 +97,7 @@ TEST_CASE("a token close to expiry is exchanged again", tags) {
     CHECK(asked.size() == 2);
 }
 
-TEST_CASE("a refused exchange holds nothing", tags) {
+TEST_CASE("a refused exchange holds nothing", "[run_token_cache]") {
     std::vector<run_token_key> asked;
     time_point now{};
     bool refuse = true;
@@ -114,7 +112,7 @@ TEST_CASE("a refused exchange holds nothing", tags) {
     CHECK(cache.size() == 1);
 }
 
-TEST_CASE("invalidate makes the next call exchange again", tags) {
+TEST_CASE("invalidate makes the next call exchange again", "[run_token_cache]") {
     std::vector<run_token_key> asked;
     time_point now{};
     bool refuse = false;
@@ -127,7 +125,7 @@ TEST_CASE("invalidate makes the next call exchange again", tags) {
     CHECK(cache.token_for(key_of("g1", "r1"), "t1") == "g1/r1#2");
 }
 
-TEST_CASE("evict_run drops every entry of one run", tags) {
+TEST_CASE("evict_run drops every entry of one run", "[run_token_cache]") {
     std::vector<run_token_key> asked;
     time_point now{};
     bool refuse = false;
@@ -146,7 +144,7 @@ TEST_CASE("evict_run drops every entry of one run", tags) {
     CHECK(cache.size() == 2);
 }
 
-TEST_CASE("the cache is bounded and drops the least recently used", tags) {
+TEST_CASE("the cache is bounded and drops the least recently used", "[run_token_cache]") {
     std::vector<run_token_key> asked;
     time_point now{};
     bool refuse = false;
@@ -166,7 +164,7 @@ TEST_CASE("the cache is bounded and drops the least recently used", tags) {
     CHECK(cache.token_for(key_of("g3", "r1"), "t1") == "g3/r1#3");
 }
 
-TEST_CASE("two grants and two runs hold their own tokens", tags) {
+TEST_CASE("two grants and two runs hold their own tokens", "[run_token_cache]") {
     std::vector<run_token_key> asked;
     time_point now{};
     bool refuse = false;

@@ -26,6 +26,8 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/reporting/report_type_configuration_type_commands.hpp"
+#include "ores.testing/party_fixture.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cli/cli.h>
@@ -34,17 +36,13 @@
 #include <string_view>
 #include <vector>
 
+using ores::testing::valid_party_id;
 using ores::nats::service::nats_client;
 using ores::shell::app::command_feedback;
 using ores::shell::app::commands::report_type_configuration_type_commands;
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.shell.reporting.tests");
-const std::string tags("[commands]");
-
-const std::string valid_party_id("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
 void report_type_configuration_type_log_in(nats_client& session) {
     nats_client::login_info info;
@@ -62,7 +60,7 @@ std::vector<std::string> report_type_configuration_type_tokens(const std::size_t
 
 }
 
-TEST_CASE("report_type_configuration_type_commands_registers_every_derived_verb", tags) {
+TEST_CASE("report_type_configuration_type_commands_registers_every_derived_verb", "[commands]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -89,7 +87,7 @@ TEST_CASE("report_type_configuration_type_commands_registers_every_derived_verb"
     BOOST_LOG_SEV(lg, debug) << "Registered 9 command(s).";
 }
 
-TEST_CASE("report_type_configuration_type_commands_process_list_requires_a_session", tags) {
+TEST_CASE("report_type_configuration_type_commands_process_list_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -104,7 +102,7 @@ TEST_CASE("report_type_configuration_type_commands_process_list_requires_a_sessi
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("report_type_configuration_type_commands_process_get_requires_a_session", tags) {
+TEST_CASE("report_type_configuration_type_commands_process_get_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -119,7 +117,8 @@ TEST_CASE("report_type_configuration_type_commands_process_get_requires_a_sessio
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("report_type_configuration_type_commands_process_get_reports_the_expected_count", tags) {
+TEST_CASE("report_type_configuration_type_commands_process_get_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -139,7 +138,8 @@ TEST_CASE("report_type_configuration_type_commands_process_get_reports_the_expec
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("report_type_configuration_type_commands_process_get_many_requires_a_session", tags) {
+TEST_CASE("report_type_configuration_type_commands_process_get_many_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -154,7 +154,7 @@ TEST_CASE("report_type_configuration_type_commands_process_get_many_requires_a_s
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("report_type_configuration_type_commands_process_add_requires_a_session", tags) {
+TEST_CASE("report_type_configuration_type_commands_process_add_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -169,7 +169,8 @@ TEST_CASE("report_type_configuration_type_commands_process_add_requires_a_sessio
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("report_type_configuration_type_commands_process_add_reports_the_expected_count", tags) {
+TEST_CASE("report_type_configuration_type_commands_process_add_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -189,7 +190,7 @@ TEST_CASE("report_type_configuration_type_commands_process_add_reports_the_expec
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("report_type_configuration_type_commands_process_set_requires_a_session", tags) {
+TEST_CASE("report_type_configuration_type_commands_process_set_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -204,7 +205,8 @@ TEST_CASE("report_type_configuration_type_commands_process_set_requires_a_sessio
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("report_type_configuration_type_commands_process_set_reports_the_expected_count", tags) {
+TEST_CASE("report_type_configuration_type_commands_process_set_reports_the_expected_count",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -224,7 +226,8 @@ TEST_CASE("report_type_configuration_type_commands_process_set_reports_the_expec
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("report_type_configuration_type_commands_process_put_many_requires_a_session", tags) {
+TEST_CASE("report_type_configuration_type_commands_process_put_many_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -239,7 +242,8 @@ TEST_CASE("report_type_configuration_type_commands_process_put_many_requires_a_s
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("report_type_configuration_type_commands_process_delete_requires_a_session", tags) {
+TEST_CASE("report_type_configuration_type_commands_process_delete_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -255,7 +259,7 @@ TEST_CASE("report_type_configuration_type_commands_process_delete_requires_a_ses
 }
 
 TEST_CASE("report_type_configuration_type_commands_process_delete_reports_the_expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -275,7 +279,8 @@ TEST_CASE("report_type_configuration_type_commands_process_delete_reports_the_ex
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("report_type_configuration_type_commands_process_delete_many_requires_a_session", tags) {
+TEST_CASE("report_type_configuration_type_commands_process_delete_many_requires_a_session",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -291,7 +296,7 @@ TEST_CASE("report_type_configuration_type_commands_process_delete_many_requires_
 }
 
 TEST_CASE("report_type_configuration_type_commands_process_by_report_type_code_requires_a_session",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -308,7 +313,7 @@ TEST_CASE("report_type_configuration_type_commands_process_by_report_type_code_r
 
 TEST_CASE("report_type_configuration_type_commands_process_by_report_type_code_reports_the_"
           "expected_count",
-          tags) {
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;

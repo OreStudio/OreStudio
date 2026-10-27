@@ -36,6 +36,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -57,9 +58,6 @@ using ores::refdata::repository::country_repository;
 using ores::testing::scoped_database_helper;
 
 namespace {
-
-const std::string_view test_suite("ores.refdata.tests");
-const std::string tags("[repository][party_country]");
 
 // Total number of test cases that write party_country records.
 // Each test uses a different slice of the fictional countries list
@@ -93,7 +91,7 @@ party_country make_party_country(scoped_database_helper& h,
 
 }
 
-TEST_CASE("write_single_party_country", tags) {
+TEST_CASE("write_single_party_country", "[repository][party_country]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -121,7 +119,7 @@ TEST_CASE("write_single_party_country", tags) {
     CHECK(read_pcs[0].change_commentary == pc.change_commentary);
 }
 
-TEST_CASE("write_multiple_party_countries", tags) {
+TEST_CASE("write_multiple_party_countries", "[repository][party_country]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -157,7 +155,7 @@ TEST_CASE("write_multiple_party_countries", tags) {
     }
 }
 
-TEST_CASE("read_latest_party_countries_by_party", tags) {
+TEST_CASE("read_latest_party_countries_by_party", "[repository][party_country]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -191,7 +189,7 @@ TEST_CASE("read_latest_party_countries_by_party", tags) {
     CHECK(found);
 }
 
-TEST_CASE("read_latest_party_countries_by_country", tags) {
+TEST_CASE("read_latest_party_countries_by_country", "[repository][party_country]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -218,7 +216,7 @@ TEST_CASE("read_latest_party_countries_by_country", tags) {
     CHECK(read_pcs[0].party_id == system_party_id);
 }
 
-TEST_CASE("remove_party_country", tags) {
+TEST_CASE("remove_party_country", "[repository][party_country]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -253,7 +251,7 @@ TEST_CASE("remove_party_country", tags) {
     CHECK(keeper_rows[0].change_commentary == keeper.change_commentary);
 }
 
-TEST_CASE("read_nonexistent_party_country", tags) {
+TEST_CASE("read_nonexistent_party_country", "[repository][party_country]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -290,7 +288,7 @@ TEST_CASE("read_nonexistent_party_country", tags) {
     CHECK(keeper_rows[0].change_commentary == keeper.change_commentary);
 }
 
-TEST_CASE("a_closed_party_country_is_in_its_history_with_the_time_it_ended", tags) {
+TEST_CASE("a_closed_party_country_is_in_its_history_with_the_time_it_ended", "[repository][party_country]") {
     scoped_database_helper h;
 
     party_repository party_repo;
@@ -325,7 +323,7 @@ TEST_CASE("a_closed_party_country_is_in_its_history_with_the_time_it_ended", tag
     CHECK_FALSE(open->closed_at.has_value());
 }
 
-TEST_CASE("a_party_country_history_reads_only_its_own_party", tags) {
+TEST_CASE("a_party_country_history_reads_only_its_own_party", "[repository][party_country]") {
     scoped_database_helper h;
 
     party_repository party_repo;
@@ -344,7 +342,7 @@ TEST_CASE("a_party_country_history_reads_only_its_own_party", tags) {
     CHECK(repo.read_all_by_party(generate()).empty());
 }
 
-TEST_CASE("the_party_country_history_provider_numbers_each_link_on_its_own", tags) {
+TEST_CASE("the_party_country_history_provider_numbers_each_link_on_its_own", "[repository][party_country]") {
     scoped_database_helper h;
 
     party_repository party_repo;

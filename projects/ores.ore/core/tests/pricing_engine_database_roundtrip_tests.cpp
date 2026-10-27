@@ -28,6 +28,7 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "party_fixture.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -37,9 +38,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[pricingengines][database][roundtrip]");
 
 std::filesystem::path ore_path(const std::string& relative) {
     return ores::testing::project_root::resolve("external/ore/" + relative);
@@ -58,7 +56,7 @@ using ores::testing::scoped_database_helper;
  * into a document again. The in-memory walk proves the mapper; this proves the
  * tables hold what the mapper produces.
  */
-TEST_CASE("pricing_engines_roundtrip_through_the_database", tags) {
+TEST_CASE("pricing_engines_roundtrip_through_the_database", "[pricingengines][database][roundtrip]") {
     auto lg(ores::logging::make_logger(test_suite));
     scoped_database_helper h;
 
@@ -104,7 +102,7 @@ TEST_CASE("pricing_engines_roundtrip_through_the_database", tags) {
     CHECK_FALSE(difference);
 }
 
-TEST_CASE("a party sees only its own pricing engine configuration", tags) {
+TEST_CASE("a party sees only its own pricing engine configuration", "[pricingengines][database][roundtrip]") {
     scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
     const auto original = pricing_engine_projection::read(file::read_content(

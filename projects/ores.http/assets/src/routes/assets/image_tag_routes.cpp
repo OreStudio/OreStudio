@@ -101,7 +101,7 @@ http_response image_tag_error_response(const std::string& error) {
  */
 template <typename Request>
 boost::asio::awaitable<http_response>
-forward(const http_request& req, nats_client& session, const Request& msg) {
+image_tag_forward(const http_request& req, nats_client& session, const Request& msg) {
     auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
     try {
         const auto reply =
@@ -155,7 +155,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_list(const http_r
     try {
         request_type msg;
         image_tag_apply_page(msg, req);
-        co_return co_await forward(req, session, msg);
+        co_return co_await image_tag_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -170,7 +170,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_get(const http_re
             image_tag_read_param<boost::uuids::uuid>(req.get_path_param("image_id"), "image_id");
         msg.key.tag_id =
             image_tag_read_param<boost::uuids::uuid>(req.get_path_param("tag_id"), "tag_id");
-        co_return co_await forward(req, session, msg);
+        co_return co_await image_tag_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -184,7 +184,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_get_many(const ht
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await image_tag_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -200,7 +200,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_add(const http_re
         }
         // The route states whether the row may exist; the body states the rest.
         parsed->change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await image_tag_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -222,7 +222,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_set(const http_re
             parsed->change.precondition.version =
                 image_tag_read_param<std::uint32_t>(raw, "version");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await image_tag_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -236,7 +236,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_put_many(const ht
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await image_tag_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -265,7 +265,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_delete(const http
                 ores::utility::domain::precondition_kind::must_match_version;
             msg.removal.precondition.version = image_tag_read_param<std::uint32_t>(raw, "version");
         }
-        co_return co_await forward(req, session, msg);
+        co_return co_await image_tag_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -279,7 +279,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_delete_many(const
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await image_tag_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -297,7 +297,7 @@ boost::asio::awaitable<http_response> image_tag_routes::handle_by_image_id(const
                                            ores::utility::domain::scope::direct;
         }
         image_tag_apply_page(msg, req);
-        co_return co_await forward(req, session, msg);
+        co_return co_await image_tag_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }

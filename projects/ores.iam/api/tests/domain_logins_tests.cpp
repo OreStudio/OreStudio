@@ -21,22 +21,16 @@
 #include "ores.iam.api/domain/login_info_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/login_info_table.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[domain]");
-
-}
-
 using ores::iam::domain::login_info;
 using namespace ores::logging;
 
-TEST_CASE("create_login_info_with_ipv4_addresses", tags) {
+TEST_CASE("create_login_info_with_ipv4_addresses", "[domain]") {
     auto lg(make_logger(test_suite));
 
     login_info sut;
@@ -56,7 +50,7 @@ TEST_CASE("create_login_info_with_ipv4_addresses", tags) {
     CHECK(sut.last_attempt_ip.to_string() == "192.168.1.101");
 }
 
-TEST_CASE("create_login_info_with_ipv6_addresses", tags) {
+TEST_CASE("create_login_info_with_ipv6_addresses", "[domain]") {
     auto lg(make_logger(test_suite));
 
     login_info sut;
@@ -75,7 +69,7 @@ TEST_CASE("create_login_info_with_ipv6_addresses", tags) {
     CHECK(sut.last_attempt_ip.to_string() == "::1");
 }
 
-TEST_CASE("create_locked_account_login_info", tags) {
+TEST_CASE("create_locked_account_login_info", "[domain]") {
     auto lg(make_logger(test_suite));
 
     login_info sut;
@@ -94,7 +88,7 @@ TEST_CASE("create_locked_account_login_info", tags) {
     CHECK(sut.last_attempt_ip.to_string() == "203.0.113.42");
 }
 
-TEST_CASE("login_info_with_failed_attempts", tags) {
+TEST_CASE("login_info_with_failed_attempts", "[domain]") {
     auto lg(make_logger(test_suite));
 
     login_info sut;
@@ -112,7 +106,7 @@ TEST_CASE("login_info_with_failed_attempts", tags) {
     CHECK(sut.last_ip.to_string() == "172.16.0.1");
 }
 
-TEST_CASE("login_info_serialization_to_json", tags) {
+TEST_CASE("login_info_serialization_to_json", "[domain]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -137,7 +131,7 @@ TEST_CASE("login_info_serialization_to_json", tags) {
     CHECK(json_output.find("198.51.100.42") != std::string::npos);
 }
 
-TEST_CASE("login_info_with_different_ip_versions", tags) {
+TEST_CASE("login_info_with_different_ip_versions", "[domain]") {
     auto lg(make_logger(test_suite));
 
     login_info sut;
@@ -156,7 +150,7 @@ TEST_CASE("login_info_with_different_ip_versions", tags) {
     CHECK(sut.last_attempt_ip.to_string() == "2001:db8::1");
 }
 
-TEST_CASE("create_login_info_with_faker", tags) {
+TEST_CASE("create_login_info_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     login_info sut;
@@ -174,7 +168,7 @@ TEST_CASE("create_login_info_with_faker", tags) {
     CHECK(sut.failed_logins <= 10);
 }
 
-TEST_CASE("create_multiple_random_login_infos", tags) {
+TEST_CASE("create_multiple_random_login_infos", "[domain]") {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 3; ++i) {
@@ -204,7 +198,7 @@ TEST_CASE("create_multiple_random_login_infos", tags) {
     }
 }
 
-TEST_CASE("login_info_convert_single_to_table", tags) {
+TEST_CASE("login_info_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     login_info li;
@@ -226,7 +220,7 @@ TEST_CASE("login_info_convert_single_to_table", tags) {
     CHECK(table.find("192.168.1.101") != std::string::npos);
 }
 
-TEST_CASE("login_info_convert_multiple_to_table", tags) {
+TEST_CASE("login_info_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<login_info> logins;
@@ -252,7 +246,7 @@ TEST_CASE("login_info_convert_multiple_to_table", tags) {
     CHECK(table.find("10.0.0.3") != std::string::npos);
 }
 
-TEST_CASE("login_info_table_with_faker_data", tags) {
+TEST_CASE("login_info_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<login_info> logins;

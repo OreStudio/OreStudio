@@ -33,8 +33,6 @@
 
 namespace {
 
-const std::string tags("[approval][apply_retry]");
-
 using ores::inbox::service::approval_apply_retry;
 using ores::inbox::service::approval_lifecycle;
 
@@ -117,7 +115,7 @@ std::chrono::system_clock::time_point after_the_window() {
 
 }
 
-TEST_CASE("an_approved_request_inside_its_window_is_started_again_and_resumed", tags) {
+TEST_CASE("an_approved_request_inside_its_window_is_started_again_and_resumed", "[approval][apply_retry]") {
     ores::testing::scoped_database_helper h;
     const auto id = approved_book_change(h);
     recording_engine engine;
@@ -136,7 +134,7 @@ TEST_CASE("an_approved_request_inside_its_window_is_started_again_and_resumed", 
     CHECK(approval_lifecycle(acting(h)).request(id)->state_code == "approved");
 }
 
-TEST_CASE("a_run_the_engine_will_not_resume_is_left_for_the_next_pass", tags) {
+TEST_CASE("a_run_the_engine_will_not_resume_is_left_for_the_next_pass", "[approval][apply_retry]") {
     ores::testing::scoped_database_helper h;
     const auto id = approved_book_change(h);
     recording_engine engine;
@@ -150,7 +148,7 @@ TEST_CASE("a_run_the_engine_will_not_resume_is_left_for_the_next_pass", tags) {
     CHECK(approval_lifecycle(acting(h)).request(id)->state_code == "approved");
 }
 
-TEST_CASE("a_request_past_its_window_moves_to_apply_failed_and_is_not_retried", tags) {
+TEST_CASE("a_request_past_its_window_moves_to_apply_failed_and_is_not_retried", "[approval][apply_retry]") {
     ores::testing::scoped_database_helper h;
     const auto id = approved_book_change(h);
     recording_engine engine;
@@ -170,7 +168,7 @@ TEST_CASE("a_request_past_its_window_moves_to_apply_failed_and_is_not_retried", 
     CHECK_FALSE(again.started_for(id));
 }
 
-TEST_CASE("a_request_in_another_state_is_never_retried", tags) {
+TEST_CASE("a_request_in_another_state_is_never_retried", "[approval][apply_retry]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     approval_lifecycle lifecycle(acting(h));
@@ -188,7 +186,7 @@ TEST_CASE("a_request_in_another_state_is_never_retried", tags) {
     CHECK_FALSE(contains(done.resumed, failed_id));
 }
 
-TEST_CASE("a_kind_that_names_no_workflow_is_never_retried", tags) {
+TEST_CASE("a_kind_that_names_no_workflow_is_never_retried", "[approval][apply_retry]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -206,7 +204,7 @@ TEST_CASE("a_kind_that_names_no_workflow_is_never_retried", tags) {
     CHECK(lifecycle.request(id)->state_code == "approved");
 }
 
-TEST_CASE("an_engine_that_is_down_does_not_stop_the_pass", tags) {
+TEST_CASE("an_engine_that_is_down_does_not_stop_the_pass", "[approval][apply_retry]") {
     ores::testing::scoped_database_helper h;
     const auto id = approved_book_change(h);
     recording_engine engine;
@@ -218,7 +216,7 @@ TEST_CASE("an_engine_that_is_down_does_not_stop_the_pass", tags) {
     CHECK(approval_lifecycle(acting(h)).request(id)->state_code == "approved");
 }
 
-TEST_CASE("a_run_still_working_past_the_window_keeps_its_request_approved", tags) {
+TEST_CASE("a_run_still_working_past_the_window_keeps_its_request_approved", "[approval][apply_retry]") {
     ores::testing::scoped_database_helper h;
     const auto id = approved_book_change(h);
     recording_engine engine;
@@ -231,7 +229,7 @@ TEST_CASE("a_run_still_working_past_the_window_keeps_its_request_approved", tags
     CHECK(approval_lifecycle(acting(h)).request(id)->state_code == "approved");
 }
 
-TEST_CASE("a_request_with_no_run_past_the_window_is_given_up", tags) {
+TEST_CASE("a_request_with_no_run_past_the_window_is_given_up", "[approval][apply_retry]") {
     ores::testing::scoped_database_helper h;
     const auto id = approved_book_change(h);
     recording_engine engine;

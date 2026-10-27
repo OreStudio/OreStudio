@@ -28,14 +28,8 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.marketdata.core.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::marketdata::generators;
@@ -44,7 +38,7 @@ using ores::testing::database_helper;
 using ores::marketdata::repository::market_series_repository;
 using ores::marketdata::repository::market_fixing_repository;
 
-TEST_CASE("insert_single_market_fixing", tags) {
+TEST_CASE("insert_single_market_fixing", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -65,7 +59,7 @@ TEST_CASE("insert_single_market_fixing", tags) {
     CHECK(read.front().id == f.id);
 }
 
-TEST_CASE("insert_multiple_market_fixings", tags) {
+TEST_CASE("insert_multiple_market_fixings", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -83,7 +77,7 @@ TEST_CASE("insert_multiple_market_fixings", tags) {
     CHECK_NOTHROW(fixings_repo.insert(h.context(), fixings));
 }
 
-TEST_CASE("read_latest_market_fixings_by_series", tags) {
+TEST_CASE("read_latest_market_fixings_by_series", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

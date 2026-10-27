@@ -32,8 +32,6 @@
 
 namespace {
 
-const std::string tags("[feeds][fomc]");
-
 /// A tenant of this test's own, with the base calendar data published to it.
 ///
 /// A tenant gets its calendars, tenor schedules and calendar events from
@@ -84,7 +82,7 @@ using namespace std::chrono;
 using ores::synthetic::feed::build_ir_curve_refdata_context;
 using ores::synthetic::feed::resolve;
 
-TEST_CASE("fomc_tenors_resolve_to_meeting_dates_in_a_new_tenant", tags) {
+TEST_CASE("fomc_tenors_resolve_to_meeting_dates_in_a_new_tenant", "[feeds][fomc]") {
     fomc_tenant t;
 
     auto refctx = build_ir_curve_refdata_context(t.ctx, "RATES_SPOT_FOMC");

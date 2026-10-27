@@ -29,8 +29,6 @@
 
 namespace {
 
-const std::string tags("[ore][party]");
-
 struct mapped_document {
     ores::reporting::domain::configuration header;
     std::vector<ores::reporting::domain::configuration_analytic> analytics;
@@ -42,7 +40,7 @@ struct mapped_document {
 
 }
 
-TEST_CASE("assigning a party stamps every row of a mapped document", tags) {
+TEST_CASE("assigning a party stamps every row of a mapped document", "[ore][party]") {
     mapped_document d;
     d.analytics.resize(3);
     d.extra = ores::reporting::domain::configuration_analytic{};

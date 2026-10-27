@@ -76,27 +76,35 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_default_curve_configurations_response list_default_curve_configurations(
-        const messaging::list_default_curve_configurations_request& request);
-    messaging::get_default_curve_configuration_response get_default_curve_configuration(
-        const messaging::get_default_curve_configuration_request& request);
-    messaging::get_many_default_curve_configurations_response get_many_default_curve_configurations(
-        const messaging::get_many_default_curve_configurations_request& request);
-    messaging::put_default_curve_configuration_response put_default_curve_configuration(
-        const messaging::put_default_curve_configuration_request& request);
-    messaging::put_many_default_curve_configurations_response put_many_default_curve_configurations(
-        const messaging::put_many_default_curve_configurations_request& request);
-    messaging::delete_default_curve_configuration_response delete_default_curve_configuration(
-        const messaging::delete_default_curve_configuration_request& request);
-    messaging::delete_many_default_curve_configurations_response
+    ::ores::refdata::messaging::list_default_curve_configurations_response
+    list_default_curve_configurations(
+        const ::ores::refdata::messaging::list_default_curve_configurations_request& request);
+    ::ores::refdata::messaging::get_default_curve_configuration_response
+    get_default_curve_configuration(
+        const ::ores::refdata::messaging::get_default_curve_configuration_request& request);
+    ::ores::refdata::messaging::get_many_default_curve_configurations_response
+    get_many_default_curve_configurations(
+        const ::ores::refdata::messaging::get_many_default_curve_configurations_request& request);
+    ::ores::refdata::messaging::put_default_curve_configuration_response
+    put_default_curve_configuration(
+        const ::ores::refdata::messaging::put_default_curve_configuration_request& request);
+    ::ores::refdata::messaging::put_many_default_curve_configurations_response
+    put_many_default_curve_configurations(
+        const ::ores::refdata::messaging::put_many_default_curve_configurations_request& request);
+    ::ores::refdata::messaging::delete_default_curve_configuration_response
+    delete_default_curve_configuration(
+        const ::ores::refdata::messaging::delete_default_curve_configuration_request& request);
+    ::ores::refdata::messaging::delete_many_default_curve_configurations_response
     delete_many_default_curve_configurations(
-        const messaging::delete_many_default_curve_configurations_request& request);
-    messaging::list_default_curve_configuration_versions_response
+        const ::ores::refdata::messaging::delete_many_default_curve_configurations_request&
+            request);
+    ::ores::refdata::messaging::list_default_curve_configuration_versions_response
     list_default_curve_configuration_versions(
-        const messaging::list_default_curve_configuration_versions_request& request);
-    messaging::get_default_curve_configuration_version_response
+        const ::ores::refdata::messaging::list_default_curve_configuration_versions_request&
+            request);
+    ::ores::refdata::messaging::get_default_curve_configuration_version_response
     get_default_curve_configuration_version(
-        const messaging::get_default_curve_configuration_version_request& request);
+        const ::ores::refdata::messaging::get_default_curve_configuration_version_request& request);
     /**@}*/
 
     /**
@@ -199,7 +207,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::default_curve_configuration_change& change,
+    prepare_change(const ::ores::refdata::messaging::default_curve_configuration_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::default_curve_configuration& out);
 };

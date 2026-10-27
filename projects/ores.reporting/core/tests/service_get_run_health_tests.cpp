@@ -29,6 +29,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "report_instance_test_fixture.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -41,19 +42,12 @@
 // the session cannot see is reported as missing rather than as a run in a state
 // with no word.
 
-namespace {
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[service][database]");
-
-}
-
 using ores::reporting::messaging::get_report_instance_health_request;
 using ores::reporting::messaging::project_run_health;
 using ores::reporting::service::report_instance_service;
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("get_run_health answers the word and the state of one run", tags) {
+TEST_CASE("get_run_health answers the word and the state of one run", "[service][database]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;
@@ -76,7 +70,7 @@ TEST_CASE("get_run_health answers the word and the state of one run", tags) {
     CHECK(answer.health == "failed");
 }
 
-TEST_CASE("get_run_health answers missing for a run the session cannot read", tags) {
+TEST_CASE("get_run_health answers missing for a run the session cannot read", "[service][database]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;

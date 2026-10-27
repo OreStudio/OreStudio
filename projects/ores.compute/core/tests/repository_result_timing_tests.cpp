@@ -51,8 +51,6 @@
 
 namespace {
 
-const std::string tags("[repository][timing]");
-
 using ores::compute::repository::result_repository;
 using ores::testing::scoped_database_helper;
 
@@ -116,7 +114,7 @@ std::optional<ores::compute::domain::result> read_marked(const ores::database::c
 
 } // namespace
 
-TEST_CASE("a result keeps the time a node took it and how long the engine ran", tags) {
+TEST_CASE("a result keeps the time a node took it and how long the engine ran", "[repository][timing]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto workunit = seed_workunit(h, ctx);
@@ -143,7 +141,7 @@ TEST_CASE("a result keeps the time a node took it and how long the engine ran", 
     CHECK(*read->duration_ms == 1234);
 }
 
-TEST_CASE("a result written without the two columns reads back as unknown", tags) {
+TEST_CASE("a result written without the two columns reads back as unknown", "[repository][timing]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto workunit = seed_workunit(h, ctx);
@@ -165,7 +163,7 @@ TEST_CASE("a result written without the two columns reads back as unknown", tags
     CHECK_FALSE(read->duration_ms.has_value());
 }
 
-TEST_CASE("a later version of a result keeps the duration and not a zero", tags) {
+TEST_CASE("a later version of a result keeps the duration and not a zero", "[repository][timing]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto workunit = seed_workunit(h, ctx);

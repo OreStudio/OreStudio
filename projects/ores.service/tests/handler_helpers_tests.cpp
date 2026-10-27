@@ -22,6 +22,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -31,9 +32,6 @@
 #include <vector>
 
 namespace {
-
-const std::string tags("[handler_helpers]");
-const std::string test_suite("ores.service.tests");
 
 struct payload {
     std::string name;
@@ -66,7 +64,7 @@ struct document {
 
 using namespace ores::service::messaging;
 
-TEST_CASE("has_permission accepts an exact match and refuses an unrelated permission", tags) {
+TEST_CASE("has_permission accepts an exact match and refuses an unrelated permission", "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto ctx = h.context().with_roles({"iam::accounts:create"});
 
@@ -75,7 +73,7 @@ TEST_CASE("has_permission accepts an exact match and refuses an unrelated permis
     REQUIRE_FALSE(has_permission(ctx, "refdata::parties:create"));
 }
 
-TEST_CASE("has_permission accepts a component wildcard but not another component", tags) {
+TEST_CASE("has_permission accepts a component wildcard but not another component", "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto ctx = h.context().with_roles({"iam::*"});
 
@@ -83,7 +81,7 @@ TEST_CASE("has_permission accepts a component wildcard but not another component
     REQUIRE_FALSE(has_permission(ctx, "refdata::parties:delete"));
 }
 
-TEST_CASE("has_permission accepts the global wildcard", tags) {
+TEST_CASE("has_permission accepts the global wildcard", "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto ctx = h.context().with_roles({"*"});
     // The same call against a context holding one unrelated permission, so the
@@ -97,7 +95,7 @@ TEST_CASE("has_permission accepts the global wildcard", tags) {
 
 // A token that carries an empty permission list grants nothing. Before this
 // change it passed every check, which let every signed-in person through.
-TEST_CASE("has_permission refuses a token that carries no permissions", tags) {
+TEST_CASE("has_permission refuses a token that carries no permissions", "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto ctx = h.context().with_roles({});
 
@@ -106,7 +104,7 @@ TEST_CASE("has_permission refuses a token that carries no permissions", tags) {
 
 // A context that carries no list at all is the service's own, built from its
 // base context, and runs on the service's authority.
-TEST_CASE("has_permission passes the service's own context", tags) {
+TEST_CASE("has_permission passes the service's own context", "[handler_helpers]") {
     ores::testing::database_helper h;
 
     REQUIRE_FALSE(h.context().roles().has_value());
@@ -115,7 +113,7 @@ TEST_CASE("has_permission passes the service's own context", tags) {
 
 // Narrowing a request's context to a tenant or a party keeps the token's list,
 // so a derived context is never trusted for want of one.
-TEST_CASE("a context narrowed to a tenant or a party keeps its permissions", tags) {
+TEST_CASE("a context narrowed to a tenant or a party keeps its permissions", "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto request = h.context().with_roles({"refdata::parties:read"});
 
@@ -128,7 +126,7 @@ TEST_CASE("a context narrowed to a tenant or a party keeps its permissions", tag
     REQUIRE_FALSE(has_permission(party, "iam::accounts:create"));
 }
 
-TEST_CASE("stamp writes the context tenant and the acting user onto the object", tags) {
+TEST_CASE("stamp writes the context tenant and the acting user onto the object", "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto ctx = h.context().with_tenant(h.tenant_id(), "alice");
     record r;
@@ -141,7 +139,7 @@ TEST_CASE("stamp writes the context tenant and the acting user onto the object",
     REQUIRE(r.change_reason_code == "system.new_record");
 }
 
-TEST_CASE("stamp keeps the client's change reason and applies the requested default", tags) {
+TEST_CASE("stamp keeps the client's change reason and applies the requested default", "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto ctx = h.context().with_tenant(h.tenant_id(), "alice");
     record supplied;
@@ -159,7 +157,7 @@ TEST_CASE("stamp keeps the client's change reason and applies the requested defa
 // from the context. That is wrong for a type whose party_id is a
 // client-supplied target rather than the row's own scope, which is why the
 // generic stamp documents the exception instead of guessing.
-TEST_CASE("stamp overwrites the party id from the context", tags) {
+TEST_CASE("stamp overwrites the party id from the context", "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto other_party =
         boost::uuids::string_generator()("22222222-2222-2222-2222-222222222222");
@@ -171,7 +169,7 @@ TEST_CASE("stamp overwrites the party id from the context", tags) {
     REQUIRE(r.party_id == other_party);
 }
 
-TEST_CASE("stamp_document stamps every row of a document, however deep", tags) {
+TEST_CASE("stamp_document stamps every row of a document, however deep", "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto ctx = h.context().with_tenant(h.tenant_id(), "alice");
     document d;
@@ -186,7 +184,7 @@ TEST_CASE("stamp_document stamps every row of a document, however deep", tags) {
     REQUIRE(d.id == boost::uuids::uuid{});
 }
 
-TEST_CASE("delegated_actor prefers the acting user and falls back to the service account", tags) {
+TEST_CASE("delegated_actor prefers the acting user and falls back to the service account", "[handler_helpers]") {
     ores::testing::database_helper h;
 
     const auto with_user = h.context().with_tenant(h.tenant_id(), "alice");
@@ -196,7 +194,7 @@ TEST_CASE("delegated_actor prefers the acting user and falls back to the service
     REQUIRE(delegated_actor(without_user) == h.context().service_account());
 }
 
-TEST_CASE("log_handler_entry returns the correlation id the caller supplied", tags) {
+TEST_CASE("log_handler_entry returns the correlation id the caller supplied", "[handler_helpers]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::nats::message msg;
     msg.subject = "iam.v1.accounts.list";
@@ -205,7 +203,7 @@ TEST_CASE("log_handler_entry returns the correlation id the caller supplied", ta
     REQUIRE(log_handler_entry(lg, msg) == "corr-1");
 }
 
-TEST_CASE("decode returns the object the wire codec encoded", tags) {
+TEST_CASE("decode returns the object the wire codec encoded", "[handler_helpers]") {
     ores::nats::message msg;
     msg.subject = "test.subject";
     const payload original{"alpha", 3};
@@ -219,7 +217,7 @@ TEST_CASE("decode returns the object the wire codec encoded", tags) {
     REQUIRE(decoded->count == 3);
 }
 
-TEST_CASE("decode returns nothing for a payload the codec cannot read", tags) {
+TEST_CASE("decode returns nothing for a payload the codec cannot read", "[handler_helpers]") {
     ores::nats::message msg;
     msg.subject = "test.subject";
     // 0xc1 is the byte msgpack reserves and never assigns.

@@ -19,22 +19,16 @@
  */
 #include "ores.iam.api/domain/role_permission.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[domain]");
-
-}
-
 using ores::iam::domain::role_permission;
 using namespace ores::logging;
 
-TEST_CASE("create_role_permission_with_valid_uuids", tags) {
+TEST_CASE("create_role_permission_with_valid_uuids", "[domain]") {
     auto lg(make_logger(test_suite));
 
     role_permission sut;
@@ -47,7 +41,7 @@ TEST_CASE("create_role_permission_with_valid_uuids", tags) {
     CHECK(!sut.permission_id.is_nil());
 }
 
-TEST_CASE("create_role_permission_with_specific_uuids", tags) {
+TEST_CASE("create_role_permission_with_specific_uuids", "[domain]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -64,7 +58,7 @@ TEST_CASE("create_role_permission_with_specific_uuids", tags) {
     CHECK(sut.permission_id == perm_uuid);
 }
 
-TEST_CASE("role_permission_same_role_different_permissions", tags) {
+TEST_CASE("role_permission_same_role_different_permissions", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto role_id = boost::uuids::random_generator()();
@@ -85,7 +79,7 @@ TEST_CASE("role_permission_same_role_different_permissions", tags) {
     }
 }
 
-TEST_CASE("role_permission_same_permission_different_roles", tags) {
+TEST_CASE("role_permission_same_permission_different_roles", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const auto permission_id = boost::uuids::random_generator()();
@@ -106,7 +100,7 @@ TEST_CASE("role_permission_same_permission_different_roles", tags) {
     }
 }
 
-TEST_CASE("create_multiple_random_role_permissions", tags) {
+TEST_CASE("create_multiple_random_role_permissions", "[domain]") {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 5; ++i) {
@@ -122,7 +116,7 @@ TEST_CASE("create_multiple_random_role_permissions", tags) {
     }
 }
 
-TEST_CASE("role_permission_default_uuids_are_nil", tags) {
+TEST_CASE("role_permission_default_uuids_are_nil", "[domain]") {
     auto lg(make_logger(test_suite));
 
     role_permission sut;

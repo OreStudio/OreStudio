@@ -31,8 +31,6 @@
 
 namespace {
 
-const std::string tags("[bundle_import]");
-
 /**
  * @brief A context with no connections, so a call that reaches storage fails.
  *
@@ -50,14 +48,14 @@ ores::database::context database_less_context() {
 
 }
 
-TEST_CASE("the staged dispatch returns false for a family the registry does not know", tags) {
+TEST_CASE("the staged dispatch returns false for a family the registry does not know", "[bundle_import]") {
     auto ctx = database_less_context();
     ores::refdata::service::conventions_apply_result result;
 
     CHECK_FALSE(ores::refdata::service::apply_staged_family(ctx, "no_such_family", "[]", result));
 }
 
-TEST_CASE("the staged dispatch has a branch for every registry family", tags) {
+TEST_CASE("the staged dispatch has a branch for every registry family", "[bundle_import]") {
     auto ctx = database_less_context();
 
     REQUIRE(ores::refdata::domain::convention_family_count > 0);

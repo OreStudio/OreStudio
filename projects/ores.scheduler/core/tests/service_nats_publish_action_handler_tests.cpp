@@ -29,6 +29,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/asio/io_context.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <expected>
@@ -47,9 +48,6 @@
 // job.
 
 namespace {
-
-const std::string_view test_suite("scheduler.tests");
-const std::string tags("[action][nats]");
 
 // The subjects the refusals are faked on.
 //
@@ -92,7 +90,7 @@ using ores::scheduler::service::action_context;
 using ores::scheduler::service::nats_publish_action_handler;
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("nats_publish_action_handler claims the nats_publish action type", tags) {
+TEST_CASE("nats_publish_action_handler claims the nats_publish action type", "[action][nats]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -103,7 +101,7 @@ TEST_CASE("nats_publish_action_handler claims the nats_publish action type", tag
     CHECK(handler.action_type() == "nats_publish");
 }
 
-TEST_CASE("nats_publish_action_handler refuses a payload it cannot read", tags) {
+TEST_CASE("nats_publish_action_handler refuses a payload it cannot read", "[action][nats]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -123,7 +121,7 @@ TEST_CASE("nats_publish_action_handler refuses a payload it cannot read", tags) 
     CHECK_FALSE(result.error().empty());
 }
 
-TEST_CASE("nats_publish_action_handler refuses a payload with no subject", tags) {
+TEST_CASE("nats_publish_action_handler refuses a payload with no subject", "[action][nats]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -146,7 +144,7 @@ TEST_CASE("nats_publish_action_handler refuses a payload with no subject", tags)
     CHECK(result.error().find("subject") != std::string::npos);
 }
 
-TEST_CASE("nats_publish_action_handler publishes to the payload's subject", tags) {
+TEST_CASE("nats_publish_action_handler publishes to the payload's subject", "[action][nats]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -170,7 +168,7 @@ TEST_CASE("nats_publish_action_handler publishes to the payload's subject", tags
     CHECK(result.has_value());
 }
 
-TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused", tags) {
+TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused", "[action][nats]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -216,7 +214,7 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
 }
 
 TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused in the body",
-          tags) {
+          "[action][nats]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

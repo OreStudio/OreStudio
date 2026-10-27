@@ -25,16 +25,10 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-
-namespace {
-
-const std::string_view test_suite("ores.dq.tests");
-const std::string tags("[repository]");
-
-}
 
 using namespace ores::logging;
 using namespace ores::dq::generators;
@@ -43,7 +37,7 @@ using ores::testing::database_helper;
 using ores::dq::repository::coding_scheme_repository;
 using ores::utility::generation::generation_context;
 
-TEST_CASE("write_single_coding_scheme", tags) {
+TEST_CASE("write_single_coding_scheme", "[repository]") {
 
     auto lg(make_logger(test_suite));
 
@@ -65,7 +59,7 @@ TEST_CASE("write_single_coding_scheme", tags) {
     CHECK(read_coding_schemes[0].name == coding_scheme.name);
 }
 
-TEST_CASE("write_multiple_coding_schemes", tags) {
+TEST_CASE("write_multiple_coding_schemes", "[repository]") {
 
     auto lg(make_logger(test_suite));
 
@@ -95,7 +89,7 @@ TEST_CASE("write_multiple_coding_schemes", tags) {
     }
 }
 
-TEST_CASE("read_latest_coding_schemes", tags) {
+TEST_CASE("read_latest_coding_schemes", "[repository]") {
 
     auto lg(make_logger(test_suite));
 
@@ -125,7 +119,7 @@ TEST_CASE("read_latest_coding_schemes", tags) {
     }
 }
 
-TEST_CASE("read_latest_coding_scheme_by_code", tags) {
+TEST_CASE("read_latest_coding_scheme_by_code", "[repository]") {
 
     auto lg(make_logger(test_suite));
 
@@ -151,7 +145,7 @@ TEST_CASE("read_latest_coding_scheme_by_code", tags) {
     CHECK(read_coding_schemes[0].name == target.name);
 }
 
-TEST_CASE("read_nonexistent_coding_scheme", tags) {
+TEST_CASE("read_nonexistent_coding_scheme", "[repository]") {
 
     auto lg(make_logger(test_suite));
 

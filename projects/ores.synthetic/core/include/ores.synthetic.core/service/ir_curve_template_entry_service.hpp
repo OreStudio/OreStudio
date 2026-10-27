@@ -76,24 +76,31 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_ir_curve_template_entries_response list_ir_curve_template_entries(
-        const messaging::list_ir_curve_template_entries_request& request);
-    messaging::get_ir_curve_template_entry_response
-    get_ir_curve_template_entry(const messaging::get_ir_curve_template_entry_request& request);
-    messaging::get_many_ir_curve_template_entries_response get_many_ir_curve_template_entries(
-        const messaging::get_many_ir_curve_template_entries_request& request);
-    messaging::put_ir_curve_template_entry_response
-    put_ir_curve_template_entry(const messaging::put_ir_curve_template_entry_request& request);
-    messaging::put_many_ir_curve_template_entries_response put_many_ir_curve_template_entries(
-        const messaging::put_many_ir_curve_template_entries_request& request);
-    messaging::delete_ir_curve_template_entry_response delete_ir_curve_template_entry(
-        const messaging::delete_ir_curve_template_entry_request& request);
-    messaging::delete_many_ir_curve_template_entries_response delete_many_ir_curve_template_entries(
-        const messaging::delete_many_ir_curve_template_entries_request& request);
-    messaging::list_ir_curve_template_entry_versions_response list_ir_curve_template_entry_versions(
-        const messaging::list_ir_curve_template_entry_versions_request& request);
-    messaging::get_ir_curve_template_entry_version_response get_ir_curve_template_entry_version(
-        const messaging::get_ir_curve_template_entry_version_request& request);
+    ::ores::synthetic::messaging::list_ir_curve_template_entries_response
+    list_ir_curve_template_entries(
+        const ::ores::synthetic::messaging::list_ir_curve_template_entries_request& request);
+    ::ores::synthetic::messaging::get_ir_curve_template_entry_response get_ir_curve_template_entry(
+        const ::ores::synthetic::messaging::get_ir_curve_template_entry_request& request);
+    ::ores::synthetic::messaging::get_many_ir_curve_template_entries_response
+    get_many_ir_curve_template_entries(
+        const ::ores::synthetic::messaging::get_many_ir_curve_template_entries_request& request);
+    ::ores::synthetic::messaging::put_ir_curve_template_entry_response put_ir_curve_template_entry(
+        const ::ores::synthetic::messaging::put_ir_curve_template_entry_request& request);
+    ::ores::synthetic::messaging::put_many_ir_curve_template_entries_response
+    put_many_ir_curve_template_entries(
+        const ::ores::synthetic::messaging::put_many_ir_curve_template_entries_request& request);
+    ::ores::synthetic::messaging::delete_ir_curve_template_entry_response
+    delete_ir_curve_template_entry(
+        const ::ores::synthetic::messaging::delete_ir_curve_template_entry_request& request);
+    ::ores::synthetic::messaging::delete_many_ir_curve_template_entries_response
+    delete_many_ir_curve_template_entries(
+        const ::ores::synthetic::messaging::delete_many_ir_curve_template_entries_request& request);
+    ::ores::synthetic::messaging::list_ir_curve_template_entry_versions_response
+    list_ir_curve_template_entry_versions(
+        const ::ores::synthetic::messaging::list_ir_curve_template_entry_versions_request& request);
+    ::ores::synthetic::messaging::get_ir_curve_template_entry_version_response
+    get_ir_curve_template_entry_version(
+        const ::ores::synthetic::messaging::get_ir_curve_template_entry_version_request& request);
     /**@}*/
 
     /**
@@ -197,7 +204,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::ir_curve_template_entry_change& change,
+    prepare_change(const ::ores::synthetic::messaging::ir_curve_template_entry_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::ir_curve_template_entry& out);
 };

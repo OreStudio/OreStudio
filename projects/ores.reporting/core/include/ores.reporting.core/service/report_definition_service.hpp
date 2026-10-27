@@ -75,24 +75,27 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_report_definitions_response
-    list_report_definitions(const messaging::list_report_definitions_request& request);
-    messaging::get_report_definition_response
-    get_report_definition(const messaging::get_report_definition_request& request);
-    messaging::get_many_report_definitions_response
-    get_many_report_definitions(const messaging::get_many_report_definitions_request& request);
-    messaging::put_report_definition_response
-    put_report_definition(const messaging::put_report_definition_request& request);
-    messaging::put_many_report_definitions_response
-    put_many_report_definitions(const messaging::put_many_report_definitions_request& request);
-    messaging::delete_report_definition_response
-    delete_report_definition(const messaging::delete_report_definition_request& request);
-    messaging::delete_many_report_definitions_response delete_many_report_definitions(
-        const messaging::delete_many_report_definitions_request& request);
-    messaging::list_report_definition_versions_response list_report_definition_versions(
-        const messaging::list_report_definition_versions_request& request);
-    messaging::get_report_definition_version_response
-    get_report_definition_version(const messaging::get_report_definition_version_request& request);
+    ::ores::reporting::messaging::list_report_definitions_response list_report_definitions(
+        const ::ores::reporting::messaging::list_report_definitions_request& request);
+    ::ores::reporting::messaging::get_report_definition_response get_report_definition(
+        const ::ores::reporting::messaging::get_report_definition_request& request);
+    ::ores::reporting::messaging::get_many_report_definitions_response get_many_report_definitions(
+        const ::ores::reporting::messaging::get_many_report_definitions_request& request);
+    ::ores::reporting::messaging::put_report_definition_response put_report_definition(
+        const ::ores::reporting::messaging::put_report_definition_request& request);
+    ::ores::reporting::messaging::put_many_report_definitions_response put_many_report_definitions(
+        const ::ores::reporting::messaging::put_many_report_definitions_request& request);
+    ::ores::reporting::messaging::delete_report_definition_response delete_report_definition(
+        const ::ores::reporting::messaging::delete_report_definition_request& request);
+    ::ores::reporting::messaging::delete_many_report_definitions_response
+    delete_many_report_definitions(
+        const ::ores::reporting::messaging::delete_many_report_definitions_request& request);
+    ::ores::reporting::messaging::list_report_definition_versions_response
+    list_report_definition_versions(
+        const ::ores::reporting::messaging::list_report_definition_versions_request& request);
+    ::ores::reporting::messaging::get_report_definition_version_response
+    get_report_definition_version(
+        const ::ores::reporting::messaging::get_report_definition_version_request& request);
     /**@}*/
 
     /**
@@ -204,9 +207,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::report_definition_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::report_definition& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::reporting::messaging::report_definition_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::report_definition& out);
 };
 
 }

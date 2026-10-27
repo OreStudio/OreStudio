@@ -65,8 +65,6 @@
 
 namespace {
 
-const std::string tags("[app][feed_ingest_loop]");
-
 using ores::marketdata::messaging::market_tick;
 using ores::marketdata::repository::market_observation_repository;
 using ores::marketdata::repository::market_series_repository;
@@ -268,7 +266,7 @@ std::shared_ptr<ores::marketdata::service::app::tick_writer> make_writer() {
 
 }
 
-TEST_CASE("a_routed_tick_writes_the_series_and_the_tick", tags) {
+TEST_CASE("a_routed_tick_writes_the_series_and_the_tick", "[app][feed_ingest_loop]") {
     auto writer = make_writer();
     if (!writer)
         SKIP("The tick writer role is not configured");
@@ -316,7 +314,7 @@ TEST_CASE("a_routed_tick_writes_the_series_and_the_tick", tags) {
     CHECK(boost::uuids::to_string(points.front().party_id) == party);
 }
 
-TEST_CASE("a_tick_from_a_source_that_no_route_names_is_dropped_and_writes_nothing", tags) {
+TEST_CASE("a_tick_from_a_source_that_no_route_names_is_dropped_and_writes_nothing", "[app][feed_ingest_loop]") {
     fixture f;
     const auto bound_source = bound_prefix + run_tag();
     const auto other_source = other_prefix + run_tag();
@@ -334,7 +332,7 @@ TEST_CASE("a_tick_from_a_source_that_no_route_names_is_dropped_and_writes_nothin
     CHECK(f.series_for(quote_uri).empty());
 }
 
-TEST_CASE("a_tick_published_on_the_wire_reaches_the_store", tags) {
+TEST_CASE("a_tick_published_on_the_wire_reaches_the_store", "[app][feed_ingest_loop]") {
     fixture f;
     const auto bound_source = bound_prefix + run_tag();
     const auto quote_uri = eur_usd_spot();
@@ -358,7 +356,7 @@ TEST_CASE("a_tick_published_on_the_wire_reaches_the_store", tags) {
     REQUIRE(f.series_for(quote_uri).size() == 1);
 }
 
-TEST_CASE("a_batch_of_ticks_stores_every_datum_and_keeps_the_last_of_a_repeated_key", tags) {
+TEST_CASE("a_batch_of_ticks_stores_every_datum_and_keeps_the_last_of_a_repeated_key", "[app][feed_ingest_loop]") {
     auto writer = make_writer();
     if (!writer)
         SKIP("The tick writer role is not configured");
@@ -401,7 +399,7 @@ TEST_CASE("a_batch_of_ticks_stores_every_datum_and_keeps_the_last_of_a_repeated_
     CHECK(tick_rows_of(tenant, party, boost::uuids::to_string(second_series.front().id)) == "1");
 }
 
-TEST_CASE("a_tick_is_accepted_and_not_stored_when_the_store_does_not_answer", tags) {
+TEST_CASE("a_tick_is_accepted_and_not_stored_when_the_store_does_not_answer", "[app][feed_ingest_loop]") {
     fixture f;
     const auto bound_source = bound_prefix + run_tag();
     const auto quote_uri = eur_usd_spot();
@@ -427,7 +425,7 @@ TEST_CASE("a_tick_is_accepted_and_not_stored_when_the_store_does_not_answer", ta
                        boost::uuids::to_string(series.front().id)) == "0");
 }
 
-TEST_CASE("a_started_loop_can_be_destroyed_while_ticks_arrive", tags) {
+TEST_CASE("a_started_loop_can_be_destroyed_while_ticks_arrive", "[app][feed_ingest_loop]") {
     fixture f;
     const auto bound_source = bound_prefix + run_tag();
     const auto quote_uri = eur_usd_spot();
@@ -458,7 +456,7 @@ TEST_CASE("a_started_loop_can_be_destroyed_while_ticks_arrive", tags) {
     SUCCEED();
 }
 
-TEST_CASE("a_stored_tick_is_copied_to_the_tick_table_under_the_owner_of_its_series", tags) {
+TEST_CASE("a_stored_tick_is_copied_to_the_tick_table_under_the_owner_of_its_series", "[app][feed_ingest_loop]") {
     auto writer = make_writer();
     if (!writer)
         SKIP("The tick writer role is not configured");
@@ -486,7 +484,7 @@ TEST_CASE("a_stored_tick_is_copied_to_the_tick_table_under_the_owner_of_its_seri
                        series_text) == "0");
 }
 
-TEST_CASE("the_ticks_of_a_datum_with_a_coordinate_are_copied_under_its_coordinate_number", tags) {
+TEST_CASE("the_ticks_of_a_datum_with_a_coordinate_are_copied_under_its_coordinate_number", "[app][feed_ingest_loop]") {
     auto writer = make_writer();
     if (!writer)
         SKIP("The tick writer role is not configured");
@@ -1004,7 +1002,7 @@ private:
 }
 
 TEST_CASE("a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_next_batch_waits",
-          tags) {
+          "[app][feed_ingest_loop]") {
     const auto options = writer_options();
     if (!options)
         SKIP("The tick writer role is not configured");
@@ -1176,7 +1174,7 @@ private:
 
 }
 
-TEST_CASE("a_small_batch_does_not_pass_the_batches_that_are_in_the_stages", tags) {
+TEST_CASE("a_small_batch_does_not_pass_the_batches_that_are_in_the_stages", "[app][feed_ingest_loop]") {
     const auto options = writer_options();
     if (!options)
         SKIP("The tick writer role is not configured");

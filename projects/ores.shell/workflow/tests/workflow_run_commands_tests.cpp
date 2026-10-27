@@ -23,6 +23,7 @@
 #include "ores.shell/app/commands/workflow/workflow_run_commands.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
+#include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -43,9 +44,6 @@ using ores::workflow::messaging::workflow_step_summary;
 using namespace ores::logging;
 
 namespace {
-
-const std::string_view test_suite("ores.shell.workflow.tests");
-const std::string tags("[commands]");
 
 /// A step that finished, at @p index.
 workflow_step_summary finished_step(int index, std::string name) {
@@ -70,7 +68,7 @@ const std::string no_handoff_result =
 
 }
 
-TEST_CASE("workflow_run_commands_registers_the_wait_verb", tags) {
+TEST_CASE("workflow_run_commands_registers_the_wait_verb", "[commands]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -86,7 +84,7 @@ TEST_CASE("workflow_run_commands_registers_the_wait_verb", tags) {
           completions.end());
 }
 
-TEST_CASE("workflow_run_commands_start_requires_a_session", tags) {
+TEST_CASE("workflow_run_commands_start_requires_a_session", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -101,7 +99,7 @@ TEST_CASE("workflow_run_commands_start_requires_a_session", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_run_commands_start_usage_names_the_instance_id_flag", tags) {
+TEST_CASE("workflow_run_commands_start_usage_names_the_instance_id_flag", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -115,7 +113,7 @@ TEST_CASE("workflow_run_commands_start_usage_names_the_instance_id_flag", tags) 
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_run_commands_start_refuses_an_instance_id_that_is_not_a_uuid", tags) {
+TEST_CASE("workflow_run_commands_start_refuses_an_instance_id_that_is_not_a_uuid", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -135,7 +133,7 @@ TEST_CASE("workflow_run_commands_start_refuses_an_instance_id_that_is_not_a_uuid
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_run_commands_start_refuses_the_nil_instance_id", tags) {
+TEST_CASE("workflow_run_commands_start_refuses_the_nil_instance_id", "[commands]") {
     auto lg(make_logger(test_suite));
 
     nats_client session;
@@ -157,7 +155,7 @@ TEST_CASE("workflow_run_commands_start_refuses_the_nil_instance_id", tags) {
     CHECK(command_feedback::failed());
 }
 
-TEST_CASE("workflow_run_commands_reads_the_child_the_last_step_hands_on", tags) {
+TEST_CASE("workflow_run_commands_reads_the_child_the_last_step_hands_on", "[commands]") {
     auto lg(make_logger(test_suite));
 
     const auto handoff = workflow_run_commands::handoff_of_result(result_holding(handoff_result));
@@ -169,7 +167,7 @@ TEST_CASE("workflow_run_commands_reads_the_child_the_last_step_hands_on", tags) 
     CHECK(handoff->tenant_id == "0d2b1c44-6f6a-4f0e-9d33-71d4bb0c1f21");
 }
 
-TEST_CASE("workflow_run_commands_treats_a_step_that_names_no_child_as_nothing_handed_on", tags) {
+TEST_CASE("workflow_run_commands_treats_a_step_that_names_no_child_as_nothing_handed_on", "[commands]") {
     auto lg(make_logger(test_suite));
 
     // A result that names an empty child and one that records nothing at all
@@ -186,7 +184,7 @@ TEST_CASE("workflow_run_commands_treats_a_step_that_names_no_child_as_nothing_ha
     }
 }
 
-TEST_CASE("workflow_run_commands_fails_on_a_step_result_it_cannot_read", tags) {
+TEST_CASE("workflow_run_commands_fails_on_a_step_result_it_cannot_read", "[commands]") {
     auto lg(make_logger(test_suite));
 
     // The read said the step has no result, so whether the run handed work on
@@ -201,7 +199,7 @@ TEST_CASE("workflow_run_commands_fails_on_a_step_result_it_cannot_read", tags) {
     CHECK(!unreadable.error().empty());
 }
 
-TEST_CASE("workflow_run_commands_reads_only_the_last_completed_step", tags) {
+TEST_CASE("workflow_run_commands_reads_only_the_last_completed_step", "[commands]") {
     auto lg(make_logger(test_suite));
 
     auto steps = std::vector<workflow_step_summary>{finished_step(0, "system_provision"),
@@ -216,7 +214,7 @@ TEST_CASE("workflow_run_commands_reads_only_the_last_completed_step", tags) {
     CHECK(last->name == "start_tenant_setup");
 }
 
-TEST_CASE("workflow_run_commands_finds_no_handoff_step_in_a_run_that_completed_none", tags) {
+TEST_CASE("workflow_run_commands_finds_no_handoff_step_in_a_run_that_completed_none", "[commands]") {
     auto lg(make_logger(test_suite));
 
     auto steps =
@@ -230,7 +228,7 @@ TEST_CASE("workflow_run_commands_finds_no_handoff_step_in_a_run_that_completed_n
     CHECK(last == nullptr);
 }
 
-TEST_CASE("workflow_run_commands_waits_for_every_step_the_run_planned", tags) {
+TEST_CASE("workflow_run_commands_waits_for_every_step_the_run_planned", "[commands]") {
     auto lg(make_logger(test_suite));
 
     // The plan says two steps, but only the first exists yet. Calling that run
@@ -248,7 +246,7 @@ TEST_CASE("workflow_run_commands_waits_for_every_step_the_run_planned", tags) {
     CHECK(workflow_run_commands::run_completed(reply, 0));
 }
 
-TEST_CASE("workflow_run_commands_counts_a_step_that_warned_as_complete", tags) {
+TEST_CASE("workflow_run_commands_counts_a_step_that_warned_as_complete", "[commands]") {
     auto lg(make_logger(test_suite));
 
     auto step = finished_step(0, "import_lei_hierarchy");
@@ -259,7 +257,7 @@ TEST_CASE("workflow_run_commands_counts_a_step_that_warned_as_complete", tags) {
     CHECK(workflow_run_commands::is_step_complete(step));
 }
 
-TEST_CASE("workflow_run_commands_completes_a_run_whose_status_says_completed", tags) {
+TEST_CASE("workflow_run_commands_completes_a_run_whose_status_says_completed", "[commands]") {
     auto lg(make_logger(test_suite));
 
     // A run the caller may not see comes back as a success with an empty step
@@ -273,7 +271,7 @@ TEST_CASE("workflow_run_commands_completes_a_run_whose_status_says_completed", t
     CHECK(workflow_run_commands::run_completed(reply, 0));
 }
 
-TEST_CASE("workflow_run_commands_does_not_complete_a_running_run_with_no_steps", tags) {
+TEST_CASE("workflow_run_commands_does_not_complete_a_running_run_with_no_steps", "[commands]") {
     auto lg(make_logger(test_suite));
 
     get_workflow_steps_response reply{.success = true, .status = "in_progress", .step_count = 9};
@@ -284,7 +282,7 @@ TEST_CASE("workflow_run_commands_does_not_complete_a_running_run_with_no_steps",
     CHECK(!workflow_run_commands::run_completed(reply, 0));
 }
 
-TEST_CASE("workflow_run_commands_follows_a_child_only_in_a_tenant_it_can_read", tags) {
+TEST_CASE("workflow_run_commands_follows_a_child_only_in_a_tenant_it_can_read", "[commands]") {
     auto lg(make_logger(test_suite));
 
     const std::string acme("3a8907d7-ba47-4b70-993c-459a942cab45");
@@ -298,7 +296,7 @@ TEST_CASE("workflow_run_commands_follows_a_child_only_in_a_tenant_it_can_read", 
     CHECK(!workflow_run_commands::can_read_run_of(acme, new_tenant));
 }
 
-TEST_CASE("workflow_run_commands_refuses_a_run_whose_tenant_is_unknown", tags) {
+TEST_CASE("workflow_run_commands_refuses_a_run_whose_tenant_is_unknown", "[commands]") {
     auto lg(make_logger(test_suite));
 
     // A tenant the handoff does not name, or names as something that is not a
@@ -316,7 +314,7 @@ TEST_CASE("workflow_run_commands_refuses_a_run_whose_tenant_is_unknown", tags) {
     CHECK(!workflow_run_commands::can_read_run_of(system, "not-a-tenant-id"));
 }
 
-TEST_CASE("workflow_run_commands_follows_a_handoff_this_session_can_read", tags) {
+TEST_CASE("workflow_run_commands_follows_a_handoff_this_session_can_read", "[commands]") {
     auto lg(make_logger(test_suite));
 
     const std::string acme("3a8907d7-ba47-4b70-993c-459a942cab45");
@@ -347,7 +345,7 @@ TEST_CASE("workflow_run_commands_follows_a_handoff_this_session_can_read", tags)
     CHECK(!workflow_run_commands::is_handoff_followed(acme, work));
 }
 
-TEST_CASE("workflow_run_commands_hands_the_child_only_what_the_first_run_left", tags) {
+TEST_CASE("workflow_run_commands_hands_the_child_only_what_the_first_run_left", "[commands]") {
     auto lg(make_logger(test_suite));
 
     // One budget covers the command, so the time the first run took is taken
@@ -365,7 +363,7 @@ TEST_CASE("workflow_run_commands_hands_the_child_only_what_the_first_run_left", 
               std::chrono::seconds(3600), std::chrono::seconds(7200)) == std::chrono::seconds(0));
 }
 
-TEST_CASE("workflow_run_commands_fails_when_it_cannot_read_the_run", tags) {
+TEST_CASE("workflow_run_commands_fails_when_it_cannot_read_the_run", "[commands]") {
     auto lg(make_logger(test_suite));
 
     // A session with no connection stands in for any read the session cannot
@@ -384,7 +382,7 @@ TEST_CASE("workflow_run_commands_fails_when_it_cannot_read_the_run", tags) {
     CHECK(out.str().find("Could not read the steps") != std::string::npos);
 }
 
-TEST_CASE("workflow_run_commands_suppresses_only_the_first_refused_poll", tags) {
+TEST_CASE("workflow_run_commands_suppresses_only_the_first_refused_poll", "[commands]") {
     auto lg(make_logger(test_suite));
 
     // The engine answers the start before it creates the instance row, so the

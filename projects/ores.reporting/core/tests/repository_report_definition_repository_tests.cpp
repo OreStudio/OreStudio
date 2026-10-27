@@ -28,13 +28,11 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
-
-const std::string_view test_suite("ores.reporting.tests");
-const std::string tags("[repository]");
 
 /**
  * @brief Fetches the first available party id from the test database.
@@ -72,7 +70,7 @@ using namespace ores::reporting::generators;
 using ores::testing::database_helper;
 using ores::reporting::repository::report_definition_repository;
 
-TEST_CASE("write_single_report_definition", tags) {
+TEST_CASE("write_single_report_definition", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -89,7 +87,7 @@ TEST_CASE("write_single_report_definition", tags) {
     CHECK_NOTHROW(repo.write(h.context(), rd));
 }
 
-TEST_CASE("write_multiple_report_definitions", tags) {
+TEST_CASE("write_multiple_report_definitions", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -108,7 +106,7 @@ TEST_CASE("write_multiple_report_definitions", tags) {
     CHECK_NOTHROW(repo.write(h.context(), definitions));
 }
 
-TEST_CASE("read_latest_report_definitions", tags) {
+TEST_CASE("read_latest_report_definitions", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -132,7 +130,7 @@ TEST_CASE("read_latest_report_definitions", tags) {
     CHECK(read.size() >= written.size());
 }
 
-TEST_CASE("read_latest_report_definition_by_id", tags) {
+TEST_CASE("read_latest_report_definition_by_id", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -158,7 +156,7 @@ TEST_CASE("read_latest_report_definition_by_id", tags) {
     CHECK(read[0].name == target.name);
 }
 
-TEST_CASE("read_all_versions_of_report_definition", tags) {
+TEST_CASE("read_all_versions_of_report_definition", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -182,7 +180,7 @@ TEST_CASE("read_all_versions_of_report_definition", tags) {
     CHECK(all.size() >= 2);
 }
 
-TEST_CASE("remove_report_definition", tags) {
+TEST_CASE("remove_report_definition", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -207,7 +205,7 @@ TEST_CASE("remove_report_definition", tags) {
     CHECK(after.empty());
 }
 
-TEST_CASE("read_nonexistent_report_definition", tags) {
+TEST_CASE("read_nonexistent_report_definition", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

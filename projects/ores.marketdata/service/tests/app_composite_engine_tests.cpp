@@ -30,8 +30,6 @@
 
 namespace {
 
-const std::string tags("[app][composite_engine]");
-
 using namespace std::chrono_literals;
 using namespace ores::marketdata::service::app;
 
@@ -76,26 +74,26 @@ struct world {
 
 }
 
-TEST_CASE("a_pass_through_rule_takes_the_first_input_that_has_a_value", tags) {
+TEST_CASE("a_pass_through_rule_takes_the_first_input_that_has_a_value", "[app][composite_engine]") {
     const auto rule = make_composite_rule("pass_through");
     REQUIRE(rule);
     CHECK(rule->evaluate({1.5, 2.5}) == 1.5);
     CHECK_FALSE(rule->evaluate({}).has_value());
 }
 
-TEST_CASE("the_average_and_median_rules_derive_a_value", tags) {
+TEST_CASE("the_average_and_median_rules_derive_a_value", "[app][composite_engine]") {
     CHECK(make_composite_rule("average")->evaluate({1.0, 2.0, 6.0}) == 3.0);
     CHECK(make_composite_rule("median")->evaluate({9.0, 1.0, 5.0}) == 5.0);
     CHECK(make_composite_rule("median")->evaluate({1.0, 2.0, 3.0, 10.0}) == 2.5);
     CHECK_FALSE(make_composite_rule("average")->evaluate({}).has_value());
 }
 
-TEST_CASE("a_code_that_names_no_rule_makes_no_rule", tags) {
+TEST_CASE("a_code_that_names_no_rule_makes_no_rule", "[app][composite_engine]") {
     CHECK(make_composite_rule("waterfall") == nullptr);
     CHECK(make_composite_rule("") == nullptr);
 }
 
-TEST_CASE("a_composite_takes_its_value_from_its_inputs_when_the_party_holds_the_rights", tags) {
+TEST_CASE("a_composite_takes_its_value_from_its_inputs_when_the_party_holds_the_rights", "[app][composite_engine]") {
     world w;
     const std::vector subscriptions{world::subscription("bloomberg", true),
                                     world::subscription("lseg", true)};
@@ -108,7 +106,7 @@ TEST_CASE("a_composite_takes_its_value_from_its_inputs_when_the_party_holds_the_
     CHECK(out.reason.empty());
 }
 
-TEST_CASE("a_composite_with_a_missing_right_gets_no_value_and_shows_the_reason", tags) {
+TEST_CASE("a_composite_with_a_missing_right_gets_no_value_and_shows_the_reason", "[app][composite_engine]") {
     world w;
     const std::vector subscriptions{world::subscription("bloomberg", true),
                                     world::subscription("lseg", false)};
@@ -121,7 +119,7 @@ TEST_CASE("a_composite_with_a_missing_right_gets_no_value_and_shows_the_reason",
     CHECK(out.reason.find("bloomberg") == std::string::npos);
 }
 
-TEST_CASE("a_party_with_no_subscription_lacks_the_right_on_every_provider", tags) {
+TEST_CASE("a_party_with_no_subscription_lacks_the_right_on_every_provider", "[app][composite_engine]") {
     world w;
 
     const auto missing = missing_derived_rights(w.inputs, {});
@@ -131,7 +129,7 @@ TEST_CASE("a_party_with_no_subscription_lacks_the_right_on_every_provider", tags
     CHECK(missing[1] == "lseg");
 }
 
-TEST_CASE("the_display_right_alone_does_not_license_a_composite", tags) {
+TEST_CASE("the_display_right_alone_does_not_license_a_composite", "[app][composite_engine]") {
     world w;
     const std::vector subscriptions{world::subscription("bloomberg", false),
                                     world::subscription("lseg", false)};
@@ -139,7 +137,7 @@ TEST_CASE("the_display_right_alone_does_not_license_a_composite", tags) {
     CHECK(missing_derived_rights(w.inputs, subscriptions).size() == 2);
 }
 
-TEST_CASE("a_composite_with_no_input_value_shows_that_reason", tags) {
+TEST_CASE("a_composite_with_no_input_value_shows_that_reason", "[app][composite_engine]") {
     world w;
     const std::vector subscriptions{world::subscription("bloomberg", true),
                                     world::subscription("lseg", true)};
@@ -150,7 +148,7 @@ TEST_CASE("a_composite_with_no_input_value_shows_that_reason", tags) {
     CHECK(out.reason == "No input has a value.");
 }
 
-TEST_CASE("a_composite_uses_the_inputs_that_have_a_value_in_the_order_of_their_positions", tags) {
+TEST_CASE("a_composite_uses_the_inputs_that_have_a_value_in_the_order_of_their_positions", "[app][composite_engine]") {
     world w;
     w.composite.rule_code = "pass_through";
     const std::vector subscriptions{world::subscription("bloomberg", true),
@@ -170,7 +168,7 @@ TEST_CASE("a_composite_uses_the_inputs_that_have_a_value_in_the_order_of_their_p
     CHECK(*both.value == 1.08);
 }
 
-TEST_CASE("a_composite_with_an_unknown_rule_shows_that_reason", tags) {
+TEST_CASE("a_composite_with_an_unknown_rule_shows_that_reason", "[app][composite_engine]") {
     world w;
     w.composite.rule_code = "waterfall";
 
@@ -180,7 +178,7 @@ TEST_CASE("a_composite_with_an_unknown_rule_shows_that_reason", tags) {
     CHECK(out.reason.find("waterfall") != std::string::npos);
 }
 
-TEST_CASE("the_resolver_gives_the_inputs_of_a_composite_in_order", tags) {
+TEST_CASE("the_resolver_gives_the_inputs_of_a_composite_in_order", "[app][composite_engine]") {
     world w;
     const auto resolve = composite_input_resolver({w.composite}, w.inputs);
 
@@ -192,7 +190,7 @@ TEST_CASE("the_resolver_gives_the_inputs_of_a_composite_in_order", tags) {
     CHECK(resolve(bbg_eur).empty());
 }
 
-TEST_CASE("the_demand_and_the_metering_of_a_composite_include_its_inputs", tags) {
+TEST_CASE("the_demand_and_the_metering_of_a_composite_include_its_inputs", "[app][composite_engine]") {
     world w;
     boost::uuids::random_generator gen;
     const auto now = std::chrono::system_clock::now();
@@ -257,7 +255,7 @@ TEST_CASE("the_demand_and_the_metering_of_a_composite_include_its_inputs", tags)
     CHECK(states.size() == 2);
 }
 
-TEST_CASE("an_input_value_that_is_not_a_number_is_no_value", tags) {
+TEST_CASE("an_input_value_that_is_not_a_number_is_no_value", "[app][composite_engine]") {
     world w;
     const std::vector subscriptions{world::subscription("bloomberg", true),
                                     world::subscription("lseg", true)};

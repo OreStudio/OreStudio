@@ -21,22 +21,16 @@
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_table.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
 
-namespace {
-
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[domain]");
-
-}
-
 using ores::iam::domain::account;
 using namespace ores::logging;
 
-TEST_CASE("create_account_with_valid_fields", tags) {
+TEST_CASE("create_account_with_valid_fields", "[domain]") {
     auto lg(make_logger(test_suite));
 
     account sut;
@@ -53,7 +47,7 @@ TEST_CASE("create_account_with_valid_fields", tags) {
     CHECK(sut.email == "john.doe@example.com");
 }
 
-TEST_CASE("default_constructed_account_has_no_image_id", tags) {
+TEST_CASE("default_constructed_account_has_no_image_id", "[domain]") {
     auto lg(make_logger(test_suite));
 
     const account sut;
@@ -62,7 +56,7 @@ TEST_CASE("default_constructed_account_has_no_image_id", tags) {
     CHECK(!sut.image_id.has_value());
 }
 
-TEST_CASE("account_image_id_can_be_set", tags) {
+TEST_CASE("account_image_id_can_be_set", "[domain]") {
     auto lg(make_logger(test_suite));
 
     account sut;
@@ -72,7 +66,7 @@ TEST_CASE("account_image_id_can_be_set", tags) {
     CHECK(sut.image_id.has_value());
 }
 
-TEST_CASE("create_admin_account", tags) {
+TEST_CASE("create_admin_account", "[domain]") {
     auto lg(make_logger(test_suite));
 
     // Note: Admin privileges are now managed via RBAC roles
@@ -90,7 +84,7 @@ TEST_CASE("create_admin_account", tags) {
     CHECK(sut.email == "admin@example.com");
 }
 
-TEST_CASE("account_with_specific_uuid", tags) {
+TEST_CASE("account_with_specific_uuid", "[domain]") {
     auto lg(make_logger(test_suite));
 
     boost::uuids::string_generator uuid_gen;
@@ -108,7 +102,7 @@ TEST_CASE("account_with_specific_uuid", tags) {
     CHECK(sut.username == "test.user");
 }
 
-TEST_CASE("account_insertion_operator", tags) {
+TEST_CASE("account_insertion_operator", "[domain]") {
     auto lg(make_logger(test_suite));
 
     account sut;
@@ -128,7 +122,7 @@ TEST_CASE("account_insertion_operator", tags) {
     CHECK(json_output.find("serialize@test.com") != std::string::npos);
 }
 
-TEST_CASE("create_account_with_faker", tags) {
+TEST_CASE("create_account_with_faker", "[domain]") {
     auto lg(make_logger(test_suite));
 
     account sut;
@@ -147,7 +141,7 @@ TEST_CASE("create_account_with_faker", tags) {
     CHECK(!sut.email.empty());
 }
 
-TEST_CASE("create_multiple_random_accounts", tags) {
+TEST_CASE("create_multiple_random_accounts", "[domain]") {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 3; ++i) {
@@ -166,7 +160,7 @@ TEST_CASE("create_multiple_random_accounts", tags) {
     }
 }
 
-TEST_CASE("account_convert_single_to_table", tags) {
+TEST_CASE("account_convert_single_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     account acc;
@@ -186,7 +180,7 @@ TEST_CASE("account_convert_single_to_table", tags) {
     CHECK(table.find("john.doe@example.com") != std::string::npos);
 }
 
-TEST_CASE("account_convert_multiple_to_table", tags) {
+TEST_CASE("account_convert_multiple_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<account> accounts;
@@ -213,7 +207,7 @@ TEST_CASE("account_convert_multiple_to_table", tags) {
     CHECK(table.find("user2@example.com") != std::string::npos);
 }
 
-TEST_CASE("account_convert_single_to_json", tags) {
+TEST_CASE("account_convert_single_to_json", "[domain]") {
     auto lg(make_logger(test_suite));
 
     account acc;
@@ -234,7 +228,7 @@ TEST_CASE("account_convert_single_to_json", tags) {
     CHECK(json.find("john.doe@example.com") != std::string::npos);
 }
 
-TEST_CASE("account_convert_multiple_to_json", tags) {
+TEST_CASE("account_convert_multiple_to_json", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<account> accounts;
@@ -261,7 +255,7 @@ TEST_CASE("account_convert_multiple_to_json", tags) {
     }
 }
 
-TEST_CASE("account_convert_empty_vector_to_table", tags) {
+TEST_CASE("account_convert_empty_vector_to_table", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<account> accounts;
@@ -273,7 +267,7 @@ TEST_CASE("account_convert_empty_vector_to_table", tags) {
     CHECK(!table.empty());
 }
 
-TEST_CASE("account_table_with_faker_data", tags) {
+TEST_CASE("account_table_with_faker_data", "[domain]") {
     auto lg(make_logger(test_suite));
 
     std::vector<account> accounts;

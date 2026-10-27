@@ -27,31 +27,27 @@
 
 using ores::analytics::service::publish_from_dq_function;
 
-namespace {
-const std::string tags("[service][publish]");
-}
-
-TEST_CASE("a pricing engines subject names its expansion function", tags) {
+TEST_CASE("a pricing engines subject names its expansion function", "[service][publish]") {
     CHECK(publish_from_dq_function("analytics.v1.ops.publish_pricing_engines_from_dq") ==
           "ores_analytics_publish_pricing_engines_from_dq_fn");
 }
 
-TEST_CASE("the operation name is the function name", tags) {
+TEST_CASE("the operation name is the function name", "[service][publish]") {
     CHECK(publish_from_dq_function("analytics.v1.ops.publish_todays_market_from_dq") ==
           "ores_analytics_publish_todays_market_from_dq_fn");
     CHECK(publish_from_dq_function("analytics.v1.ops.publish_a_b_c_from_dq") ==
           "ores_analytics_publish_a_b_c_from_dq_fn");
 }
 
-TEST_CASE("a subject without a version has no function", tags) {
+TEST_CASE("a subject without a version has no function", "[service][publish]") {
     CHECK(publish_from_dq_function("reporting.report-definitions.publish-from-dq").empty());
 }
 
-TEST_CASE("a subject outside the publish pattern has no function", tags) {
+TEST_CASE("a subject outside the publish pattern has no function", "[service][publish]") {
     CHECK(publish_from_dq_function("analytics.v1.report-definitions.list").empty());
 }
 
-TEST_CASE("a subject whose operation is not a plain publish name has no function", tags) {
+TEST_CASE("a subject whose operation is not a plain publish name has no function", "[service][publish]") {
     CHECK(publish_from_dq_function("analytics.v1.ops.x; drop table y").empty());
     CHECK(publish_from_dq_function("analytics.v1.ops.publish_a_from_dq; select 1").empty());
     CHECK(publish_from_dq_function("analytics.v1.ops.Publish_A_from_dq").empty());
@@ -59,6 +55,6 @@ TEST_CASE("a subject whose operation is not a plain publish name has no function
     CHECK(publish_from_dq_function("analytics.v1.ops._from_dq").empty());
 }
 
-TEST_CASE("a subject with nothing between the version and the suffix has no function", tags) {
+TEST_CASE("a subject with nothing between the version and the suffix has no function", "[service][publish]") {
     CHECK(publish_from_dq_function("analytics.v1..publish-from-dq").empty());
 }

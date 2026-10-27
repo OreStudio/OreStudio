@@ -76,24 +76,29 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_stress_test_scenarios_response
-    list_stress_test_scenarios(const messaging::list_stress_test_scenarios_request& request);
-    messaging::get_stress_test_scenario_response
-    get_stress_test_scenario(const messaging::get_stress_test_scenario_request& request);
-    messaging::get_many_stress_test_scenarios_response get_many_stress_test_scenarios(
-        const messaging::get_many_stress_test_scenarios_request& request);
-    messaging::put_stress_test_scenario_response
-    put_stress_test_scenario(const messaging::put_stress_test_scenario_request& request);
-    messaging::put_many_stress_test_scenarios_response put_many_stress_test_scenarios(
-        const messaging::put_many_stress_test_scenarios_request& request);
-    messaging::delete_stress_test_scenario_response
-    delete_stress_test_scenario(const messaging::delete_stress_test_scenario_request& request);
-    messaging::delete_many_stress_test_scenarios_response delete_many_stress_test_scenarios(
-        const messaging::delete_many_stress_test_scenarios_request& request);
-    messaging::list_stress_test_scenario_versions_response list_stress_test_scenario_versions(
-        const messaging::list_stress_test_scenario_versions_request& request);
-    messaging::get_stress_test_scenario_version_response get_stress_test_scenario_version(
-        const messaging::get_stress_test_scenario_version_request& request);
+    ::ores::analytics::messaging::list_stress_test_scenarios_response list_stress_test_scenarios(
+        const ::ores::analytics::messaging::list_stress_test_scenarios_request& request);
+    ::ores::analytics::messaging::get_stress_test_scenario_response get_stress_test_scenario(
+        const ::ores::analytics::messaging::get_stress_test_scenario_request& request);
+    ::ores::analytics::messaging::get_many_stress_test_scenarios_response
+    get_many_stress_test_scenarios(
+        const ::ores::analytics::messaging::get_many_stress_test_scenarios_request& request);
+    ::ores::analytics::messaging::put_stress_test_scenario_response put_stress_test_scenario(
+        const ::ores::analytics::messaging::put_stress_test_scenario_request& request);
+    ::ores::analytics::messaging::put_many_stress_test_scenarios_response
+    put_many_stress_test_scenarios(
+        const ::ores::analytics::messaging::put_many_stress_test_scenarios_request& request);
+    ::ores::analytics::messaging::delete_stress_test_scenario_response delete_stress_test_scenario(
+        const ::ores::analytics::messaging::delete_stress_test_scenario_request& request);
+    ::ores::analytics::messaging::delete_many_stress_test_scenarios_response
+    delete_many_stress_test_scenarios(
+        const ::ores::analytics::messaging::delete_many_stress_test_scenarios_request& request);
+    ::ores::analytics::messaging::list_stress_test_scenario_versions_response
+    list_stress_test_scenario_versions(
+        const ::ores::analytics::messaging::list_stress_test_scenario_versions_request& request);
+    ::ores::analytics::messaging::get_stress_test_scenario_version_response
+    get_stress_test_scenario_version(
+        const ::ores::analytics::messaging::get_stress_test_scenario_version_request& request);
     /**@}*/
 
     /**
@@ -196,7 +201,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::stress_test_scenario_change& change,
+    prepare_change(const ::ores::analytics::messaging::stress_test_scenario_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::stress_test_scenario& out);
 };

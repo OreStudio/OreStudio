@@ -24,8 +24,6 @@
 
 namespace {
 
-const std::string tags("[counterparty_proposal][mapping]");
-
 using ores::refdata::service::counterparty_lines;
 
 counterparty_lines counterparties(const std::string& operation) {
@@ -51,7 +49,7 @@ counterparty_lines links(const std::string& operation) {
 
 }
 
-TEST_CASE("each_kind_of_put_needs_the_write_permission_of_that_kind", tags) {
+TEST_CASE("each_kind_of_put_needs_the_write_permission_of_that_kind", "[counterparty_proposal][mapping]") {
     using ores::refdata::messaging::required_permissions;
     CHECK(required_permissions(counterparties("put")) ==
           std::vector<std::string>{"refdata::counterparties:write"});
@@ -61,7 +59,7 @@ TEST_CASE("each_kind_of_put_needs_the_write_permission_of_that_kind", tags) {
           std::vector<std::string>{"refdata::party_counterparties:write"});
 }
 
-TEST_CASE("each_kind_of_delete_needs_the_delete_permission_of_that_kind", tags) {
+TEST_CASE("each_kind_of_delete_needs_the_delete_permission_of_that_kind", "[counterparty_proposal][mapping]") {
     using ores::refdata::messaging::required_permissions;
     CHECK(required_permissions(counterparties("delete")) ==
           std::vector<std::string>{"refdata::counterparties:delete"});
@@ -71,7 +69,7 @@ TEST_CASE("each_kind_of_delete_needs_the_delete_permission_of_that_kind", tags) 
           std::vector<std::string>{"refdata::party_counterparties:delete"});
 }
 
-TEST_CASE("a_mix_of_kinds_needs_each_permission_once", tags) {
+TEST_CASE("a_mix_of_kinds_needs_each_permission_once", "[counterparty_proposal][mapping]") {
     auto lines = counterparties("put");
     lines.counterparties.push_back(lines.counterparties.back());
     lines.identifiers = identifiers("put").identifiers;
@@ -84,11 +82,11 @@ TEST_CASE("a_mix_of_kinds_needs_each_permission_once", tags) {
                                              "refdata::party_counterparties:delete"});
 }
 
-TEST_CASE("no_lines_cannot_be_proposed", tags) {
+TEST_CASE("no_lines_cannot_be_proposed", "[counterparty_proposal][mapping]") {
     CHECK_FALSE(ores::refdata::messaging::invalid_lines(counterparty_lines{}).empty());
 }
 
-TEST_CASE("an_unknown_operation_in_any_kind_cannot_be_proposed_and_counts_as_no_write", tags) {
+TEST_CASE("an_unknown_operation_in_any_kind_cannot_be_proposed_and_counts_as_no_write", "[counterparty_proposal][mapping]") {
     using ores::refdata::messaging::invalid_lines;
     using ores::refdata::messaging::required_permissions;
     CHECK_FALSE(invalid_lines(counterparties("purge")).empty());
@@ -97,7 +95,7 @@ TEST_CASE("an_unknown_operation_in_any_kind_cannot_be_proposed_and_counts_as_no_
     CHECK(required_permissions(links("purge")).empty());
 }
 
-TEST_CASE("puts_and_deletes_of_every_kind_can_be_proposed", tags) {
+TEST_CASE("puts_and_deletes_of_every_kind_can_be_proposed", "[counterparty_proposal][mapping]") {
     auto lines = counterparties("put");
     lines.identifiers = identifiers("delete").identifiers;
     lines.links = links("put").links;
@@ -105,7 +103,7 @@ TEST_CASE("puts_and_deletes_of_every_kind_can_be_proposed", tags) {
     CHECK(ores::refdata::messaging::invalid_lines(lines).empty());
 }
 
-TEST_CASE("a_recheck_fails_its_step_with_the_first_refused_line", tags) {
+TEST_CASE("a_recheck_fails_its_step_with_the_first_refused_line", "[counterparty_proposal][mapping]") {
     ores::refdata::service::counterparty_preview preview;
     preview.lines.push_back({.line_no = 1, .refusal = ""});
     preview.lines.push_back({.line_no = 2, .refusal = "stale"});
@@ -117,14 +115,14 @@ TEST_CASE("a_recheck_fails_its_step_with_the_first_refused_line", tags) {
     CHECK(result.error == "Line 2: stale");
 }
 
-TEST_CASE("a_recheck_with_no_refusal_completes_its_step", tags) {
+TEST_CASE("a_recheck_with_no_refusal_completes_its_step", "[counterparty_proposal][mapping]") {
     ores::refdata::service::counterparty_preview preview;
     preview.lines.push_back({.line_no = 1});
 
     CHECK(ores::refdata::messaging::recheck_step_result(preview).completed);
 }
 
-TEST_CASE("an_apply_step_reports_how_the_apply_ended", tags) {
+TEST_CASE("an_apply_step_reports_how_the_apply_ended", "[counterparty_proposal][mapping]") {
     using ores::refdata::messaging::apply_step_result;
     ores::refdata::service::counterparty_apply applied;
     applied.applied = true;

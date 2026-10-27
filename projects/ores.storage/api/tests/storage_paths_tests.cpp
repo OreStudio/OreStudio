@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.storage.api/net/storage_paths.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <string_view>
@@ -26,14 +27,7 @@
 using ores::storage::net::storage_paths;
 using namespace ores::logging;
 
-namespace {
-
-const std::string_view test_suite("ores.storage.tests");
-const std::string tags("[net]");
-
-}
-
-TEST_CASE("make_object_path_uses_the_storage_api_prefix", tags) {
+TEST_CASE("make_object_path_uses_the_storage_api_prefix", "[net]") {
     auto lg(make_logger(test_suite));
 
     const auto path = storage_paths::make_object_path("ores", "abc/def");
@@ -42,7 +36,7 @@ TEST_CASE("make_object_path_uses_the_storage_api_prefix", tags) {
     CHECK(path == "/api/v1/storage/ores/abc/def");
 }
 
-TEST_CASE("make_object_url_prepends_the_base_url", tags) {
+TEST_CASE("make_object_url_prepends_the_base_url", "[net]") {
     auto lg(make_logger(test_suite));
 
     const auto url = storage_paths::make_object_url("http://localhost:51000", "b", "k");
@@ -51,14 +45,14 @@ TEST_CASE("make_object_url_prepends_the_base_url", tags) {
     CHECK(url == "http://localhost:51000/api/v1/storage/b/k");
 }
 
-TEST_CASE("prefix_matches_the_storage_api_path", tags) {
+TEST_CASE("prefix_matches_the_storage_api_path", "[net]") {
     auto lg(make_logger(test_suite));
 
     BOOST_LOG_SEV(lg, info) << "Prefix: " << storage_paths::prefix;
     CHECK(storage_paths::prefix == "/api/v1/storage");
 }
 
-TEST_CASE("key_with_slashes_survives_unchanged", tags) {
+TEST_CASE("key_with_slashes_survives_unchanged", "[net]") {
     auto lg(make_logger(test_suite));
 
     const std::string key("releases/1.2.3/oscar-1.2.3.tar.gz");
@@ -71,7 +65,7 @@ TEST_CASE("key_with_slashes_survives_unchanged", tags) {
                  "releases/1.2.3/oscar-1.2.3.tar.gz");
 }
 
-TEST_CASE("split_object_path_inverts_make_object_path", tags) {
+TEST_CASE("split_object_path_inverts_make_object_path", "[net]") {
     auto lg(make_logger(test_suite));
 
     std::string bucket;
@@ -85,7 +79,7 @@ TEST_CASE("split_object_path_inverts_make_object_path", tags) {
     CHECK(key == original);
 }
 
-TEST_CASE("split_object_path_refuses_a_path_outside_the_prefix", tags) {
+TEST_CASE("split_object_path_refuses_a_path_outside_the_prefix", "[net]") {
     auto lg(make_logger(test_suite));
 
     std::string bucket;

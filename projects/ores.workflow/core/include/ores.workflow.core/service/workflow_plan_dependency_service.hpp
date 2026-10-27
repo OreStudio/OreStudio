@@ -76,29 +76,35 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_workflow_plan_dependencies_response list_workflow_plan_dependencies(
-        const messaging::list_workflow_plan_dependencies_request& request);
-    messaging::get_workflow_plan_dependency_response
-    get_workflow_plan_dependency(const messaging::get_workflow_plan_dependency_request& request);
-    messaging::get_many_workflow_plan_dependencies_response get_many_workflow_plan_dependencies(
-        const messaging::get_many_workflow_plan_dependencies_request& request);
-    messaging::put_workflow_plan_dependency_response
-    put_workflow_plan_dependency(const messaging::put_workflow_plan_dependency_request& request);
-    messaging::put_many_workflow_plan_dependencies_response put_many_workflow_plan_dependencies(
-        const messaging::put_many_workflow_plan_dependencies_request& request);
-    messaging::delete_workflow_plan_dependency_response delete_workflow_plan_dependency(
-        const messaging::delete_workflow_plan_dependency_request& request);
-    messaging::delete_many_workflow_plan_dependencies_response
+    ::ores::workflow::messaging::list_workflow_plan_dependencies_response
+    list_workflow_plan_dependencies(
+        const ::ores::workflow::messaging::list_workflow_plan_dependencies_request& request);
+    ::ores::workflow::messaging::get_workflow_plan_dependency_response get_workflow_plan_dependency(
+        const ::ores::workflow::messaging::get_workflow_plan_dependency_request& request);
+    ::ores::workflow::messaging::get_many_workflow_plan_dependencies_response
+    get_many_workflow_plan_dependencies(
+        const ::ores::workflow::messaging::get_many_workflow_plan_dependencies_request& request);
+    ::ores::workflow::messaging::put_workflow_plan_dependency_response put_workflow_plan_dependency(
+        const ::ores::workflow::messaging::put_workflow_plan_dependency_request& request);
+    ::ores::workflow::messaging::put_many_workflow_plan_dependencies_response
+    put_many_workflow_plan_dependencies(
+        const ::ores::workflow::messaging::put_many_workflow_plan_dependencies_request& request);
+    ::ores::workflow::messaging::delete_workflow_plan_dependency_response
+    delete_workflow_plan_dependency(
+        const ::ores::workflow::messaging::delete_workflow_plan_dependency_request& request);
+    ::ores::workflow::messaging::delete_many_workflow_plan_dependencies_response
     delete_many_workflow_plan_dependencies(
-        const messaging::delete_many_workflow_plan_dependencies_request& request);
-    messaging::list_by_workflow_id_workflow_plan_dependencies_response
+        const ::ores::workflow::messaging::delete_many_workflow_plan_dependencies_request& request);
+    ::ores::workflow::messaging::list_by_workflow_id_workflow_plan_dependencies_response
     list_by_workflow_id_workflow_plan_dependencies(
-        const messaging::list_by_workflow_id_workflow_plan_dependencies_request& request);
-    messaging::list_workflow_plan_dependency_versions_response
+        const ::ores::workflow::messaging::list_by_workflow_id_workflow_plan_dependencies_request&
+            request);
+    ::ores::workflow::messaging::list_workflow_plan_dependency_versions_response
     list_workflow_plan_dependency_versions(
-        const messaging::list_workflow_plan_dependency_versions_request& request);
-    messaging::get_workflow_plan_dependency_version_response get_workflow_plan_dependency_version(
-        const messaging::get_workflow_plan_dependency_version_request& request);
+        const ::ores::workflow::messaging::list_workflow_plan_dependency_versions_request& request);
+    ::ores::workflow::messaging::get_workflow_plan_dependency_version_response
+    get_workflow_plan_dependency_version(
+        const ::ores::workflow::messaging::get_workflow_plan_dependency_version_request& request);
     /**@}*/
 
     /**
@@ -221,7 +227,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::workflow_plan_dependency_change& change,
+    prepare_change(const ::ores::workflow::messaging::workflow_plan_dependency_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::workflow_plan_dependency& out);
 };

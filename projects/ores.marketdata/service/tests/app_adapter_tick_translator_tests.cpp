@@ -26,8 +26,6 @@
 
 namespace {
 
-const std::string tags("[app][adapter_tick_translator]");
-
 using namespace std::chrono_literals;
 using ores::marketdata::service::app::adapter_tick_drop;
 using ores::marketdata::service::app::adapter_tick_translator;
@@ -80,7 +78,7 @@ struct catalogue {
 
 }
 
-TEST_CASE("a_mapped_tick_becomes_the_tick_of_its_item_and_source", tags) {
+TEST_CASE("a_mapped_tick_becomes_the_tick_of_its_item_and_source", "[app][adapter_tick_translator]") {
     catalogue c;
     auto sut = c.translator();
 
@@ -95,7 +93,7 @@ TEST_CASE("a_mapped_tick_becomes_the_tick_of_its_item_and_source", tags) {
     CHECK(out->source_id == c.live.id);
 }
 
-TEST_CASE("a_live_and_a_simulated_source_take_the_same_path", tags) {
+TEST_CASE("a_live_and_a_simulated_source_take_the_same_path", "[app][adapter_tick_translator]") {
     catalogue c;
     auto sut = c.translator();
 
@@ -111,7 +109,7 @@ TEST_CASE("a_live_and_a_simulated_source_take_the_same_path", tags) {
     CHECK(live->source_id != simulated->source_id);
 }
 
-TEST_CASE("a_tick_with_no_vendor_instrument_is_unmapped", tags) {
+TEST_CASE("a_tick_with_no_vendor_instrument_is_unmapped", "[app][adapter_tick_translator]") {
     catalogue c;
     auto sut = c.translator();
 
@@ -130,7 +128,7 @@ TEST_CASE("a_tick_with_no_vendor_instrument_is_unmapped", tags) {
     CHECK(sut.drops("bloomberg-live", adapter_tick_drop::unmapped) == 3);
 }
 
-TEST_CASE("a_tick_of_an_adapter_that_is_no_source_is_unmapped", tags) {
+TEST_CASE("a_tick_of_an_adapter_that_is_no_source_is_unmapped", "[app][adapter_tick_translator]") {
     catalogue c;
     auto sut = c.translator();
 
@@ -140,7 +138,7 @@ TEST_CASE("a_tick_of_an_adapter_that_is_no_source_is_unmapped", tags) {
     CHECK(out.error() == adapter_tick_drop::unmapped);
 }
 
-TEST_CASE("a_mapping_that_does_not_hold_now_leaves_a_tick_unmapped", tags) {
+TEST_CASE("a_mapping_that_does_not_hold_now_leaves_a_tick_unmapped", "[app][adapter_tick_translator]") {
     catalogue c;
     c.mapping.effective_from = c.now + 1h;
     CHECK(c.translator().translate("bloomberg-live", c.tick(), c.now).error() ==
@@ -152,7 +150,7 @@ TEST_CASE("a_mapping_that_does_not_hold_now_leaves_a_tick_unmapped", tags) {
           adapter_tick_drop::unmapped);
 }
 
-TEST_CASE("the_newest_mapping_that_holds_names_the_item", tags) {
+TEST_CASE("the_newest_mapping_that_holds_names_the_item", "[app][adapter_tick_translator]") {
     catalogue c;
     auto newer = c.mapping;
     newer.id = boost::uuids::random_generator{}();
@@ -166,7 +164,7 @@ TEST_CASE("the_newest_mapping_that_holds_names_the_item", tags) {
     CHECK(out->tick.oresmd_uri == newer.oresmd_uri);
 }
 
-TEST_CASE("a_value_that_is_not_a_number_is_dropped", tags) {
+TEST_CASE("a_value_that_is_not_a_number_is_dropped", "[app][adapter_tick_translator]") {
     catalogue c;
     auto sut = c.translator();
 
@@ -178,7 +176,7 @@ TEST_CASE("a_value_that_is_not_a_number_is_dropped", tags) {
     }
 }
 
-TEST_CASE("a_value_outside_the_bounds_is_dropped", tags) {
+TEST_CASE("a_value_outside_the_bounds_is_dropped", "[app][adapter_tick_translator]") {
     catalogue c;
     auto sut = c.translator();
 
@@ -188,7 +186,7 @@ TEST_CASE("a_value_outside_the_bounds_is_dropped", tags) {
     CHECK(out.error() == adapter_tick_drop::out_of_range);
 }
 
-TEST_CASE("a_tick_older_than_the_age_limit_is_stale", tags) {
+TEST_CASE("a_tick_older_than_the_age_limit_is_stale", "[app][adapter_tick_translator]") {
     catalogue c;
     auto sut = c.translator();
 
@@ -200,7 +198,7 @@ TEST_CASE("a_tick_older_than_the_age_limit_is_stale", tags) {
     CHECK(out.error() == adapter_tick_drop::stale);
 }
 
-TEST_CASE("the_limits_an_adapter_reads_are_the_limits_the_service_applies", tags) {
+TEST_CASE("the_limits_an_adapter_reads_are_the_limits_the_service_applies", "[app][adapter_tick_translator]") {
     // The simulator injects its faults from these limits, so a tick one step beyond them is
     // dropped for exactly the reason the fault is meant to show.
     using ores::marketdata::domain::adapter_limits;
@@ -219,7 +217,7 @@ TEST_CASE("the_limits_an_adapter_reads_are_the_limits_the_service_applies", tags
     CHECK(beyond_age.error() == adapter_tick_drop::stale);
 }
 
-TEST_CASE("a_tick_before_the_newest_stored_one_is_out_of_order", tags) {
+TEST_CASE("a_tick_before_the_newest_stored_one_is_out_of_order", "[app][adapter_tick_translator]") {
     catalogue c;
     auto sut = c.translator();
 
@@ -237,7 +235,7 @@ TEST_CASE("a_tick_before_the_newest_stored_one_is_out_of_order", tags) {
     CHECK(sut.translate("bloomberg-live", same, c.now).has_value());
 }
 
-TEST_CASE("the_order_of_a_source_does_not_depend_on_another_source", tags) {
+TEST_CASE("the_order_of_a_source_does_not_depend_on_another_source", "[app][adapter_tick_translator]") {
     catalogue c;
     auto sut = c.translator();
 
@@ -250,7 +248,7 @@ TEST_CASE("the_order_of_a_source_does_not_depend_on_another_source", tags) {
     CHECK(sut.translate("bloomberg-sim", earlier, c.now).has_value());
 }
 
-TEST_CASE("each_drop_is_counted_for_its_adapter_and_reason", tags) {
+TEST_CASE("each_drop_is_counted_for_its_adapter_and_reason", "[app][adapter_tick_translator]") {
     catalogue c;
     auto sut = c.translator();
 

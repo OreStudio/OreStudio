@@ -28,8 +28,6 @@
 
 namespace {
 
-const std::string tags("[notification]");
-
 ores::iam::domain::account seed_account(ores::testing::scoped_database_helper& h) {
     auto ctx = ores::testing::make_generation_context(h);
     auto a = ores::iam::generators::generate_synthetic_account(ctx);
@@ -60,7 +58,7 @@ ores::database::context acting(ores::testing::scoped_database_helper& h) {
 
 using ores::inbox::service::notification_center;
 
-TEST_CASE("a_raised_notification_reaches_each_recipient_with_its_values", tags) {
+TEST_CASE("a_raised_notification_reaches_each_recipient_with_its_values", "[notification]") {
     ores::testing::scoped_database_helper h;
     const auto raiser = seed_account(h);
     const auto reader = seed_account(h);
@@ -84,7 +82,7 @@ TEST_CASE("a_raised_notification_reaches_each_recipient_with_its_values", tags) 
     CHECK(it->arguments[1].value == "Covers, \"the\" {desk}");
 }
 
-TEST_CASE("marking_read_and_clearing_move_a_person_s_own_copy", tags) {
+TEST_CASE("marking_read_and_clearing_move_a_person_s_own_copy", "[notification]") {
     ores::testing::scoped_database_helper h;
     const auto raiser = seed_account(h);
     const auto reader = seed_account(h);
@@ -109,7 +107,7 @@ TEST_CASE("marking_read_and_clearing_move_a_person_s_own_copy", tags) {
                                [&](const auto& n) { return n.id == raised.notification_id; }));
 }
 
-TEST_CASE("a_person_never_reads_another_person_s_copy", tags) {
+TEST_CASE("a_person_never_reads_another_person_s_copy", "[notification]") {
     ores::testing::scoped_database_helper h;
     const auto raiser = seed_account(h);
     const auto reader = seed_account(h);

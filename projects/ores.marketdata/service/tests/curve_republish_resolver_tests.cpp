@@ -23,8 +23,6 @@
 
 namespace {
 
-const std::string tags("[curve_republish_resolver]");
-
 using namespace std::chrono;
 using ores::analytics::quant::service::bootstrap_curve_role_code;
 using ores::marketdata::service::curve_republish_refdata_context;
@@ -84,7 +82,7 @@ curve_republish_refdata_context make_context() {
 
 }
 
-TEST_CASE("resolve_bootstrap_pillars resolves a single DEPOSIT pillar's dates and rate", tags) {
+TEST_CASE("resolve_bootstrap_pillars resolves a single DEPOSIT pillar's dates and rate", "[curve_republish_resolver]") {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "3M", "DEPOSIT")};
     std::unordered_map<std::string, double> raw_rates{{"3M", 0.03}};
@@ -101,7 +99,7 @@ TEST_CASE("resolve_bootstrap_pillars resolves a single DEPOSIT pillar's dates an
 }
 
 TEST_CASE("resolve_bootstrap_pillars resolves an FRA pillar's start/end from its own tenor codes",
-          tags) {
+          "[curve_republish_resolver]") {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "3M", "6M", "FRA")};
     std::unordered_map<std::string, double> raw_rates{{"6M", 0.032}};
@@ -114,7 +112,7 @@ TEST_CASE("resolve_bootstrap_pillars resolves an FRA pillar's start/end from its
     CHECK(resolved[0].end_date == resolve_tenor_date(ctx, "6M"));
 }
 
-TEST_CASE("resolve_bootstrap_pillars sorts by sequence_index regardless of input order", tags) {
+TEST_CASE("resolve_bootstrap_pillars sorts by sequence_index regardless of input order", "[curve_republish_resolver]") {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{
         make_pillar(1, "3M", "6M", "FRA"),
@@ -131,7 +129,7 @@ TEST_CASE("resolve_bootstrap_pillars sorts by sequence_index regardless of input
 
 TEST_CASE("resolve_bootstrap_pillars builds a SWAP pillar's fixed_leg_dates from every prior "
           "pillar's own end_date plus its own",
-          tags) {
+          "[curve_republish_resolver]") {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{
         make_pillar(0, "SPOT", "1Y", "DEPOSIT"),
@@ -150,7 +148,7 @@ TEST_CASE("resolve_bootstrap_pillars builds a SWAP pillar's fixed_leg_dates from
 }
 
 TEST_CASE("resolve_bootstrap_pillars rejects a pillar with no observed rate in the raw grid",
-          tags) {
+          "[curve_republish_resolver]") {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "3M", "DEPOSIT")};
     // Empty, so 3M is missing.
@@ -159,7 +157,7 @@ TEST_CASE("resolve_bootstrap_pillars rejects a pillar with no observed rate in t
     CHECK_THROWS_AS(resolve_bootstrap_pillars(pillars, ctx, raw_rates), std::invalid_argument);
 }
 
-TEST_CASE("resolve_bootstrap_pillars rejects an unknown tenor code", tags) {
+TEST_CASE("resolve_bootstrap_pillars rejects an unknown tenor code", "[curve_republish_resolver]") {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "9M", "DEPOSIT")};
     std::unordered_map<std::string, double> raw_rates{{"9M", 0.03}};
@@ -167,7 +165,7 @@ TEST_CASE("resolve_bootstrap_pillars rejects an unknown tenor code", tags) {
     CHECK_THROWS_AS(resolve_bootstrap_pillars(pillars, ctx, raw_rates), std::invalid_argument);
 }
 
-TEST_CASE("resolve_bootstrap_pillars rejects an unrecognised curve_role_code", tags) {
+TEST_CASE("resolve_bootstrap_pillars rejects an unrecognised curve_role_code", "[curve_republish_resolver]") {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "3M", "BOND")};
     std::unordered_map<std::string, double> raw_rates{{"3M", 0.03}};

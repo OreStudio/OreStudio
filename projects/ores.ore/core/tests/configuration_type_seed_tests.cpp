@@ -34,6 +34,7 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
@@ -57,9 +58,6 @@
  */
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][configuration_types][database]");
 
 using namespace ores::logging;
 
@@ -141,7 +139,7 @@ const std::set<std::string> unbound = {"simulation",
 
 }
 
-TEST_CASE("every seeded configuration type the codec carries names its root element", tags) {
+TEST_CASE("every seeded configuration type the codec carries names its root element", "[ore][configuration_types][database]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
 

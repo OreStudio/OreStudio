@@ -31,6 +31,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -46,9 +47,6 @@ using ores::refdata::repository::party_repository;
 
 namespace {
 
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[repository]");
-
 boost::uuids::uuid find_system_party_id(party_repository& repo,
                                         ores::database::context ctx,
                                         const ores::utility::uuid::tenant_id& tid) {
@@ -61,7 +59,7 @@ boost::uuids::uuid find_system_party_id(party_repository& repo,
 
 }
 
-TEST_CASE("write_single_account_party", tags) {
+TEST_CASE("write_single_account_party", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -83,7 +81,7 @@ TEST_CASE("write_single_account_party", tags) {
     CHECK_NOTHROW(repo.write(ap));
 }
 
-TEST_CASE("write_multiple_account_parties", tags) {
+TEST_CASE("write_multiple_account_parties", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -114,7 +112,7 @@ TEST_CASE("write_multiple_account_parties", tags) {
     CHECK_NOTHROW(repo.write(aps));
 }
 
-TEST_CASE("read_latest_account_parties", tags) {
+TEST_CASE("read_latest_account_parties", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -156,7 +154,7 @@ TEST_CASE("read_latest_account_parties", tags) {
     CHECK(read_aps.size() >= written.size());
 }
 
-TEST_CASE("read_latest_account_parties_by_account", tags) {
+TEST_CASE("read_latest_account_parties_by_account", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -188,7 +186,7 @@ TEST_CASE("read_latest_account_parties_by_account", tags) {
     CHECK(read_aps[0].account_id == acc.id);
 }
 
-TEST_CASE("read_nonexistent_account_party", tags) {
+TEST_CASE("read_nonexistent_account_party", "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

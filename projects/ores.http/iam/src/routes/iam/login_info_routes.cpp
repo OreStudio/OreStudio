@@ -101,7 +101,7 @@ http_response login_info_error_response(const std::string& error) {
  */
 template <typename Request>
 boost::asio::awaitable<http_response>
-forward(const http_request& req, nats_client& session, const Request& msg) {
+login_info_forward(const http_request& req, nats_client& session, const Request& msg) {
     auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
     try {
         const auto reply =
@@ -155,7 +155,7 @@ boost::asio::awaitable<http_response> login_info_routes::handle_list(const http_
     try {
         request_type msg;
         login_info_apply_page(msg, req);
-        co_return co_await forward(req, session, msg);
+        co_return co_await login_info_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -168,7 +168,7 @@ boost::asio::awaitable<http_response> login_info_routes::handle_get(const http_r
         request_type msg;
         msg.key.account_id = login_info_read_param<boost::uuids::uuid>(
             req.get_path_param("account_id"), "account_id");
-        co_return co_await forward(req, session, msg);
+        co_return co_await login_info_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }
@@ -182,7 +182,7 @@ boost::asio::awaitable<http_response> login_info_routes::handle_get_many(const h
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await login_info_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }

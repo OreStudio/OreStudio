@@ -40,6 +40,7 @@
 #include "ores.refdata.api/messaging/counterparty_change_protocol.hpp"
 #include "ores.refdata.core/repository/counterparty_change_repository.hpp"
 #include "ores.refdata.core/service/counterparty_change_service.hpp"
+#include "test_suite.hpp"
 // Parent-seed snippet includes (ores_inbox_approval_requests_tbl): the parent table is
 // hand-authored with no modeling org, so the snippet's generator and
 // repository headers are named by the org rather than derived.
@@ -69,13 +70,6 @@
 // event_bus -> NATS publish chain, assembled directly here the same
 // way the production event-registrar wires it.
 
-namespace {
-
-const std::string_view test_suite("refdata.tests");
-const std::string tags("[eventing][integration]");
-
-
-}
 
 using namespace ores::refdata::generators;
 using ores::refdata::domain::counterparty_change;
@@ -83,7 +77,7 @@ using ores::refdata::repository::counterparty_change_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
-TEST_CASE("write_counterparty_change_publishes_an_event", tags) {
+TEST_CASE("write_counterparty_change_publishes_an_event", "[eventing][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

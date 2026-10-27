@@ -36,8 +36,6 @@
 
 namespace {
 
-const std::string tags("[variability][onboarding]");
-
 // Every tenant-wide setting is scoped to the tenant's system party, and the
 // handler's token must carry that party for the settings table's party
 // isolation to admit the write.
@@ -83,7 +81,7 @@ using ores::variability::messaging::complete_system_onboarding_request;
 using ores::variability::messaging::complete_system_onboarding_response;
 using ores::variability::service::system_settings_service;
 
-TEST_CASE("the onboarding system flag the service writes is the one it reads back", tags) {
+TEST_CASE("the onboarding system flag the service writes is the one it reads back", "[variability][onboarding]") {
     ores::testing::scoped_database_helper db;
     system_settings_service svc(db.context(), db.tenant_id().to_string());
 
@@ -97,7 +95,7 @@ TEST_CASE("the onboarding system flag the service writes is the one it reads bac
     REQUIRE(svc.is_onboarding_system_complete());
 }
 
-TEST_CASE("complete_system_onboarding answers ok and lands the flag", tags) {
+TEST_CASE("complete_system_onboarding answers ok and lands the flag", "[variability][onboarding]") {
     fixture f;
     const auto token = f.keys.token(f.db.tenant_id().to_string(), f.party, {});
 
@@ -111,7 +109,7 @@ TEST_CASE("complete_system_onboarding answers ok and lands the flag", tags) {
     CHECK(svc.is_onboarding_system_complete());
 }
 
-TEST_CASE("complete_system_onboarding reports a failed write as operation_failed", tags) {
+TEST_CASE("complete_system_onboarding reports a failed write as operation_failed", "[variability][onboarding]") {
     fixture f;
     // A party that is not the row's own fails the settings table's party
     // isolation when the write lands, which is the handler's failure path.

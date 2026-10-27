@@ -40,8 +40,6 @@
 
 namespace {
 
-const std::string tags("[marketdata][service][oresmd_schema_describer]");
-
 using namespace ores::marketdata;
 using namespace ores::marketdata::datum;
 using ores::marketdata::service::oresmd_schema_describer;
@@ -66,7 +64,7 @@ bool has_field(const messaging::oresmd_instrument& row, const std::string& name)
 
 }
 
-TEST_CASE("the answer holds every asset class, instrument type and quote type", tags) {
+TEST_CASE("the answer holds every asset class, instrument type and quote type", "[marketdata][service][oresmd_schema_describer]") {
     const auto& answer = schema_answer();
     CHECK(answer.success);
     CHECK(answer.assets.size() == asset_class_count);
@@ -75,7 +73,7 @@ TEST_CASE("the answer holds every asset class, instrument type and quote type", 
     CHECK(answer.indexes.size() == index_family_count);
 }
 
-TEST_CASE("an instrument's code is the text the codec writes, and names its row", tags) {
+TEST_CASE("an instrument's code is the text the codec writes, and names its row", "[marketdata][service][oresmd_schema_describer]") {
     const auto& answer = schema_answer();
     std::set<std::string> codes;
     for (std::size_t i = 0; i < instrument_type_count; ++i) {
@@ -90,7 +88,7 @@ TEST_CASE("an instrument's code is the text the codec writes, and names its row"
     CHECK(codes.size() == instrument_type_count);
 }
 
-TEST_CASE("a row's fields follow the schema in order, with role, none and kind", tags) {
+TEST_CASE("a row's fields follow the schema in order, with role, none and kind", "[marketdata][service][oresmd_schema_describer]") {
     const auto& answer = schema_answer();
     for (std::size_t i = 0; i < instrument_type_count; ++i) {
         const auto& expected = schema_of(static_cast<instrument_type>(i)).fields;
@@ -106,7 +104,7 @@ TEST_CASE("a row's fields follow the schema in order, with role, none and kind",
 }
 
 TEST_CASE("an interest rate swap holds the fields the codec writes, with the index name optional",
-          tags) {
+          "[marketdata][service][oresmd_schema_describer]") {
     const auto* swap = instrument_coded("ir_swap");
     REQUIRE(swap != nullptr);
     CHECK(swap->asset == "ir");
@@ -120,7 +118,7 @@ TEST_CASE("an interest rate swap holds the fields the codec writes, with the ind
     CHECK(index_name->may_be_none);
 }
 
-TEST_CASE("a code field carries the tokens ORE accepts and no other field carries any", tags) {
+TEST_CASE("a code field carries the tokens ORE accepts and no other field carries any", "[marketdata][service][oresmd_schema_describer]") {
     std::size_t code_fields = 0;
     for (std::size_t i = 0; i < instrument_type_count; ++i) {
         const auto& expected = schema_of(static_cast<instrument_type>(i)).fields;
@@ -140,7 +138,7 @@ TEST_CASE("a code field carries the tokens ORE accepts and no other field carrie
     CHECK(code_fields > 0);
 }
 
-TEST_CASE("every key of a URI the codec reads is a field its row describes", tags) {
+TEST_CASE("every key of a URI the codec reads is a field its row describes", "[marketdata][service][oresmd_schema_describer]") {
     const std::string uri =
         "oresmd://credit/ACME?type=quote&instrument=cds&quote=credit_spread&seniority=SNRFOR"
         "&ccy=USD&doc_clause=XR14&term=5Y";
@@ -153,7 +151,7 @@ TEST_CASE("every key of a URI the codec reads is a field its row describes", tag
     CHECK(cds->subject == "underlying_name");
 }
 
-TEST_CASE("the quotes are the spellings a URI writes, each once", tags) {
+TEST_CASE("the quotes are the spellings a URI writes, each once", "[marketdata][service][oresmd_schema_describer]") {
     const auto& quotes = schema_answer().quotes;
     CHECK(std::set<std::string>(quotes.begin(), quotes.end()).size() == quote_type_count);
     CHECK(std::find(quotes.begin(), quotes.end(), "credit_spread") != quotes.end());
@@ -162,7 +160,7 @@ TEST_CASE("the quotes are the spellings a URI writes, each once", tags) {
         CHECK(quotes[i] == oresmd_uri_codec::quote_spelling(static_cast<quote_type>(i)));
 }
 
-TEST_CASE("an index family holds what the codec reads for a fixing", tags) {
+TEST_CASE("an index family holds what the codec reads for a fixing", "[marketdata][service][oresmd_schema_describer]") {
     const auto& indexes = schema_answer().indexes;
     const auto ibor =
         std::find_if(indexes.begin(), indexes.end(), [](auto& f) { return f.code == "ibor"; });
@@ -179,7 +177,7 @@ TEST_CASE("an index family holds what the codec reads for a fixing", tags) {
             .has_value());
 }
 
-TEST_CASE("every title names only the subject and the fields of its row", tags) {
+TEST_CASE("every title names only the subject and the fields of its row", "[marketdata][service][oresmd_schema_describer]") {
     const auto& answer = schema_answer();
     for (std::size_t i = 0; i < instrument_type_count; ++i) {
         const auto& row = answer.instruments[i];
@@ -197,7 +195,7 @@ TEST_CASE("every title names only the subject and the fields of its row", tags) 
     }
 }
 
-TEST_CASE("the answer gives one title for each quote type, empty only for none", tags) {
+TEST_CASE("the answer gives one title for each quote type, empty only for none", "[marketdata][service][oresmd_schema_describer]") {
     const auto& answer = schema_answer();
     REQUIRE(answer.quote_titles.size() == answer.quotes.size());
     for (std::size_t i = 0; i < quote_type_count; ++i) {

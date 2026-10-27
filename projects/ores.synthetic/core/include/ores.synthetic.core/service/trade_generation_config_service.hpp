@@ -76,24 +76,31 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_trade_generation_configs_response
-    list_trade_generation_configs(const messaging::list_trade_generation_configs_request& request);
-    messaging::get_trade_generation_config_response
-    get_trade_generation_config(const messaging::get_trade_generation_config_request& request);
-    messaging::get_many_trade_generation_configs_response get_many_trade_generation_configs(
-        const messaging::get_many_trade_generation_configs_request& request);
-    messaging::put_trade_generation_config_response
-    put_trade_generation_config(const messaging::put_trade_generation_config_request& request);
-    messaging::put_many_trade_generation_configs_response put_many_trade_generation_configs(
-        const messaging::put_many_trade_generation_configs_request& request);
-    messaging::delete_trade_generation_config_response delete_trade_generation_config(
-        const messaging::delete_trade_generation_config_request& request);
-    messaging::delete_many_trade_generation_configs_response delete_many_trade_generation_configs(
-        const messaging::delete_many_trade_generation_configs_request& request);
-    messaging::list_trade_generation_config_versions_response list_trade_generation_config_versions(
-        const messaging::list_trade_generation_config_versions_request& request);
-    messaging::get_trade_generation_config_version_response get_trade_generation_config_version(
-        const messaging::get_trade_generation_config_version_request& request);
+    ::ores::synthetic::messaging::list_trade_generation_configs_response
+    list_trade_generation_configs(
+        const ::ores::synthetic::messaging::list_trade_generation_configs_request& request);
+    ::ores::synthetic::messaging::get_trade_generation_config_response get_trade_generation_config(
+        const ::ores::synthetic::messaging::get_trade_generation_config_request& request);
+    ::ores::synthetic::messaging::get_many_trade_generation_configs_response
+    get_many_trade_generation_configs(
+        const ::ores::synthetic::messaging::get_many_trade_generation_configs_request& request);
+    ::ores::synthetic::messaging::put_trade_generation_config_response put_trade_generation_config(
+        const ::ores::synthetic::messaging::put_trade_generation_config_request& request);
+    ::ores::synthetic::messaging::put_many_trade_generation_configs_response
+    put_many_trade_generation_configs(
+        const ::ores::synthetic::messaging::put_many_trade_generation_configs_request& request);
+    ::ores::synthetic::messaging::delete_trade_generation_config_response
+    delete_trade_generation_config(
+        const ::ores::synthetic::messaging::delete_trade_generation_config_request& request);
+    ::ores::synthetic::messaging::delete_many_trade_generation_configs_response
+    delete_many_trade_generation_configs(
+        const ::ores::synthetic::messaging::delete_many_trade_generation_configs_request& request);
+    ::ores::synthetic::messaging::list_trade_generation_config_versions_response
+    list_trade_generation_config_versions(
+        const ::ores::synthetic::messaging::list_trade_generation_config_versions_request& request);
+    ::ores::synthetic::messaging::get_trade_generation_config_version_response
+    get_trade_generation_config_version(
+        const ::ores::synthetic::messaging::get_trade_generation_config_version_request& request);
     /**@}*/
 
     /**
@@ -197,7 +204,7 @@ private:
      * @return ok, or why the change was refused.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::trade_generation_config_change& change,
+    prepare_change(const ::ores::synthetic::messaging::trade_generation_config_change& change,
                    const ores::utility::domain::change_intent& intent,
                    domain::trade_generation_config& out);
 };

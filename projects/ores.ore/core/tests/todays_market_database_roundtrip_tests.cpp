@@ -28,6 +28,7 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "party_fixture.hpp"
+#include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -37,9 +38,6 @@
 #include <vector>
 
 namespace {
-
-const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[todaysmarket][database][roundtrip]");
 
 std::filesystem::path ore_path(const std::string& relative) {
     return ores::testing::project_root::resolve("external/ore/" + relative);
@@ -59,7 +57,7 @@ using ores::testing::scoped_database_helper;
  * into a document again. The in-memory walk proves the projection over every corpus
  * file; this proves the tables hold what the projection produces.
  */
-TEST_CASE("todays_market_roundtrip_through_the_database", tags) {
+TEST_CASE("todays_market_roundtrip_through_the_database", "[todaysmarket][database][roundtrip]") {
     auto lg(ores::logging::make_logger(test_suite));
     scoped_database_helper h;
 
@@ -119,7 +117,7 @@ TEST_CASE("todays_market_roundtrip_through_the_database", tags) {
     CHECK_FALSE(difference);
 }
 
-TEST_CASE("a collection naming a kind ORE does not have is refused", tags) {
+TEST_CASE("a collection naming a kind ORE does not have is refused", "[todaysmarket][database][roundtrip]") {
     scoped_database_helper h;
 
     const auto f = ore_path("examples/Products/Input/todaysmarket.xml");
@@ -135,7 +133,7 @@ TEST_CASE("a collection naming a kind ORE does not have is refused", tags) {
     CHECK_THROWS(todays_market_collection_repository().write(h.context(), collection));
 }
 
-TEST_CASE("a party sees only its own today's market configuration", tags) {
+TEST_CASE("a party sees only its own today's market configuration", "[todaysmarket][database][roundtrip]") {
     scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
     auto mapped = todays_market_projection::map(todays_market_projection::read(

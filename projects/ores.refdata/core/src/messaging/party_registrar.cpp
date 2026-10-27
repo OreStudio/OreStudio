@@ -84,12 +84,12 @@ register_party_handlers(ores::nats::service::client& nats,
         get_party_version_request::nats_subject, party_queue_group, [h](ores::nats::message msg) {
             h->get_party_version(std::move(msg));
         }));
+    subs.push_back(
+        nats.queue_subscribe(get_party_composite_as_of_request::nats_subject,
+                             party_queue_group,
+                             [h](ores::nats::message msg) { h->composite_as_of(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_party_composite_as_of_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->composite_as_of(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        put_party_composite_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+        put_party_composite_request::nats_subject, party_queue_group, [h](ores::nats::message msg) {
             h->put_composite(std::move(msg));
         }));
     return subs;

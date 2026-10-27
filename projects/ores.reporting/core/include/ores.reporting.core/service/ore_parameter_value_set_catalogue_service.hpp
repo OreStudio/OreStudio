@@ -76,31 +76,40 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_ore_parameter_value_set_catalogues_response
+    ::ores::reporting::messaging::list_ore_parameter_value_set_catalogues_response
     list_ore_parameter_value_set_catalogues(
-        const messaging::list_ore_parameter_value_set_catalogues_request& request);
-    messaging::get_ore_parameter_value_set_catalogue_response get_ore_parameter_value_set_catalogue(
-        const messaging::get_ore_parameter_value_set_catalogue_request& request);
-    messaging::get_many_ore_parameter_value_set_catalogues_response
+        const ::ores::reporting::messaging::list_ore_parameter_value_set_catalogues_request&
+            request);
+    ::ores::reporting::messaging::get_ore_parameter_value_set_catalogue_response
+    get_ore_parameter_value_set_catalogue(
+        const ::ores::reporting::messaging::get_ore_parameter_value_set_catalogue_request& request);
+    ::ores::reporting::messaging::get_many_ore_parameter_value_set_catalogues_response
     get_many_ore_parameter_value_set_catalogues(
-        const messaging::get_many_ore_parameter_value_set_catalogues_request& request);
-    messaging::put_ore_parameter_value_set_catalogue_response put_ore_parameter_value_set_catalogue(
-        const messaging::put_ore_parameter_value_set_catalogue_request& request);
-    messaging::put_many_ore_parameter_value_set_catalogues_response
+        const ::ores::reporting::messaging::get_many_ore_parameter_value_set_catalogues_request&
+            request);
+    ::ores::reporting::messaging::put_ore_parameter_value_set_catalogue_response
+    put_ore_parameter_value_set_catalogue(
+        const ::ores::reporting::messaging::put_ore_parameter_value_set_catalogue_request& request);
+    ::ores::reporting::messaging::put_many_ore_parameter_value_set_catalogues_response
     put_many_ore_parameter_value_set_catalogues(
-        const messaging::put_many_ore_parameter_value_set_catalogues_request& request);
-    messaging::delete_ore_parameter_value_set_catalogue_response
+        const ::ores::reporting::messaging::put_many_ore_parameter_value_set_catalogues_request&
+            request);
+    ::ores::reporting::messaging::delete_ore_parameter_value_set_catalogue_response
     delete_ore_parameter_value_set_catalogue(
-        const messaging::delete_ore_parameter_value_set_catalogue_request& request);
-    messaging::delete_many_ore_parameter_value_set_catalogues_response
+        const ::ores::reporting::messaging::delete_ore_parameter_value_set_catalogue_request&
+            request);
+    ::ores::reporting::messaging::delete_many_ore_parameter_value_set_catalogues_response
     delete_many_ore_parameter_value_set_catalogues(
-        const messaging::delete_many_ore_parameter_value_set_catalogues_request& request);
-    messaging::list_ore_parameter_value_set_catalogue_versions_response
+        const ::ores::reporting::messaging::delete_many_ore_parameter_value_set_catalogues_request&
+            request);
+    ::ores::reporting::messaging::list_ore_parameter_value_set_catalogue_versions_response
     list_ore_parameter_value_set_catalogue_versions(
-        const messaging::list_ore_parameter_value_set_catalogue_versions_request& request);
-    messaging::get_ore_parameter_value_set_catalogue_version_response
+        const ::ores::reporting::messaging::list_ore_parameter_value_set_catalogue_versions_request&
+            request);
+    ::ores::reporting::messaging::get_ore_parameter_value_set_catalogue_version_response
     get_ore_parameter_value_set_catalogue_version(
-        const messaging::get_ore_parameter_value_set_catalogue_version_request& request);
+        const ::ores::reporting::messaging::get_ore_parameter_value_set_catalogue_version_request&
+            request);
     /**@}*/
 
     /**
@@ -199,10 +208,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result
-    prepare_change(const messaging::ore_parameter_value_set_catalogue_change& change,
-                   const ores::utility::domain::change_intent& intent,
-                   domain::ore_parameter_value_set_catalogue& out);
+    ores::utility::domain::result prepare_change(
+        const ::ores::reporting::messaging::ore_parameter_value_set_catalogue_change& change,
+        const ores::utility::domain::change_intent& intent,
+        domain::ore_parameter_value_set_catalogue& out);
 };
 
 }

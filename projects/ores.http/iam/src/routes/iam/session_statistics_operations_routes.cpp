@@ -72,8 +72,9 @@ http_response session_statistics_operations_error_response(const std::string& er
  * nothing; it states the subject the request already carries.
  */
 template <typename Request>
-boost::asio::awaitable<http_response>
-forward(const http_request& req, nats_client& session, const Request& msg) {
+boost::asio::awaitable<http_response> session_statistics_operations_forward(const http_request& req,
+                                                                            nats_client& session,
+                                                                            const Request& msg) {
     auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
     try {
         const auto reply =
@@ -109,7 +110,7 @@ session_statistics_operations_routes::handle_get_session_statistics(const http_r
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }
-        co_return co_await forward(req, session, *parsed);
+        co_return co_await session_statistics_operations_forward(req, session, *parsed);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }

@@ -63,7 +63,6 @@ using ores::marketdata::core::series_classification;
 using ores::marketdata::core::series_classifier;
 using ores::marketdata::domain::series_classification_rule;
 
-const std::string tags("[marketdata][classification][corpus]");
 const std::string unit_tags("[marketdata][classification]");
 
 /**
@@ -282,7 +281,7 @@ void check_code_is_in_catalogue(const std::string& code, const std::string& rel_
 
 }
 
-TEST_CASE("every_distinct_series_key_in_the_ore_corpus_classifies", tags) {
+TEST_CASE("every_distinct_series_key_in_the_ore_corpus_classifies", "[marketdata][classification][corpus]") {
     const auto& entries = survey().entries;
     const auto parsed_files = survey().market_data_files.size() + survey().fixing_files.size();
 
@@ -315,7 +314,7 @@ TEST_CASE("every_distinct_series_key_in_the_ore_corpus_classifies", tags) {
     CHECK(unclassified.empty());
 }
 
-TEST_CASE("every_series_type_the_ore_corpus_carries_is_known_to_the_classifier", tags) {
+TEST_CASE("every_series_type_the_ore_corpus_carries_is_known_to_the_classifier", "[marketdata][classification][corpus]") {
     const auto types = distinct_types();
     const auto known = seed_classifier().known_series_types();
     const std::set<std::string> known_set(known.begin(), known.end());
@@ -334,7 +333,7 @@ TEST_CASE("every_series_type_the_ore_corpus_carries_is_known_to_the_classifier",
     CHECK(unknown.empty());
 }
 
-TEST_CASE("every_classification_code_the_classifier_can_emit_exists_in_its_catalogue", tags) {
+TEST_CASE("every_classification_code_the_classifier_can_emit_exists_in_its_catalogue", "[marketdata][classification][corpus]") {
     std::set<std::string> asset_classes;
     std::set<std::string> subclasses;
 
@@ -371,7 +370,7 @@ TEST_CASE("every_classification_code_the_classifier_can_emit_exists_in_its_catal
                                    "refdata_series_subclass_codes_populate.sql");
 }
 
-TEST_CASE("a_correlation_takes_its_classes_from_the_two_operands_in_its_key", tags) {
+TEST_CASE("a_correlation_takes_its_classes_from_the_two_operands_in_its_key", "[marketdata][classification][corpus]") {
     std::map<std::pair<std::string, std::string>, series_classification> by_operands;
     for (const auto& [key, entry] : survey().entries) {
         if (entry.series_type != "CORRELATION")
@@ -407,7 +406,7 @@ TEST_CASE("a_correlation_takes_its_classes_from_the_two_operands_in_its_key", ta
     CHECK(rates->second.asset_classes.front() == "interest_rates");
 }
 
-TEST_CASE("the_classification_rule_seed_is_well_formed", tags) {
+TEST_CASE("the_classification_rule_seed_is_well_formed", "[marketdata][classification][corpus]") {
     const auto& rules = ores::testing::seed_classification_rules();
 
     // The reader of the table aborts on an empty one and names the table, so a

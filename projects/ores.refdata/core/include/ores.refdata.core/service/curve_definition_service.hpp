@@ -75,24 +75,26 @@ public:
      * made, rather than being inferred from an exception.
      */
     /**@{*/
-    messaging::list_curve_definitions_response
-    list_curve_definitions(const messaging::list_curve_definitions_request& request);
-    messaging::get_curve_definition_response
-    get_curve_definition(const messaging::get_curve_definition_request& request);
-    messaging::get_many_curve_definitions_response
-    get_many_curve_definitions(const messaging::get_many_curve_definitions_request& request);
-    messaging::put_curve_definition_response
-    put_curve_definition(const messaging::put_curve_definition_request& request);
-    messaging::put_many_curve_definitions_response
-    put_many_curve_definitions(const messaging::put_many_curve_definitions_request& request);
-    messaging::delete_curve_definition_response
-    delete_curve_definition(const messaging::delete_curve_definition_request& request);
-    messaging::delete_many_curve_definitions_response
-    delete_many_curve_definitions(const messaging::delete_many_curve_definitions_request& request);
-    messaging::list_curve_definition_versions_response list_curve_definition_versions(
-        const messaging::list_curve_definition_versions_request& request);
-    messaging::get_curve_definition_version_response
-    get_curve_definition_version(const messaging::get_curve_definition_version_request& request);
+    ::ores::refdata::messaging::list_curve_definitions_response list_curve_definitions(
+        const ::ores::refdata::messaging::list_curve_definitions_request& request);
+    ::ores::refdata::messaging::get_curve_definition_response
+    get_curve_definition(const ::ores::refdata::messaging::get_curve_definition_request& request);
+    ::ores::refdata::messaging::get_many_curve_definitions_response get_many_curve_definitions(
+        const ::ores::refdata::messaging::get_many_curve_definitions_request& request);
+    ::ores::refdata::messaging::put_curve_definition_response
+    put_curve_definition(const ::ores::refdata::messaging::put_curve_definition_request& request);
+    ::ores::refdata::messaging::put_many_curve_definitions_response put_many_curve_definitions(
+        const ::ores::refdata::messaging::put_many_curve_definitions_request& request);
+    ::ores::refdata::messaging::delete_curve_definition_response delete_curve_definition(
+        const ::ores::refdata::messaging::delete_curve_definition_request& request);
+    ::ores::refdata::messaging::delete_many_curve_definitions_response
+    delete_many_curve_definitions(
+        const ::ores::refdata::messaging::delete_many_curve_definitions_request& request);
+    ::ores::refdata::messaging::list_curve_definition_versions_response
+    list_curve_definition_versions(
+        const ::ores::refdata::messaging::list_curve_definition_versions_request& request);
+    ::ores::refdata::messaging::get_curve_definition_version_response get_curve_definition_version(
+        const ::ores::refdata::messaging::get_curve_definition_version_request& request);
     /**@}*/
 
     /**
@@ -203,9 +205,10 @@ private:
      * @param out The stamped domain object, written only when the result is ok.
      * @return ok, or why the change was refused.
      */
-    ores::utility::domain::result prepare_change(const messaging::curve_definition_change& change,
-                                                 const ores::utility::domain::change_intent& intent,
-                                                 domain::curve_definition& out);
+    ores::utility::domain::result
+    prepare_change(const ::ores::refdata::messaging::curve_definition_change& change,
+                   const ores::utility::domain::change_intent& intent,
+                   domain::curve_definition& out);
 };
 
 }

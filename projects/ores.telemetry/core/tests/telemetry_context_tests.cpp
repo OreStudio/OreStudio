@@ -22,13 +22,11 @@
 #include "ores.telemetry.core/domain/telemetry_context.hpp"
 #include "ores.telemetry.core/generators/span_id_generator.hpp"
 #include "ores.telemetry.core/generators/trace_id_generator.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <thread>
 
 namespace {
-
-const std::string test_suite("ores.telemetry.tests");
-const std::string tags("[telemetry_context]");
 
 using namespace ores::telemetry::domain;
 using namespace ores::telemetry::generators;
@@ -49,7 +47,7 @@ std::shared_ptr<resource> create_test_resource() {
 
 using namespace ores::logging;
 
-TEST_CASE("telemetry_context_is_valid_when_properly_constructed", tags) {
+TEST_CASE("telemetry_context_is_valid_when_properly_constructed", "[telemetry_context]") {
     auto lg(make_logger(test_suite));
 
     auto ctx = create_test_context();
@@ -67,7 +65,7 @@ TEST_CASE("telemetry_context_is_valid_when_properly_constructed", tags) {
                              << tctx.get_trace_id().to_hex();
 }
 
-TEST_CASE("telemetry_context_start_span_creates_child", tags) {
+TEST_CASE("telemetry_context_start_span_creates_child", "[telemetry_context]") {
     auto lg(make_logger(test_suite));
 
     auto res = create_test_resource();
@@ -94,7 +92,7 @@ TEST_CASE("telemetry_context_start_span_creates_child", tags) {
     BOOST_LOG_SEV(lg, debug) << "Created child span: " << child_span.context.span.to_hex();
 }
 
-TEST_CASE("telemetry_context_start_linked_trace_creates_new_trace", tags) {
+TEST_CASE("telemetry_context_start_linked_trace_creates_new_trace", "[telemetry_context]") {
     auto lg(make_logger(test_suite));
 
     auto res = create_test_resource();
@@ -122,7 +120,7 @@ TEST_CASE("telemetry_context_start_linked_trace_creates_new_trace", tags) {
                              << " linked from: " << parent_ctx.get_trace_id().to_hex();
 }
 
-TEST_CASE("telemetry_context_shares_resource", tags) {
+TEST_CASE("telemetry_context_shares_resource", "[telemetry_context]") {
     auto res = create_test_resource();
     auto parent_ctx = telemetry_context::create_root(res);
 
@@ -136,7 +134,7 @@ TEST_CASE("telemetry_context_shares_resource", tags) {
     REQUIRE(child_span.name == "child_op");
 }
 
-TEST_CASE("span_is_root_works_correctly", tags) {
+TEST_CASE("span_is_root_works_correctly", "[telemetry_context]") {
     auto res = create_test_resource();
     auto parent_ctx = telemetry_context::create_root(res);
 
@@ -154,7 +152,7 @@ TEST_CASE("span_is_root_works_correctly", tags) {
     REQUIRE_FALSE(child_span.is_root());
 }
 
-TEST_CASE("span_duration_calculation", tags) {
+TEST_CASE("span_duration_calculation", "[telemetry_context]") {
     span s;
     s.start_time = std::chrono::system_clock::now();
 
@@ -170,7 +168,7 @@ TEST_CASE("span_duration_calculation", tags) {
     REQUIRE(s.duration().value().count() >= 10'000'000); // At least 10ms in ns
 }
 
-TEST_CASE("span_is_session_checks_attribute", tags) {
+TEST_CASE("span_is_session_checks_attribute", "[telemetry_context]") {
     span s;
     REQUIRE_FALSE(s.is_session());
 
@@ -183,7 +181,7 @@ TEST_CASE("span_is_session_checks_attribute", tags) {
     REQUIRE(std::get<std::string>(s.attrs.at("session.id")) == "test-session-123");
 }
 
-TEST_CASE("resource_from_environment_populates_attributes", tags) {
+TEST_CASE("resource_from_environment_populates_attributes", "[telemetry_context]") {
     auto lg(make_logger(test_suite));
 
     auto res = resource::from_environment("my.service", "2.0.0");

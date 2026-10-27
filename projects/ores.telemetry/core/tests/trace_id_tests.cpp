@@ -20,23 +20,17 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.telemetry.core/domain/trace_id.hpp"
 #include "ores.telemetry.core/generators/trace_id_generator.hpp"
+#include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <set>
 #include <thread>
 #include <vector>
 
-namespace {
-
-const std::string test_suite("ores.telemetry.tests");
-const std::string tags("[trace_id]");
-
-}
-
 using namespace ores::telemetry::domain;
 using namespace ores::telemetry::generators;
 using namespace ores::logging;
 
-TEST_CASE("default_trace_id_is_invalid", tags) {
+TEST_CASE("default_trace_id_is_invalid", "[trace_id]") {
     auto lg(make_logger(test_suite));
     trace_id id;
     REQUIRE(id.to_hex() == "00000000000000000000000000000000");
@@ -44,7 +38,7 @@ TEST_CASE("default_trace_id_is_invalid", tags) {
     BOOST_LOG_SEV(lg, debug) << "Default trace_id: " << id.to_hex();
 }
 
-TEST_CASE("generated_trace_id_is_valid", tags) {
+TEST_CASE("generated_trace_id_is_valid", "[trace_id]") {
     auto lg(make_logger(test_suite));
     trace_id_generator gen;
     const auto id = gen();
@@ -53,7 +47,7 @@ TEST_CASE("generated_trace_id_is_valid", tags) {
     BOOST_LOG_SEV(lg, debug) << "Generated trace_id: " << id.to_hex();
 }
 
-TEST_CASE("trace_id_to_hex_produces_32_chars", tags) {
+TEST_CASE("trace_id_to_hex_produces_32_chars", "[trace_id]") {
     const auto id = trace_id::from_hex("000102030405060708090a0b0c0d0e0f");
     const auto hex = id.to_hex();
 
@@ -77,7 +71,7 @@ TEST_CASE("trace_id_to_hex_produces_32_chars", tags) {
     REQUIRE(static_cast<unsigned>(id.bytes[15]) == 0x0f);
 }
 
-TEST_CASE("trace_id_from_hex_roundtrips", tags) {
+TEST_CASE("trace_id_from_hex_roundtrips", "[trace_id]") {
     trace_id expected;
     expected.bytes = {std::byte{0x00},
                       std::byte{0x01},
@@ -103,7 +97,7 @@ TEST_CASE("trace_id_from_hex_roundtrips", tags) {
     REQUIRE(parsed.is_valid());
 }
 
-TEST_CASE("trace_id_from_hex_with_invalid_input_returns_invalid", tags) {
+TEST_CASE("trace_id_from_hex_with_invalid_input_returns_invalid", "[trace_id]") {
     // Too short
     auto id1 = trace_id::from_hex("abc");
     REQUIRE_FALSE(id1.is_valid());
@@ -117,7 +111,7 @@ TEST_CASE("trace_id_from_hex_with_invalid_input_returns_invalid", tags) {
     REQUIRE_FALSE(id3.is_valid());
 }
 
-TEST_CASE("generated_trace_ids_are_unique", tags) {
+TEST_CASE("generated_trace_ids_are_unique", "[trace_id]") {
     trace_id_generator gen;
     std::set<std::string> ids;
 
@@ -129,7 +123,7 @@ TEST_CASE("generated_trace_ids_are_unique", tags) {
     }
 }
 
-TEST_CASE("trace_id_generator_uses_machine_id", tags) {
+TEST_CASE("trace_id_generator_uses_machine_id", "[trace_id]") {
     auto lg(make_logger(test_suite));
     trace_id_generator gen(0x1234);
 
@@ -146,7 +140,7 @@ TEST_CASE("trace_id_generator_uses_machine_id", tags) {
     BOOST_LOG_SEV(lg, debug) << "Trace ID with machine 0x1234: " << id.to_hex();
 }
 
-TEST_CASE("trace_id_generator_is_thread_safe", tags) {
+TEST_CASE("trace_id_generator_is_thread_safe", "[trace_id]") {
     trace_id_generator gen;
     std::vector<std::thread> threads;
     std::mutex mutex;

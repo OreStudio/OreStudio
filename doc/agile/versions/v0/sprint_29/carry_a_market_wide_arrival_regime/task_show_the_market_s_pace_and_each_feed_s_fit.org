@@ -26,11 +26,11 @@ A person watching the Market regime tab can see how fast market time runs and wh
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
-| Now          | Built; live check next.                |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -80,7 +80,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Quant law and trace tests | 20 cases passed | =ores.analytics.quant.tests [scheduler_trace],[arrival_law]= | 968dbe59cb |
+| BFF regime and trace tests | 16 passed | =npx vitest run src/market-regime.test.ts= | 968dbe59cb |
+| Web synthetic tests | 198 passed | =npx vitest run src/marketdata/synthetic= | 693d213d67 |
+| Harness, market regime | 6 passed, the new one for the pace chart, the fit and the tau switch included | =npx playwright test tests/market-regime.spec.ts= | ed8f639cad |
+| Live fit | 123 seen against 123.1 expected for a feed at a tick a second; 4 against 4.1 for the quiet curves | screenshot of the fit section on Acme | ed8f639cad |
 
 * Notes
 
@@ -105,6 +109,27 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Bot: a Hawkes decay of zero divides by zero in the compensator. | arrival_law.cpp | Decline | validate_arrival_process_parameters refuses a decay of zero or less, and make_arrival_law runs it first. |
+| 2 | Bot: the phase never changes, though it sits beside live numbers. | locales | Accept | Labelled initial phase. |
+| 3 | Bot: a quiet feed may show a false shortfall. | marketTrace.ts | Decline | The expectation is the rate over the window's market time, which is the time the feed's ticks could fill; live, the quiet curves show 4 seen against 4.1 expected. |
+| 4 | Bot: the log and the fit assume the events arrive in order. | marketTrace.ts | Accept | Both sort by tau. |
+| 5 | Bot: check algorithm and cmath are included. | tick_scheduler.cpp | Decline | Both are included directly. |
+| 6 | Bot: a QQ plot of one or two gaps says nothing. | MarketRegimeTab.tsx | Accept | Five gaps at least, else the tab says there are too few ticks; tested. |
+| 7 | Harness: a pin from the screen took effect and reported a failure. | market_regime_handler.hpp | Accept | Found on the live check and already on main: the pin reply lacked the heat and samples the BFF reads. It now carries the whole regime. |
+| 8 | Live check: the fit opened on a feed with one tick and drew no plot. | MarketRegimeTab.tsx | Accept | It opens on the busiest feed, and the table scrolls. |
 
 * Result
+
+A person watching the Market regime tab can now see how fast market time runs
+and why, and check each feed against its law while the run goes on. The tab
+draws the pace stacked into the regime and the heat, takes its state bands
+from the scheduler's own record, shows the run seed, the loop gain against one
+and the loop's numbers, and lists what the loop applied. The raster switches
+between clock time and tau, and in tau a periodic feed's marks are evenly
+spaced. Each row and the Arrivals panel show the feed's law, base rate,
+sensitivity, rate now, and its initial phase or its excitation. The fit sets
+each feed's count against its rate times its sensitivity times the market
+time that passed, and plots its rescaled gaps against Exp(1). On Acme a feed
+at a tick a second showed 123 ticks against 123.1 expected. The live check
+also found a fault that was already on main: a pin from the screen took effect
+and then reported a failure, because its reply lacked the heat the BFF reads.

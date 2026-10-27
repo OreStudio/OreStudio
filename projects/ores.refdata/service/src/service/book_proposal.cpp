@@ -50,6 +50,11 @@ constexpr auto kind_code = "refdata.book_change";
 constexpr auto entity_type = "book";
 constexpr auto savepoint = "book_line";
 
+// The operation a policy names for the act that opens a book, as distinct from
+// the act that changes one. A put of a book that does not exist yet is both, so
+// its parts are the union of the two.
+constexpr auto create_operation = "create";
+
 auto& log() {
     static auto instance = ores::logging::make_logger("ores.refdata.service.book_proposal");
     return instance;
@@ -172,6 +177,17 @@ book_preview book_proposal_service::preview(const std::vector<domain::book_chang
                 savepoint);
 
         out.part_codes = policy_parts(ctx, entity_type, line.operation, out.columns);
+        // A put of a book that is not there is the act that opens it. That act
+        // asks the functions the opening chain names as well as the ones that
+        // own a column, because the controller's check is of the opening and
+        // not of any field the opening writes.
+        if (line.operation == "put" && !live) {
+            for (const auto& code :
+                 policy_parts(ctx, entity_type, create_operation, out.columns)) {
+                if (std::ranges::find(out.part_codes, code) == out.part_codes.end())
+                    out.part_codes.push_back(code);
+            }
+        }
         for (const auto& code : out.part_codes) {
             if (std::ranges::find(result.part_codes, code) == result.part_codes.end())
                 result.part_codes.push_back(code);

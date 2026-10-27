@@ -67,13 +67,12 @@ domain later is a migration.
 
 ** The canonical row
 
-Every file the engine writes is marshalled into rows of the same shape before
-anything loads them. The shape is the contract between the grid, the store and the
-screens:
+Every file the engine writes is marshalled into rows of one shape before anything
+loads them. The shape is the contract between the grid, the store and the screens:
 
 | Column | Read from | Notes |
 |--------+-----------+-------|
-| =subject_type= | the marshal, from the file | =trade= today |
+| =subject_type= | the marshal, from the file | =trade= |
 | =subject_id= | =TradeId= | the engine's own identifier |
 | =measure= | the file's heading | =npv=, =npv_base=, =notional=, =delta=, =gamma= |
 | =currency= | =NpvCurrency=, =NotionalCurrency= | empty when the measure has none |
@@ -93,40 +92,61 @@ a decimal; a measure whose currency it cannot state when the measure has one. A
 refusal is a run error naming the file and the heading, and it fails the
 post-processing rather than writing part of a result.
 
-The screens may rely on one row per subject, measure and currency per run — a
-repeated row is a fault the store's key refuses — on =value= being a decimal whose
+The screens rely on one row per subject, measure and currency per run — a repeated
+row is a fault the store's key refuses — on =value= being a decimal whose
 formatting is theirs, on =measure= being open so a new analytic adds a value rather
 than a column, and on a run's rows arriving together.
 
 This refines *The result store* above: the families stay apart, and a family whose
-files state several measures carries the measure as a dimension. Both are
-time-series tables, keyed and chunked on the run's priced date.
+files state several measures carries the measure as a dimension. Each is a
+time-series table keyed and chunked on the run's priced date, in the form the
+[[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][tick ingest pipeline]] gives its
+hypertables.
 
 ** Where the work happens
 
 The expensive half is reading what the engine wrote, and it belongs where the
-engine already is: the compute wrapper, which runs on the worker beside the engine
-and is the only component that knows which analytics the package ran and what files
-they wrote. The wrapper marshals those files into the canonical rows before it
-uploads, and the service's post-processing step is fetch, validate and load.
+engine is: the compute wrapper, on the worker beside it. The wrapper is the only
+component that knows which analytics the package ran and what files they wrote, so
+it marshals them into the canonical rows before it uploads, for the same reason the
+package is prepared where the engine reads it. The reporting service's step is to
+fetch, validate and load.
 
-That split is what keeps the service scalable. A run's rows are written by a single
-=COPY= inside one transaction, so a hundred runs finishing at once are a hundred
-short inserts rather than a hundred parsers, and the work grows with the grid
-rather than with the reporting service's replica count. The queue group and the run
-grant already spread and limit the load.
+That split is what keeps the service scalable: a run's rows are written by a single
+=COPY= inside one transaction, so many runs finishing together are many short
+inserts rather than many parsers, and the work grows with the grid rather than with
+the reporting service's replicas. The queue group spreads the load and the run
+grant admits it.
 
-The service keeps a fallback: when a run's output holds no marshalled file, a
-registered reader may parse the archive in the service, and the run records that it
-was read the old way. That is a migration path for wrappers already deployed, not a
-second architecture.
+#+begin_src plantuml
+@startuml
+actor "Workflow engine" as wf
+participant "Compute wrapper" as wrapper
+participant "Object storage" as store
+participant "Reporting service" as reporting
+database "Result tables" as results
 
-** What the phase is called in the workflow
+wf -> reporting : collect_compute_results(run)
+reporting -> store : fetch the run's archive
+store --> reporting : the archive
+reporting --> wf : the output location, and what the run said
+note right of reporting : the archive is kept as provenance
 
-Retrieval answers where the output is; post-processing answers what it says. They
-are two steps, because a transport failure and a contract failure read differently
-and the errors a person sees should say which. The pipeline keeps six phases and the
-workflow gains one step.
+wrapper -> wrapper : marshal each analytic's file into canonical rows
+wrapper -> store : upload the archive, canonical rows inside
+wf -> reporting : post_process_results(run)
+reporting -> store : fetch the canonical rows
+store --> reporting : rows
+reporting -> results : COPY, one transaction
+reporting -> wf : the run's result summary
+@enduml
+#+end_src
+
+Retrieval and post-processing are two calls from the workflow because they answer
+two questions: *where the output is*, and *what it says*. A transport failure and a
+contract failure read differently, and the errors a person sees say which. The
+pipeline keeps its six phases; [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][the
+reporting note]] states the workflow's steps.
 
 ** What is not bound to ORE
 

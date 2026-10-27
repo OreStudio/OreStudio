@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 4DA654B3-7CE6-4637-B4D8-E8E2B4D092B3
+:END:
+#+title: Delivery threads enqueue and a bounded pool runs the handlers
+#+description: NATS delivery threads only decode and enqueue; a fixed pool sized to the database pool runs handlers behind bounded queues with deadlines.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:nats:concurrency:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+* Summary
+
+A NATS delivery thread decodes a message and puts it on its service's queue; it
+never waits for the database. A fixed pool of workers, as many as the service's
+database connections, takes work from the queues and runs the handlers. Queues
+are bounded and every entry has a deadline. A full queue answers a request with
+busy, or drops a message its policy allows to be lost, and a worker skips an
+entry whose deadline has passed. A service's thread count is set by its
+configuration, not by the number of its subscriptions.
+
+* Detail
+
+** Delivery
+
+The subscriptions of a connection share a few delivery threads. A delivery
+thread does the work that cannot wait: it decodes, checks the deadline and
+enqueues. Nothing it does blocks on another service or on the store.
+
+** Queues by class of work
+
+| Queue | Holds | When full |
+|-------+-------+-----------|
+| Requests | Calls that expect a reply | Reply busy, with the time to wait |
+| Events | Core NATS events that may be lost | Drop the oldest and count it |
+| Durable deliveries | JetStream messages | Answer with a delayed redelivery |
+
+Each class has its own queue, so a burst of events cannot starve the requests
+behind it.
+
+** Deadlines
+
+A request's deadline is its caller's timeout. A worker that takes an entry
+whose deadline has passed skips it, because nobody waits for its answer.
+
+** Size
+
+The worker pool is as large as the connection pool ([[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]]), so a worker never
+waits for a connection, and a request waits only in its queue, where its wait is
+counted ([[id:7425094C-C5A0-4AF7-8EF4-B8062979A7BD][Every queue and every session reports its own numbers]]).
+
+* Patterns used
+
+- [[id:3D3813ED-73C6-4537-AB34-3F93EC60E29E][Bulkhead]] — each class of work has its own queue, so one class cannot exhaust another's capacity.
+- [[id:3A3752D7-9322-45F0-9932-762B727642E1][Throttling]] — a full queue answers busy or drops by policy instead of growing.
+
+* See also
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the bus whose delivery threads feed these queues.

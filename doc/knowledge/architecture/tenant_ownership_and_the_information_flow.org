@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:tenancy:security:rls:information_flow:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-26
 
 * Summary
 
@@ -27,13 +27,18 @@ lists where the missing third class already bites.
 
 | Owner              | What it owns                                          | Examples |
 |--------------------+-------------------------------------------------------+----------|
-| A tenant           | Its own business data                                  | parties, portfolios, books, trades, workunits, batches, results, market data, synthetic configuration |
+| A tenant           | Its own business data                                  | parties, portfolios, books, trades, workunits, batches, results, a party's quote series, routes and subscriptions, synthetic configuration |
 | The system tenant  | The installation's registers, and the datasets every tenant reads | the tenants registry, service accounts, permissions, roles, seed profiles; countries, currencies, coding schemes, asset classes, avatars, calendars |
-| The installation   | Facts about the deployment itself, owned by nobody in particular | the services roster and its instances, hosts and wrapper nodes, grid and node samples, telemetry logs, message-bus samples, the database and build row, the expected-services registry |
+| The installation   | Facts about the deployment itself, owned by nobody in particular | the services roster and its instances, hosts and wrapper nodes, grid and node samples, telemetry logs, message-bus samples, the database and build row, the expected-services registry, the tick streams and their points |
 
 The third row is the one the schema does not name. Its rows have no tenant
 in any meaningful sense: a node sample describes a machine, and the machine
 runs whatever work the installation gives it.
+
+A tick point is the same kind of row: an observation of a source, not a
+tenant's data. It carries no tenant and no row-level security, only the
+marketdata service's roles reach it, and a party reads it through its own
+series and entitlement. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]].
 
 ** What the schema does today
 

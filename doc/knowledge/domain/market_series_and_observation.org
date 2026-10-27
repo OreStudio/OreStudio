@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:storage:series:observations:
 #+created: 2026-10-06
-#+updated: 2026-10-23
+#+updated: 2026-10-26
 
 * Summary
 
@@ -35,9 +35,9 @@ The URI is the row's only identity. The ORE key is not stored, because
 
 ** A tick is not an observation
 
-The ingest writes each tick to the append-only tick table and writes no observation row.
-See [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]]
-for the table. The observation table holds the points that people and processes state: an
+The ingest writes each tick once, as a point of its source's stream, and writes no
+observation row. A party's series points at the stream. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]] for the store and
+[[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] for the lanes that write it. The observation table holds the points that people and processes state: an
 ORE import, a hand-keyed point and a derived point. The list of observations returns
 observations and never a tick. A client that wants ticks calls the history read. See
 [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]].

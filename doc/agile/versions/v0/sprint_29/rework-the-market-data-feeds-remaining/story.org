@@ -71,7 +71,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 
 * Decisions
 
-- The tick store holds one tick for each source, owned by the system tenant, and the history read checks the subscription (2026-10-25). The per-party copy added 80% of the store on the measured tenant, and neither the usage recorder nor the delivery meter reads the store. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][One shared tick or one copy for each party]].
+- The tick store holds one tick for each source, owned by the system tenant, and the history read checks the subscription (2026-10-25). The per-party copy added 80% of the store on the measured tenant, and neither the usage recorder nor the delivery meter reads the store. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]].
 
 - Split from [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
 - The route is the one consumer record (2026-10-24). The feed binding retires, with its two tables, its screen and its policies. A projection of the routes would keep two records for one fact and need a writer to hold them in step. This reverses the sprint 27 decision that consumption is a binding. Evidence and consequences are in [[id:E53B0439-85D8-44FF-9D3F-6C7C644E0D62][Decide the binding's place in the route architecture]].

@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 2EEE37F6-0570-43B8-979F-079153A3DECA
+:END:
+#+title: Work is pushed to the grid, and an idle grid costs one claim per wrapper per timeout
+#+description: A wrapper waits for work to reach it; it claims when a notice says work exists, or after a long timeout, so an idle grid runs one claim per wrapper per timeout and nothing else.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:compute:nats:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+* Summary
+
+Work reaches a wrapper; a wrapper does not poll for it. The server publishes a
+notice when it adds work for a platform. An idle wrapper waits for the notice
+and claims when it arrives, and the claim takes one job under a lease. A wrapper
+also claims after a long timeout, measured in minutes, which covers a lost
+notice. Between those it sends nothing, so an idle grid runs one claim per
+wrapper per timeout and nothing else.
+
+* Detail
+
+** The notice
+
+The notice is a core NATS message on the platform's work subject. It holds no
+state; it tells the wrappers of that platform that a claim can succeed. A lost
+notice costs at most the long timeout.
+
+** The claim
+
+A claim takes the oldest runnable job of the platform with =FOR UPDATE SKIP
+LOCKED=, leases it to the wrapper and mints its token, as
+[[id:7D4D8598-555D-4E86-8006-3BC79E926382][How the compute grid queues and claims work]] describes. Several wrappers woken by one notice race; the lock decides
+which one takes the job, and the others find none and wait again.
+
+** After a job
+
+A wrapper that finishes a job claims again at once, because work may be
+waiting, and waits for a notice only when a claim finds nothing.
+
+* Patterns used
+
+- [[id:5C52B5EA-C13B-4149-BC18-DCB2D9AE998B][Competing Consumers]] — the wrappers of a platform compete for its jobs, and the lock decides each one.
+
+* See also
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — the life of a job from batch to result.

@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 37D08E01-F99C-4D2D-8ACA-E19E252BBE3D
+:END:
+#+title: A repository works inside an open transaction and never holds credentials
+#+description: One unit-of-work call acquires, sets context, commits or rolls back, and releases; repositories receive the open transaction.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:database:api:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+* Summary
+
+Repositories never open connections and never see credentials. A unit-of-work
+call takes the tenant, the party and a function. It acquires a connection,
+begins a transaction with that context ([[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]]), calls the function with the
+open transaction, commits when the function returns, rolls back when it fails,
+and releases the connection. Every repository operation takes the transaction
+as its first argument, so several operations commit together, and a repository
+has no other way to reach the database.
+
+* Detail
+
+** The shape
+
+#+begin_src cpp
+ctx.transact(tenant, party, [&](tx& t) {
+    const auto held = ledger.held_by(t, host);
+    ledger.requeue(t, held);
+});
+#+end_src
+
+The context holds the pool, the service account and the acquire policy. It
+does not hand out connections or credentials; =transact= is the only way in.
+
+** What runs inside
+
+The generated repositories and the hand-written statements ([[id:E8369409-2A7B-4258-9D3C-6D37A46F4603][A hand-written statement is declared once, typed both ways and prepared once]]) take the
+same =tx=. A transaction is read-write unless it is declared read-only, and a
+read-only transaction tells the store so.
+
+** What comes out
+
+=transact= returns the function's value or an error with a class ([[id:E11DB09A-328A-476A-A71B-8E303A68D07D][A store error says whether a retry can succeed]]). A
+retryable error leaves the decision to retry with the caller, which knows
+whether the work is safe to repeat.
+
+** What is outside it
+
+The data plane does not use the unit of work. Tick lanes hold connections of
+the writer role and commit COPY batches ([[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]]), because a tick needs neither
+the tenant context nor the audit columns.
+
+* See also
+
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
+- [[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]] — the pool =transact= acquires from.
+- [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] — the conventions of the store the transaction runs in.

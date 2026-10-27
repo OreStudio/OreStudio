@@ -4655,7 +4655,7 @@ const fr: SourceCatalogue = {
                 'Hawkes uniquement : combien de ticks supplémentaires un tick provoque, en dessous de un.',
             decay: 'Décroissance, par seconde',
             decayHelp:
-                'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, en unités de un sur une seconde.',
+                'Hawkes uniquement : vitesse à laquelle une rafale s’estompe, par seconde de temps de marché. Une rafale s’estompe plus vite dans un marché animé.',
             market: 'Marché maintenant : {state}. Il se lit ici et se règle dans l’onglet Régime de marché.',
             marketUnknown: 'l’état du marché n’est pas lisible pour le moment',
             unsaved: 'Modifications non enregistrées',

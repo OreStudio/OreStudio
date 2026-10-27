@@ -48,6 +48,8 @@
 #include <string>
 #include <tuple>
 
+constexpr const char* tags = "[curve_publish]";
+
 namespace {
 
 using ores::inbox::service::approval_lifecycle;

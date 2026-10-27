@@ -52,6 +52,8 @@ arrival_law make_arrival_law(const arrival_spec& spec, math::rng_stream& stream)
         return periodic_law{.rate = rate, .offset = open_uniform(stream)};
     if (spec.mode == "poisson")
         return poisson_law{.rate = rate};
+    if (spec.mode != "hawkes")
+        throw std::invalid_argument("make_arrival_law: unrecognised mode '" + spec.mode + "'");
 
     // The stationary intensity is the mean rate, so the stationary excess is the
     // part of it the baseline does not supply.

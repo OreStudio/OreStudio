@@ -100,7 +100,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Bot: confirm validation refuses a branching ratio of one. | arrival_law.cpp | Decline | It does; make_arrival_law refuses what cannot work tests n = 1. |
+| 2 | Bot: check for hawkes by name, not as the fallback. | arrival_law.cpp | Accept | An unknown mode now throws. |
+| 3 | Bot: say record_event takes the gap that actually passed. | arrival_law.hpp | Accept | Documented on the parameter. |
+| 4 | Bot: move overloaded to a shared header. | arrival_law.cpp | Decline | One user today; it moves when a second needs it. |
 
 * Result
 

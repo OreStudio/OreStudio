@@ -96,6 +96,9 @@ ORES_ANALYTICS_QUANT_EXPORT double draw_gap(const arrival_law& law, math::rng_st
 
 /**
  * @brief Move a law past an event that came one gap after the last.
+ *
+ * @param gap the operational time that actually passed since the last event:
+ *        the gap draw_gap returned, if the event came then. It is not checked.
  */
 ORES_ANALYTICS_QUANT_EXPORT void record_event(arrival_law& law, double gap);
 

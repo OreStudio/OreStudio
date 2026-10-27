@@ -4652,7 +4652,7 @@ const pt: SourceCatalogue = {
             latenessValue: '{smoothed} ms, no máximo {most} ms',
             modes: { periodic: 'Periódico', poisson: 'Poisson', hawkes: 'Hawkes' },
             law: '{mode} {rate}/s ×{sensitivity} → {now}/s',
-            phase: 'fase {phase}',
+            phase: 'fase inicial {phase}',
             excess: 'excitação {excess}',
             charts: {
                 pace: 'a velocidade do tempo de mercado',
@@ -4667,6 +4667,7 @@ const pt: SourceCatalogue = {
                 observed: 'vistos',
                 expected: 'esperados',
                 qq: 'Os intervalos normalizados de {feed} face a Exp(1)',
+                tooFew: '{feed} tem poucos ticks na janela para um gráfico: são precisos {minimum} intervalos.',
                 qqCaption:
                     '{feed}: intervalos normalizados face a Exp(1). Os intervalos de um fluxo periódico valem todos um.',
             },

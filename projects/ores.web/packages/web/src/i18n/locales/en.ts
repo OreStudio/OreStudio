@@ -4622,7 +4622,7 @@ export const en: SourceCatalogue = {
             latenessValue: '{smoothed} ms, at most {most} ms',
             modes: { periodic: 'Periodic', poisson: 'Poisson', hawkes: 'Hawkes' },
             law: '{mode} {rate}/s ×{sensitivity} → {now}/s',
-            phase: 'phase {phase}',
+            phase: 'initial phase {phase}',
             excess: 'excitation {excess}',
             charts: {
                 pace: 'how fast market time runs',
@@ -4637,6 +4637,7 @@ export const en: SourceCatalogue = {
                 observed: 'seen',
                 expected: 'expected',
                 qq: 'The rescaled gaps of {feed} against Exp(1)',
+                tooFew: '{feed} has too few ticks in the window for a plot: it needs {minimum} gaps.',
                 qqCaption:
                     '{feed}: rescaled gaps against Exp(1). A periodic feed’s gaps are all one.',
             },

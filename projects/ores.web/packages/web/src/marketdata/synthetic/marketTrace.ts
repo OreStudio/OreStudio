@@ -109,7 +109,8 @@ export function traceBands(
 
 /** The decisions a person took or the feeds made: pins and changes of the feeds, newest first. */
 export function commandLog(events: readonly TraceEvent[], most = 12): readonly TraceEvent[] {
-    return events
+    return [...events]
+        .sort((left, right) => left.tau - right.tau)
         .filter((event) => event.kind !== 'tick' && event.kind !== 'transition')
         .slice(-most)
         .reverse();
@@ -165,9 +166,9 @@ export function feedFit(
     feed: TraceFeed,
     span: { from: number; to: number },
 ): FeedFit {
-    const ticks = events.filter(
-        (event) => event.kind === 'tick' && event.sourceName === feed.sourceName,
-    );
+    const ticks = events
+        .filter((event) => event.kind === 'tick' && event.sourceName === feed.sourceName)
+        .sort((left, right) => left.tau - right.tau);
     return {
         observed: ticks.length,
         expected: feed.rate * feed.sensitivity * (span.to - span.from),
@@ -179,6 +180,9 @@ export function feedFit(
 }
 
 /** Points of a QQ plot of ascending gaps against Exp(1): the theoretical then the observed. */
+/** The fewest gaps a QQ plot is drawn from: fewer say nothing about a law's shape. */
+export const QQ_MINIMUM_GAPS = 5;
+
 export function exponentialQuantiles(
     gaps: readonly number[],
 ): readonly { readonly expected: number; readonly observed: number }[] {

@@ -51,6 +51,7 @@ import {
     feedFit,
     lawText,
     paceSteps,
+    QQ_MINIMUM_GAPS,
     tauPositions,
     tauSpan,
     traceBands,
@@ -388,7 +389,14 @@ function FeedFits({ trace }: { readonly trace: MarketTrace }): ReactNode {
                         </tbody>
                     </table>
                 </div>
-                {chosen === undefined || points.length < 2 ? null : (
+                {chosen === undefined ? null : points.length < QQ_MINIMUM_GAPS ? (
+                    <p className="max-w-[160px] text-[10px] text-ink-faint">
+                        {t('marketdata.marketRegime.fit.tooFew', {
+                            feed: chosen.feed.sourceName,
+                            minimum: QQ_MINIMUM_GAPS,
+                        })}
+                    </p>
+                ) : (
                     <figure className="space-y-1">
                         <svg
                             role="img"

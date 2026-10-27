@@ -367,7 +367,7 @@ describe('the market regime tab with the scheduler’s record', () => {
 
     it('shows each running feed’s law, rate, sensitivity, rate now and phase on its row', () => {
         const html = renderTraced();
-        expect(html).toContain('Periodic 1.00/s ×1.00 → 2.05/s phase 0.37');
+        expect(html).toContain('Periodic 1.00/s ×1.00 → 2.05/s initial phase 0.37');
     });
 
     it('offers to place the marks by clock time or by market time', () => {
@@ -379,9 +379,9 @@ describe('the market regime tab with the scheduler’s record', () => {
     it('sets each feed against its law and plots its rescaled gaps against Exp(1)', () => {
         const html = renderTraced();
         expect(html).toContain('Each feed against its law');
-        expect(html).toContain('The rescaled gaps of live.eurusd against Exp(1)');
-        // Three ticks, and the first one's gap began before the window.
-        expect(html.match(/data-qq/g)?.length).toBe(2);
+        // Three ticks give two gaps, too few for a plot, so the tab says so instead.
+        expect(html).toContain('live.eurusd has too few ticks in the window for a plot');
+        expect(html).not.toContain('data-qq');
     });
 
     it('lists what the loop applied, newest first', () => {
@@ -396,5 +396,14 @@ describe('the market regime tab with the scheduler’s record', () => {
         const html = render(regime());
         expect(html).not.toContain('Each feed against its law');
         expect(html).not.toContain('What the loop applied');
+    });
+});
+
+describe('the QQ plot of a busy feed', () => {
+    it('plots a feed with enough gaps against Exp(1)', () => {
+        const ticks = [60, 50, 40, 30, 20, 10, 5].map((ago) => traced(ago));
+        const html = renderTraced(trace({ events: ticks }));
+        expect(html).toContain('The rescaled gaps of live.eurusd against Exp(1)');
+        expect(html.match(/data-qq/g)?.length).toBe(6);
     });
 });

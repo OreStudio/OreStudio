@@ -4685,7 +4685,7 @@ const fr: SourceCatalogue = {
             latenessValue: '{smoothed} ms, au plus {most} ms',
             modes: { periodic: 'Périodique', poisson: 'Poisson', hawkes: 'Hawkes' },
             law: '{mode} {rate}/s ×{sensitivity} → {now}/s',
-            phase: 'phase {phase}',
+            phase: 'phase initiale {phase}',
             excess: 'excitation {excess}',
             charts: {
                 pace: 'la vitesse du temps de marché',
@@ -4700,6 +4700,7 @@ const fr: SourceCatalogue = {
                 observed: 'vus',
                 expected: 'attendus',
                 qq: 'Les écarts normalisés de {feed} face à Exp(1)',
+                tooFew: '{feed} a trop peu de ticks dans la fenêtre pour un graphique : il faut {minimum} écarts.',
                 qqCaption:
                     '{feed} : écarts normalisés face à Exp(1). Les écarts d’un flux périodique valent tous un.',
             },

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4BBDF56E-612C-4E0B-AAC0-A0EECF93F669][Eight columns in the trading models hold JSON blobs where th…]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A constituent states its kind and the code it names, and a write is refused when
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:4BBDF56E-612C-4E0B-AAC0-A0EECF93F669][Eight columns in the trading models hold JSON blobs where th…]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,43 @@ A constituent states its kind and the code it names, and a write is refused when
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** What the kind is for
+
+A constituent names a code, and a code means nothing without the vocabulary
+that holds it. The corpus proves the point twice over: =RIC:.SPX= is an equity
+because the equity catalogue holds it, and one =EquityWorstOfBasketSwap= in the
+examples carries constituents whose =Type= is =FX=. A table that stored only
+the code would file a currency pair as an equity and would have nothing to
+check the code against.
+
+** The shape
+
+1. *The column.* =underlying_kind= on =equity_basket_constituent=, text and not
+   null, generated as =equity= so an existing row keeps the meaning it had.
+2. *The refusal.* A check on the table calling
+   =ores_trading_basket_constituent_resolves_fn(kind, code)=, which looks the
+   code up in the catalogue the kind names and raises with both values when it
+   is absent. It raises rather than returning false so the operator reads the
+   kind and the code that disagree instead of a constraint name.
+3. *The projection.* The document's =Underlying/Type= is read into the column
+   and written back from it, so a round trip keeps the kind the document stated.
+4. *The tests.* A round trip that asserts the kind, and a write that the
+   catalogue must refuse.
+
+** Why the catalogues and not a list of kinds
+
+A kind is only meaningful if there is a catalogue behind it. Three exist today
+-- equities, currency pairs and commodities -- and each is tenant scoped and
+carries its own policies, so the function runs as the writing account and sees
+only the catalogues that account may see. A fourth vocabulary becomes a branch
+in one function rather than a change to the schema.
+
+** The trap this will hit
+
+The existing repository and eventing tests insert a generated constituent whose
+name comes from a faker, which no catalogue holds, so they are refused the
+moment the check exists. That is the check working, not a defect, and the tests
+have to publish an underlying before they can name one.
 
 * Measurements
 

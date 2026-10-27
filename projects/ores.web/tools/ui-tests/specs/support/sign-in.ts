@@ -18,10 +18,10 @@ export const PASSWORD = process.env['ORES_UI_PASSWORD'] ?? '';
  */
 export async function signIn(
     page: Page,
-    options: { readonly party?: RegExp | string } = {},
+    options: { readonly party?: RegExp | string; readonly username?: string } = {},
 ): Promise<void> {
     await page.goto('/');
-    await page.getByLabel(/username/i).fill(USERNAME);
+    await page.getByLabel(/username/i).fill(options.username ?? USERNAME);
     await page.getByLabel(/password/i).fill(PASSWORD);
     await page.getByRole('button', { name: /sign in/i }).click();
 

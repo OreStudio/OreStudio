@@ -68,7 +68,12 @@ test('the list shows the seeded templates and the run adds, corrects and removes
 
     // The tenant administrator works in several parties; this environment
     // provisions the tenant with a Hong Kong party.
-    await signIn(page, { party: /ACME Corporation HK Ltd/ });
+    await signIn(page, {
+        party: /ACME Corporation HK Ltd/,
+        // A configuration screen is Operations' to write; the shared default
+        // account holds Member only.
+        username: 'adrian.vance@acme_corporation',
+    });
 
     await page.goto(LIST);
     await expect(page.getByRole('heading', { name: 'Sensitivity templates' })).toBeVisible();

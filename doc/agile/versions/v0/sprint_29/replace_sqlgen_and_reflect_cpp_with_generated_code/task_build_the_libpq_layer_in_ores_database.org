@@ -26,11 +26,11 @@ Step 2 of 7. The layer the generated repositories run on, in place of sqlgen's c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -60,9 +60,46 @@ tested against the database on the layer alone; callers move onto it in step 3.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The layer lives beside sqlgen in =ores.database=, under =ores/database/pq=, in the
+namespace =ores::database::pq=. Nothing moves onto it in this step; step 3 moves
+each component.
+
+The data shapes, from the bottom up:
+
+| Type | What it holds | Owns |
+|------+---------------+------|
+| =connection= | One =PGconn= and the names prepared on it | the connection, closed by RAII |
+| =result= | One =PGresult= | the result, cleared by RAII |
+| =codec<T>= | The type's OID, its binary encoding and decoding | nothing; a trait |
+| =statement<Columns, Params>= | A name, the SQL, and two counters: prepares and executions | nothing; declared once, =inline const= |
+| =session_context= | Tenant, party, visible parties, actor, service | values |
+| =transaction= | A connection and a session context, not yet begun | the open transaction |
+| =pool= | A fixed set of long-lived connections | the connections |
+| =store_error= | The SQLSTATE and its class: retryable or refused | — |
+
+The flow:
+
+1. A service opens a =pool= of a few connections at start. Nothing is set on a
+   connection when it opens.
+2. =transact(pool, context, fn)= leases a connection, makes a =transaction=,
+   calls =fn(tx)=, commits on return, rolls back on an exception, and returns
+   the lease on every path. Nothing else begins, commits or releases.
+3. A transaction's first statement goes out in one pipeline with =begin= and
+   one =set_config(..., true)= statement for the five settings, so the context
+   costs no round trip of its own. A statement not yet prepared on the
+   connection is prepared in the same pipeline.
+4. Parameters and results are binary. =codec<T>= covers bool, the integers,
+   float8, text, uuid, =tenant_id=, timestamptz, date, numeric (as the project's
+   decimal), =std::optional= for NULL, and one-dimensional arrays.
+5. =transaction::pipeline= sends a batch of statements and syncs once.
+   =transaction::copy_in= writes rows with binary =COPY=, outside pipeline mode.
+6. =check= reads every result. A failure throws =store_error=, classed by
+   SQLSTATE: connection, transaction rollback, insufficient resources, operator
+   intervention and lock-not-available are retryable; the rest are refused. A
+   connection that breaks is retryable.
+
+Binary timestamps are microseconds since 2000 in UTC whatever the session's
+time zone, so the layer needs no time zone setting.
 
 * Measurements
 
@@ -76,9 +113,33 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Layer test cases against the database | 9 of 9 pass | =ctest --preset linux-clang-release-ninja -R ores.database.tests= | this branch |
+| Write 1,000 rows in one pipeline, on the layer | median 26.2 ms (19.2–34.4), 20 runs, load average 25 | =ores.database.tests "[.benchmark]"= | this branch |
+| Read all 1,000, on the layer | median 3.95 ms (2.90–10.0) | same | this branch |
+| 1,000 point reads, one round trip each, on the layer | median 84.3 ms (70.2–179) | same | this branch |
+| The same three on raw libpq, from the analysis | 24.4 ms, 3.76 ms, 72.9 ms | [[id:974EC72D-5B19-4979-A9B4-3E96E732981A][Compare a repository on sqlgen, libpqxx and raw libpq]] | 824be0b56a |
 
 * Notes
+
+** What the tests prove, and how
+
+Each test was checked against the defect it targets. The isolation test first
+passed with =set_config(..., false)=, because every transaction sets all five
+settings. It now also reads the settings on the bare connection between
+transactions and compares them with a fresh connection's, so a session-wide
+setting fails it. The test roles carry a role default for the tenant, the
+system tenant, which is what a fresh connection shows.
+
+** Choices
+
+- The layer prepares on the protocol, so a utility statement such as =create=
+  or =do= is a statement like any other.
+- =time_point::max()= is the bitemporal never. A time point counts nanoseconds
+  and stops in 2262, so the codec writes the database's =9999-12-31 23:59:59=
+  for it and reads anything past the clock's range back as it.
+- A pool that stays busy past its acquire timeout throws =53300=, retryable.
+- COPY runs outside pipeline mode, which does not allow it; it begins the
+  transaction first if no statement has.
 
 * Test Scenarios
 
@@ -104,3 +165,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores.database= has the libpq layer under =pq=: a pool of long-lived
+connections, =transact= as the one unit of work, a transaction that sets its
+context locally in the round trip of its first statement, statements declared
+once with typed parameters and columns, prepared once per connection and
+binary both ways, one check that classes every failure as retryable or refused
+by SQLSTATE, pipelined batches and binary COPY. Nine test cases prove each
+point against the database. The analysis story's benchmark runs on the layer at
+the speed of the raw libpq it was compared with. Nothing has moved onto the
+layer yet; step 3 moves each component.

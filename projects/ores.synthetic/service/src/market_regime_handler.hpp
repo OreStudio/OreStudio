@@ -82,6 +82,11 @@ public:
         BOOST_LOG_SEV(market_regime_handler_lg(), info)
             << "market_regime get: replying to '" << msg.reply_subject << "' with state '"
             << response.state << "'.";
+        const auto market = scheduler_.snapshot();
+        BOOST_LOG_SEV(market_regime_handler_lg(), debug)
+            << "market_regime get: pace " << market.pace << ", tau " << market.tau << ", heat "
+            << market.heat << ", enrolled rate " << market.population_rate << " a second, "
+            << scheduler_.size() << " series.";
         try {
             reply(nats_, msg, response);
         } catch (const std::exception& ex) {

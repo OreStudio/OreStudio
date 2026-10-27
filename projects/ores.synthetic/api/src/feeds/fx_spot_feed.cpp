@@ -124,7 +124,6 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                 auth_nats, cfg, ores::marketdata::domain::start_date(cfg.vintage_date, clock)) :
             cfg.gmm_initial_price;
 
-
     auto process = ores::analytics::quant::service::process_factory::make_process(
         cfg.process_type,
         std::move(means),

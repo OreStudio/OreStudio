@@ -105,7 +105,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Bot: removing the seed block left two blank lines. | fx_spot_feed.cpp | Accept | One now. |
+| 2 | Bot: an FX and a curve feed with one source name would share a stream. | feed_factory.hpp | Decline | The fleet claims a source name once in one running set across every kind, so two running feeds cannot share one; the arrival stream has the same key. |
+| 3 | Bot: two processes in one dry run would share a stream. | feed_kind_registry.cpp | Decline | Each path builds one process from the request seed plus its index. |
+| 4 | Bot: log the run seed now the per-feed seed line is gone. | application.cpp | Decline | The service logs SYNTHETIC RUN SEED once at start. |
+| 5 | Bot: a restart with one seed republishes one price path. | | Decline | That is the purpose; the ticks smoke counts ticks, not distinct prices. |
 
 * Result
 

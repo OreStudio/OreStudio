@@ -26,11 +26,11 @@ The work that follows the documentation task, and it owns the rest of the story.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | The entity prose calls a curve configuration's leaves parameters, and the code, SQL and diagrams that read it are regenerated. The page and the write check remain. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Draw the curve configuration page with the shared leaf parts, then check a value against its set on write. |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -134,3 +134,18 @@ via its "Verifies task" field.
 | 10 | Reading =t_sets= only from the referenced sets made the orphan assertion vacuous: a curve set no leaf uses was never in the table. | the new test | Accept | =t_sets= is now the curve sets by prefix, plus any set a curve leaf wrongly uses, so an orphan is seen and a shared set is still caught. Proven by inserting an orphan set: the test failed on it, and the probe was removed. |
 
 * Result
+
+The entity prose now calls a curve configuration's leaf a parameter, and the
+code, SQL and diagrams that carry it are regenerated. A pgTAP suite of six
+assertions guards the value-set links: every curve link names a set that exists,
+every documented curve leaf has a link, every set a leaf uses is a curve set, no
+curve set is orphaned, and every catalogue is registered.
+
+This task was scaffolded to own the whole remainder, and that was too much for
+one task. The two items it did not deliver are split out:
+
+- [[id:FCD8EE04-D549-45B2-AE29-8C5FBBC66B74][Draw the curve configuration page with the shared leaf parts]].
+- [[id:050CE731-4FE6-4158-840B-E5DFB006B30A][Map the curve configuration columns to their leaves]].
+
+The value sets were already delivered by [[id:52535EEC-CB9C-4ECF-A9EB-C2F186B2677D][their own task]], and the sections
+have been in =curve_section= since before this story, so neither is repeated here.

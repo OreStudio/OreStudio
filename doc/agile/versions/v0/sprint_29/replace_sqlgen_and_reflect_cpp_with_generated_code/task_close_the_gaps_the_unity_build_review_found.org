@@ -130,3 +130,9 @@ their own test target. Twelve tests pin these points. Lint lints every file
 when git is missing, and the own-or-system RLS comment is reworded in the
 templates and the generated SQL. CMake already required 3.28, so that point
 needed no change.
+
+The branch also carries the unity build over main's hold reason change,
+which merged after the unity build and was generated from the older
+templates: the registrar's queue group and the shell helpers are prefixed
+by regeneration, the new tests take the shared constants, one seed_account
+clash is recorded, and main's unlisted headers join the file lists.

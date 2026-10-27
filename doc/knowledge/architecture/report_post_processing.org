@@ -65,6 +65,69 @@ The cost of the shortest path should be stated rather than discovered: results
 landing in reporting's database make them a reporting asset, so moving them to a
 domain later is a migration.
 
+** The canonical row
+
+Every file the engine writes is marshalled into rows of the same shape before
+anything loads them. The shape is the contract between the grid, the store and the
+screens:
+
+| Column | Read from | Notes |
+|--------+-----------+-------|
+| =subject_type= | the marshal, from the file | =trade= today |
+| =subject_id= | =TradeId= | the engine's own identifier |
+| =measure= | the file's heading | =npv=, =npv_base=, =notional=, =delta=, =gamma= |
+| =currency= | =NpvCurrency=, =NotionalCurrency= | empty when the measure has none |
+| =value= | the figure's column | a decimal, never formatted |
+| =source= | the marshal | the file and the row it came from |
+
+The run, its definition, its party and tenant, and =as_of= are not in the file:
+they belong to the run, and the load fills them.
+
+A file stating one measure in one row projects one row. A file stating several
+measures in one row, as the sensitivity output does, widens to one row per measure.
+That rule is stated per analytic in the marshal and nowhere else.
+
+A marshal refuses rather than guesses: a file whose headings it does not know,
+naming the headings it found; a row with no subject id; a figure it cannot read as
+a decimal; a measure whose currency it cannot state when the measure has one. A
+refusal is a run error naming the file and the heading, and it fails the
+post-processing rather than writing part of a result.
+
+The screens may rely on one row per subject, measure and currency per run — a
+repeated row is a fault the store's key refuses — on =value= being a decimal whose
+formatting is theirs, on =measure= being open so a new analytic adds a value rather
+than a column, and on a run's rows arriving together.
+
+This refines *The result store* above: the families stay apart, and a family whose
+files state several measures carries the measure as a dimension. Both are
+time-series tables, keyed and chunked on the run's priced date.
+
+** Where the work happens
+
+The expensive half is reading what the engine wrote, and it belongs where the
+engine already is: the compute wrapper, which runs on the worker beside the engine
+and is the only component that knows which analytics the package ran and what files
+they wrote. The wrapper marshals those files into the canonical rows before it
+uploads, and the service's post-processing step is fetch, validate and load.
+
+That split is what keeps the service scalable. A run's rows are written by a single
+=COPY= inside one transaction, so a hundred runs finishing at once are a hundred
+short inserts rather than a hundred parsers, and the work grows with the grid
+rather than with the reporting service's replica count. The queue group and the run
+grant already spread and limit the load.
+
+The service keeps a fallback: when a run's output holds no marshalled file, a
+registered reader may parse the archive in the service, and the run records that it
+was read the old way. That is a migration path for wrappers already deployed, not a
+second architecture.
+
+** What the phase is called in the workflow
+
+Retrieval answers where the output is; post-processing answers what it says. They
+are two steps, because a transport failure and a contract failure read differently
+and the errors a person sees should say which. The pipeline keeps six phases and the
+workflow gains one step.
+
 ** What is not bound to ORE
 
 The result files are delimited tables, not an ORE document. Their shape — a

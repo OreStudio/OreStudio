@@ -96,6 +96,8 @@
 \ir ./reporting_report_instances_create.sql
 \ir ./reporting_report_instances_fsm_guard_create.sql
 \ir ./reporting_report_instances_notify_trigger_create.sql
+\ir ./reporting_report_result_rows_create.sql
+\ir ./reporting_report_result_rows_notify_trigger_create.sql
 \ir ./reporting_report_error_events_create.sql
 \ir ./reporting_report_error_events_notify_trigger_create.sql
 \ir ./reporting_report_input_bundles_create.sql

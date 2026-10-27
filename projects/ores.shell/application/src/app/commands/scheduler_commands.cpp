@@ -32,6 +32,7 @@
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "shared_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
@@ -58,9 +59,6 @@ namespace {
  * protocol, because the entity it reports on has no model of its own yet.
  */
 constexpr std::string_view job_instance_events_subject = "scheduler.v1.job_instance_events.updated";
-
-constexpr std::string_view default_reason_code =
-    dq::domain::change_reason_constants::codes::new_record;
 
 constexpr unsigned default_watch_seconds = 60;
 constexpr unsigned max_watch_seconds = 3600;

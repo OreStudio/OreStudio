@@ -71,8 +71,8 @@ constexpr auto spot = std::chrono::year{2026} / std::chrono::January / 19;
 
 /// The calendars carry a country code, and the sentinel is the one a
 /// synthetic row may name.
-void write_zz_country_sentinel(scoped_database_helper& h,
-                               ores::utility::generation::generation_context& gctx) {
+void service_tenor_resolution_service_write_zz_country_sentinel(
+    scoped_database_helper& h, ores::utility::generation::generation_context& gctx) {
     country_repository{}.write(h.context(), {generate_country_sentinel(gctx)});
 }
 
@@ -92,7 +92,7 @@ struct fixture {
                      const std::string& convention = "TEST_SPOT_FORWARD")
         : convention_code(convention) {
         auto gctx = ores::testing::make_generation_context(h);
-        write_zz_country_sentinel(h, gctx);
+        service_tenor_resolution_service_write_zz_country_sentinel(h, gctx);
 
         auto calendar = generate_synthetic_calendar(gctx);
         calendar.source = "user";

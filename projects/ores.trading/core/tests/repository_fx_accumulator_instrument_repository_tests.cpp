@@ -45,7 +45,8 @@ using namespace ores::logging;
  *   - knock_out_barrier is extracted from the first UpAndOut barrier (level 126)
  *   - FixingFloor barrier and range bounds are not captured
  */
-fx_accumulator_instrument make_instrument(database_helper& h) {
+fx_accumulator_instrument
+repository_fx_accumulator_instrument_repository_make_instrument(database_helper& h) {
     fx_accumulator_instrument r;
     // The instrument is keyed by its trade, so the trade is written first.
     r.identity.trade_id = ores::trading::tests::write_parent_trade(h);
@@ -75,7 +76,7 @@ TEST_CASE("fx_accumulator_instrument_write_and_read_latest", "[repository][fx][f
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
-    auto instr = make_instrument(h);
+    auto instr = repository_fx_accumulator_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
     BOOST_LOG_SEV(lg, debug) << "Writing FX accumulator instrument: " << instr;
 
@@ -103,7 +104,7 @@ TEST_CASE("fx_accumulator_instrument_read_nonexistent", "[repository][fx][fx_acc
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
     fx_accumulator_instrument_repository repo;
-    auto instr = make_instrument(h);
+    auto instr = repository_fx_accumulator_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
     repo.write(ctx, instr);
 
@@ -123,7 +124,7 @@ TEST_CASE("fx_accumulator_instrument_remove", "[repository][fx][fx_accumulator]"
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
-    auto instr = make_instrument(h);
+    auto instr = repository_fx_accumulator_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
 
     fx_accumulator_instrument_repository repo;

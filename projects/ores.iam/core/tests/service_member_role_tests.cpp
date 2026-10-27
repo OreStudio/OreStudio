@@ -23,31 +23,22 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "test_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
 
-auto& lg() {
+auto& service_member_role_lg() {
     static auto instance = ores::logging::make_logger("ores.iam.core.tests.member_role");
     return instance;
-}
-
-ores::database::context acting(ores::testing::scoped_database_helper& h) {
-    return h.context().with_tenant(h.tenant_id(), h.db_user());
 }
 
 std::vector<std::string> query(ores::testing::scoped_database_helper& h,
                                const std::string& sql,
                                const std::vector<std::string>& params) {
     return ores::database::repository::execute_parameterized_string_query(
-        acting(h), sql, params, lg(), sql);
-}
-
-void run(ores::testing::scoped_database_helper& h,
-         const std::string& sql,
-         const std::vector<std::string>& params) {
-    ores::database::repository::execute_parameterized_command(acting(h), sql, params, lg(), sql);
+        acting(h), sql, params, service_member_role_lg(), sql);
 }
 
 /**
@@ -65,8 +56,9 @@ void ensure_member(ores::testing::scoped_database_helper& h) {
         {h.tenant_id().to_string(), h.db_user()});
 }
 
-ores::iam::domain::account write_account(ores::testing::scoped_database_helper& h,
-                                         const std::string& account_type) {
+ores::iam::domain::account
+service_member_role_write_account(ores::testing::scoped_database_helper& h,
+                                  const std::string& account_type) {
     auto ctx = ores::testing::make_generation_context(h);
     auto a = ores::iam::generators::generate_synthetic_account(ctx);
     a.account_type = account_type;
@@ -94,7 +86,7 @@ TEST_CASE("a_person_account_holds_member_from_its_first_version", "[member_role]
     ores::testing::scoped_database_helper h(true);
     ensure_member(h);
 
-    const auto person = write_account(h, "user");
+    const auto person = service_member_role_write_account(h, "user");
 
     CHECK(holds_member(h, person));
 }
@@ -103,7 +95,7 @@ TEST_CASE("a_service_account_does_not_hold_member", "[member_role]") {
     ores::testing::scoped_database_helper h(true);
     ensure_member(h);
 
-    const auto service = write_account(h, "service");
+    const auto service = service_member_role_write_account(h, "service");
 
     CHECK_FALSE(holds_member(h, service));
 }
@@ -111,7 +103,7 @@ TEST_CASE("a_service_account_does_not_hold_member", "[member_role]") {
 TEST_CASE("member_taken_away_is_not_given_back_by_the_next_version", "[member_role]") {
     ores::testing::scoped_database_helper h(true);
     ensure_member(h);
-    auto person = write_account(h, "user");
+    auto person = service_member_role_write_account(h, "user");
     REQUIRE(holds_member(h, person));
 
     run(h,

@@ -23,6 +23,7 @@
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.utility/crypto/sha256.hpp"
+#include "test_helpers.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
@@ -51,22 +52,11 @@ namespace {
 
 using namespace ores::ore::domain;
 
-std::filesystem::path corpus_root() {
+std::filesystem::path xml_roundtrip_conventions_corpus_root() {
     return ores::testing::project_root::resolve("external/ore/examples");
 }
 
-std::string read(const std::filesystem::path& path) {
-    std::ifstream in(path, std::ios::binary);
-    std::ostringstream buffer;
-    buffer << in.rdbuf();
-    return buffer.str();
-}
-
-conventions load(const std::filesystem::path& path) {
-    return conventions_mapper::read(read(path), path.string());
-}
-
-ores::ore::xml::record_reader root_of(const conventions& document) {
+ores::ore::xml::record_reader xml_roundtrip_conventions_root_of(const conventions& document) {
     return ores::ore::xml::record_reader(
         *ores::ore::xml::generated::conventions::conventions_document().root, &document);
 }
@@ -164,7 +154,7 @@ std::vector<family> families() {
 
 std::vector<std::string> ids_in(const conventions& document, const std::string& element) {
     std::vector<std::string> ids;
-    for (const auto& x : root_of(document).children(element))
+    for (const auto& x : xml_roundtrip_conventions_root_of(document).children(element))
         ids.push_back(x.text("Id").value_or(std::string()));
     return ids;
 }
@@ -180,7 +170,8 @@ TEST_CASE("every_conventions_family_round_trips", "[ore][xml][roundtrip][convent
     for (const auto& f : families()) {
         INFO("family " << f.key);
         int files = 0;
-        for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        for (const auto& path : ores::ore::xml::files_of_kind(
+                 "conventions", xml_roundtrip_conventions_corpus_root())) {
             const auto document = load(path);
             const auto expected_ids = ids_in(document, f.element);
             if (expected_ids.empty())
@@ -213,9 +204,11 @@ TEST_CASE("every_conventions_family_round_trips", "[ore][xml][roundtrip][convent
 TEST_CASE("conventions_intraday_power_load_round_trips", "[ore][xml][roundtrip][conventions]") {
     std::size_t elements = 0;
 
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+    for (const auto& path :
+         ores::ore::xml::files_of_kind("conventions", xml_roundtrip_conventions_corpus_root())) {
         const auto document = load(path);
-        const auto profiles = root_of(document).children("IntradayPowerLoad");
+        const auto profiles =
+            xml_roundtrip_conventions_root_of(document).children("IntradayPowerLoad");
         if (profiles.empty())
             continue;
 
@@ -244,8 +237,9 @@ TEST_CASE("conventions_intraday_power_load_round_trips", "[ore][xml][roundtrip][
 
 TEST_CASE("conventions_bond_yield_round_trips", "[ore][xml][roundtrip][conventions]") {
     std::size_t elements = 0;
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root()))
-        elements += root_of(load(path)).children("BondYield").size();
+    for (const auto& path :
+         ores::ore::xml::files_of_kind("conventions", xml_roundtrip_conventions_corpus_root()))
+        elements += xml_roundtrip_conventions_root_of(load(path)).children("BondYield").size();
 
     // One of the seventy-two files carries it, in five elements.
     CHECK(elements == 5);
@@ -282,7 +276,8 @@ TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive",
 </Conventions>)";
 
     const auto document = conventions_mapper::read(text);
-    REQUIRE(root_of(document).children("CrossCurrencyFixFloat").size() == 1);
+    REQUIRE(xml_roundtrip_conventions_root_of(document).children("CrossCurrencyFixFloat").size() ==
+            1);
 
     const auto mapped = split_conventions(document);
     const auto rows = rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
@@ -314,9 +309,10 @@ TEST_CASE("conventions_inflation_swap_publication_schedules_are_modelled",
           "[ore][xml][roundtrip][conventions]") {
     int files_with_a_publication_schedule = 0;
 
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+    for (const auto& path :
+         ores::ore::xml::files_of_kind("conventions", xml_roundtrip_conventions_corpus_root())) {
         const auto document = load(path);
-        const auto swaps = root_of(document).children("InflationSwap");
+        const auto swaps = xml_roundtrip_conventions_root_of(document).children("InflationSwap");
         const bool carries_a_schedule = std::ranges::any_of(
             swaps, [](const auto& swap) { return swap.has("PublicationSchedule"); });
         if (!carries_a_schedule)
@@ -380,9 +376,10 @@ TEST_CASE("conventions_zero_inflation_index_rebasing_events_are_counted",
 TEST_CASE("conventions_tenor_basis_swap_round_trips", "[ore][xml][roundtrip][conventions]") {
     int files = 0;
 
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+    for (const auto& path :
+         ores::ore::xml::files_of_kind("conventions", xml_roundtrip_conventions_corpus_root())) {
         const auto document = load(path);
-        const auto swaps = root_of(document).children("TenorBasisSwap");
+        const auto swaps = xml_roundtrip_conventions_root_of(document).children("TenorBasisSwap");
         if (swaps.empty())
             continue;
 
@@ -401,10 +398,12 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", "[ore][xml][roundtrip][con
             CHECK(central.identity.kind_code == "TENOR_BASIS_SWAP");
             CHECK(central.payload.name == in.text("Id").value_or(std::string()));
 
-            const auto pay_receive = std::ranges::find_if(
-                pay_receives, [&](const auto& p) { return p.identity.convention_id == central.identity.id; });
-            const auto long_short = std::ranges::find_if(
-                long_shorts, [&](const auto& l) { return l.identity.convention_id == central.identity.id; });
+            const auto pay_receive = std::ranges::find_if(pay_receives, [&](const auto& p) {
+                return p.identity.convention_id == central.identity.id;
+            });
+            const auto long_short = std::ranges::find_if(long_shorts, [&](const auto& l) {
+                return l.identity.convention_id == central.identity.id;
+            });
             if (in.has("PayIndex"))
                 CHECK(pay_receive->pay_leg.pay_index == in.text("PayIndex"));
             if (in.has("ReceiveIndex"))
@@ -436,7 +435,8 @@ TEST_CASE("conventions_files_using_only_modelled_categories_round_trip",
     const auto kind = conventions_kind();
     int walked = 0;
 
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+    for (const auto& path :
+         ores::ore::xml::files_of_kind("conventions", xml_roundtrip_conventions_corpus_root())) {
         // A file that carries a category the mapper does not model cannot round
         // trip, and saying which those are is the measurement's job rather than
         // this case's.
@@ -467,7 +467,8 @@ TEST_CASE("conventions_files_cleared_by_each_category", "[.][conventions][measur
     std::map<int, int> files_by_category_count;
     int files = 0;
 
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+    for (const auto& path :
+         ores::ore::xml::files_of_kind("conventions", xml_roundtrip_conventions_corpus_root())) {
         const auto unmodelled = conventions_mapper::unmodelled(load(path));
         ++files;
         ++files_by_category_count[static_cast<int>(unmodelled.size())];
@@ -493,7 +494,8 @@ TEST_CASE("conventions_unmodelled_categories_measurement", "[.][conventions][mea
     int files = 0;
     int files_with_unmodelled = 0;
 
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+    for (const auto& path :
+         ores::ore::xml::files_of_kind("conventions", xml_roundtrip_conventions_corpus_root())) {
         const auto unmodelled = conventions_mapper::unmodelled(load(path));
         ++files;
         if (!unmodelled.empty())
@@ -556,7 +558,7 @@ std::map<std::string, std::string> read_digests(const std::filesystem::path& pat
 
 TEST_CASE("the exported conventions corpus matches its recorded digests",
           "[ore][xml][roundtrip][conventions]") {
-    const auto root = corpus_root();
+    const auto root = xml_roundtrip_conventions_corpus_root();
     const auto recorded = read_digests(digests_path());
     REQUIRE_FALSE(recorded.empty());
 

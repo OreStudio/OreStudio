@@ -41,7 +41,7 @@ using namespace ores::logging;
 
 namespace {
 
-auto& lg() {
+auto& scheduler_loop_lg() {
     static auto instance = make_logger("ores.scheduler.service.scheduler_loop");
     return instance;
 }
@@ -72,18 +72,19 @@ void scheduler_loop::publish_instance_event(std::string_view change_type,
 
         nats_.publish(job_instance_events_subject, ores::nats::default_wire_codec().encode(ev));
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to publish instance event (" << change_type
-                                  << ") for job " << job.job_name << ": " << e.what();
+        BOOST_LOG_SEV(scheduler_loop_lg(), warn)
+            << "Failed to publish instance event (" << change_type << ") for job " << job.job_name
+            << ": " << e.what();
     }
 }
 
 void scheduler_loop::load_jobs() {
-    BOOST_LOG_SEV(lg(), info) << "Loading all active job definitions.";
+    BOOST_LOG_SEV(scheduler_loop_lg(), info) << "Loading all active job definitions.";
 
     repository::job_definition_repository repo;
     jobs_ = repo.read_all_active(system_ctx_);
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << jobs_.size() << " active jobs.";
+    BOOST_LOG_SEV(scheduler_loop_lg(), info) << "Loaded " << jobs_.size() << " active jobs.";
 
     // Seed last_run_ from the job_instance table so we don't re-fire jobs
     // that already ran since the last minute boundary.
@@ -93,15 +94,16 @@ void scheduler_loop::load_jobs() {
             auto last = inst_repo.last_run_at(system_ctx_, job.id);
             if (last) {
                 last_run_[job.id] = *last;
-                BOOST_LOG_SEV(lg(), debug) << "Seeded last_run for job " << job.job_name << ": "
-                                           << last_run_[job.id].time_since_epoch().count();
+                BOOST_LOG_SEV(scheduler_loop_lg(), debug)
+                    << "Seeded last_run for job " << job.job_name << ": "
+                    << last_run_[job.id].time_since_epoch().count();
             }
         }
     }
 }
 
 boost::asio::awaitable<void> scheduler_loop::fire_job(const domain::job_definition& job) {
-    BOOST_LOG_SEV(lg(), info) << "Firing job: " << job.job_name;
+    BOOST_LOG_SEV(scheduler_loop_lg(), info) << "Firing job: " << job.job_name;
 
     const auto now = std::chrono::system_clock::now();
     domain::job_instance inst;
@@ -118,7 +120,7 @@ boost::asio::awaitable<void> scheduler_loop::fire_job(const domain::job_definiti
     try {
         inst_id = inst_repo.write_started(system_ctx_, inst);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
+        BOOST_LOG_SEV(scheduler_loop_lg(), error)
             << "Failed to write job instance for " << job.job_name << ": " << e.what();
         co_return;
     }
@@ -135,7 +137,7 @@ boost::asio::awaitable<void> scheduler_loop::fire_job(const domain::job_definiti
 
     if (!chosen) {
         const auto msg = "No handler found for action_type: " + job.action_type;
-        BOOST_LOG_SEV(lg(), error) << msg << " (job: " << job.job_name << ")";
+        BOOST_LOG_SEV(scheduler_loop_lg(), error) << msg << " (job: " << job.job_name << ")";
         try {
             inst_repo.write_completed(system_ctx_, inst_id, now, domain::job_status::failed, msg);
         } catch (...) {
@@ -152,29 +154,30 @@ boost::asio::awaitable<void> scheduler_loop::fire_job(const domain::job_definiti
         try {
             inst_repo.write_completed(system_ctx_, inst_id, now, domain::job_status::succeeded);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
+            BOOST_LOG_SEV(scheduler_loop_lg(), warn)
                 << "Failed to write completion for " << job.job_name << ": " << e.what();
         }
         publish_instance_event("updated", job, inst_id);
         last_run_[job.id] = now;
-        BOOST_LOG_SEV(lg(), info) << "Job succeeded: " << job.job_name;
+        BOOST_LOG_SEV(scheduler_loop_lg(), info) << "Job succeeded: " << job.job_name;
     } else {
         const auto& err = result.error();
         try {
             inst_repo.write_completed(system_ctx_, inst_id, now, domain::job_status::failed, err);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
+            BOOST_LOG_SEV(scheduler_loop_lg(), warn)
                 << "Failed to write failure for " << job.job_name << ": " << e.what();
         }
         publish_instance_event("updated", job, inst_id);
         last_run_[job.id] = now;
-        BOOST_LOG_SEV(lg(), error) << "Job failed: " << job.job_name << " error: " << err;
+        BOOST_LOG_SEV(scheduler_loop_lg(), error)
+            << "Job failed: " << job.job_name << " error: " << err;
     }
 }
 
 boost::asio::awaitable<void> scheduler_loop::tick(boost::asio::io_context& ioc) {
     if (needs_reload_.exchange(false, std::memory_order_relaxed)) {
-        BOOST_LOG_SEV(lg(), info) << "Reloading job definitions.";
+        BOOST_LOG_SEV(scheduler_loop_lg(), info) << "Reloading job definitions.";
         load_jobs();
     }
 
@@ -198,7 +201,7 @@ boost::asio::awaitable<void> scheduler_loop::tick(boost::asio::io_context& ioc) 
 }
 
 boost::asio::awaitable<void> scheduler_loop::run(boost::asio::io_context& ioc) {
-    BOOST_LOG_SEV(lg(), info) << "Scheduler loop starting.";
+    BOOST_LOG_SEV(scheduler_loop_lg(), info) << "Scheduler loop starting.";
 
     load_jobs();
 
@@ -212,7 +215,7 @@ boost::asio::awaitable<void> scheduler_loop::run(boost::asio::io_context& ioc) {
         co_await timer.async_wait(boost::asio::redirect_error(boost::asio::use_awaitable, ec));
 
         if (ec == boost::asio::error::operation_aborted) {
-            BOOST_LOG_SEV(lg(), info) << "Scheduler loop timer cancelled, stopping.";
+            BOOST_LOG_SEV(scheduler_loop_lg(), info) << "Scheduler loop timer cancelled, stopping.";
             co_return;
         }
 

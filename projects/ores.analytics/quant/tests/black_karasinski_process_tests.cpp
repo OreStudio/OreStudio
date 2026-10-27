@@ -41,7 +41,7 @@ namespace {
 /**
  * @brief Welford's one-pass running mean and variance.
  */
-struct running_moments {
+struct black_karasinski_process_running_moments {
     double mean = 0.0;
     double m2 = 0.0;
     std::size_t count = 0;
@@ -170,7 +170,7 @@ TEST_CASE("black_karasinski_process ln r is a Gaussian OU with the exact moments
     const double kappa = 0.5, theta = std::log(0.04), sigma = 0.4, r0 = 0.05, dt = 0.25;
     const std::size_t paths = 200000;
 
-    running_moments one_tick, two_ticks;
+    black_karasinski_process_running_moments one_tick, two_ticks;
     for (std::size_t path = 0; path < paths; ++path) {
         black_karasinski_process p(
             kappa, theta, sigma, r0, 42 + static_cast<std::uint32_t>(path), dt);
@@ -243,7 +243,7 @@ TEST_CASE("black_karasinski_process with kappa <= 0 degenerates to a driftless r
     // and kappa < 0 behaves identically -- no anti-mean-reversion pull.
     const double sigma = 0.3, r0 = 0.05, dt = 0.5;
     const std::size_t paths = 200000;
-    running_moments zero_kappa, negative_kappa;
+    black_karasinski_process_running_moments zero_kappa, negative_kappa;
     for (std::size_t path = 0; path < paths; ++path) {
         black_karasinski_process a(
             0.0, std::log(0.04), sigma, r0, 42 + static_cast<std::uint32_t>(path), dt);
@@ -276,7 +276,7 @@ TEST_CASE("black_karasinski_process is dt-aware: variance scales with dt",
     // variance as one tick at dt = 1.0: sigma^2.
     const double sigma = 0.3, r0 = 0.05;
     const std::size_t paths = 200000;
-    running_moments fine, coarse;
+    black_karasinski_process_running_moments fine, coarse;
     for (std::size_t path = 0; path < paths; ++path) {
         const std::uint32_t seed = 42 + static_cast<std::uint32_t>(path);
         black_karasinski_process a(0.0, std::log(0.04), sigma, r0, seed, 0.25);

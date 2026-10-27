@@ -47,9 +47,9 @@ using trading::domain::trade_envelope_field;
  * states the map its own way, so the projection checks the spelling before it
  * appends a trade rather than writing a type no reader accepts.
  */
-auto accepts_spelling(const xml::record_type& type,
-                      std::string_view name,
-                      std::string_view value) -> bool {
+auto portfolio_projection_accepts_spelling(const xml::record_type& type,
+                                           std::string_view name,
+                                           std::string_view value) -> bool {
     const auto* f = xml::find_field(type, name, false);
     if (f == nullptr || f->tokens == nullptr)
         return false;
@@ -196,7 +196,8 @@ portfolio_projection::reverse(const std::vector<trading::messaging::trade_export
         throw std::runtime_error("the portfolio table has no Trade element");
 
     for (const auto& item : items) {
-        if (!accepts_spelling(*trade_type, "TradeType", item.anchor.trade_type)) {
+        if (!portfolio_projection_accepts_spelling(
+                *trade_type, "TradeType", item.anchor.trade_type)) {
             // The schema has no such trade type, so there is no document to
             // write. Naming the trade keeps the loss visible to the operator.
             BOOST_LOG_SEV(lg(), ores::logging::warn)

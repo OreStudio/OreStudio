@@ -74,6 +74,7 @@
 #include "ores.trading.core/service/trade_envelope_reader.hpp"
 #include "ores.trading.core/service/vanilla_swap_instrument_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "shared_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <iterator>
@@ -86,16 +87,6 @@ using namespace ores::logging;
 using messaging::trade_export_item;
 
 namespace {
-
-std::string to_uuid_array(const std::vector<std::string>& ids) {
-    std::string r = "{";
-    for (std::size_t i = 0; i < ids.size(); ++i) {
-        if (i != 0)
-            r += ',';
-        r += ids[i];
-    }
-    return r + "}";
-}
 
 /**
  * Adds a name beside the ids of a trade's envelope, unless the trade's source

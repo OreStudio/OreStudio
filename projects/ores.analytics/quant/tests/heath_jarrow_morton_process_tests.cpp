@@ -19,6 +19,7 @@
  */
 #include "ores.analytics.quant/service/processes/heath_jarrow_morton_params.hpp"
 #include "ores.analytics.quant/service/processes/heath_jarrow_morton_process.hpp"
+#include "test_helpers.hpp"
 #include <Eigen/Dense>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -36,14 +37,6 @@ using ores::analytics::quant::service::heath_jarrow_morton_process;
 using ores::analytics::quant::service::hjm_no_arbitrage_drift;
 
 namespace {
-
-Eigen::VectorXd vector(std::initializer_list<double> values) {
-    Eigen::VectorXd result(values.size());
-    std::size_t i = 0;
-    for (const double v : values)
-        result[i++] = v;
-    return result;
-}
 
 /**
  * @brief Welford running mean and variance for scalar samples.

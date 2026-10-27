@@ -26,6 +26,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -52,21 +53,6 @@ void import(database_helper& h, const std::string& content) {
     req.source = "test.manual_point_service";
     const auto resp = svc.import(req);
     REQUIRE(resp.success);
-}
-
-resolve_series_identity_request fx_option_identity(const std::string& unit_ccy,
-                                                   const std::string& ccy) {
-    resolve_series_identity_request id;
-    id.asset = "fx";
-    id.scope = unit_ccy;
-    id.instrument_type = "fx_option";
-    id.quote_type = "rate_lnvol";
-    id.fields.push_back({"ccy", ccy});
-    return id;
-}
-
-std::chrono::system_clock::time_point instant(const std::string& iso) {
-    return ores::platform::time::datetime::from_iso8601_utc(iso);
 }
 
 /// The context of the party that owns the series, as a person acting for it has.

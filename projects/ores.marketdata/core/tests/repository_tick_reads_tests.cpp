@@ -27,6 +27,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "test_helpers.hpp"
 #include "tick_test_support.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -48,14 +49,9 @@ using ores::marketdata::tests::insert_tick;
 using ores::marketdata::tests::party_context;
 
 /// The number of the series' own datum in the tick dictionary, assigned if it has none.
-int number_of(const ores::database::context& owner,
-              const ores::marketdata::domain::market_series& s) {
+int repository_tick_reads_number_of(const ores::database::context& owner,
+                                    const ores::marketdata::domain::market_series& s) {
     return tick_coords_repository{}.resolve(owner, s.party_id, s.id, s.oresmd_uri);
-}
-
-/// A whole second, so that the instants of a test survive the round trip through text.
-std::chrono::system_clock::time_point now_second() {
-    return std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
 }
 
 }
@@ -68,7 +64,7 @@ TEST_CASE("a_tick_is_the_point_of_a_series_without_coordinates", "[repository][t
 
     const auto t0 = now_second();
     const auto owner = party_context(h, s.party_id);
-    const auto number = number_of(owner, s);
+    const auto number = repository_tick_reads_number_of(owner, s);
     insert_tick(owner, s.party_id, s.id, number, t0, 1.0845);
 
     const auto points =
@@ -124,7 +120,7 @@ TEST_CASE("a_tick_of_another_party_is_not_in_the_snapshot", "[repository][ticks]
 
     const auto t0 = now_second();
     const auto owner = party_context(h, s.party_id);
-    insert_tick(owner, s.party_id, s.id, number_of(owner, s), t0, 1.5);
+    insert_tick(owner, s.party_id, s.id, repository_tick_reads_number_of(owner, s), t0, 1.5);
 
     const auto stranger = boost::uuids::random_generator{}();
     const auto points = market_observation_repository{}.read_as_of(
@@ -149,7 +145,7 @@ TEST_CASE("an_observation_row_wins_a_tie_with_a_tick_at_the_same_instant", "[rep
     market_observation_repository{}.insert(h.context(), observed);
 
     const auto owner = party_context(h, s.party_id);
-    const auto number = number_of(owner, s);
+    const auto number = repository_tick_reads_number_of(owner, s);
     insert_tick(owner, s.party_id, s.id, number, t0, 1.0);
 
     const auto points =
@@ -168,7 +164,7 @@ TEST_CASE("each_bucket_of_the_evolution_reads_the_latest_tick_at_its_boundary",
 
     const auto t0 = now_second();
     const auto owner = party_context(h, s.party_id);
-    const auto number = number_of(owner, s);
+    const auto number = repository_tick_reads_number_of(owner, s);
     insert_tick(owner, s.party_id, s.id, number, t0, 1.0);
     insert_tick(owner, s.party_id, s.id, number, t0 + std::chrono::minutes(10), 2.0);
 
@@ -190,7 +186,7 @@ TEST_CASE("the_instants_of_a_series_are_the_times_of_its_ticks", "[repository][t
 
     const auto t0 = now_second();
     const auto owner = party_context(h, s.party_id);
-    const auto number = number_of(owner, s);
+    const auto number = repository_tick_reads_number_of(owner, s);
     insert_tick(owner, s.party_id, s.id, number, t0, 1.0);
     insert_tick(owner, s.party_id, s.id, number, t0 + std::chrono::seconds(5), 2.0);
 

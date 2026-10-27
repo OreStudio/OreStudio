@@ -35,6 +35,7 @@
 #include "ores.trading.core/repository/trade_party_role_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "test_helpers.hpp"
 #include "trade_parent_seed.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -57,7 +58,7 @@ using ores::trading::messaging::trades_filter;
 using ores::trading::repository::trade_repository;
 using uuid = boost::uuids::uuid;
 
-struct fixture {
+struct repository_trade_filter_fixture {
     ores::testing::database_helper h;
     ores::database::context ctx = ores::trading::tests::write_parent_party(h);
     uuid counterparty = write_counterparty();
@@ -160,16 +161,11 @@ std::vector<uuid> ids(const std::vector<ores::trading::domain::trade>& trades) {
     return r;
 }
 
-std::vector<uuid> sorted(std::vector<uuid> v) {
-    std::ranges::sort(v);
-    return v;
-}
-
 }
 
 TEST_CASE("a counterparty narrows the trade list, and the total follows",
           "[repository][list_filter]") {
-    fixture f;
+    repository_trade_filter_fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("FxForward", f.counterparty);
     f.write("Swap", f.other_counterparty);
@@ -180,7 +176,7 @@ TEST_CASE("a counterparty narrows the trade list, and the total follows",
 
 TEST_CASE("an empty counterparty member reads the trades that have no counterparty",
           "[repository][list_filter]") {
-    fixture f;
+    repository_trade_filter_fixture f;
     const auto internal = f.write_intra_entity("Swap");
     f.write("Swap", f.counterparty);
 
@@ -191,7 +187,7 @@ TEST_CASE("an empty counterparty member reads the trades that have no counterpar
 
 TEST_CASE("a trade type narrows the list, and the members that are set must all hold",
           "[repository][list_filter]") {
-    fixture f;
+    repository_trade_filter_fixture f;
     const auto a = f.write("Swap", f.counterparty);
     f.write("FxForward", f.counterparty);
     f.write("Swap", f.other_counterparty);
@@ -202,7 +198,7 @@ TEST_CASE("a trade type narrows the list, and the members that are set must all 
 }
 
 TEST_CASE("a one-of member reads the trades of the types it lists", "[repository][list_filter]") {
-    fixture f;
+    repository_trade_filter_fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("FxForward", f.counterparty);
     f.write("CapFloor", f.counterparty);
@@ -217,7 +213,7 @@ TEST_CASE("a one-of member reads the trades of the types it lists", "[repository
 
 TEST_CASE("a counterparty one-of member reads the trades of the counterparties it lists",
           "[repository][list_filter]") {
-    fixture f;
+    repository_trade_filter_fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.other_counterparty);
 
@@ -228,7 +224,7 @@ TEST_CASE("a counterparty one-of member reads the trades of the counterparties i
 
 TEST_CASE("a search matches the trade type, ignoring case, and literally",
           "[repository][list_filter]") {
-    fixture f;
+    repository_trade_filter_fixture f;
     f.write("Swap", f.counterparty);
     const auto b = f.write("FxForward", f.counterparty);
 
@@ -244,7 +240,7 @@ TEST_CASE("a search matches the trade type, ignoring case, and literally",
 }
 
 TEST_CASE("the trade type is sortable and nothing else is", "[repository][list_filter]") {
-    fixture f;
+    repository_trade_filter_fixture f;
     const auto swap = f.write("Swap", f.counterparty);
     const auto forward = f.write("FxForward", f.counterparty);
 
@@ -263,7 +259,7 @@ TEST_CASE("the trade type is sortable and nothing else is", "[repository][list_f
 
 TEST_CASE("an enum member narrows the list by the enum's text", "[repository][list_filter]") {
     using ores::trading::domain::counterparty_scope;
-    fixture f;
+    repository_trade_filter_fixture f;
     const auto external = f.write_scoped(counterparty_scope::external);
     const auto inter = f.write_scoped(counterparty_scope::inter_entity);
     f.write_scoped(counterparty_scope::intra_entity);
@@ -280,7 +276,7 @@ TEST_CASE("an enum member narrows the list by the enum's text", "[repository][li
 
 TEST_CASE("a child table reads the rows of one trade by its trade id",
           "[repository][list_filter]") {
-    fixture f;
+    repository_trade_filter_fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
     f.write_identifier(a, "UTI", "ID-A-1");
@@ -307,7 +303,7 @@ TEST_CASE("a child table reads the rows of one trade by its trade id",
 }
 
 TEST_CASE("every child of a trade reads by its trade id", "[repository][list_filter]") {
-    fixture f;
+    repository_trade_filter_fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
     f.write_additional_field(a, 1, "First");

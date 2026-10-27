@@ -49,9 +49,8 @@
 
 namespace {
 
-ores::database::context
-write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
-                                   ores::utility::generation::generation_context& ctx) {
+ores::database::context service_report_run_admission_write_test_party_and_scope_context(
+    ores::testing::scoped_database_helper& h, ores::utility::generation::generation_context& ctx) {
     using ores::refdata::repository::party_repository;
     party_repository party_repo;
     auto party = ores::refdata::generators::generate_synthetic_party(ctx);
@@ -82,7 +81,7 @@ TEST_CASE("an on-demand run is admitted by the trigger it records",
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto party_ctx = write_test_party_and_scope_context(h, ctx);
+    auto party_ctx = service_report_run_admission_write_test_party_and_scope_context(h, ctx);
 
     // An instance names an FSM state of the report instance machine. The
     // machines and their states are system-tenant reference data, so they are
@@ -132,7 +131,7 @@ TEST_CASE("a plan that is not one of the two trigger types is refused",
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto party_ctx = write_test_party_and_scope_context(h, ctx);
+    auto party_ctx = service_report_run_admission_write_test_party_and_scope_context(h, ctx);
 
     report_run_admission_service::plan plan;
     plan.definition_id = ctx.generate_uuid();
@@ -163,7 +162,7 @@ TEST_CASE("a scheduled run is admitted by the trigger that names its firing",
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto party_ctx = write_test_party_and_scope_context(h, ctx);
+    auto party_ctx = service_report_run_admission_write_test_party_and_scope_context(h, ctx);
 
     const auto states = load_fsm_states(
         party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()),

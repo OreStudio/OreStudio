@@ -35,10 +35,10 @@ namespace {
 
 using namespace ores::logging;
 
-inline std::string_view logger_name = "ores.nats.service.jetstream_admin";
+inline std::string_view jetstream_admin_logger_name = "ores.nats.service.jetstream_admin";
 
-auto& lg() {
-    static auto instance = make_logger(logger_name);
+auto& jetstream_admin_lg() {
+    static auto instance = make_logger(jetstream_admin_logger_name);
     return instance;
 }
 
@@ -168,8 +168,8 @@ void jetstream_admin::prune_consumers(std::string_view name, std::string_view ke
     if (s != NATS_OK) {
         // Not fatal: the consumer that serves this stream is not among the ones
         // this call would have deleted.
-        BOOST_LOG_SEV(lg(), warn) << "Could not list the consumers of '" << name_str
-                                  << "' to prune them: " << natsStatus_GetText(s);
+        BOOST_LOG_SEV(jetstream_admin_lg(), warn) << "Could not list the consumers of '" << name_str
+                                                  << "' to prune them: " << natsStatus_GetText(s);
         return;
     }
 
@@ -190,16 +190,18 @@ void jetstream_admin::prune_consumers(std::string_view name, std::string_view ke
         const natsStatus ds =
             js_DeleteConsumer(js, name_str.c_str(), consumer.c_str(), &del_opts, &jerr);
         if (ds != NATS_OK) {
-            BOOST_LOG_SEV(lg(), warn) << "Could not prune consumer '" << consumer << "' on '"
-                                      << name_str << "': " << natsStatus_GetText(ds);
+            BOOST_LOG_SEV(jetstream_admin_lg(), warn)
+                << "Could not prune consumer '" << consumer << "' on '" << name_str
+                << "': " << natsStatus_GetText(ds);
             continue;
         }
         ++pruned;
     }
 
     if (pruned > 0)
-        BOOST_LOG_SEV(lg(), info) << "Pruned " << pruned << " consumer(s) on '" << name_str
-                                  << "' that the service no longer declares";
+        BOOST_LOG_SEV(jetstream_admin_lg(), info)
+            << "Pruned " << pruned << " consumer(s) on '" << name_str
+            << "' that the service no longer declares";
 }
 
 std::optional<consumer_status> jetstream_admin::consumer_state(std::string_view stream,

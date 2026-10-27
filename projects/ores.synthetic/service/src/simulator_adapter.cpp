@@ -28,7 +28,7 @@
 namespace ores::synthetic::service {
 
 using namespace ores::logging;
-namespace messaging = ores::marketdata::messaging;
+namespace simulator_adapter_messaging = ores::marketdata::messaging;
 namespace domain = ores::marketdata::domain;
 
 simulator_adapter::simulator_adapter(
@@ -65,22 +65,23 @@ void simulator_adapter::stop() {
         thread_.join();
 }
 
-messaging::adapter_announce_request simulator_adapter::announcement() const {
-    messaging::adapter_announce_request request;
+simulator_adapter_messaging::adapter_announce_request simulator_adapter::announcement() const {
+    simulator_adapter_messaging::adapter_announce_request request;
     request.adapter_id = adapter_id_;
     request.provider_code = provider_code_;
     request.universe = runner_.universe();
     return request;
 }
 
-messaging::adapter_demand_response
-simulator_adapter::on_demand(const messaging::adapter_demand_request& request) {
-    messaging::adapter_demand_response response;
+simulator_adapter_messaging::adapter_demand_response
+simulator_adapter::on_demand(const simulator_adapter_messaging::adapter_demand_request& request) {
+    simulator_adapter_messaging::adapter_demand_response response;
     // A not entitled rejection runs no generator and rejects every id.
     if (faults().not_entitled) {
         runner_.apply({});
         for (const auto& id : request.ids)
-            response.rejected.push_back(messaging::rejected_id{id, "not_entitled"});
+            response.rejected.push_back(
+                simulator_adapter_messaging::rejected_id{id, "not_entitled"});
         return response;
     }
     const auto outcome = runner_.apply(request.ids);
@@ -93,8 +94,8 @@ void simulator_adapter::demand_message(const ores::nats::message& msg) {
     // A lost connection answers nothing, so the service sees a demand that did not arrive.
     if (faults().connection_lost)
         return;
-    auto request =
-        ores::nats::default_wire_codec().decode<messaging::adapter_demand_request>(msg.data);
+    auto request = ores::nats::default_wire_codec()
+                       .decode<simulator_adapter_messaging::adapter_demand_request>(msg.data);
     if (!request) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to decode a demand on '" << msg.subject
                                   << "': " << request.error().what();
@@ -112,8 +113,8 @@ bool simulator_adapter::announce() {
                                               {},
                                               timing_.reply_timeout);
         const auto response =
-            ores::nats::default_wire_codec().decode<messaging::adapter_announce_response>(
-                reply.data);
+            ores::nats::default_wire_codec()
+                .decode<simulator_adapter_messaging::adapter_announce_response>(reply.data);
         if (!response) {
             BOOST_LOG_SEV(lg(), warn)
                 << "Failed to decode the announce reply: " << response.error().what();
@@ -162,7 +163,7 @@ void simulator_adapter::loop() {
         }
         if (announced() && clock::now() >= next_heartbeat) {
             try {
-                messaging::adapter_heartbeat beat;
+                simulator_adapter_messaging::adapter_heartbeat beat;
                 beat.adapter_id = adapter_id_;
                 beat.counter = ++counter_;
                 nats_.publish(domain::adapter_heartbeat_subject(adapter_id_),

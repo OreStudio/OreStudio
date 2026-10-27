@@ -45,7 +45,7 @@ using ores::service::messaging::has_permission;
 using ores::service::messaging::reply;
 
 namespace {
-inline auto& lg() {
+inline auto& calendar_materialisation_handler_lg() {
     static auto instance = make_logger("ores.refdata.messaging.calendar_materialisation_handler");
     return instance;
 }
@@ -60,7 +60,7 @@ calendar_materialisation_handler::calendar_materialisation_handler(
     , verifier_(std::move(verifier)) {}
 
 void calendar_materialisation_handler::regenerate(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
+    BOOST_LOG_SEV(calendar_materialisation_handler_lg(), debug) << "Handling " << msg.subject;
     auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
     if (!req_ctx_expected) {
         error_reply(nats_, msg, req_ctx_expected.error());
@@ -80,19 +80,22 @@ void calendar_materialisation_handler::regenerate(ores::nats::message msg) {
                     std::nullopt;
             const auto rows = req->calendar_code ? svc.regenerate(*req->calendar_code, end_year) :
                                                    svc.regenerate_all(end_year);
-            BOOST_LOG_SEV(lg(), debug) << "Completed " << msg.subject;
+            BOOST_LOG_SEV(calendar_materialisation_handler_lg(), debug)
+                << "Completed " << msg.subject;
             reply(nats_,
                   msg,
                   regenerate_calendar_dates_response{
                       .success = true, .rows_written = static_cast<std::uint64_t>(rows)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(calendar_materialisation_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   regenerate_calendar_dates_response{.success = false, .message = e.what()});
         }
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to decode: " << msg.subject;
+        BOOST_LOG_SEV(calendar_materialisation_handler_lg(), warn)
+            << "Failed to decode: " << msg.subject;
         error_reply(nats_, msg, ores::service::error_code::bad_request);
     }
 }

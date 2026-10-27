@@ -57,7 +57,7 @@ namespace tm = ores::ore::xml::generated::todays_market;
 using tm::todays_market_document;
 using tm::todaysmarket;
 
-auto read_file(const fs::path& path) -> std::string {
+auto xml_emitter_read_file(const fs::path& path) -> std::string {
     std::ifstream file(path, std::ios::binary);
     return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 }
@@ -120,7 +120,7 @@ auto sweep_family(const fs::path& root,
         ++documents;
 
         Record record{};
-        const auto written = write_back(doc, read_file(entry.path()), record);
+        const auto written = write_back(doc, xml_emitter_read_file(entry.path()), record);
         if (!written) {
             ++failures;
             report += entry.path().string() + ": " + written.error() + "\n";

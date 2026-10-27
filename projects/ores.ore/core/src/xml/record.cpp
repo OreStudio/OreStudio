@@ -78,19 +78,19 @@ const field& require_kind(const record_type& type,
     return f;
 }
 
-const void* slot_of(const void* record, const field& f) {
+const void* record_slot_of(const void* record, const field& f) {
     return static_cast<const std::byte*>(record) + f.offset;
 }
 
 /// The columns struct a record keeps for the type that member `f` holds, or null.
-const void* columns_held(const void* record, const field& f) {
+const void* record_columns_held(const void* record, const field& f) {
     if (f.columns_offset == no_arena)
         return nullptr;
     return static_cast<const std::byte*>(record) + f.columns_offset;
 }
 
-void* columns_held(void* record, const field& f) {
-    return const_cast<void*>(columns_held(static_cast<const void*>(record), f));
+void* record_columns_held(void* record, const field& f) {
+    return const_cast<void*>(record_columns_held(static_cast<const void*>(record), f));
 }
 
 /// The index a column_nested member's row holds, checked against its column.
@@ -100,7 +100,7 @@ const void* column_row(const void* record, const void* columns, const field& f) 
         throw std::runtime_error(std::format(
             "'{}' names an alternative held in a column the record does not carry", f.name));
     const auto* rows = static_cast<const std::byte*>(columns) + f.arena_offset;
-    const auto index = *static_cast<const std::uint32_t*>(slot_of(record, f));
+    const auto index = *static_cast<const std::uint32_t*>(record_slot_of(record, f));
     if (index >= f.repeated->count(rows))
         throw std::runtime_error(std::format("'{}' names a row its column does not hold", f.name));
     return f.repeated->at(rows, index);
@@ -129,21 +129,21 @@ auto record_reader::text(std::string_view name) const -> std::optional<std::stri
     const auto& f = require_kind(*type_, name, field_kind::text, "text");
     if (!bit_is_set(record_, f))
         return std::nullopt;
-    return *static_cast<const std::string*>(slot_of(record_, f));
+    return *static_cast<const std::string*>(record_slot_of(record_, f));
 }
 
 auto record_reader::integer(std::string_view name) const -> std::optional<std::int64_t> {
     const auto& f = require_kind(*type_, name, field_kind::integer, "an integer");
     if (!bit_is_set(record_, f))
         return std::nullopt;
-    return *static_cast<const std::int64_t*>(slot_of(record_, f));
+    return *static_cast<const std::int64_t*>(record_slot_of(record_, f));
 }
 
 auto record_reader::real(std::string_view name) const -> std::optional<double> {
     const auto& f = require_kind(*type_, name, field_kind::real, "a real number");
     if (!bit_is_set(record_, f))
         return std::nullopt;
-    return *static_cast<const double*>(slot_of(record_, f));
+    return *static_cast<const double*>(record_slot_of(record_, f));
 }
 
 auto record_reader::decimal(std::string_view name) const
@@ -151,7 +151,7 @@ auto record_reader::decimal(std::string_view name) const
     const auto& f = require_kind(*type_, name, field_kind::decimal, "a decimal");
     if (!bit_is_set(record_, f))
         return std::nullopt;
-    return *static_cast<const ores::utility::decimal::decimal*>(slot_of(record_, f));
+    return *static_cast<const ores::utility::decimal::decimal*>(record_slot_of(record_, f));
 }
 
 auto record_reader::spelling(std::string_view name) const -> std::optional<std::string> {
@@ -175,7 +175,7 @@ auto record_reader::own_decimal() const -> std::optional<ores::utility::decimal:
     if (!bit_is_set(record_, f))
         return std::nullopt;
     if (f.kind == field_kind::decimal)
-        return *static_cast<const ores::utility::decimal::decimal*>(slot_of(record_, f));
+        return *static_cast<const ores::utility::decimal::decimal*>(record_slot_of(record_, f));
     const auto text = own_text();
     if (!text)
         return std::nullopt;
@@ -193,21 +193,22 @@ auto record_reader::own_text() const -> std::optional<std::string> {
         return std::nullopt;
     switch (f.kind) {
         case field_kind::text:
-            return *static_cast<const std::string*>(slot_of(record_, f));
+            return *static_cast<const std::string*>(record_slot_of(record_, f));
         case field_kind::integer:
-            return std::to_string(*static_cast<const std::int64_t*>(slot_of(record_, f)));
+            return std::to_string(*static_cast<const std::int64_t*>(record_slot_of(record_, f)));
         case field_kind::decimal:
-            return static_cast<const utility::decimal::decimal*>(slot_of(record_, f))->to_string();
+            return static_cast<const utility::decimal::decimal*>(record_slot_of(record_, f))
+                ->to_string();
         case field_kind::real: {
             char buffer[64]{};
-            const auto value = *static_cast<const double*>(slot_of(record_, f));
+            const auto value = *static_cast<const double*>(record_slot_of(record_, f));
             const auto [stop, ec] = std::to_chars(buffer, buffer + sizeof(buffer), value);
             if (ec != std::errc{})
                 return std::nullopt;
             return std::string(buffer, stop);
         }
         case field_kind::enumeration: {
-            const auto index = *static_cast<const std::int16_t*>(slot_of(record_, f));
+            const auto index = *static_cast<const std::int16_t*>(record_slot_of(record_, f));
             if (index < 0 || f.tokens == nullptr)
                 return std::nullopt;
             for (std::int16_t i = 0; i <= index; ++i)
@@ -230,7 +231,7 @@ auto record_reader::child(std::string_view name) const -> std::optional<record_r
     require_kind(*type_, name, field_kind::nested, "a child element");
     if (!bit_is_set(record_, f) || f.type == nullptr)
         return std::nullopt;
-    return record_reader(*f.type, slot_of(record_, f), columns_held(record_, f));
+    return record_reader(*f.type, record_slot_of(record_, f), record_columns_held(record_, f));
 }
 
 auto record_reader::children(std::string_view name) const -> std::vector<record_reader> {
@@ -238,10 +239,12 @@ auto record_reader::children(std::string_view name) const -> std::vector<record_
     std::vector<record_reader> out;
     if (!bit_is_set(record_, f) || f.repeated == nullptr || f.type == nullptr)
         return out;
-    const auto count = f.repeated->count(slot_of(record_, f));
+    const auto count = f.repeated->count(record_slot_of(record_, f));
     out.reserve(count);
     for (std::size_t i = 0; i < count; ++i)
-        out.emplace_back(*f.type, f.repeated->at(slot_of(record_, f), i), columns_held(record_, f));
+        out.emplace_back(*f.type,
+                         f.repeated->at(record_slot_of(record_, f), i),
+                         record_columns_held(record_, f));
     return out;
 }
 
@@ -253,10 +256,11 @@ auto record_reader::values(std::string_view name) const -> std::vector<std::stri
     std::vector<std::string> out;
     if (!bit_is_set(record_, f) || f.repeated == nullptr)
         return out;
-    const auto count = f.repeated->count(slot_of(record_, f));
+    const auto count = f.repeated->count(record_slot_of(record_, f));
     out.reserve(count);
     for (std::size_t i = 0; i < count; ++i)
-        out.push_back(*static_cast<const std::string*>(f.repeated->at(slot_of(record_, f), i)));
+        out.push_back(
+            *static_cast<const std::string*>(f.repeated->at(record_slot_of(record_, f), i)));
     return out;
 }
 
@@ -268,11 +272,11 @@ auto record_reader::spellings(std::string_view name) const -> std::vector<std::s
     std::vector<std::string> out;
     if (!bit_is_set(record_, f) || f.repeated == nullptr)
         return out;
-    const auto count = f.repeated->count(slot_of(record_, f));
+    const auto count = f.repeated->count(record_slot_of(record_, f));
     out.reserve(count);
     for (std::size_t i = 0; i < count; ++i) {
         const auto index =
-            *static_cast<const std::int16_t*>(f.repeated->at(slot_of(record_, f), i));
+            *static_cast<const std::int16_t*>(f.repeated->at(record_slot_of(record_, f), i));
         if (index < 0)
             throw std::runtime_error(std::format(
                 "'{}' of the {} table holds a value with no spelling", name, type_->name));
@@ -294,11 +298,11 @@ auto record_reader::decimals(std::string_view name) const
     std::vector<ores::utility::decimal::decimal> out;
     if (!bit_is_set(record_, f) || f.repeated == nullptr)
         return out;
-    const auto count = f.repeated->count(slot_of(record_, f));
+    const auto count = f.repeated->count(record_slot_of(record_, f));
     out.reserve(count);
     for (std::size_t i = 0; i < count; ++i)
         out.push_back(*static_cast<const ores::utility::decimal::decimal*>(
-            f.repeated->at(slot_of(record_, f), i)));
+            f.repeated->at(record_slot_of(record_, f), i)));
     return out;
 }
 
@@ -310,14 +314,15 @@ auto record_reader::indexed(std::string_view name) const -> std::vector<record_r
     std::vector<record_reader> out;
     if (!bit_is_set(record_, f))
         return out;
-    const auto* indices = static_cast<const std::vector<std::uint32_t>*>(slot_of(record_, f));
+    const auto* indices =
+        static_cast<const std::vector<std::uint32_t>*>(record_slot_of(record_, f));
     const auto* arena = static_cast<const std::byte*>(record_) + f.arena_offset;
     const auto rows = f.repeated->count(arena);
     for (const auto index : *indices) {
         if (index >= rows)
             throw std::runtime_error(std::format(
                 "'{}' of the {} table names a row the arena does not hold", name, type_->name));
-        out.emplace_back(*f.type, f.repeated->at(arena, index), columns_held(record_, f));
+        out.emplace_back(*f.type, f.repeated->at(arena, index), record_columns_held(record_, f));
     }
     return out;
 }
@@ -488,7 +493,8 @@ auto record_reader::residuals() const -> std::vector<residual_element> {
         const auto& f = type_->fields[i];
         if (f.kind != field_kind::residual || !bit_is_set(record_, f))
             continue;
-        const auto* bag = static_cast<const std::vector<residual_element>*>(slot_of(record_, f));
+        const auto* bag =
+            static_cast<const std::vector<residual_element>*>(record_slot_of(record_, f));
         out.insert(out.end(), bag->begin(), bag->end());
     }
     return out;
@@ -521,7 +527,7 @@ auto record_writer::child(std::string_view name) -> record_writer {
     }
     require_kind(*type_, name, field_kind::nested, "a child element");
     set_bit(record_, f);
-    return record_writer(*f.type, slot_of(f), columns_held(record_, f));
+    return record_writer(*f.type, slot_of(f), record_columns_held(record_, f));
 }
 
 void record_writer::append_value(std::string_view name, std::string_view value) {
@@ -583,7 +589,7 @@ auto record_writer::append_indexed(std::string_view name) -> record_writer {
     void* slot = nullptr;
     f.repeated->append(arena, &slot);
     indices->push_back(index);
-    return record_writer(*f.type, slot, columns_held(record_, f));
+    return record_writer(*f.type, slot, record_columns_held(record_, f));
 }
 
 void record_writer::append_residual(std::string_view name, std::string_view value) {
@@ -605,7 +611,7 @@ auto record_writer::append(std::string_view name) -> record_writer {
     set_bit(record_, f);
     void* slot = nullptr;
     f.repeated->append(slot_of(f), &slot);
-    return record_writer(*f.type, slot, columns_held(record_, f));
+    return record_writer(*f.type, slot, record_columns_held(record_, f));
 }
 
 }

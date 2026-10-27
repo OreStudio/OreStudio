@@ -41,13 +41,15 @@
 
 namespace {
 
-std::string read_schema(const std::string& name) {
+std::string repository_shift_vocabulary_seed_read_schema(const std::string& name) {
     std::ifstream in(ores::testing::project_root::resolve("external/ore/xsd/" + name));
     REQUIRE(in.good());
     return {std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
 }
 
-std::string type_body(const std::string& schema, const std::string& kind, const std::string& name) {
+std::string repository_shift_vocabulary_seed_type_body(const std::string& schema,
+                                                       const std::string& kind,
+                                                       const std::string& name) {
     const auto start = schema.find("<xs:" + kind + " name=\"" + name + "\"");
     REQUIRE(start != std::string::npos);
     const auto end = schema.find("</xs:" + kind + ">", start);
@@ -71,7 +73,8 @@ ores::database::context system_context(ores::testing::scoped_database_helper& h)
 TEST_CASE("the seeded stress shift families are the stresstest type's elements",
           "[repository][shift_vocabulary][database]") {
     ores::testing::scoped_database_helper h;
-    const auto body = type_body(read_schema("stress.xsd"), "complexType", "stresstest");
+    const auto body = repository_shift_vocabulary_seed_type_body(
+        repository_shift_vocabulary_seed_read_schema("stress.xsd"), "complexType", "stresstest");
     auto expected = matches(body, std::regex(R"re(<xs:element[^>]*name="([A-Za-z]+)")re"));
     expected.erase("Date");
     REQUIRE(expected.size() == 16);
@@ -86,7 +89,8 @@ TEST_CASE("the seeded stress shift families are the stresstest type's elements",
 TEST_CASE("the seeded shift types are the schema's shiftType enumeration",
           "[repository][shift_vocabulary][database]") {
     ores::testing::scoped_database_helper h;
-    const auto body = type_body(read_schema("ore_types.xsd"), "simpleType", "shiftType");
+    const auto body = repository_shift_vocabulary_seed_type_body(
+        repository_shift_vocabulary_seed_read_schema("ore_types.xsd"), "simpleType", "shiftType");
     const auto expected = matches(body, std::regex(R"re(<xs:enumeration value="([^"]+)")re"));
     REQUIRE(expected.size() == 3);
 

@@ -27,11 +27,11 @@ namespace ores::database::service {
 
 namespace {
 
-inline static std::string_view logger_name = "ores.database.service.tenant_context";
+inline static std::string_view tenant_context_logger_name = "ores.database.service.tenant_context";
 
-[[nodiscard]] auto& lg() {
+[[nodiscard]] auto& tenant_context_lg() {
     using namespace ores::logging;
-    static auto instance = make_logger(logger_name);
+    static auto instance = make_logger(tenant_context_logger_name);
     return instance;
 }
 
@@ -47,20 +47,21 @@ utility::uuid::tenant_id tenant_context::lookup_by_code(const context& ctx,
     using namespace ores::logging;
     using ores::database::repository::execute_parameterized_string_query;
 
-    BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by code: " << code;
+    BOOST_LOG_SEV(tenant_context_lg(), debug) << "Looking up tenant by code: " << code;
 
     const auto results =
         execute_parameterized_string_query(ctx,
                                            "SELECT ores_iam_tenant_by_code_fn($1)::text",
                                            {code},
-                                           lg(),
+                                           tenant_context_lg(),
                                            "Looking up tenant by code");
 
     if (results.empty()) {
         throw std::runtime_error("No active tenant found with code: " + code);
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Resolved tenant code '" << code << "' to ID: " << results[0];
+    BOOST_LOG_SEV(tenant_context_lg(), debug)
+        << "Resolved tenant code '" << code << "' to ID: " << results[0];
 
     auto result = utility::uuid::tenant_id::from_string(results[0]);
     if (!result) {
@@ -74,21 +75,21 @@ utility::uuid::tenant_id tenant_context::lookup_by_hostname(const context& ctx,
     using namespace ores::logging;
     using ores::database::repository::execute_parameterized_string_query;
 
-    BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
+    BOOST_LOG_SEV(tenant_context_lg(), debug) << "Looking up tenant by hostname: " << hostname;
 
     const auto results =
         execute_parameterized_string_query(ctx,
                                            "SELECT ores_iam_tenant_by_hostname_fn($1)::text",
                                            {hostname},
-                                           lg(),
+                                           tenant_context_lg(),
                                            "Looking up tenant by hostname");
 
     if (results.empty()) {
         throw std::runtime_error("No active tenant found with hostname: " + hostname);
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Resolved tenant hostname '" << hostname
-                               << "' to ID: " << results[0];
+    BOOST_LOG_SEV(tenant_context_lg(), debug)
+        << "Resolved tenant hostname '" << hostname << "' to ID: " << results[0];
 
     auto result = utility::uuid::tenant_id::from_string(results[0]);
     if (!result) {
@@ -103,21 +104,21 @@ std::string tenant_context::lookup_name(const context& ctx,
     using ores::database::repository::execute_parameterized_string_query;
 
     const auto tenant_id_str = tenant_id.to_string();
-    BOOST_LOG_SEV(lg(), debug) << "Looking up tenant name by ID: " << tenant_id_str;
+    BOOST_LOG_SEV(tenant_context_lg(), debug) << "Looking up tenant name by ID: " << tenant_id_str;
 
     const auto results =
         execute_parameterized_string_query(ctx,
                                            "SELECT ores_iam_tenant_name_by_id_fn($1::uuid)",
                                            {tenant_id_str},
-                                           lg(),
+                                           tenant_context_lg(),
                                            "Looking up tenant name by ID");
 
     if (results.empty()) {
         throw std::runtime_error("No active tenant found with ID: " + tenant_id_str);
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Resolved tenant ID '" << tenant_id_str
-                               << "' to name: " << results[0];
+    BOOST_LOG_SEV(tenant_context_lg(), debug)
+        << "Resolved tenant ID '" << tenant_id_str << "' to name: " << results[0];
     return results[0];
 }
 
@@ -146,9 +147,9 @@ utility::uuid::tenant_id resolve_tenant_id(const context& ctx, const std::string
         }
 
         if (name.empty()) {
-            BOOST_LOG_SEV(lg(), debug) << "Using tenant ID directly: " << tenant;
+            BOOST_LOG_SEV(tenant_context_lg(), debug) << "Using tenant ID directly: " << tenant;
         } else {
-            BOOST_LOG_SEV(lg(), debug)
+            BOOST_LOG_SEV(tenant_context_lg(), debug)
                 << "Using tenant ID directly: " << tenant << " [" << name << "]";
         }
         return *result;
@@ -163,10 +164,11 @@ utility::uuid::tenant_id resolve_tenant_id(const context& ctx, const std::string
 void verify_tenant_context(context& ctx, const utility::uuid::tenant_id& tenant_id) {
     const auto r = sqlgen::session(ctx.connection_pool());
     if (!r) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to verify tenant context: " << r.error().what();
+        BOOST_LOG_SEV(tenant_context_lg(), error)
+            << "Failed to verify tenant context: " << r.error().what();
         throw std::runtime_error("Failed to set tenant context: " + std::string(r.error().what()));
     }
-    BOOST_LOG_SEV(lg(), info) << "Tenant context set to: " << tenant_id.to_string();
+    BOOST_LOG_SEV(tenant_context_lg(), info) << "Tenant context set to: " << tenant_id.to_string();
 }
 
 } // anonymous namespace
@@ -174,7 +176,7 @@ void verify_tenant_context(context& ctx, const utility::uuid::tenant_id& tenant_
 context tenant_context::with_tenant(const context& ctx, const std::string& tenant) {
     using namespace ores::logging;
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating context with tenant: " << tenant;
+    BOOST_LOG_SEV(tenant_context_lg(), debug) << "Creating context with tenant: " << tenant;
 
     // Resolve tenant code to tenant_id
     const auto tenant_id = resolve_tenant_id(ctx, tenant);

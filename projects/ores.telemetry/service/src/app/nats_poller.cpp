@@ -168,7 +168,7 @@ void nats_poller::poll_server() {
         return;
     }
 
-    messaging::nats_server_sample sample;
+    ores::telemetry::messaging::nats_server_sample sample;
     sample.sampled_at = std::chrono::system_clock::now();
     sample.in_msgs = parsed->in_msgs;
     sample.out_msgs = parsed->out_msgs;
@@ -192,11 +192,11 @@ void nats_poller::poll_streams() {
     }
 
     const auto now = std::chrono::system_clock::now();
-    std::vector<messaging::nats_stream_sample> samples;
+    std::vector<ores::telemetry::messaging::nats_stream_sample> samples;
     for (const auto& account :
          parsed->account_details.value_or(std::vector<jsz_account_detail>{})) {
         for (const auto& stream : account.stream_detail) {
-            messaging::nats_stream_sample s;
+            ores::telemetry::messaging::nats_stream_sample s;
             s.sampled_at = now;
             s.stream_name = stream.name;
             s.messages = stream.state.messages;

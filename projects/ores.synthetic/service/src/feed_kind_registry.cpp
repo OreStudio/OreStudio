@@ -562,8 +562,10 @@ feed_kind_registry make_default_feed_kind_registry() {
 
 feed_simulation_result run_simulate_paths(const feed_simulate_envelope& env) {
     feed_simulation_result r;
-    const int ticks = std::clamp(env.num_ticks, 1, messaging::max_simulate_num_ticks);
-    const int paths = std::clamp(env.num_paths, 1, messaging::max_simulate_num_paths);
+    const int ticks =
+        std::clamp(env.num_ticks, 1, ores::synthetic::messaging::max_simulate_num_ticks);
+    const int paths =
+        std::clamp(env.num_paths, 1, ores::synthetic::messaging::max_simulate_num_paths);
     try {
         for (int p = 0; p < paths; ++p) {
             auto process = env.make_process(env.seed + static_cast<std::uint32_t>(p));

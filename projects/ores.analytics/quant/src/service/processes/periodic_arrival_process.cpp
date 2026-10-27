@@ -29,7 +29,7 @@ namespace {
 
 // The reciprocal needs a positive rate, so the check runs before the member
 // that takes it is built.
-double checked_rate(double mean_rate) {
+double periodic_arrival_process_checked_rate(double mean_rate) {
     if (!std::isfinite(mean_rate) || mean_rate <= 0.0)
         throw std::invalid_argument(
             "periodic_arrival_process: mean_rate must be finite and strictly positive");
@@ -39,7 +39,7 @@ double checked_rate(double mean_rate) {
 }
 
 periodic_arrival_process::periodic_arrival_process(double mean_rate, std::uint32_t seed)
-    : mean_rate_(checked_rate(mean_rate))
+    : mean_rate_(periodic_arrival_process_checked_rate(mean_rate))
     , gap_(1.0 / mean_rate_) {
     // A quarter turn would still leave four feeds in step; the phase is drawn, so
     // two feeds of one rate are as likely to be a whole gap apart as a hair.

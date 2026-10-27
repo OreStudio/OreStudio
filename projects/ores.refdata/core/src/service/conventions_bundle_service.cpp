@@ -53,7 +53,7 @@ constexpr std::string_view long_short_family = "tenor_basis_swap_long_short";
 /**
  * @brief Where the registry lists a family, or past the end when it does not.
  */
-consteval std::size_t family_position(std::string_view key) {
+consteval std::size_t conventions_bundle_service_family_position(std::string_view key) {
     for (std::size_t i = 0; i < domain::convention_family_count; ++i)
         if (domain::convention_families[i].key == key)
             return i;
@@ -63,15 +63,20 @@ consteval std::size_t family_position(std::string_view key) {
 // The read keeps a part only when it already carries that part's central row,
 // so each of the three keys must be in the registry and the shared family must
 // come first.
-static_assert(family_position(central_family) < domain::convention_family_count,
+static_assert(conventions_bundle_service_family_position(central_family) <
+                  domain::convention_family_count,
               "The registry has no convention family.");
-static_assert(family_position(pay_receive_family) < domain::convention_family_count,
+static_assert(conventions_bundle_service_family_position(pay_receive_family) <
+                  domain::convention_family_count,
               "The registry has no tenor basis swap pay receive family.");
-static_assert(family_position(long_short_family) < domain::convention_family_count,
+static_assert(conventions_bundle_service_family_position(long_short_family) <
+                  domain::convention_family_count,
               "The registry has no tenor basis swap long short family.");
-static_assert(family_position(central_family) < family_position(pay_receive_family),
+static_assert(conventions_bundle_service_family_position(central_family) <
+                  conventions_bundle_service_family_position(pay_receive_family),
               "The read needs the shared family before its pay receive part.");
-static_assert(family_position(central_family) < family_position(long_short_family),
+static_assert(conventions_bundle_service_family_position(central_family) <
+                  conventions_bundle_service_family_position(long_short_family),
               "The read needs the shared family before its long short part.");
 
 bool belongs_to_the_tenor_bundle(const std::string& family) {
@@ -123,23 +128,20 @@ conventions_bundle conventions_bundle_service::read() {
             // covers one of them.
             if (family == central_family) {
                 const auto decoded = rfl::json::read<domain::convention>(payload);
-                if (!decoded ||
-                    decoded->identity.kind_code != tenor_basis_swap_kind)
+                if (!decoded || decoded->identity.kind_code != tenor_basis_swap_kind)
                     continue;
                 covered_central.insert(boost::uuids::to_string(decoded->identity.id));
             }
             if (family == pay_receive_family) {
                 const auto decoded = rfl::json::read<domain::tenor_basis_swap_pay_receive>(payload);
-                if (!decoded ||
-                    !covered_central.contains(
-                        boost::uuids::to_string(decoded->identity.convention_id)))
+                if (!decoded || !covered_central.contains(
+                                    boost::uuids::to_string(decoded->identity.convention_id)))
                     continue;
             }
             if (family == long_short_family) {
                 const auto decoded = rfl::json::read<domain::tenor_basis_swap_long_short>(payload);
-                if (!decoded ||
-                    !covered_central.contains(
-                        boost::uuids::to_string(decoded->identity.convention_id)))
+                if (!decoded || !covered_central.contains(
+                                    boost::uuids::to_string(decoded->identity.convention_id)))
                     continue;
             }
             bundle.rows.push_back(conventions_bundle_row{

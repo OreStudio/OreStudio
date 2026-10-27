@@ -32,6 +32,7 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -53,16 +54,17 @@ using ores::utility::generation::generation_context;
 using Catch::Matchers::ContainsSubstring;
 using namespace ores::logging;
 
-const std::string granted_code("iam::accounts:read");
-
-account write_account(database_helper& h, generation_context& gen) {
+account service_run_grant_operations_service_write_account(database_helper& h,
+                                                           generation_context& gen) {
     ores::iam::repository::account_repository repo;
     auto value = ores::iam::generators::generate_synthetic_account(gen);
     repo.write(h.context(), value);
     return value;
 }
 
-role write_role_bundling(database_helper& h, generation_context& gen, const std::string& code) {
+role service_run_grant_operations_service_write_role_bundling(database_helper& h,
+                                                              generation_context& gen,
+                                                              const std::string& code) {
     ores::iam::repository::role_repository roles;
     ores::iam::repository::permission_repository permissions_repo;
     ores::iam::repository::role_permission_repository links(h.context());
@@ -89,10 +91,10 @@ role write_role_bundling(database_helper& h, generation_context& gen, const std:
     return r;
 }
 
-context person(database_helper& h,
-               const account& a,
-               const boost::uuids::uuid& party,
-               std::vector<std::string> held) {
+context service_run_grant_operations_service_person(database_helper& h,
+                                                    const account& a,
+                                                    const boost::uuids::uuid& party,
+                                                    std::vector<std::string> held) {
     return h.context()
         .with_party(h.tenant_id(), party, {party}, a.username)
         .with_roles(std::move(held));
@@ -106,15 +108,6 @@ create_run_grant_request request_for(const role& r, const std::string& resource)
     return req;
 }
 
-std::string resource_name() {
-    return "reporting.report_definition/" +
-           boost::uuids::to_string(boost::uuids::random_generator()());
-}
-
-boost::uuids::uuid id_of(const std::string& s) {
-    return boost::uuids::string_generator()(s);
-}
-
 }
 
 TEST_CASE("create_run_grant_records_the_grant_for_a_role_the_person_holds",
@@ -122,10 +115,10 @@ TEST_CASE("create_run_grant_records_the_grant_for_a_role_the_person_holds",
     auto lg(make_logger(test_suite));
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto a = write_account(h, gen);
-    const auto r = write_role_bundling(h, gen, granted_code);
+    const auto a = service_run_grant_operations_service_write_account(h, gen);
+    const auto r = service_run_grant_operations_service_write_role_bundling(h, gen, granted_code);
     const auto party = boost::uuids::random_generator()();
-    const auto ctx = person(h, a, party, {granted_code});
+    const auto ctx = service_run_grant_operations_service_person(h, a, party, {granted_code});
 
     run_grant_operations_service sut(ctx);
     const auto resp = sut.create_run_grant(request_for(r, resource_name()));
@@ -146,9 +139,10 @@ TEST_CASE("create_run_grant_refuses_a_role_the_person_does_not_hold_in_full",
           "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto a = write_account(h, gen);
-    const auto r = write_role_bundling(h, gen, granted_code);
-    const auto ctx = person(h, a, boost::uuids::random_generator()(), {"iam::accounts:update"});
+    const auto a = service_run_grant_operations_service_write_account(h, gen);
+    const auto r = service_run_grant_operations_service_write_role_bundling(h, gen, granted_code);
+    const auto ctx = service_run_grant_operations_service_person(
+        h, a, boost::uuids::random_generator()(), {"iam::accounts:update"});
 
     const auto resp =
         run_grant_operations_service(ctx).create_run_grant(request_for(r, resource_name()));
@@ -160,8 +154,8 @@ TEST_CASE("create_run_grant_refuses_a_role_the_person_does_not_hold_in_full",
 TEST_CASE("create_run_grant_refuses_a_session_that_acts_for_no_party", "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto a = write_account(h, gen);
-    const auto r = write_role_bundling(h, gen, granted_code);
+    const auto a = service_run_grant_operations_service_write_account(h, gen);
+    const auto r = service_run_grant_operations_service_write_role_bundling(h, gen, granted_code);
     const auto ctx = h.context().with_tenant(h.tenant_id(), a.username).with_roles({granted_code});
 
     const auto resp =
@@ -174,8 +168,8 @@ TEST_CASE("create_run_grant_refuses_a_context_without_the_persons_permissions",
           "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto a = write_account(h, gen);
-    const auto r = write_role_bundling(h, gen, granted_code);
+    const auto a = service_run_grant_operations_service_write_account(h, gen);
+    const auto r = service_run_grant_operations_service_write_role_bundling(h, gen, granted_code);
     const auto party = boost::uuids::random_generator()();
     const auto ctx = h.context().with_party(h.tenant_id(), party, {party}, a.username);
 
@@ -189,9 +183,10 @@ TEST_CASE("create_run_grant_returns_the_active_grant_for_the_same_resource",
           "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto a = write_account(h, gen);
-    const auto r = write_role_bundling(h, gen, granted_code);
-    const auto ctx = person(h, a, boost::uuids::random_generator()(), {granted_code});
+    const auto a = service_run_grant_operations_service_write_account(h, gen);
+    const auto r = service_run_grant_operations_service_write_role_bundling(h, gen, granted_code);
+    const auto ctx = service_run_grant_operations_service_person(
+        h, a, boost::uuids::random_generator()(), {granted_code});
     run_grant_operations_service sut(ctx);
     const auto resource = resource_name();
 
@@ -207,9 +202,10 @@ TEST_CASE("revoke_run_grant_by_the_grantor_ends_the_grant_and_repeats_safely",
           "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto a = write_account(h, gen);
-    const auto r = write_role_bundling(h, gen, granted_code);
-    const auto ctx = person(h, a, boost::uuids::random_generator()(), {granted_code});
+    const auto a = service_run_grant_operations_service_write_account(h, gen);
+    const auto r = service_run_grant_operations_service_write_role_bundling(h, gen, granted_code);
+    const auto ctx = service_run_grant_operations_service_person(
+        h, a, boost::uuids::random_generator()(), {granted_code});
     run_grant_operations_service sut(ctx);
     const auto created = sut.create_run_grant(request_for(r, resource_name()));
     REQUIRE(created.success);
@@ -234,9 +230,10 @@ TEST_CASE("create_run_grant_reactivates_a_revoked_grant_under_the_same_id",
           "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto a = write_account(h, gen);
-    const auto r = write_role_bundling(h, gen, granted_code);
-    const auto ctx = person(h, a, boost::uuids::random_generator()(), {granted_code});
+    const auto a = service_run_grant_operations_service_write_account(h, gen);
+    const auto r = service_run_grant_operations_service_write_role_bundling(h, gen, granted_code);
+    const auto ctx = service_run_grant_operations_service_person(
+        h, a, boost::uuids::random_generator()(), {granted_code});
     run_grant_operations_service sut(ctx);
     const auto resource = resource_name();
     const auto first = sut.create_run_grant(request_for(r, resource));
@@ -256,22 +253,25 @@ TEST_CASE("create_run_grant_reactivates_a_revoked_grant_under_the_same_id",
 TEST_CASE("revoke_run_grant_needs_the_grantor_or_the_revoke_permission", "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto grantor = write_account(h, gen);
-    const auto other = write_account(h, gen);
-    const auto r = write_role_bundling(h, gen, granted_code);
+    const auto grantor = service_run_grant_operations_service_write_account(h, gen);
+    const auto other = service_run_grant_operations_service_write_account(h, gen);
+    const auto r = service_run_grant_operations_service_write_role_bundling(h, gen, granted_code);
     const auto party = boost::uuids::random_generator()();
-    const auto created = run_grant_operations_service(person(h, grantor, party, {granted_code}))
+    const auto created = run_grant_operations_service(service_run_grant_operations_service_person(
+                                                          h, grantor, party, {granted_code}))
                              .create_run_grant(request_for(r, resource_name()));
     REQUIRE(created.success);
     revoke_run_grant_request req;
     req.grant_id = created.grant_id;
 
-    const auto refused =
-        run_grant_operations_service(person(h, other, party, {granted_code})).revoke_run_grant(req);
+    const auto refused = run_grant_operations_service(service_run_grant_operations_service_person(
+                                                          h, other, party, {granted_code}))
+                             .revoke_run_grant(req);
     CHECK_FALSE(refused.success);
 
     const auto allowed =
-        run_grant_operations_service(person(h, other, party, {"iam::run_grants:revoke"}))
+        run_grant_operations_service(service_run_grant_operations_service_person(
+                                         h, other, party, {"iam::run_grants:revoke"}))
             .revoke_run_grant(req);
     CHECK(allowed.success);
 }
@@ -279,9 +279,10 @@ TEST_CASE("revoke_run_grant_needs_the_grantor_or_the_revoke_permission", "[servi
 TEST_CASE("create_run_grant_renews_a_grant_past_its_not_after", "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto a = write_account(h, gen);
-    const auto r = write_role_bundling(h, gen, granted_code);
-    const auto ctx = person(h, a, boost::uuids::random_generator()(), {granted_code});
+    const auto a = service_run_grant_operations_service_write_account(h, gen);
+    const auto r = service_run_grant_operations_service_write_role_bundling(h, gen, granted_code);
+    const auto ctx = service_run_grant_operations_service_person(
+        h, a, boost::uuids::random_generator()(), {granted_code});
     run_grant_operations_service sut(ctx);
     const auto resource = resource_name();
     const auto first = sut.create_run_grant(request_for(r, resource));
@@ -306,10 +307,13 @@ TEST_CASE("create_run_grant_renews_a_grant_past_its_not_after", "[service][run_g
 TEST_CASE("create_run_grant_replaces_an_active_grant_with_a_new_role", "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto a = write_account(h, gen);
-    const auto first_role = write_role_bundling(h, gen, granted_code);
-    const auto second_role = write_role_bundling(h, gen, granted_code);
-    const auto ctx = person(h, a, boost::uuids::random_generator()(), {granted_code});
+    const auto a = service_run_grant_operations_service_write_account(h, gen);
+    const auto first_role =
+        service_run_grant_operations_service_write_role_bundling(h, gen, granted_code);
+    const auto second_role =
+        service_run_grant_operations_service_write_role_bundling(h, gen, granted_code);
+    const auto ctx = service_run_grant_operations_service_person(
+        h, a, boost::uuids::random_generator()(), {granted_code});
     run_grant_operations_service sut(ctx);
     const auto resource = resource_name();
     const auto first = sut.create_run_grant(request_for(first_role, resource));
@@ -329,12 +333,13 @@ TEST_CASE("revoke_run_grant_by_an_administrator_of_another_party_keeps_the_grant
           "[service][run_grant]") {
     database_helper h;
     auto gen = ores::testing::make_generation_context(h);
-    const auto grantor = write_account(h, gen);
-    const auto admin = write_account(h, gen);
-    const auto r = write_role_bundling(h, gen, granted_code);
+    const auto grantor = service_run_grant_operations_service_write_account(h, gen);
+    const auto admin = service_run_grant_operations_service_write_account(h, gen);
+    const auto r = service_run_grant_operations_service_write_role_bundling(h, gen, granted_code);
     const auto party = boost::uuids::random_generator()();
     const auto other_party = boost::uuids::random_generator()();
-    const auto created = run_grant_operations_service(person(h, grantor, party, {granted_code}))
+    const auto created = run_grant_operations_service(service_run_grant_operations_service_person(
+                                                          h, grantor, party, {granted_code}))
                              .create_run_grant(request_for(r, resource_name()));
     REQUIRE(created.success);
 

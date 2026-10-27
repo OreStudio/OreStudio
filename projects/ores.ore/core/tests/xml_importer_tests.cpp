@@ -20,16 +20,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
-namespace {
-
-std::filesystem::path ore_path(const std::string& relative) {
-    return ores::testing::project_root::resolve("external/ore/" + relative);
-}
-
-}
 
 using ores::ore::xml::importer;
 using ores::refdata::domain::currency;

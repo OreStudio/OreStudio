@@ -23,6 +23,7 @@
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -39,18 +40,6 @@ using ores::marketdata::repository::market_series_identity_projector;
 using ores::marketdata::repository::market_series_identity_repository;
 using ores::marketdata::repository::market_series_repository;
 using ores::testing::database_helper;
-
-/// A curve id no earlier run used, so the series is this test's alone.
-std::string fresh_curve_id() {
-    auto tag = boost::uuids::to_string(boost::uuids::random_generator{}());
-    tag.erase(std::remove(tag.begin(), tag.end(), '-'), tag.end());
-    return tag;
-}
-
-std::string zero_uri(const std::string& curve_id) {
-    return "oresmd://ir/EUR?type=series&instrument=zero&quote=rate&curve_id=" + curve_id +
-           "&day_counter=A365";
-}
 
 /// Inserts a series the way the data quality publish does: in SQL, which cannot run the
 /// codec, so the series has no identity row. Returns its id.

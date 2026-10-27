@@ -94,7 +94,7 @@ std::string run_tag() {
  * to the series this run creates rather than to whatever else the suite's
  * tenant happens to hold.
  */
-std::string eur_usd_spot() {
+std::string app_feed_ingest_loop_eur_usd_spot() {
     const auto tag = run_tag();
     const auto code = [&](std::size_t offset) {
         return std::string{"AAAAA"} + tag[offset] + "A";
@@ -119,13 +119,13 @@ std::string series_uri(const std::string& quote_uri) {
  * catalogue source, the subscription and the route that make the party consume
  * it, and the NATS client the loop is built around.
  */
-struct fixture {
+struct app_feed_ingest_loop_fixture {
     scoped_database_helper h;
     ores::utility::generation::generation_context gen = ores::testing::make_generation_context(h);
     ores::nats::service::client nats{ores::testing::make_nats_options()};
     boost::uuids::uuid party_id;
 
-    fixture() {
+    app_feed_ingest_loop_fixture() {
         // The rows of a test belong to a tenant of its own, never the system
         // tenant: a system-tenant test would hide a policy that reads nothing
         // in a real tenant, which is the defect of 2026-10-23.
@@ -139,7 +139,7 @@ struct fixture {
         party_id = party.id;
     }
 
-    ~fixture() {
+    ~app_feed_ingest_loop_fixture() {
         nats.disconnect();
     }
 
@@ -270,9 +270,9 @@ TEST_CASE("a_routed_tick_writes_the_series_and_the_tick", "[app][feed_ingest_loo
     auto writer = make_writer();
     if (!writer)
         SKIP("The tick writer role is not configured");
-    fixture f;
+    app_feed_ingest_loop_fixture f;
     const auto bound_source = bound_prefix + run_tag();
-    const auto quote_uri = eur_usd_spot();
+    const auto quote_uri = app_feed_ingest_loop_eur_usd_spot();
     f.route(bound_source);
     f.connect();
 
@@ -316,10 +316,10 @@ TEST_CASE("a_routed_tick_writes_the_series_and_the_tick", "[app][feed_ingest_loo
 
 TEST_CASE("a_tick_from_a_source_that_no_route_names_is_dropped_and_writes_nothing",
           "[app][feed_ingest_loop]") {
-    fixture f;
+    app_feed_ingest_loop_fixture f;
     const auto bound_source = bound_prefix + run_tag();
     const auto other_source = other_prefix + run_tag();
-    const auto quote_uri = eur_usd_spot();
+    const auto quote_uri = app_feed_ingest_loop_eur_usd_spot();
     f.route(other_source);
     f.connect();
 
@@ -334,9 +334,9 @@ TEST_CASE("a_tick_from_a_source_that_no_route_names_is_dropped_and_writes_nothin
 }
 
 TEST_CASE("a_tick_published_on_the_wire_reaches_the_store", "[app][feed_ingest_loop]") {
-    fixture f;
+    app_feed_ingest_loop_fixture f;
     const auto bound_source = bound_prefix + run_tag();
-    const auto quote_uri = eur_usd_spot();
+    const auto quote_uri = app_feed_ingest_loop_eur_usd_spot();
     f.route(bound_source);
     f.connect();
 
@@ -362,10 +362,10 @@ TEST_CASE("a_batch_of_ticks_stores_every_datum_and_keeps_the_last_of_a_repeated_
     auto writer = make_writer();
     if (!writer)
         SKIP("The tick writer role is not configured");
-    fixture f;
+    app_feed_ingest_loop_fixture f;
     const auto bound_source = bound_prefix + run_tag();
-    const auto first_uri = eur_usd_spot();
-    const auto second_uri = eur_usd_spot();
+    const auto first_uri = app_feed_ingest_loop_eur_usd_spot();
+    const auto second_uri = app_feed_ingest_loop_eur_usd_spot();
     f.route(bound_source);
     f.connect();
 
@@ -403,9 +403,9 @@ TEST_CASE("a_batch_of_ticks_stores_every_datum_and_keeps_the_last_of_a_repeated_
 
 TEST_CASE("a_tick_is_accepted_and_not_stored_when_the_store_does_not_answer",
           "[app][feed_ingest_loop]") {
-    fixture f;
+    app_feed_ingest_loop_fixture f;
     const auto bound_source = bound_prefix + run_tag();
-    const auto quote_uri = eur_usd_spot();
+    const auto quote_uri = app_feed_ingest_loop_eur_usd_spot();
     f.route(bound_source);
     f.connect();
 
@@ -429,9 +429,9 @@ TEST_CASE("a_tick_is_accepted_and_not_stored_when_the_store_does_not_answer",
 }
 
 TEST_CASE("a_started_loop_can_be_destroyed_while_ticks_arrive", "[app][feed_ingest_loop]") {
-    fixture f;
+    app_feed_ingest_loop_fixture f;
     const auto bound_source = bound_prefix + run_tag();
-    const auto quote_uri = eur_usd_spot();
+    const auto quote_uri = app_feed_ingest_loop_eur_usd_spot();
     f.route(bound_source);
     f.connect();
 
@@ -465,9 +465,9 @@ TEST_CASE("a_stored_tick_is_copied_to_the_tick_table_under_the_owner_of_its_seri
     if (!writer)
         SKIP("The tick writer role is not configured");
 
-    fixture f;
+    app_feed_ingest_loop_fixture f;
     const auto bound_source = bound_prefix + run_tag();
-    const auto quote_uri = eur_usd_spot();
+    const auto quote_uri = app_feed_ingest_loop_eur_usd_spot();
     f.route(bound_source);
     f.connect();
 
@@ -494,7 +494,7 @@ TEST_CASE("the_ticks_of_a_datum_with_a_coordinate_are_copied_under_its_coordinat
     if (!writer)
         SKIP("The tick writer role is not configured");
 
-    fixture f;
+    app_feed_ingest_loop_fixture f;
     const auto bound_source = bound_prefix + run_tag();
     const auto name = std::string{"AAAAA"} + run_tag()[0] + "A";
     const auto cds_series = "oresmd://credit/" + name +
@@ -647,7 +647,7 @@ struct burst_set {
 
 /// Sends one tick for each datum and waits until every series exists and holds its tick, so that
 /// the caches of the loop are warm. The ticks of the burst follow later.
-burst_set warm_up(fixture& f,
+burst_set warm_up(app_feed_ingest_loop_fixture& f,
                   const std::string& source,
                   burst_reader& reader,
                   const std::function<void(const std::vector<market_tick>&)>& send) {
@@ -684,7 +684,9 @@ void report(const std::string& what, int rep, std::size_t rows, double seconds) 
 /// the message, so it does not slow the drain that a test times. The ticks are decoded later.
 class republish_tap final {
 public:
-    republish_tap(fixture& f, const std::string& tenant, const std::string& party)
+    republish_tap(app_feed_ingest_loop_fixture& f,
+                  const std::string& tenant,
+                  const std::string& party)
         : sub_(f.nats.subscribe(ores::marketdata::domain::market_tick_subject_all(tenant, party),
                                 [this](ores::nats::message msg) {
                                     const auto at = std::chrono::system_clock::now();
@@ -765,7 +767,7 @@ TEST_CASE("burst_a_bare_copy_of_the_tick_writer", "[.][burst]") {
     auto writer = make_writer();
     if (!writer)
         SKIP("The tick writer role is not configured");
-    fixture f;
+    app_feed_ingest_loop_fixture f;
     burst_cleanup cleanup{f.h.tenant_id().to_string()};
     burst_reader reader(f.h.tenant_id().to_string(), boost::uuids::to_string(f.party_id));
 
@@ -798,7 +800,7 @@ TEST_CASE("burst_the_store_path_of_the_loop_without_nats", "[.][burst]") {
     auto writer = make_writer();
     if (!writer)
         SKIP("The tick writer role is not configured");
-    fixture f;
+    app_feed_ingest_loop_fixture f;
     burst_cleanup cleanup{f.h.tenant_id().to_string()};
     const auto source = bound_prefix + run_tag();
     f.route(source);
@@ -836,7 +838,7 @@ TEST_CASE("burst_through_nats_and_the_worker_of_the_loop", "[.][burst]") {
     auto writer = make_writer();
     if (!writer)
         SKIP("The tick writer role is not configured");
-    fixture f;
+    app_feed_ingest_loop_fixture f;
     burst_cleanup cleanup{f.h.tenant_id().to_string()};
     const auto source = bound_prefix + run_tag();
     f.route(source);
@@ -890,7 +892,7 @@ TEST_CASE("burst_serial_against_pipelined_through_nats", "[.][burst]") {
     auto writer = make_writer();
     if (!writer)
         SKIP("The tick writer role is not configured");
-    fixture f;
+    app_feed_ingest_loop_fixture f;
     burst_cleanup cleanup{f.h.tenant_id().to_string()};
     const auto source = bound_prefix + run_tag();
     f.route(source);
@@ -1013,7 +1015,7 @@ TEST_CASE("a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_nex
         SKIP("The tick writer role is not configured");
     auto writer = std::make_shared<flaky_writer>(*options);
 
-    fixture f;
+    app_feed_ingest_loop_fixture f;
     burst_cleanup cleanup{f.h.tenant_id().to_string()};
     const auto source = bound_prefix + run_tag();
     f.route(source);
@@ -1186,7 +1188,7 @@ TEST_CASE("a_small_batch_does_not_pass_the_batches_that_are_in_the_stages",
         SKIP("The tick writer role is not configured");
     auto writer = std::make_shared<gated_writer>(*options);
 
-    fixture f;
+    app_feed_ingest_loop_fixture f;
     burst_cleanup cleanup{f.h.tenant_id().to_string()};
     const auto source = bound_prefix + run_tag();
     f.route(source);

@@ -67,7 +67,8 @@ struct operation_response {
     std::string report_instance_id;
 };
 
-ores::scheduler::domain::job_definition make_job(const std::string& payload) {
+ores::scheduler::domain::job_definition
+service_nats_publish_action_handler_make_job(const std::string& payload) {
     ores::scheduler::domain::job_definition job;
     job.job_name = "nats_action_handler_test_job";
     job.command = "";
@@ -109,7 +110,7 @@ TEST_CASE("nats_publish_action_handler refuses a payload it cannot read", "[acti
     auto svc_nats = make_unauthenticated_client(nats);
     nats_publish_action_handler handler(nats, svc_nats);
 
-    const auto job = make_job("this is not json");
+    const auto job = service_nats_publish_action_handler_make_job("this is not json");
     const action_context ctx{job, h.context(), 0};
 
     boost::asio::io_context io;
@@ -132,7 +133,8 @@ TEST_CASE("nats_publish_action_handler refuses a payload with no subject", "[act
     // Valid JSON, and still unsendable: without a subject there is nothing to
     // publish to, and publishing to the empty subject would be worse than
     // failing.
-    const auto job = make_job(R"({"report_definition_id":"x"})");
+    const auto job =
+        service_nats_publish_action_handler_make_job(R"({"report_definition_id":"x"})");
     const action_context ctx{job, h.context(), 0};
 
     boost::asio::io_context io;
@@ -157,7 +159,8 @@ TEST_CASE("nats_publish_action_handler publishes to the payload's subject", "[ac
 
     // No report definition, so this is a notification nothing answers: the
     // handler publishes it and the job succeeds without waiting for a reply.
-    const auto job = make_job(R"({"subject":"ores.scheduler.action_handler_test"})");
+    const auto job = service_nats_publish_action_handler_make_job(
+        R"({"subject":"ores.scheduler.action_handler_test"})");
     const action_context ctx{job, h.context(), 42};
 
     boost::asio::io_context io;
@@ -202,7 +205,7 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
     const auto payload = std::string(R"({"subject":")") + std::string(refused_in_envelope_subject) +
                          R"(","report_definition_id":"00000000-0000-0000-0000-000000000000",)"
                          R"("tenant_id":"00000000-0000-0000-0000-000000000000"})";
-    const auto job = make_job(payload);
+    const auto job = service_nats_publish_action_handler_make_job(payload);
     const action_context ctx{job, h.context(), 7};
 
     boost::asio::io_context io;
@@ -241,7 +244,7 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
     const auto payload = std::string(R"({"subject":")") + std::string(refused_in_body_subject) +
                          R"(","report_definition_id":"00000000-0000-0000-0000-000000000000",)"
                          R"("tenant_id":"00000000-0000-0000-0000-000000000000"})";
-    const auto job = make_job(payload);
+    const auto job = service_nats_publish_action_handler_make_job(payload);
     const action_context ctx{job, h.context(), 7};
 
     boost::asio::io_context io;

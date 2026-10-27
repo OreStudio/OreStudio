@@ -39,6 +39,7 @@
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "shared_helpers.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -59,9 +60,6 @@ using namespace logging;
 using ores::nats::service::nats_client;
 
 namespace {
-
-constexpr std::string_view default_reason_code =
-    dq::domain::change_reason_constants::codes::new_record;
 
 std::optional<compute::domain::app>
 find_app_by_name(std::ostream& out, nats_client& session, const std::string& name) {

@@ -45,7 +45,8 @@ using namespace ores::logging;
  *   - moment_type is hardcoded to Variance (MomentType in XML is ignored)
  *   - underlying_code comes from Underlying.Name (no FX prefix)
  */
-fx_variance_swap_instrument make_instrument(database_helper& h) {
+fx_variance_swap_instrument
+repository_fx_variance_swap_instrument_repository_make_instrument(database_helper& h) {
     fx_variance_swap_instrument r;
     // The instrument is keyed by its trade, so the trade is written first.
     r.identity.trade_id = ores::trading::tests::write_parent_trade(h);
@@ -77,7 +78,7 @@ TEST_CASE("fx_variance_swap_instrument_write_and_read_latest",
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
-    auto instr = make_instrument(h);
+    auto instr = repository_fx_variance_swap_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
     BOOST_LOG_SEV(lg, debug) << "Writing FX variance swap instrument: " << instr;
 
@@ -104,7 +105,7 @@ TEST_CASE("fx_variance_swap_instrument_read_nonexistent", "[repository][fx][fx_v
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
     fx_variance_swap_instrument_repository repo;
-    auto instr = make_instrument(h);
+    auto instr = repository_fx_variance_swap_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
     repo.write(ctx, instr);
 
@@ -124,7 +125,7 @@ TEST_CASE("fx_variance_swap_instrument_remove", "[repository][fx][fx_variance_sw
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
-    auto instr = make_instrument(h);
+    auto instr = repository_fx_variance_swap_instrument_repository_make_instrument(h);
     const auto id_str = boost::uuids::to_string(instr.identity.trade_id);
 
     fx_variance_swap_instrument_repository repo;

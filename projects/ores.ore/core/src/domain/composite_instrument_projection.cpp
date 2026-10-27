@@ -33,9 +33,11 @@ using trading::domain::composite_instrument_data;
 using trading::domain::composite_leg;
 
 /// The actor and reason every imported row states.
-constexpr std::string_view actor = "ores";
-constexpr std::string_view change_reason = "system.external_data_import";
-constexpr std::string_view change_commentary = "Imported from ORE XML";
+constexpr std::string_view composite_instrument_projection_actor = "ores";
+constexpr std::string_view composite_instrument_projection_change_reason =
+    "system.external_data_import";
+constexpr std::string_view composite_instrument_projection_change_commentary =
+    "Imported from ORE XML";
 
 /**
  * @brief The trade types the family states, which are the ones the old
@@ -48,29 +50,28 @@ constexpr bool is_composite_trade_type(std::string_view type) {
 auto make_instrument(std::string_view trade_type_code) -> composite_instrument {
     composite_instrument r;
     r.identity.trade_type_code = std::string(trade_type_code);
-    r.audit.modified_by = std::string(actor);
-    r.audit.performed_by = std::string(actor);
-    r.audit.change_reason_code = std::string(change_reason);
-    r.audit.change_commentary = std::string(change_commentary);
+    r.audit.modified_by = std::string(composite_instrument_projection_actor);
+    r.audit.performed_by = std::string(composite_instrument_projection_actor);
+    r.audit.change_reason_code = std::string(composite_instrument_projection_change_reason);
+    r.audit.change_commentary = std::string(composite_instrument_projection_change_commentary);
     return r;
 }
 
-auto make_leg(std::string_view id,
-              const std::optional<std::string>& type,
-              int sequence) -> composite_leg {
+auto make_leg(std::string_view id, const std::optional<std::string>& type, int sequence)
+    -> composite_leg {
     composite_leg leg;
     leg.identity.leg_sequence = sequence;
     leg.constituent_trade_id = id.empty() ? type.value_or("") : std::string(id);
-    leg.audit.modified_by = std::string(actor);
-    leg.audit.performed_by = std::string(actor);
-    leg.audit.change_reason_code = std::string(change_reason);
-    leg.audit.change_commentary = std::string(change_commentary);
+    leg.audit.modified_by = std::string(composite_instrument_projection_actor);
+    leg.audit.performed_by = std::string(composite_instrument_projection_actor);
+    leg.audit.change_reason_code = std::string(composite_instrument_projection_change_reason);
+    leg.audit.change_commentary = std::string(composite_instrument_projection_change_commentary);
     return leg;
 }
 
-auto read_leg(xml::record_reader component,
-              std::string_view type_name,
-              int sequence) -> composite_leg {
+auto composite_instrument_projection_read_leg(xml::record_reader component,
+                                              std::string_view type_name,
+                                              int sequence) -> composite_leg {
     return make_leg(component.text("id").value_or(""), component.spelling(type_name), sequence);
 }
 
@@ -108,9 +109,11 @@ auto read_components(const xml::record_reader& data) -> std::vector<composite_le
     // Components element, so reading one list after the other keeps the order
     // the document wrote.
     for (const auto& component : components->children("Trade"))
-        legs.push_back(read_leg(component, "TradeType", sequence++));
+        legs.push_back(
+            composite_instrument_projection_read_leg(component, "TradeType", sequence++));
     for (const auto& component : components->children("SubTrade"))
-        legs.push_back(read_leg(component, "SubTradeType", sequence++));
+        legs.push_back(
+            composite_instrument_projection_read_leg(component, "SubTradeType", sequence++));
     return legs;
 }
 

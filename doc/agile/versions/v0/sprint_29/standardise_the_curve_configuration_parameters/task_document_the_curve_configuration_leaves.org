@@ -8,7 +8,7 @@
 #+filetags: :standardise_the_curve_configuration_parameters:sprint_29:v0:
 #+owner: marco
 #+branch: feature/document-the-curve-configuration-leaves
-#+pr:
+#+pr: 3905
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-26
@@ -150,7 +150,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3905][#3905]] | [sql] Document the curve configuration leaves in the ORE parameter contract |
 
 * Review
 

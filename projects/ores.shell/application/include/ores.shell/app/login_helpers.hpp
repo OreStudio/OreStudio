@@ -27,6 +27,7 @@
 #include "ores.shell/app/request_helpers.hpp"
 #include <optional>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -100,6 +101,37 @@ inline std::optional<std::string> complete_login(std::ostream& out,
     info.jwt = selected->token;
     session.set_auth(std::move(info));
     return selected->party_name;
+}
+
+/**
+ * @brief Signs @p session in again with the credentials that opened it.
+ *
+ * The shell's answer to a refused token. A person's command is refused only
+ * once the server has rejected the token, so nothing was done and the command
+ * can be sent again; but a shell built for interactive use has no way to ask
+ * for a password mid-command, so it holds the credentials that signed it in and
+ * opens a fresh session with them. The party is chosen again by the same rule
+ * as the first time, because a fresh login starts without one.
+ *
+ * @return true when the session holds a usable token. A failure is silent
+ * here: it is reported by the refusal the caller was already handling.
+ */
+inline bool sign_in_again(ores::nats::service::nats_client& session,
+                          const std::string& principal,
+                          const std::string& password) {
+    std::ostringstream discarded;
+    try {
+        iam::messaging::login_request req;
+        req.principal = principal;
+        req.password = password;
+        auto result = ores::nats::service::request_and_decode<iam::messaging::login_response>(
+            session, iam::messaging::login_request::nats_subject, req);
+        if (!result || !result->success)
+            return false;
+        return complete_login(discarded, session, *result).has_value();
+    } catch (const std::exception&) {
+        return false;
+    }
 }
 
 }

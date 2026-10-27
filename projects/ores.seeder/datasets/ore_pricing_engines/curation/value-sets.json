@@ -353,11 +353,13 @@
       ],
       "description": "The values the sensitivitydecomposition setting accepts."
     },
-    "sensitivity_template": {
-      "name": "Sensitivity template",
+    "sensitivitytemplate": {
+      "name": "Sensitivity Template",
       "source_kind": "catalogue",
       "catalogue_code": "analytics.sensitivity_template",
-      "description": "The values the sensitivity template setting accepts."
+      "is_ordered": false,
+      "values": [],
+      "description": "The values the SensitivityTemplate setting accepts."
     },
     "soboldirectionintegers": {
       "name": "Soboldirectionintegers",
@@ -753,7 +755,7 @@
     "EngineParameters|Scheme": "scheme",
     "EngineParameters|ScriptedLibraryOverride": "flag",
     "EngineParameters|SensitivityDecomposition": "sensitivitydecomposition",
-    "EngineParameters|SensitivityTemplate": "sensitivity_template",
+    "EngineParameters|SensitivityTemplate": "sensitivitytemplate",
     "EngineParameters|SeparateCallPutVols": "flag",
     "EngineParameters|Sobol": "flag",
     "EngineParameters|SobolDirectionIntegers": "soboldirectionintegers",

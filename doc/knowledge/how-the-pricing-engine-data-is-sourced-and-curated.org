@@ -78,6 +78,13 @@ refuses a set no setting names, an enumerated set with no values, or a link to a
 unknown set. Writing the code's file whole is what keeps a re-extraction from
 leaving a stale link behind.
 
+The one statement the code cannot make is where a setting's choices come from: a
+parser sees only a string. So a guide set that names a catalogue keeps that
+statement over the code's plain text set of the same name, and the set carries
+no values of its own because the relation the catalogue names holds them. The
+sensitivity template is the case: ORE reads its setting as text, and the choices
+are the rows of =ores_analytics_sensitivity_templates_tbl=.
+
 The extraction is build-time evidence. The rows it produces are written by the
 seed, and the screen and the write path read the rows. Nothing reads the parser,
 the code or the guide at run time.

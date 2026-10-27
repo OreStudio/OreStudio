@@ -196,20 +196,36 @@ def resolve(data):
     return problems
 
 
+def keep_guide_catalogues(guide_sets, data):
+    """Let a guide set that names a catalogue stand over the code's set.
+
+    The code states a setting's type for every setting and cannot state where
+    its choices come from: a parser sees a string. Only the guide names a
+    catalogue, so its set replaces the code's set of the same name and states
+    no values, because the relation the catalogue names holds them.
+    """
+    for name, entry in guide_sets.items():
+        if entry.get("source_kind") != "catalogue" or name not in data["sets"]:
+            continue
+        data["sets"][name] = dict(entry)
+
+
 def load():
     """The guide's sets, with the code's sets over the top.
 
     The guide states some choices; the code states a setting's type for every
-    setting. A code set replaces the guide's set of the same name. A guide set no
-    setting names after that is dropped, because its link now points at the set
-    the code states.
+    setting. A code set replaces the guide's set of the same name, except where
+    the guide names a catalogue. A guide set no setting names after that is
+    dropped, because its link now points at the set the code states.
     """
     with open(GUIDE, encoding="utf-8") as handle:
         data = json.load(handle)
+    guide_sets = dict(data["sets"])
     with open(CODE, encoding="utf-8") as handle:
         code = json.load(handle)
     data["sets"].update(code["sets"])
     data["links"].update(code["links"])
+    keep_guide_catalogues(guide_sets, data)
     with open(REVIEW, encoding="utf-8") as handle:
         review = json.load(handle)
     data["links"].update(review["links"])

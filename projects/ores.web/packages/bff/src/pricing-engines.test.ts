@@ -381,6 +381,7 @@ function vocabularyReads(): Record<string, unknown> {
                     code: 'IR_FD',
                     asset_class: 'IR',
                     method: 'Finite difference',
+                    method_code: 'FD',
                     description: 'Interest rate products priced on a grid.',
                 },
             ],
@@ -409,9 +410,9 @@ function vocabularyReads(): Record<string, unknown> {
                     is_ordered: false,
                 },
                 {
-                    code: 'sensitivity_template',
-                    name: 'Sensitivity template',
-                    description: 'The values the sensitivity template setting accepts.',
+                    code: 'sensitivitytemplate',
+                    name: 'Sensitivity Template',
+                    description: 'The values the SensitivityTemplate setting accepts.',
                     source_kind: 'catalogue',
                     catalogue_code: 'analytics.sensitivity_template',
                     minimum: null,
@@ -478,7 +479,7 @@ function vocabularyReads(): Record<string, unknown> {
                     code: 'EngineParameters:SensitivityTemplate',
                     scope: 'EngineParameters',
                     name: 'SensitivityTemplate',
-                    value_set_code: 'sensitivity_template',
+                    value_set_code: 'sensitivitytemplate',
                 },
             ],
         },
@@ -663,7 +664,7 @@ describe('pricing engine routes', () => {
         expect(response.json().globals).toEqual([]);
     });
 
-    it('resolves a catalogue set from the relation it names', async () => {
+    it('draws the sensitivity template set from the templates list it names', async () => {
         const { server, sessionId } = buildTestServer(vocabularyReads());
         const response = await send(
             server,
@@ -675,8 +676,10 @@ describe('pricing engine routes', () => {
         const setting = response
             .json()
             .settings.find((entry: { name: string }) => entry.name === 'SensitivityTemplate');
+        // The seed states this set as a catalogue and no value rows, so the
+        // only place the choices can come from is the templates list.
         expect(setting).toMatchObject({
-            valueSet: 'sensitivity_template',
+            valueSet: 'sensitivitytemplate',
             sourceKind: 'catalogue',
             choices: [{ value: 'IR_FD', label: 'IR_FD' }],
         });

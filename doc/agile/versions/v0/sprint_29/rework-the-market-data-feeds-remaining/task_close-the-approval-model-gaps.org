@@ -26,11 +26,11 @@ The approval model asks the checks the journeys describe and no open question is
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -85,4 +85,38 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Measurements
+
+| What | Value |
+|------+-------|
+| Opening book parts | controller, finance, market_risk, operations |
+| Controller answer order | 1, the only open part on an opening |
+| Publish kind | marketdata.curve_publish, market risk decides, 14-day expiry |
+| Hold reasons | 10 codes, system-tenant lookup |
+| Suites | book proposal 43, curve publish 5, hold 3, inbox and shell 100%, BFF 1040 |
+| Live | controller queue and decision, publish ask/approve/refuse, hold accept/refuse |
+
 * Result
+
+The four approval gaps are closed.
+
+- An opening book asks for the controller part. The policy model gained an
+  operation value `create`, so an opening asks controller plus the field owners
+  and an edit asks only the owners.
+- A market data publish has a kind, a raiser and a decider. The trader asks
+  through publish_curve, which raises marketdata.curve_publish for the market
+  risk decider, and writes only with an approved request. republish_curve stays
+  the ungated internal write and is named as the bypass.
+- The tenant's Market Risk decides a tenant-wide convention change, never a
+  party's, as a permission is held by an account in a tenant and the queue is
+  tenant-scoped. The journeys and the demo note state it.
+- A hold takes a code from a seeded lookup of ten reasons; a missing or unknown
+  code is refused with the lookup's terms, and the shell and the decision panel
+  offer the list.
+
+Open by design: a publish request names no subject, so it authorises whatever
+config the publisher passes; a curve has no published marker or publisher; the
+Acme dataset has no curve config of its own; the shell needs a placeholder part
+token for a request with no parts; only TenantAdmin holds refdata::books:write,
+so a desk cannot raise a book change; and a put of a book id that no longer
+exists counts as an opening.

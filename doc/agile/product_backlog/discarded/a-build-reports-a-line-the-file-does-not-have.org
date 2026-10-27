@@ -34,3 +34,19 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 * See also
 
 -
+
+* Why this is discarded
+
+The capture claimed a tool defect: that =compass build= reported a deleted
+function at a line the file did not contain, while =ninja= built the same
+target cleanly.
+
+It does not reproduce. With the tree clean, =compass build= of all three
+targets exits 0, so the tool is not broken and the claim is withdrawn.
+
+What actually happened is narrower and is a mistake of mine. A build failed
+while the source was being edited, its log was read after the source had
+already changed, and the mismatch between the quoted line and the file was
+taken as evidence of a defect rather than as a reason to re-run. The lesson
+is to establish which run a build log belongs to, and to reproduce before
+recording a cause. It is not a product backlog item.

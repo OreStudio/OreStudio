@@ -149,3 +149,9 @@ TEST_CASE("vasicek_process struct constructor matches flat constructor",
     }
     CHECK(from_struct.discount_factor(10) == from_flat.discount_factor(10));
 }
+
+TEST_CASE("vasicek says it has no step bound, because its transition is exact", "[vasicek]") {
+    vasicek_process process(0.3, 0.02, 0.01, 0.015);
+
+    CHECK(std::isinf(process.max_step()));
+}

@@ -75,6 +75,21 @@ public:
     }
 
     /**
+     * @brief The largest step, in the law's own time unit, this process can be
+     * stepped by without its scheme's error dominating.
+     *
+     * A process that implements the exact transition of its law — an affine or
+     * Ornstein–Uhlenbeck family, or a mixture whose increment is exactly normal —
+     * is the law for any step, and answers infinity. A process stepped by an Euler
+     * scheme or a tree is an approximation, and its error grows with the step, so
+     * it states the bound its scheme can carry and a caller refuses a step above
+     * it rather than producing a path nobody calibrated.
+     */
+    virtual double max_step() const {
+        return std::numeric_limits<double>::infinity();
+    }
+
+    /**
      * @brief Return the current price without advancing.
      */
     virtual double current() const = 0;

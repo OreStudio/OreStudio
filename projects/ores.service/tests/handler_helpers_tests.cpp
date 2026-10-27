@@ -184,7 +184,8 @@ TEST_CASE("stamp overwrites the party id from the context", "[handler_helpers]")
     REQUIRE(r.party_id == other_party);
 }
 
-TEST_CASE("of_acting_party keeps the acting party's row of a key and drops the others", "[handler_helpers]") {
+TEST_CASE("of_acting_party keeps the acting party's row of a key and drops the others",
+          "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto acting = boost::uuids::string_generator()("22222222-2222-2222-2222-222222222222");
     const auto below = boost::uuids::string_generator()("33333333-3333-3333-3333-333333333333");
@@ -221,7 +222,8 @@ TEST_CASE("of_acting_party keeps every row when there is no party to keep", "[ha
     REQUIRE(of_acting_party(std::vector<record>(2), ctx).size() == 2);
 }
 
-TEST_CASE("of_acting_party keeps the acting party's row over rows with no party", "[handler_helpers]") {
+TEST_CASE("of_acting_party keeps the acting party's row over rows with no party",
+          "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto acting = boost::uuids::string_generator()("22222222-2222-2222-2222-222222222222");
     const auto below = boost::uuids::string_generator()("33333333-3333-3333-3333-333333333333");
@@ -239,7 +241,8 @@ TEST_CASE("of_acting_party keeps the acting party's row over rows with no party"
     REQUIRE(nil.front().party_id == acting);
 }
 
-TEST_CASE("of_acting_party keeps a key's rows as read when none is the acting party's", "[handler_helpers]") {
+TEST_CASE("of_acting_party keeps a key's rows as read when none is the acting party's",
+          "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto acting = boost::uuids::string_generator()("22222222-2222-2222-2222-222222222222");
     const auto below = boost::uuids::string_generator()("33333333-3333-3333-3333-333333333333");

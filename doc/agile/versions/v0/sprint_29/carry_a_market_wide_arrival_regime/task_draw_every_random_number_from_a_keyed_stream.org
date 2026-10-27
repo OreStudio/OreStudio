@@ -101,6 +101,12 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the header uses std::size_t without including cstddef. | rng_stream.hpp | Accept | Fixed in 4770bbeaf1. |
 | 2 | Local review: main's component lists for marketdata.api and refdata.api miss headers, so cmake-sources fails on any branch. | component_files.cmake | Accept | Regenerated in 0fca827109. |
+| 3 | Bot: the stream id is a 64-bit hash, so a collision is possible; say so. | rng_stream.hpp | Accept | The class doc called the ranges disjoint; it now gives the 2^-64 chance a pair. |
+| 4 | Bot: no case varies the high word of the run seed. | rng_stream_tests.cpp | Accept | A fifth stream with seed 7 + 2^32; the check now wants 5000 distinct values. |
+| 5 | Bot: the test uses std::size_t without cstddef. | rng_stream_tests.cpp | Accept | Included. |
+| 6 | Bot: operator() has no nodiscard, which is right. | rng_stream.hpp | Decline | A note, not a change; tests discard draws on purpose. |
+| 7 | Bot: a copy replays draws; say to pass by reference. | rng_stream.hpp | Accept | One line in the class doc. |
+| 8 | Gate: the format check failed on both files. | rng_stream.hpp, rng_stream_tests.cpp | Accept | clang-format applied. |
 
 * Result
 

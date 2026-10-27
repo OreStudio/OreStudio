@@ -93,13 +93,15 @@ struct stream_key {
 /**
  * @brief A reproducible stream of random bits, keyed by run, series and purpose.
  *
- * The run seed is the Philox key. The series and the purpose mix into the high
- * half of the counter, and the draw index fills the low half, so each stream is
- * a disjoint range of one generator. A stream's draws depend on its key alone:
- * not on the thread that draws them, nor on how many other streams exist or the
- * order they were made in.
+ * The run seed is the Philox key, so two runs never share a stream. The series
+ * and the purpose hash to a 64-bit stream id in the high half of the counter,
+ * and the draw index fills the low half. Two pairs of series and purpose share
+ * a range only if their ids collide, with a chance of about 2^-64 a pair. A
+ * stream's draws depend on its key alone: not on the thread that draws them,
+ * nor on how many other streams exist or the order they were made in.
  *
  * Satisfies UniformRandomBitGenerator, so the standard distributions take it.
+ * A copy replays the draws of its original, so pass a stream by reference.
  */
 class rng_stream final {
 public:
@@ -107,8 +109,8 @@ public:
 
     constexpr explicit rng_stream(const stream_key& key)
         : key_{static_cast<std::uint32_t>(key.run_seed),
-               static_cast<std::uint32_t>(key.run_seed >> 32)},
-          stream_id_(mix(key.series ^ mix(static_cast<std::uint64_t>(key.purpose)))) {}
+               static_cast<std::uint32_t>(key.run_seed >> 32)}
+        , stream_id_(mix(key.series ^ mix(static_cast<std::uint64_t>(key.purpose)))) {}
 
     static constexpr result_type min() {
         return 0;

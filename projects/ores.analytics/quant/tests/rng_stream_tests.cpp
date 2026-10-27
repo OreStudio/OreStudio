@@ -21,6 +21,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <random>
 #include <set>
@@ -52,12 +53,12 @@ double uniform(std::uint64_t bits) {
 TEST_CASE("philox4x32_10 reproduces the Random123 known answers", "[rng_stream]") {
     STATIC_REQUIRE(philox4x32_10({0, 0, 0, 0}, {0, 0}) ==
                    block{0x6627e8d5, 0xe169c58d, 0xbc57ac4c, 0x9b00dbd8});
-    STATIC_REQUIRE(philox4x32_10({0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff},
-                                 {0xffffffff, 0xffffffff}) ==
-                   block{0x408f276d, 0x41c83b0e, 0xa20bc7c6, 0x6d5451fd});
-    STATIC_REQUIRE(philox4x32_10({0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344},
-                                 {0xa4093822, 0x299f31d0}) ==
-                   block{0xd16cfe09, 0x94fdcceb, 0x5001e420, 0x24126ea1});
+    STATIC_REQUIRE(
+        philox4x32_10({0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff}, {0xffffffff, 0xffffffff}) ==
+        block{0x408f276d, 0x41c83b0e, 0xa20bc7c6, 0x6d5451fd});
+    STATIC_REQUIRE(
+        philox4x32_10({0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344}, {0xa4093822, 0x299f31d0}) ==
+        block{0xd16cfe09, 0x94fdcceb, 0x5001e420, 0x24126ea1});
 }
 
 TEST_CASE("series_key is FNV-1a over the source name", "[rng_stream]") {
@@ -68,12 +69,10 @@ TEST_CASE("series_key is FNV-1a over the source name", "[rng_stream]") {
 }
 
 TEST_CASE("rng_stream gives one key the same draws whatever else is drawn", "[rng_stream]") {
-    const stream_key eurusd{.run_seed = 42,
-                            .series = series_key("acme.fx.EURUSD"),
-                            .purpose = draw_purpose::arrival};
-    const stream_key gbpusd{.run_seed = 42,
-                            .series = series_key("acme.fx.GBPUSD"),
-                            .purpose = draw_purpose::arrival};
+    const stream_key eurusd{
+        .run_seed = 42, .series = series_key("acme.fx.EURUSD"), .purpose = draw_purpose::arrival};
+    const stream_key gbpusd{
+        .run_seed = 42, .series = series_key("acme.fx.GBPUSD"), .purpose = draw_purpose::arrival};
 
     rng_stream alone(eurusd);
     const auto expected = take(alone, 9);
@@ -99,11 +98,13 @@ TEST_CASE("rng_stream draws differ when any part of the key differs", "[rng_stre
     const std::array keys{
         base,
         stream_key{.run_seed = 8, .series = series, .purpose = draw_purpose::arrival},
+        stream_key{
+            .run_seed = 7 + (1ull << 32), .series = series, .purpose = draw_purpose::arrival},
         stream_key{.run_seed = 7, .series = series + 1, .purpose = draw_purpose::arrival},
         stream_key{.run_seed = 7, .series = series, .purpose = draw_purpose::price},
     };
 
-    // Every value across the four streams is distinct: a stream that repeated a
+    // Every value across the five streams is distinct: a stream that repeated a
     // block, or two keys that shared a range of the counter, would collide.
     std::set<std::uint64_t> seen;
     for (const auto& key : keys) {
@@ -111,12 +112,14 @@ TEST_CASE("rng_stream draws differ when any part of the key differs", "[rng_stre
         for (const auto value : take(stream, 1000))
             seen.insert(value);
     }
-    CHECK(seen.size() == 4000);
+    CHECK(seen.size() == 5000);
 }
 
 TEST_CASE("rng_stream draws are uniform and two streams are uncorrelated", "[rng_stream]") {
-    rng_stream a(stream_key{.run_seed = 1, .series = series_key("a"), .purpose = draw_purpose::price});
-    rng_stream b(stream_key{.run_seed = 1, .series = series_key("b"), .purpose = draw_purpose::price});
+    rng_stream a(
+        stream_key{.run_seed = 1, .series = series_key("a"), .purpose = draw_purpose::price});
+    rng_stream b(
+        stream_key{.run_seed = 1, .series = series_key("b"), .purpose = draw_purpose::price});
 
     // With n draws the sample mean of a uniform has a standard error of
     // 1/sqrt(12 n), and the sample correlation of two independent streams one of

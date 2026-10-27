@@ -12,10 +12,11 @@ reporting --> wf : the output location, and what the run said
 note right of reporting : the archive is kept as provenance
 
 wrapper -> wrapper : marshal each analytic's file into canonical rows
-wrapper -> store : upload the archive, canonical rows inside
+wrapper -> store : upload the rows to results_uri
+wrapper -> store : upload the archive to output_uri
 wf -> reporting : post_process_results(run)
-reporting -> store : fetch the canonical rows
-store --> reporting : rows
+reporting -> store : fetch results_uri
+store --> reporting : the canonical rows
 reporting -> results : COPY, one transaction
 reporting -> wf : the run's result summary
 @enduml

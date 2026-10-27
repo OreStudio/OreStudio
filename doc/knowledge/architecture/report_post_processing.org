@@ -122,12 +122,39 @@ The diagram draws the two calls: retrieval answers where the output is, the wrap
 marshals the engine's files into canonical rows beside the engine, and
 post-processing answers what the run says.
 
-#+caption: Report post-processing: the workflow asks for retrieval, which fetches the run's archive and keeps it as provenance; the wrapper marshals each analytic's file into canonical rows and uploads them with the archive; the workflow asks for post-processing, which fetches the rows, copies them into the result tables in one transaction and answers with the run's summary.
+#+caption: Report post-processing: the workflow asks for retrieval, which fetches the run's archive and keeps it as provenance; the wrapper marshals each analytic's file into canonical rows, uploads them to the results location the claim gave it, and uploads the archive beside them; the workflow asks for post-processing, which fetches the rows, copies them into the result tables in one transaction and answers with the run's summary.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/architecture/report_post_processing_interaction.png]]
 
 Source: [[proj:doc/knowledge/architecture/report_post_processing_interaction.puml][=report_post_processing_interaction.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/architecture/report_post_processing_interaction.puml=.
+
+** How the rows reach the results table
+
+The node does not post to the reporting service, and nothing writes the results
+table but the reporting service. The rows travel over the channel the node already
+has — object storage, over HTTP, with the token of the claim it holds — and the
+service fetches them in its own step.
+
+| Step | Who | Where the rows are |
++------+-----+--------------------+
+| Marshal | the wrapper, after the engine exits | in the job directory |
+| Upload | the wrapper, with the claim's token | object storage, at =results_uri= |
+| Upload | the wrapper, with the claim's token | object storage, at =output_uri=, the archive as provenance |
+| Load | the reporting service, on =post_process_results= | copied into the result table, in one transaction |
+
+The claim therefore carries two locations, not one: =output_uri= for the archive
+the grid already uploads, and =results_uri= for the canonical rows. The node
+composes neither key and names neither bucket; it writes to the two locations the
+claim gave it, which is what keeps a node's authority to exactly what it was
+granted for that job.
+
+A reporting endpoint that accepted rows from a node would add a write surface into
+reporting's data for a caller that holds no user's authority, and it would not
+save the validation the service has to do anyway: the rows still have to be read,
+checked against the contract, and written in one transaction by the component that
+owns the run. Storage is where a node is allowed to put things it produced; the
+service is what turns them into results.
 
 ** What a node may reach
 
@@ -140,7 +167,7 @@ rest of the system over the trusted machine channel of =compute.v1.ops=:
 | Reach | Why |
 +-------+-----+
 | the job directory | the package is extracted there and the engine writes =Output/= there |
-| object storage, over HTTP with the claim's token | to upload the archive it produces |
+| object storage, over HTTP with the claim's token | to upload the archive and the canonical rows |
 | =compute.v1.ops= claim, heartbeat and submit | to take work and to say what happened |
 | the database | not at all |
 | a user session, or a user's token | not at all |

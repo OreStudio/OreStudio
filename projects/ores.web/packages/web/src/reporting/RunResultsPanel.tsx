@@ -31,6 +31,7 @@ import {
     type RunResultRow,
 } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { Donut, type Share } from './Donut.js';
 import { bookPath, counterpartyPath, tradePath } from '../shell/paths.js';
 
 /**
@@ -233,6 +234,22 @@ export function RunResultsPanel({
     const reason = results.data?.reason ?? '';
     const filtering = bookFilter !== '' || counterpartyFilter !== '' || noBook;
     const tradeCount = results.data?.tradeCount ?? 0;
+    const bookShares: readonly Share[] = aggregates
+        .filter((row) => !row.is_group && !row.is_removed)
+        .map((row) => ({
+            name: row.name === '' ? row.key : row.name,
+            value: row.totals.reduce((sum, money) => {
+                const figure = Number.parseFloat(money.total);
+                return sum + (Number.isFinite(figure) ? Math.max(0, figure) : 0);
+            }, 0),
+        }))
+        .filter((share) => share.value > 0);
+    const problems: readonly Share[] = Object.entries(
+        (errors.data ?? []).map(toError).reduce<Record<string, number>>((counts, error) => {
+            const scope = error.scope === '' ? t(`${field}.unscoped`) : error.scope;
+            return { ...counts, [scope]: (counts[scope] ?? 0) + 1 };
+        }, {}),
+    ).map(([name, value]) => ({ name, value }));
     const filterName = noBook
         ? t(`${field}.unbooked`)
         : bookFilter !== ''
@@ -287,6 +304,14 @@ export function RunResultsPanel({
             </label>
             {results.isPending && <p className="text-sm text-ink-muted">{t('common.loading')}</p>}
             {results.isError && <p className="text-sm text-down">{t(`${field}.failed`)}</p>}
+            {results.isSuccess && problems.length > 0 && (
+                <Donut
+                    title={t(`${field}.problemsTitle`)}
+                    caption={t(`${field}.problemsCaption`)}
+                    parts={problems}
+                    format={(value) => String(value)}
+                />
+            )}
             {results.isSuccess && (
                 <>
                     {trades.length === 0 && aggregates.length === 0 ? (
@@ -380,6 +405,14 @@ export function RunResultsPanel({
                                         {t(`${field}.clearFilter`)}
                                     </button>
                                 </p>
+                            )}
+                            {level === 'book' && bookShares.length > 1 && (
+                                <Donut
+                                    title={t(`${field}.shareTitle`)}
+                                    caption={t(`${field}.shareCaption`)}
+                                    parts={bookShares}
+                                    format={(value) => asFigure(value.toFixed(2))}
+                                />
                             )}
                             {level === 'trade' ? (
                                 <TradeTable

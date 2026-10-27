@@ -5488,6 +5488,13 @@ export const en: SourceCatalogue = {
             errors: "Read this run's errors",
         },
         results: {
+            shareTitle: "Each book's share of the run",
+            shareCaption:
+                'One whole in a few parts is a donut. The figures are stated beside it, because a ring says the shape and not the value.',
+            problemsTitle: "The run's problems by scope",
+            problemsCaption:
+                'One whole in a few parts is a donut. Every problem the run recorded is counted here, whatever its scope.',
+            unscoped: 'No scope stated',
             was: 'Earlier run',
             compareTo: 'Compare to',
             noComparison: 'No comparison',

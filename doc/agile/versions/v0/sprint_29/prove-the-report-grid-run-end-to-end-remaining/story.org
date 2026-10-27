@@ -58,6 +58,7 @@ The ACME report definition runs to completion against the compute grid from an i
 | [[id:1379A7DF-8755-4314-A564-B4771A4C1B5F][Compare a run with an earlier one]] | DONE | | 2026-10-26 | A run's aggregate levels can be stated against an earlier completed run of the same report, with each row's change and share. |
 | [[id:9B64F464-EC3D-4B3F-B2B7-4DF1E7F321EA][Group books under their portfolios]] | DONE | | 2026-10-26 | The book level states each portfolio's rolled-up figure above the books it holds. |
 | [[id:EF671389-BF56-4635-A154-5FF2BC19BF57][Nest the portfolios into a tree]] | DONE | | 2026-10-26 | The book level reads as a tree: a global portfolio over banking books over the ports and books beneath them, each row rolled up from what it holds. |
+| [[id:4010067E-6BEB-4A54-9183-8736D264BFC7][Draw the plots the run can answer]] | DONE | | 2026-10-27 | The results screen draws a donut of each book's share of the run, and a donut of the run's problems by scope, each with its figures beside it. |
 
 * Decisions
 

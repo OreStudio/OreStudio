@@ -5573,6 +5573,13 @@ const fr: SourceCatalogue = {
             errors: 'Lire les erreurs de cette exécution',
         },
         results: {
+            shareTitle: "Part de chaque livre dans l'exécution",
+            shareCaption:
+                'Un tout en quelques parts se lit en anneau. Les chiffres sont à côté, car un anneau dit la forme et non la valeur.',
+            problemsTitle: "Les problèmes de l'exécution par portée",
+            problemsCaption:
+                'Un tout en quelques parts se lit en anneau. Chaque problème enregistré est compté ici, quelle que soit sa portée.',
+            unscoped: 'Portée non indiquée',
             was: 'Exécution précédente',
             compareTo: 'Comparer à',
             noComparison: 'Aucune comparaison',

@@ -1484,6 +1484,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_identifiers:read',                     'View trade identifiers');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_identifiers:write',                    'Create and modify trade identifiers');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_identifiers:delete',                   'Delete trade identifiers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::structure_identifiers:read',                   'View structure identifiers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::structure_identifiers:write',                  'Create and modify structure identifiers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::structure_identifiers:delete',                 'Delete structure identifiers');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_link_types:read',                      'View trade link types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_link_types:write',                     'Create and modify trade link types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::trade_link_types:delete',                    'Delete trade link types');

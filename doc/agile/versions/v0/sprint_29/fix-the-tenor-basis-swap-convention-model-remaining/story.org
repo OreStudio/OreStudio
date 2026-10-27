@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :msvc:c1202:refdata:codegen:dod:sprint_29:v0:
 #+created: 2026-10-24
-#+updated: 2026-10-26
+#+updated: 2026-10-27
 #+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -23,9 +23,9 @@ The tenor basis swap convention carries its identity, legs, coupon treatment, ma
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The field-group remodel is implemented; the database suites are the last gate. Split from [[id:9738A907-2C19-4B89-9B69-9411FA257F54][Fix the tenor basis swap convention model and the document TU]], which closed in sprint 28 with its done tasks. |
+| Now           | The field-group remodel is done; the document protocol split remains. Split from [[id:9738A907-2C19-4B89-9B69-9411FA257F54][Fix the tenor basis swap convention model and the document TU]], which closed in sprint 28 with its done tasks. |
 | Waiting on    | Nothing.                               |
-| Next          | Close the remodel task, then measure the document protocol's translation unit. |
+| Next          | Split the configuration document protocol by document family, and measure its translation unit. |
 | Last touched  | 2026-10-24                               |
 
 * Acceptance
@@ -38,7 +38,7 @@ The tenor basis swap convention carries its identity, legs, coupon treatment, ma
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:1AF6032A-F53E-4E56-8AD1-4CFA20020DFB][Remodel the tenor basis swap convention onto field groups]] | STARTED | 2026-10-26 | | Split the 24 flat members of tenor_basis_swap_convention into identity, two alternative leg forms, coupon treatment, market-data annex and change audit field groups, so no reflected literal is wide and no row carries the leg form it is not. |
+| [[id:1AF6032A-F53E-4E56-8AD1-4CFA20020DFB][Remodel the tenor basis swap convention onto field groups]] | DONE | 2026-10-26 | 2026-10-27 | Split the 24 flat members of tenor_basis_swap_convention into identity, two alternative leg forms, coupon treatment, market-data annex and change audit field groups, so no reflected literal is wide and no row carries the leg form it is not. |
 | [[id:2750EACD-6C84-485D-B32A-E41D2785F0DF][Split the configuration document protocol by document family]] | BACKLOG | | | Split configuration_document_protocol.hpp and its handler so each translation unit reaches one document family, and restore the Windows MSVC build without a compiler-flag workaround. |
 
 * Decisions

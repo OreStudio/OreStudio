@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-14
-#+updated: 2026-10-26
+#+updated: 2026-10-27
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,11 +26,11 @@ tenor_basis_swap_convention is generated from field-group models: its identity a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:EB412177-0504-4299-A332-903EB15DA560][Fix the tenor basis swap convention model and the document TU — the remaining work]] |
-| Now          | Implemented and building. The three rows are grouped, the family service writes grouped members, and the database suites are the last gate. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the refdata and ORE convention suites, then raise the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance
@@ -271,3 +271,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The convention family is grouped onto field groups and the generated family
+service writes and reads a grouped member.
+
+- The central row is identity, payload and the =ores.dq.audit_record= tail;
+  each part is a shared identity, one group per leg, its coupon treatment and
+  the same tail. Nine field-group models, every group two to five members.
+- The family view resolves a member's domain groups and names each column
+  through the group that carries it, which the composite family service had
+  refused before. Four templates follow the same path.
+- A grouped row is stamped through its members; without that the party stayed
+  nil and the database refused every write.
+- The tables, the columns, the write records and the wire shape are unchanged.
+  The seventeen seeded =TENOR_BASIS_SWAP= kind terms still name a real column.
+- =ores.dq.api= is a public dependency of =ores.refdata.api=, declared in the
+  component's own overview because the generated CMakeLists overwrites a hand
+  edit.
+
+Evidence at =2a7b6a303a=: codegen 1624 passed; drift sweep clean; refdata core
+466 cases and 5595 assertions; ORE core 394 cases and 475486 assertions; SQL
+unchanged. The Windows MSVC build has not been run.

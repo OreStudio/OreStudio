@@ -558,6 +558,7 @@ struct trade_generation_assignment {
     std::optional<std::chrono::year_month_day> as_of_date = {};
     std::optional<std::uint64_t> seed = {};
     std::optional<std::uint32_t> trades_per_book = {};
+    std::optional<std::uint32_t> structures_per_book = {};
 };
 
 /// The configs a generate_trades step records, in the order it records them.

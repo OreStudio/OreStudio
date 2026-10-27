@@ -19,15 +19,12 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/dataset_bundle_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/q/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/dataset_bundle.hpp"
 #include "ores.dq.api/domain/dataset_bundle_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
@@ -42,16 +39,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -60,13 +47,14 @@
 
 namespace ores::dq::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace q = ores::database::q;
+using namespace ores::database::q;
+using namespace ores::database::q::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string dataset_bundle_repository::sql() {
-    return generate_create_table_sql<dataset_bundle_entity>(lg());
+    return q::generate_create_table_sql<dataset_bundle_entity>(lg());
 }
 
 bool dataset_bundle_repository::is_sortable(std::string_view field) {
@@ -81,10 +69,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
-dataset_bundle_list_order(const ores::utility::domain::order& order,
-                          std::initializer_list<std::string> default_columns,
-                          bool default_descending) {
+q::order dataset_bundle_list_order(const ores::utility::domain::order& order,
+                                   std::initializer_list<std::string> default_columns,
+                                   bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!dataset_bundle_repository::is_sortable(order.field))
@@ -97,13 +84,13 @@ dataset_bundle_list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
+std::optional<q::condition>
 dataset_bundle_filter_condition(const std::optional<messaging::dataset_bundles_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<q::condition> r;
     if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<q::value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
@@ -186,7 +173,7 @@ void dataset_bundle_repository::write(
 
 std::vector<domain::dataset_bundle> dataset_bundle_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> |
+    const auto query = q::read<std::vector<dataset_bundle_entity>> |
                        where("valid_to"_c == max.value()) | order_by("id"_c);
 
     return execute_read_query<dataset_bundle_entity, domain::dataset_bundle>(
@@ -201,7 +188,7 @@ std::vector<domain::dataset_bundle> dataset_bundle_repository::read_latest(conte
                                                                            const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> |
+    const auto query = q::read<std::vector<dataset_bundle_entity>> |
                        where("id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<dataset_bundle_entity, domain::dataset_bundle>(
@@ -216,7 +203,7 @@ std::vector<domain::dataset_bundle>
 dataset_bundle_repository::read_latest_by_code(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle by code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> |
+    const auto query = q::read<std::vector<dataset_bundle_entity>> |
                        where("code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<dataset_bundle_entity, domain::dataset_bundle>(
@@ -230,8 +217,8 @@ dataset_bundle_repository::read_latest_by_code(context ctx, const std::string& c
 std::vector<domain::dataset_bundle>
 dataset_bundle_repository::read_any_by_code(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any dataset bundle by code: " << code;
-    const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> | where("code"_c == code) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+    const auto query = q::read<std::vector<dataset_bundle_entity>> | where("code"_c == code) |
+                       order_by("valid_from"_c.desc()) | q::limit(1);
 
     return execute_read_query<dataset_bundle_entity, domain::dataset_bundle>(
         ctx,
@@ -245,7 +232,7 @@ dataset_bundle_repository::read_any_by_code(context ctx, const std::string& code
 std::vector<domain::dataset_bundle> dataset_bundle_repository::read_all(context ctx,
                                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all dataset bundle versions. " << "id: " << id;
-    const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> | where("id"_c == id) |
+    const auto query = q::read<std::vector<dataset_bundle_entity>> | where("id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<dataset_bundle_entity, domain::dataset_bundle>(
@@ -260,8 +247,8 @@ std::optional<domain::dataset_bundle> dataset_bundle_repository::read_at_version
     context ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading dataset bundle at version. " << "id: " << id
                                << " version: " << version;
-    const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> |
-                       where("id"_c == id && "version"_c == version) | sqlgen::limit(1);
+    const auto query = q::read<std::vector<dataset_bundle_entity>> |
+                       where("id"_c == id && "version"_c == version) | q::limit(1);
 
     const auto entities = execute_read_query<dataset_bundle_entity, domain::dataset_bundle>(
         ctx,
@@ -291,7 +278,7 @@ dataset_bundle_repository::remove_status dataset_bundle_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<dataset_bundle_entity> |
+    const auto query = q::delete_from<dataset_bundle_entity> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
@@ -317,8 +304,8 @@ std::vector<domain::dataset_bundle> dataset_bundle_repository::read_latest(
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundles with offset: " << offset
                                << " and limit: " << limit;
-    const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+    const auto query =
+        q::read<std::vector<dataset_bundle_entity>> | q::offset(offset) | q::limit(limit);
 
     return execute_ordered_read_query<dataset_bundle_entity, domain::dataset_bundle>(
         ctx,
@@ -336,7 +323,7 @@ std::uint32_t dataset_bundle_repository::get_total_bundle_count(
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active dataset bundle count";
 
-    const auto query = sqlgen::read<std::vector<dataset_bundle_entity>>;
+    const auto query = q::read<std::vector<dataset_bundle_entity>>;
 
     return execute_count_query<dataset_bundle_entity>(
         ctx,
@@ -351,7 +338,7 @@ dataset_bundle_repository::read_latest(context ctx, const std::vector<std::strin
     if (ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> |
+    const auto query = q::read<std::vector<dataset_bundle_entity>> |
                        where("id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<dataset_bundle_entity, domain::dataset_bundle>(
         ctx,
@@ -373,7 +360,7 @@ void dataset_bundle_repository::remove(context ctx, const std::vector<std::strin
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<dataset_bundle_entity> |
+    const auto query = q::delete_from<dataset_bundle_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing dataset bundles.");
 }

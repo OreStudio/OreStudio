@@ -43,7 +43,7 @@ domain::badge_definition badge_definition_mapper::map(const badge_definition_ent
     domain::badge_definition r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

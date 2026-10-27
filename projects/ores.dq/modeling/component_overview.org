@@ -12,6 +12,7 @@
 #+full_name: ores.dq
 #+component_kind: composite
 #+parts: api core service
+#+repository_backend: libpq
 #+brief: Data-quality domain component
 
 * Summary

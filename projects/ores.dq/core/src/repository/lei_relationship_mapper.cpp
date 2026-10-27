@@ -43,7 +43,7 @@ domain::lei_relationship lei_relationship_mapper::map(const lei_relationship_ent
 
     domain::lei_relationship r;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.relationship_start_node_node_id = v.relationship_start_node_node_id.value();
+    r.relationship_start_node_node_id = v.relationship_start_node_node_id;
     r.relationship_start_node_node_id_type = v.relationship_start_node_node_id_type;
     r.relationship_end_node_node_id = v.relationship_end_node_node_id;
     r.relationship_end_node_node_id_type = v.relationship_end_node_node_id_type;

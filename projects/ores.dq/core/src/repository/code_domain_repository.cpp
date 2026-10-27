@@ -19,15 +19,12 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/code_domain_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/q/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/code_domain.hpp"
 #include "ores.dq.api/domain/code_domain_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/messaging/code_domain_protocol.hpp"
@@ -41,16 +38,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -59,13 +46,14 @@
 
 namespace ores::dq::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace q = ores::database::q;
+using namespace ores::database::q;
+using namespace ores::database::q::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string code_domain_repository::sql() {
-    return generate_create_table_sql<code_domain_entity>(lg());
+    return q::generate_create_table_sql<code_domain_entity>(lg());
 }
 
 bool code_domain_repository::is_sortable(std::string_view field) {
@@ -80,9 +68,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy code_domain_list_order(const ores::utility::domain::order& order,
-                                                std::initializer_list<std::string> default_columns,
-                                                bool default_descending) {
+q::order code_domain_list_order(const ores::utility::domain::order& order,
+                                std::initializer_list<std::string> default_columns,
+                                bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!code_domain_repository::is_sortable(order.field))
@@ -95,13 +83,13 @@ sqlgen::dynamic::OrderBy code_domain_list_order(const ores::utility::domain::ord
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
+std::optional<q::condition>
 code_domain_filter_condition(const std::optional<messaging::code_domains_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<q::condition> r;
     if (filter->code_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<q::value> values;
         for (const auto& v : *filter->code_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("code", std::move(values)));
@@ -181,7 +169,7 @@ void code_domain_repository::write(context ctx,
 std::vector<domain::code_domain> code_domain_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<code_domain_entity>> |
+    const auto query = q::read<std::vector<code_domain_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("code"_c);
 
@@ -199,7 +187,7 @@ std::vector<domain::code_domain> code_domain_repository::read_latest(context ctx
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<code_domain_entity>> |
+        q::read<std::vector<code_domain_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<code_domain_entity, domain::code_domain>(
@@ -215,7 +203,7 @@ std::vector<domain::code_domain> code_domain_repository::read_all(context ctx,
                                                                   const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all code domain versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<code_domain_entity>> |
+    const auto query = q::read<std::vector<code_domain_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
@@ -233,9 +221,9 @@ std::optional<domain::code_domain> code_domain_repository::read_at_version(conte
     BOOST_LOG_SEV(lg(), debug) << "Reading code domain at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<code_domain_entity>> |
+    const auto query = q::read<std::vector<code_domain_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
-                       sqlgen::limit(1);
+                       q::limit(1);
 
     const auto entities = execute_read_query<code_domain_entity, domain::code_domain>(
         ctx,
@@ -265,7 +253,7 @@ code_domain_repository::remove_status code_domain_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<code_domain_entity> |
+    const auto query = q::delete_from<code_domain_entity> |
                        where("tenant_id"_c == tid && "code"_c == code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
@@ -292,8 +280,8 @@ code_domain_repository::read_latest(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest code domains with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<code_domain_entity>> | where("tenant_id"_c == tid) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = q::read<std::vector<code_domain_entity>> | where("tenant_id"_c == tid) |
+                       q::offset(offset) | q::limit(limit);
 
     return execute_ordered_read_query<code_domain_entity, domain::code_domain>(
         ctx,
@@ -312,7 +300,7 @@ std::uint32_t code_domain_repository::get_total_domain_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active code domain count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<code_domain_entity>> | where("tenant_id"_c == tid);
+    const auto query = q::read<std::vector<code_domain_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<code_domain_entity>(
         ctx,
@@ -329,7 +317,7 @@ code_domain_repository::read_latest(context ctx, const std::vector<std::string>&
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::read<std::vector<code_domain_entity>> |
+        q::read<std::vector<code_domain_entity>> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
     auto result = execute_read_query<code_domain_entity, domain::code_domain>(
         ctx,
@@ -352,7 +340,7 @@ void code_domain_repository::remove(context ctx, const std::vector<std::string>&
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::delete_from<code_domain_entity> |
+        q::delete_from<code_domain_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing code domains.");
 }

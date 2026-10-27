@@ -42,7 +42,7 @@ domain::badge_severity badge_severity_mapper::map(const badge_severity_entity& v
     domain::badge_severity r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
 
     r.name = v.name;
 

@@ -31,7 +31,7 @@ domain::dataset_dependency dataset_dependency_mapper::map(const dataset_dependen
 
     domain::dataset_dependency r;
     r.tenant_id = v.tenant_id;
-    r.dataset_code = v.dataset_code.value();
+    r.dataset_code = v.dataset_code;
     r.dependency_code = v.dependency_code;
     r.role = v.role;
     r.modified_by = v.modified_by;

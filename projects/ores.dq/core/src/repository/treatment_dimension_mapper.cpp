@@ -42,7 +42,7 @@ domain::treatment_dimension treatment_dimension_mapper::map(const treatment_dime
     domain::treatment_dimension r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.name = v.name;
     r.description = v.description;
     r.modified_by = v.modified_by;

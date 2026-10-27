@@ -25,8 +25,8 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_DATASET_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_DATASET_ENTITY_HPP
 
+#include "ores.database/q/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct dataset_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_dq_datasets_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
 
@@ -72,6 +72,35 @@ struct dataset_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = dataset_entity;
+        namespace q = ores::database::q;
+        return q::columns<e>() | q::key("id", &e::id) | q::bind("tenant_id", &e::tenant_id) |
+               q::bind("version", &e::version) | q::bind("code", &e::code) |
+               q::bind("catalog_name", &e::catalog_name) |
+               q::bind("subject_area_name", &e::subject_area_name) |
+               q::bind("domain_name", &e::domain_name) |
+               q::bind("coding_scheme_code", &e::coding_scheme_code) |
+               q::bind("origin_code", &e::origin_code) | q::bind("nature_code", &e::nature_code) |
+               q::bind("treatment_code", &e::treatment_code) |
+               q::bind("methodology_id", &e::methodology_id) | q::bind("name", &e::name) |
+               q::bind("description", &e::description) |
+               q::bind("source_system_id", &e::source_system_id) |
+               q::bind("business_context", &e::business_context) |
+               q::bind("upstream_derivation_id", &e::upstream_derivation_id) |
+               q::bind("lineage_depth", &e::lineage_depth) | q::bind("as_of_date", &e::as_of_date) |
+               q::bind("ingestion_timestamp", &e::ingestion_timestamp) |
+               q::bind("license_info", &e::license_info) |
+               q::bind("artefact_type", &e::artefact_type) |
+               q::bind("modified_by", &e::modified_by) | q::bind("performed_by", &e::performed_by) |
+               q::bind("change_reason_code", &e::change_reason_code) |
+               q::bind("change_commentary", &e::change_commentary) |
+               q::bind("valid_from", &e::valid_from) | q::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const dataset_entity& v);

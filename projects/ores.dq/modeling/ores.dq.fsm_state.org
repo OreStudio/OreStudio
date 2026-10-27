@@ -191,7 +191,7 @@ fsm_state_repository::read_latest_by_machine_name(context ctx,
         return {};
     }
 
-    const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
+    const auto query = q::read<std::vector<fsm_state_entity>> |
                        where("machine_id"_c == machine_ids.front() &&
                              "valid_to"_c == max.value()) |
                        order_by("name"_c);

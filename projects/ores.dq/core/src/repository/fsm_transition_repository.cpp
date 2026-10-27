@@ -19,15 +19,12 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/fsm_transition_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/q/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/fsm_transition.hpp"
 #include "ores.dq.api/domain/fsm_transition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/messaging/fsm_transition_protocol.hpp"
@@ -42,16 +39,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -60,13 +47,14 @@
 
 namespace ores::dq::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace q = ores::database::q;
+using namespace ores::database::q;
+using namespace ores::database::q::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string fsm_transition_repository::sql() {
-    return generate_create_table_sql<fsm_transition_entity>(lg());
+    return q::generate_create_table_sql<fsm_transition_entity>(lg());
 }
 
 bool fsm_transition_repository::is_sortable(std::string_view field) {
@@ -81,10 +69,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy
-fsm_transition_list_order(const ores::utility::domain::order& order,
-                          std::initializer_list<std::string> default_columns,
-                          bool default_descending) {
+q::order fsm_transition_list_order(const ores::utility::domain::order& order,
+                                   std::initializer_list<std::string> default_columns,
+                                   bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!fsm_transition_repository::is_sortable(order.field))
@@ -97,13 +84,13 @@ fsm_transition_list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
+std::optional<q::condition>
 fsm_transition_filter_condition(const std::optional<messaging::fsm_transitions_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<q::condition> r;
     if (filter->id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<q::value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
@@ -186,7 +173,7 @@ void fsm_transition_repository::write(
 
 std::vector<domain::fsm_transition> fsm_transition_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<fsm_transition_entity>> |
+    const auto query = q::read<std::vector<fsm_transition_entity>> |
                        where("valid_to"_c == max.value()) | order_by("id"_c);
 
     return execute_read_query<fsm_transition_entity, domain::fsm_transition>(
@@ -201,7 +188,7 @@ std::vector<domain::fsm_transition> fsm_transition_repository::read_latest(conte
                                                                            const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm transition. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<fsm_transition_entity>> |
+    const auto query = q::read<std::vector<fsm_transition_entity>> |
                        where("id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<fsm_transition_entity, domain::fsm_transition>(
@@ -216,7 +203,7 @@ std::vector<domain::fsm_transition>
 fsm_transition_repository::read_latest_by_name(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm transition by name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<fsm_transition_entity>> |
+    const auto query = q::read<std::vector<fsm_transition_entity>> |
                        where("name"_c == name && "valid_to"_c == max.value());
 
     return execute_read_query<fsm_transition_entity, domain::fsm_transition>(
@@ -230,8 +217,8 @@ fsm_transition_repository::read_latest_by_name(context ctx, const std::string& n
 std::vector<domain::fsm_transition>
 fsm_transition_repository::read_any_by_name(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any fsm transition by name: " << name;
-    const auto query = sqlgen::read<std::vector<fsm_transition_entity>> | where("name"_c == name) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+    const auto query = q::read<std::vector<fsm_transition_entity>> | where("name"_c == name) |
+                       order_by("valid_from"_c.desc()) | q::limit(1);
 
     return execute_read_query<fsm_transition_entity, domain::fsm_transition>(
         ctx,
@@ -245,7 +232,7 @@ fsm_transition_repository::read_any_by_name(context ctx, const std::string& name
 std::vector<domain::fsm_transition> fsm_transition_repository::read_all(context ctx,
                                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all fsm transition versions. " << "id: " << id;
-    const auto query = sqlgen::read<std::vector<fsm_transition_entity>> | where("id"_c == id) |
+    const auto query = q::read<std::vector<fsm_transition_entity>> | where("id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<fsm_transition_entity, domain::fsm_transition>(
@@ -260,8 +247,8 @@ std::optional<domain::fsm_transition> fsm_transition_repository::read_at_version
     context ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading fsm transition at version. " << "id: " << id
                                << " version: " << version;
-    const auto query = sqlgen::read<std::vector<fsm_transition_entity>> |
-                       where("id"_c == id && "version"_c == version) | sqlgen::limit(1);
+    const auto query = q::read<std::vector<fsm_transition_entity>> |
+                       where("id"_c == id && "version"_c == version) | q::limit(1);
 
     const auto entities = execute_read_query<fsm_transition_entity, domain::fsm_transition>(
         ctx,
@@ -291,7 +278,7 @@ fsm_transition_repository::remove_status fsm_transition_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<fsm_transition_entity> |
+    const auto query = q::delete_from<fsm_transition_entity> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
@@ -317,8 +304,8 @@ std::vector<domain::fsm_transition> fsm_transition_repository::read_latest(
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm transitions with offset: " << offset
                                << " and limit: " << limit;
-    const auto query = sqlgen::read<std::vector<fsm_transition_entity>> | sqlgen::offset(offset) |
-                       sqlgen::limit(limit);
+    const auto query =
+        q::read<std::vector<fsm_transition_entity>> | q::offset(offset) | q::limit(limit);
 
     return execute_ordered_read_query<fsm_transition_entity, domain::fsm_transition>(
         ctx,
@@ -336,7 +323,7 @@ std::uint32_t fsm_transition_repository::get_total_transition_count(
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active fsm transition count";
 
-    const auto query = sqlgen::read<std::vector<fsm_transition_entity>>;
+    const auto query = q::read<std::vector<fsm_transition_entity>>;
 
     return execute_count_query<fsm_transition_entity>(
         ctx,
@@ -351,7 +338,7 @@ fsm_transition_repository::read_latest(context ctx, const std::vector<std::strin
     if (ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<fsm_transition_entity>> |
+    const auto query = q::read<std::vector<fsm_transition_entity>> |
                        where("id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<fsm_transition_entity, domain::fsm_transition>(
         ctx,
@@ -373,7 +360,7 @@ void fsm_transition_repository::remove(context ctx, const std::vector<std::strin
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<fsm_transition_entity> |
+    const auto query = q::delete_from<fsm_transition_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing fsm transitions.");
 }

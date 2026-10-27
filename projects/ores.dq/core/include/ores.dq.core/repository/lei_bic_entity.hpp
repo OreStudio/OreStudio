@@ -25,8 +25,8 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_LEI_BIC_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_LEI_BIC_ENTITY_HPP
 
+#include "ores.database/q/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,9 +42,19 @@ struct lei_bic_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_dq_lei_bic_artefact_tbl";
 
-    sqlgen::PrimaryKey<std::string> lei;
+    std::string lei;
     std::string tenant_id;
     std::string bic;
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = lei_bic_entity;
+        namespace q = ores::database::q;
+        return q::columns<e>() | q::key("lei", &e::lei) | q::bind("tenant_id", &e::tenant_id) |
+               q::bind("bic", &e::bic);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const lei_bic_entity& v);

@@ -20,8 +20,8 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_DATASET_DEPENDENCY_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_DATASET_DEPENDENCY_ENTITY_HPP
 
+#include "ores.database/q/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <string>
 
 namespace ores::dq::repository {
@@ -35,7 +35,7 @@ struct dataset_dependency_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_dq_dataset_dependencies_tbl";
 
-    sqlgen::PrimaryKey<std::string> dataset_code;
+    std::string dataset_code;
     std::string tenant_id;
     std::string dependency_code;
     std::string role;
@@ -44,6 +44,21 @@ struct dataset_dependency_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = dataset_dependency_entity;
+        namespace q = ores::database::q;
+        return q::columns<e>() | q::key("dataset_code", &e::dataset_code) |
+               q::bind("tenant_id", &e::tenant_id) |
+               q::bind("dependency_code", &e::dependency_code) | q::bind("role", &e::role) |
+               q::bind("modified_by", &e::modified_by) |
+               q::bind("change_reason_code", &e::change_reason_code) |
+               q::bind("change_commentary", &e::change_commentary) |
+               q::bind("valid_from", &e::valid_from) | q::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const dataset_dependency_entity& v);

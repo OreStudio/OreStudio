@@ -25,8 +25,8 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_DATASET_BUNDLE_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_DATASET_BUNDLE_ENTITY_HPP
 
+#include "ores.database/q/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct dataset_bundle_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_dq_dataset_bundles_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    std::string id;
     std::string tenant_id;
     int version = 0;
 
@@ -58,6 +58,21 @@ struct dataset_bundle_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = dataset_bundle_entity;
+        namespace q = ores::database::q;
+        return q::columns<e>() | q::key("id", &e::id) | q::bind("tenant_id", &e::tenant_id) |
+               q::bind("version", &e::version) | q::bind("code", &e::code) |
+               q::bind("name", &e::name) | q::bind("description", &e::description) |
+               q::bind("modified_by", &e::modified_by) | q::bind("performed_by", &e::performed_by) |
+               q::bind("change_reason_code", &e::change_reason_code) |
+               q::bind("change_commentary", &e::change_commentary) |
+               q::bind("valid_from", &e::valid_from) | q::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const dataset_bundle_entity& v);

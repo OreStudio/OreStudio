@@ -43,7 +43,7 @@ domain::coding_scheme coding_scheme_mapper::map(const coding_scheme_entity& v) {
     domain::coding_scheme r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.code = v.code.value();
+    r.code = v.code;
     r.name = v.name;
     r.authority_type = v.authority_type;
     r.subject_area_name = v.subject_area_name;

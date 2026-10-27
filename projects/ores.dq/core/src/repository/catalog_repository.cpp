@@ -19,15 +19,12 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_domain_type_repository.cpp.mustache
+ * Template: cpp_domain_type_repository_pq.cpp.mustache
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/catalog_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/q/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
-#include "ores.database/repository/stated_order.hpp"
-#include "ores.database/repository/valid_at.hpp"
 #include "ores.dq.api/domain/catalog.hpp"
 #include "ores.dq.api/domain/catalog_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
@@ -41,16 +38,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
-#include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
-#include <sqlgen/limit.hpp>
-#include <sqlgen/literals.hpp>
-#include <sqlgen/offset.hpp>
-#include <sqlgen/order_by.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/where.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -59,13 +46,14 @@
 
 namespace ores::dq::repository {
 
-using namespace sqlgen;
-using namespace sqlgen::literals;
+namespace q = ores::database::q;
+using namespace ores::database::q;
+using namespace ores::database::q::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string catalog_repository::sql() {
-    return generate_create_table_sql<catalog_entity>(lg());
+    return q::generate_create_table_sql<catalog_entity>(lg());
 }
 
 bool catalog_repository::is_sortable(std::string_view field) {
@@ -80,9 +68,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-sqlgen::dynamic::OrderBy catalog_list_order(const ores::utility::domain::order& order,
-                                            std::initializer_list<std::string> default_columns,
-                                            bool default_descending) {
+q::order catalog_list_order(const ores::utility::domain::order& order,
+                            std::initializer_list<std::string> default_columns,
+                            bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"name"});
     if (!catalog_repository::is_sortable(order.field))
@@ -94,13 +82,13 @@ sqlgen::dynamic::OrderBy catalog_list_order(const ores::utility::domain::order& 
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<sqlgen::dynamic::Condition>
+std::optional<q::condition>
 catalog_filter_condition(const std::optional<messaging::catalogs_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
+    std::vector<q::condition> r;
     if (filter->name_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
+        std::vector<q::value> values;
         for (const auto& v : *filter->name_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("name", std::move(values)));
@@ -179,8 +167,8 @@ void catalog_repository::write(context ctx,
 
 std::vector<domain::catalog> catalog_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<catalog_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("name"_c);
+    const auto query = q::read<std::vector<catalog_entity>> | where("valid_to"_c == max.value()) |
+                       order_by("name"_c);
 
     return execute_read_query<catalog_entity, domain::catalog>(
         ctx,
@@ -193,7 +181,7 @@ std::vector<domain::catalog> catalog_repository::read_latest(context ctx) {
 std::vector<domain::catalog> catalog_repository::read_latest(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest catalog. " << "name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<catalog_entity>> |
+    const auto query = q::read<std::vector<catalog_entity>> |
                        where("name"_c == name && "valid_to"_c == max.value());
 
     return execute_read_query<catalog_entity, domain::catalog>(
@@ -207,7 +195,7 @@ std::vector<domain::catalog> catalog_repository::read_latest(context ctx, const 
 
 std::vector<domain::catalog> catalog_repository::read_all(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all catalog versions. " << "name: " << name;
-    const auto query = sqlgen::read<std::vector<catalog_entity>> | where("name"_c == name) |
+    const auto query = q::read<std::vector<catalog_entity>> | where("name"_c == name) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<catalog_entity, domain::catalog>(
@@ -222,8 +210,8 @@ std::optional<domain::catalog>
 catalog_repository::read_at_version(context ctx, const std::string& name, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading catalog at version. " << "name: " << name
                                << " version: " << version;
-    const auto query = sqlgen::read<std::vector<catalog_entity>> |
-                       where("name"_c == name && "version"_c == version) | sqlgen::limit(1);
+    const auto query = q::read<std::vector<catalog_entity>> |
+                       where("name"_c == name && "version"_c == version) | q::limit(1);
 
     const auto entities = execute_read_query<catalog_entity, domain::catalog>(
         ctx,
@@ -254,7 +242,7 @@ catalog_repository::remove_status catalog_repository::remove(context ctx,
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<catalog_entity> |
+    const auto query = q::delete_from<catalog_entity> |
                        where("tenant_id"_c == tid && "name"_c == name &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
@@ -280,8 +268,7 @@ catalog_repository::read_latest(context ctx,
                                 const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest catalogs with offset: " << offset
                                << " and limit: " << limit;
-    const auto query =
-        sqlgen::read<std::vector<catalog_entity>> | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto query = q::read<std::vector<catalog_entity>> | q::offset(offset) | q::limit(limit);
 
     return execute_ordered_read_query<catalog_entity, domain::catalog>(
         ctx,
@@ -299,7 +286,7 @@ catalog_repository::get_total_catalog_count(context ctx,
                                             const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active catalog count";
 
-    const auto query = sqlgen::read<std::vector<catalog_entity>>;
+    const auto query = q::read<std::vector<catalog_entity>>;
 
     return execute_count_query<catalog_entity>(
         ctx,
@@ -314,7 +301,7 @@ catalog_repository::read_latest(context ctx, const std::vector<std::string>& nam
     if (names.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<catalog_entity>> |
+    const auto query = q::read<std::vector<catalog_entity>> |
                        where("name"_c.in(names) && "valid_to"_c == max.value());
     auto result = execute_read_query<catalog_entity, domain::catalog>(
         ctx,
@@ -337,7 +324,7 @@ void catalog_repository::remove(context ctx, const std::vector<std::string>& nam
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        sqlgen::delete_from<catalog_entity> |
+        q::delete_from<catalog_entity> |
         where("tenant_id"_c == tid && "name"_c.in(names) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing catalogs.");
 }

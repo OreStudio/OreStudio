@@ -25,8 +25,8 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_DATA_DOMAIN_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_DATA_DOMAIN_ENTITY_HPP
 
+#include "ores.database/q/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
@@ -42,7 +42,7 @@ struct data_domain_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_dq_data_domains_tbl";
 
-    sqlgen::PrimaryKey<std::string> name;
+    std::string name;
     std::string tenant_id;
     int version = 0;
     std::string description;
@@ -52,6 +52,20 @@ struct data_domain_entity {
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
+
+    /**
+     * @brief The columns of the table, named as the members, with the key.
+     */
+    static constexpr auto columns() {
+        using e = data_domain_entity;
+        namespace q = ores::database::q;
+        return q::columns<e>() | q::key("name", &e::name) | q::bind("tenant_id", &e::tenant_id) |
+               q::bind("version", &e::version) | q::bind("description", &e::description) |
+               q::bind("modified_by", &e::modified_by) | q::bind("performed_by", &e::performed_by) |
+               q::bind("change_reason_code", &e::change_reason_code) |
+               q::bind("change_commentary", &e::change_commentary) |
+               q::bind("valid_from", &e::valid_from) | q::bind("valid_to", &e::valid_to);
+    }
 };
 
 std::ostream& operator<<(std::ostream& s, const data_domain_entity& v);

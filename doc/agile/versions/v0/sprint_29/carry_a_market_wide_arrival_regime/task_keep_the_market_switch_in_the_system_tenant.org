@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: D84C9FBA-F332-4379-8BB3-28E5A9DBDA3C
+:END:
+#+title: Task: Keep the market switch in the system tenant
+#+description: The pin checked only the permission to run feeds, so a tenant administrator could set the whole installation's market. Only the system tenant sets the market, as only it starts a system feed; a tenant reads the market and sees no switch.
+#+type: task
+#+level: s1
+#+filetags: :carry_a_market_wide_arrival_regime:sprint_29:v0:
+#+owner: marco
+#+branch: feature/keep-the-market-switch-in-the-system-tenant
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The market belongs to the installation: only the system tenant pins it, and a tenant reads it without a switch.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+- The service refuses a pin from any tenant but the system tenant.
+- The Market regime tab offers the switch to a system session only, and tells a tenant who sets the market.
+- The harness pins as the system administrator and checks a tenant sees no switch.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| A tenant's pin | refused: the server refused synthetic.v1.ops.pin_market_regime: forbidden | shell as tenant_admin@acme_corporation, =synthetic regime pin calm= | e4c54af59f |
+| Harness | 7 passed: a tenant reads the market and sees no switch; the system administrator sees one state in force, pins and hands back | =npx playwright test tests/market-regime.spec.ts= | e4c54af59f |
+| Web synthetic tests | 199 passed, one new for a tenant's view | =npx vitest run src/marketdata/synthetic= | e4c54af59f |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The market is the installation's, and only the system tenant sets it now, as
+only the system tenant starts a system feed. A tenant administrator's pin from
+the shell is refused as forbidden, and the Market regime tab shows a tenant the
+market read-only, with a line saying the system administrator sets it, while a
+system session keeps the switch. The gap came with the task that first put the
+switch on the feeds screen, which checked the permission to run feeds and not
+the tenant.

@@ -71,7 +71,8 @@ void stage(ores::database::context ctx,
 
 }
 
-TEST_CASE("a part staged before its central row still commits into one row each", "[bundle_import][database]") {
+TEST_CASE("a part staged before its central row still commits into one row each",
+          "[bundle_import][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     boost::uuids::random_generator uuid;
@@ -109,7 +110,8 @@ TEST_CASE("a part staged before its central row still commits into one row each"
     CHECK(held_parts.front().convention_id == held.front().id);
 }
 
-TEST_CASE("a commit that cannot decode a family leaves the import staging", "[bundle_import][database]") {
+TEST_CASE("a commit that cannot decode a family leaves the import staging",
+          "[bundle_import][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     boost::uuids::random_generator uuid;

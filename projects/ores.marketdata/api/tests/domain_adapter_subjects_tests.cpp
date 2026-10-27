@@ -36,7 +36,8 @@ TEST_CASE("the_control_subjects_encode_an_awkward_adapter_id", "[domain][adapter
           "marketdata.v1.adapters.ore%20sim%2E1.heartbeat");
 }
 
-TEST_CASE("an_ingress_subject_holds_one_token_for_the_adapter_and_one_for_the_id", "[domain][adapter_subjects]") {
+TEST_CASE("an_ingress_subject_holds_one_token_for_the_adapter_and_one_for_the_id",
+          "[domain][adapter_subjects]") {
     const auto subject = adapter_ingress_subject("bloomberg-sim", "EURUSD Curncy");
     CHECK(subject == "marketdata.v1.ingress.bloomberg-sim.EURUSD%20Curncy");
 }
@@ -70,7 +71,8 @@ TEST_CASE("an_ingress_subject_gives_its_adapter_and_id_back", "[domain][adapter_
     }
 }
 
-TEST_CASE("a_subject_that_is_not_an_ingress_subject_gives_nothing_back", "[domain][adapter_subjects]") {
+TEST_CASE("a_subject_that_is_not_an_ingress_subject_gives_nothing_back",
+          "[domain][adapter_subjects]") {
     CHECK_FALSE(adapter_ingress_subject_parts("marketdata.v1.adapters.announce").has_value());
     CHECK_FALSE(adapter_ingress_subject_parts("marketdata.v1.ingress.only").has_value());
     CHECK_FALSE(adapter_ingress_subject_parts("marketdata.v1.ingress.a.b.c").has_value());

@@ -131,7 +131,8 @@ TEST_CASE("sync host run follows the parse result", "[host_runner]") {
     REQUIRE(accepting_runs == 1);
 }
 
-TEST_CASE("sync host run returns the early exit code without running the application", "[host_runner]") {
+TEST_CASE("sync host run returns the early exit code without running the application",
+          "[host_runner]") {
     std::ostringstream output;
     auto lg(ores::logging::make_logger(test_suite));
     bool ran = false;

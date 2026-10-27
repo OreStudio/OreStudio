@@ -52,7 +52,8 @@ const std::string set_up_tenant_row_id("719e8f00-aa85-456e-a43b-735a6f1ce4e0");
 
 }
 
-TEST_CASE("has_tenant_of_its_own_is_false_for_a_deployment_with_only_the_system_tenant", "[tenant]") {
+TEST_CASE("has_tenant_of_its_own_is_false_for_a_deployment_with_only_the_system_tenant",
+          "[tenant]") {
     CHECK_FALSE(has_tenant_of_its_own({}));
     CHECK_FALSE(has_tenant_of_its_own({registry_row(system_row_id, "system")}));
 }

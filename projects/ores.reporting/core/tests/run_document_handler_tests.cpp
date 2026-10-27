@@ -125,7 +125,8 @@ using namespace ores::reporting::messaging;
 using ores::testing::decode_reply;
 using ores::testing::request;
 
-TEST_CASE("a run document saves, binds, reads back and deletes through the operations", "[reporting][run_document][handler]") {
+TEST_CASE("a run document saves, binds, reads back and deletes through the operations",
+          "[reporting][run_document][handler]") {
     fixture f;
     const auto token = f.token(all_permissions);
     const auto definition = make_definition(f, f.party);
@@ -187,7 +188,8 @@ TEST_CASE("a run document saves, binds, reads back and deletes through the opera
     CHECK_FALSE(gone->success);
 }
 
-TEST_CASE("a party cannot store a run on another party's definition", "[reporting][run_document][handler]") {
+TEST_CASE("a party cannot store a run on another party's definition",
+          "[reporting][run_document][handler]") {
     fixture f;
     auto gen = ores::testing::make_generation_context(f.db);
     auto other = ores::refdata::generators::generate_synthetic_party(gen);
@@ -206,7 +208,8 @@ TEST_CASE("a party cannot store a run on another party's definition", "[reportin
     CHECK_FALSE(saved->success);
 }
 
-TEST_CASE("a session that acts for no party cannot change a run, but can read it", "[reporting][run_document][handler]") {
+TEST_CASE("a session that acts for no party cannot change a run, but can read it",
+          "[reporting][run_document][handler]") {
     fixture f;
     const auto definition = make_definition(f, f.party);
     const auto party_token = f.token(all_permissions);

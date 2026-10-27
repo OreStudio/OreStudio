@@ -94,7 +94,8 @@ using ores::reporting::repository::report_instance_repository;
 using ores::reporting::service::report_instance_service;
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("a list shows production instances unless the caller asks for a kind", "[service][integration]") {
+TEST_CASE("a list shows production instances unless the caller asks for a kind",
+          "[service][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -196,7 +197,8 @@ TEST_CASE("a list of runs answers only the definitions it is asked for", "[servi
     CHECK(lists(both.instances, second.id));
 }
 
-TEST_CASE("two definitions and three runs read as two rows, each the latest run", "[service][integration]") {
+TEST_CASE("two definitions and three runs read as two rows, each the latest run",
+          "[service][integration]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

@@ -182,7 +182,8 @@ TEST_CASE("every_interval_carries_the_actor_and_a_reason", "[app][usage_planner]
     }
 }
 
-TEST_CASE("an_item_that_enters_the_demand_opens_an_interval_and_one_that_leaves_closes_it", "[app][usage_planner]") {
+TEST_CASE("an_item_that_enters_the_demand_opens_an_interval_and_one_that_leaves_closes_it",
+          "[app][usage_planner]") {
     fixture f;
     const auto eur = f.item("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
     const auto gbp = f.item("oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
@@ -206,7 +207,8 @@ TEST_CASE("an_item_that_stays_in_the_demand_keeps_its_interval", "[app][usage_pl
     CHECK(plan.to_close.empty());
 }
 
-TEST_CASE("the_states_come_from_the_routes_that_hold_a_subscription_with_a_right", "[app][usage_planner]") {
+TEST_CASE("the_states_come_from_the_routes_that_hold_a_subscription_with_a_right",
+          "[app][usage_planner]") {
     fixture f;
     demand_catalogue c;
     ores::marketdata::domain::route routed;

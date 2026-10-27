@@ -70,7 +70,8 @@ std::vector<std::string> events_for(scoped_database_helper& h,
 
 }
 
-TEST_CASE("an_administrator_enters_a_tenant_reading_only_as_its_system_party", "[service][tenant_session]") {
+TEST_CASE("an_administrator_enters_a_tenant_reading_only_as_its_system_party",
+          "[service][tenant_session]") {
     scoped_database_helper h;
     auto sign = signer();
     tenant_session_service svc(h.context(), sign, std::chrono::seconds{600});
@@ -95,7 +96,8 @@ TEST_CASE("an_administrator_enters_a_tenant_reading_only_as_its_system_party", "
     CHECK(events_for(h, caller.account_id) == std::vector<std::string>{"tenant_entered"});
 }
 
-TEST_CASE("the_tenant_session_carries_only_the_reads_the_administrator_holds", "[service][tenant_session]") {
+TEST_CASE("the_tenant_session_carries_only_the_reads_the_administrator_holds",
+          "[service][tenant_session]") {
     const std::vector<std::string> catalogue{"iam::accounts:read",
                                              "iam::accounts:write",
                                              "refdata::parties:delete",

@@ -377,7 +377,8 @@ TEST_CASE("registry_register_kind_validates_what_a_kind_must_supply", "[feed_kin
     CHECK_THROWS_AS(registry.register_kind(stub_kind(stub_permission)), std::invalid_argument);
 }
 
-TEST_CASE("registry_permits_all_configs_is_derived_from_the_registrations", "[feed_kind_registry]") {
+TEST_CASE("registry_permits_all_configs_is_derived_from_the_registrations",
+          "[feed_kind_registry]") {
     stub_fixture f;
     feed_kind_registry registry(feed_kind_registry::deps{.factory = &f.factory});
     registry.register_kind(stub_kind(stub_permission));
@@ -401,7 +402,8 @@ TEST_CASE("registry_permits_all_configs_is_derived_from_the_registrations", "[fe
     CHECK(registry.permits_all_configs(f.ctx));
 }
 
-TEST_CASE("registry_make_feed_applies_the_gate_and_builds_through_the_factory", "[feed_kind_registry]") {
+TEST_CASE("registry_make_feed_applies_the_gate_and_builds_through_the_factory",
+          "[feed_kind_registry]") {
     stub_fixture f;
     const auto registry = f.registry;
     const ores::synthetic::feed::feed_build_context bctx{f.nats, f.auth_nats};
@@ -574,7 +576,8 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", "[feed_kind_registry]"
     }
 }
 
-TEST_CASE("client_message_tells_the_caller_its_own_mistake_and_nothing_else", "[feed_kind_registry]") {
+TEST_CASE("client_message_tells_the_caller_its_own_mistake_and_nothing_else",
+          "[feed_kind_registry]") {
     using ores::synthetic::service::client_message;
     CHECK(client_message(std::invalid_argument("The half-life must be longer than zero.")) ==
           "The half-life must be longer than zero.");

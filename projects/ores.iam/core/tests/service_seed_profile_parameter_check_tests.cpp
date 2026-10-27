@@ -101,7 +101,8 @@ TEST_CASE("check_parameters_refuses_a_required_parameter_stated_as_empty_rather_
     CHECK(checked.refusal == "The parameter 'counterparty_size' is required and has no value.");
 }
 
-TEST_CASE("check_parameters_refuses_a_value_outside_a_choice_parameters_choices", "[seed_profile]") {
+TEST_CASE("check_parameters_refuses_a_value_outside_a_choice_parameters_choices",
+          "[seed_profile]") {
     const auto checked = check_parameters(
         declared_parameters(), {"root_lei=9695ACMEGROUP0000030", "counterparty_size=huge"});
 
@@ -189,7 +190,8 @@ TEST_CASE("check_parameters_refuses_a_parameter_supplied_more_than_once", "[seed
     CHECK(checked.refusal == "The parameter 'root_lei' is supplied more than once.");
 }
 
-TEST_CASE("check_parameters_refuses_a_parameter_whose_declared_type_it_does_not_know", "[seed_profile]") {
+TEST_CASE("check_parameters_refuses_a_parameter_whose_declared_type_it_does_not_know",
+          "[seed_profile]") {
     auto declared = declared_parameters();
     declared[1].data_type = "counterparty";
 

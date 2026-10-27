@@ -76,7 +76,8 @@ TEST_CASE("build_single_flat_file_produces_one_book", "[ore][hierarchy][hierarch
     CHECK(nodes[0].source_files[0] == root / "portfolio.xml");
 }
 
-TEST_CASE("build_multiple_flat_files_produce_multiple_books", "[ore][hierarchy][hierarchy_builder]") {
+TEST_CASE("build_multiple_flat_files_produce_multiple_books",
+          "[ore][hierarchy][hierarchy_builder]") {
     auto lg(make_logger(test_suite));
 
     const std::filesystem::path root = "/data/ore";
@@ -102,7 +103,8 @@ TEST_CASE("build_multiple_flat_files_produce_multiple_books", "[ore][hierarchy][
 // Subdirectory tests
 // =============================================================================
 
-TEST_CASE("build_one_level_subdirectory_creates_portfolio_and_book", "[ore][hierarchy][hierarchy_builder]") {
+TEST_CASE("build_one_level_subdirectory_creates_portfolio_and_book",
+          "[ore][hierarchy][hierarchy_builder]") {
     auto lg(make_logger(test_suite));
 
     const std::filesystem::path root = "/data/ore";
@@ -125,7 +127,8 @@ TEST_CASE("build_one_level_subdirectory_creates_portfolio_and_book", "[ore][hier
     CHECK(*book->parent_index == rates_idx);
 }
 
-TEST_CASE("build_two_level_subdirectory_creates_nested_portfolios", "[ore][hierarchy][hierarchy_builder]") {
+TEST_CASE("build_two_level_subdirectory_creates_nested_portfolios",
+          "[ore][hierarchy][hierarchy_builder]") {
     auto lg(make_logger(test_suite));
 
     const std::filesystem::path root = "/data/ore";

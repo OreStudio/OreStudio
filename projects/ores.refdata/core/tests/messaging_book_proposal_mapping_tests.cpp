@@ -39,7 +39,8 @@ TEST_CASE("a_put_needs_the_write_permission", "[book_proposal][mapping]") {
     CHECK(needed == std::vector<std::string>{"refdata::books:write"});
 }
 
-TEST_CASE("a_delete_needs_the_delete_permission_and_not_the_write_permission", "[book_proposal][mapping]") {
+TEST_CASE("a_delete_needs_the_delete_permission_and_not_the_write_permission",
+          "[book_proposal][mapping]") {
     const auto needed = ores::refdata::messaging::required_permissions({line("delete")});
     CHECK(needed == std::vector<std::string>{"refdata::books:delete"});
 }
@@ -54,7 +55,8 @@ TEST_CASE("no_lines_cannot_be_proposed", "[book_proposal][mapping]") {
     CHECK_FALSE(ores::refdata::messaging::invalid_lines({}).empty());
 }
 
-TEST_CASE("an_unknown_operation_cannot_be_proposed_and_is_not_counted_as_a_write", "[book_proposal][mapping]") {
+TEST_CASE("an_unknown_operation_cannot_be_proposed_and_is_not_counted_as_a_write",
+          "[book_proposal][mapping]") {
     CHECK_FALSE(ores::refdata::messaging::invalid_lines({line("put"), line("purge")}).empty());
     CHECK(ores::refdata::messaging::required_permissions({line("purge")}).empty());
 }
@@ -92,7 +94,8 @@ TEST_CASE("an_applied_request_completes_its_step", "[book_proposal][mapping]") {
     CHECK(ores::refdata::messaging::apply_step_result(applied).completed);
 }
 
-TEST_CASE("a_refused_apply_fails_its_step_with_the_line_and_the_reason", "[book_proposal][mapping]") {
+TEST_CASE("a_refused_apply_fails_its_step_with_the_line_and_the_reason",
+          "[book_proposal][mapping]") {
     ores::refdata::service::book_apply applied;
     applied.failed_line = 3;
     applied.refusal = "The book changed since it was read";
@@ -103,7 +106,8 @@ TEST_CASE("a_refused_apply_fails_its_step_with_the_line_and_the_reason", "[book_
     CHECK(result.error == "Line 3: The book changed since it was read");
 }
 
-TEST_CASE("a_transient_apply_fails_its_step_and_says_it_may_run_again", "[book_proposal][mapping]") {
+TEST_CASE("a_transient_apply_fails_its_step_and_says_it_may_run_again",
+          "[book_proposal][mapping]") {
     ores::refdata::service::book_apply applied;
     applied.transient = true;
     applied.refusal = "server closed the connection unexpectedly";

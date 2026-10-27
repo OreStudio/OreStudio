@@ -121,7 +121,8 @@ TEST_CASE("roundtrip_market_CurveBuilding_Input_market_20160205", "[ore][market]
 TEST_CASE("roundtrip_market_Legacy_Example_19_market_20160205_smile", "[ore][market][roundtrip]") {
     check_market_roundtrip("Legacy/Example_19/Input/market_20160205_smile.txt");
 }
-TEST_CASE("roundtrip_market_AmericanMonteCarlo_Input_market_flat_fixed_fxfwd", "[ore][market][roundtrip]") {
+TEST_CASE("roundtrip_market_AmericanMonteCarlo_Input_market_flat_fixed_fxfwd",
+          "[ore][market][roundtrip]") {
     check_market_roundtrip("AmericanMonteCarlo/Input/market_20160205_flat_fixed_fxfwd.txt");
 }
 TEST_CASE("roundtrip_market_Exposure_Input_market_flipview", "[ore][market][roundtrip]") {
@@ -168,7 +169,8 @@ TEST_CASE("roundtrip_market_XvaRisk_market_20160205_eur6m_200bp_up", "[ore][mark
 TEST_CASE("roundtrip_market_AmericanMonteCarlo_Input_market", "[ore][market][roundtrip]") {
     check_market_roundtrip("AmericanMonteCarlo/Input/market.txt");
 }
-TEST_CASE("roundtrip_market_Academy_FC003_Reporting_Currency_marketdata", "[ore][market][roundtrip]") {
+TEST_CASE("roundtrip_market_Academy_FC003_Reporting_Currency_marketdata",
+          "[ore][market][roundtrip]") {
     check_market_roundtrip("Academy/FC003_Reporting_Currency/Input/marketdata.txt");
 }
 TEST_CASE("roundtrip_market_Academy_TA001_Equity_Option_marketdata", "[ore][market][roundtrip]") {

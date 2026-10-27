@@ -114,7 +114,8 @@ TEST_CASE("tenants read in name order when no order is stated", "[repository][st
     CHECK(codes_in_order(h, m, {.field = "name"}) == std::vector<std::string>{tied[0], tied[1], b});
 }
 
-TEST_CASE("a descending order reverses the field and keeps ties in key order", "[repository][stated_order]") {
+TEST_CASE("a descending order reverses the field and keeps ties in key order",
+          "[repository][stated_order]") {
     database_helper h;
     const auto m = unique_marker();
     const auto b = write_tenant(h, m + "_1", "Order Fixture " + m + " b");
@@ -139,7 +140,8 @@ TEST_CASE("tenants read in code order when code is stated", "[repository][stated
           std::vector<std::string>{c2, c1});
 }
 
-TEST_CASE("the store refuses an order by a field the model does not declare", "[repository][stated_order]") {
+TEST_CASE("the store refuses an order by a field the model does not declare",
+          "[repository][stated_order]") {
     database_helper h;
     CHECK(tenant_repository::is_sortable("name"));
     CHECK(tenant_repository::is_sortable("code"));
@@ -149,7 +151,8 @@ TEST_CASE("the store refuses an order by a field the model does not declare", "[
         std::invalid_argument);
 }
 
-TEST_CASE("the service refuses an undeclared field and honours a declared one", "[repository][stated_order]") {
+TEST_CASE("the service refuses an undeclared field and honours a declared one",
+          "[repository][stated_order]") {
     database_helper h;
     ores::iam::service::tenant_service service(system_context(h));
 

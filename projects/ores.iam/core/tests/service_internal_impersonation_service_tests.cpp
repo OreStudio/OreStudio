@@ -35,7 +35,8 @@ using namespace ores::logging;
 using ores::testing::scoped_database_helper;
 using ores::iam::service::internal_impersonation_service;
 
-TEST_CASE("mint_token_produces_a_token_validating_to_the_impersonated_identity", "[service][internal_impersonation_service]") {
+TEST_CASE("mint_token_produces_a_token_validating_to_the_impersonated_identity",
+          "[service][internal_impersonation_service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

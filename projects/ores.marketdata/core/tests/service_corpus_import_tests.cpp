@@ -357,7 +357,8 @@ TEST_CASE("every_line_of_the_whole_corpus_reaches_the_database", "[corpus-full]"
     CHECK(total > 0);
 }
 
-TEST_CASE("every_line_of_every_corpus_fixing_file_reaches_the_database", "[corpus][import_service]") {
+TEST_CASE("every_line_of_every_corpus_fixing_file_reaches_the_database",
+          "[corpus][import_service]") {
     auto lg(make_logger(test_suite));
 
     corpus_tenant tenant;

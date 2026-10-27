@@ -36,7 +36,8 @@ const ores::workflow::service::workflow_definition* registered(workflow_registry
 
 }
 
-TEST_CASE("the_book_apply_workflow_stops_on_a_failure_and_keeps_its_completed_steps", "[book_apply][workflow]") {
+TEST_CASE("the_book_apply_workflow_stops_on_a_failure_and_keeps_its_completed_steps",
+          "[book_apply][workflow]") {
     workflow_registry registry;
     const auto* def = registered(registry);
     REQUIRE(def != nullptr);
@@ -63,7 +64,8 @@ TEST_CASE("the_book_apply_workflow_rechecks_then_applies_then_tells", "[book_app
     CHECK(steps[2].command_subject == "inbox.v1.steps.tell_apply_result");
 }
 
-TEST_CASE("every_step_of_the_book_apply_workflow_states_a_deadline_and_no_compensation", "[book_apply][workflow]") {
+TEST_CASE("every_step_of_the_book_apply_workflow_states_a_deadline_and_no_compensation",
+          "[book_apply][workflow]") {
     workflow_registry registry;
     const auto* def = registered(registry);
     REQUIRE(def != nullptr);

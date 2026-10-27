@@ -223,7 +223,8 @@ TEST_CASE("read_account_access_is_denied_without_the_read_permission", "[authori
     CHECK(access.roles.empty());
 }
 
-TEST_CASE("read_account_access_returns_the_composed_shape_with_the_read_permission", "[authorization]") {
+TEST_CASE("read_account_access_returns_the_composed_shape_with_the_read_permission",
+          "[authorization]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -531,7 +532,8 @@ TEST_CASE("read_own_permissions_pages_the_resources_of_one_area", "[authorizatio
     CHECK(second.rows.front().resource == "alpha_two");
 }
 
-TEST_CASE("read_own_permissions_names_the_actions_held_and_the_role_behind_them", "[authorization]") {
+TEST_CASE("read_own_permissions_names_the_actions_held_and_the_role_behind_them",
+          "[authorization]") {
     database_helper h;
     const auto zzheld_name = unique_area("zzheld");
     auto gen = ores::testing::make_generation_context(h);
@@ -548,7 +550,8 @@ TEST_CASE("read_own_permissions_names_the_actions_held_and_the_role_behind_them"
     CHECK(page.rows.front().roles == std::vector<std::string>{r.name});
 }
 
-TEST_CASE("read_own_permissions_lists_only_areas_the_account_holds_something_in", "[authorization]") {
+TEST_CASE("read_own_permissions_lists_only_areas_the_account_holds_something_in",
+          "[authorization]") {
     database_helper h;
     const auto zzonly_name = unique_area("zzonly");
     const auto zznothing_name = unique_area("zznothing");

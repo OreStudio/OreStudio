@@ -150,7 +150,8 @@ TEST_CASE("a curve configuration document saves, reads back and deletes by its c
     CHECK_FALSE(gone->success);
 }
 
-TEST_CASE("a caller without the permission is refused", "[refdata][configuration_document][handler]") {
+TEST_CASE("a caller without the permission is refused",
+          "[refdata][configuration_document][handler]") {
     fixture f;
     const auto token = f.token({"refdata::curve_configurations:read"});
     const auto reply = request(f.nats,
@@ -160,7 +161,8 @@ TEST_CASE("a caller without the permission is refused", "[refdata][configuration
     CHECK(error_of(reply) == "forbidden");
 }
 
-TEST_CASE("a session that acts for no party cannot save a document", "[refdata][configuration_document][handler]") {
+TEST_CASE("a session that acts for no party cannot save a document",
+          "[refdata][configuration_document][handler]") {
     fixture f;
     const auto token = f.keys.token_without_party(f.db.tenant_id().to_string(),
                                                   {"refdata::curve_configurations:write"});
@@ -178,7 +180,8 @@ TEST_CASE("a session that acts for no party cannot save a document", "[refdata][
     CHECK(saved->message.find("acts for no party") != std::string::npos);
 }
 
-TEST_CASE("deleting a configuration no document fills succeeds", "[refdata][configuration_document][handler]") {
+TEST_CASE("deleting a configuration no document fills succeeds",
+          "[refdata][configuration_document][handler]") {
     fixture f;
     const auto token = f.token({"refdata::curve_configurations:delete"});
     const auto deleted = decode_reply<delete_curve_configuration_document_response>(request(

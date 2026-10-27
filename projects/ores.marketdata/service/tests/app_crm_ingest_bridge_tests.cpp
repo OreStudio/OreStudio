@@ -141,7 +141,8 @@ TEST_CASE("refresh builds an engine from persisted config and driver pairs, upda
     CHECK(derived->rate == Catch::Approx(1.10 * 150.0));
 }
 
-TEST_CASE("rate() returns nullopt when no CRM is configured for the (tenant, party)", "[app][crm]") {
+TEST_CASE("rate() returns nullopt when no CRM is configured for the (tenant, party)",
+          "[app][crm]") {
     fixture f;
     crm_ingest_bridge bridge(f.h.context());
     // Nothing is persisted, so the engines map stays empty.
@@ -152,7 +153,8 @@ TEST_CASE("rate() returns nullopt when no CRM is configured for the (tenant, par
     CHECK_FALSE(result.has_value());
 }
 
-TEST_CASE("rate() returns nullopt for an unknown CRM name when others are configured", "[app][crm]") {
+TEST_CASE("rate() returns nullopt for an unknown CRM name when others are configured",
+          "[app][crm]") {
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;
@@ -187,7 +189,8 @@ TEST_CASE("update() silently ignores a pair that is not a driver edge", "[app][c
         bridge.update(tenant_id_str, "GBP", "USD", 1.25, std::chrono::system_clock::now()));
 }
 
-TEST_CASE("rates() returns every configured pair (driver + enabled derived) in one batch", "[app][crm]") {
+TEST_CASE("rates() returns every configured pair (driver + enabled derived) in one batch",
+          "[app][crm]") {
     fixture f;
     crm_topology_config_repository config_repo;
     crm_driver_pair_repository driver_repo;
@@ -418,7 +421,8 @@ TEST_CASE("update() is tenant-wide: one tick feeds every party's matching engine
     CHECK(second_party_rate->status == ores::analytics::quant::domain::rate_status::fresh);
 }
 
-TEST_CASE("the DB rejects a second active crm_topology_config sharing a party's CRM name", "[app][crm]") {
+TEST_CASE("the DB rejects a second active crm_topology_config sharing a party's CRM name",
+          "[app][crm]") {
     // crm_ingest_bridge::refresh() relies on this: it would throw
     // std::logic_error if it ever saw two enabled, same-named configs for
     // one party, but that can only happen if this DB invariant is somehow

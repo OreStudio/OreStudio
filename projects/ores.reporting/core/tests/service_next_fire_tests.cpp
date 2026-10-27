@@ -116,7 +116,8 @@ next_fire_of(const std::vector<ores::reporting::messaging::definition_next_fire>
 
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("a definition's schedule reads the next fire the scheduler states for its job", "[service][database]") {
+TEST_CASE("a definition's schedule reads the next fire the scheduler states for its job",
+          "[service][database]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;

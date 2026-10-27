@@ -78,7 +78,8 @@ struct catalogue {
 
 }
 
-TEST_CASE("a_mapped_tick_becomes_the_tick_of_its_item_and_source", "[app][adapter_tick_translator]") {
+TEST_CASE("a_mapped_tick_becomes_the_tick_of_its_item_and_source",
+          "[app][adapter_tick_translator]") {
     catalogue c;
     auto sut = c.translator();
 
@@ -138,7 +139,8 @@ TEST_CASE("a_tick_of_an_adapter_that_is_no_source_is_unmapped", "[app][adapter_t
     CHECK(out.error() == adapter_tick_drop::unmapped);
 }
 
-TEST_CASE("a_mapping_that_does_not_hold_now_leaves_a_tick_unmapped", "[app][adapter_tick_translator]") {
+TEST_CASE("a_mapping_that_does_not_hold_now_leaves_a_tick_unmapped",
+          "[app][adapter_tick_translator]") {
     catalogue c;
     c.mapping.effective_from = c.now + 1h;
     CHECK(c.translator().translate("bloomberg-live", c.tick(), c.now).error() ==
@@ -198,7 +200,8 @@ TEST_CASE("a_tick_older_than_the_age_limit_is_stale", "[app][adapter_tick_transl
     CHECK(out.error() == adapter_tick_drop::stale);
 }
 
-TEST_CASE("the_limits_an_adapter_reads_are_the_limits_the_service_applies", "[app][adapter_tick_translator]") {
+TEST_CASE("the_limits_an_adapter_reads_are_the_limits_the_service_applies",
+          "[app][adapter_tick_translator]") {
     // The simulator injects its faults from these limits, so a tick one step beyond them is
     // dropped for exactly the reason the fault is meant to show.
     using ores::marketdata::domain::adapter_limits;
@@ -235,7 +238,8 @@ TEST_CASE("a_tick_before_the_newest_stored_one_is_out_of_order", "[app][adapter_
     CHECK(sut.translate("bloomberg-live", same, c.now).has_value());
 }
 
-TEST_CASE("the_order_of_a_source_does_not_depend_on_another_source", "[app][adapter_tick_translator]") {
+TEST_CASE("the_order_of_a_source_does_not_depend_on_another_source",
+          "[app][adapter_tick_translator]") {
     catalogue c;
     auto sut = c.translator();
 

@@ -239,7 +239,8 @@ TEST_CASE("every_name_reads_back_to_what_it_names", "[datum][market_datum]") {
     CHECK_FALSE(field_named("settle"));
 }
 
-TEST_CASE("every_field_is_used_by_some_row_and_every_code_field_has_a_vocabulary", "[datum][market_datum]") {
+TEST_CASE("every_field_is_used_by_some_row_and_every_code_field_has_a_vocabulary",
+          "[datum][market_datum]") {
     std::set<field> used;
     for (const auto& row : schema) {
         for (const auto& spec : row.fields)
@@ -268,7 +269,8 @@ TEST_CASE("every_asset_class_names_itself_and_is_used_by_some_row", "[datum][mar
     CHECK_FALSE(asset_class_named("interest_rates"));
 }
 
-TEST_CASE("every_asset_class_but_correlation_and_generic_is_a_refdata_asset_class", "[datum][market_datum]") {
+TEST_CASE("every_asset_class_but_correlation_and_generic_is_a_refdata_asset_class",
+          "[datum][market_datum]") {
     using ores::marketdata::domain::asset_class_for_authority;
     for (std::size_t i = 0; i < asset_class_count; ++i) {
         const auto a = static_cast<asset_class>(i);

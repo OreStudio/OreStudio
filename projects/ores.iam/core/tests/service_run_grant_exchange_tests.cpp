@@ -235,7 +235,8 @@ struct exchange_fixture {
 
 }
 
-TEST_CASE("exchange_run_grant_issues_a_token_naming_the_grant_the_run_and_the_service", "[service][run_grant][exchange]") {
+TEST_CASE("exchange_run_grant_issues_a_token_naming_the_grant_the_run_and_the_service",
+          "[service][run_grant][exchange]") {
     auto lg(make_logger(test_suite));
     exchange_fixture f;
     REQUIRE_FALSE(f.grant_id.empty());
@@ -272,7 +273,8 @@ TEST_CASE("exchange_run_grant_issues_a_token_naming_the_grant_the_run_and_the_se
     CHECK(issues.exists(f.grant_id, "run-1"));
 }
 
-TEST_CASE("exchange_run_grant_refuses_a_caller_without_the_exchange_permission", "[service][run_grant][exchange]") {
+TEST_CASE("exchange_run_grant_refuses_a_caller_without_the_exchange_permission",
+          "[service][run_grant][exchange]") {
     exchange_fixture f;
     const auto without = f.caller().with_roles({"iam::accounts:read"});
     const auto resp = run_grant_operations_service(without, signer_for_tests())
@@ -281,7 +283,8 @@ TEST_CASE("exchange_run_grant_refuses_a_caller_without_the_exchange_permission",
     CHECK_THAT(resp.message, ContainsSubstring("not_permitted"));
 }
 
-TEST_CASE("exchange_run_grant_refuses_an_account_that_holds_no_service_role", "[service][run_grant][exchange]") {
+TEST_CASE("exchange_run_grant_refuses_an_account_that_holds_no_service_role",
+          "[service][run_grant][exchange]") {
     exchange_fixture f;
     const auto plain = write_account(f.h, f.gen, "active");
     const auto resp =
@@ -291,7 +294,8 @@ TEST_CASE("exchange_run_grant_refuses_an_account_that_holds_no_service_role", "[
     CHECK_THAT(resp.message, ContainsSubstring("no_service_identity"));
 }
 
-TEST_CASE("exchange_run_grant_refuses_a_service_outside_the_audience", "[service][run_grant][exchange]") {
+TEST_CASE("exchange_run_grant_refuses_a_service_outside_the_audience",
+          "[service][run_grant][exchange]") {
     exchange_fixture f;
     const auto other_role = existing_or_new_role(f.h, f.gen, compute_service, granted_code);
     const auto other = write_account(f.h, f.gen, "active");
@@ -332,7 +336,8 @@ TEST_CASE("exchange_run_grant_refuses_a_revoked_grant", "[service][run_grant][ex
     CHECK_THAT(resp.message, ContainsSubstring("grant_revoked"));
 }
 
-TEST_CASE("exchange_run_grant_refuses_a_grant_past_its_not_after", "[service][run_grant][exchange]") {
+TEST_CASE("exchange_run_grant_refuses_a_grant_past_its_not_after",
+          "[service][run_grant][exchange]") {
     exchange_fixture f;
     REQUIRE(f.save_grant(
         [](auto& g) { g.not_after = std::chrono::system_clock::now() - std::chrono::hours(1); }));
@@ -343,7 +348,8 @@ TEST_CASE("exchange_run_grant_refuses_a_grant_past_its_not_after", "[service][ru
     CHECK_THAT(resp.message, ContainsSubstring("grant_expired"));
 }
 
-TEST_CASE("exchange_run_grant_admits_one_run_and_refuses_the_next", "[service][run_grant][exchange]") {
+TEST_CASE("exchange_run_grant_admits_one_run_and_refuses_the_next",
+          "[service][run_grant][exchange]") {
     exchange_fixture f;
     REQUIRE(f.save_grant([](auto& g) { g.max_runs = 1; }));
     run_grant_operations_service sut(f.caller(), signer_for_tests());
@@ -357,7 +363,8 @@ TEST_CASE("exchange_run_grant_admits_one_run_and_refuses_the_next", "[service][r
     CHECK_THAT(second.message, ContainsSubstring("grant_exhausted"));
 }
 
-TEST_CASE("exchange_run_grant_refuses_a_tenant_that_is_not_a_tenant_id", "[service][run_grant][exchange]") {
+TEST_CASE("exchange_run_grant_refuses_a_tenant_that_is_not_a_tenant_id",
+          "[service][run_grant][exchange]") {
     exchange_fixture f;
     const auto resp =
         run_grant_operations_service(f.caller(), signer_for_tests())
@@ -374,7 +381,8 @@ TEST_CASE("exchange_run_grant_refuses_an_inactive_grantor", "[service][run_grant
     CHECK_THAT(resp.message, ContainsSubstring("grantor_inactive"));
 }
 
-TEST_CASE("exchange_run_grant_refuses_a_grantor_who_holds_none_of_the_role", "[service][run_grant][exchange]") {
+TEST_CASE("exchange_run_grant_refuses_a_grantor_who_holds_none_of_the_role",
+          "[service][run_grant][exchange]") {
     exchange_fixture f;
     // The grantor loses every role, so the intersection is empty.
     const auto person_ctx = f.h.context()
@@ -390,7 +398,8 @@ TEST_CASE("exchange_run_grant_refuses_a_grantor_who_holds_none_of_the_role", "[s
     CHECK_THAT(resp.message, ContainsSubstring("grant_lapsed"));
 }
 
-TEST_CASE("exchange_run_grant_refuses_a_caller_over_its_rate_limit", "[service][run_grant][exchange]") {
+TEST_CASE("exchange_run_grant_refuses_a_caller_over_its_rate_limit",
+          "[service][run_grant][exchange]") {
     exchange_fixture f;
     const run_grant_operations_service::exchange_limits limits{
         .per_service = 1, .per_tenant = 1, .burst = 1, .period = std::chrono::seconds(60)};

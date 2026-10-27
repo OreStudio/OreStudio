@@ -70,7 +70,8 @@ TEST_CASE("the engine's own error reaches the refusal", "[ore][log][engine_run_v
           "  Error in ORE analytics: error opening file Input/market_20160205_flat.txt");
 }
 
-TEST_CASE("a run that wrote nothing but its log still states why it failed", "[ore][log][engine_run_verdict]") {
+TEST_CASE("a run that wrote nothing but its log still states why it failed",
+          "[ore][log][engine_run_verdict]") {
     const auto log = line("ALERT", "Error in ORE analytics: Failed to run analytics NPV");
 
     const auto outcome = judge_engine_run({"log.txt"}, log);
@@ -80,7 +81,8 @@ TEST_CASE("a run that wrote nothing but its log still states why it failed", "[o
                              "  Error in ORE analytics: Failed to run analytics NPV");
 }
 
-TEST_CASE("an error does not fail a run that still wrote analytics", "[ore][log][engine_run_verdict]") {
+TEST_CASE("an error does not fail a run that still wrote analytics",
+          "[ore][log][engine_run_verdict]") {
     const auto log = line("ERROR", "a leg priced with a fallback curve");
 
     const auto outcome = judge_engine_run({"log.txt", "portfolio.xml"}, log);
@@ -89,7 +91,8 @@ TEST_CASE("an error does not fail a run that still wrote analytics", "[ore][log]
     CHECK(outcome.failure.empty());
 }
 
-TEST_CASE("the engine's own failed-analytic verdict outranks the files it wrote", "[ore][log][engine_run_verdict]") {
+TEST_CASE("the engine's own failed-analytic verdict outranks the files it wrote",
+          "[ore][log][engine_run_verdict]") {
     // ORE writes its calibration and timing reports even when the analytic it
     // was asked for produced nothing, so the files alone say the run worked.
     // It states the failure on an ALERT line, repeats it inside the structured
@@ -114,7 +117,8 @@ TEST_CASE("the engine's own failed-analytic verdict outranks the files it wrote"
           "The engine's analytic failed. The engine reported:\n  " + std::string(failure));
 }
 
-TEST_CASE("a failed analytic names the quote and the trade it could not build", "[ore][log][engine_run_verdict]") {
+TEST_CASE("a failed analytic names the quote and the trade it could not build",
+          "[ore][log][engine_run_verdict]") {
     // The engine states the failure it stops on, then attributes it to a trade
     // in its structured message. A reader needs both to act on it.
     const auto log =

@@ -49,7 +49,8 @@ counterparty_lines links(const std::string& operation) {
 
 }
 
-TEST_CASE("each_kind_of_put_needs_the_write_permission_of_that_kind", "[counterparty_proposal][mapping]") {
+TEST_CASE("each_kind_of_put_needs_the_write_permission_of_that_kind",
+          "[counterparty_proposal][mapping]") {
     using ores::refdata::messaging::required_permissions;
     CHECK(required_permissions(counterparties("put")) ==
           std::vector<std::string>{"refdata::counterparties:write"});
@@ -59,7 +60,8 @@ TEST_CASE("each_kind_of_put_needs_the_write_permission_of_that_kind", "[counterp
           std::vector<std::string>{"refdata::party_counterparties:write"});
 }
 
-TEST_CASE("each_kind_of_delete_needs_the_delete_permission_of_that_kind", "[counterparty_proposal][mapping]") {
+TEST_CASE("each_kind_of_delete_needs_the_delete_permission_of_that_kind",
+          "[counterparty_proposal][mapping]") {
     using ores::refdata::messaging::required_permissions;
     CHECK(required_permissions(counterparties("delete")) ==
           std::vector<std::string>{"refdata::counterparties:delete"});
@@ -86,7 +88,8 @@ TEST_CASE("no_lines_cannot_be_proposed", "[counterparty_proposal][mapping]") {
     CHECK_FALSE(ores::refdata::messaging::invalid_lines(counterparty_lines{}).empty());
 }
 
-TEST_CASE("an_unknown_operation_in_any_kind_cannot_be_proposed_and_counts_as_no_write", "[counterparty_proposal][mapping]") {
+TEST_CASE("an_unknown_operation_in_any_kind_cannot_be_proposed_and_counts_as_no_write",
+          "[counterparty_proposal][mapping]") {
     using ores::refdata::messaging::invalid_lines;
     using ores::refdata::messaging::required_permissions;
     CHECK_FALSE(invalid_lines(counterparties("purge")).empty());
@@ -103,7 +106,8 @@ TEST_CASE("puts_and_deletes_of_every_kind_can_be_proposed", "[counterparty_propo
     CHECK(ores::refdata::messaging::invalid_lines(lines).empty());
 }
 
-TEST_CASE("a_recheck_fails_its_step_with_the_first_refused_line", "[counterparty_proposal][mapping]") {
+TEST_CASE("a_recheck_fails_its_step_with_the_first_refused_line",
+          "[counterparty_proposal][mapping]") {
     ores::refdata::service::counterparty_preview preview;
     preview.lines.push_back({.line_no = 1, .refusal = ""});
     preview.lines.push_back({.line_no = 2, .refusal = "stale"});

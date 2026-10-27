@@ -112,7 +112,8 @@ void require_same_entities(const mapped_credit_simulation& lhs,
 
 }
 
-TEST_CASE("a_credit_simulation_survives_the_round_trip", "[ore][xml][roundtrip][creditsimulation]") {
+TEST_CASE("a_credit_simulation_survives_the_round_trip",
+          "[ore][xml][roundtrip][creditsimulation]") {
     auto lg(make_logger(test_suite));
 
     // Eight rows of eight, one on the diagonal, which is the shape a
@@ -158,7 +159,8 @@ TEST_CASE("a_credit_simulation_survives_the_round_trip", "[ore][xml][roundtrip][
     require_same_entities(first, second, "literal document");
 }
 
-TEST_CASE("a_model_with_no_matrix_is_refused_rather_than_written_empty", "[ore][xml][roundtrip][creditsimulation]") {
+TEST_CASE("a_model_with_no_matrix_is_refused_rather_than_written_empty",
+          "[ore][xml][roundtrip][creditsimulation]") {
     auto lg(make_logger(test_suite));
 
     // The schema requires a matrix and an entity, so an empty model cannot
@@ -169,7 +171,8 @@ TEST_CASE("a_model_with_no_matrix_is_refused_rather_than_written_empty", "[ore][
                     std::runtime_error);
 }
 
-TEST_CASE("every_credit_simulation_in_the_corpus_round_trips", "[ore][xml][roundtrip][creditsimulation]") {
+TEST_CASE("every_credit_simulation_in_the_corpus_round_trips",
+          "[ore][xml][roundtrip][creditsimulation]") {
     auto lg(make_logger(test_suite));
 
     const auto root = ores::testing::project_root::resolve("external/ore/examples");

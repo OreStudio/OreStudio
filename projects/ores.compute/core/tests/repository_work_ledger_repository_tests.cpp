@@ -94,7 +94,8 @@ private:
 
 }
 
-TEST_CASE("claim_takes_a_queued_entry_for_the_platform_and_counts_the_attempt", "[repository][work_ledger]") {
+TEST_CASE("claim_takes_a_queued_entry_for_the_platform_and_counts_the_attempt",
+          "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -170,7 +171,8 @@ TEST_CASE("claim_prefers_the_tenant_with_the_fewest_entries_claimed", "[reposito
     CHECK(third->work_tenant_id == deep);
 }
 
-TEST_CASE("claim_prefers_the_higher_priority_among_tenants_with_equal_load", "[repository][work_ledger]") {
+TEST_CASE("claim_prefers_the_higher_priority_among_tenants_with_equal_load",
+          "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -185,7 +187,8 @@ TEST_CASE("claim_prefers_the_higher_priority_among_tenants_with_equal_load", "[r
     CHECK(claimed->result_id == urgent.result_id);
 }
 
-TEST_CASE("release_returns_a_claimed_entry_to_the_queue_and_gives_the_attempt_back", "[repository][work_ledger]") {
+TEST_CASE("release_returns_a_claimed_entry_to_the_queue_and_gives_the_attempt_back",
+          "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -231,7 +234,8 @@ TEST_CASE("concurrent_claims_never_take_the_same_entry", "[repository][work_ledg
     CHECK(std::ranges::adjacent_find(taken) == taken.end());
 }
 
-TEST_CASE("requeue_expired_returns_an_expired_claim_that_has_attempts_left", "[repository][work_ledger]") {
+TEST_CASE("requeue_expired_returns_an_expired_claim_that_has_attempts_left",
+          "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -262,7 +266,8 @@ TEST_CASE("requeue_expired_leaves_a_live_lease_alone", "[repository][work_ledger
     CHECK(ledger.holder(cleanup.system(), queued.result_id) == host);
 }
 
-TEST_CASE("an_expired_claim_with_no_attempts_left_is_exhausted_and_not_requeued", "[repository][work_ledger]") {
+TEST_CASE("an_expired_claim_with_no_attempts_left_is_exhausted_and_not_requeued",
+          "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -329,7 +334,8 @@ TEST_CASE("remove_deletes_an_entry_so_it_is_not_claimed", "[repository][work_led
     CHECK(!ledger.claim(cleanup.system(), random_uuid(), platform, seconds(300)).has_value());
 }
 
-TEST_CASE("holder_is_nothing_for_an_entry_that_waits_and_for_one_not_in_the_ledger", "[repository][work_ledger]") {
+TEST_CASE("holder_is_nothing_for_an_entry_that_waits_and_for_one_not_in_the_ledger",
+          "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto queued = cleanup.add(entry_for(unique_platform(), random_uuid()));
@@ -363,7 +369,8 @@ TEST_CASE("extend_lease_extends_only_the_job_the_host_names", "[repository][work
     CHECK(!ledger.holder(cleanup.system(), first->result_id).has_value());
 }
 
-TEST_CASE("requeue_held_returns_what_a_host_abandoned_and_keeps_the_attempts", "[repository][work_ledger]") {
+TEST_CASE("requeue_held_returns_what_a_host_abandoned_and_keeps_the_attempts",
+          "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -380,7 +387,8 @@ TEST_CASE("requeue_held_returns_what_a_host_abandoned_and_keeps_the_attempts", "
     CHECK(again->attempts == 2);
 }
 
-TEST_CASE("requeue_held_leaves_an_entry_with_no_attempts_left_and_another_hosts_entries", "[repository][work_ledger]") {
+TEST_CASE("requeue_held_leaves_an_entry_with_no_attempts_left_and_another_hosts_entries",
+          "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();
@@ -416,7 +424,8 @@ TEST_CASE("enqueue_leaves_an_entry_already_in_the_ledger_as_it_is", "[repository
     CHECK(ledger.holder(cleanup.system(), queued.result_id) == host);
 }
 
-TEST_CASE("a_tenant_session_reads_none_of_the_ledger_and_writes_none_of_it", "[repository][work_ledger]") {
+TEST_CASE("a_tenant_session_reads_none_of_the_ledger_and_writes_none_of_it",
+          "[repository][work_ledger]") {
     database_helper h;
     ledger_cleanup cleanup(h);
     const auto platform = unique_platform();

@@ -75,7 +75,8 @@ outcome write(app_version_service& service, put_app_version_request r, std::uint
 
 } // namespace
 
-TEST_CASE("two versions that share a wrapper version republish each on its own row", "[service][app_version]") {
+TEST_CASE("two versions that share a wrapper version republish each on its own row",
+          "[service][app_version]") {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
     auto app = ores::compute::generators::generate_synthetic_app(gen_ctx);
@@ -111,7 +112,8 @@ TEST_CASE("a stale version is still refused for the row it names", "[service][ap
     CHECK(write(service, request_for(id, app.id, "1.8.16.0", "stale"), 1) == outcome::conflict);
 }
 
-TEST_CASE("the versions of an app are listed without the versions of another app", "[service][app_version]") {
+TEST_CASE("the versions of an app are listed without the versions of another app",
+          "[service][app_version]") {
     database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
     auto first_app = ores::compute::generators::generate_synthetic_app(gen_ctx);

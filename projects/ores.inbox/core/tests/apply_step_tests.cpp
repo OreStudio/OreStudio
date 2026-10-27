@@ -44,7 +44,8 @@ ores::iam::domain::account seed_account(ores::testing::scoped_database_helper& h
 
 }
 
-TEST_CASE("an_approved_request_is_told_as_applied_and_any_other_state_keeps_its_name", "[approval][apply_step]") {
+TEST_CASE("an_approved_request_is_told_as_applied_and_any_other_state_keeps_its_name",
+          "[approval][apply_step]") {
     using ores::inbox::messaging::apply_result_state;
     CHECK(apply_result_state("approved") == "applied");
     CHECK(apply_result_state("apply_failed") == "apply_failed");

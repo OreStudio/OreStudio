@@ -263,7 +263,8 @@ struct fixture {
 
 }
 
-TEST_CASE("a definition with no consent is given one, from the person asking", "[run_grant][trigger][handler]") {
+TEST_CASE("a definition with no consent is given one, from the person asking",
+          "[run_grant][trigger][handler]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     fixture f;
@@ -304,7 +305,8 @@ TEST_CASE("a definition with no consent is given one, from the person asking", "
     CHECK(f.grant_calls == 1);
 }
 
-TEST_CASE("an on-demand run of a never-scheduled definition holds its consent", "[run_grant][trigger][handler]") {
+TEST_CASE("an on-demand run of a never-scheduled definition holds its consent",
+          "[run_grant][trigger][handler]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     fixture f;

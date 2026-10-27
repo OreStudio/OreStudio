@@ -152,7 +152,8 @@ TEST_CASE("bond_leg_amount_decimal_round_trips_exactly", "[repository][bond_leg_
         repo.remove(ctx, id_str, "trs_funding", "1", "notional", std::to_string(i + 1));
 }
 
-TEST_CASE("bond_leg_amount_decimal_keeps_a_value_a_double_would_round", "[repository][bond_leg_amount][decimal]") {
+TEST_CASE("bond_leg_amount_decimal_keeps_a_value_a_double_would_round",
+          "[repository][bond_leg_amount][decimal]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -176,7 +177,8 @@ TEST_CASE("bond_leg_amount_decimal_keeps_a_value_a_double_would_round", "[reposi
     repo.remove(ctx, id_str, "trs_funding", "1", "notional", "1");
 }
 
-TEST_CASE("bond_leg_amount_refuses_a_value_wider_than_the_column", "[repository][bond_leg_amount][decimal]") {
+TEST_CASE("bond_leg_amount_refuses_a_value_wider_than_the_column",
+          "[repository][bond_leg_amount][decimal]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

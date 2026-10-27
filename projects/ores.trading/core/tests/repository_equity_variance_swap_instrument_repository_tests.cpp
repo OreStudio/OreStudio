@@ -64,7 +64,8 @@ equity_variance_swap_instrument make_instrument(database_helper& h) {
 
 } // namespace
 
-TEST_CASE("equity_variance_swap_instrument_write_and_read_latest", "[repository][equity][equity_variance_swap]") {
+TEST_CASE("equity_variance_swap_instrument_write_and_read_latest",
+          "[repository][equity][equity_variance_swap]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -91,7 +92,8 @@ TEST_CASE("equity_variance_swap_instrument_write_and_read_latest", "[repository]
     BOOST_LOG_SEV(lg, debug) << "Read equity variance swap instrument: " << read[0];
 }
 
-TEST_CASE("equity_variance_swap_instrument_read_nonexistent", "[repository][equity][equity_variance_swap]") {
+TEST_CASE("equity_variance_swap_instrument_read_nonexistent",
+          "[repository][equity][equity_variance_swap]") {
     database_helper h;
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());

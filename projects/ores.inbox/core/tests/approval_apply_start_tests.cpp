@@ -71,7 +71,8 @@ TEST_CASE("the_start_names_the_workflow_the_request_and_its_tenant", "[approval]
     CHECK(start->request_json == "{\"request_id\":\"" + id + "\"}");
 }
 
-TEST_CASE("a_request_always_names_the_same_run_and_two_requests_name_two", "[approval][apply_start]") {
+TEST_CASE("a_request_always_names_the_same_run_and_two_requests_name_two",
+          "[approval][apply_start]") {
     const auto first = a_request();
     const auto second = a_request();
     const auto kind = kind_applied_by("book_apply_workflow");

@@ -369,9 +369,11 @@ def test_the_service_declares_the_canonical_operation_methods(tmp_path):
     service = _render(tmp_path, "cpp_service.hpp.mustache",
                       "widget_owner_service.hpp")
 
+    # The protocol types are named in full, so a unit that also opens a
+    # service component's own messaging namespace still finds them.
     for method, request, response in CANONICAL_OPERATIONS:
-        assert (f"messaging::{response} {method}("
-                f"const messaging::{request}& request);") in service, method
+        assert (f"::ores::widget::messaging::{response} {method}("
+                f"const ::ores::widget::messaging::{request}& request);") in service, method
     for retired in RETIRED_JUNCTION_TOKENS:
         assert retired not in service, retired
     # A single write and a batch state the same claim, so the check they share

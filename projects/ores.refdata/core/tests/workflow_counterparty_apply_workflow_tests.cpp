@@ -45,7 +45,8 @@ TEST_CASE("the_counterparty_apply_workflow_stops_on_a_failure_and_keeps_its_comp
     CHECK_FALSE(def->steps_depend_on_request);
 }
 
-TEST_CASE("the_counterparty_apply_workflow_rechecks_then_applies_then_tells", "[counterparty_apply][workflow]") {
+TEST_CASE("the_counterparty_apply_workflow_rechecks_then_applies_then_tells",
+          "[counterparty_apply][workflow]") {
     workflow_registry registry;
     const auto* def = registered(registry);
     REQUIRE(def != nullptr);

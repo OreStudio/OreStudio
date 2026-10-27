@@ -133,7 +133,8 @@ TEST_CASE("postgres_listener_service_notification_reception", "[service][postgre
     listener.stop();
 }
 
-TEST_CASE("postgres_listener_service_no_notification_without_subscribe", "[service][postgres_listener]") {
+TEST_CASE("postgres_listener_service_no_notification_without_subscribe",
+          "[service][postgres_listener]") {
     auto lg(make_logger(test_suite));
 
     std::string channel_name =
@@ -273,7 +274,8 @@ TEST_CASE("postgres_listener_service_connect_forces_utc_session", "[service][pos
     REQUIRE_FALSE(result);
 }
 
-TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window", "[service][postgres_listener]") {
+TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window",
+          "[service][postgres_listener]") {
     std::string channel_name =
         "test_channel_reconnect_" +
         std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
@@ -369,7 +371,8 @@ TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window", "[service]
     listener.stop();
 }
 
-TEST_CASE("postgres_listener_service_drains_a_burst_of_notifications", "[service][postgres_listener]") {
+TEST_CASE("postgres_listener_service_drains_a_burst_of_notifications",
+          "[service][postgres_listener]") {
     auto lg(make_logger(test_suite));
 
     // A bulk import fires one notification per row. The listener must drain a

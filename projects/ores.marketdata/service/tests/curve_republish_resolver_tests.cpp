@@ -82,7 +82,8 @@ curve_republish_refdata_context make_context() {
 
 }
 
-TEST_CASE("resolve_bootstrap_pillars resolves a single DEPOSIT pillar's dates and rate", "[curve_republish_resolver]") {
+TEST_CASE("resolve_bootstrap_pillars resolves a single DEPOSIT pillar's dates and rate",
+          "[curve_republish_resolver]") {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "3M", "DEPOSIT")};
     std::unordered_map<std::string, double> raw_rates{{"3M", 0.03}};
@@ -112,7 +113,8 @@ TEST_CASE("resolve_bootstrap_pillars resolves an FRA pillar's start/end from its
     CHECK(resolved[0].end_date == resolve_tenor_date(ctx, "6M"));
 }
 
-TEST_CASE("resolve_bootstrap_pillars sorts by sequence_index regardless of input order", "[curve_republish_resolver]") {
+TEST_CASE("resolve_bootstrap_pillars sorts by sequence_index regardless of input order",
+          "[curve_republish_resolver]") {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{
         make_pillar(1, "3M", "6M", "FRA"),
@@ -165,7 +167,8 @@ TEST_CASE("resolve_bootstrap_pillars rejects an unknown tenor code", "[curve_rep
     CHECK_THROWS_AS(resolve_bootstrap_pillars(pillars, ctx, raw_rates), std::invalid_argument);
 }
 
-TEST_CASE("resolve_bootstrap_pillars rejects an unrecognised curve_role_code", "[curve_republish_resolver]") {
+TEST_CASE("resolve_bootstrap_pillars rejects an unrecognised curve_role_code",
+          "[curve_republish_resolver]") {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "3M", "BOND")};
     std::unordered_map<std::string, double> raw_rates{{"3M", 0.03}};

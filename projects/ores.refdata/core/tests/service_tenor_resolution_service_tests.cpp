@@ -210,7 +210,8 @@ struct fixture {
 
 }
 
-TEST_CASE("resolves a period tenor to the date its convention rolls it to", "[service][tenor_resolution]") {
+TEST_CASE("resolves a period tenor to the date its convention rolls it to",
+          "[service][tenor_resolution]") {
     fixture f;
 
     // One month from 31 January 2026 is 28 February, a Saturday, which the
@@ -231,7 +232,8 @@ TEST_CASE("resolves a period tenor to the date its convention rolls it to", "[se
     CHECK(response.calendar == f.calendar_code);
 }
 
-TEST_CASE("a holiday the calendar materialised moves the date the rule reached", "[service][tenor_resolution]") {
+TEST_CASE("a holiday the calendar materialised moves the date the rule reached",
+          "[service][tenor_resolution]") {
     // Not materialised up front: materialisation is extend-only, so a
     // calendar already written for 2026 would not be reopened to see the
     // exception added after it.
@@ -253,7 +255,8 @@ TEST_CASE("a holiday the calendar materialised moves the date the rule reached",
     CHECK(response.adjusted_date == std::chrono::year{2026} / std::chrono::February / 26);
 }
 
-TEST_CASE("a tenor the convention does not carry is refused with the row that is missing", "[service][tenor_resolution]") {
+TEST_CASE("a tenor the convention does not carry is refused with the row that is missing",
+          "[service][tenor_resolution]") {
     fixture f;
     f.tenor_code = "3M";
     f.write_tenor("3M", "PERIOD", "MONTH", 3);
@@ -266,7 +269,8 @@ TEST_CASE("a tenor the convention does not carry is refused with the row that is
     CHECK(response.result.fields[0].field == "tenor_convention_resolutions");
 }
 
-TEST_CASE("a calendar nobody materialised is refused rather than read as all business days", "[service][tenor_resolution]") {
+TEST_CASE("a calendar nobody materialised is refused rather than read as all business days",
+          "[service][tenor_resolution]") {
     fixture f(false);
 
     const auto response = f.resolve();
@@ -277,7 +281,8 @@ TEST_CASE("a calendar nobody materialised is refused rather than read as all bus
     CHECK(response.result.fields[0].field == "calendar_code");
 }
 
-TEST_CASE("a spot anchored rule refuses when no spot date is supplied, and names it", "[service][tenor_resolution]") {
+TEST_CASE("a spot anchored rule refuses when no spot date is supplied, and names it",
+          "[service][tenor_resolution]") {
     fixture f;
 
     const auto response = f.resolve(std::nullopt);
@@ -292,7 +297,8 @@ TEST_CASE("a spot anchored rule refuses when no spot date is supplied, and names
     CHECK_FALSE(response.anchor_date.ok());
 }
 
-TEST_CASE("a refusal that got as far as an anchor reports the date it counted from", "[service][tenor_resolution]") {
+TEST_CASE("a refusal that got as far as an anchor reports the date it counted from",
+          "[service][tenor_resolution]") {
     fixture f;
     f.tenor_code = "O/N";
     f.write_tenor("O/N", "SPECIAL", "NONE", 0);
@@ -310,7 +316,8 @@ TEST_CASE("a refusal that got as far as an anchor reports the date it counted fr
     CHECK(response.result.fields[0].field == "tenor_convention_resolutions");
 }
 
-TEST_CASE("a tenor that does not exist is refused with the code it was asked for", "[service][tenor_resolution]") {
+TEST_CASE("a tenor that does not exist is refused with the code it was asked for",
+          "[service][tenor_resolution]") {
     fixture f;
     auto req = f.request();
     req.tenor_code = "NOSUCH";
@@ -324,7 +331,8 @@ TEST_CASE("a tenor that does not exist is refused with the code it was asked for
     CHECK(response.result.fields[0].field == "tenor_code");
 }
 
-TEST_CASE("a closed form schedule resolves a year tenor to its quarterly roll date", "[service][tenor_resolution]") {
+TEST_CASE("a closed form schedule resolves a year tenor to its quarterly roll date",
+          "[service][tenor_resolution]") {
     // SCHEDULE_STEP is what makes the row's schedule worth reading; under
     // ANCHOR_OFFSET the engine resolves on the calendar axis and the schedule
     // is not consulted at all.
@@ -359,7 +367,8 @@ TEST_CASE("a closed form schedule resolves a year tenor to its quarterly roll da
     CHECK(response.adjusted_date == std::chrono::year{2027} / std::chrono::March / 22);
 }
 
-TEST_CASE("a closed form schedule the engine cannot walk is refused, not approximated", "[service][tenor_resolution]") {
+TEST_CASE("a closed form schedule the engine cannot walk is refused, not approximated",
+          "[service][tenor_resolution]") {
     fixture f(true, "SCHEDULE_STEP");
     f.write_schedule("SOME_OTHER_FORM", "CLOSED_FORM");
     f.write_resolution("SOME_OTHER_FORM", 1);
@@ -372,7 +381,8 @@ TEST_CASE("a closed form schedule the engine cannot walk is refused, not approxi
     CHECK(response.result.fields[0].field == "schedule_code");
 }
 
-TEST_CASE("a row naming a schedule under an anchor-offset convention is refused", "[service][tenor_resolution]") {
+TEST_CASE("a row naming a schedule under an anchor-offset convention is refused",
+          "[service][tenor_resolution]") {
     // The engine never consults a schedule for ANCHOR_OFFSET, so a row that
     // names one states something the resolution will ignore. Refusing says so
     // rather than resolving one of the two readings and leaving the other
@@ -389,7 +399,8 @@ TEST_CASE("a row naming a schedule under an anchor-offset convention is refused"
     CHECK(response.result.fields[0].field == "resolution_algorithm");
 }
 
-TEST_CASE("a preview answers about the drafted rule and not the stored one", "[service][tenor_resolution]") {
+TEST_CASE("a preview answers about the drafted rule and not the stored one",
+          "[service][tenor_resolution]") {
     fixture f;
 
     // The stored rule is one month from spot, rolled ModifiedFollowing, so it
@@ -432,7 +443,8 @@ TEST_CASE("a preview answers about the drafted rule and not the stored one", "[s
     CHECK(response.calendar == f.calendar_code);
 }
 
-TEST_CASE("a preview of a rule that needs a spot date refuses and says so", "[service][tenor_resolution]") {
+TEST_CASE("a preview of a rule that needs a spot date refuses and says so",
+          "[service][tenor_resolution]") {
     fixture f;
 
     auto draft_convention = tenor_convention{};
@@ -543,7 +555,8 @@ TEST_CASE("a tenor that cannot resolve costs only its own entry", "[service][ten
     CHECK(refused->result.fields[0].field == "tenor_convention_resolutions");
 }
 
-TEST_CASE("rows that name one schedule resolve against it together", "[service][tenor_resolution]") {
+TEST_CASE("rows that name one schedule resolve against it together",
+          "[service][tenor_resolution]") {
     fixture f(true, "SCHEDULE_STEP", "TEST_CONVENTION_SHARED_SCHEDULE");
     f.write_tenor("1Y", "PERIOD", "YEAR", 1);
     f.write_tenor("2Y", "PERIOD", "YEAR", 2);
@@ -578,7 +591,8 @@ TEST_CASE("rows that name one schedule resolve against it together", "[service][
     CHECK(two_years->adjusted_date == std::chrono::year{2028} / std::chrono::March / 20);
 }
 
-TEST_CASE("a convention that does not exist is refused with the code it was asked for", "[service][tenor_resolution]") {
+TEST_CASE("a convention that does not exist is refused with the code it was asked for",
+          "[service][tenor_resolution]") {
     fixture f;
     auto req = convention_request(f);
     req.convention_code = "NOSUCH";
@@ -593,7 +607,8 @@ TEST_CASE("a convention that does not exist is refused with the code it was aske
     CHECK(response.tenors.empty());
 }
 
-TEST_CASE("a calendar nobody materialised refuses the whole convention", "[service][tenor_resolution]") {
+TEST_CASE("a calendar nobody materialised refuses the whole convention",
+          "[service][tenor_resolution]") {
     fixture f(false);
 
     tenor_resolution_service service(f.h.context());

@@ -365,7 +365,8 @@ TEST_CASE("export_with_a_date_keeps_the_history_and_writes_the_value_at_the_clos
     CHECK(lines_of(exporter.write_all().market_data) == lines{"20160204 1.05", "20160205 1.10"});
 }
 
-TEST_CASE("the_reads_for_every_series_give_what_the_reads_for_each_series_give", "[service][ore_export]") {
+TEST_CASE("the_reads_for_every_series_give_what_the_reads_for_each_series_give",
+          "[service][ore_export]") {
     export_tenant t;
     ores::nats::service::nats_client auth_nats;
     import_service importer(t.ctx, auth_nats);
@@ -419,7 +420,8 @@ TEST_CASE("the_reads_for_every_series_give_what_the_reads_for_each_series_give",
     CHECK(every.size() == 5);
 }
 
-TEST_CASE("export_with_a_date_leaves_out_a_datum_whose_value_is_older_than_the_limit", "[service][ore_export]") {
+TEST_CASE("export_with_a_date_leaves_out_a_datum_whose_value_is_older_than_the_limit",
+          "[service][ore_export]") {
     export_tenant t;
     ores::nats::service::nats_client auth_nats;
     import_service importer(t.ctx, auth_nats);

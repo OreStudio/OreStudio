@@ -47,6 +47,7 @@ TEST_CASE("a subject outside the publish pattern has no function", "[service][pu
     CHECK(publish_from_dq_function("reporting.v1.report-definitions.list").empty());
 }
 
-TEST_CASE("a subject with nothing between the version and the suffix has no function", "[service][publish]") {
+TEST_CASE("a subject with nothing between the version and the suffix has no function",
+          "[service][publish]") {
     CHECK(publish_from_dq_function("reporting.v1..publish-from-dq").empty());
 }

@@ -455,7 +455,8 @@ TEST_CASE("a_test_trade_booked_live_raises_no_authorisation_request", "[service]
     CHECK(requests_for(f.ctx, req.anchor.id).empty());
 }
 
-TEST_CASE("the_summary_of_a_booked_actual_trade_names_its_state_book_and_waiting_request", "[service]") {
+TEST_CASE("the_summary_of_a_booked_actual_trade_names_its_state_book_and_waiting_request",
+          "[service]") {
     fixture f;
     auto req = f.request();
     req.anchor.booking_nature = ores::trading::domain::booking_nature::actual;

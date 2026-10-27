@@ -67,14 +67,14 @@ void event_channel_commands::process_channels(std::ostream& out, nats_client& /*
 }
 
 void event_channel_commands::process_listen(std::ostream& out,
-                                           nats_client& /*session*/,
-                                           std::string /*event_type*/) {
+                                            nats_client& /*session*/,
+                                            std::string /*event_type*/) {
     out << "Event subscriptions are not available in NATS mode." << std::endl;
 }
 
 void event_channel_commands::process_unlisten(std::ostream& out,
-                                             nats_client& /*session*/,
-                                             std::string /*event_type*/) {
+                                              nats_client& /*session*/,
+                                              std::string /*event_type*/) {
     out << "Event subscriptions are not available in NATS mode." << std::endl;
 }
 
@@ -87,7 +87,7 @@ void event_channel_commands::process_notifications(std::ostream& out, nats_clien
 }
 
 std::size_t event_channel_commands::display_pending_notifications(std::ostream& /*out*/,
-                                                                 nats_client& /*session*/) {
+                                                                  nats_client& /*session*/) {
     return 0;
 }
 

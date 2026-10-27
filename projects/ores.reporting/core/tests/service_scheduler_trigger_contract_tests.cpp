@@ -92,7 +92,8 @@ ores::nats::service::nats_client make_unauthenticated_client(ores::nats::service
 using ores::reporting::messaging::trigger_report_instance_request;
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("what the scheduler publishes decodes as the reporting trigger request", "[contract][trigger][integration]") {
+TEST_CASE("what the scheduler publishes decodes as the reporting trigger request",
+          "[contract][trigger][integration]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;

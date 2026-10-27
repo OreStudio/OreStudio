@@ -48,7 +48,8 @@ ores::database::context database_less_context() {
 
 }
 
-TEST_CASE("the staged dispatch returns false for a family the registry does not know", "[bundle_import]") {
+TEST_CASE("the staged dispatch returns false for a family the registry does not know",
+          "[bundle_import]") {
     auto ctx = database_less_context();
     ores::refdata::service::conventions_apply_result result;
 

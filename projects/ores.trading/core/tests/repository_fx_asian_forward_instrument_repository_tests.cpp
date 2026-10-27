@@ -67,7 +67,8 @@ fx_asian_forward_instrument make_instrument(database_helper& h) {
 
 } // namespace
 
-TEST_CASE("fx_asian_forward_instrument_write_and_read_latest", "[repository][fx][fx_asian_forward]") {
+TEST_CASE("fx_asian_forward_instrument_write_and_read_latest",
+          "[repository][fx][fx_asian_forward]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

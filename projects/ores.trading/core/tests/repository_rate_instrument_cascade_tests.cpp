@@ -179,7 +179,8 @@ TEST_CASE("rate_instrument_delete_closes_the_whole_family", "[repository][rate_i
     CHECK(anchor.size() == 1);
 }
 
-TEST_CASE("rate_instrument_refuses_a_trade_type_the_anchor_does_not_hold", "[repository][rate_instrument]") {
+TEST_CASE("rate_instrument_refuses_a_trade_type_the_anchor_does_not_hold",
+          "[repository][rate_instrument]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

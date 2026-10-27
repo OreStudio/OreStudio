@@ -134,13 +134,15 @@ TEST_CASE("a configuration with no analytic is refused", "[service][run_document
     CHECK_THROWS_AS(generate_run_document(in), std::invalid_argument);
 }
 
-TEST_CASE("a configuration whose analytics are all off is refused", "[service][run_document_generator]") {
+TEST_CASE("a configuration whose analytics are all off is refused",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.analytics = {analytic("npv", 1, "N")};
     CHECK_THROWS_AS(generate_run_document(in), std::invalid_argument);
 }
 
-TEST_CASE("the analytics of the configuration are the analytics of the run, in order", "[service][run_document_generator]") {
+TEST_CASE("the analytics of the configuration are the analytics of the run, in order",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.analytics = {analytic("portfolioDetails", 1),
                     analytic("npv", 2),
@@ -151,7 +153,8 @@ TEST_CASE("the analytics of the configuration are the analytics of the run, in o
     CHECK(codes(generate_run_document(in)) == expected);
 }
 
-TEST_CASE("an analytic that is off stays in the run with its flag", "[service][run_document_generator]") {
+TEST_CASE("an analytic that is off stays in the run with its flag",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.analytics = {analytic("npv", 1), analytic("cashflow", 2, "N")};
     const auto d = generate_run_document(in);
@@ -159,7 +162,8 @@ TEST_CASE("an analytic that is off stays in the run with its flag", "[service][r
     CHECK(d.analytics[1].analytic.active == "N");
 }
 
-TEST_CASE("the parameters of an analytic reach the run with their values and order", "[service][run_document_generator]") {
+TEST_CASE("the parameters of an analytic reach the run with their values and order",
+          "[service][run_document_generator]") {
     auto in = inputs();
     auto pfe = analytic("pfe", 1);
     pfe.parameters = {{"quantile", "0.95", 1}, {"calculationType", "Symmetric", 2}};
@@ -172,7 +176,8 @@ TEST_CASE("the parameters of an analytic reach the run with their values and ord
     CHECK(d.analytics[1].parameters[1].name == "calculationType");
 }
 
-TEST_CASE("the run names a file for each bound type and none for the others", "[service][run_document_generator]") {
+TEST_CASE("the run names a file for each bound type and none for the others",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.bound_types = {"curve_configuration", "todays_market"};
     const auto& files = generate_run_document(in).files;
@@ -183,7 +188,8 @@ TEST_CASE("the run names a file for each bound type and none for the others", "[
     CHECK(files[1].name == "todaysmarket.xml");
 }
 
-TEST_CASE("the run names the data files that belong to no configuration", "[service][run_document_generator]") {
+TEST_CASE("the run names the data files that belong to no configuration",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.file_types.push_back(setup_data_file("portfolioFile", "portfolio.xml"));
     in.file_types.push_back(setup_data_file("marketDataFile", "market.txt"));
@@ -199,7 +205,8 @@ TEST_CASE("the run names the data files that belong to no configuration", "[serv
     CHECK(files[6].name == "fixings.txt");
 }
 
-TEST_CASE("the run names a data file of an analytic once, by the analytic", "[service][run_document_generator]") {
+TEST_CASE("the run names a data file of an analytic once, by the analytic",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.file_types.push_back(analytic_file("curves", "curvesOutputFile", "data_file", "curves.csv"));
 
@@ -208,14 +215,16 @@ TEST_CASE("the run names a data file of an analytic once, by the analytic", "[se
         CHECK(f.parameter != "curvesOutputFile");
 }
 
-TEST_CASE("the run carries the choices of the configuration as they are", "[service][run_document_generator]") {
+TEST_CASE("the run carries the choices of the configuration as they are",
+          "[service][run_document_generator]") {
     const auto& s = generate_run_document(inputs()).settings;
     CHECK(s.market_data_type == "date");
     CHECK(s.market_data_date == "2026-10-09");
     CHECK(s.base_currency == std::optional<std::string>("GBP"));
 }
 
-TEST_CASE("the run carries the engine settings the definition binds", "[service][run_document_generator]") {
+TEST_CASE("the run carries the engine settings the definition binds",
+          "[service][run_document_generator]") {
     auto in = inputs();
     ores::reporting::messaging::run_engine_settings engine;
     engine.execution.emplace();
@@ -229,11 +238,13 @@ TEST_CASE("the run carries the engine settings the definition binds", "[service]
     CHECK_FALSE(r.engine_settings->fixings);
 }
 
-TEST_CASE("a run with no engine settings carries none and the engine defaults hold", "[service][run_document_generator]") {
+TEST_CASE("a run with no engine settings carries none and the engine defaults hold",
+          "[service][run_document_generator]") {
     CHECK_FALSE(generate_run_document(inputs()).engine_settings);
 }
 
-TEST_CASE("the run carries the market bindings of the configuration", "[service][run_document_generator]") {
+TEST_CASE("the run carries the market bindings of the configuration",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.market_bindings[0].market_configuration_name = "overnight";
     const auto d = generate_run_document(in);
@@ -242,13 +253,15 @@ TEST_CASE("the run carries the market bindings of the configuration", "[service]
     CHECK(d.market_bindings[0].market_configuration_name == "overnight");
 }
 
-TEST_CASE("a configuration with no market binding makes a run with none", "[service][run_document_generator]") {
+TEST_CASE("a configuration with no market binding makes a run with none",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.market_bindings.clear();
     CHECK(generate_run_document(in).market_bindings.empty());
 }
 
-TEST_CASE("an end of day run values the portfolio on the weekday before the run date", "[service][run_document_generator]") {
+TEST_CASE("an end of day run values the portfolio on the weekday before the run date",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.risk.market_data_type = "eod";
     in.risk.market_data_date.clear();
@@ -266,13 +279,15 @@ TEST_CASE("a live run values the portfolio on the run date", "[service][run_docu
     CHECK(generate_run_document(in).settings.market_data_date == "2026-10-12");
 }
 
-TEST_CASE("a configuration that names its date keeps it whatever the run date", "[service][run_document_generator]") {
+TEST_CASE("a configuration that names its date keeps it whatever the run date",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.run_date = "2030-01-01";
     CHECK(generate_run_document(in).settings.market_data_date == "2026-10-09");
 }
 
-TEST_CASE("a run date that is no date is refused for an end of day run", "[service][run_document_generator]") {
+TEST_CASE("a run date that is no date is refused for an end of day run",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.risk.market_data_type = "eod";
     in.risk.market_data_date.clear();
@@ -302,7 +317,8 @@ TEST_CASE("the engine settings binding names no file", "[service][run_document_g
     CHECK(files[0].parameter == "conventionsFile");
 }
 
-TEST_CASE("an analytic names the file it writes with the well known name", "[service][run_document_generator]") {
+TEST_CASE("an analytic names the file it writes with the well known name",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.analytics = {analytic("npv", 1)};
     const auto d = generate_run_document(in);
@@ -328,7 +344,8 @@ TEST_CASE("an analytic that is off names no file", "[service][run_document_gener
     CHECK(d.analytics[1].parameters.empty());
 }
 
-TEST_CASE("a reader takes the name of the analytic that writes the file", "[service][run_document_generator]") {
+TEST_CASE("a reader takes the name of the analytic that writes the file",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.analytics = {analytic("sensitivity", 1), analytic("parametricVar", 2)};
     const auto d = generate_run_document(in);
@@ -350,14 +367,16 @@ TEST_CASE("a reader follows the name its writer was given", "[service][run_docum
     CHECK(read->value == "mine.csv");
 }
 
-TEST_CASE("a reader whose writer is not in the run names no file", "[service][run_document_generator]") {
+TEST_CASE("a reader whose writer is not in the run names no file",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.analytics = {analytic("npv", 1), analytic("parametricVar", 2)};
     const auto d = generate_run_document(in);
     CHECK(parameter_of(d.analytics[1], "sensitivityInputFile") == nullptr);
 }
 
-TEST_CASE("a reader whose writer is switched off names no file", "[service][run_document_generator]") {
+TEST_CASE("a reader whose writer is switched off names no file",
+          "[service][run_document_generator]") {
     auto in = inputs();
     in.analytics = {analytic("sensitivity", 1, "N"), analytic("parametricVar", 2)};
     const auto d = generate_run_document(in);

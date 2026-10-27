@@ -181,7 +181,8 @@ std::vector<std::string> codes_of(const std::vector<pricing_engines_document_pro
 
 }
 
-TEST_CASE("a pricing engines document saves, reads back and deletes by its configuration", "[analytics][configuration_document][handler]") {
+TEST_CASE("a pricing engines document saves, reads back and deletes by its configuration",
+          "[analytics][configuration_document][handler]") {
     fixture f;
     const auto token = f.token({"analytics::pricing_model_configs:read",
                                 "analytics::pricing_model_configs:write",
@@ -225,7 +226,8 @@ TEST_CASE("a pricing engines document saves, reads back and deletes by its confi
     CHECK_FALSE(gone->success);
 }
 
-TEST_CASE("saving a pricing engines document again removes what it omits", "[analytics][configuration_document][handler]") {
+TEST_CASE("saving a pricing engines document again removes what it omits",
+          "[analytics][configuration_document][handler]") {
     fixture f;
     const auto token = f.token(
         {"analytics::pricing_model_configs:read", "analytics::pricing_model_configs:write"});
@@ -291,7 +293,8 @@ TEST_CASE("saving a pricing engines document again removes what it omits", "[ana
     CHECK(after.parameters.empty());
 }
 
-TEST_CASE("a today's market document saves and reads back by its configuration", "[analytics][configuration_document][handler]") {
+TEST_CASE("a today's market document saves and reads back by its configuration",
+          "[analytics][configuration_document][handler]") {
     fixture f;
     const auto token = f.token(
         {"analytics::todays_market_configs:read", "analytics::todays_market_configs:write"});
@@ -321,7 +324,8 @@ TEST_CASE("a today's market document saves and reads back by its configuration",
     CHECK(got->document.config.id == doc.config.id);
 }
 
-TEST_CASE("a caller without the permission is refused", "[analytics][configuration_document][handler]") {
+TEST_CASE("a caller without the permission is refused",
+          "[analytics][configuration_document][handler]") {
     fixture f;
     const auto token = f.token({"analytics::pricing_model_configs:read"});
     const auto reply = request(f.nats,
@@ -400,7 +404,8 @@ TEST_CASE("a product with no engine is refused", "[analytics][configuration_docu
     CHECK_FALSE(stored(f, token, doc));
 }
 
-TEST_CASE("a product that states the same setting twice is refused", "[analytics][configuration_document][handler]") {
+TEST_CASE("a product that states the same setting twice is refused",
+          "[analytics][configuration_document][handler]") {
     fixture f;
     const auto token = f.token(save_permissions);
     auto gen = ores::testing::make_generation_context(f.db);
@@ -438,7 +443,8 @@ TEST_CASE("a setting with no value is refused", "[analytics][configuration_docum
     CHECK_FALSE(stored(f, token, doc));
 }
 
-TEST_CASE("every problem of a save is refused at once", "[analytics][configuration_document][handler]") {
+TEST_CASE("every problem of a save is refused at once",
+          "[analytics][configuration_document][handler]") {
     fixture f;
     const auto token = f.token(save_permissions);
     auto gen = ores::testing::make_generation_context(f.db);

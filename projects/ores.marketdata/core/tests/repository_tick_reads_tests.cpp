@@ -80,7 +80,8 @@ TEST_CASE("a_tick_is_the_point_of_a_series_without_coordinates", "[repository][t
     CHECK(points.front().source.empty());
 }
 
-TEST_CASE("a_snapshot_reads_the_latest_tick_of_each_coordinate_at_or_before_the_instant", "[repository][ticks]") {
+TEST_CASE("a_snapshot_reads_the_latest_tick_of_each_coordinate_at_or_before_the_instant",
+          "[repository][ticks]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto s = generate_synthetic_market_series(ctx);
@@ -158,7 +159,8 @@ TEST_CASE("an_observation_row_wins_a_tie_with_a_tick_at_the_same_instant", "[rep
     CHECK(points.front().source == "feed.test");
 }
 
-TEST_CASE("each_bucket_of_the_evolution_reads_the_latest_tick_at_its_boundary", "[repository][ticks]") {
+TEST_CASE("each_bucket_of_the_evolution_reads_the_latest_tick_at_its_boundary",
+          "[repository][ticks]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto s = generate_synthetic_market_series(ctx);
@@ -212,7 +214,8 @@ TEST_CASE("the_instants_of_a_series_are_the_times_of_its_ticks", "[repository][t
     CHECK(stated.front().points.front().value == "2");
 }
 
-TEST_CASE("the_numbers_of_many_datums_are_assigned_together_and_stay_the_same", "[repository][ticks]") {
+TEST_CASE("the_numbers_of_many_datums_are_assigned_together_and_stay_the_same",
+          "[repository][ticks]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     auto first = generate_synthetic_market_series(ctx);

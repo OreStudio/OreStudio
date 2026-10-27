@@ -93,7 +93,8 @@ TEST_CASE("notify_systemd_ready sends READY=1 to the socket in NOTIFY_SOCKET", "
 // systemd names an abstract socket with a leading '@'; on the wire that is a
 // leading NUL byte, and the notification must not go to a literal file named
 // "@...".
-TEST_CASE("notify_systemd_ready sends to an abstract socket named with a leading at", "[systemd_notify]") {
+TEST_CASE("notify_systemd_ready sends to an abstract socket named with a leading at",
+          "[systemd_notify]") {
 #if !defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
     SKIP("boost::asio local sockets are unavailable on this platform");
 #elif !defined(__linux__)

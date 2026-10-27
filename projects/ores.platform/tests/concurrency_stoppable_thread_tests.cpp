@@ -83,7 +83,10 @@ TEMPLATE_TEST_CASE("a_wait_returns_at_once_when_a_stop_was_requested_before_it",
     CHECK(std::chrono::steady_clock::now() - started < woken_within);
 }
 
-TEMPLATE_TEST_CASE("a_stop_wakes_a_wait_that_is_in_progress", "[concurrency][stoppable_thread]", portable_kit, selected_kit) {
+TEMPLATE_TEST_CASE("a_stop_wakes_a_wait_that_is_in_progress",
+                   "[concurrency][stoppable_thread]",
+                   portable_kit,
+                   selected_kit) {
     typename TestType::source source;
     auto waiter = std::async(std::launch::async, [token = source.get_token()] {
         const auto started = std::chrono::steady_clock::now();
@@ -100,7 +103,10 @@ TEMPLATE_TEST_CASE("a_stop_wakes_a_wait_that_is_in_progress", "[concurrency][sto
     CHECK(waited < woken_within);
 }
 
-TEMPLATE_TEST_CASE("tokens_of_one_source_share_its_state", "[concurrency][stoppable_thread]", portable_kit, selected_kit) {
+TEMPLATE_TEST_CASE("tokens_of_one_source_share_its_state",
+                   "[concurrency][stoppable_thread]",
+                   portable_kit,
+                   selected_kit) {
     typename TestType::source source;
     const auto first = source.get_token();
     const auto second = source.get_token();
@@ -126,7 +132,10 @@ TEMPLATE_TEST_CASE("a_token_with_no_state_is_never_stopped_and_waits_the_span",
     CHECK_FALSE(none.stop_possible());
 }
 
-TEMPLATE_TEST_CASE("a_moved_from_source_does_nothing", "[concurrency][stoppable_thread]", portable_kit, selected_kit) {
+TEMPLATE_TEST_CASE("a_moved_from_source_does_nothing",
+                   "[concurrency][stoppable_thread]",
+                   portable_kit,
+                   selected_kit) {
     typename TestType::source source;
     const typename TestType::source taken = std::move(source);
 

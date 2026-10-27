@@ -69,9 +69,8 @@ auto read_file(const fs::path& path) -> std::string {
  * either the text or the values.
  */
 template <typename Record>
-auto write_back(const document_type& doc,
-                std::string_view text,
-                Record& record) -> std::expected<std::string, std::string> {
+auto write_back(const document_type& doc, std::string_view text, Record& record)
+    -> std::expected<std::string, std::string> {
     const auto bound = binder::bind(doc, text, &record);
     if (!bound)
         return std::unexpected("the document does not bind: " + bound.error().message);
@@ -292,7 +291,8 @@ TEST_CASE("an_enumeration_index_past_its_spellings_is_refused", "[ore][xml][emit
     CHECK(emitted.error().message.find("spelling") != std::string::npos);
 }
 
-TEST_CASE("every_generated_family_writes_back_every_document_in_the_corpus", "[ore][xml][emitter]") {
+TEST_CASE("every_generated_family_writes_back_every_document_in_the_corpus",
+          "[ore][xml][emitter]") {
     auto lg(make_logger(test_suite));
 
     const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";

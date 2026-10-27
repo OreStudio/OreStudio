@@ -256,7 +256,8 @@ TEST_CASE("conventions_bond_yield_round_trips", "[ore][xml][roundtrip][conventio
 // all nine, including a zero-valued fixing days and a false resettable flag,
 // which are the two cases a mapper that tested the value rather than the
 // presence would drop.
-TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive", "[ore][xml][roundtrip][conventions]") {
+TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive",
+          "[ore][xml][roundtrip][conventions]") {
     const std::string text = R"(<Conventions>
   <CrossCurrencyFixFloat>
     <Id>USD-TRY-XCCY-FIX-FLOAT-CONVENTIONS</Id>
@@ -309,7 +310,8 @@ TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive", "[ore]
     CHECK(again[0] == out);
 }
 
-TEST_CASE("conventions_inflation_swap_publication_schedules_are_modelled", "[ore][xml][roundtrip][conventions]") {
+TEST_CASE("conventions_inflation_swap_publication_schedules_are_modelled",
+          "[ore][xml][roundtrip][conventions]") {
     int files_with_a_publication_schedule = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
@@ -341,7 +343,8 @@ TEST_CASE("conventions_inflation_swap_publication_schedules_are_modelled", "[ore
 // when one appears. This case builds that document and asserts the mapper
 // counts the field instead of dropping it: a skip that is counted keeps the
 // file out of the round-trip set, and a skip that is silent loses content.
-TEST_CASE("conventions_zero_inflation_index_rebasing_events_are_counted", "[ore][xml][roundtrip][conventions]") {
+TEST_CASE("conventions_zero_inflation_index_rebasing_events_are_counted",
+          "[ore][xml][roundtrip][conventions]") {
     const std::string without = R"(<Conventions>
   <ZeroInflationIndex>
     <Id>UKRPI</Id>
@@ -428,7 +431,8 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", "[ore][xml][roundtrip][con
     CHECK(files == 29);
 }
 
-TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", "[ore][xml][roundtrip][conventions]") {
+TEST_CASE("conventions_files_using_only_modelled_categories_round_trip",
+          "[ore][xml][roundtrip][conventions]") {
     const auto kind = conventions_kind();
     int walked = 0;
 
@@ -550,7 +554,8 @@ std::map<std::string, std::string> read_digests(const std::filesystem::path& pat
 
 }
 
-TEST_CASE("the exported conventions corpus matches its recorded digests", "[ore][xml][roundtrip][conventions]") {
+TEST_CASE("the exported conventions corpus matches its recorded digests",
+          "[ore][xml][roundtrip][conventions]") {
     const auto root = corpus_root();
     const auto recorded = read_digests(digests_path());
     REQUIRE_FALSE(recorded.empty());

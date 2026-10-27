@@ -288,7 +288,8 @@ TEST_CASE("read_nonexistent_party_country", "[repository][party_country]") {
     CHECK(keeper_rows[0].change_commentary == keeper.change_commentary);
 }
 
-TEST_CASE("a_closed_party_country_is_in_its_history_with_the_time_it_ended", "[repository][party_country]") {
+TEST_CASE("a_closed_party_country_is_in_its_history_with_the_time_it_ended",
+          "[repository][party_country]") {
     scoped_database_helper h;
 
     party_repository party_repo;
@@ -342,7 +343,8 @@ TEST_CASE("a_party_country_history_reads_only_its_own_party", "[repository][part
     CHECK(repo.read_all_by_party(generate()).empty());
 }
 
-TEST_CASE("the_party_country_history_provider_numbers_each_link_on_its_own", "[repository][party_country]") {
+TEST_CASE("the_party_country_history_provider_numbers_each_link_on_its_own",
+          "[repository][party_country]") {
     scoped_database_helper h;
 
     party_repository party_repo;

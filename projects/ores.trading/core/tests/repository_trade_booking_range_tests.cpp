@@ -132,7 +132,8 @@ system_clock::time_point at(int y, unsigned m, unsigned d, int hour, int minute 
 
 }
 
-TEST_CASE("a date range holds the bookings whose trade date lies in it, bounds included", "[repository][list_filter][range]") {
+TEST_CASE("a date range holds the bookings whose trade date lies in it, bounds included",
+          "[repository][list_filter][range]") {
     fixture f;
     const auto first = f.write_booking(ymd(2026, 3, 1), std::nullopt);
     const auto middle = f.write_booking(ymd(2026, 3, 15), std::nullopt);
@@ -162,7 +163,8 @@ TEST_CASE("a range excludes a booking that has no trade date", "[repository][lis
     CHECK(f.read(range) == std::vector<uuid>{dated});
 }
 
-TEST_CASE("a date as the upper bound of a timestamp range holds the whole of that day", "[repository][list_filter][range]") {
+TEST_CASE("a date as the upper bound of a timestamp range holds the whole of that day",
+          "[repository][list_filter][range]") {
     fixture f;
     const auto morning = f.write_booking(std::nullopt, at(2026, 3, 5, 10));
     const auto late = f.write_booking(std::nullopt, at(2026, 3, 5, 23, 59));
@@ -182,7 +184,8 @@ TEST_CASE("a date as the upper bound of a timestamp range holds the whole of tha
     CHECK(f.read(range) == sorted({morning, late}));
 }
 
-TEST_CASE("a UTC timestamp bound is the instant itself, included", "[repository][list_filter][range]") {
+TEST_CASE("a UTC timestamp bound is the instant itself, included",
+          "[repository][list_filter][range]") {
     fixture f;
     const auto early = f.write_booking(std::nullopt, at(2026, 3, 5, 9));
     const auto exact = f.write_booking(std::nullopt, at(2026, 3, 5, 10));

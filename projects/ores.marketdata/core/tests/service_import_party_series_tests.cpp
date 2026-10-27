@@ -105,7 +105,8 @@ std::vector<listed_series> surfaces_seen_by(const ores::database::context& ctx) 
 
 }
 
-TEST_CASE("two_parties_each_import_the_same_surface_into_series_of_their_own", "[service][import_service][party]") {
+TEST_CASE("two_parties_each_import_the_same_surface_into_series_of_their_own",
+          "[service][import_service][party]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -135,7 +136,8 @@ TEST_CASE("two_parties_each_import_the_same_surface_into_series_of_their_own", "
     CHECK(seen_by_b[0].axes == std::vector<std::string>{"expiry", "strike_label"});
 }
 
-TEST_CASE("a_party_importing_again_updates_its_own_series_and_adds_none", "[service][import_service][party]") {
+TEST_CASE("a_party_importing_again_updates_its_own_series_and_adds_none",
+          "[service][import_service][party]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

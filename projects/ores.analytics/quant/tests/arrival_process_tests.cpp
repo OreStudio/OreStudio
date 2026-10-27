@@ -137,7 +137,8 @@ TEST_CASE("a hawkes stream settles at its long-run mean rate", "[arrival_process
     CHECK(mean_gap(process, 200000) == Catch::Approx(0.001).epsilon(0.03));
 }
 
-TEST_CASE("a hawkes stream clusters: the Fano factor is one over one minus n squared", "[arrival_process]") {
+TEST_CASE("a hawkes stream clusters: the Fano factor is one over one minus n squared",
+          "[arrival_process]") {
     // Windows of a second are ten bursts long (1 / beta = 0.1 s), so the count
     // inside one window sees the clustering. For n = 0.5 the Fano factor is 4.
     hawkes_arrival_process process(10.0, 0.5, 10.0, 13);
@@ -147,7 +148,8 @@ TEST_CASE("a hawkes stream clusters: the Fano factor is one over one minus n squ
     CHECK(fano_factor(counts) == Catch::Approx(4.0).epsilon(0.15));
 }
 
-TEST_CASE("the rescaled gaps of a hawkes stream are exponential with mean one", "[arrival_process]") {
+TEST_CASE("the rescaled gaps of a hawkes stream are exponential with mean one",
+          "[arrival_process]") {
     // The time-rescaling test: integrate the intensity over each gap. For the
     // exponential kernel that integral is closed form, and the compensated
     // gaps must be Exp(1), whose mean and variance are both one.
@@ -208,7 +210,8 @@ TEST_CASE("the arrival rules refuse what cannot work", "[arrival_process]") {
     CHECK(validate_arrival_process_parameters("hawkes", 3600.0, 0.0, 10.0).valid);
 }
 
-TEST_CASE("the factory converts ticks per hour to the process unit and refuses a bad mode", "[arrival_process]") {
+TEST_CASE("the factory converts ticks per hour to the process unit and refuses a bad mode",
+          "[arrival_process]") {
     const auto hourly =
         ores::analytics::quant::service::process_factory::make_arrival_process("periodic", 3600.0);
     CHECK(hourly->next_gap() <= Catch::Approx(1.0));

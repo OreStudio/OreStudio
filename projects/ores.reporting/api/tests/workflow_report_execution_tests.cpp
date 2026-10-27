@@ -81,7 +81,8 @@ std::string packaging_result(const std::string& uri) {
 
 }
 
-TEST_CASE("a run that executes every phase builds the chain it always built", "[workflow][reporting]") {
+TEST_CASE("a run that executes every phase builds the chain it always built",
+          "[workflow][reporting]") {
     const auto steps = steps_for(run_request("execute", "", "execute"));
 
     CHECK(names_of(steps) == std::vector<std::string>{"gather_trades",
@@ -131,7 +132,8 @@ TEST_CASE("submission reads whichever step filled the input role", "[workflow][r
     CHECK(cmd->tarball_uris == std::vector<std::string>{"prepared/input.tar.gz"});
 }
 
-TEST_CASE("the substitute is indistinguishable to the step that follows it", "[workflow][reporting]") {
+TEST_CASE("the substitute is indistinguishable to the step that follows it",
+          "[workflow][reporting]") {
     const auto json = run_request("execute", "", "execute");
     const auto executed = steps_for(json);
     const auto substituted =
@@ -158,7 +160,8 @@ TEST_CASE("a consumer whose result is absent fails rather than guessing", "[work
     CHECK_THROWS_AS(steps[2].build_command(json, {}), std::runtime_error);
 }
 
-TEST_CASE("a consumer whose result cannot be read fails rather than guessing", "[workflow][reporting]") {
+TEST_CASE("a consumer whose result cannot be read fails rather than guessing",
+          "[workflow][reporting]") {
     const auto json = run_request("execute", "", "execute");
     const auto steps = steps_for(json);
 
@@ -236,7 +239,8 @@ TEST_CASE("substituting without naming an input fails at chain build", "[workflo
     CHECK_THROWS_AS(steps_for(run_request("substitute", "", "execute")), std::runtime_error);
 }
 
-TEST_CASE("a package instance prepares the input and stops before the grid", "[workflow][reporting]") {
+TEST_CASE("a package instance prepares the input and stops before the grid",
+          "[workflow][reporting]") {
     const auto steps = steps_for(run_request("execute", "", "execute", "package"));
 
     CHECK(names_of(steps) == std::vector<std::string>{"gather_trades",
@@ -252,7 +256,8 @@ TEST_CASE("the post-processing of a package instance changes nothing, because no
           names_of(steps_for(run_request("execute", "", "execute", "package"))));
 }
 
-TEST_CASE("a package instance runs the very steps a production instance runs", "[workflow][reporting]") {
+TEST_CASE("a package instance runs the very steps a production instance runs",
+          "[workflow][reporting]") {
     const auto package = steps_for(run_request("execute", "", "execute", "package"));
     const auto production = steps_for(run_request("execute", "", "execute", "production"));
 
@@ -279,12 +284,14 @@ TEST_CASE("a report that substitutes its input has no packages to build", "[work
         std::runtime_error);
 }
 
-TEST_CASE("an instance kind nobody implements is refused before a step is dispatched", "[workflow][reporting]") {
+TEST_CASE("an instance kind nobody implements is refused before a step is dispatched",
+          "[workflow][reporting]") {
     CHECK_THROWS_AS(steps_for(run_request("execute", "", "execute", "rehearsal")),
                     std::runtime_error);
 }
 
-TEST_CASE("the instance kinds this component implements are production and package", "[workflow][reporting]") {
+TEST_CASE("the instance kinds this component implements are production and package",
+          "[workflow][reporting]") {
     CHECK(wf::is_known_instance_kind("production"));
     CHECK(wf::is_known_instance_kind("package"));
     CHECK_FALSE(wf::is_known_instance_kind("rehearsal"));

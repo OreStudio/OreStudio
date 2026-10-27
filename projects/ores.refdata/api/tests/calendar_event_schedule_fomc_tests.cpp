@@ -239,7 +239,8 @@ TEST_CASE("tenor_schedule calendar is optional", "[calendar_event][tenor_schedul
     CHECK(*fomc.calendar_code == "US.FOMC");
 }
 
-TEST_CASE("FOMC_MEETING points at the meeting events on US.FOMC", "[calendar_event][tenor_schedule][fomc]") {
+TEST_CASE("FOMC_MEETING points at the meeting events on US.FOMC",
+          "[calendar_event][tenor_schedule][fomc]") {
     // invariant.FomcSchedulePointsAtMeetingEvents as a data contract over
     // the seeded tenor_schedules rows (transcribed from
     // refdata_tenor_schedules_populate.sql): the FOMC_MEETING schedule is
@@ -258,7 +259,8 @@ TEST_CASE("FOMC_MEETING points at the meeting events on US.FOMC", "[calendar_eve
     CHECK(!roll.diary_entry_type);
 }
 
-TEST_CASE("US.FOMC meeting events satisfy the EnterFomcMeeting rule", "[calendar_event][tenor_schedule][fomc]") {
+TEST_CASE("US.FOMC meeting events satisfy the EnterFomcMeeting rule",
+          "[calendar_event][tenor_schedule][fomc]") {
     using namespace std::chrono;
 
     // rule-success.EnterFomcMeeting as a data contract: the rule's requires
@@ -287,7 +289,8 @@ TEST_CASE("US.FOMC meeting events satisfy the EnterFomcMeeting rule", "[calendar
     }
 }
 
-TEST_CASE("tenor_convention_resolution exposes its declared fields", "[calendar_event][tenor_schedule][fomc]") {
+TEST_CASE("tenor_convention_resolution exposes its declared fields",
+          "[calendar_event][tenor_schedule][fomc]") {
     tenor_convention_resolution r;
     r.convention_code = "RATES_SPOT_FOMC";
     r.tenor_code = "2F";
@@ -309,7 +312,8 @@ TEST_CASE("tenor_convention_resolution exposes its declared fields", "[calendar_
     CHECK(*r.schedule_step_count == 2);
 }
 
-TEST_CASE("tenor_convention_resolution schedule_step_count is optional", "[calendar_event][tenor_schedule][fomc]") {
+TEST_CASE("tenor_convention_resolution schedule_step_count is optional",
+          "[calendar_event][tenor_schedule][fomc]") {
     // The spec declares schedule_step_count optional: rows with no schedule
     // walk (the plain RATES_SPOT_FORWARD resolutions) leave it null...
     tenor_convention_resolution plain;
@@ -329,7 +333,8 @@ TEST_CASE("tenor_convention_resolution schedule_step_count is optional", "[calen
     CHECK(*fomc.schedule_step_count == 2);
 }
 
-TEST_CASE("tenor_convention_resolution anchor_override is optional", "[calendar_event][tenor_schedule][fomc]") {
+TEST_CASE("tenor_convention_resolution anchor_override is optional",
+          "[calendar_event][tenor_schedule][fomc]") {
     // entity-optional.TenorResolution.anchor_override: a per-tenor deviation
     // from the convention's measured_from default. Plain rows leave it null
     // -- the RATES_SPOT_FORWARD membership rows measure from the
@@ -377,7 +382,8 @@ TEST_CASE("tenor_convention_resolution anchor_override is optional", "[calendar_
     CHECK(*cds.anchor_override == fomc_convention.measured_from);
 }
 
-TEST_CASE("RATES_SPOT_FOMC convention carries the SPOT/SCHEDULE_STEP binding", "[calendar_event][tenor_schedule][fomc]") {
+TEST_CASE("RATES_SPOT_FOMC convention carries the SPOT/SCHEDULE_STEP binding",
+          "[calendar_event][tenor_schedule][fomc]") {
     // entity-fields.TenorConvention: the seeded convention row
     // (refdata_tenor_conventions_populate.sql, task D2) binds measured_from
     // SPOT and resolution_algorithm SCHEDULE_STEP.
@@ -400,7 +406,8 @@ TEST_CASE("RATES_SPOT_FOMC convention carries the SPOT/SCHEDULE_STEP binding", "
     CHECK(c.resolution_algorithm == "SCHEDULE_STEP");
 }
 
-TEST_CASE("tenor is FOMC when SPECIAL/NONE with multiplier at least one", "[calendar_event][tenor_schedule][fomc]") {
+TEST_CASE("tenor is FOMC when SPECIAL/NONE with multiplier at least one",
+          "[calendar_event][tenor_schedule][fomc]") {
     // derived.Tenor.is_fomc, evaluated over the seeded tenors (transcribed
     // from refdata_tenors_populate.sql, task D2): kind = SPECIAL and
     // unit = NONE and multiplier >= 1.

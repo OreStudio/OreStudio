@@ -64,7 +64,8 @@ using ores::testing::scoped_database_helper;
  * into a document again. Passing the in-memory round trip proves the mapper;
  * this proves the tables hold what the mapper produces.
  */
-TEST_CASE("credit_simulation_roundtrip_through_the_database", "[creditsimulation][database][roundtrip]") {
+TEST_CASE("credit_simulation_roundtrip_through_the_database",
+          "[creditsimulation][database][roundtrip]") {
     auto lg(make_logger(test_suite));
     scoped_database_helper h;
 
@@ -141,7 +142,8 @@ TEST_CASE("credit_simulation_roundtrip_through_the_database", "[creditsimulation
     CHECK(exported.entities.entity.size() == original.entities.entity.size());
 }
 
-TEST_CASE("a party sees only its own credit simulation configuration", "[creditsimulation][database][roundtrip]") {
+TEST_CASE("a party sees only its own credit simulation configuration",
+          "[creditsimulation][database][roundtrip]") {
     scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
     const auto original =

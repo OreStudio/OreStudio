@@ -167,7 +167,8 @@ TEST_CASE("workflow_run_commands_reads_the_child_the_last_step_hands_on", "[comm
     CHECK(handoff->tenant_id == "0d2b1c44-6f6a-4f0e-9d33-71d4bb0c1f21");
 }
 
-TEST_CASE("workflow_run_commands_treats_a_step_that_names_no_child_as_nothing_handed_on", "[commands]") {
+TEST_CASE("workflow_run_commands_treats_a_step_that_names_no_child_as_nothing_handed_on",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     // A result that names an empty child and one that records nothing at all
@@ -214,7 +215,8 @@ TEST_CASE("workflow_run_commands_reads_only_the_last_completed_step", "[commands
     CHECK(last->name == "start_tenant_setup");
 }
 
-TEST_CASE("workflow_run_commands_finds_no_handoff_step_in_a_run_that_completed_none", "[commands]") {
+TEST_CASE("workflow_run_commands_finds_no_handoff_step_in_a_run_that_completed_none",
+          "[commands]") {
     auto lg(make_logger(test_suite));
 
     auto steps =

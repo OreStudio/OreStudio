@@ -274,7 +274,8 @@ TEST_CASE("from_iso8601_utc_refuses_a_malformed_fraction", "[time][datetime]") {
     CHECK_THROWS_AS(datetime::from_iso8601_utc("2026-04-08 10:30:45.12xZ"), std::invalid_argument);
 }
 
-TEST_CASE("to_iso8601_utc_writes_the_same_bytes_whatever_the_process_timezone", "[time][datetime]") {
+TEST_CASE("to_iso8601_utc_writes_the_same_bytes_whatever_the_process_timezone",
+          "[time][datetime]") {
     // The server's convention, not a second one: an instant must cross the
     // wire as the same bytes whether the process reading it runs in UTC or in
     // a zone with a positive or negative offset. Every writer in the system

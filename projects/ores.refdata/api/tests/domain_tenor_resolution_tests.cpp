@@ -76,7 +76,8 @@ make_resolution(std::string convention_code,
 
 }
 
-TEST_CASE("resolve_end_date_uses_tenor_multiplier_for_period_tenors_from_spot", "[tenor_resolution]") {
+TEST_CASE("resolve_end_date_uses_tenor_multiplier_for_period_tenors_from_spot",
+          "[tenor_resolution]") {
     using namespace std::chrono;
 
     const auto oneMonth = make_period_tenor("1M", "MONTH", 1);
@@ -170,7 +171,8 @@ TEST_CASE("resolve_end_date_rejects_special_tenor_missing_offset", "[tenor_resol
                     std::invalid_argument);
 }
 
-TEST_CASE("resolve_end_date_migrated_credit_cds_imm_resolves_to_pinned_roll_quarter", "[tenor_resolution]") {
+TEST_CASE("resolve_end_date_migrated_credit_cds_imm_resolves_to_pinned_roll_quarter",
+          "[tenor_resolution]") {
     using namespace std::chrono;
 
     const auto oneYear = make_period_tenor("1Y", "YEAR", 1);
@@ -191,7 +193,8 @@ TEST_CASE("resolve_end_date_migrated_credit_cds_imm_resolves_to_pinned_roll_quar
     CHECK(end == year_month_day{year(2027), month(3), day(20)});
 }
 
-TEST_CASE("resolve_end_date_walks_roll_quarter_from_anchor_with_zero_offset", "[tenor_resolution]") {
+TEST_CASE("resolve_end_date_walks_roll_quarter_from_anchor_with_zero_offset",
+          "[tenor_resolution]") {
     using namespace std::chrono;
 
     const auto rollTenor = make_special_tenor("RQ");

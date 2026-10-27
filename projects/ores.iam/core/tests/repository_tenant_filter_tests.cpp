@@ -83,7 +83,8 @@ std::vector<ores::iam::domain::tenant> read(ores::testing::database_helper& h,
 
 using ores::testing::database_helper;
 
-TEST_CASE("a search matches the code, the name and the hostname, ignoring case", "[repository][list_filter]") {
+TEST_CASE("a search matches the code, the name and the hostname, ignoring case",
+          "[repository][list_filter]") {
     database_helper h;
     const auto m = unique_marker();
     write_tenant(h, m + "_a", "Filter Fixture " + m);
@@ -96,7 +97,8 @@ TEST_CASE("a search matches the code, the name and the hostname, ignoring case",
     CHECK(codes(read(h, {.search = m + "_a.EXAMPLE"})) == std::vector<std::string>{m + "_a"});
 }
 
-TEST_CASE("a search folds letters outside ASCII as the database does", "[repository][list_filter]") {
+TEST_CASE("a search folds letters outside ASCII as the database does",
+          "[repository][list_filter]") {
     database_helper h;
     const auto m = unique_marker();
     write_tenant(h, m + "_a", "Société " + m);
@@ -173,7 +175,8 @@ TEST_CASE("the service answers a filtered page and its total", "[repository][lis
     CHECK(r.total == 2);
 }
 
-TEST_CASE("the service refuses a one-of list longer than 1000 values", "[repository][list_filter]") {
+TEST_CASE("the service refuses a one-of list longer than 1000 values",
+          "[repository][list_filter]") {
     database_helper h;
     ores::iam::service::tenant_service service(system_context(h));
 

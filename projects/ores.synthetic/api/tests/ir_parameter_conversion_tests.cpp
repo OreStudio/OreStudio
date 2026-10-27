@@ -36,7 +36,8 @@ const ir_simple_view sample{
 
 }
 
-TEST_CASE("ir_parameter_conversion turns a half-life into κ and a move into σ for Vasicek", "[ir_parameter_conversion]") {
+TEST_CASE("ir_parameter_conversion turns a half-life into κ and a move into σ for Vasicek",
+          "[ir_parameter_conversion]") {
     const auto p = ir_parameters_from_simple("VASICEK", sample);
     CHECK(p.at("kappa") == Approx(std::log(2.0) / 2.0));
     CHECK(p.at("theta") == Approx(0.04));
@@ -44,18 +45,21 @@ TEST_CASE("ir_parameter_conversion turns a half-life into κ and a move into σ 
     CHECK(p.at("initial_rate") == Approx(0.03));
 }
 
-TEST_CASE("ir_parameter_conversion scales σ by the square root of the level for CIR", "[ir_parameter_conversion]") {
+TEST_CASE("ir_parameter_conversion scales σ by the square root of the level for CIR",
+          "[ir_parameter_conversion]") {
     const auto p = ir_parameters_from_simple("COX_INGERSOLL_ROSS", sample);
     CHECK(p.at("sigma") == Approx(0.01 / std::sqrt(0.04)));
 }
 
-TEST_CASE("ir_parameter_conversion writes Black-Karasinski on the log rate", "[ir_parameter_conversion]") {
+TEST_CASE("ir_parameter_conversion writes Black-Karasinski on the log rate",
+          "[ir_parameter_conversion]") {
     const auto p = ir_parameters_from_simple("BLACK_KARASINSKI", sample);
     CHECK(p.at("theta") == Approx(std::log(0.04)));
     CHECK(p.at("sigma") == Approx(0.01 / 0.04));
 }
 
-TEST_CASE("ir_parameter_conversion gives Two-Factor Gaussian a derived second factor", "[ir_parameter_conversion]") {
+TEST_CASE("ir_parameter_conversion gives Two-Factor Gaussian a derived second factor",
+          "[ir_parameter_conversion]") {
     const auto p = ir_parameters_from_simple("TWO_FACTOR_GAUSSIAN", sample);
     CHECK(p.size() == 7);
     CHECK(p.at("kappa_y") == Approx(0.6 * p.at("kappa_x")));
@@ -66,7 +70,8 @@ TEST_CASE("ir_parameter_conversion gives Two-Factor Gaussian a derived second fa
     CHECK(total == Approx(0.01));
 }
 
-TEST_CASE("ir_parameter_conversion reads every engine's parameters back to the same view", "[ir_parameter_conversion]") {
+TEST_CASE("ir_parameter_conversion reads every engine's parameters back to the same view",
+          "[ir_parameter_conversion]") {
     for (const auto* engine : {"VASICEK",
                                "COX_INGERSOLL_ROSS",
                                "HULL_WHITE",
@@ -84,7 +89,8 @@ TEST_CASE("ir_parameter_conversion reads every engine's parameters back to the s
     }
 }
 
-TEST_CASE("ir_parameter_conversion warns when a CIR rate can reach zero", "[ir_parameter_conversion]") {
+TEST_CASE("ir_parameter_conversion warns when a CIR rate can reach zero",
+          "[ir_parameter_conversion]") {
     auto p = ir_parameters_from_simple("COX_INGERSOLL_ROSS", sample);
     CHECK(ir_simple_from_parameters("COX_INGERSOLL_ROSS", p).caution.empty());
     p["sigma"] = 0.5;
@@ -93,11 +99,13 @@ TEST_CASE("ir_parameter_conversion warns when a CIR rate can reach zero", "[ir_p
               .caution.empty());
 }
 
-TEST_CASE("ir_parameter_conversion accepts the process type in either case", "[ir_parameter_conversion]") {
+TEST_CASE("ir_parameter_conversion accepts the process type in either case",
+          "[ir_parameter_conversion]") {
     CHECK(ir_parameters_from_simple("vasicek", sample).size() == 4);
 }
 
-TEST_CASE("ir_parameter_conversion has no simple view without a reversion", "[ir_parameter_conversion]") {
+TEST_CASE("ir_parameter_conversion has no simple view without a reversion",
+          "[ir_parameter_conversion]") {
     auto p = ir_parameters_from_simple("VASICEK", sample);
     p["kappa"] = 0.0;
     const auto reading = ir_simple_from_parameters("VASICEK", p);
@@ -105,7 +113,8 @@ TEST_CASE("ir_parameter_conversion has no simple view without a reversion", "[ir
     CHECK_FALSE(reading.reason.empty());
 }
 
-TEST_CASE("ir_parameter_conversion has no simple view for a hand-set second factor", "[ir_parameter_conversion]") {
+TEST_CASE("ir_parameter_conversion has no simple view for a hand-set second factor",
+          "[ir_parameter_conversion]") {
     auto p = ir_parameters_from_simple("TWO_FACTOR_GAUSSIAN", sample);
     p["rho"] = 0.4;
     const auto reading = ir_simple_from_parameters("TWO_FACTOR_GAUSSIAN", p);

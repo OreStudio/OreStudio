@@ -698,7 +698,8 @@ tally check(const std::vector<catalogue_line>& lines) {
 
 }
 
-TEST_CASE("the_codec_reads_every_documented_ore_form_as_ore_does", "[marketdata][datum][ore_key_codec]") {
+TEST_CASE("the_codec_reads_every_documented_ore_form_as_ore_does",
+          "[marketdata][datum][ore_key_codec]") {
     const auto t = check(catalogue_forms());
     CHECK(t.lines == catalogue_forms().size());
     for (const auto& f : t.failures)
@@ -714,7 +715,8 @@ TEST_CASE("the_codec_reads_every_corpus_key_as_ore_does", "[marketdata][datum][o
     CHECK(t.failures.empty());
 }
 
-TEST_CASE("the_codec_admits_the_quote_types_ore_admits_for_each_form", "[marketdata][datum][ore_key_codec]") {
+TEST_CASE("the_codec_admits_the_quote_types_ore_admits_for_each_form",
+          "[marketdata][datum][ore_key_codec]") {
     const auto t = check(catalogue_quote_matrix());
     CHECK(t.lines == catalogue_quote_matrix().size());
     for (const auto& f : t.failures)
@@ -722,7 +724,8 @@ TEST_CASE("the_codec_admits_the_quote_types_ore_admits_for_each_form", "[marketd
     CHECK(t.failures.empty());
 }
 
-TEST_CASE("every_ore_instrument_and_quote_type_is_modelled_and_read", "[marketdata][datum][ore_key_codec]") {
+TEST_CASE("every_ore_instrument_and_quote_type_is_modelled_and_read",
+          "[marketdata][datum][ore_key_codec]") {
     // Each token ORE's parser reads must open a key that both ORE and the
     // codec accept, so an alias or a type with no documented form fails here.
     std::set<std::string> instrument_tokens;
@@ -764,7 +767,8 @@ TEST_CASE("every_ore_instrument_and_quote_type_is_modelled_and_read", "[marketda
     }
 }
 
-TEST_CASE("an_alias_reads_as_its_type_and_writes_canonically", "[marketdata][datum][ore_key_codec]") {
+TEST_CASE("an_alias_reads_as_its_type_and_writes_canonically",
+          "[marketdata][datum][ore_key_codec]") {
     const auto spot = ore_key_codec::read("FX_SPOT/RATE/EUR/USD");
     REQUIRE(spot);
     CHECK(spot->type() == instrument_type::fx_spot);
@@ -776,7 +780,8 @@ TEST_CASE("an_alias_reads_as_its_type_and_writes_canonically", "[marketdata][dat
     CHECK(ore_key_codec::write(*gvol) == "SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM");
 }
 
-TEST_CASE("the_codec_refuses_tokens_it_could_not_write_back", "[marketdata][datum][ore_key_codec]") {
+TEST_CASE("the_codec_refuses_tokens_it_could_not_write_back",
+          "[marketdata][datum][ore_key_codec]") {
     // ORE reads each of these and ignores a token; the codec cannot keep what it
     // would not write, so it refuses them.
     for (const auto* key : {"CAPFLOOR/SHIFT/EUR/6M/C",
@@ -798,7 +803,8 @@ TEST_CASE("a_flag_outside_its_vocabulary_is_refused", "[marketdata][datum][ore_k
     }
 }
 
-TEST_CASE("a_running_spread_and_a_doc_clause_are_told_apart_by_value", "[marketdata][datum][ore_key_codec]") {
+TEST_CASE("a_running_spread_and_a_doc_clause_are_told_apart_by_value",
+          "[marketdata][datum][ore_key_codec]") {
     const auto spread = ore_key_codec::read("CDS/CREDIT_SPREAD/ACME/SNRFOR/USD/5Y/100");
     REQUIRE(spread);
     CHECK(spread->get<field::term>()->text() == "5Y");
@@ -811,7 +817,8 @@ TEST_CASE("a_running_spread_and_a_doc_clause_are_told_apart_by_value", "[marketd
     CHECK(std::holds_alternative<none_t>(clause->at(field::running_spread)));
 }
 
-TEST_CASE("the_equity_option_shorthand_is_a_strike_only_for_equity_options", "[marketdata][datum][ore_key_codec]") {
+TEST_CASE("the_equity_option_shorthand_is_a_strike_only_for_equity_options",
+          "[marketdata][datum][ore_key_codec]") {
     const auto equity = ore_key_codec::read("EQUITY_OPTION/RATE_LNVOL/SP5/USD/1Y/ATMF");
     REQUIRE(equity);
     CHECK(ore_key_codec::write(*equity) == "EQUITY_OPTION/RATE_LNVOL/SP5/USD/1Y/ATMF");
@@ -820,7 +827,8 @@ TEST_CASE("the_equity_option_shorthand_is_a_strike_only_for_equity_options", "[m
     CHECK(ore_key_codec::read("COMMODITY_OPTION/RATE_LNVOL/WTI/USD/1Y/ATM/AtmFwd"));
 }
 
-TEST_CASE("a_period_keeps_its_spelling_through_the_round_trip", "[marketdata][datum][ore_key_codec]") {
+TEST_CASE("a_period_keeps_its_spelling_through_the_round_trip",
+          "[marketdata][datum][ore_key_codec]") {
     // ORE prints 12M as 1Y and 14D as 2W; the key keeps what was written.
     for (const auto* key : {"MM/RATE/EUR/0D/12M", "MM/RATE/EUR/0D/14D", "FRA/RATE/EUR/1y/1Y6M"}) {
         INFO("key: " << key);
@@ -830,7 +838,8 @@ TEST_CASE("a_period_keeps_its_spelling_through_the_round_trip", "[marketdata][da
     }
 }
 
-TEST_CASE("an_unknown_type_or_quote_is_refused_with_a_reason", "[marketdata][datum][ore_key_codec]") {
+TEST_CASE("an_unknown_type_or_quote_is_refused_with_a_reason",
+          "[marketdata][datum][ore_key_codec]") {
     const auto type = ore_key_codec::read("NOT_A_TYPE/RATE/EUR");
     REQUIRE_FALSE(type);
     CHECK_FALSE(type.error().empty());
@@ -843,7 +852,8 @@ TEST_CASE("an_unknown_type_or_quote_is_refused_with_a_reason", "[marketdata][dat
     CHECK_FALSE(ore_key_codec::read("ZERO"));
 }
 
-TEST_CASE("a_datum_whose_key_reads_as_another_form_has_no_key", "[marketdata][datum][ore_key_codec]") {
+TEST_CASE("a_datum_whose_key_reads_as_another_form_has_no_key",
+          "[marketdata][datum][ore_key_codec]") {
     // With no seniority, the doc clause XR14 takes the seniority's place, so
     // the key would read back with XR14 as the seniority.
     const auto read = ore_key_codec::read("CDS/CREDIT_SPREAD/ACME/SNRFOR/USD/XR14/5Y");

@@ -133,7 +133,8 @@ TEST_CASE("read_latest_account_roles_by_account", "[repository]") {
     }
 }
 
-TEST_CASE("a_role_taken_away_is_in_the_history_of_the_account_with_the_time_it_ended", "[repository]") {
+TEST_CASE("a_role_taken_away_is_in_the_history_of_the_account_with_the_time_it_ended",
+          "[repository]") {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
 

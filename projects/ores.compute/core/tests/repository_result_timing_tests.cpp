@@ -114,7 +114,8 @@ std::optional<ores::compute::domain::result> read_marked(const ores::database::c
 
 } // namespace
 
-TEST_CASE("a result keeps the time a node took it and how long the engine ran", "[repository][timing]") {
+TEST_CASE("a result keeps the time a node took it and how long the engine ran",
+          "[repository][timing]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto workunit = seed_workunit(h, ctx);
@@ -141,7 +142,8 @@ TEST_CASE("a result keeps the time a node took it and how long the engine ran", 
     CHECK(*read->duration_ms == 1234);
 }
 
-TEST_CASE("a result written without the two columns reads back as unknown", "[repository][timing]") {
+TEST_CASE("a result written without the two columns reads back as unknown",
+          "[repository][timing]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto workunit = seed_workunit(h, ctx);

@@ -110,7 +110,8 @@ TEST_CASE("a_quote_uri_resolves_to_the_datum_key_subject", "[commands][marketdat
     CHECK_FALSE(watch->series.has_value());
 }
 
-TEST_CASE("a_series_uri_resolves_to_the_partys_whole_tick_subtree", "[commands][marketdata][stream]") {
+TEST_CASE("a_series_uri_resolves_to_the_partys_whole_tick_subtree",
+          "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
 
     const auto watch = marketdata_commands::stream_subjects(tenant_id, party_id, rating_series_uri);
@@ -150,7 +151,8 @@ TEST_CASE("a_series_filter_keeps_only_the_points_of_the_series", "[commands][mar
     CHECK(output.rows.size() == 2);
 }
 
-TEST_CASE("an_unparseable_uri_is_refused_with_the_codecs_message", "[commands][marketdata][stream]") {
+TEST_CASE("an_unparseable_uri_is_refused_with_the_codecs_message",
+          "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
 
     const auto subjects = marketdata_commands::stream_subjects(
@@ -164,7 +166,8 @@ TEST_CASE("an_unparseable_uri_is_refused_with_the_codecs_message", "[commands][m
     CHECK(subjects.error().find("quote") != std::string::npos);
 }
 
-TEST_CASE("two_ticks_render_the_expected_screen_lines_and_csv_rows", "[commands][marketdata][stream]") {
+TEST_CASE("two_ticks_render_the_expected_screen_lines_and_csv_rows",
+          "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
 
     stub_tick_source source({tick(eurusd_uri, "1.0812", "synthetic.eurusd", 9),
@@ -198,7 +201,8 @@ TEST_CASE("a_csv_field_holding_a_separator_is_quoted", "[commands][marketdata][s
     CHECK(row == "2026-10-06 09:00:00.000000Z," + eurusd_uri + ",1.0812,\"synthetic, quoted\"");
 }
 
-TEST_CASE("a_stream_that_receives_nothing_still_writes_the_header", "[commands][marketdata][stream]") {
+TEST_CASE("a_stream_that_receives_nothing_still_writes_the_header",
+          "[commands][marketdata][stream]") {
     auto lg(make_logger(test_suite));
 
     stub_tick_source source({});

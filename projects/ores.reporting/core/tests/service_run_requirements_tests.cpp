@@ -35,7 +35,8 @@ const std::vector<std::string> risk_requires{
 
 }
 
-TEST_CASE("a definition binding every required type misses nothing", "[service][run_requirements]") {
+TEST_CASE("a definition binding every required type misses nothing",
+          "[service][run_requirements]") {
     const std::vector<std::string> bound{
         "conventions", "curve_configuration", "todays_market", "pricing_engines"};
     CHECK(missing_configuration_types(risk_requires, bound).empty());
@@ -51,7 +52,8 @@ TEST_CASE("extra bound types do not count as missing", "[service][run_requiremen
     CHECK(missing_configuration_types(risk_requires, bound).empty());
 }
 
-TEST_CASE("a definition binding nothing misses every required type, sorted", "[service][run_requirements]") {
+TEST_CASE("a definition binding nothing misses every required type, sorted",
+          "[service][run_requirements]") {
     const std::vector<std::string> expected{
         "conventions", "curve_configuration", "pricing_engines", "todays_market"};
     CHECK(missing_configuration_types(risk_requires, {}) == expected);

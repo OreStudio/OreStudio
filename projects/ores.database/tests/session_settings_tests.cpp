@@ -27,7 +27,8 @@
 
 using ores::database::repository::execute_raw_multi_column_query;
 
-TEST_CASE("a raw query's setting holding a quote reaches the session unchanged", "[session_settings]") {
+TEST_CASE("a raw query's setting holding a quote reaches the session unchanged",
+          "[session_settings]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
     const auto ctx = h.context().with_tenant(h.tenant_id(), "o'brien");

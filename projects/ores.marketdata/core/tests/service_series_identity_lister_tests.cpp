@@ -140,7 +140,8 @@ two_parties make_two_parties(scoped_database_helper& h) {
 
 }
 
-TEST_CASE("a_listed_identity_names_the_series_it_was_listed_for", "[service][series_identity_lister]") {
+TEST_CASE("a_listed_identity_names_the_series_it_was_listed_for",
+          "[service][series_identity_lister]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -168,7 +169,8 @@ TEST_CASE("a_listed_identity_names_the_series_it_was_listed_for", "[service][ser
     CHECK(resolved[0].id == written.id);
 }
 
-TEST_CASE("each_provider_of_one_identity_is_listed_and_resolves_to_its_own_series", "[service][series_identity_lister]") {
+TEST_CASE("each_provider_of_one_identity_is_listed_and_resolves_to_its_own_series",
+          "[service][series_identity_lister]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -193,7 +195,8 @@ TEST_CASE("each_provider_of_one_identity_is_listed_and_resolves_to_its_own_serie
     }
 }
 
-TEST_CASE("a_party_is_listed_its_own_series_and_not_another_partys", "[service][series_identity_lister]") {
+TEST_CASE("a_party_is_listed_its_own_series_and_not_another_partys",
+          "[service][series_identity_lister]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -242,7 +245,8 @@ TEST_CASE("naming_a_party_narrows_the_list_to_it", "[service][series_identity_li
     CHECK(found[0].identity.party_id == boost::uuids::to_string(second));
 }
 
-TEST_CASE("a_party_is_named_whatever_way_its_uuid_is_spelled", "[service][series_identity_lister]") {
+TEST_CASE("a_party_is_named_whatever_way_its_uuid_is_spelled",
+          "[service][series_identity_lister]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -263,7 +267,8 @@ TEST_CASE("a_party_is_named_whatever_way_its_uuid_is_spelled", "[service][series
     }
 }
 
-TEST_CASE("a_party_that_is_no_uuid_is_refused_and_not_answered_with_nothing", "[service][series_identity_lister]") {
+TEST_CASE("a_party_that_is_no_uuid_is_refused_and_not_answered_with_nothing",
+          "[service][series_identity_lister]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

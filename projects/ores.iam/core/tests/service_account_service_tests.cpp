@@ -1532,7 +1532,8 @@ TEST_CASE("update_self_account_refuses_an_image_id_that_is_not_a_uuid", "[servic
     CHECK(!reloaded->image_id.has_value());
 }
 
-TEST_CASE("update_self_account_contact_information_updates_a_record_that_already_exists", "[service]") {
+TEST_CASE("update_self_account_contact_information_updates_a_record_that_already_exists",
+          "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -1568,7 +1569,8 @@ TEST_CASE("update_self_account_contact_information_updates_a_record_that_already
     REQUIRE(stored.size() == 1);
 }
 
-TEST_CASE("update_self_account_contact_information_refuses_a_bad_email_and_country_code", "[service]") {
+TEST_CASE("update_self_account_contact_information_refuses_a_bad_email_and_country_code",
+          "[service]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

@@ -49,7 +49,8 @@ ores::reporting::domain::configuration make_header(const boost::uuids::uuid& par
 
 }
 
-TEST_CASE("a context without a party does not inherit a pooled connection's party", "[ore][session][database]") {
+TEST_CASE("a context without a party does not inherit a pooled connection's party",
+          "[ore][session][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     ores::reporting::repository::configuration_repository repo;

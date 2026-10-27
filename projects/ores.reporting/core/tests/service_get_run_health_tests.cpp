@@ -70,7 +70,8 @@ TEST_CASE("get_run_health answers the word and the state of one run", "[service]
     CHECK(answer.health == "failed");
 }
 
-TEST_CASE("get_run_health answers missing for a run the session cannot read", "[service][database]") {
+TEST_CASE("get_run_health answers missing for a run the session cannot read",
+          "[service][database]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;

@@ -60,7 +60,8 @@ fx_forward_instrument_key key_of(const fx_forward_instrument_write& w) {
 
 } // namespace
 
-TEST_CASE("get_many_answers_one_entry_per_key_in_the_order_asked", "[service][fx][fx_forward][get_many]") {
+TEST_CASE("get_many_answers_one_entry_per_key_in_the_order_asked",
+          "[service][fx][fx_forward][get_many]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

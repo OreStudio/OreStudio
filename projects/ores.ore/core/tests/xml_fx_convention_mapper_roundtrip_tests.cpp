@@ -88,7 +88,8 @@ conventions roundtrip_single(const record_reader& original) {
 // Real example file: field-by-field round-trip for every <FX> entry
 // =============================================================================
 
-TEST_CASE("fx_convention_roundtrip_real_example_file_field_values", "[ore][xml][mapper][roundtrip][fx_convention]") {
+TEST_CASE("fx_convention_roundtrip_real_example_file_field_values",
+          "[ore][xml][mapper][roundtrip][fx_convention]") {
     auto lg(make_logger(test_suite));
     const auto original = load_conventions();
     const auto entries = root_of(original).children("FX");
@@ -130,7 +131,8 @@ TEST_CASE("fx_convention_roundtrip_real_example_file_field_values", "[ore][xml][
 // Documented data-loss case: multiple <FX> entries per pair collide
 // =============================================================================
 
-TEST_CASE("fx_convention_roundtrip_duplicate_pair_collision_is_documented", "[ore][xml][mapper][roundtrip][fx_convention]") {
+TEST_CASE("fx_convention_roundtrip_duplicate_pair_collision_is_documented",
+          "[ore][xml][mapper][roundtrip][fx_convention]") {
     auto lg(make_logger(test_suite));
     const auto original = load_conventions();
     const auto entries = root_of(original).children("FX");
@@ -165,7 +167,8 @@ TEST_CASE("fx_convention_roundtrip_duplicate_pair_collision_is_documented", "[or
 // Synthetic case: EOM and Convention fields (not exercised by the real file)
 // =============================================================================
 
-TEST_CASE("fx_convention_roundtrip_synthetic_eom_and_business_day_convention", "[ore][xml][mapper][roundtrip][fx_convention]") {
+TEST_CASE("fx_convention_roundtrip_synthetic_eom_and_business_day_convention",
+          "[ore][xml][mapper][roundtrip][fx_convention]") {
     const auto original = conventions_mapper::read("<Conventions>"
                                                    "<FX>"
                                                    "<Id>EUR-USD-FX-CONVENTIONS</Id>"

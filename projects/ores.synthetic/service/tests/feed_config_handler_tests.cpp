@@ -436,7 +436,8 @@ struct config_fixture {
 
 using namespace ores::synthetic::messaging;
 
-TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id", "[feed_config_handler][integration]") {
+TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id",
+          "[feed_config_handler][integration]") {
     config_fixture f;
     const auto test_party = resolve_test_party(f.db);
     const auto seeds = seed_configs(f.db, test_party);
@@ -509,7 +510,8 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id", "[feed_co
     CHECK(f.fleet.running_count() == 0);
 }
 
-TEST_CASE("feed_config_reports_not_found_and_disabled_uniformly", "[feed_config_handler][integration]") {
+TEST_CASE("feed_config_reports_not_found_and_disabled_uniformly",
+          "[feed_config_handler][integration]") {
     config_fixture f;
     const auto test_party = resolve_test_party(f.db);
     const auto seeds = seed_configs(f.db, test_party);
@@ -552,7 +554,8 @@ TEST_CASE("feed_config_reports_not_found_and_disabled_uniformly", "[feed_config_
     CHECK(f.fleet.running_count() == 0);
 }
 
-TEST_CASE("feed_config_start_requires_the_resolved_kind_permission", "[feed_config_handler][integration]") {
+TEST_CASE("feed_config_start_requires_the_resolved_kind_permission",
+          "[feed_config_handler][integration]") {
     config_fixture f;
     const auto test_party = resolve_test_party(f.db);
     const auto seeds = seed_configs(f.db, test_party);

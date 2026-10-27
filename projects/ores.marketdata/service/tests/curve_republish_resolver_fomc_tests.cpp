@@ -176,7 +176,8 @@ std::unordered_map<std::string, double> make_fomc_raw_rates() {
 
 }
 
-TEST_CASE("resolve_bootstrap_pillars resolves the FOMC pillar chain onto the meeting dates", "[curve_republish_resolver][fomc]") {
+TEST_CASE("resolve_bootstrap_pillars resolves the FOMC pillar chain onto the meeting dates",
+          "[curve_republish_resolver][fomc]") {
     const auto ctx = make_fomc_context();
     const auto meetings = fomc_2026_meeting_dates();
 
@@ -227,7 +228,8 @@ TEST_CASE("resolve_bootstrap_pillars keeps FOMC pillar end dates strictly ascend
         CHECK(resolved[i].end_date > resolved[i - 1].end_date);
 }
 
-TEST_CASE("resolve_bootstrap_pillars looks up every FOMC point id in the raw grid", "[curve_republish_resolver][fomc]") {
+TEST_CASE("resolve_bootstrap_pillars looks up every FOMC point id in the raw grid",
+          "[curve_republish_resolver][fomc]") {
     const auto ctx = make_fomc_context();
 
     const auto resolved =
@@ -252,7 +254,8 @@ TEST_CASE("resolve_bootstrap_pillars fails loudly when a FOMC point id has no ra
                     std::invalid_argument);
 }
 
-TEST_CASE("the FOMC-to-FOMC fixing schedule falls out of the pillar order", "[curve_republish_resolver][fomc]") {
+TEST_CASE("the FOMC-to-FOMC fixing schedule falls out of the pillar order",
+          "[curve_republish_resolver][fomc]") {
     const auto ctx = make_fomc_context();
 
     const auto resolved =

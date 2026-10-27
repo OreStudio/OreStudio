@@ -29,8 +29,8 @@
 #include <chrono>
 #include <functional>
 #include <mutex>
-#include <string_view>
 #include <string>
+#include <string_view>
 
 namespace ores::database {
 

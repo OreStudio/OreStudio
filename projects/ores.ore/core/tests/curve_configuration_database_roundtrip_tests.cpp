@@ -181,7 +181,8 @@ read_back(const ores::database::context& ctx,
 
 }
 
-TEST_CASE("curve_configuration_roundtrip_through_the_database", "[curveconfig][database][roundtrip]") {
+TEST_CASE("curve_configuration_roundtrip_through_the_database",
+          "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
     write_conventions(h.context());
 
@@ -207,7 +208,8 @@ TEST_CASE("curve_configuration_roundtrip_through_the_database", "[curveconfig][d
     CHECK(difference.empty());
 }
 
-TEST_CASE("a segment naming a convention the tenant does not hold is refused", "[curveconfig][database][roundtrip]") {
+TEST_CASE("a segment naming a convention the tenant does not hold is refused",
+          "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
     write_conventions(h.context());
 
@@ -220,7 +222,8 @@ TEST_CASE("a segment naming a convention the tenant does not hold is refused", "
     CHECK_THROWS(curve_segment_repository().write(h.context(), mapped.segments.front()));
 }
 
-TEST_CASE("a yield curve naming a day counter ORE does not spell is refused", "[curveconfig][database][roundtrip]") {
+TEST_CASE("a yield curve naming a day counter ORE does not spell is refused",
+          "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
 
     auto mapped = curve_configuration_projection::map(load_document(example + "curveconfig.xml"));
@@ -232,7 +235,8 @@ TEST_CASE("a yield curve naming a day counter ORE does not spell is refused", "[
     CHECK_THROWS(yield_curve_config_repository().write(h.context(), mapped.yield_curves.front()));
 }
 
-TEST_CASE("a segment of a type the vocabulary does not hold is refused", "[curveconfig][database][roundtrip]") {
+TEST_CASE("a segment of a type the vocabulary does not hold is refused",
+          "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
     write_conventions(h.context());
 
@@ -329,7 +333,8 @@ TEST_CASE("equity and commodity volatility configurations and the report configu
     CHECK(difference.empty());
 }
 
-TEST_CASE("swaption and cap and floor proxies and smiles round trip through the database", "[curveconfig][database][roundtrip]") {
+TEST_CASE("swaption and cap and floor proxies and smiles round trip through the database",
+          "[curveconfig][database][roundtrip]") {
     for (const std::string path :
          {"external/ore/examples/Legacy/Example_63/Input/curveconfig.xml",
           "external/ore/examples/CurveBuilding/Input/curveconfig_sabr.xml"}) {
@@ -360,7 +365,8 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
     }
 }
 
-TEST_CASE("a CDS volatility's terms and strike surface round trip through the database", "[curveconfig][database][roundtrip]") {
+TEST_CASE("a CDS volatility's terms and strike surface round trip through the database",
+          "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
 
     const auto full = load_document(products_example);
@@ -383,7 +389,8 @@ TEST_CASE("a CDS volatility's terms and strike surface round trip through the da
     CHECK(difference.empty());
 }
 
-TEST_CASE("an FX volatility's report configuration round trips through the database", "[curveconfig][database][roundtrip]") {
+TEST_CASE("an FX volatility's report configuration round trips through the database",
+          "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
     write_input_conventions(h.context());
 
@@ -418,7 +425,8 @@ TEST_CASE("an FX volatility's report configuration round trips through the datab
     CHECK(difference.empty());
 }
 
-TEST_CASE("an equity curve naming a calendar ORE does not accept is refused", "[curveconfig][database][roundtrip]") {
+TEST_CASE("an equity curve naming a calendar ORE does not accept is refused",
+          "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
 
     auto mapped = curve_configuration_projection::map(equity_and_securities());
@@ -430,7 +438,8 @@ TEST_CASE("an equity curve naming a calendar ORE does not accept is refused", "[
     CHECK_THROWS(equity_curve_config_repository().write(h.context(), mapped.equity_curves.front()));
 }
 
-TEST_CASE("an equity curve naming a joined calendar ORE accepts is stored", "[curveconfig][database][roundtrip]") {
+TEST_CASE("an equity curve naming a joined calendar ORE accepts is stored",
+          "[curveconfig][database][roundtrip]") {
     ores::testing::scoped_database_helper h;
 
     auto mapped = curve_configuration_projection::map(equity_and_securities());

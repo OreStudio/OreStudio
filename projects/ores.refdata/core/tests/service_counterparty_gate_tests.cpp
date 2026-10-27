@@ -103,7 +103,8 @@ bool linked(const world& w, const domain::party_counterparty_change& l) {
 
 }
 
-TEST_CASE("a_counterparty_put_with_no_request_writes_nothing_and_answers_approval_required", "[counterparty_gate]") {
+TEST_CASE("a_counterparty_put_with_no_request_writes_nothing_and_answers_approval_required",
+          "[counterparty_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto line = new_counterparty_line(h);
@@ -115,7 +116,8 @@ TEST_CASE("a_counterparty_put_with_no_request_writes_nothing_and_answers_approva
     CHECK_FALSE(exists(w, line.entity_id));
 }
 
-TEST_CASE("an_identifier_put_with_no_request_writes_nothing_and_answers_approval_required", "[counterparty_gate]") {
+TEST_CASE("an_identifier_put_with_no_request_writes_nothing_and_answers_approval_required",
+          "[counterparty_gate]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     const auto owner = make_live(w, new_counterparty_line(h));

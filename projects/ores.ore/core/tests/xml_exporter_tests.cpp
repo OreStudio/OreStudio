@@ -440,7 +440,8 @@ TEST_CASE("a_rate_trade_that_states_its_fact_row_exports_its_legs", "[ore][xml][
     CHECK(xml.find("<LegData>") != std::string::npos);
 }
 
-TEST_CASE("a_forward_rate_agreement_exports_the_index_its_fact_row_states", "[ore][xml][exporter]") {
+TEST_CASE("a_forward_rate_agreement_exports_the_index_its_fact_row_states",
+          "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     /*
@@ -709,7 +710,8 @@ TEST_CASE("an_accumulator_exports_its_knock_out", "[ore][xml][exporter]") {
     CHECK(xml.contains("EUR/GBP"));
 }
 
-TEST_CASE("export_portfolio_keeps_a_cross_currency_swap_apart_from_a_swap", "[ore][xml][exporter]") {
+TEST_CASE("export_portfolio_keeps_a_cross_currency_swap_apart_from_a_swap",
+          "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     // The schema states a plain swap and a cross-currency swap in an element
@@ -905,7 +907,8 @@ TEST_CASE("export_portfolio_unknown_type_is_skipped", "[ore][xml][exporter]") {
     CHECK(!xml.contains("UnmappedTrade001"));
 }
 
-TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards", "[ore][xml][exporter]") {
+TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards",
+          "[ore][xml][exporter]") {
     auto lg(make_logger(test_suite));
 
     /*

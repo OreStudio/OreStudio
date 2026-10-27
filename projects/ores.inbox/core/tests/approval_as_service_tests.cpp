@@ -83,7 +83,8 @@ ores::database::context as_inbox_service(ores::testing::scoped_database_helper& 
 
 }
 
-TEST_CASE("the_inbox_service_user_reads_a_request_and_tells_the_person_who_asked", "[approval][as_service]") {
+TEST_CASE("the_inbox_service_user_reads_a_request_and_tells_the_person_who_asked",
+          "[approval][as_service]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);
@@ -109,7 +110,8 @@ TEST_CASE("the_inbox_service_user_reads_a_request_and_tells_the_person_who_asked
     CHECK(std::ranges::any_of(page.notifications, [&](const auto& n) { return n.link_id == id; }));
 }
 
-TEST_CASE("the_inbox_service_user_closes_an_overdue_request_in_the_expiry_sweep", "[approval][as_service]") {
+TEST_CASE("the_inbox_service_user_closes_an_overdue_request_in_the_expiry_sweep",
+          "[approval][as_service]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     approval_lifecycle lifecycle(acting(h));
@@ -129,7 +131,8 @@ TEST_CASE("the_inbox_service_user_closes_an_overdue_request_in_the_expiry_sweep"
     CHECK(lifecycle.request(id)->state_code == "expired");
 }
 
-TEST_CASE("the_inbox_service_user_lists_an_approved_request_whose_apply_has_not_finished", "[approval][as_service]") {
+TEST_CASE("the_inbox_service_user_lists_an_approved_request_whose_apply_has_not_finished",
+          "[approval][as_service]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     const auto decider = seed_account(h);

@@ -41,7 +41,8 @@ using strings = std::vector<std::string>;
 
 }
 
-TEST_CASE("terms_are_ordered_by_length_whatever_order_a_source_stated_them", "[service][series_shape]") {
+TEST_CASE("terms_are_ordered_by_length_whatever_order_a_source_stated_them",
+          "[service][series_shape]") {
     auto lg(make_logger(test_suite));
 
     CHECK(in_term_order({"2M",
@@ -81,14 +82,16 @@ TEST_CASE("a_compound_period_sits_by_its_length", "[service][series_shape]") {
     CHECK(in_term_order({"2Y", "1Y6M", "1Y", "13M"}) == strings{"1Y", "13M", "1Y6M", "2Y"});
 }
 
-TEST_CASE("overnight_tenors_come_before_periods_and_dates_and_continuations_after", "[service][series_shape]") {
+TEST_CASE("overnight_tenors_come_before_periods_and_dates_and_continuations_after",
+          "[service][series_shape]") {
     auto lg(make_logger(test_suite));
 
     CHECK(in_term_order({"c2", "2030-01-15", "1W", "SN", "ON", "c1", "TN", "1M"}) ==
           strings{"ON", "TN", "SN", "1W", "1M", "2030-01-15", "c1", "c2"});
 }
 
-TEST_CASE("a_value_that_is_no_term_follows_the_terms_in_its_stated_order", "[service][series_shape]") {
+TEST_CASE("a_value_that_is_no_term_follows_the_terms_in_its_stated_order",
+          "[service][series_shape]") {
     auto lg(make_logger(test_suite));
 
     CHECK(in_term_order({"odd", "1Y", "other", "1M"}) == strings{"1M", "1Y", "odd", "other"});

@@ -64,7 +64,8 @@ equity_forward_instrument make_instrument(database_helper& h) {
 
 } // namespace
 
-TEST_CASE("equity_forward_instrument_write_and_read_latest", "[repository][equity][equity_forward]") {
+TEST_CASE("equity_forward_instrument_write_and_read_latest",
+          "[repository][equity][equity_forward]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

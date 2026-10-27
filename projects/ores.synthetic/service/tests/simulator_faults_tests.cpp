@@ -89,7 +89,8 @@ TEST_CASE("with no fault a tick goes out once and unchanged", "[simulator_faults
     CHECK(out.front().vendor_time == now);
 }
 
-TEST_CASE("an out of range fault sends a value beyond what the service accepts", "[simulator_faults]") {
+TEST_CASE("an out of range fault sends a value beyond what the service accepts",
+          "[simulator_faults]") {
     std::optional<messaging::adapter_tick> previous;
     fault_plan plan;
     plan.out_of_range = true;
@@ -163,7 +164,8 @@ TEST_CASE("a not entitled fault rejects every id and runs no generator", "[simul
     CHECK(normal.rejected.front().reason == "unknown_id");
 }
 
-TEST_CASE("a lost connection sends no heartbeat and resumes when the fault is off", "[simulator_faults]") {
+TEST_CASE("a lost connection sends no heartbeat and resumes when the fault is off",
+          "[simulator_faults]") {
     ores::nats::service::client nats(ores::testing::make_nats_options());
     nats.connect();
     const auto adapter_id =

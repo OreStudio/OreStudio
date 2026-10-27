@@ -38,7 +38,8 @@ namespace vendor = ores::marketdata::vendor;
 
 } // namespace
 
-TEST_CASE("every_installed_vendor_instrument_roundtrips_through_its_providers_notation", "[vendor_notation][catalogue]") {
+TEST_CASE("every_installed_vendor_instrument_roundtrips_through_its_providers_notation",
+          "[vendor_notation][catalogue]") {
     ores::testing::scoped_database_helper h;
     const auto& tenant_ctx = h.context();
 

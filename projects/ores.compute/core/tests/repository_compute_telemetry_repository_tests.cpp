@@ -232,7 +232,8 @@ TEST_CASE("read_latest_node_samples_sees_own_and_system_tenants_but_not_a_third"
     CHECK(!std::ranges::contains(hosts, boost::uuids::to_string(third_row.host_id)));
 }
 
-TEST_CASE("read_newest_grid_sample_returns_a_system_row_not_a_newer_third_tenant_row", "[repository]") {
+TEST_CASE("read_newest_grid_sample_returns_a_system_row_not_a_newer_third_tenant_row",
+          "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -604,7 +605,8 @@ node_sample node_sample_at(const node_sample& model,
 
 } // namespace
 
-TEST_CASE("node_series_sums_the_interval_counters_and_orders_the_nodes_by_machine", "[repository]") {
+TEST_CASE("node_series_sums_the_interval_counters_and_orders_the_nodes_by_machine",
+          "[repository]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

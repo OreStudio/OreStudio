@@ -143,7 +143,8 @@ TEST_CASE("export_portfolio_response_carries_the_envelope", "[messaging][codec]"
     CHECK(decoded->items[0].envelope->netting_set_id == "NS-1");
 }
 
-TEST_CASE("export_trades_to_storage_response_survives_the_codec_with_its_versions", "[messaging][codec]") {
+TEST_CASE("export_trades_to_storage_response_survives_the_codec_with_its_versions",
+          "[messaging][codec]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto codec = wire_codec{wire_format::msgpack};

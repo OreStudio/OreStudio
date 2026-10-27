@@ -167,7 +167,8 @@ TEST_CASE("content_the_schema_does_not_name_is_captured", "[ore][xml][binding]")
     CHECK(record.extras[0].text == "hello");
 }
 
-TEST_CASE("content_the_schema_does_not_name_and_cannot_represent_is_refused", "[ore][xml][binding]") {
+TEST_CASE("content_the_schema_does_not_name_and_cannot_represent_is_refused",
+          "[ore][xml][binding]") {
     auto lg(make_logger(test_suite));
 
     notes record;

@@ -204,7 +204,8 @@ TEST_CASE("a_tenant_reads_a_provider_the_system_tenant_holds", "[repository][cat
 
 // The system tenant id on a write means "the session's tenant", so a tenant that writes a provider
 // for the system tenant writes one of its own. It cannot reach a system row.
-TEST_CASE("a_tenant_write_for_the_system_tenant_lands_in_its_own_tenant", "[repository][catalogue]") {
+TEST_CASE("a_tenant_write_for_the_system_tenant_lands_in_its_own_tenant",
+          "[repository][catalogue]") {
     ores::testing::scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto& tenant_ctx = h.context();

@@ -195,7 +195,8 @@ std::vector<uuid> sorted(std::vector<uuid> v) {
 
 }
 
-TEST_CASE("a counterparty narrows the trade summary, and the total follows", "[repository][list_filter][trade_summary]") {
+TEST_CASE("a counterparty narrows the trade summary, and the total follows",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("FxForward", f.counterparty);
@@ -205,7 +206,8 @@ TEST_CASE("a counterparty narrows the trade summary, and the total follows", "[r
     CHECK(trade_summary_repository().get_total_trade_summary_count(f.ctx, on(f.counterparty)) == 2);
 }
 
-TEST_CASE("a row of a trade names its kind and its instrument type", "[repository][list_filter][trade_summary]") {
+TEST_CASE("a row of a trade names its kind and its instrument type",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
 
@@ -230,7 +232,8 @@ TEST_CASE("an instrument type narrows the summary", "[repository][list_filter][t
     CHECK(f.read(filter).empty());
 }
 
-TEST_CASE("a book and a trade date narrow the summary through the booking", "[repository][list_filter][trade_summary]") {
+TEST_CASE("a book and a trade date narrow the summary through the booking",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
@@ -258,7 +261,8 @@ TEST_CASE("a trade with no booking has no book", "[repository][list_filter][trad
     CHECK_FALSE(rows[0].book_id.has_value());
 }
 
-TEST_CASE("the authorisation status of an actual trade with no request is not requested", "[repository][list_filter][trade_summary]") {
+TEST_CASE("the authorisation status of an actual trade with no request is not requested",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto actual = f.write("Swap", f.counterparty);
     const auto test = f.write("Swap", f.counterparty, ores::trading::domain::booking_nature::test);
@@ -271,7 +275,8 @@ TEST_CASE("the authorisation status of an actual trade with no request is not re
     CHECK(ids(f.read(filter)) == std::vector<uuid>{test});
 }
 
-TEST_CASE("a search matches an identifier of the trade, ignoring case, and literally", "[repository][list_filter][trade_summary]") {
+TEST_CASE("a search matches an identifier of the trade, ignoring case, and literally",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
@@ -323,7 +328,8 @@ TEST_CASE("only the listed columns sort the summary", "[repository][list_filter]
     CHECK_THROWS_AS(f.read(on(f.counterparty), {.field = "search_text"}), std::invalid_argument);
 }
 
-TEST_CASE("a structure is a row of the same list, with the count of its trades", "[repository][list_filter][trade_summary]") {
+TEST_CASE("a structure is a row of the same list, with the count of its trades",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
@@ -343,7 +349,8 @@ TEST_CASE("a structure is a row of the same list, with the count of its trades",
     CHECK(ids(f.read(on(f.counterparty))) == sorted({a, b, package}));
 }
 
-TEST_CASE("a search finds a structure through an identifier of one of its trades", "[repository][list_filter][trade_summary]") {
+TEST_CASE("a search finds a structure through an identifier of one of its trades",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);
@@ -355,7 +362,8 @@ TEST_CASE("a search finds a structure through an identifier of one of its trades
     CHECK(ids(f.read(filter)) == sorted({a, package}));
 }
 
-TEST_CASE("a filter on a column only a trade has leaves the structure out", "[repository][list_filter][trade_summary]") {
+TEST_CASE("a filter on a column only a trade has leaves the structure out",
+          "[repository][list_filter][trade_summary]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     f.write_booking(a, year_month_day{year{2025} / 1 / 15});

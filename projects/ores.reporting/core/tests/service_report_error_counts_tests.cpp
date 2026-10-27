@@ -103,7 +103,8 @@ std::string write_instance(const ores::database::context& party_ctx,
 
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("the problems of a run read as one row split into errors and warnings", "[service][database]") {
+TEST_CASE("the problems of a run read as one row split into errors and warnings",
+          "[service][database]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;

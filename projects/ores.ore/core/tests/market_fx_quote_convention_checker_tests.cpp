@@ -24,7 +24,8 @@
 using ores::ore::market::fx_quote_convention_checker;
 using ores::ore::market::fx_quote_status;
 
-TEST_CASE("pair already in canonical order is unchanged", "[ore][market][fx_quote_convention_checker]") {
+TEST_CASE("pair already in canonical order is unchanged",
+          "[ore][market][fx_quote_convention_checker]") {
     fx_quote_convention_checker checker({{"EUR", "USD"}, {"EUR", "GBP"}});
 
     const auto result = checker.check("EUR", "USD");
@@ -33,7 +34,8 @@ TEST_CASE("pair already in canonical order is unchanged", "[ore][market][fx_quot
     CHECK(result.quote_currency == "USD");
 }
 
-TEST_CASE("reversed pair is swapped back to canonical order", "[ore][market][fx_quote_convention_checker]") {
+TEST_CASE("reversed pair is swapped back to canonical order",
+          "[ore][market][fx_quote_convention_checker]") {
     // The real-world case this class exists for: Legacy/Example_56's
     // market.txt stores FX/RATE/USD/GBP, but refdata's canonical pair is
     // (GBP, USD).
@@ -45,7 +47,8 @@ TEST_CASE("reversed pair is swapped back to canonical order", "[ore][market][fx_
     CHECK(result.quote_currency == "USD");
 }
 
-TEST_CASE("unrecognised pair is left unchanged and reported unknown", "[ore][market][fx_quote_convention_checker]") {
+TEST_CASE("unrecognised pair is left unchanged and reported unknown",
+          "[ore][market][fx_quote_convention_checker]") {
     fx_quote_convention_checker checker({{"EUR", "USD"}});
 
     const auto result = checker.check("CHF", "JPY");
@@ -54,7 +57,8 @@ TEST_CASE("unrecognised pair is left unchanged and reported unknown", "[ore][mar
     CHECK(result.quote_currency == "JPY");
 }
 
-TEST_CASE("empty known-pairs set never corrects anything", "[ore][market][fx_quote_convention_checker]") {
+TEST_CASE("empty known-pairs set never corrects anything",
+          "[ore][market][fx_quote_convention_checker]") {
     fx_quote_convention_checker checker({});
 
     const auto result = checker.check("GBP", "USD");
@@ -63,7 +67,8 @@ TEST_CASE("empty known-pairs set never corrects anything", "[ore][market][fx_quo
     CHECK(result.quote_currency == "USD");
 }
 
-TEST_CASE("multiple known pairs: each checked independently", "[ore][market][fx_quote_convention_checker]") {
+TEST_CASE("multiple known pairs: each checked independently",
+          "[ore][market][fx_quote_convention_checker]") {
     fx_quote_convention_checker checker(
         {{"EUR", "USD"}, {"GBP", "USD"}, {"EUR", "CHF"}, {"USD", "JPY"}});
 
@@ -74,7 +79,8 @@ TEST_CASE("multiple known pairs: each checked independently", "[ore][market][fx_
     CHECK(checker.check("JPY", "USD").status == fx_quote_status::key_swapped);
 }
 
-TEST_CASE("degenerate same-currency pair does not crash", "[ore][market][fx_quote_convention_checker]") {
+TEST_CASE("degenerate same-currency pair does not crash",
+          "[ore][market][fx_quote_convention_checker]") {
     fx_quote_convention_checker checker({{"EUR", "USD"}});
 
     const auto result = checker.check("EUR", "EUR");
@@ -83,7 +89,8 @@ TEST_CASE("degenerate same-currency pair does not crash", "[ore][market][fx_quot
     CHECK(result.quote_currency == "EUR");
 }
 
-TEST_CASE("currency codes are matched exactly (case-sensitive)", "[ore][market][fx_quote_convention_checker]") {
+TEST_CASE("currency codes are matched exactly (case-sensitive)",
+          "[ore][market][fx_quote_convention_checker]") {
     // Currency codes are always uppercase ISO in practice; the checker
     // performs no case normalisation, so a mismatched case is simply an
     // unknown pair rather than a false match.
@@ -93,7 +100,8 @@ TEST_CASE("currency codes are matched exactly (case-sensitive)", "[ore][market][
     REQUIRE(result.status == fx_quote_status::unknown_pair);
 }
 
-TEST_CASE("both orders present in known set: first-listed order wins as canonical", "[ore][market][fx_quote_convention_checker]") {
+TEST_CASE("both orders present in known set: first-listed order wins as canonical",
+          "[ore][market][fx_quote_convention_checker]") {
     // Pathological input (both orders "known") — shouldn't happen with real
     // refdata (pair_code is 1:1 canonical), but the checker must still
     // behave deterministically rather than throwing or looping.

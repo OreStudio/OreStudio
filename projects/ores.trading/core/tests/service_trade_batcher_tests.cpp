@@ -162,7 +162,8 @@ public:
 
 }
 
-TEST_CASE("batch_by_book gives one set per book named for the report and the date", "[trading][service][batcher]") {
+TEST_CASE("batch_by_book gives one set per book named for the report and the date",
+          "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     const auto population = population_of({
@@ -200,7 +201,8 @@ TEST_CASE("batch_by_book covers the population exactly once", "[trading][service
           std::vector<std::string>{"trade-1", "trade-2", "trade-3", "trade-4"});
 }
 
-TEST_CASE("a book whose trades exceed the limit splits into bounded sets", "[trading][service][batcher]") {
+TEST_CASE("a book whose trades exceed the limit splits into bounded sets",
+          "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     const auto population = population_of({
@@ -244,7 +246,8 @@ TEST_CASE("a composed strategy says which strategies it ran", "[trading][service
     CHECK(strategy.name() == "batch-by-book,at-most-trades");
 }
 
-TEST_CASE("a strategy that partitions on another attribute needs no other change", "[trading][service][batcher]") {
+TEST_CASE("a strategy that partitions on another attribute needs no other change",
+          "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     const auto population = population_of({
@@ -277,7 +280,8 @@ TEST_CASE("a set within the limit keeps its own batch key", "[trading][service][
     CHECK(sets[0].name == "Headline Position");
 }
 
-TEST_CASE("a population that leaves a trade out of every set is refused", "[trading][service][batcher]") {
+TEST_CASE("a population that leaves a trade out of every set is refused",
+          "[trading][service][batcher]") {
     auto lg(make_logger(test_suite));
 
     const auto population = population_of({

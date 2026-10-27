@@ -46,7 +46,8 @@ TEST_CASE("register_history_provider_makes_has_provider_true", "[service][dispat
     CHECK(registry.provider_count() == 1);
 }
 
-TEST_CASE("register_history_provider_twice_for_same_entity_type_replaces_not_duplicates", "[service][dispatch_registry]") {
+TEST_CASE("register_history_provider_twice_for_same_entity_type_replaces_not_duplicates",
+          "[service][dispatch_registry]") {
     database_helper h;
     dispatch_registry registry;
     int first_call_count = 0;
@@ -73,7 +74,8 @@ TEST_CASE("register_history_provider_twice_for_same_entity_type_replaces_not_dup
     CHECK(second_call_count == 1);
 }
 
-TEST_CASE("dispatch_with_no_registered_provider_returns_a_failure_response", "[service][dispatch_registry]") {
+TEST_CASE("dispatch_with_no_registered_provider_returns_a_failure_response",
+          "[service][dispatch_registry]") {
     database_helper h;
     dispatch_registry registry;
 
@@ -85,7 +87,8 @@ TEST_CASE("dispatch_with_no_registered_provider_returns_a_failure_response", "[s
     CHECK(response.message.find("ores.refdata.party") != std::string::npos);
 }
 
-TEST_CASE("dispatch_calls_the_registered_provider_with_the_requested_entity_id", "[service][dispatch_registry]") {
+TEST_CASE("dispatch_calls_the_registered_provider_with_the_requested_entity_id",
+          "[service][dispatch_registry]") {
     database_helper h;
     dispatch_registry registry;
     std::string received_id;
@@ -109,7 +112,8 @@ TEST_CASE("dispatch_calls_the_registered_provider_with_the_requested_entity_id",
     CHECK(response.versions[0].modified_by == "alice");
 }
 
-TEST_CASE("dispatch_passes_context_through_to_the_provider_unexamined", "[service][dispatch_registry]") {
+TEST_CASE("dispatch_passes_context_through_to_the_provider_unexamined",
+          "[service][dispatch_registry]") {
     database_helper h;
     dispatch_registry registry;
     std::optional<ores::utility::uuid::tenant_id> received_tenant_id;
@@ -128,7 +132,8 @@ TEST_CASE("dispatch_passes_context_through_to_the_provider_unexamined", "[servic
     CHECK(*received_tenant_id == h.context().tenant_id());
 }
 
-TEST_CASE("dispatch_only_calls_the_provider_matching_the_requested_entity_type", "[service][dispatch_registry]") {
+TEST_CASE("dispatch_only_calls_the_provider_matching_the_requested_entity_type",
+          "[service][dispatch_registry]") {
     database_helper h;
     dispatch_registry registry;
     bool currency_provider_called = false;
@@ -153,7 +158,8 @@ TEST_CASE("dispatch_only_calls_the_provider_matching_the_requested_entity_type",
     CHECK(party_provider_called);
 }
 
-TEST_CASE("dispatch_returns_a_failure_response_when_the_provider_throws", "[service][dispatch_registry]") {
+TEST_CASE("dispatch_returns_a_failure_response_when_the_provider_throws",
+          "[service][dispatch_registry]") {
     database_helper h;
     dispatch_registry registry;
 
@@ -214,7 +220,8 @@ TEST_CASE("dispatch_serves_a_caller_holding_the_read_permission", "[service][dis
     CHECK(provider_called);
 }
 
-TEST_CASE("dispatch_refuses_a_caller_holding_no_permission_at_all", "[service][dispatch_registry]") {
+TEST_CASE("dispatch_refuses_a_caller_holding_no_permission_at_all",
+          "[service][dispatch_registry]") {
     database_helper h;
     dispatch_registry registry;
     bool provider_called = false;

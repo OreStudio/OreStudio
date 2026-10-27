@@ -142,7 +142,8 @@ TEST_CASE("feed_filter names only the picked feeds and ignores the filter", "[fe
     CHECK(where_clause(f, {"synthetic.a"}, true) == "id::uuid in (E'" + folder + "'::uuid)");
 }
 
-TEST_CASE("feed_filter keeps the feeds that should run: enabled, automatic and stopped", "[feed_filter]") {
+TEST_CASE("feed_filter keeps the feeds that should run: enabled, automatic and stopped",
+          "[feed_filter]") {
     feed_filter f;
     f.should_run = true;
     CHECK_THAT(where_clause(f, {"synthetic.a"}, true),
@@ -154,7 +155,8 @@ TEST_CASE("feed_filter keeps the feeds that should run: enabled, automatic and s
                ContainsSubstring("source_name not in (E'synthetic.a')"));
 }
 
-TEST_CASE("feed_filter refuses a selection that names nothing and narrows nothing", "[feed_filter]") {
+TEST_CASE("feed_filter refuses a selection that names nothing and narrows nothing",
+          "[feed_filter]") {
     CHECK_FALSE(selection_problem({}).empty());
     feed_filter f;
     f.state = "all";
@@ -187,7 +189,8 @@ TEST_CASE("feed_filter names the cap in its message", "[feed_filter]") {
     CHECK_THAT(filter_problem(f), ContainsSubstring("2000"));
 }
 
-TEST_CASE("feed_filter leaves the system feeds out of those another tenant should run", "[feed_filter]") {
+TEST_CASE("feed_filter leaves the system feeds out of those another tenant should run",
+          "[feed_filter]") {
     feed_filter f;
     f.should_run = true;
     CHECK_THAT(where_clause(f, {}, false),

@@ -54,7 +54,8 @@ TEST_CASE("a_full_queue_drops_its_oldest_entry_and_counts_the_drop", "[app][tick
     CHECK(queue.size() == 0);
 }
 
-TEST_CASE("a_queue_gives_up_at_most_the_asked_number_of_entries_oldest_first", "[app][tick_batch]") {
+TEST_CASE("a_queue_gives_up_at_most_the_asked_number_of_entries_oldest_first",
+          "[app][tick_batch]") {
     drop_oldest_queue<int> queue(10);
     for (int i = 1; i <= 6; ++i)
         queue.push(i);
@@ -95,7 +96,8 @@ TEST_CASE("closing_a_queue_wakes_a_waiting_worker_with_nothing", "[app][tick_bat
     CHECK(out.empty());
 }
 
-TEST_CASE("a_tick_older_than_the_limit_is_removed_and_the_others_keep_their_order", "[app][tick_batch]") {
+TEST_CASE("a_tick_older_than_the_limit_is_removed_and_the_others_keep_their_order",
+          "[app][tick_batch]") {
     using namespace std::chrono;
     const auto now = system_clock::now();
     const auto tick_at = [&](milliseconds age, const std::string& value) {

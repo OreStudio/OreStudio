@@ -86,7 +86,8 @@ TEST_CASE("provision_commands_calls_a_followed_tenant_ready", "[commands][provis
     CHECK(out.str().find("setup continues") == std::string::npos);
 }
 
-TEST_CASE("provision_commands_does_not_call_a_tenant_ready_while_its_setup_continues", "[commands][provision]") {
+TEST_CASE("provision_commands_does_not_call_a_tenant_ready_while_its_setup_continues",
+          "[commands][provision]") {
     auto lg(make_logger(test_suite));
 
     std::ostringstream out;

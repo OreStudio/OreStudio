@@ -64,7 +64,8 @@ struct document {
 
 using namespace ores::service::messaging;
 
-TEST_CASE("has_permission accepts an exact match and refuses an unrelated permission", "[handler_helpers]") {
+TEST_CASE("has_permission accepts an exact match and refuses an unrelated permission",
+          "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto ctx = h.context().with_roles({"iam::accounts:create"});
 
@@ -73,7 +74,8 @@ TEST_CASE("has_permission accepts an exact match and refuses an unrelated permis
     REQUIRE_FALSE(has_permission(ctx, "refdata::parties:create"));
 }
 
-TEST_CASE("has_permission accepts a component wildcard but not another component", "[handler_helpers]") {
+TEST_CASE("has_permission accepts a component wildcard but not another component",
+          "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto ctx = h.context().with_roles({"iam::*"});
 
@@ -126,7 +128,8 @@ TEST_CASE("a context narrowed to a tenant or a party keeps its permissions", "[h
     REQUIRE_FALSE(has_permission(party, "iam::accounts:create"));
 }
 
-TEST_CASE("stamp writes the context tenant and the acting user onto the object", "[handler_helpers]") {
+TEST_CASE("stamp writes the context tenant and the acting user onto the object",
+          "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto ctx = h.context().with_tenant(h.tenant_id(), "alice");
     record r;
@@ -139,7 +142,8 @@ TEST_CASE("stamp writes the context tenant and the acting user onto the object",
     REQUIRE(r.change_reason_code == "system.new_record");
 }
 
-TEST_CASE("stamp keeps the client's change reason and applies the requested default", "[handler_helpers]") {
+TEST_CASE("stamp keeps the client's change reason and applies the requested default",
+          "[handler_helpers]") {
     ores::testing::database_helper h;
     const auto ctx = h.context().with_tenant(h.tenant_id(), "alice");
     record supplied;
@@ -184,7 +188,8 @@ TEST_CASE("stamp_document stamps every row of a document, however deep", "[handl
     REQUIRE(d.id == boost::uuids::uuid{});
 }
 
-TEST_CASE("delegated_actor prefers the acting user and falls back to the service account", "[handler_helpers]") {
+TEST_CASE("delegated_actor prefers the acting user and falls back to the service account",
+          "[handler_helpers]") {
     ores::testing::database_helper h;
 
     const auto with_user = h.context().with_tenant(h.tenant_id(), "alice");

@@ -180,7 +180,8 @@ void write_leg(context ctx,
  * the leg lands. The test measures the leg's own contribution rather than the
  * absolute count, which the other parts would otherwise decide.
  */
-TEST_CASE("rewriting_a_bond_leg_advances_the_parent_trade_version", "[repository][bond][versioning]") {
+TEST_CASE("rewriting_a_bond_leg_advances_the_parent_trade_version",
+          "[repository][bond][versioning]") {
     database_helper h;
 
     /*
@@ -222,7 +223,8 @@ TEST_CASE("rewriting_a_bond_leg_advances_the_parent_trade_version", "[repository
  * a bond write produces land microseconds apart inside one transaction, so a
  * bound taken straight from one version row can fall inside its neighbour.
  */
-TEST_CASE("as_of_read_reports_the_legs_current_at_each_parent_version", "[repository][bond][versioning]") {
+TEST_CASE("as_of_read_reports_the_legs_current_at_each_parent_version",
+          "[repository][bond][versioning]") {
     database_helper h;
 
     auto gen = ores::testing::make_generation_context(h);

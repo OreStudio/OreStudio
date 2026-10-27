@@ -266,7 +266,8 @@ private:
 
 }
 
-TEST_CASE("the runner starts one generator for each id in the demand", "[simulator_adapter][runner]") {
+TEST_CASE("the runner starts one generator for each id in the demand",
+          "[simulator_adapter][runner]") {
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] {
         return std::vector{idle_offer("EUR/USD", counters), idle_offer("GBP/USD", counters)};
@@ -295,7 +296,8 @@ TEST_CASE("the runner keeps a running generator when the next demand names it ag
     CHECK(runner.running_count() == 1);
 }
 
-TEST_CASE("the runner stops a generator that the next demand drops", "[simulator_adapter][runner]") {
+TEST_CASE("the runner stops a generator that the next demand drops",
+          "[simulator_adapter][runner]") {
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] {
         return std::vector{idle_offer("EUR/USD", counters), idle_offer("GBP/USD", counters)};
@@ -433,7 +435,8 @@ TEST_CASE("the runner rejects an id with no generator and still serves the other
     CHECK(out.rejected.front().reason == "unknown_id");
 }
 
-TEST_CASE("the runner refuses a second generator for one vendor instrument", "[simulator_adapter][runner]") {
+TEST_CASE("the runner refuses a second generator for one vendor instrument",
+          "[simulator_adapter][runner]") {
     auto first = std::make_shared<generator_counters>();
     auto second = std::make_shared<generator_counters>();
     generator_runner runner(
@@ -448,7 +451,8 @@ TEST_CASE("the runner refuses a second generator for one vendor instrument", "[s
     CHECK(runner.running_count() == 1);
 }
 
-TEST_CASE("the runner counts an id once when the demand repeats it", "[simulator_adapter][runner]") {
+TEST_CASE("the runner counts an id once when the demand repeats it",
+          "[simulator_adapter][runner]") {
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] { return std::vector{idle_offer("EUR/USD", counters)}; });
 
@@ -458,7 +462,8 @@ TEST_CASE("the runner counts an id once when the demand repeats it", "[simulator
     CHECK(counters->built == 1);
 }
 
-TEST_CASE("the runner rejects an id whose generator cannot be built", "[simulator_adapter][runner]") {
+TEST_CASE("the runner rejects an id whose generator cannot be built",
+          "[simulator_adapter][runner]") {
     auto counters = std::make_shared<generator_counters>();
     generator_runner runner([&] {
         return std::vector{generator_offer{.id = bbg_id("EUR/USD"),
@@ -478,9 +483,8 @@ TEST_CASE("the runner rejects an id whose generator cannot be built", "[simulato
 
 TEST_CASE("the runner survives a generator whose start throws", "[simulator_adapter][runner]") {
     generator_runner runner([] {
-        return std::vector{generator_offer{.id = bbg_id("EUR/USD"), .make = [] {
-                                               return std::make_shared<failing_generator>();
-                                           }}};
+        return std::vector{generator_offer{
+            .id = bbg_id("EUR/USD"), .make = [] { return std::make_shared<failing_generator>(); }}};
     });
 
     const auto out = runner.apply({bbg_id("EUR/USD")});
@@ -708,10 +712,7 @@ TEST_CASE("the offers are the startable system configs of the provider that have
             [](const auto&, const auto&) {
                 return std::optional<ores::synthetic::domain::market_data_generation_config>{};
             },
-        .containers =
-            [containers](const auto&) {
-                return containers();
-            }});
+        .containers = [containers](const auto&) { return containers(); }});
 
     svc::feed_kind kind;
     kind.kind = std::string(ores::synthetic::feed::fx_spot_feed_kind);

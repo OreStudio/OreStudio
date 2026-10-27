@@ -143,7 +143,8 @@ TEST_CASE("generate_fictional_currencies_returns_requested_count", "[generators]
     CHECK(currencies[4].name == "Calandrian Crown");
 }
 
-TEST_CASE("generate_fictional_currencies_returns_all_when_count_exceeds_available", "[generators]") {
+TEST_CASE("generate_fictional_currencies_returns_all_when_count_exceeds_available",
+          "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
 

@@ -78,7 +78,8 @@ ores::database::context system_context(ores::testing::scoped_database_helper& h)
 
 }
 
-TEST_CASE("the seeded day counters are the schema's dayCounter enumeration", "[repository][curve_vocabulary][database]") {
+TEST_CASE("the seeded day counters are the schema's dayCounter enumeration",
+          "[repository][curve_vocabulary][database]") {
     ores::testing::scoped_database_helper h;
     const auto body = type_body(read_schema("ore_types.xsd"), "simpleType", "dayCounter");
     const auto values = matches(body, std::regex(R"re(<xs:enumeration value="([^"]+)")re"));
@@ -94,7 +95,8 @@ TEST_CASE("the seeded day counters are the schema's dayCounter enumeration", "[r
     CHECK(seeded == expected);
 }
 
-TEST_CASE("the seeded curve sections are the curve configuration's entry sections", "[repository][curve_vocabulary][database]") {
+TEST_CASE("the seeded curve sections are the curve configuration's entry sections",
+          "[repository][curve_vocabulary][database]") {
     ores::testing::scoped_database_helper h;
     const auto schema = read_schema("curveconfig.xsd");
     const auto root = type_body(schema, "complexType", "curveconfiguration");
@@ -123,7 +125,8 @@ TEST_CASE("the seeded curve sections are the curve configuration's entry section
     CHECK(seeded.at("InflationCapFloorVolatilities") == "InflationCapFloorVolatility");
 }
 
-TEST_CASE("the seeded segment types are the schema's segment types, each under its kind", "[repository][curve_vocabulary][database]") {
+TEST_CASE("the seeded segment types are the schema's segment types, each under its kind",
+          "[repository][curve_vocabulary][database]") {
     ores::testing::scoped_database_helper h;
     const auto schema = read_schema("curveconfig.xsd");
     const auto segments = type_body(schema, "complexType", "segmentsType");
@@ -156,7 +159,8 @@ TEST_CASE("the seeded segment types are the schema's segment types, each under i
     CHECK(seeded == expected);
 }
 
-TEST_CASE("the seeded calendar names are the schema's calendar pattern names", "[repository][curve_vocabulary][database]") {
+TEST_CASE("the seeded calendar names are the schema's calendar pattern names",
+          "[repository][curve_vocabulary][database]") {
     ores::testing::scoped_database_helper h;
     const auto body = type_body(read_schema("ore_types.xsd"), "simpleType", "calendar");
     const std::string open_mark = "(^)?(";

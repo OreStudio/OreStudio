@@ -421,7 +421,8 @@ TEST_CASE("counterparty_contact_information_generator_produces_valid_instance", 
     CHECK(sut.change_reason_code == "system.test");
 }
 
-TEST_CASE("counterparty_contact_information_generator_produces_multiple_instances", "[generators]") {
+TEST_CASE("counterparty_contact_information_generator_produces_multiple_instances",
+          "[generators]") {
     auto lg(make_logger(test_suite));
     generation_context ctx;
     const std::size_t count = 5;

@@ -120,7 +120,8 @@ TEST_CASE("import_dedupes_duplicate_observation_and_reports_warning", "[service]
     CHECK(resp.warnings[0].find("FX/RATE/EUR/CHF") != std::string::npos);
 }
 
-TEST_CASE("import_with_duplicates_are_errors_skips_only_the_affected_section", "[service][import_service]") {
+TEST_CASE("import_with_duplicates_are_errors_skips_only_the_affected_section",
+          "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -205,7 +206,8 @@ TEST_CASE("import_skips_a_short_key_oresmd_cannot_name", "[service][import_servi
     CHECK(resp.warnings[0].find("skipped") != std::string::npos);
 }
 
-TEST_CASE("import_skips_a_one_segment_key_and_keeps_the_rest_of_the_file", "[service][import_service]") {
+TEST_CASE("import_skips_a_one_segment_key_and_keeps_the_rest_of_the_file",
+          "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -267,7 +269,8 @@ TEST_CASE("import_warns_when_refdata_says_an_fx_pair_is_reversed", "[service][im
                 .size() == 1);
 }
 
-TEST_CASE("import_keeps_the_ir_swap_settlement_segment_the_file_carried", "[service][import_service]") {
+TEST_CASE("import_keeps_the_ir_swap_settlement_segment_the_file_carried",
+          "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     // The settlement segment is an identity field of the swap, stored as the file
@@ -301,7 +304,8 @@ TEST_CASE("import_keeps_the_ir_swap_settlement_segment_the_file_carried", "[serv
                 .size() == 1);
 }
 
-TEST_CASE("import_stores_an_alias_under_its_canonical_spelling_and_says_so", "[service][import_service]") {
+TEST_CASE("import_stores_an_alias_under_its_canonical_spelling_and_says_so",
+          "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     // ORE reads FX_SPOT as FX, so the two spellings name one datum: the row is
@@ -362,7 +366,8 @@ TEST_CASE("import_stores_a_key_in_the_case_it_was_written", "[service][import_se
                 .size() == 1);
 }
 
-TEST_CASE("import_leaves_fx_qualifier_untouched_when_currency_pairs_unreachable", "[service][import_service]") {
+TEST_CASE("import_leaves_fx_qualifier_untouched_when_currency_pairs_unreachable",
+          "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     // auth_nats is unconnected (no live refdata to fetch currency_pair
@@ -453,7 +458,8 @@ TEST_CASE("a_series_is_read_by_the_identity_its_key_projects_to", "[service][imp
           "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD");
 }
 
-TEST_CASE("a_series_carries_its_instruments_identity_not_one_of_its_points", "[service][import_service]") {
+TEST_CASE("a_series_carries_its_instruments_identity_not_one_of_its_points",
+          "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     // A file's key names one datum, and the payload below carries two points of one
@@ -567,7 +573,8 @@ TEST_CASE("import_declares_the_shape_of_a_series_it_creates", "[service][import_
     CHECK(term_values(series.front().id, h.context()) == std::vector<std::string>{"1Y", "2Y"});
 }
 
-TEST_CASE("import_declares_a_surfaces_strike_axis_as_canonical_components", "[service][import_service]") {
+TEST_CASE("import_declares_a_surfaces_strike_axis_as_canonical_components",
+          "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -647,7 +654,8 @@ TEST_CASE("import_re_declares_the_same_shape_without_adding_rows", "[service][im
     CHECK(term_values(series.front().id, h.context()) == std::vector<std::string>{"1Y", "2Y"});
 }
 
-TEST_CASE("import_records_a_term_the_reference_tenor_table_does_not_hold", "[service][import_service]") {
+TEST_CASE("import_records_a_term_the_reference_tenor_table_does_not_hold",
+          "[service][import_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

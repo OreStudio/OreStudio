@@ -38,7 +38,8 @@ bootstrapped_point make_point(const std::string& id, year_month_day date, double
 
 }
 
-TEST_CASE("calculate returns an empty result for fewer than two points", "[forward_rate_calculator]") {
+TEST_CASE("calculate returns an empty result for fewer than two points",
+          "[forward_rate_calculator]") {
     CHECK(forward_rate_calculator::calculate({}, A365).empty());
     CHECK(forward_rate_calculator::calculate({make_point("3M", 2026y / April / 1d, 0.99)}, A365)
               .empty());
@@ -69,7 +70,8 @@ TEST_CASE("calculate derives a constant forward rate along a flat continuously-c
         CHECK(f.instantaneous_forward_rate == Catch::Approx(r).epsilon(1e-6));
 }
 
-TEST_CASE("calculate recovers a hand-computed forward rate for a known non-flat pair", "[forward_rate_calculator]") {
+TEST_CASE("calculate recovers a hand-computed forward rate for a known non-flat pair",
+          "[forward_rate_calculator]") {
     // f = ln(df_start/df_end) / yf, Act/365 over exactly one year (365 days -> yf == 1.0).
     const auto start = 2026y / January / 1d;
     const auto end = 2027y / January / 1d;
@@ -104,10 +106,12 @@ TEST_CASE("calculate is sensitive to the day-count convention", "[forward_rate_c
     CHECK(a365[0].instantaneous_forward_rate != Catch::Approx(a360[0].instantaneous_forward_rate));
 }
 
-TEST_CASE("calculate rejects a pair that does not strictly increase in date", "[forward_rate_calculator]") {
+TEST_CASE("calculate rejects a pair that does not strictly increase in date",
+          "[forward_rate_calculator]") {
     const auto d = 2026y / January / 1d;
     std::vector<bootstrapped_point> points{
-        make_point("a", d, 0.99), make_point("b", d, 0.98), // same date -- zero-length interval
+        make_point("a", d, 0.99),
+        make_point("b", d, 0.98), // same date -- zero-length interval
     };
 
     CHECK_THROWS_AS(forward_rate_calculator::calculate(points, A365), std::invalid_argument);
@@ -123,7 +127,8 @@ TEST_CASE("calculate rejects a non-positive discount factor", "[forward_rate_cal
     CHECK_THROWS_AS(forward_rate_calculator::calculate(points, A365), std::invalid_argument);
 }
 
-TEST_CASE("calculate handles more than two points, one forward rate per consecutive pair", "[forward_rate_calculator]") {
+TEST_CASE("calculate handles more than two points, one forward rate per consecutive pair",
+          "[forward_rate_calculator]") {
     const auto value_date = 2026y / January / 1d;
     std::vector<bootstrapped_point> points{
         make_point("", value_date, 1.0),

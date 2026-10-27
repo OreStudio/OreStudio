@@ -117,7 +117,8 @@ void check_no_conversion_failures(const ores::ore::xml::roundtrip_summary& summa
 
 } // namespace
 
-TEST_CASE("roundtrip mirrors every portfolio in the ORE example corpus", "[ore][xml][roundtrip][exporter][external]") {
+TEST_CASE("roundtrip mirrors every portfolio in the ORE example corpus",
+          "[ore][xml][roundtrip][exporter][external]") {
     using ores::platform::filesystem::file;
 
     const auto input = examples_dir("Products/Example_Trades");
@@ -182,7 +183,8 @@ TEST_CASE("roundtrip mirrors every portfolio in the ORE example corpus", "[ore][
           static_cast<std::size_t>(summary.trades_mapped));
 }
 
-TEST_CASE("roundtrip classifies a mixed ORE input directory", "[ore][xml][roundtrip][exporter][external]") {
+TEST_CASE("roundtrip classifies a mixed ORE input directory",
+          "[ore][xml][roundtrip][exporter][external]") {
     const auto input = examples_dir("Input");
     REQUIRE(fs::exists(input));
 

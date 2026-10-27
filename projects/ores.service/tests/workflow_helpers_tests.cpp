@@ -60,7 +60,8 @@ TEST_CASE("workflow step context reads the three headers off a command", "[workf
     REQUIRE(ctx->nats == &nats);
 }
 
-TEST_CASE("workflow step context is absent on a message that is not a workflow command", "[workflow_helpers]") {
+TEST_CASE("workflow step context is absent on a message that is not a workflow command",
+          "[workflow_helpers]") {
     ores::nats::service::client nats{ores::nats::config::nats_options{}};
     ores::nats::message msg;
     msg.headers[std::string(instance_id_header)] = "instance-1";
@@ -68,7 +69,8 @@ TEST_CASE("workflow step context is absent on a message that is not a workflow c
     REQUIRE_FALSE(workflow_step_context::from_message(nats, msg).has_value());
 }
 
-TEST_CASE("a cached step result defaults to a completed outcome with no payload", "[workflow_helpers]") {
+TEST_CASE("a cached step result defaults to a completed outcome with no payload",
+          "[workflow_helpers]") {
     const cached_step_result result;
 
     REQUIRE(result.outcome == ores::workflow::messaging::step_outcome::completed);

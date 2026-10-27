@@ -47,7 +47,8 @@ TEST_CASE("a subject outside the publish pattern has no function", "[service][pu
     CHECK(publish_from_dq_function("analytics.v1.report-definitions.list").empty());
 }
 
-TEST_CASE("a subject whose operation is not a plain publish name has no function", "[service][publish]") {
+TEST_CASE("a subject whose operation is not a plain publish name has no function",
+          "[service][publish]") {
     CHECK(publish_from_dq_function("analytics.v1.ops.x; drop table y").empty());
     CHECK(publish_from_dq_function("analytics.v1.ops.publish_a_from_dq; select 1").empty());
     CHECK(publish_from_dq_function("analytics.v1.ops.Publish_A_from_dq").empty());
@@ -55,6 +56,7 @@ TEST_CASE("a subject whose operation is not a plain publish name has no function
     CHECK(publish_from_dq_function("analytics.v1.ops._from_dq").empty());
 }
 
-TEST_CASE("a subject with nothing between the version and the suffix has no function", "[service][publish]") {
+TEST_CASE("a subject with nothing between the version and the suffix has no function",
+          "[service][publish]") {
     CHECK(publish_from_dq_function("analytics.v1..publish-from-dq").empty());
 }

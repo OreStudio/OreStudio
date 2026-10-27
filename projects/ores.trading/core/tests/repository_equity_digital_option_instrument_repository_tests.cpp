@@ -66,7 +66,8 @@ equity_digital_option_instrument make_instrument(database_helper& h) {
 
 } // namespace
 
-TEST_CASE("equity_digital_option_instrument_write_and_read_latest", "[repository][equity][equity_digital_option]") {
+TEST_CASE("equity_digital_option_instrument_write_and_read_latest",
+          "[repository][equity][equity_digital_option]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -94,7 +95,8 @@ TEST_CASE("equity_digital_option_instrument_write_and_read_latest", "[repository
     BOOST_LOG_SEV(lg, debug) << "Read equity digital option instrument: " << read[0];
 }
 
-TEST_CASE("equity_digital_option_instrument_read_nonexistent", "[repository][equity][equity_digital_option]") {
+TEST_CASE("equity_digital_option_instrument_read_nonexistent",
+          "[repository][equity][equity_digital_option]") {
     database_helper h;
     const auto party_id = boost::uuids::random_generator()();
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
@@ -113,7 +115,8 @@ TEST_CASE("equity_digital_option_instrument_read_nonexistent", "[repository][equ
     CHECK(read.empty());
 }
 
-TEST_CASE("equity_digital_option_instrument_remove", "[repository][equity][equity_digital_option]") {
+TEST_CASE("equity_digital_option_instrument_remove",
+          "[repository][equity][equity_digital_option]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

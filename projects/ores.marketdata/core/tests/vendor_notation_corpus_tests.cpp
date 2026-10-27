@@ -128,7 +128,8 @@ TEST_CASE("the_registry_lists_the_providers_that_have_a_notation", "[vendor_nota
     CHECK(vendor::notation_of("") == nullptr);
 }
 
-TEST_CASE("every_id_in_the_corpus_reads_as_the_corpus_says_and_roundtrips", "[vendor_notation][corpus]") {
+TEST_CASE("every_id_in_the_corpus_reads_as_the_corpus_says_and_roundtrips",
+          "[vendor_notation][corpus]") {
     for (const auto& provider : providers) {
         const auto& sut = notation(provider);
         std::size_t valid = 0;
@@ -172,7 +173,8 @@ TEST_CASE("every_id_in_the_corpus_reads_as_the_corpus_says_and_roundtrips", "[ve
     }
 }
 
-TEST_CASE("every_pillar_in_the_corpus_writes_as_the_corpus_says_and_roundtrips", "[vendor_notation][corpus]") {
+TEST_CASE("every_pillar_in_the_corpus_writes_as_the_corpus_says_and_roundtrips",
+          "[vendor_notation][corpus]") {
     std::size_t written_ids = 0;
     std::size_t refusals = 0;
     for (const auto& row : rows_of("ir_curve_pillar_descriptions.csv")) {
@@ -208,7 +210,8 @@ TEST_CASE("every_pillar_in_the_corpus_writes_as_the_corpus_says_and_roundtrips",
     CHECK(refusals >= 33);
 }
 
-TEST_CASE("a_pair_is_not_read_as_a_pillar_and_a_pillar_is_not_read_as_a_pair", "[vendor_notation][corpus]") {
+TEST_CASE("a_pair_is_not_read_as_a_pillar_and_a_pillar_is_not_read_as_a_pair",
+          "[vendor_notation][corpus]") {
     const std::vector<messaging::vendor_id> pairs{{"bbg_ticker", "EURUSD Curncy", "PX_LAST"},
                                                   {"ric", "EUR=", "BID"},
                                                   {"demo_key", "EUR/USD", "value"}};
@@ -236,7 +239,8 @@ TEST_CASE("a_pair_is_not_read_as_a_pillar_and_a_pillar_is_not_read_as_a_pair", "
     }
 }
 
-TEST_CASE("every_description_in_the_corpus_writes_as_the_corpus_says_and_roundtrips", "[vendor_notation][corpus]") {
+TEST_CASE("every_description_in_the_corpus_writes_as_the_corpus_says_and_roundtrips",
+          "[vendor_notation][corpus]") {
     std::size_t written_ids = 0;
     std::size_t refusals = 0;
     for (const auto& row : rows_of("fx_spot_descriptions.csv")) {
@@ -272,7 +276,8 @@ TEST_CASE("every_description_in_the_corpus_writes_as_the_corpus_says_and_roundtr
     CHECK(refusals > 50);
 }
 
-TEST_CASE("no_notation_writes_an_id_that_reads_as_another_description", "[vendor_notation][corpus]") {
+TEST_CASE("no_notation_writes_an_id_that_reads_as_another_description",
+          "[vendor_notation][corpus]") {
     // The property over a grid the corpus does not list: every ordered pair of a set of
     // currencies, with every side, through every notation.
     const std::vector<std::string> currencies{

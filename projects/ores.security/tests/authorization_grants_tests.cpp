@@ -61,7 +61,8 @@ TEST_CASE("the_wildcard_does_not_cover_an_installation_code", "[authorization][g
     CHECK_FALSE(covers({"*", "refdata::*"}, "installation::deployment:read"));
 }
 
-TEST_CASE("an_installation_code_is_covered_by_itself_and_by_its_component_wildcard", "[authorization][grants]") {
+TEST_CASE("an_installation_code_is_covered_by_itself_and_by_its_component_wildcard",
+          "[authorization][grants]") {
     CHECK(covers({"installation::deployment:read"}, "installation::deployment:read"));
     CHECK(covers({"installation::*"}, "installation::deployment:read"));
     CHECK_FALSE(covers({"installation::*"}, "iam::accounts:read"));

@@ -65,7 +65,8 @@ fx_vanilla_option_instrument make_instrument(database_helper& h) {
 
 } // namespace
 
-TEST_CASE("fx_vanilla_option_instrument_write_and_read_latest", "[repository][fx][fx_vanilla_option]") {
+TEST_CASE("fx_vanilla_option_instrument_write_and_read_latest",
+          "[repository][fx][fx_vanilla_option]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

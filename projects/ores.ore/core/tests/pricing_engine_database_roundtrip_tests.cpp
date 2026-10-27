@@ -56,7 +56,8 @@ using ores::testing::scoped_database_helper;
  * into a document again. The in-memory walk proves the mapper; this proves the
  * tables hold what the mapper produces.
  */
-TEST_CASE("pricing_engines_roundtrip_through_the_database", "[pricingengines][database][roundtrip]") {
+TEST_CASE("pricing_engines_roundtrip_through_the_database",
+          "[pricingengines][database][roundtrip]") {
     auto lg(ores::logging::make_logger(test_suite));
     scoped_database_helper h;
 
@@ -102,7 +103,8 @@ TEST_CASE("pricing_engines_roundtrip_through_the_database", "[pricingengines][da
     CHECK_FALSE(difference);
 }
 
-TEST_CASE("a party sees only its own pricing engine configuration", "[pricingengines][database][roundtrip]") {
+TEST_CASE("a party sees only its own pricing engine configuration",
+          "[pricingengines][database][roundtrip]") {
     scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
     const auto original = pricing_engine_projection::read(file::read_content(

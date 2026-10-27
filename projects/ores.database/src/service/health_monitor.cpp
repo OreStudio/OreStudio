@@ -20,10 +20,10 @@
 #include "ores.database/service/health_monitor.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "ores.logging/boost_severity.hpp"
-#include <boost/log/sources/severity_feature.hpp>
 #include <boost/asio/bind_cancellation_slot.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <boost/log/sources/severity_feature.hpp>
 #include <sqlgen/postgres.hpp>
 
 namespace ores::database {

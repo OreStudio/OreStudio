@@ -94,7 +94,8 @@ struct world {
 
 }
 
-TEST_CASE("the_demand_of_an_adapter_is_the_mapped_ids_of_its_provider", "[app][demand_calculator]") {
+TEST_CASE("the_demand_of_an_adapter_is_the_mapped_ids_of_its_provider",
+          "[app][demand_calculator]") {
     world w;
     w.party_routed_to(w.sim);
 
@@ -118,7 +119,8 @@ TEST_CASE("the_demand_holds_no_id_of_another_provider", "[app][demand_calculator
         CHECK(id.id_scheme == "bbg_ticker");
 }
 
-TEST_CASE("the_demand_is_the_union_over_the_parties_and_holds_no_id_twice", "[app][demand_calculator]") {
+TEST_CASE("the_demand_is_the_union_over_the_parties_and_holds_no_id_twice",
+          "[app][demand_calculator]") {
     world w;
     w.party_routed_to(w.sim);
     w.party_routed_to(w.sim);
@@ -157,7 +159,8 @@ TEST_CASE("a_route_without_a_subscription_is_refused_as_not_entitled", "[app][de
     CHECK(result.by_adapter.at("bloomberg-sim").empty());
 }
 
-TEST_CASE("a_subscription_with_only_the_derived_right_still_entitles_a_party", "[app][demand_calculator]") {
+TEST_CASE("a_subscription_with_only_the_derived_right_still_entitles_a_party",
+          "[app][demand_calculator]") {
     world w;
     w.party_routed_to(w.sim, true, true);
 

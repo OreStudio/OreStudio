@@ -90,7 +90,8 @@ TEST_CASE("an_announce_with_no_adapter_id_is_refused", "[app][adapter_registry]"
     CHECK(sut.status().empty());
 }
 
-TEST_CASE("an_accepted_demand_makes_an_adapter_serve_and_an_empty_one_makes_it_ready", "[app][adapter_registry]") {
+TEST_CASE("an_accepted_demand_makes_an_adapter_serve_and_an_empty_one_makes_it_ready",
+          "[app][adapter_registry]") {
     adapter_registry sut;
     sut.announce(announce(), catalogue(), t0);
 
@@ -104,7 +105,8 @@ TEST_CASE("an_accepted_demand_makes_an_adapter_serve_and_an_empty_one_makes_it_r
     CHECK(sut.state_of("bloomberg-sim") == adapter_state::ready);
 }
 
-TEST_CASE("the_status_shows_the_accepted_and_rejected_ids_of_the_last_reply", "[app][adapter_registry]") {
+TEST_CASE("the_status_shows_the_accepted_and_rejected_ids_of_the_last_reply",
+          "[app][adapter_registry]") {
     adapter_registry sut;
     sut.announce(announce(), catalogue(), t0);
     adapter_demand_response reply;
@@ -153,7 +155,8 @@ TEST_CASE("a_heartbeat_keeps_an_adapter_from_going_stale", "[app][adapter_regist
     CHECK(sut.expire(t0 + 26s).size() == 1);
 }
 
-TEST_CASE("a_returning_heartbeat_makes_a_stale_adapter_ready_and_asks_for_demand", "[app][adapter_registry]") {
+TEST_CASE("a_returning_heartbeat_makes_a_stale_adapter_ready_and_asks_for_demand",
+          "[app][adapter_registry]") {
     adapter_registry sut(15s);
     sut.announce(announce(), catalogue(), t0);
     (void)sut.expire(t0 + 20s);

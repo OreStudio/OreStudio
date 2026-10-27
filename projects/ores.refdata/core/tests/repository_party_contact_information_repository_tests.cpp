@@ -244,7 +244,8 @@ TEST_CASE("read_nonexistent_party_contact_information_id", "[repository]") {
     CHECK(keeper_rows[0].city == keeper.city);
 }
 
-TEST_CASE("the_history_of_a_contact_is_its_own_when_another_party_holds_the_same_type", "[repository]") {
+TEST_CASE("the_history_of_a_contact_is_its_own_when_another_party_holds_the_same_type",
+          "[repository]") {
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     party_repository party_repo;

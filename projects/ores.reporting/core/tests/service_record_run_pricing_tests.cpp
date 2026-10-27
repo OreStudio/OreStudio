@@ -74,7 +74,8 @@ TEST_CASE("record_run_pricing stores the date and the note on the run", "[servic
     CHECK(stored->price_note == request.price_note);
 }
 
-TEST_CASE("record_run_pricing answers missing for a run the session cannot read", "[service][database]") {
+TEST_CASE("record_run_pricing answers missing for a run the session cannot read",
+          "[service][database]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;

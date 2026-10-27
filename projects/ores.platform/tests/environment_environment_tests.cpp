@@ -180,7 +180,8 @@ TEST_CASE("real_environment_provider_round_trips_a_variable", "[environment]") {
     CHECK(std::getenv(name.c_str()) == nullptr);
 }
 
-TEST_CASE("real_environment_provider_get_returns_empty_optional_for_absent_variable", "[environment]") {
+TEST_CASE("real_environment_provider_get_returns_empty_optional_for_absent_variable",
+          "[environment]") {
     real_environment_provider provider;
 
     CHECK_FALSE(provider.get("ORES_PLATFORM_TEST_NEVER_SET").has_value());

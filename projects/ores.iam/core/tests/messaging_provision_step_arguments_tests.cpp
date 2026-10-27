@@ -99,7 +99,8 @@ TEST_CASE("a step whose arguments are not a JSON object is refused", "[provision
     CHECK_THROWS_WITH(parse_step_bundles("[1, 2]"), "The step's arguments are not a JSON object.");
 }
 
-TEST_CASE("an LEI import reads its bundle and its root LEI from the step's arguments", "[provision_step]") {
+TEST_CASE("an LEI import reads its bundle and its root LEI from the step's arguments",
+          "[provision_step]") {
     const auto arguments = parse_lei_hierarchy_arguments(
         R"({"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"})", {});
 
@@ -116,7 +117,8 @@ TEST_CASE("an LEI import takes the root LEI from the run's parameters when the s
     CHECK(arguments.root_lei == "529900T8BM49AURSDO55");
 }
 
-TEST_CASE("an LEI import prefers the step's own root LEI to the run's parameter", "[provision_step]") {
+TEST_CASE("an LEI import prefers the step's own root LEI to the run's parameter",
+          "[provision_step]") {
     const auto arguments = parse_lei_hierarchy_arguments(
         R"({"bundles": ["lei_hierarchy"], "root_lei": "9695ACMEGROUP0000030"})",
         parameters("root_lei", "529900T8BM49AURSDO55"));
@@ -156,7 +158,8 @@ TEST_CASE("an LEI import whose root_lei argument is not a string is refused", "[
         "The step's argument 'root_lei' is not a string.");
 }
 
-TEST_CASE("a staff step reads each party's name, its bundles and its default flag", "[provision_step]") {
+TEST_CASE("a staff step reads each party's name, its bundles and its default flag",
+          "[provision_step]") {
     const auto assignments = parse_staff_assignments(
         R"({"parties": [
              {"name": "Acme Corporation Plc", "bundles": ["acme_group"], "default": true},
@@ -180,7 +183,8 @@ TEST_CASE("a staff step that names no parties is refused", "[provision_step]") {
                       "The step's argument 'parties' is not a list of objects.");
 }
 
-TEST_CASE("a staff step's party entry that omits its name or its bundles is refused", "[provision_step]") {
+TEST_CASE("a staff step's party entry that omits its name or its bundles is refused",
+          "[provision_step]") {
     CHECK_THROWS_WITH(parse_staff_assignments(R"({"parties": [{"bundles": ["acme_uk"]}]})"),
                       "The step's party entry names no 'name' argument.");
     CHECK_THROWS_WITH(
@@ -191,14 +195,16 @@ TEST_CASE("a staff step's party entry that omits its name or its bundles is refu
                       "The step names no bundle in its 'bundles' argument.");
 }
 
-TEST_CASE("a staff step's party entry whose default flag is not a boolean is refused", "[provision_step]") {
+TEST_CASE("a staff step's party entry whose default flag is not a boolean is refused",
+          "[provision_step]") {
     CHECK_THROWS_WITH(parse_staff_assignments(R"({"parties": [
              {"name": "ACME Corporation UK plc", "bundles": ["acme_uk"], "default": "yes"}
            ]})"),
                       "The step's argument 'default' is not a boolean.");
 }
 
-TEST_CASE("a photo step reads each party's name and dataset and the logo's key", "[provision_step]") {
+TEST_CASE("a photo step reads each party's name and dataset and the logo's key",
+          "[provision_step]") {
     const auto arguments = parse_photo_arguments(
         R"({"party_logo": "acme_party_logo",
             "parties": [
@@ -310,7 +316,8 @@ TEST_CASE("a publish step that opts in nothing publishes its bundles whole", "[p
     CHECK(arguments.opted_in_datasets.empty());
 }
 
-TEST_CASE("a publish step builds an opted-in dataset from the run's parameter", "[provision_step]") {
+TEST_CASE("a publish step builds an opted-in dataset from the run's parameter",
+          "[provision_step]") {
     // The counterparty set a starting point publishes is the value of its own
     // parameter, so the row names the parameter rather than one of its values.
     const auto arguments = parse_publish_bundle_arguments(
@@ -321,7 +328,8 @@ TEST_CASE("a publish step builds an opted-in dataset from the run's parameter", 
           std::vector<std::string>{"gleif.lei_counterparties.small"});
 }
 
-TEST_CASE("a publish step whose parameter the run supplies no value for is refused", "[provision_step]") {
+TEST_CASE("a publish step whose parameter the run supplies no value for is refused",
+          "[provision_step]") {
     CHECK_THROWS_WITH(
         parse_publish_bundle_arguments(
             R"({"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]})",
@@ -363,7 +371,8 @@ TEST_CASE("a publish step whose braces name no parameter is refused", "[provisio
         "supplies no value for.");
 }
 
-TEST_CASE("a party step that names no party acts on every party the tenant holds", "[provision_step]") {
+TEST_CASE("a party step that names no party acts on every party the tenant holds",
+          "[provision_step]") {
     const auto arguments = parse_provision_party_arguments(R"({"bundles": ["party_essentials"]})");
 
     CHECK(arguments.bundles == std::vector<std::string>{"party_essentials"});
@@ -383,7 +392,8 @@ TEST_CASE("a party step that names no bundle is refused", "[provision_step]") {
                       "The step names no 'bundles' argument.");
 }
 
-TEST_CASE("a trade generation step reads each config's recipe in the order it names them", "[provision_step]") {
+TEST_CASE("a trade generation step reads each config's recipe in the order it names them",
+          "[provision_step]") {
     const auto assignments = parse_trade_generation_assignments(
         R"({"configs": [
             {"party": "Acme Corporation Plc", "name": "ACME ACMCOR bond population",

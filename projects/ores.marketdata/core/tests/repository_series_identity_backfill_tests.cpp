@@ -84,7 +84,8 @@ std::size_t identity_rows(database_helper& h, const std::string& series_id) {
 
 }
 
-TEST_CASE("a_series_inserted_in_sql_has_no_identity_until_it_is_projected", "[repository][series_identity][backfill]") {
+TEST_CASE("a_series_inserted_in_sql_has_no_identity_until_it_is_projected",
+          "[repository][series_identity][backfill]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -98,7 +99,8 @@ TEST_CASE("a_series_inserted_in_sql_has_no_identity_until_it_is_projected", "[re
     CHECK(identity_rows(h, bare) == 1);
 }
 
-TEST_CASE("projecting_missing_identities_leaves_a_projected_series_alone", "[repository][series_identity][backfill]") {
+TEST_CASE("projecting_missing_identities_leaves_a_projected_series_alone",
+          "[repository][series_identity][backfill]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -141,7 +143,8 @@ TEST_CASE("a_second_backfill_finds_nothing_to_project", "[repository][series_ide
     CHECK(again.already_projected >= 1);
 }
 
-TEST_CASE("a_series_with_an_unreadable_uri_is_projected_once_and_not_retried", "[repository][series_identity][backfill]") {
+TEST_CASE("a_series_with_an_unreadable_uri_is_projected_once_and_not_retried",
+          "[repository][series_identity][backfill]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -164,7 +167,8 @@ TEST_CASE("a_series_with_an_unreadable_uri_is_projected_once_and_not_retried", "
     CHECK(identity_rows(h, odd) == 1);
 }
 
-TEST_CASE("a_backfill_for_one_party_leaves_the_other_partys_series_unprojected", "[repository][series_identity][backfill]") {
+TEST_CASE("a_backfill_for_one_party_leaves_the_other_partys_series_unprojected",
+          "[repository][series_identity][backfill]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

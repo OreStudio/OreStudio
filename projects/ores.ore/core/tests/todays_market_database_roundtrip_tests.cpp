@@ -117,7 +117,8 @@ TEST_CASE("todays_market_roundtrip_through_the_database", "[todaysmarket][databa
     CHECK_FALSE(difference);
 }
 
-TEST_CASE("a collection naming a kind ORE does not have is refused", "[todaysmarket][database][roundtrip]") {
+TEST_CASE("a collection naming a kind ORE does not have is refused",
+          "[todaysmarket][database][roundtrip]") {
     scoped_database_helper h;
 
     const auto f = ore_path("examples/Products/Input/todaysmarket.xml");
@@ -133,7 +134,8 @@ TEST_CASE("a collection naming a kind ORE does not have is refused", "[todaysmar
     CHECK_THROWS(todays_market_collection_repository().write(h.context(), collection));
 }
 
-TEST_CASE("a party sees only its own today's market configuration", "[todaysmarket][database][roundtrip]") {
+TEST_CASE("a party sees only its own today's market configuration",
+          "[todaysmarket][database][roundtrip]") {
     scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
     auto mapped = todays_market_projection::map(todays_market_projection::read(

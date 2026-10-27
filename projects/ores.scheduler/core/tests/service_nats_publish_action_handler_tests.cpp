@@ -168,7 +168,8 @@ TEST_CASE("nats_publish_action_handler publishes to the payload's subject", "[ac
     CHECK(result.has_value());
 }
 
-TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused", "[action][nats]") {
+TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused",
+          "[action][nats]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

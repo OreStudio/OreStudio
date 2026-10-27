@@ -62,7 +62,8 @@ ores::database::context as_refdata_service(ores::testing::scoped_database_helper
 
 }
 
-TEST_CASE("the_refdata_service_user_raises_a_request_and_tells_its_deciders", "[book_proposal][as_service]") {
+TEST_CASE("the_refdata_service_user_raises_a_request_and_tells_its_deciders",
+          "[book_proposal][as_service]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(as_refdata_service(h, w));
@@ -103,7 +104,8 @@ TEST_CASE("the_refdata_service_user_applies_an_approved_request", "[book_proposa
     CHECK(books.get_book(line.entity_id).has_value());
 }
 
-TEST_CASE("the_refdata_service_user_moves_a_refused_request_to_apply_failed", "[book_proposal][as_service]") {
+TEST_CASE("the_refdata_service_user_moves_a_refused_request_to_apply_failed",
+          "[book_proposal][as_service]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(as_refdata_service(h, w));

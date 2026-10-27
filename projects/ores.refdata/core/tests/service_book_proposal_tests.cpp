@@ -51,7 +51,8 @@ using namespace ores::refdata::tests;
 
 }
 
-TEST_CASE("a_preview_accepts_a_valid_new_book_and_names_every_part_that_decides_it", "[book_proposal]") {
+TEST_CASE("a_preview_accepts_a_valid_new_book_and_names_every_part_that_decides_it",
+          "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -96,7 +97,8 @@ TEST_CASE("a_refused_line_does_not_stop_the_next_line_being_checked", "[book_pro
     CHECK(preview.refused());
 }
 
-TEST_CASE("a_preview_refuses_a_line_that_read_a_version_that_is_no_longer_current", "[book_proposal]") {
+TEST_CASE("a_preview_refuses_a_line_that_read_a_version_that_is_no_longer_current",
+          "[book_proposal]") {
     ores::testing::scoped_database_helper h;
     const auto w = seed_world(h);
     book_proposal_service svc(w.ctx);
@@ -441,7 +443,8 @@ TEST_CASE("a_recheck_reads_the_stored_lines_against_the_live_book", "[book_propo
     CHECK(svc.recheck(id).refused());
 }
 
-TEST_CASE("only_the_database_refusing_a_write_is_a_refusal_and_not_the_infrastructure", "[book_proposal]") {
+TEST_CASE("only_the_database_refusing_a_write_is_a_refusal_and_not_the_infrastructure",
+          "[book_proposal]") {
     using ores::refdata::service::is_infrastructure_failure;
     // The client cannot reach the server: no label from the server at all.
     CHECK(is_infrastructure_failure("server closed the connection unexpectedly"));

@@ -1014,7 +1014,8 @@ TEST_CASE("read_instruments_rebuilds_the_trs_return_side", "[repository]") {
     CHECK(rebuilt.trs_schedule.rules[0].tenor == "3M");
 }
 
-TEST_CASE("read_instruments_rebuilds_the_option_block_of_a_type_with_no_option_row", "[repository]") {
+TEST_CASE("read_instruments_rebuilds_the_option_block_of_a_type_with_no_option_row",
+          "[repository]") {
     database_helper h;
     const auto s = make_stamps(h);
     auto ctx = make_context(h, s);

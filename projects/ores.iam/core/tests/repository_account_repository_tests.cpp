@@ -337,7 +337,8 @@ TEST_CASE("write_account_with_itself_as_modified_by", "[repository]") {
     CHECK(read_accounts[0].full_name == second.full_name);
 }
 
-TEST_CASE("a_username_or_email_lookup_never_returns_a_shared_account_of_the_system_tenant", "[repository]") {
+TEST_CASE("a_username_or_email_lookup_never_returns_a_shared_account_of_the_system_tenant",
+          "[repository]") {
     database_helper h;
     account_repository repo;
 

@@ -167,7 +167,8 @@ std::vector<uuid> sorted(std::vector<uuid> v) {
 
 }
 
-TEST_CASE("a counterparty narrows the trade list, and the total follows", "[repository][list_filter]") {
+TEST_CASE("a counterparty narrows the trade list, and the total follows",
+          "[repository][list_filter]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("FxForward", f.counterparty);
@@ -177,7 +178,8 @@ TEST_CASE("a counterparty narrows the trade list, and the total follows", "[repo
     CHECK(trade_repository().get_total_trade_count(f.ctx, on(f.counterparty)) == 2);
 }
 
-TEST_CASE("an empty counterparty member reads the trades that have no counterparty", "[repository][list_filter]") {
+TEST_CASE("an empty counterparty member reads the trades that have no counterparty",
+          "[repository][list_filter]") {
     fixture f;
     const auto internal = f.write_intra_entity("Swap");
     f.write("Swap", f.counterparty);
@@ -187,7 +189,8 @@ TEST_CASE("an empty counterparty member reads the trades that have no counterpar
     CHECK(ids(f.read(filter)) == std::vector<uuid>{internal});
 }
 
-TEST_CASE("a trade type narrows the list, and the members that are set must all hold", "[repository][list_filter]") {
+TEST_CASE("a trade type narrows the list, and the members that are set must all hold",
+          "[repository][list_filter]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     f.write("FxForward", f.counterparty);
@@ -212,7 +215,8 @@ TEST_CASE("a one-of member reads the trades of the types it lists", "[repository
     CHECK(f.read(filter).empty());
 }
 
-TEST_CASE("a counterparty one-of member reads the trades of the counterparties it lists", "[repository][list_filter]") {
+TEST_CASE("a counterparty one-of member reads the trades of the counterparties it lists",
+          "[repository][list_filter]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.other_counterparty);
@@ -222,7 +226,8 @@ TEST_CASE("a counterparty one-of member reads the trades of the counterparties i
     CHECK(ids(f.read(filter)) == sorted({a, b}));
 }
 
-TEST_CASE("a search matches the trade type, ignoring case, and literally", "[repository][list_filter]") {
+TEST_CASE("a search matches the trade type, ignoring case, and literally",
+          "[repository][list_filter]") {
     fixture f;
     f.write("Swap", f.counterparty);
     const auto b = f.write("FxForward", f.counterparty);
@@ -273,7 +278,8 @@ TEST_CASE("an enum member narrows the list by the enum's text", "[repository][li
     CHECK(ids(f.read(filter)) == sorted({external, inter}));
 }
 
-TEST_CASE("a child table reads the rows of one trade by its trade id", "[repository][list_filter]") {
+TEST_CASE("a child table reads the rows of one trade by its trade id",
+          "[repository][list_filter]") {
     fixture f;
     const auto a = f.write("Swap", f.counterparty);
     const auto b = f.write("Swap", f.counterparty);

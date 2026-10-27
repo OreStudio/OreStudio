@@ -38,7 +38,8 @@ const fx_simple_view sample{.trend_pct_per_hour = 0.05,
 
 }
 
-TEST_CASE("fx_simple_conversion spreads a figure per hour over the updates of the hour", "[fx_simple_conversion]") {
+TEST_CASE("fx_simple_conversion spreads a figure per hour over the updates of the hour",
+          "[fx_simple_conversion]") {
     const auto m = fx_mixture_from_simple(sample, "geometric", 1.1, 3600);
     REQUIRE(m.means.size() == 2);
     CHECK(m.means[0] == Approx(0.05 / 100.0 / 3600.0));
@@ -46,14 +47,16 @@ TEST_CASE("fx_simple_conversion spreads a figure per hour over the updates of th
     CHECK(m.weights[0] == Approx(0.9));
 }
 
-TEST_CASE("fx_simple_conversion adds a jump regime of four times the volatility", "[fx_simple_conversion]") {
+TEST_CASE("fx_simple_conversion adds a jump regime of four times the volatility",
+          "[fx_simple_conversion]") {
     const auto m = fx_mixture_from_simple(sample, "geometric", 1.1, 3600);
     CHECK(m.means[1] == 0.0);
     CHECK(m.stdevs[1] == Approx(4.0 * m.stdevs[0]));
     CHECK(m.weights[1] == Approx(0.1));
 }
 
-TEST_CASE("fx_simple_conversion writes one component when there are no jumps", "[fx_simple_conversion]") {
+TEST_CASE("fx_simple_conversion writes one component when there are no jumps",
+          "[fx_simple_conversion]") {
     auto view = sample;
     view.jump_share_pct = 0.0;
     const auto m = fx_mixture_from_simple(view, "geometric", 1.1, 3600);
@@ -61,7 +64,8 @@ TEST_CASE("fx_simple_conversion writes one component when there are no jumps", "
     CHECK(m.weights[0] == Approx(1.0));
 }
 
-TEST_CASE("fx_simple_conversion scales the arithmetic engine by the price", "[fx_simple_conversion]") {
+TEST_CASE("fx_simple_conversion scales the arithmetic engine by the price",
+          "[fx_simple_conversion]") {
     const auto geometric = fx_mixture_from_simple(sample, "geometric", 2.0, 3600);
     const auto arithmetic = fx_mixture_from_simple(sample, "arithmetic", 2.0, 3600);
     CHECK(arithmetic.stdevs[0] == Approx(2.0 * geometric.stdevs[0]));
@@ -77,7 +81,8 @@ TEST_CASE("fx_simple_conversion gives Ornstein-Uhlenbeck one component with κ f
     CHECK(m.stdevs[0] == Approx(0.1 / 100.0 / std::sqrt(60.0) * 2.0));
 }
 
-TEST_CASE("fx_simple_conversion reads what it wrote back to the same view", "[fx_simple_conversion]") {
+TEST_CASE("fx_simple_conversion reads what it wrote back to the same view",
+          "[fx_simple_conversion]") {
     for (const auto* engine : {"geometric", "arithmetic", "ornstein_uhlenbeck"}) {
         CAPTURE(engine);
         const auto m = fx_mixture_from_simple(sample, engine, 1.3, 1800);
@@ -93,7 +98,8 @@ TEST_CASE("fx_simple_conversion reads what it wrote back to the same view", "[fx
     }
 }
 
-TEST_CASE("fx_simple_conversion reads the seeded primary and tail as a simple form", "[fx_simple_conversion]") {
+TEST_CASE("fx_simple_conversion reads the seeded primary and tail as a simple form",
+          "[fx_simple_conversion]") {
     const ores::synthetic::feed::fx_mixture seeded{
         .means = {0.0, 0.0}, .stdevs = {2.14e-05, 8.56e-05}, .weights = {0.95, 0.05}};
     const auto reading = fx_simple_from_mixture(seeded, "geometric", 1.1, 3600);
@@ -102,13 +108,15 @@ TEST_CASE("fx_simple_conversion reads the seeded primary and tail as a simple fo
     CHECK(reading.view.volatility_pct_per_hour == Approx(2.14e-05 * 60.0 * 100.0));
 }
 
-TEST_CASE("fx_simple_conversion allows for the rounding of a seeded tail", "[fx_simple_conversion]") {
+TEST_CASE("fx_simple_conversion allows for the rounding of a seeded tail",
+          "[fx_simple_conversion]") {
     const ores::synthetic::feed::fx_mixture seeded{
         .means = {0.0, 0.0}, .stdevs = {1.89e-05, 7.55e-05}, .weights = {0.95, 0.05}};
     CHECK(fx_simple_from_mixture(seeded, "geometric", 1.0, 3600).exact);
 }
 
-TEST_CASE("fx_simple_conversion approximates a mixture set by hand, and says so", "[fx_simple_conversion]") {
+TEST_CASE("fx_simple_conversion approximates a mixture set by hand, and says so",
+          "[fx_simple_conversion]") {
     const ores::synthetic::feed::fx_mixture hand{
         .means = {0.0, 0.0001, 0.0}, .stdevs = {0.001, 0.0011, 0.01}, .weights = {0.6, 0.3, 0.1}};
     const auto reading = fx_simple_from_mixture(hand, "geometric", 1.0, 3600);
@@ -117,7 +125,8 @@ TEST_CASE("fx_simple_conversion approximates a mixture set by hand, and says so"
     CHECK(reading.view.jump_share_pct == Approx(10.0));
 }
 
-TEST_CASE("fx_simple_conversion has no exact form for a mean-reverting engine with no pull", "[fx_simple_conversion]") {
+TEST_CASE("fx_simple_conversion has no exact form for a mean-reverting engine with no pull",
+          "[fx_simple_conversion]") {
     const ores::synthetic::feed::fx_mixture still{
         .means = {0.0}, .stdevs = {0.001}, .weights = {0.0}};
     const auto reading = fx_simple_from_mixture(still, "ornstein_uhlenbeck", 1.0, 3600);

@@ -71,7 +71,8 @@ TEST_CASE("a_deployment_that_does_not_accept_signups_answers_the_same_either_way
  * are exercised by the running deployment.
  */
 
-TEST_CASE("registration_is_refused_when_the_address_names_no_tenant_and_none_is_nominated", "[signup]") {
+TEST_CASE("registration_is_refused_when_the_address_names_no_tenant_and_none_is_nominated",
+          "[signup]") {
     const auto refusal = auth_registration_destination_refusal(false, false);
 
     REQUIRE(refusal.has_value());
@@ -97,7 +98,8 @@ TEST_CASE("registration_has_a_destination_when_the_tenant_and_the_role_are_known
  * breaking change.
  */
 
-TEST_CASE("every_registration_and_sign_in_refusal_names_the_code_a_client_branches_on", "[signup]") {
+TEST_CASE("every_registration_and_sign_in_refusal_names_the_code_a_client_branches_on",
+          "[signup]") {
     CHECK(to_string(error_code::signup_disabled) == "signup_disabled");
     CHECK(to_string(error_code::signup_requires_authorization) == "signup_requires_authorization");
     CHECK(to_string(error_code::username_taken) == "username_taken");

@@ -25,7 +25,8 @@
 using ores::synthetic::domain::generation_options;
 using namespace ores::logging;
 
-TEST_CASE("default_constructed_generation_options_has_expected_counts", "[domain][generation_options]") {
+TEST_CASE("default_constructed_generation_options_has_expected_counts",
+          "[domain][generation_options]") {
     auto lg(make_logger(test_suite));
 
     const generation_options sut;

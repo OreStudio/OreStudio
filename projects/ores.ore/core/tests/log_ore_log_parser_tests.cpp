@@ -144,7 +144,8 @@ TEST_CASE("parse_message_with_leading_whitespace_after_colon", "[ore][log][ore_l
 // Microsecond handling
 // =============================================================================
 
-TEST_CASE("parse_microseconds_fewer_than_six_digits_are_scaled_to_microseconds", "[ore][log][ore_log_parser]") {
+TEST_CASE("parse_microseconds_fewer_than_six_digits_are_scaled_to_microseconds",
+          "[ore][log][ore_log_parser]") {
     // "123" → treated as 123000 µs (i.e., 0.123 seconds, right-padded with zeros)
     const auto result =
         parse_ore_log_line("NOTICE    [2024-Jan-01 00:00:01.123]    (x.cpp:1) : msg");

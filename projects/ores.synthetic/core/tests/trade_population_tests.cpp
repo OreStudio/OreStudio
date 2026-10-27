@@ -225,7 +225,8 @@ TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_
     REQUIRE(types.size() == 25u);
 }
 
-TEST_CASE("a_commodity_slot_states_its_own_terms_and_names_a_catalogue_commodity", "[trade_population]") {
+TEST_CASE("a_commodity_slot_states_its_own_terms_and_names_a_catalogue_commodity",
+          "[trade_population]") {
     const auto plan = plan_of(commodity_scope());
 
     std::set<std::string> commodities;
@@ -612,7 +613,8 @@ TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", "[trade_popul
     REQUIRE(writer.versions == versions_after_first);
 }
 
-TEST_CASE("a_security_has_the_same_issuer_whatever_counterparties_a_config_scopes", "[trade_population]") {
+TEST_CASE("a_security_has_the_same_issuer_whatever_counterparties_a_config_scopes",
+          "[trade_population]") {
     const auto wide = bond_scope();
     auto narrow = bond_scope();
     narrow.counterparty_ids = {second_bank};

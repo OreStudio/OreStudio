@@ -112,7 +112,8 @@ TEST_CASE("batches read newest first when no order is stated", "[repository][sta
     CHECK(refs_in_order(ctx, m, {}) == written);
 }
 
-TEST_CASE("a descending order reverses the default and reads oldest first", "[repository][stated_order]") {
+TEST_CASE("a descending order reverses the default and reads oldest first",
+          "[repository][stated_order]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto m = unique_marker();
@@ -121,7 +122,8 @@ TEST_CASE("a descending order reverses the default and reads oldest first", "[re
     CHECK(refs_in_order(ctx, m, {.descending = true}) == written);
 }
 
-TEST_CASE("the recording time is honoured in both directions when it is stated", "[repository][stated_order]") {
+TEST_CASE("the recording time is honoured in both directions when it is stated",
+          "[repository][stated_order]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto m = unique_marker();
@@ -133,7 +135,8 @@ TEST_CASE("the recording time is honoured in both directions when it is stated",
     CHECK(refs_in_order(ctx, m, {.field = "recorded_at", .descending = true}) == newest_first);
 }
 
-TEST_CASE("the store refuses an order by a field the model does not declare", "[repository][stated_order]") {
+TEST_CASE("the store refuses an order by a field the model does not declare",
+          "[repository][stated_order]") {
     scoped_database_helper h;
     const auto ctx = party_context(h);
 

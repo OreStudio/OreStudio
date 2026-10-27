@@ -25,7 +25,8 @@
 using ores::synthetic::domain::synthetic_catalog;
 using namespace ores::logging;
 
-TEST_CASE("default_constructed_synthetic_catalog_has_zero_seed_and_empty_vectors", "[domain][synthetic_catalog]") {
+TEST_CASE("default_constructed_synthetic_catalog_has_zero_seed_and_empty_vectors",
+          "[domain][synthetic_catalog]") {
     auto lg(make_logger(test_suite));
 
     const synthetic_catalog sut;

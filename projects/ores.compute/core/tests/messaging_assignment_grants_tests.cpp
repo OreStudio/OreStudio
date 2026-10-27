@@ -48,7 +48,8 @@ TEST_CASE("grant_for_path_refuses_a_path_that_names_no_object", "[messaging]") {
     CHECK(!grant_for_path("/api/v1/storage/ores/", "get").has_value());
 }
 
-TEST_CASE("storage_grants_for_reads_the_package_and_the_input_and_writes_the_output", "[messaging]") {
+TEST_CASE("storage_grants_for_reads_the_package_and_the_input_and_writes_the_output",
+          "[messaging]") {
     const auto grants = storage_grants_for(package, input, output);
 
     REQUIRE(grants.has_value());

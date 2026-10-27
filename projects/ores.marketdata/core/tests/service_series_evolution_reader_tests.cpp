@@ -129,7 +129,8 @@ std::vector<std::string> statuses_of(const get_series_evolution_response& resp) 
 
 }
 
-TEST_CASE("an_evolution_marks_every_node_of_the_declared_grid", "[service][series_evolution_reader]") {
+TEST_CASE("an_evolution_marks_every_node_of_the_declared_grid",
+          "[service][series_evolution_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -169,7 +170,8 @@ TEST_CASE("an_evolution_marks_every_node_of_the_declared_grid", "[service][serie
               "persistent", "dropped", "dropped", "dropped", "added", "never_quoted"});
 }
 
-TEST_CASE("a_node_an_instant_between_the_ends_alone_carries_is_intermittent", "[service][series_evolution_reader]") {
+TEST_CASE("a_node_an_instant_between_the_ends_alone_carries_is_intermittent",
+          "[service][series_evolution_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -191,7 +193,8 @@ TEST_CASE("a_node_an_instant_between_the_ends_alone_carries_is_intermittent", "[
     CHECK(statuses_of(resp) == std::vector<std::string>{"intermittent", "intermittent"});
 }
 
-TEST_CASE("an_evolution_of_a_one_axis_object_is_the_whole_ladder", "[service][series_evolution_reader]") {
+TEST_CASE("an_evolution_of_a_one_axis_object_is_the_whole_ladder",
+          "[service][series_evolution_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -216,7 +219,8 @@ TEST_CASE("an_evolution_of_a_one_axis_object_is_the_whole_ladder", "[service][se
     CHECK(statuses_of(resp) == std::vector<std::string>{"dropped", "persistent"});
 }
 
-TEST_CASE("a_set_of_instants_the_caller_states_replaces_the_range", "[service][series_evolution_reader]") {
+TEST_CASE("a_set_of_instants_the_caller_states_replaces_the_range",
+          "[service][series_evolution_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

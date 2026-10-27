@@ -118,7 +118,8 @@ TEST_CASE("a run document reads back as it was saved", "[reporting][run_document
     CHECK(back->market_bindings[0].market_configuration_name == "default");
 }
 
-TEST_CASE("a definition binds one risk report configuration", "[reporting][run_document][database]") {
+TEST_CASE("a definition binds one risk report configuration",
+          "[reporting][run_document][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto definition = make_definition(h, ctx);
@@ -127,7 +128,8 @@ TEST_CASE("a definition binds one risk report configuration", "[reporting][run_d
     CHECK_THROWS_AS(runs.save(definition, npv_run()), std::invalid_argument);
 }
 
-TEST_CASE("a parameter no definition describes is refused before anything is written", "[reporting][run_document][database]") {
+TEST_CASE("a parameter no definition describes is refused before anything is written",
+          "[reporting][run_document][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto definition = make_definition(h, ctx);
@@ -138,7 +140,8 @@ TEST_CASE("a parameter no definition describes is refused before anything is wri
     CHECK_FALSE(runs.get(definition).has_value());
 }
 
-TEST_CASE("a binding takes its owning component from the configuration type", "[reporting][run_document][database]") {
+TEST_CASE("a binding takes its owning component from the configuration type",
+          "[reporting][run_document][database]") {
     ores::testing::scoped_database_helper h;
     const auto ctx = party_context(h);
     const auto definition = make_definition(h, ctx);

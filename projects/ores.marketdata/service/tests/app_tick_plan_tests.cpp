@@ -116,7 +116,8 @@ TEST_CASE("a_tick_from_a_source_with_several_consumers_has_one_target_each", "[a
               token);
 }
 
-TEST_CASE("a_uri_is_named_once_with_its_canonical_spelling_and_the_uri_of_its_series", "[app][tick_plan]") {
+TEST_CASE("a_uri_is_named_once_with_its_canonical_spelling_and_the_uri_of_its_series",
+          "[app][tick_plan]") {
     const auto named = name_datum(eur_usd_spot);
 
     REQUIRE(named.has_value());
@@ -147,7 +148,8 @@ TEST_CASE("a_plan_uses_the_named_datum_and_the_targets_it_is_given", "[app][tick
     CHECK((*targets)[0].party_text == "22222222-2222-2222-2222-222222222222");
 }
 
-TEST_CASE("a_plan_given_a_named_datum_still_refuses_a_value_that_is_no_number", "[app][tick_plan]") {
+TEST_CASE("a_plan_given_a_named_datum_still_refuses_a_value_that_is_no_number",
+          "[app][tick_plan]") {
     const std::vector<consumer> consumers{
         make_owner("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222")};
 

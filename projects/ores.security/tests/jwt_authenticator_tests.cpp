@@ -214,7 +214,8 @@ TEST_CASE("jwt_authenticator_create_rs256_verifier_configured", "[jwt_authentica
     REQUIRE(auth.is_configured());
 }
 
-TEST_CASE("jwt_authenticator_create_rs256_verifier_empty_key_not_configured", "[jwt_authenticator]") {
+TEST_CASE("jwt_authenticator_create_rs256_verifier_empty_key_not_configured",
+          "[jwt_authenticator]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing RS256 verifier with empty key";
 

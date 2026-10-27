@@ -34,7 +34,8 @@ using ores::scheduler::domain::job_status;
 using ores::scheduler::repository::job_instance_entity;
 using ores::scheduler::repository::job_instance_mapper;
 
-TEST_CASE("job_instance_mapper reads every column of a full row", "[repository][mapper][job_instance]") {
+TEST_CASE("job_instance_mapper reads every column of a full row",
+          "[repository][mapper][job_instance]") {
     auto lg(make_logger(test_suite));
 
     job_instance_entity e;
@@ -67,7 +68,8 @@ TEST_CASE("job_instance_mapper reads every column of a full row", "[repository][
     CHECK(*inst.completed_at > inst.triggered_at);
 }
 
-TEST_CASE("job_instance_mapper leaves an absent column absent", "[repository][mapper][job_instance]") {
+TEST_CASE("job_instance_mapper leaves an absent column absent",
+          "[repository][mapper][job_instance]") {
     auto lg(make_logger(test_suite));
 
     job_instance_entity e;
@@ -87,7 +89,8 @@ TEST_CASE("job_instance_mapper leaves an absent column absent", "[repository][ma
     CHECK(inst.status == job_status::starting);
 }
 
-TEST_CASE("job_instance_mapper maps the status strings the table allows", "[repository][mapper][job_instance]") {
+TEST_CASE("job_instance_mapper maps the status strings the table allows",
+          "[repository][mapper][job_instance]") {
     auto lg(make_logger(test_suite));
 
     const auto status_of = [](const std::string& s) {

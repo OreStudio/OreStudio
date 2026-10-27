@@ -148,7 +148,8 @@ void write_synthetic_pair(scoped_database_helper& h,
 
 }
 
-TEST_CASE("write_single_currency_pair_convention_calendar", "[repository][currency_pair_convention_calendar]") {
+TEST_CASE("write_single_currency_pair_convention_calendar",
+          "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -174,7 +175,8 @@ TEST_CASE("write_single_currency_pair_convention_calendar", "[repository][curren
     CHECK(read_pccs[0].change_commentary == pcc.change_commentary);
 }
 
-TEST_CASE("write_multiple_currency_pair_convention_calendars", "[repository][currency_pair_convention_calendar]") {
+TEST_CASE("write_multiple_currency_pair_convention_calendars",
+          "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -211,7 +213,8 @@ TEST_CASE("write_multiple_currency_pair_convention_calendars", "[repository][cur
     }
 }
 
-TEST_CASE("read_latest_currency_pair_convention_calendars_by_pair", "[repository][currency_pair_convention_calendar]") {
+TEST_CASE("read_latest_currency_pair_convention_calendars_by_pair",
+          "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -250,7 +253,8 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_by_pair", "[repository
 // conventions_mapper::reverse_fx, which never touches this table) is
 // correctly resolvable at export time from the junction table alone: read
 // back exactly the set of calendars written, no more, no less.
-TEST_CASE("read_latest_currency_pair_convention_calendars_returns_full_set_for_pair", "[repository][currency_pair_convention_calendar]") {
+TEST_CASE("read_latest_currency_pair_convention_calendars_returns_full_set_for_pair",
+          "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -288,7 +292,8 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_returns_full_set_for_p
     CHECK(read_codes == expected_codes);
 }
 
-TEST_CASE("read_latest_currency_pair_convention_calendars_by_calendar", "[repository][currency_pair_convention_calendar]") {
+TEST_CASE("read_latest_currency_pair_convention_calendars_by_calendar",
+          "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -315,7 +320,8 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_by_calendar", "[reposi
     CHECK(read_pccs[0].pair_code == conventions[4].pair_code);
 }
 
-TEST_CASE("remove_currency_pair_convention_calendar", "[repository][currency_pair_convention_calendar]") {
+TEST_CASE("remove_currency_pair_convention_calendar",
+          "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -352,7 +358,8 @@ TEST_CASE("remove_currency_pair_convention_calendar", "[repository][currency_pai
     CHECK(keeper_it->change_commentary == keeper.change_commentary);
 }
 
-TEST_CASE("remove_by_pair_currency_pair_convention_calendar", "[repository][currency_pair_convention_calendar]") {
+TEST_CASE("remove_by_pair_currency_pair_convention_calendar",
+          "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -388,7 +395,8 @@ TEST_CASE("remove_by_pair_currency_pair_convention_calendar", "[repository][curr
     CHECK(keeper_it->change_commentary == keeper.change_commentary);
 }
 
-TEST_CASE("read_nonexistent_currency_pair_convention_calendar", "[repository][currency_pair_convention_calendar]") {
+TEST_CASE("read_nonexistent_currency_pair_convention_calendar",
+          "[repository][currency_pair_convention_calendar]") {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;

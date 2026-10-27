@@ -242,7 +242,8 @@ TEST_CASE("a_component_counts_only_in_the_period_it_applies_to", "[app][billing]
     CHECK(rate_source(w.live, w.card, w.events, w.period()).lines.empty());
 }
 
-TEST_CASE("a_live_and_a_simulated_source_give_the_same_bill_apart_from_the_label", "[app][billing]") {
+TEST_CASE("a_live_and_a_simulated_source_give_the_same_bill_apart_from_the_label",
+          "[app][billing]") {
     world w;
     for (const auto* source : {&w.live, &w.simulated}) {
         w.component(*source, "fixed_per_period", 1000000);

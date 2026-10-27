@@ -39,12 +39,14 @@ std::vector<ores::diff::domain::field_value> render_fake(const fake_version& v) 
 
 using ores::history::service::build_entity_history_versions;
 
-TEST_CASE("build_entity_history_versions_returns_empty_for_an_empty_input", "[service][version_builder]") {
+TEST_CASE("build_entity_history_versions_returns_empty_for_an_empty_input",
+          "[service][version_builder]") {
     const auto result = build_entity_history_versions(std::vector<fake_version>{}, render_fake);
     CHECK(result.empty());
 }
 
-TEST_CASE("build_entity_history_versions_numbers_versions_descending_from_the_count", "[service][version_builder]") {
+TEST_CASE("build_entity_history_versions_numbers_versions_descending_from_the_count",
+          "[service][version_builder]") {
     const std::vector<fake_version> versions{
         {.name = "v3", .modified_by = "carol", .recorded_at = {}},
         {.name = "v2", .modified_by = "bob", .recorded_at = {}},
@@ -61,7 +63,8 @@ TEST_CASE("build_entity_history_versions_numbers_versions_descending_from_the_co
     CHECK(result[2].modified_by == "alice");
 }
 
-TEST_CASE("build_entity_history_versions_leaves_the_oldest_versions_diff_empty", "[service][version_builder]") {
+TEST_CASE("build_entity_history_versions_leaves_the_oldest_versions_diff_empty",
+          "[service][version_builder]") {
     const std::vector<fake_version> versions{
         {.name = "v2", .modified_by = "bob", .recorded_at = {}},
         {.name = "v1", .modified_by = "alice", .recorded_at = {}},
@@ -73,7 +76,8 @@ TEST_CASE("build_entity_history_versions_leaves_the_oldest_versions_diff_empty",
     CHECK(result.back().changes.entries.empty());
 }
 
-TEST_CASE("build_entity_history_versions_diffs_each_version_against_the_next_older_one", "[service][version_builder]") {
+TEST_CASE("build_entity_history_versions_diffs_each_version_against_the_next_older_one",
+          "[service][version_builder]") {
     const std::vector<fake_version> versions{
         {.name = "v2", .modified_by = "bob", .recorded_at = {}},
         {.name = "v1", .modified_by = "alice", .recorded_at = {}},
@@ -86,7 +90,8 @@ TEST_CASE("build_entity_history_versions_diffs_each_version_against_the_next_old
     CHECK(result.front().changes.entries.front().field_name == "name");
 }
 
-TEST_CASE("build_entity_history_versions_preserves_rendered_fields_per_version", "[service][version_builder]") {
+TEST_CASE("build_entity_history_versions_preserves_rendered_fields_per_version",
+          "[service][version_builder]") {
     const std::vector<fake_version> versions{
         {.name = "v1", .modified_by = "alice", .recorded_at = {}},
     };

@@ -339,7 +339,8 @@ TEST_CASE("a party imports the same run twice", "[ore][store][database]") {
           1);
 }
 
-TEST_CASE("an import naming a file the input lacks is refused before it writes", "[ore][store][database]") {
+TEST_CASE("an import naming a file the input lacks is refused before it writes",
+          "[ore][store][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     const auto definition = make_definition(h, parties);
@@ -367,7 +368,8 @@ TEST_CASE("a second import into the same report definition is refused", "[ore][s
                       "into a new definition.");
 }
 
-TEST_CASE("an export from a session with no party reads the definition's party", "[ore][store][database]") {
+TEST_CASE("an export from a session with no party reads the definition's party",
+          "[ore][store][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     const auto files = example_input();
@@ -458,7 +460,8 @@ TEST_CASE("the run document refuses a data file that leaves the package", "[ore]
     CHECK_THROWS_AS(store::declared_data_files(files), std::invalid_argument);
 }
 
-TEST_CASE("an import whose document does not parse is refused before it writes", "[ore][store][database]") {
+TEST_CASE("an import whose document does not parse is refused before it writes",
+          "[ore][store][database]") {
     ores::testing::scoped_database_helper h;
     const auto parties = ores::ore::tests::make_two_parties(h);
     const auto definition = make_definition(h, parties);

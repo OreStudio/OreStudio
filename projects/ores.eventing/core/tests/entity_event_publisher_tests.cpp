@@ -38,7 +38,8 @@ TEST_CASE("publish_entity_event_rethrows_on_nats_failure", "[service][entity_eve
         std::runtime_error);
 }
 
-TEST_CASE("entity_event_headers_carry_the_tenant_and_the_party", "[service][entity_event_publisher]") {
+TEST_CASE("entity_event_headers_carry_the_tenant_and_the_party",
+          "[service][entity_event_publisher]") {
     const auto headers = ores::eventing::service::entity_event_headers("tenant-1", "party-1");
 
     REQUIRE(headers.size() == 2);
@@ -46,7 +47,8 @@ TEST_CASE("entity_event_headers_carry_the_tenant_and_the_party", "[service][enti
     REQUIRE(headers.at("X-Party-Id") == "party-1");
 }
 
-TEST_CASE("entity_event_headers_leave_the_party_out_of_a_tenant_wide_event", "[service][entity_event_publisher]") {
+TEST_CASE("entity_event_headers_leave_the_party_out_of_a_tenant_wide_event",
+          "[service][entity_event_publisher]") {
     const auto headers = ores::eventing::service::entity_event_headers("tenant-1", std::nullopt);
 
     REQUIRE(headers.size() == 1);
@@ -54,7 +56,8 @@ TEST_CASE("entity_event_headers_leave_the_party_out_of_a_tenant_wide_event", "[s
     REQUIRE_FALSE(headers.contains("X-Party-Id"));
 }
 
-TEST_CASE("entity_event_headers_send_no_tenant_that_is_unknown", "[service][entity_event_publisher]") {
+TEST_CASE("entity_event_headers_send_no_tenant_that_is_unknown",
+          "[service][entity_event_publisher]") {
     const auto headers = ores::eventing::service::entity_event_headers("", std::nullopt);
 
     REQUIRE(headers.empty());

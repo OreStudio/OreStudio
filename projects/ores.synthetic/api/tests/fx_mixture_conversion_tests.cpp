@@ -69,7 +69,8 @@ TEST_CASE("fx_mixture_conversion gives the one component the whole weight leavin
     CHECK(geometric.weights[0] == 1.0);
 }
 
-TEST_CASE("fx_mixture_conversion returns a mixture whose engine does not change as it is", "[fx_mixture_conversion]") {
+TEST_CASE("fx_mixture_conversion returns a mixture whose engine does not change as it is",
+          "[fx_mixture_conversion]") {
     const fx_mixture mixture{{0.1}, {0.2}, {0.3}};
     const auto same = convert_fx_mixture(mixture, "arithmetic", "arithmetic", 2.0, 60);
     CHECK(same.means == mixture.means);

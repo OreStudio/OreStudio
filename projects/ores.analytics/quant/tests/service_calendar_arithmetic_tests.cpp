@@ -86,7 +86,8 @@ date_period y(int n) {
 
 }
 
-TEST_CASE("the SouthAfrica ruleset materialises the calendar QuantLib computes for 2015", "[calendar_arithmetic]") {
+TEST_CASE("the SouthAfrica ruleset materialises the calendar QuantLib computes for 2015",
+          "[calendar_arithmetic]") {
     // Transcribed from ql/time/calendars/southafrica.cpp, so the holiday list
     // is checked against the year on its own before any convention is driven
     // through it. A Saturday holiday -- 21 March, 26 December -- is a weekend
@@ -115,7 +116,8 @@ TEST_CASE("the SouthAfrica ruleset materialises the calendar QuantLib computes f
     CHECK(dates == expected);
 }
 
-TEST_CASE("QuantLib's own business day convention cases all resolve as it states", "[calendar_arithmetic]") {
+TEST_CASE("QuantLib's own business day convention cases all resolve as it states",
+          "[calendar_arithmetic]") {
     struct convention_case final {
         business_day_convention convention;
         year_month_day start;
@@ -324,7 +326,8 @@ TEST_CASE("QuantLib's own business day convention cases all resolve as it states
     }
 }
 
-TEST_CASE("a period added as calendar time is not the same as one walked in business days", "[calendar_arithmetic]") {
+TEST_CASE("a period added as calendar time is not the same as one walked in business days",
+          "[calendar_arithmetic]") {
     const auto calendars = make_south_africa();
 
     // Friday 6 February 2015. Four calendar days later is Tuesday the 10th;
@@ -338,7 +341,8 @@ TEST_CASE("a period added as calendar time is not the same as one walked in busi
           year{2015} / February / 12);
 }
 
-TEST_CASE("a day counted period lands on a business day whatever the convention says", "[calendar_arithmetic]") {
+TEST_CASE("a day counted period lands on a business day whatever the convention says",
+          "[calendar_arithmetic]") {
     const auto calendars = make_south_africa();
 
     // A day-counted walk skips holidays itself, so Unadjusted cannot put it
@@ -351,7 +355,8 @@ TEST_CASE("a day counted period lands on a business day whatever the convention 
         year{2015} / January / 5);
 }
 
-TEST_CASE("a month end that has no matching day clamps once, against the target month", "[calendar_arithmetic]") {
+TEST_CASE("a month end that has no matching day clamps once, against the target month",
+          "[calendar_arithmetic]") {
     // 31 January plus one month has no 31 February, so it clamps to the 28th;
     // plus two months there is a 31 March, so it does not. Clamping is against
     // the total months, not applied a month at a time.
@@ -374,7 +379,8 @@ TEST_CASE("a year added to a leap day clamps to the twenty eighth", "[calendar_a
           year{2025} / February / 28);
 }
 
-TEST_CASE("a negative month period clamps the same way a positive one does", "[calendar_arithmetic]") {
+TEST_CASE("a negative month period clamps the same way a positive one does",
+          "[calendar_arithmetic]") {
     CHECK(calendar_arithmetic::add_period(year{2026} / March / 31, m(-1)) ==
           year{2026} / February / 28);
 }
@@ -384,7 +390,8 @@ TEST_CASE("a period with no unit has no length and cannot be added", "[calendar_
                     std::invalid_argument);
 }
 
-TEST_CASE("end of month means at or after the last business day, not is the last one", "[calendar_arithmetic]") {
+TEST_CASE("end of month means at or after the last business day, not is the last one",
+          "[calendar_arithmetic]") {
     const auto calendars = make_target();
 
     // 31 January 2026 is a Saturday, so no business day is left in the month
@@ -396,7 +403,8 @@ TEST_CASE("end of month means at or after the last business day, not is the last
     CHECK_FALSE(calendar_arithmetic::is_end_of_month(year{2026} / January / 29, target, calendars));
 }
 
-TEST_CASE("the last business day of a month stays inside the month it was asked about", "[calendar_arithmetic]") {
+TEST_CASE("the last business day of a month stays inside the month it was asked about",
+          "[calendar_arithmetic]") {
     const auto calendars = make_target();
 
     for (unsigned month_index = 1; month_index <= 12; ++month_index) {
@@ -412,7 +420,8 @@ TEST_CASE("the last business day of a month stays inside the month it was asked 
     }
 }
 
-TEST_CASE("end of month turns a month counted period into the month's last business day", "[calendar_arithmetic]") {
+TEST_CASE("end of month turns a month counted period into the month's last business day",
+          "[calendar_arithmetic]") {
     const auto calendars = make_target();
 
     // 31 January 2026 is the last business day of its month, so a one-month
@@ -493,7 +502,8 @@ TEST_CASE("the main IMM cycle steps a quarter at a time", "[calendar_arithmetic]
     CHECK(imm == year{2021} / March / 17);
 }
 
-TEST_CASE("a calendar the set was not built with is refused rather than assumed open", "[calendar_arithmetic]") {
+TEST_CASE("a calendar the set was not built with is refused rather than assumed open",
+          "[calendar_arithmetic]") {
     const auto calendars = make_target();
 
     CHECK_THROWS_AS(
@@ -568,7 +578,8 @@ TEST_CASE("the main ASX cycle steps a quarter at a time", "[calendar_arithmetic]
     CHECK(asx == year{2021} / March / 12);
 }
 
-TEST_CASE("an ASX date and an IMM date are different dates on the same cycle", "[calendar_arithmetic]") {
+TEST_CASE("an ASX date and an IMM date are different dates on the same cycle",
+          "[calendar_arithmetic]") {
     // The two exchanges standardise on different weekdays, and a reader who
     // treats them as one convention gets the other's contracts.
     for (unsigned month_index : {3u, 6u, 9u, 12u}) {

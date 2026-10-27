@@ -59,7 +59,8 @@ TEST_CASE("wire_codec round-trips a reflectable struct under msgpack", "[domain]
     CHECK(decoded->payload == original.payload);
 }
 
-TEST_CASE("wire_codec msgpack round-trips a byte-vector field natively, not as base64", "[domain][wire_codec]") {
+TEST_CASE("wire_codec msgpack round-trips a byte-vector field natively, not as base64",
+          "[domain][wire_codec]") {
     // This is the property the whole story exists to exploit: msgpack's
     // native binary type carries std::vector<uint8_t> as raw bytes, not
     // a base64-inflated string -- so the msgpack encoding of a
@@ -110,7 +111,8 @@ TEST_CASE("wire_codec::format returns the format fixed at construction", "[domai
           ores::nats::wire_format::msgpack);
 }
 
-TEST_CASE("wire_codec decode surfaces a parse error for malformed json input", "[domain][wire_codec]") {
+TEST_CASE("wire_codec decode surfaces a parse error for malformed json input",
+          "[domain][wire_codec]") {
     const ores::nats::wire_codec codec(ores::nats::wire_format::json);
     const std::string garbage = "not json";
     const std::span<const std::byte> bytes(reinterpret_cast<const std::byte*>(garbage.data()),
@@ -121,7 +123,8 @@ TEST_CASE("wire_codec decode surfaces a parse error for malformed json input", "
     CHECK_FALSE(decoded.has_value());
 }
 
-TEST_CASE("wire_codec decode surfaces a parse error for malformed msgpack input", "[domain][wire_codec]") {
+TEST_CASE("wire_codec decode surfaces a parse error for malformed msgpack input",
+          "[domain][wire_codec]") {
     const ores::nats::wire_codec codec(ores::nats::wire_format::msgpack);
     const std::string garbage = "not msgpack";
     const std::span<const std::byte> bytes(reinterpret_cast<const std::byte*>(garbage.data()),
@@ -132,7 +135,8 @@ TEST_CASE("wire_codec decode surfaces a parse error for malformed msgpack input"
     CHECK_FALSE(decoded.has_value());
 }
 
-TEST_CASE("default_wire_codec defaults to msgpack and reflects set_default_wire_codec", "[domain][wire_codec]") {
+TEST_CASE("default_wire_codec defaults to msgpack and reflects set_default_wire_codec",
+          "[domain][wire_codec]") {
     // No ores::nats::service::client has been constructed in this test
     // binary, so the process-wide default is still whatever it was left
     // at by construction (msgpack) -- verify that, then verify

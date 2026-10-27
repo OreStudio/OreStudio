@@ -139,7 +139,8 @@ const std::set<std::string> unbound = {"simulation",
 
 }
 
-TEST_CASE("every seeded configuration type the codec carries names its root element", "[ore][configuration_types][database]") {
+TEST_CASE("every seeded configuration type the codec carries names its root element",
+          "[ore][configuration_types][database]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
 

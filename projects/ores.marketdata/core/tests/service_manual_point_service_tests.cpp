@@ -110,7 +110,8 @@ snapshot(database_helper& h, const resolve_series_identity_request& identity) {
 
 }
 
-TEST_CASE("a_keyed_point_owns_its_node_and_a_clear_gives_the_feed_value_back", "[service][manual_point_service]") {
+TEST_CASE("a_keyed_point_owns_its_node_and_a_clear_gives_the_feed_value_back",
+          "[service][manual_point_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -143,7 +144,8 @@ TEST_CASE("a_keyed_point_owns_its_node_and_a_clear_gives_the_feed_value_back", "
     CHECK(after_clear.provenance[1].source_kind == "quoted");
 }
 
-TEST_CASE("a_clear_releases_a_node_that_was_keyed_more_than_once", "[service][manual_point_service]") {
+TEST_CASE("a_clear_releases_a_node_that_was_keyed_more_than_once",
+          "[service][manual_point_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -163,7 +165,8 @@ TEST_CASE("a_clear_releases_a_node_that_was_keyed_more_than_once", "[service][ma
     CHECK(snapshot(h, identity).values == std::vector<std::string>{"0.080"});
 }
 
-TEST_CASE("a_node_the_shape_does_not_hold_is_refused_and_nothing_is_written", "[service][manual_point_service]") {
+TEST_CASE("a_node_the_shape_does_not_hold_is_refused_and_nothing_is_written",
+          "[service][manual_point_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -184,7 +187,8 @@ TEST_CASE("a_node_the_shape_does_not_hold_is_refused_and_nothing_is_written", "[
     CHECK(after.provenance[0].source_kind == "quoted");
 }
 
-TEST_CASE("a_value_that_is_no_number_or_a_missing_reason_is_refused", "[service][manual_point_service]") {
+TEST_CASE("a_value_that_is_no_number_or_a_missing_reason_is_refused",
+          "[service][manual_point_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -215,7 +219,8 @@ TEST_CASE("a_value_that_is_no_number_or_a_missing_reason_is_refused", "[service]
     CHECK(snapshot(h, identity).values == std::vector<std::string>{"0.080"});
 }
 
-TEST_CASE("a_value_that_carries_a_plus_is_a_number_and_keeps_its_spelling", "[service][manual_point_service]") {
+TEST_CASE("a_value_that_carries_a_plus_is_a_number_and_keeps_its_spelling",
+          "[service][manual_point_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -253,7 +258,8 @@ TEST_CASE("clearing_a_node_with_no_manual_point_says_so", "[service][manual_poin
     CHECK_FALSE(cleared.message.empty());
 }
 
-TEST_CASE("a_context_for_another_party_cannot_key_on_the_series", "[service][manual_point_service]") {
+TEST_CASE("a_context_for_another_party_cannot_key_on_the_series",
+          "[service][manual_point_service]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

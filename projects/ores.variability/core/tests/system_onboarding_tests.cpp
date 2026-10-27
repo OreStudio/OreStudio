@@ -81,7 +81,8 @@ using ores::variability::messaging::complete_system_onboarding_request;
 using ores::variability::messaging::complete_system_onboarding_response;
 using ores::variability::service::system_settings_service;
 
-TEST_CASE("the onboarding system flag the service writes is the one it reads back", "[variability][onboarding]") {
+TEST_CASE("the onboarding system flag the service writes is the one it reads back",
+          "[variability][onboarding]") {
     ores::testing::scoped_database_helper db;
     system_settings_service svc(db.context(), db.tenant_id().to_string());
 
@@ -109,7 +110,8 @@ TEST_CASE("complete_system_onboarding answers ok and lands the flag", "[variabil
     CHECK(svc.is_onboarding_system_complete());
 }
 
-TEST_CASE("complete_system_onboarding reports a failed write as operation_failed", "[variability][onboarding]") {
+TEST_CASE("complete_system_onboarding reports a failed write as operation_failed",
+          "[variability][onboarding]") {
     fixture f;
     // A party that is not the row's own fails the settings table's party
     // isolation when the write lands, which is the handler's failure path.

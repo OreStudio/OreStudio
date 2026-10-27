@@ -69,7 +69,8 @@ fx_variance_swap_instrument make_instrument(database_helper& h) {
 
 } // namespace
 
-TEST_CASE("fx_variance_swap_instrument_write_and_read_latest", "[repository][fx][fx_variance_swap]") {
+TEST_CASE("fx_variance_swap_instrument_write_and_read_latest",
+          "[repository][fx][fx_variance_swap]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

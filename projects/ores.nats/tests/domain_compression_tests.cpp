@@ -54,7 +54,8 @@ TEST_CASE("large compressible payload is compressed and flagged", "[domain][comp
             ores::nats::headers::content_encoding_gzip);
 }
 
-TEST_CASE("large incompressible payload is left uncompressed despite size", "[domain][compression]") {
+TEST_CASE("large incompressible payload is left uncompressed despite size",
+          "[domain][compression]") {
     // A payload gzip cannot shrink (already at the incompressibility limit
     // for this trivial generator: strictly increasing bytes have no
     // repeating structure) must not be sent compressed-but-larger.
@@ -74,7 +75,8 @@ TEST_CASE("large incompressible payload is left uncompressed despite size", "[do
         REQUIRE(out.size() == large.size());
 }
 
-TEST_CASE("compress_if_worthwhile never overrides an existing content-encoding header", "[domain][compression]") {
+TEST_CASE("compress_if_worthwhile never overrides an existing content-encoding header",
+          "[domain][compression]") {
     const std::string large(ores::nats::compression_threshold_bytes * 4, 'a');
     std::unordered_map<std::string, std::string> headers{
         {std::string(ores::nats::headers::x_content_encoding), "identity"}};
@@ -94,7 +96,8 @@ TEST_CASE("decompress_if_flagged is a no-op without the header", "[domain][compr
     REQUIRE(std::string(reinterpret_cast<const char*>(out.data()), out.size()) == data);
 }
 
-TEST_CASE("decompress_if_flagged throws on the gzip header with a non-gzip payload", "[domain][compression]") {
+TEST_CASE("decompress_if_flagged throws on the gzip header with a non-gzip payload",
+          "[domain][compression]") {
     // Pins the contract callers must handle: a message that claims gzip
     // encoding but isn't valid gzip (corrupted in transit, or a malformed
     // sender) throws rather than silently returning garbage. Every inbound
@@ -126,7 +129,8 @@ TEST_CASE("compress then decompress round-trips to the original bytes", "[domain
             original);
 }
 
-TEST_CASE("round-trip preserves synthetic worst-case SVG-batch-sized binary data", "[domain][compression]") {
+TEST_CASE("round-trip preserves synthetic worst-case SVG-batch-sized binary data",
+          "[domain][compression]") {
     // Mirrors the decision task's synthetic worst case: a payload the size
     // of the largest measured SVG batch, but with byte content varied
     // enough to be representative of real (non-degenerate) input rather

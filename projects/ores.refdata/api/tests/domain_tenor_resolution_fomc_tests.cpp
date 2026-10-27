@@ -120,7 +120,8 @@ tenor_convention_resolution make_fomc_resolution(int n) {
 
 }
 
-TEST_CASE("SCHEDULE_STEP resolves 1F to the first FOMC meeting on-or-after spot", "[tenor_resolution][fomc]") {
+TEST_CASE("SCHEDULE_STEP resolves 1F to the first FOMC meeting on-or-after spot",
+          "[tenor_resolution][fomc]") {
     using namespace std::chrono;
 
     const auto horizon = year(2026) / month(1) / day(1);
@@ -137,7 +138,8 @@ TEST_CASE("SCHEDULE_STEP resolves 1F to the first FOMC meeting on-or-after spot"
     CHECK(end == nth_on_or_after(meetings, spot, 1));
 }
 
-TEST_CASE("SCHEDULE_STEP resolves 8F to the eighth FOMC meeting on-or-after spot", "[tenor_resolution][fomc]") {
+TEST_CASE("SCHEDULE_STEP resolves 8F to the eighth FOMC meeting on-or-after spot",
+          "[tenor_resolution][fomc]") {
     using namespace std::chrono;
 
     const auto horizon = year(2026) / month(1) / day(1);
@@ -156,7 +158,8 @@ TEST_CASE("SCHEDULE_STEP resolves 8F to the eighth FOMC meeting on-or-after spot
     CHECK(end == nth_on_or_after(meetings, spot, 8));
 }
 
-TEST_CASE("SCHEDULE_STEP rejects resolution when the schedule is exhausted", "[tenor_resolution][fomc]") {
+TEST_CASE("SCHEDULE_STEP rejects resolution when the schedule is exhausted",
+          "[tenor_resolution][fomc]") {
     using namespace std::chrono;
 
     const auto horizon = year(2026) / month(1) / day(1);
@@ -176,7 +179,8 @@ TEST_CASE("SCHEDULE_STEP rejects resolution when the schedule is exhausted", "[t
                     std::logic_error);
 }
 
-TEST_CASE("SCHEDULE_STEP resolves the 1Y split tenor on the calendar axis", "[tenor_resolution][fomc]") {
+TEST_CASE("SCHEDULE_STEP resolves the 1Y split tenor on the calendar axis",
+          "[tenor_resolution][fomc]") {
     using namespace std::chrono;
 
     const auto horizon = year(2026) / month(1) / day(1);
@@ -201,7 +205,8 @@ TEST_CASE("SCHEDULE_STEP resolves the 1Y split tenor on the calendar axis", "[te
     CHECK(end == year(2027) / month(1) / day(2));
 }
 
-TEST_CASE("SCHEDULE_STEP rejects resolution with no schedule_code in the row", "[tenor_resolution][fomc]") {
+TEST_CASE("SCHEDULE_STEP rejects resolution with no schedule_code in the row",
+          "[tenor_resolution][fomc]") {
     using namespace std::chrono;
 
     const auto horizon = year(2026) / month(1) / day(1);
@@ -223,7 +228,8 @@ TEST_CASE("SCHEDULE_STEP rejects resolution with no schedule_code in the row", "
                     std::logic_error);
 }
 
-TEST_CASE("SCHEDULE_STEP rejects resolution with no schedule_step_count in the row", "[tenor_resolution][fomc]") {
+TEST_CASE("SCHEDULE_STEP rejects resolution with no schedule_step_count in the row",
+          "[tenor_resolution][fomc]") {
     using namespace std::chrono;
 
     const auto horizon = year(2026) / month(1) / day(1);
@@ -245,7 +251,8 @@ TEST_CASE("SCHEDULE_STEP rejects resolution with no schedule_step_count in the r
                     std::logic_error);
 }
 
-TEST_CASE("SCHEDULE_STEP rejects resolution with no event-lookup dates supplied", "[tenor_resolution][fomc]") {
+TEST_CASE("SCHEDULE_STEP rejects resolution with no event-lookup dates supplied",
+          "[tenor_resolution][fomc]") {
     using namespace std::chrono;
 
     const auto horizon = year(2026) / month(1) / day(1);

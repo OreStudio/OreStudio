@@ -79,7 +79,8 @@ TEST_CASE("the acme profile states the demonstration password once", "[seed][acm
     CHECK(passwords.front() == development_password);
 }
 
-TEST_CASE("an account whose password is provisioned this way authenticates", "[seed][acme][passwords]") {
+TEST_CASE("an account whose password is provisioned this way authenticates",
+          "[seed][acme][passwords]") {
     ores::testing::scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     ores::iam::service::account_operations_service sut(h.context());

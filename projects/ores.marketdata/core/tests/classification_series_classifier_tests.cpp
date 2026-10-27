@@ -281,7 +281,8 @@ void check_code_is_in_catalogue(const std::string& code, const std::string& rel_
 
 }
 
-TEST_CASE("every_distinct_series_key_in_the_ore_corpus_classifies", "[marketdata][classification][corpus]") {
+TEST_CASE("every_distinct_series_key_in_the_ore_corpus_classifies",
+          "[marketdata][classification][corpus]") {
     const auto& entries = survey().entries;
     const auto parsed_files = survey().market_data_files.size() + survey().fixing_files.size();
 
@@ -314,7 +315,8 @@ TEST_CASE("every_distinct_series_key_in_the_ore_corpus_classifies", "[marketdata
     CHECK(unclassified.empty());
 }
 
-TEST_CASE("every_series_type_the_ore_corpus_carries_is_known_to_the_classifier", "[marketdata][classification][corpus]") {
+TEST_CASE("every_series_type_the_ore_corpus_carries_is_known_to_the_classifier",
+          "[marketdata][classification][corpus]") {
     const auto types = distinct_types();
     const auto known = seed_classifier().known_series_types();
     const std::set<std::string> known_set(known.begin(), known.end());
@@ -333,7 +335,8 @@ TEST_CASE("every_series_type_the_ore_corpus_carries_is_known_to_the_classifier",
     CHECK(unknown.empty());
 }
 
-TEST_CASE("every_classification_code_the_classifier_can_emit_exists_in_its_catalogue", "[marketdata][classification][corpus]") {
+TEST_CASE("every_classification_code_the_classifier_can_emit_exists_in_its_catalogue",
+          "[marketdata][classification][corpus]") {
     std::set<std::string> asset_classes;
     std::set<std::string> subclasses;
 
@@ -370,7 +373,8 @@ TEST_CASE("every_classification_code_the_classifier_can_emit_exists_in_its_catal
                                    "refdata_series_subclass_codes_populate.sql");
 }
 
-TEST_CASE("a_correlation_takes_its_classes_from_the_two_operands_in_its_key", "[marketdata][classification][corpus]") {
+TEST_CASE("a_correlation_takes_its_classes_from_the_two_operands_in_its_key",
+          "[marketdata][classification][corpus]") {
     std::map<std::pair<std::string, std::string>, series_classification> by_operands;
     for (const auto& [key, entry] : survey().entries) {
         if (entry.series_type != "CORRELATION")

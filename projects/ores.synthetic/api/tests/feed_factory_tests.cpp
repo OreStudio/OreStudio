@@ -243,7 +243,8 @@ TEST_CASE("factory::make constructs an fx_spot_feed from its persisted config", 
     CHECK(fx->publish_count() == 0);
 }
 
-TEST_CASE("factory::make refuses an fx_spot config whose URI is not the quote of its pair", "[feed_factory]") {
+TEST_CASE("factory::make refuses an fx_spot config whose URI is not the quote of its pair",
+          "[feed_factory]") {
     const auto factory = make_default_feed_factory();
 
     auto other_pair = make_fx_config();
@@ -320,7 +321,8 @@ TEST_CASE("an ir_curve_feed's series carries the tenor of its index, so two inde
     CHECK(six->series_uris() != three->series_uris());
 }
 
-TEST_CASE("an overnight ir_curve_feed, FOMC variant included, has the index tenor 1D", "[feed_factory]") {
+TEST_CASE("an overnight ir_curve_feed, FOMC variant included, has the index tenor 1D",
+          "[feed_factory]") {
     const auto factory = make_default_feed_factory();
     auto f = make_ir_fixture();
     f.config.tenor = "FOMC";
@@ -335,7 +337,8 @@ TEST_CASE("an overnight ir_curve_feed, FOMC variant included, has the index teno
               "oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"});
 }
 
-TEST_CASE("factory::make derives the producer subject from the source name, for every kind", "[feed_factory]") {
+TEST_CASE("factory::make derives the producer subject from the source name, for every kind",
+          "[feed_factory]") {
     const auto factory = make_default_feed_factory();
     const auto f = make_ir_fixture();
 
@@ -396,7 +399,8 @@ TEST_CASE("a config row's arrival mode reaches the feed it builds", "[feed_facto
                     std::invalid_argument);
 }
 
-TEST_CASE("a process that cannot step by elapsed time is refused a non-periodic arrival", "[feed_factory]") {
+TEST_CASE("a process that cannot step by elapsed time is refused a non-periodic arrival",
+          "[feed_factory]") {
     const auto factory = make_default_feed_factory();
     auto f = make_ir_fixture();
     f.config.arrival_mode = "poisson";

@@ -78,7 +78,8 @@ TEST_CASE("a convention survives a round trip through its persisted code", "[dat
               convention);
 }
 
-TEST_CASE("an unknown business day convention code is refused rather than mapped", "[date_convention]") {
+TEST_CASE("an unknown business day convention code is refused rather than mapped",
+          "[date_convention]") {
     CHECK_THROWS_AS(parse_business_day_convention_code("Modified"), std::invalid_argument);
     CHECK_THROWS_AS(parse_business_day_convention_code(""), std::invalid_argument);
     CHECK_THROWS_AS(parse_business_day_convention_code("unadjusted"), std::invalid_argument);
@@ -162,7 +163,8 @@ TEST_CASE("every resolution status spells itself for a refusal message", "[date_
     CHECK(to_string(resolution_status::unsupported_anchor) == "unsupported_anchor");
 }
 
-TEST_CASE("every observance shift code the database holds parses, and no other", "[date_convention]") {
+TEST_CASE("every observance shift code the database holds parses, and no other",
+          "[date_convention]") {
     // The codes ores_refdata_calendar_rules_tbl.shift carries. The last two
     // differ only on a Saturday, and the persisted spelling is owned here so
     // the materialiser does not restate it.

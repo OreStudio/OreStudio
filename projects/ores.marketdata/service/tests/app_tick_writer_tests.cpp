@@ -59,13 +59,15 @@ TEST_CASE("a_tick_time_keeps_microseconds_and_drops_finer_digits", "[app][tick_w
     CHECK(tick_copy_line(row).find("2026-10-21 10:30:05.123456+00,") != std::string::npos);
 }
 
-TEST_CASE("a_value_that_does_not_round_trip_in_fewer_digits_is_written_in_full", "[app][tick_writer]") {
+TEST_CASE("a_value_that_does_not_round_trip_in_fewer_digits_is_written_in_full",
+          "[app][tick_writer]") {
     auto row = sample_row();
     row.value = 0.1 + 0.2;
     CHECK(tick_copy_line(row).find(",0.30000000000000004,") != std::string::npos);
 }
 
-TEST_CASE("a_write_to_a_database_that_is_not_there_throws_and_the_writer_stays_usable", "[app][tick_writer]") {
+TEST_CASE("a_write_to_a_database_that_is_not_there_throws_and_the_writer_stays_usable",
+          "[app][tick_writer]") {
     tick_writer writer(tick_writer_options{
         .user = "nobody", .password = "none", .host = "127.0.0.1", .database = "none", .port = 1});
     const std::vector<tick_row> rows{sample_row()};

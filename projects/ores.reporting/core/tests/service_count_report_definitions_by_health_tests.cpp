@@ -71,7 +71,8 @@ by_word(const ores::reporting::messaging::count_report_definitions_by_health_res
 
 }
 
-TEST_CASE("the tally counts each definition at the word its latest run reads as", "[service][database]") {
+TEST_CASE("the tally counts each definition at the word its latest run reads as",
+          "[service][database]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_database_helper h;

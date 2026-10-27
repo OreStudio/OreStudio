@@ -125,7 +125,8 @@ struct handler_fixture {
 
 }
 
-TEST_CASE("every_read_of_ticks_refuses_a_session_that_names_no_party", "[tick_read_party][integration]") {
+TEST_CASE("every_read_of_ticks_refuses_a_session_that_names_no_party",
+          "[tick_read_party][integration]") {
     handler_fixture f;
     const auto bearer = f.token({});
     const auto sentence = party_required_message();
@@ -160,7 +161,8 @@ TEST_CASE("every_read_of_ticks_refuses_a_session_that_names_no_party", "[tick_re
 // and the case states only what the party check owes: a session that names a party is not
 // refused with the sentence of party_required. That a party reads its own ticks and no
 // others is shown for the history call over NATS, and for the as-of reads at the repository.
-TEST_CASE("a_session_that_names_a_party_is_not_refused_for_want_of_one", "[tick_read_party][integration]") {
+TEST_CASE("a_session_that_names_a_party_is_not_refused_for_want_of_one",
+          "[tick_read_party][integration]") {
     handler_fixture f;
     const auto bearer = f.token({boost::uuids::to_string(f.party)});
     const auto sentence = party_required_message();

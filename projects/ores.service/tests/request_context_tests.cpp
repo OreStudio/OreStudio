@@ -88,7 +88,8 @@ TEST_CASE("a request without an authorization header is unauthorized", "[request
     REQUIRE(result.error() == error_code::unauthorized);
 }
 
-TEST_CASE("an authorization header that is not a bearer token is unauthorized", "[request_context]") {
+TEST_CASE("an authorization header that is not a bearer token is unauthorized",
+          "[request_context]") {
     ores::testing::database_helper h;
     ores::nats::message msg;
     msg.headers[std::string(ores::nats::headers::authorization)] =
@@ -124,7 +125,8 @@ TEST_CASE("a token signed with another key is unauthorized", "[request_context]"
     REQUIRE(result.error() == error_code::unauthorized);
 }
 
-TEST_CASE("a valid bearer token scopes the context to its tenant, actor and permissions", "[request_context]") {
+TEST_CASE("a valid bearer token scopes the context to its tenant, actor and permissions",
+          "[request_context]") {
     ores::testing::database_helper h;
     ores::nats::message msg;
     msg.headers[std::string(ores::nats::headers::authorization)] =

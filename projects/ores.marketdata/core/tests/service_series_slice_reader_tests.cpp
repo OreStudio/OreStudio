@@ -100,7 +100,8 @@ get_series_slice_request slice_request(resolve_series_identity_request identity,
 
 }
 
-TEST_CASE("a_slice_returns_one_component_as_a_ladder_at_each_instant", "[service][series_slice_reader]") {
+TEST_CASE("a_slice_returns_one_component_as_a_ladder_at_each_instant",
+          "[service][series_slice_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -136,7 +137,8 @@ TEST_CASE("a_slice_returns_one_component_as_a_ladder_at_each_instant", "[service
     CHECK(resp.instants[2].values == std::vector<std::string>{"", ""});
 }
 
-TEST_CASE("a_slice_names_a_node_the_shape_declares_and_no_point_fills_as_a_hole", "[service][series_slice_reader]") {
+TEST_CASE("a_slice_names_a_node_the_shape_declares_and_no_point_fills_as_a_hole",
+          "[service][series_slice_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -182,7 +184,8 @@ TEST_CASE("a_slice_of_a_one_axis_object_is_the_whole_object", "[service][series_
     CHECK(resp.instants[0].values == std::vector<std::string>{"0.010", "0.020"});
 }
 
-TEST_CASE("a_slice_refuses_a_component_the_shape_does_not_declare", "[service][series_slice_reader]") {
+TEST_CASE("a_slice_refuses_a_component_the_shape_does_not_declare",
+          "[service][series_slice_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -220,7 +223,8 @@ TEST_CASE("a_slice_refuses_a_component_the_shape_does_not_declare", "[service][s
     CHECK(reversed.message.find("range") != std::string::npos);
 }
 
-TEST_CASE("a_slice_of_an_identity_no_series_carries_is_empty_and_not_an_error", "[service][series_slice_reader]") {
+TEST_CASE("a_slice_of_an_identity_no_series_carries_is_empty_and_not_an_error",
+          "[service][series_slice_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

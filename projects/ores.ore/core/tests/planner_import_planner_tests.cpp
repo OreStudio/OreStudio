@@ -136,7 +136,8 @@ TEST_CASE("plan_includes_all_currencies_when_mode_is_all", "[ore][planner][impor
     CHECK(!plan.currencies.empty());
 }
 
-TEST_CASE("plan_skips_existing_iso_codes_when_mode_is_missing_only", "[ore][planner][import_planner]") {
+TEST_CASE("plan_skips_existing_iso_codes_when_mode_is_missing_only",
+          "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto root = ore_path("examples/Legacy/Example_1/Input");
@@ -188,7 +189,8 @@ TEST_CASE("plan_skips_existing_iso_codes_when_mode_is_missing_only", "[ore][plan
 // Portfolio / book tests
 // =============================================================================
 
-TEST_CASE("plan_creates_portfolios_and_books_from_portfolio_files", "[ore][planner][import_planner]") {
+TEST_CASE("plan_creates_portfolios_and_books_from_portfolio_files",
+          "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto root = ore_path("examples/Legacy/Example_1");
@@ -456,7 +458,8 @@ TEST_CASE("plan_trade_defaults_override_parsed_values", "[ore][planner][import_p
 // An import into a sandbox puts everything it creates in the sandbox: the
 // wrapping portfolio, the portfolios of the tree and the books, which are
 // virtual books that never reach the ledger.
-TEST_CASE("plan_into_a_sandbox_creates_only_sandbox_portfolios_and_virtual_books", "[ore][planner][import_planner]") {
+TEST_CASE("plan_into_a_sandbox_creates_only_sandbox_portfolios_and_virtual_books",
+          "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto source = ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
@@ -488,7 +491,8 @@ TEST_CASE("plan_into_a_sandbox_creates_only_sandbox_portfolios_and_virtual_books
     std::filesystem::remove_all(root, ec);
 }
 
-TEST_CASE("plan_without_a_sandbox_creates_official_portfolios_and_books", "[ore][planner][import_planner]") {
+TEST_CASE("plan_without_a_sandbox_creates_official_portfolios_and_books",
+          "[ore][planner][import_planner]") {
     auto lg(make_logger(test_suite));
 
     const auto source = ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");

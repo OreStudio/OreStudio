@@ -171,7 +171,8 @@ const std::set<std::string>& known_row_differences() {
 
 } // namespace
 
-TEST_CASE("every credit trade in the corpus comes back as the same family rows", "[ore][xml][roundtrip][credit][corpus][external]") {
+TEST_CASE("every credit trade in the corpus comes back as the same family rows",
+          "[ore][xml][roundtrip][credit][corpus][external]") {
     const auto dir =
         ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades");
     REQUIRE(fs::exists(dir));
@@ -237,7 +238,8 @@ TEST_CASE("every credit trade in the corpus comes back as the same family rows",
                    detail);
 }
 
-TEST_CASE("the credit family rows change when a stored field changes", "[ore][xml][roundtrip][credit][corpus][external]") {
+TEST_CASE("the credit family rows change when a stored field changes",
+          "[ore][xml][roundtrip][credit][corpus][external]") {
     const auto dir =
         ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades");
     auto items = importer::import_portfolio_with_context(dir / "Credit_Default_Swap.xml");

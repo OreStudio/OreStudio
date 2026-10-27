@@ -89,7 +89,8 @@ TEST_CASE("an_up_style_refuses_a_lower_level", "[repository][fx][fx_barrier_opti
 
 } // namespace
 
-TEST_CASE("fx_barrier_option_instrument_write_and_read_latest", "[repository][fx][fx_barrier_option]") {
+TEST_CASE("fx_barrier_option_instrument_write_and_read_latest",
+          "[repository][fx][fx_barrier_option]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

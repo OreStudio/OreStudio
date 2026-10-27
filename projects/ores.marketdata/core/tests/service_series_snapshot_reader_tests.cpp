@@ -116,7 +116,8 @@ get_curve_snapshot_request snapshot_request(resolve_series_identity_request iden
 
 }
 
-TEST_CASE("a_snapshot_states_the_declared_grid_and_the_value_at_each_node", "[service][series_snapshot_reader]") {
+TEST_CASE("a_snapshot_states_the_declared_grid_and_the_value_at_each_node",
+          "[service][series_snapshot_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -144,7 +145,8 @@ TEST_CASE("a_snapshot_states_the_declared_grid_and_the_value_at_each_node", "[se
     CHECK(resp.as_of == instant("2017-04-11T12:00:00Z"));
 }
 
-TEST_CASE("a_node_no_point_states_is_a_hole_with_no_record_time", "[service][series_snapshot_reader]") {
+TEST_CASE("a_node_no_point_states_is_a_hole_with_no_record_time",
+          "[service][series_snapshot_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -167,7 +169,8 @@ TEST_CASE("a_node_no_point_states_is_a_hole_with_no_record_time", "[service][ser
     CHECK(resp.recorded_at[0] != std::chrono::system_clock::time_point{});
 }
 
-TEST_CASE("a_snapshot_and_an_evolution_agree_on_the_nodes_and_on_a_stated_value", "[service][series_snapshot_reader]") {
+TEST_CASE("a_snapshot_and_an_evolution_agree_on_the_nodes_and_on_a_stated_value",
+          "[service][series_snapshot_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -218,7 +221,8 @@ TEST_CASE("a_snapshot_of_an_object_with_no_axis_is_refused", "[service][series_s
     CHECK_FALSE(resp.message.empty());
 }
 
-TEST_CASE("a_snapshot_of_an_identity_no_series_carries_is_empty", "[service][series_snapshot_reader]") {
+TEST_CASE("a_snapshot_of_an_identity_no_series_carries_is_empty",
+          "[service][series_snapshot_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -232,7 +236,8 @@ TEST_CASE("a_snapshot_of_an_identity_no_series_carries_is_empty", "[service][ser
     CHECK(resp.as_of == at);
 }
 
-TEST_CASE("a_snapshot_asked_for_provenance_names_the_source_of_each_value", "[service][series_snapshot_reader]") {
+TEST_CASE("a_snapshot_asked_for_provenance_names_the_source_of_each_value",
+          "[service][series_snapshot_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -423,7 +428,8 @@ TEST_CASE("a_later_import_does_not_undo_a_manual_point", "[service][series_snaps
     CHECK(resp.provenance[0].source_kind == "manual");
 }
 
-TEST_CASE("a_manual_point_can_be_rekeyed_and_an_import_lands_once_it_is_cleared", "[service][series_snapshot_reader]") {
+TEST_CASE("a_manual_point_can_be_rekeyed_and_an_import_lands_once_it_is_cleared",
+          "[service][series_snapshot_reader]") {
     auto lg(make_logger(test_suite));
 
     database_helper h;

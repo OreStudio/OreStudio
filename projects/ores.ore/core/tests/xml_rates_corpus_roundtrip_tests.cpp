@@ -182,7 +182,8 @@ const std::set<std::string>& known_row_differences() {
 
 } // namespace
 
-TEST_CASE("every rates trade in the corpus comes back as the same family rows", "[ore][xml][roundtrip][rates][corpus][external]") {
+TEST_CASE("every rates trade in the corpus comes back as the same family rows",
+          "[ore][xml][roundtrip][rates][corpus][external]") {
     const auto dir =
         ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades");
     REQUIRE(fs::exists(dir));

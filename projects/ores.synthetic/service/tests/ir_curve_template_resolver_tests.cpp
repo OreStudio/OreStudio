@@ -178,7 +178,8 @@ std::vector<ir_curve_template_entry> make_fomc_entries() {
 
 }
 
-TEST_CASE("resolve derives ticks and year_fraction for a Deposit (point) entry", "[ir_curve_template_resolver]") {
+TEST_CASE("resolve derives ticks and year_fraction for a Deposit (point) entry",
+          "[ir_curve_template_resolver]") {
     const auto ctx = make_context();
     const auto out = resolve({make_entry(0, "SPOT", "3M", "DEPO")}, ctx, "Quarterly");
 
@@ -191,7 +192,8 @@ TEST_CASE("resolve derives ticks and year_fraction for a Deposit (point) entry",
     CHECK(out[0].fixed_leg_schedule.empty());
 }
 
-TEST_CASE("resolve derives a genuine [start, end) window for an FRA (interval) entry", "[ir_curve_template_resolver]") {
+TEST_CASE("resolve derives a genuine [start, end) window for an FRA (interval) entry",
+          "[ir_curve_template_resolver]") {
     const auto ctx = make_context();
     const auto out = resolve({make_entry(0, "3M", "6M", "FRA")}, ctx, "Quarterly");
 
@@ -203,7 +205,8 @@ TEST_CASE("resolve derives a genuine [start, end) window for an FRA (interval) e
     CHECK(out[0].fixed_leg_schedule.empty());
 }
 
-TEST_CASE("resolve builds a quarterly fixed-leg schedule for a 2Y Swap entry", "[ir_curve_template_resolver]") {
+TEST_CASE("resolve builds a quarterly fixed-leg schedule for a 2Y Swap entry",
+          "[ir_curve_template_resolver]") {
     const auto ctx = make_context();
     const auto out = resolve({make_entry(0, "SPOT", "2Y", "SWAP")}, ctx, "Quarterly");
 
@@ -224,7 +227,8 @@ TEST_CASE("resolve builds a quarterly fixed-leg schedule for a 2Y Swap entry", "
     CHECK(total_accrual == Catch::Approx(out[0].year_fraction));
 }
 
-TEST_CASE("resolve sorts output by sequence_index regardless of input order", "[ir_curve_template_resolver]") {
+TEST_CASE("resolve sorts output by sequence_index regardless of input order",
+          "[ir_curve_template_resolver]") {
     const auto ctx = make_context();
     const auto out = resolve({make_entry(2, "SPOT", "2Y", "SWAP"),
                               make_entry(0, "SPOT", "3M", "DEPO"),
@@ -250,7 +254,8 @@ TEST_CASE("resolve throws on an unknown instrument code", "[ir_curve_template_re
                     std::invalid_argument);
 }
 
-TEST_CASE("resolve throws on an unknown fixed-leg payment frequency for a Swap entry", "[ir_curve_template_resolver]") {
+TEST_CASE("resolve throws on an unknown fixed-leg payment frequency for a Swap entry",
+          "[ir_curve_template_resolver]") {
     const auto ctx = make_context();
     CHECK_THROWS_AS(resolve({make_entry(0, "SPOT", "2Y", "SWAP")}, ctx, "Monthly"),
                     std::invalid_argument);
@@ -282,7 +287,8 @@ TEST_CASE("resolve maps the FOMC template onto the meeting-dated point ids 1F..8
     CHECK(out[8].ticks_ahead_end == 365);   // 2027-01-02 (the calendar-axis fallback)
 }
 
-TEST_CASE("resolve chains each FOMC interval start onto the previous meeting", "[ir_curve_template_resolver]") {
+TEST_CASE("resolve chains each FOMC interval start onto the previous meeting",
+          "[ir_curve_template_resolver]") {
     const auto ctx = make_fomc_context();
     const auto out = resolve(make_fomc_entries(), ctx, "Quarterly");
 
@@ -293,7 +299,8 @@ TEST_CASE("resolve chains each FOMC interval start onto the previous meeting", "
         CHECK(out[i].ticks_ahead_start == out[i - 1].ticks_ahead_end);
 }
 
-TEST_CASE("resolve builds a quarterly fixed-leg schedule for the 8F->1Y split swap", "[ir_curve_template_resolver]") {
+TEST_CASE("resolve builds a quarterly fixed-leg schedule for the 8F->1Y split swap",
+          "[ir_curve_template_resolver]") {
     const auto ctx = make_fomc_context();
     const auto out = resolve(make_fomc_entries(), ctx, "Quarterly");
 
@@ -331,7 +338,8 @@ TEST_CASE("the index tenor of a curve is 1D for an overnight index and for the F
     CHECK(ores::synthetic::feed::ir_curve_index_tenor(cfg) == "6M");
 }
 
-TEST_CASE("only the FOMC variant resolves its tenors under the meeting-dated convention", "[ir_curve_template_resolver]") {
+TEST_CASE("only the FOMC variant resolves its tenors under the meeting-dated convention",
+          "[ir_curve_template_resolver]") {
     ores::synthetic::domain::ir_curve_generation_config cfg;
     cfg.index_family = "sofr";
 

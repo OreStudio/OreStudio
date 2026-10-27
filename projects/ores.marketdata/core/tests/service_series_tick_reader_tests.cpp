@@ -235,7 +235,8 @@ TEST_CASE("a_tick_of_another_party_is_not_in_the_reply", "[service][ticks]") {
     CHECK(reply.values.empty());
 }
 
-TEST_CASE("a_session_with_no_party_is_refused_and_not_answered_with_an_empty_reply", "[service][ticks]") {
+TEST_CASE("a_session_with_no_party_is_refused_and_not_answered_with_an_empty_reply",
+          "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
@@ -259,7 +260,8 @@ TEST_CASE("a_span_that_ends_before_it_starts_is_refused", "[service][ticks]") {
     CHECK(reply.result.code == "range_inverted");
 }
 
-TEST_CASE("a_span_that_starts_and_ends_at_one_instant_is_empty_and_not_refused", "[service][ticks]") {
+TEST_CASE("a_span_that_starts_and_ends_at_one_instant_is_empty_and_not_refused",
+          "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
@@ -271,7 +273,8 @@ TEST_CASE("a_span_that_starts_and_ends_at_one_instant_is_empty_and_not_refused",
     CHECK(reply.values.empty());
 }
 
-TEST_CASE("a_span_at_the_ceiling_is_answered_and_a_span_over_it_is_refused_naming_it", "[service][ticks]") {
+TEST_CASE("a_span_at_the_ceiling_is_answered_and_a_span_over_it_is_refused_naming_it",
+          "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h);
     const auto t0 = now_second();
@@ -383,7 +386,8 @@ TEST_CASE("an_identity_no_series_carries_gives_an_empty_reply_and_success", "[se
     CHECK(reply.values.empty());
 }
 
-TEST_CASE("an_identity_that_two_parties_carry_is_refused_and_not_resolved_to_one", "[service][ticks]") {
+TEST_CASE("an_identity_that_two_parties_carry_is_refused_and_not_resolved_to_one",
+          "[service][ticks]") {
     database_helper h;
     const auto curve = fresh_curve_id();
     const auto first = make_series(h, curve);
@@ -419,7 +423,8 @@ TEST_CASE("an_identity_that_states_the_party_names_that_partys_series", "[servic
     CHECK(reply.values == std::vector<double>{2.0});
 }
 
-TEST_CASE("an_identity_that_two_providers_of_one_party_carry_is_refused_and_names_both", "[service][ticks]") {
+TEST_CASE("an_identity_that_two_providers_of_one_party_carry_is_refused_and_names_both",
+          "[service][ticks]") {
     database_helper h;
     const auto curve = fresh_curve_id();
     const auto ore = make_series(h, curve, boost::uuids::nil_uuid(), "ore");
@@ -456,7 +461,8 @@ TEST_CASE("a_provider_states_which_series_of_one_party_is_read", "[service][tick
     CHECK(reply.values == std::vector<double>{2.0});
 }
 
-TEST_CASE("a_provider_that_holds_no_series_of_the_identity_gives_an_empty_reply", "[service][ticks]") {
+TEST_CASE("a_provider_that_holds_no_series_of_the_identity_gives_an_empty_reply",
+          "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h, fresh_curve_id(), boost::uuids::nil_uuid(), "ore");
     const auto t0 = now_second();

@@ -177,7 +177,8 @@ TEST_CASE("the system run takes the system-scoped kinds and the handing step", "
     }
 }
 
-TEST_CASE("the setup run's kinds become steps in order, with the completing step last", "[workflow]") {
+TEST_CASE("the setup run's kinds become steps in order, with the completing step last",
+          "[workflow]") {
     const auto def = setup_definition();
     const auto steps =
         def.build_steps(request_json({declared("publish_bundle", R"({"bundles":["acme_group"]})"),
@@ -311,7 +312,8 @@ TEST_CASE("a step that needs two kinds reads one step when both resolve to it", 
     CHECK(inputs_of("attach_photos") == std::vector<std::string>{"provision_party"});
 }
 
-TEST_CASE("a profile that orders nothing still runs the step that finishes each run", "[workflow]") {
+TEST_CASE("a profile that orders nothing still runs the step that finishes each run",
+          "[workflow]") {
     const auto setup_steps =
         setup_definition().build_steps(request_json({}), tenant_id, correlation_id);
     REQUIRE(setup_steps.size() == 1);

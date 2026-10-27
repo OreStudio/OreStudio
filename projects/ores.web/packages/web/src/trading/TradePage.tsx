@@ -457,6 +457,25 @@ export function TradePage(): ReactNode {
                             label={t('trading.fields.tradeDate')}
                             value={trade.trade_date ?? ''}
                         />
+                        <Fact label={t('trading.structure.title')}>
+                            {record.structures.length === 0 ? (
+                                '—'
+                            ) : (
+                                record.structures.map((entry, index) => (
+                                    <span key={entry.structure_id}>
+                                        {index > 0 ? ', ' : ''}
+                                        <Link
+                                            className="text-accent hover:text-accent-bright"
+                                            to={`${PATHS.structures}/${entry.structure_id}`}
+                                        >
+                                            {entry.reference === ''
+                                                ? entry.structure_id
+                                                : entry.reference}
+                                        </Link>
+                                    </span>
+                                ))
+                            )}
+                        </Fact>
                         <Fact label={t('trading.fields.counterparty')}>
                             {trade.counterparty_id === null ? (
                                 trade.counterparty_name

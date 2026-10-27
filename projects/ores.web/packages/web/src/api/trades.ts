@@ -97,6 +97,15 @@ export interface TradeLink {
     readonly other_label: string;
 }
 
+/** The deal a trade is a leg of, with the role it takes there. */
+export interface TradeStructure {
+    readonly structure_id: string;
+    /** The reference the deal is known by, or empty when it has none. */
+    readonly reference: string;
+    readonly role: string;
+    readonly sequence_number: number;
+}
+
 /** One version of the trade, newest first. */
 export interface TradeVersion {
     readonly version: number;
@@ -115,6 +124,8 @@ export interface TradePageRecord {
     readonly roles: readonly TradePartyRole[];
     readonly booking: TradeBooking | null;
     readonly links: { readonly from: readonly TradeLink[]; readonly to: readonly TradeLink[] };
+    /** The deal this trade is a leg of, when it is one. */
+    readonly structures: readonly TradeStructure[];
     readonly history: readonly TradeVersion[];
 }
 
@@ -190,6 +201,16 @@ const tradePageRecordSchema = z.object({
             }),
         ),
     }),
+    structures: z
+        .array(
+            z.looseObject({
+                structure_id: z.string(),
+                reference: z.string().default(''),
+                role: z.string().default(''),
+                sequence_number: z.coerce.number().int().default(0),
+            }),
+        )
+        .default([]),
     history: z.array(z.looseObject({ version: z.coerce.number().int() })),
 });
 

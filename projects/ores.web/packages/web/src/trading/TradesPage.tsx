@@ -117,9 +117,10 @@ export function TradesPage(): ReactNode {
                 onAdd={() => {
                     void navigate(PATHS.newTrade);
                 }}
-                // A structure has no page of its own yet, so only a trade opens.
                 pathOf={(row) =>
-                    row.row_kind === 'trade' ? `${PATHS.trades}/${row.id}` : undefined
+                    row.row_kind === 'structure'
+                        ? `${PATHS.structures}/${row.id}`
+                        : `${PATHS.trades}/${row.id}`
                 }
                 columns={[
                     {
@@ -231,7 +232,9 @@ function stateLabel(t: (key: string) => string, state: string): string {
 function IdentifierCell({ row }: { readonly row: TradeRow }): ReactNode {
     const { t } = useTranslation();
     if (row.row_kind === 'structure') {
-        return t('trading.trades.structureRow');
+        // The deal's own reference, when it has one: a structure a desk grouped
+        // is addressed by the reference it was given, not by its kind.
+        return row.identifier === '' ? t('trading.trades.structureRow') : show(row.identifier);
     }
     return show(row.identifier);
 }

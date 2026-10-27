@@ -961,6 +961,17 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                                    row.subject_id));
                 return;
             }
+            boost::uuids::uuid counterparty{};
+            if (!row.counterparty_id.empty()) {
+                try {
+                    counterparty = sg(row.counterparty_id);
+                } catch (const std::exception&) {
+                    refuse(std::format(
+                        "The run's rows state a counterparty '{}' that is not a record id.",
+                        row.counterparty_id));
+                    return;
+                }
+            }
             rows.push_back(domain::report_result_row{
                 .id = boost::uuids::random_generator()(),
                 .party_id = instance->party_id,
@@ -971,6 +982,7 @@ void report_execution_handler::post_process_results(ores::nats::message msg) {
                 .measure = row.measure,
                 .currency = row.currency,
                 .report_definition_id = instance->definition_id,
+                .counterparty_id = counterparty,
                 .figure = row.figure,
                 .source = row.source});
         }

@@ -53,6 +53,7 @@ The party that owns the run.
 :type:         uuid
 :cpp_type:     boost::uuids::uuid
 :natural_key:  true
+:filterable:   true
 :END:
 
 The run that produced the figure.
@@ -97,6 +98,7 @@ The engine's own identifier for the record.
 :type:         text
 :cpp_type:     std::string
 :natural_key:  true
+:filterable:   true
 :END:
 
 The engine's name for the figure: =npv=, =npv_base=, =notional=, =delta=,
@@ -110,6 +112,17 @@ The engine's name for the figure: =npv=, =npv_base=, =notional=, =delta=,
 :END:
 
 The currency the figure is stated in, empty when the measure has none.
+
+** counterparty_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     true
+:END:
+
+The counterparty the engine stated beside the trade, when it stated one. It is a
+dimension of the row rather than a measure: the screen groups by it, and reading it
+here is what spares a request from joining the trading records.
 
 ** figure
 :PROPERTIES:

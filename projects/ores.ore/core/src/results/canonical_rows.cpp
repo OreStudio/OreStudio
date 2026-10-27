@@ -40,6 +40,7 @@ constexpr std::string_view heading_npv_currency = "NpvCurrency";
 constexpr std::string_view heading_npv_base = "NPV(Base)";
 constexpr std::string_view heading_notional = "Notional";
 constexpr std::string_view heading_notional_currency = "NotionalCurrency";
+constexpr std::string_view heading_counterparty = "CounterParty";
 
 /**
  * @brief The fields of one line, commas inside quotes kept.
@@ -101,6 +102,7 @@ marshal_outcome marshal_npv_csv(std::string_view csv, std::string_view source_fi
     const auto npv_base_at = at(heading_npv_base);
     const auto notional_at = at(heading_notional);
     const auto notional_currency_at = at(heading_notional_currency);
+    const auto counterparty_at = at(heading_counterparty);
 
     if (trade_id_at == header.size() || npv_at == header.size()) {
         std::string named;
@@ -158,10 +160,13 @@ marshal_outcome marshal_npv_csv(std::string_view csv, std::string_view source_fi
                                            std::string(measure) + " with no currency.");
                 return;
             }
+            const auto counterparty =
+                counterparty_at != header.size() ? field_at(counterparty_at) : std::string_view();
             outcome.rows.push_back(canonical_row{.subject_type = std::string(subject_type_trade),
                                                  .subject_id = std::string(trade_id),
                                                  .measure = std::string(measure),
                                                  .currency = std::string(currency),
+                                                 .counterparty_id = std::string(counterparty),
                                                  .figure = figure,
                                                  .source = std::string(source_file)});
         };
@@ -196,11 +201,12 @@ std::string canonical_csv(const std::vector<canonical_row>& rows) {
     };
 
     std::ostringstream out;
-    out << "subject_type,subject_id,measure,currency,figure,source\n";
+    out << "subject_type,subject_id,measure,currency,counterparty_id,figure,source\n";
     for (const auto& row : rows) {
         out << quoted(row.subject_type) << ',' << quoted(row.subject_id) << ','
             << quoted(row.measure) << ',' << quoted(row.currency) << ','
-            << figure_text(row.figure) << ',' << quoted(row.source) << '\n';
+            << quoted(row.counterparty_id) << ',' << figure_text(row.figure) << ','
+            << quoted(row.source) << '\n';
     }
     return out.str();
 }

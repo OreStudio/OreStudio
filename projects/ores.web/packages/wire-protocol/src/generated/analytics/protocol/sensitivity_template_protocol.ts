@@ -57,6 +57,7 @@ export interface SensitivityTemplateLookup {
 
 export interface SensitivityTemplatesFilter {
     code_one_of: string[] | null;
+    search: string | null;
 }
 
 export interface SensitivityTemplateEvent {

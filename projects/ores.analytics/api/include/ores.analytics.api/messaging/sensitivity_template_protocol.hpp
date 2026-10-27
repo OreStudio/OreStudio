@@ -64,6 +64,7 @@ struct sensitivity_template_lookup {
 
 struct sensitivity_templates_filter {
     std::optional<std::vector<std::string>> code_one_of;
+    std::optional<std::string> search;
 };
 
 struct sensitivity_template_event {

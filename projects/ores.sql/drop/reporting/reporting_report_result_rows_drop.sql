@@ -23,10 +23,9 @@
  * To modify, update the template and regenerate.
  */
 
-drop rule if exists ores_reporting_report_result_rows_delete_rule on "ores_reporting_report_result_rows_tbl";
+drop policy if exists report_result_rows_tbl_tenant_isolation_policy on "ores_reporting_report_result_rows_tbl";
+drop trigger if exists ores_reporting_report_result_rows_delete_trg on "ores_reporting_report_result_rows_tbl";
+drop function if exists ores_reporting_report_result_rows_delete_fn;
 drop trigger if exists ores_reporting_report_result_rows_insert_trg on "ores_reporting_report_result_rows_tbl";
 drop function if exists ores_reporting_report_result_rows_insert_fn;
-drop trigger if exists ores_reporting_report_result_rows_immutable_trg on "ores_reporting_report_result_rows_tbl";
-drop trigger if exists ores_reporting_report_result_rows_immutable_truncate_trg on "ores_reporting_report_result_rows_tbl";
-drop function if exists ores_reporting_report_result_rows_immutable_fn;
 drop table if exists "ores_reporting_report_result_rows_tbl";

@@ -44,27 +44,34 @@ create table if not exists "ores_reporting_report_result_rows_tbl" (
     "report_definition_id" uuid not null,
     "value" double precision not null,
     "source" text not null,
-    primary key (tenant_id, id),
+    "valid_from" timestamp with time zone not null,
+    "valid_to" timestamp with time zone not null,
+    primary key (id, as_of),
+    check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Composite natural key: unique combination for active records
 create unique index if not exists report_result_rows_party_id_report_instance_id_as_of_subject_type_subject_id_measure_currency_uniq_idx
 on "ores_reporting_report_result_rows_tbl" (tenant_id, party_id, report_instance_id, as_of, subject_type, subject_id, measure, currency)
-;
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 
 
 create or replace function ores_reporting_report_result_rows_insert_fn()
 returns trigger as $$
-declare
 begin
-    -- Validate tenant_id
-    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+    new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
 
+    update "ores_reporting_report_result_rows_tbl"
+    set valid_to = current_timestamp
+    where tenant_id = new.tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn()
+      and valid_from < current_timestamp;
 
-
-    return NEW;
+    new.valid_from := current_timestamp;
+    new.valid_to   := ores_utility_infinity_timestamp_fn();
+    return new;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
@@ -72,27 +79,20 @@ create or replace trigger ores_reporting_report_result_rows_insert_trg
 before insert on "ores_reporting_report_result_rows_tbl"
 for each row execute function ores_reporting_report_result_rows_insert_fn();
 
-create or replace function ores_reporting_report_result_rows_immutable_fn()
+create or replace function ores_reporting_report_result_rows_delete_fn()
 returns trigger as $$
 begin
-    -- A tenant purge is the one sanctioned delete. It turns the switch on
-    -- for its own transaction and off again after its delete.
-    if TG_OP = 'DELETE' and ores_utility_immutable_purge_allowed_fn() then
-        return OLD;
-    end if;
-    raise exception 'ores_reporting_report_result_rows_tbl rows are immutable: % is refused.', TG_OP
-        using errcode = '55000';
+    update "ores_reporting_report_result_rows_tbl"
+    set valid_to = current_timestamp
+    where tenant_id = old.tenant_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+    return null;
 end;
-$$ language plpgsql set search_path = public, pg_temp;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
-create or replace trigger ores_reporting_report_result_rows_immutable_trg
-before update or delete on "ores_reporting_report_result_rows_tbl"
-for each row execute function ores_reporting_report_result_rows_immutable_fn();
-
-create or replace trigger ores_reporting_report_result_rows_immutable_truncate_trg
-before truncate on "ores_reporting_report_result_rows_tbl"
-for each statement execute function ores_reporting_report_result_rows_immutable_fn();
-
+create or replace trigger ores_reporting_report_result_rows_delete_trg
+before delete on "ores_reporting_report_result_rows_tbl"
+for each row execute function ores_reporting_report_result_rows_delete_fn();
 do $$
 declare
     tsdb_installed boolean;
@@ -114,3 +114,20 @@ begin
         raise notice 'TimescaleDB not available - using regular table (manual cleanup required)';
     end if;
 end $$;
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Report result row
+-- =============================================================================
+alter table ores_reporting_report_result_rows_tbl enable row level security;
+
+drop policy if exists report_result_rows_tbl_tenant_isolation_policy
+    on ores_reporting_report_result_rows_tbl;
+
+create policy report_result_rows_tbl_tenant_isolation_policy
+on ores_reporting_report_result_rows_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

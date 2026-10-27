@@ -4678,7 +4678,8 @@ const pt: SourceCatalogue = {
                 },
                 basisPoints: 'pontos base',
                 noBaseline: 'Nenhum conjunto publicado, por isso não há base para comparar.',
-                noCandidate: 'A curva {curve} não tem candidato, por isso não há nada para comparar com o conjunto publicado.',
+                noCandidate:
+                    'A curva {curve} não tem candidato, por isso não há nada para comparar com o conjunto publicado.',
             },
         },
         subscriptions: {

@@ -4709,7 +4709,8 @@ const fr: SourceCatalogue = {
                 },
                 basisPoints: 'points de base',
                 noBaseline: 'Aucun jeu publié, donc aucune référence à comparer.',
-                noCandidate: 'La courbe {curve} n’a aucun candidat, donc rien à comparer au jeu publié.',
+                noCandidate:
+                    'La courbe {curve} n’a aucun candidat, donc rien à comparer au jeu publié.',
             },
         },
         subscriptions: {

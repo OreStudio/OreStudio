@@ -4567,8 +4567,7 @@ export const en: SourceCatalogue = {
                 supersededAt: 'Superseded at',
                 successorRequest: 'Successor request',
                 successorAsOf: 'Successor as-of',
-                lastChanged:
-                    'Last changed {at}. The series holds {count} published set(s).',
+                lastChanged: 'Last changed {at}. The series holds {count} published set(s).',
                 readOnly:
                     'The publish record is written by the gate that applies an approved request and never by a screen.',
             },
@@ -4646,7 +4645,8 @@ export const en: SourceCatalogue = {
                 },
                 basisPoints: 'basis points',
                 noBaseline: 'No published set, so there is no baseline to compare against.',
-                noCandidate: 'The curve {curve} has no candidate, so there is nothing to compare against the published set.',
+                noCandidate:
+                    'The curve {curve} has no candidate, so there is nothing to compare against the published set.',
             },
         },
         subscriptions: {

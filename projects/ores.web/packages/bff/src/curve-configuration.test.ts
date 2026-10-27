@@ -54,6 +54,15 @@ function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
 const ok = { outcome: 'ok', code: '', message: '' };
 
 const CONFIGURATION_ID = '11111111-1111-4111-8111-111111111111';
+
+/**
+ * A configuration id as the ORE bundle import writes one.
+ *
+ * The import mints ids whose version and variant bits are not the ones RFC 4122
+ * defines, so a route that reads the address as an RFC uuid refuses the very rows
+ * the import created. The page must open them.
+ */
+const IMPORTED_CONFIGURATION_ID = '90e6d408-aa8e-3e14-206b-d510eefb7c29';
 const CONFIGURATION_ID_NONE = '22222222-2222-4222-8222-222222222222';
 const PARTY_ID = '33333333-3333-4333-8333-333333333333';
 const DEFINITION_ID = '44444444-4444-4444-8444-444444444444';
@@ -350,6 +359,16 @@ describe('the curve configuration a report binds', () => {
         ]);
         expect(body.documented).toBe(2);
         expect(body.total).toBe(12 + 11);
+    });
+
+    it('opens a configuration whose id the ORE import minted, which is not an RFC uuid', async () => {
+        const reply = await read(
+            repliesFor(),
+            `/api/refdata/curve-configurations/${IMPORTED_CONFIGURATION_ID}`,
+        );
+        expect(reply.statusCode).toBe(200);
+        const body = reply.json() as CurveConfigurationView;
+        expect(body.configurationId).toBe(IMPORTED_CONFIGURATION_ID);
     });
 
     it('answers 404 when no document fills the configuration', async () => {

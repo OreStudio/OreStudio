@@ -22,7 +22,7 @@
       "nonProduction": true
     },
     {
-      "id": "swift_curie_local",
+      "id": "swift_curie",
       "displayName": "Swift Curie",
       "description": "Local checkout of the swift-curie environment.",
       "host": "localhost",

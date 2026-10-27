@@ -220,8 +220,8 @@ def _resolve_web_env_id(checkout_root: Path, nats_port: int,
     The BFF resolves its site configuration by id, and it falls back to
     ORES_ENV_NAME -- the checkout label, which is not necessarily an id the
     web config declares. So a checkout whose label differs from its declared
-    id (e.g. the label 'swift_curie' against the declared
-    'swift_curie_local') cannot start the web service without this binding.
+    id (e.g. a label 'curie' against a declared 'curie_local') cannot start the
+    web service without this binding.
 
     Match on the NATS port and subject prefix, which is how a declared entry
     anchors itself to an environment and which compass itself assigned; prefer

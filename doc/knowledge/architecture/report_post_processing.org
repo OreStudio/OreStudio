@@ -118,29 +118,16 @@ inserts rather than many parsers, and the work grows with the grid rather than w
 the reporting service's replicas. The queue group spreads the load and the run
 grant admits it.
 
-#+begin_src plantuml
-@startuml
-actor "Workflow engine" as wf
-participant "Compute wrapper" as wrapper
-participant "Object storage" as store
-participant "Reporting service" as reporting
-database "Result tables" as results
+The diagram draws the two calls: retrieval answers where the output is, the wrapper
+marshals the engine's files into canonical rows beside the engine, and
+post-processing answers what the run says.
 
-wf -> reporting : collect_compute_results(run)
-reporting -> store : fetch the run's archive
-store --> reporting : the archive
-reporting --> wf : the output location, and what the run said
-note right of reporting : the archive is kept as provenance
+#+caption: Report post-processing: the workflow asks for retrieval, which fetches the run's archive and keeps it as provenance; the wrapper marshals each analytic's file into canonical rows and uploads them with the archive; the workflow asks for post-processing, which fetches the rows, copies them into the result tables in one transaction and answers with the run's summary.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/report_post_processing_interaction.png]]
 
-wrapper -> wrapper : marshal each analytic's file into canonical rows
-wrapper -> store : upload the archive, canonical rows inside
-wf -> reporting : post_process_results(run)
-reporting -> store : fetch the canonical rows
-store --> reporting : rows
-reporting -> results : COPY, one transaction
-reporting -> wf : the run's result summary
-@enduml
-#+end_src
+Source: [[proj:doc/knowledge/architecture/report_post_processing_interaction.puml][=report_post_processing_interaction.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/report_post_processing_interaction.puml=.
 
 Retrieval and post-processing are two calls from the workflow because they answer
 two questions: *where the output is*, and *what it says*. A transport failure and a

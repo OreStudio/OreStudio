@@ -1,0 +1,21 @@
+@startuml
+actor "Workflow engine" as wf
+participant "Compute wrapper" as wrapper
+participant "Object storage" as store
+participant "Reporting service" as reporting
+database "Result tables" as results
+
+wf -> reporting : collect_compute_results(run)
+reporting -> store : fetch the run's archive
+store --> reporting : the archive
+reporting --> wf : the output location, and what the run said
+note right of reporting : the archive is kept as provenance
+
+wrapper -> wrapper : marshal each analytic's file into canonical rows
+wrapper -> store : upload the archive, canonical rows inside
+wf -> reporting : post_process_results(run)
+reporting -> store : fetch the canonical rows
+store --> reporting : rows
+reporting -> results : COPY, one transaction
+reporting -> wf : the run's result summary
+@enduml

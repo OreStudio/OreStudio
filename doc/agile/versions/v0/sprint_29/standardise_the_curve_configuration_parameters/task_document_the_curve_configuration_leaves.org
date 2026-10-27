@@ -28,7 +28,7 @@ Every leaf of curveconfig.xsd that ORE reads is documented once, in the ORE para
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | The extractor resolves 19 sections and 366 leaves, and 202 of them have text from the guide and are written into the contract. The other 164 are gaps, reported by the generator. |
+| Now          | The extractor resolves 19 sections and 434 leaves, and 235 of them have text from the guide and are written into the contract. The other 199 are gaps, reported by the generator. |
 | Waiting on   | Nothing.                               |
 | Next         | Give the rows their value sets, then close the 8 blocks the extractor cannot resolve. |
 | Last touched | 2026-10-26                               |
@@ -78,14 +78,14 @@ task and name that file in the Command column.
 | Lines across those sources | 7,437 | =wc -l= over the same list | =3d75a6908= (ORE) |
 | The guide chapter of =curveconfig.xml= | 92,273 bytes | =wc -c Docs/UserGuide/parameterisation/curveconfig.tex= | =3d75a6908= (ORE) |
 | Sections the document names | 19 | =python3 projects/ores.sql/utility/extract_curve_terms.py= | =3d75a6908= (ORE) |
-| Leaves extracted | 366 | the same run | =3d75a6908= (ORE) |
+| Leaves extracted | 434 | the same run | =3d75a6908= (ORE) |
 | Leaves ORE reads in more than one branch | 5 | the same run | =3d75a6908= (ORE) |
 | Blocks the extractor cannot resolve | 8 | the same run | =3d75a6908= (ORE) |
-| Leaves the guide gives text for | 202 | the same run | =3d75a6908= (ORE) |
+| Leaves the guide gives text for | 235 | the same run | =3d75a6908= (ORE) |
 | Guide entries keyed by section and leaf | 517 | =python3 -c "import extract_curve_terms as e; print(len(e.guide_terms(ORE, sections)))"= | =3d75a6908= (ORE) |
-| Curve rows written into the contract | 202 | =python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py= | this branch |
-| Leaves still without text (gaps) | 164 | the same run | this branch |
-| Rows in the contract after the change | 2,227 | the same run | this branch |
+| Curve rows written into the contract | 235 | =python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py= | this branch |
+| Leaves still without text (gaps) | 199 | the same run | this branch |
+| Rows in the contract after the change | 2,260 | the same run | this branch |
 
 * Notes
 

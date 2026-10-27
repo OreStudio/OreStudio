@@ -1662,20 +1662,171 @@
      ],
      "source_ref": "OREData/ored/configuration/commoditycurveconfig.cpp:226",
      "type": "text"
-    }
-   ],
-   "unresolved": [
+    },
     {
+     "conditional": false,
+     "default": null,
      "element": "BootstrapConfig",
-     "name": null,
+     "guide_optional": true,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:25",
+     "guide_text": "The accuracy with which the implied quote must match the market quote for each instrument in the curve bootstrap (iterative bootstrap) or the accuracy of the global optimizer (global bootstrap). This node should hold a positive real number. If omitted, the default value is 1.0e-12.",
+     "mandatory": false,
+     "name": "Accuracy",
      "path": [
       "CommodityCurves",
       "CommodityCurve",
-      "BootstrapConfig"
+      "BootstrapConfig",
+      "Accuracy"
      ],
-     "unresolved": "child node with no parser"
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:35",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "guide_optional": true,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:30",
+     "guide_text": "If the interpolation method in the bootstrap is global, e.g. cubic spline, the bootstrap routine needs to perform multiple iterative bootstraps of the curve to converge. After each such bootstrap of the full curve, the absolute value of the change between the current bootstrap and previous bootstrap for the curve value at each pillar is calculated. The global bootstrap is deemed to have converged if the maximum of these changes is less than the global accuracy or the accuracy from the Accuracy node. This node should hold a positive real number. If omitted, the global accuracy is set equal to the accuracy from the Accuracy node. This node is useful in some cases where a slightly less restrictive accuracy, than that given by the Accuracy node, is needed for the global bootstrap.",
+     "mandatory": false,
+     "name": "GlobalAccuracy",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "BootstrapConfig",
+      "GlobalAccuracy"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:41",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "guide_optional": true,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:33",
+     "guide_text": "If this node is set to true, the curve bootstrap does not throw an error when the bootstrap fails at a pillar. Instead, a curve value is sought at the failing pillar that minimises the absolute value of the difference between the implied quote and the market quote at that pillar. The minimum is sought between the minimum and maximum curve value that was used in the root finding routine that failed at the pillar. The number of steps used in this search is given by the DontThrowSteps node below. This node should hold a boolean value. If omitted, the default value is false i.e. the bootstrap throws an exception at the first pillar where the bootstrap fails.",
+     "mandatory": false,
+     "name": "DontThrow",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "BootstrapConfig",
+      "DontThrow"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:46",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "guide_optional": true,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:36",
+     "guide_text": "At each pillar, the bootstrap routine searches between a minimum curve value and a maximum curve value for a curve value that gives an implied quote that matches the market quote at that pillar. In some cases, the minimum curve value and maximum curve value are too restrictive and the bootstrap fails at a pillar. This node determines how many times the bootstrap should be attempted at each pillar. For example, if the node is set to 1, the bootstrap uses the minimum curve value and maximum curve value implied in the code and fails if a root is not found. If this node is set to 2 and the first attempt fails, the minimum curve value is reduced by a factor specified in the node MinFactor, the maximum curve value is increased by a factor specified in the node MaxFactor and a second attempt is made to find a root between the enlarged bounds. If no root is found, the bootstrap then fails at this pillar. This node should hold a positive integer. If omitted, the default value is 5.",
+     "mandatory": false,
+     "name": "MaxAttempts",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "BootstrapConfig",
+      "MaxAttempts"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:51",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "guide_optional": true,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:39",
+     "guide_text": "This node is used only if MaxAttempts is greater than 1. The meaning of this node is given in the description of the MaxAttempts node. This node should hold a positive real number. If omitted, the default value is 2.0.",
+     "mandatory": false,
+     "name": "MaxFactor",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "BootstrapConfig",
+      "MaxFactor"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:58",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "guide_optional": true,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:42",
+     "guide_text": "This node is used only if MaxAttempts is greater than 1. The meaning of this node is given in the description of the MaxAttempts node. This node should hold a positive real number. If omitted, the default value is 2.0.",
+     "mandatory": false,
+     "name": "MinFactor",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "BootstrapConfig",
+      "MinFactor"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:63",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "guide_optional": true,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:45",
+     "guide_text": "This node is used only if DontThrow is true. The meaning of this node is given in the description of the DontThrow node. This node should hold a positive integer. If omitted, the default value is 10.",
+     "mandatory": false,
+     "name": "DontThrowSteps",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "BootstrapConfig",
+      "DontThrowSteps"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:68",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "guide_optional": true,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:48",
+     "guide_text": "Defaults to false. This nodes specifies whether the curve should use a global bootstrap over all instruments of the curve (true) or iterative bootstrap (false, default value). If global bootstrap is used, only the fields Accuracy and SmoothnessLambda of the BootstrapConfig are relevant. Accurcy specifies the accuracy of the global optimizer in this case. Global bootstrap is required to build curves that form a cycle in the dependency graph, in this case all members of the cycle must have Global set to true in their bootstrap configs. In this case a global optimization is run over all instrument of all members of the cycle simultaneously. Global bootstrap is also required if according to the PillarChoice configuration of each segment there are curve instrument without or with more than one associated curve pillar date. Finally, global bootstrap can be preferable over iterative bootstrap if the latter requires an outer convergence loop, i.e. if a pillar choice is not set to LastRelevatDate or if the interpolation is non-local.",
+     "mandatory": false,
+     "name": "Global",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "BootstrapConfig",
+      "Global"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:75",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "BootstrapConfig",
+     "guide_optional": true,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:59",
+     "guide_text": "Defaults to zero. Only applies if GLobal is set to true. If positive, penalty components are included in the global optimization used to build a curve. For each adjacent pair of discrete forward rates F_i, F_i+1 between curve interpolation pillars, the term (F_i+1 - F_i) is added to the target function vector of which the MSE is optimized.",
+     "mandatory": false,
+     "name": "SmoothnessLambda",
+     "path": [
+      "CommodityCurves",
+      "CommodityCurve",
+      "BootstrapConfig",
+      "SmoothnessLambda"
+     ],
+     "source_ref": "OREData/ored/configuration/bootstrapconfig.cpp:80",
+     "type": "text"
     }
-   ]
+   ],
+   "unresolved": []
   },
   "CommodityVolatilities": {
    "entry_class": "CommodityVolatilityConfig",
@@ -3960,20 +4111,66 @@
      ],
      "source_ref": "OREData/ored/configuration/reportconfig.cpp:94",
      "type": "text"
-    }
-   ],
-   "unresolved": [
+    },
     {
-     "element": "ParametricSmileConfiguration",
-     "name": null,
+     "conditional": false,
+     "default": null,
+     "element": "ResidualCorrection",
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:141",
+     "guide_text": "Distinguishes at-the-money volatility curves from volatility surfaces. An `ATMTriangulated' value denotes a curve triangulated from two other surfaces. Allowable values: ATM, Smile, ATMTriangulated",
+     "mandatory": true,
+     "name": "Dimension",
      "path": [
       "FXVolatilities",
       "FXVolatility",
-      "ParametricSmileConfiguration"
+      "ParametricSmileConfiguration",
+      "Parameters",
+      "Dimension"
      ],
-     "unresolved": "child node with no parser"
+     "source_ref": "OREData/ored/configuration/parametricsmileconfiguration.cpp:78",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "ResidualCorrection",
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:141",
+     "guide_text": "Distinguishes at-the-money volatility curves from volatility surfaces. An `ATMTriangulated' value denotes a curve triangulated from two other surfaces. Allowable values: ATM, Smile, ATMTriangulated",
+     "mandatory": true,
+     "name": "Dimension",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "ParametricSmileConfiguration",
+      "Calibration",
+      "Dimension"
+     ],
+     "source_ref": "OREData/ored/configuration/parametricsmileconfiguration.cpp:78",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "ResidualCorrection",
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:141",
+     "guide_text": "Distinguishes at-the-money volatility curves from volatility surfaces. An `ATMTriangulated' value denotes a curve triangulated from two other surfaces. Allowable values: ATM, Smile, ATMTriangulated",
+     "mandatory": true,
+     "name": "Dimension",
+     "path": [
+      "FXVolatilities",
+      "FXVolatility",
+      "ParametricSmileConfiguration",
+      "ResidualCorrection",
+      "Dimension"
+     ],
+     "source_ref": "OREData/ored/configuration/parametricsmileconfiguration.cpp:78",
+     "type": "text"
     }
-   ]
+   ],
+   "unresolved": []
   },
   "InflationCapFloorVolatilities": {
    "entry_class": "InflationCapFloorVolatilityCurveConfig",
@@ -5097,8 +5294,514 @@
    "entry_element": "SwaptionVolatility",
    "section": "SwaptionVolatilities",
    "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:734",
-   "terms": [],
-   "unresolved": []
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:74",
+     "guide_text": "Unique identifier of the swaption volatility structure",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:170",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": true,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:75",
+     "guide_text": "A description of the volatility structure, may be left blank.",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:172",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:76",
+     "guide_text": "Distinguishes at-the-money matrices and full volatility cubes. Allowable values: ATM, Smile",
+     "mandatory": true,
+     "name": "Dimension",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Dimension"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:192",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:77",
+     "guide_text": "Specifies the type of market volatility inputs. Allowable values: Normal, Lognormal, ShiftedLognormal In the case of ShiftedLognormal, a matrix of shifts (by option and swap tenor) has to be provided in the market data input.",
+     "mandatory": true,
+     "name": "VolatilityType",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "VolatilityType"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:203",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:88",
+     "guide_text": "Optional, defaults to input volatility type. Possible values: Normal, Lognormal (alias for ShiftedLognormal, shift is taken from OutputShift if given, or input market data shift. Input market quotes will be converted to output volatility type and shift before building the vol surfaces, except for parametric models (SABR), where the model is calibrated to the input market data directly (without conversion) and the output volatility type and shift is handled by the calibrated parametric model. An early conversion of the input market data would not be an advantage in this case, we could only loose information.",
+     "mandatory": false,
+     "name": "OutputVolatilityType",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "OutputVolatilityType"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:216",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "Linear",
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:80",
+     "guide_text": "Optional. Possible values: Linear, Hagan2002Lognormal, Hagan2002Normal, Hagan2002NormalZeroBeta, Antonov2015FreeBoundaryNormal, KienitzLawsonSwaynePde, FlochKennedyFlochKennedy shows unstable results and is considered experimental. More work is needed.. If not given, defaults to Linear.",
+     "mandatory": false,
+     "name": "Interpolation",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Interpolation"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:234",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "Flat",
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:86",
+     "guide_text": "Specifies the extrapolation behaviour in all dimensions. Allowable values: Linear, Flat, None",
+     "mandatory": false,
+     "name": "Extrapolation",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Extrapolation"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:244",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:31",
+     "guide_text": "The business day calendar on both swaps.",
+     "mandatory": true,
+     "name": "Calendar",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Calendar"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:260",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:97",
+     "guide_text": "The term structure's day counter used in date to time conversions",
+     "mandatory": true,
+     "name": "DayCounter",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "DayCounter"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:262",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:99",
+     "guide_text": "The term structure's business day convention used in option tenor to date conversion",
+     "mandatory": true,
+     "name": "BusinessDayConvention",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "BusinessDayConvention"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:266",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:104",
+     "guide_text": "Swap index (ORE naming convention, e.g. EUR-CMS-1Y) used to compute ATM strikes for tenors up to and including the tenor given in the index (1Y in this example)",
+     "mandatory": true,
+     "name": "ShortSwapIndexBase",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "ShortSwapIndexBase"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:271",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:105",
+     "guide_text": "Swap index used to compute ATM strikes for tenors longer than the one defined by the short index",
+     "mandatory": true,
+     "name": "SwapIndexBase",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "SwapIndexBase"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:272",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": true,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:113",
+     "guide_text": "If non-empty, a tag will be included in the market datum labels. This can be used to set up underlying specific volatility date. For example, if the quote tag is set to EUR-EURIBOR-3M, the market datum labels will be +SWAPTION/RATE_LNVOL/EUR/EUR-EURIBOR-3M/5Y/10Y/ATM+ instead of +SWAPTION/RATE_LNVOL/EUR/5Y/10Y/ATM+. See section .",
+     "mandatory": false,
+     "name": "QuoteTag",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "QuoteTag"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:290",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "ResidualCorrection",
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:76",
+     "guide_text": "Distinguishes at-the-money matrices and full volatility cubes. Allowable values: ATM, Smile",
+     "mandatory": true,
+     "name": "Dimension",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "ParametricSmileConfiguration",
+      "Parameters",
+      "Dimension"
+     ],
+     "source_ref": "OREData/ored/configuration/parametricsmileconfiguration.cpp:78",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "ResidualCorrection",
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:76",
+     "guide_text": "Distinguishes at-the-money matrices and full volatility cubes. Allowable values: ATM, Smile",
+     "mandatory": true,
+     "name": "Dimension",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "ParametricSmileConfiguration",
+      "Calibration",
+      "Dimension"
+     ],
+     "source_ref": "OREData/ored/configuration/parametricsmileconfiguration.cpp:78",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "ResidualCorrection",
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/curveconfig.tex:76",
+     "guide_text": "Distinguishes at-the-money matrices and full volatility cubes. Allowable values: ATM, Smile",
+     "mandatory": true,
+     "name": "Dimension",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "ParametricSmileConfiguration",
+      "ResidualCorrection",
+      "Dimension"
+     ],
+     "source_ref": "OREData/ored/configuration/parametricsmileconfiguration.cpp:78",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "ReportOnDeltaGrid",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Report",
+      "ReportOnDeltaGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "ReportOnMoneynessGrid",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Report",
+      "ReportOnMoneynessGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "ReportOnStrikeGrid",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Report",
+      "ReportOnStrikeGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "ReportOnStrikeSpreadGrid",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Report",
+      "ReportOnStrikeSpreadGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "Deltas",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Report",
+      "Deltas"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "Moneyness",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Report",
+      "Moneyness"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "Strikes",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Report",
+      "Strikes"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "StrikeSpreads",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Report",
+      "StrikeSpreads"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "Expiries",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Report",
+      "Expiries"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "PillarDates",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Report",
+      "PillarDates"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "UnderlyingTenors",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Report",
+      "UnderlyingTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "ContinuationExpiry",
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "Report",
+      "ContinuationExpiry"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:94",
+     "type": "text"
+    }
+   ],
+   "unresolved": [
+    {
+     "element": "ProxyConfig",
+     "name": null,
+     "path": [
+      "SwaptionVolatilities",
+      "SwaptionVolatility",
+      "ProxyConfig"
+     ],
+     "unresolved": "child node with no parser"
+    }
+   ]
   },
   "YieldCurves": {
    "entry_class": "YieldCurveConfig",
@@ -6658,8 +7361,514 @@
    "entry_element": "YieldVolatility",
    "section": "YieldVolatilities",
    "source_ref": "OREData/ored/configuration/curveconfigurations.cpp:735",
-   "terms": [],
-   "unresolved": []
+   "terms": [
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "name": "CurveId",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "CurveId"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:170",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "name": "CurveDescription",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "CurveDescription"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:172",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "name": "Dimension",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Dimension"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:192",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "name": "VolatilityType",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "VolatilityType"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:203",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "OutputVolatilityType",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "OutputVolatilityType"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:216",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "Linear",
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/simulation.tex:43",
+     "guide_text": "This can be LogLinear, LinearZero or LogCubic. If not given, the value defaults to LogLinear. LogLinear and LogCubic interpolate the discount factors (log-linearly resp.\\ with a monotonic log-cubic spline), while LinearZero interpolates the continuously compounded zero rates linearly.",
+     "mandatory": false,
+     "name": "Interpolation",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Interpolation"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:234",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": "Flat",
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/simulation.tex:44",
+     "guide_text": "This can be FlatFwd or FlatZero. If not given, the value defaults to FlatFwd.",
+     "mandatory": false,
+     "name": "Extrapolation",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Extrapolation"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:244",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:46",
+     "guide_text": "The business day calendar for the deposit quote.",
+     "mandatory": true,
+     "name": "Calendar",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Calendar"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:260",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:48",
+     "guide_text": "The day count basis associated with the zero rate quote (for choices see section )",
+     "mandatory": true,
+     "name": "DayCounter",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "DayCounter"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:262",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": false,
+     "guide_ref": "Docs/UserGuide/parameterisation/conventions.tex:31",
+     "guide_text": "The business day convention used by the index.",
+     "mandatory": true,
+     "name": "BusinessDayConvention",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "BusinessDayConvention"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:266",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "name": "ShortSwapIndexBase",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "ShortSwapIndexBase"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:271",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "name": "SwapIndexBase",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "SwapIndexBase"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:272",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": null,
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "QuoteTag",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "QuoteTag"
+     ],
+     "source_ref": "OREData/ored/configuration/genericyieldvolcurveconfig.cpp:290",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "ResidualCorrection",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "name": "Dimension",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "ParametricSmileConfiguration",
+      "Parameters",
+      "Dimension"
+     ],
+     "source_ref": "OREData/ored/configuration/parametricsmileconfiguration.cpp:78",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "ResidualCorrection",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "name": "Dimension",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "ParametricSmileConfiguration",
+      "Calibration",
+      "Dimension"
+     ],
+     "source_ref": "OREData/ored/configuration/parametricsmileconfiguration.cpp:78",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "ResidualCorrection",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": true,
+     "name": "Dimension",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "ParametricSmileConfiguration",
+      "ResidualCorrection",
+      "Dimension"
+     ],
+     "source_ref": "OREData/ored/configuration/parametricsmileconfiguration.cpp:78",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "ReportOnDeltaGrid",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Report",
+      "ReportOnDeltaGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:29",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "ReportOnMoneynessGrid",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Report",
+      "ReportOnMoneynessGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:34",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "ReportOnStrikeGrid",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Report",
+      "ReportOnStrikeGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:40",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "ReportOnStrikeSpreadGrid",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Report",
+      "ReportOnStrikeSpreadGrid"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:46",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "Deltas",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Report",
+      "Deltas"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:52",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "Moneyness",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Report",
+      "Moneyness"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:58",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "Strikes",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Report",
+      "Strikes"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:64",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "StrikeSpreads",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Report",
+      "StrikeSpreads"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:70",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "Expiries",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Report",
+      "Expiries"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:76",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "PillarDates",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Report",
+      "PillarDates"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:82",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "UnderlyingTenors",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Report",
+      "UnderlyingTenors"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:88",
+     "type": "text"
+    },
+    {
+     "conditional": false,
+     "default": null,
+     "element": "Report",
+     "guide_optional": null,
+     "guide_ref": "",
+     "guide_text": "",
+     "mandatory": false,
+     "name": "ContinuationExpiry",
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "Report",
+      "ContinuationExpiry"
+     ],
+     "source_ref": "OREData/ored/configuration/reportconfig.cpp:94",
+     "type": "text"
+    }
+   ],
+   "unresolved": [
+    {
+     "element": "ProxyConfig",
+     "name": null,
+     "path": [
+      "YieldVolatilities",
+      "YieldVolatility",
+      "ProxyConfig"
+     ],
+     "unresolved": "child node with no parser"
+    }
+   ]
   }
  }
 }

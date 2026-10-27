@@ -74,7 +74,9 @@ READ = re.compile(
 CHILD = re.compile(
     r"(?:auto|XMLNode\*)\s+(\w+)\s*=\s*XMLUtils::getChildNode\(\s*(\w+)\s*,\s*\"([\w.]+)\"\s*\)")
 NODEVALUE = re.compile(r"XMLUtils::getNodeValue\(\s*(\w+)\s*\)")
-CALL = re.compile(r"(\w+)\.fromXML\(\s*(\w+)\s*\)")
+# A member may be a value or a pointer, so both `.` and `->` reach its parser.
+CALL = re.compile(r"(\w+)(?:\.|->)fromXML\(\s*(\w+)\s*\)")
+LOCAL = re.compile(r"^\s*([A-Za-z_][\w:]*)\s+(\w+)\s*[;{=(]", re.M)
 DISPATCH = re.compile(r'childName\s*==\s*"(\w+)"')
 CLASS = re.compile(r"^(?:class|struct)\s+(\w+)", re.M)
 BASE = re.compile(r"^(?:class|struct)\s+(\w+)\s*:\s*public\s+([\w:]+)", re.M)
@@ -152,7 +154,12 @@ def parse_function(path, text, chunk, start, node, element):
                           literal(rest), m.start()))
 
     valued = {m.group(1) for m in NODEVALUE.finditer(chunk)}
+    # A parser may build the class it needs on the spot (`Parameter p;`) rather
+    # than hold it as a member, so the declaration says what parses the node.
+    locals_of = {m.group(2): m.group(1) for m in LOCAL.finditer(chunk)
+                 if m.group(1) not in ("if", "for", "while", "return", "else")}
     calls = {m.group(2): m.group(1) for m in CALL.finditer(chunk)}
+    types = {var: locals_of.get(member) for var, member in calls.items()}
     children = list(CHILD.finditer(chunk))
     used = set()
 
@@ -164,7 +171,8 @@ def parse_function(path, text, chunk, start, node, element):
             reads.append(leaf(name, "text", False, None, m.start()))
             used.add(m.start())
         elif var in calls:
-            nested.append({"element": name, "member": calls[var], "reads": []})
+            nested.append({"element": name, "member": calls[var],
+                           "type": types.get(var), "reads": []})
             used.add(m.start())
 
     # A child node whose own children are read is a block of leaves. Where the
@@ -289,7 +297,7 @@ def resolve(member, node_class, found, members_of):
         return kind
     guess = member.rstrip("_").lower()
     for name in found:
-        if name.lower() == guess:
+        if name.lower() == guess or name.split("::")[-1].lower() == guess:
             return name
     return None
 
@@ -303,8 +311,9 @@ def walk(node_class, found, members_of, by_element, path, depth, seen):
     terms = []
     base = entry.get("base")
     if base and base in found and base not in seen:
-        terms.extend(walk(base, found, members_of, by_element, path, depth,
-                          seen | {base}))
+        # The base has not been walked yet, so it must not be in `seen`: its own
+        # guard would reject it before it read a single leaf.
+        terms.extend(walk(base, found, members_of, by_element, path, depth, seen))
     for r in entry["reads"]:
         terms.append(dict(r, path=path + [r["name"]], element=entry["element"]))
     for name in entry["dispatch"]:
@@ -327,7 +336,9 @@ def walk(node_class, found, members_of, by_element, path, depth, seen):
                     terms.append({"path": path + [element, name], "element": name,
                                   "name": None, "unresolved": "dispatch with no class"})
             continue
-        kind = resolve(block["member"], node_class, found, members_of) if block["member"] else None
+        kind = block.get("type") if block.get("type") in found else None
+        if not kind and block["member"]:
+            kind = resolve(block["member"], node_class, found, members_of)
         child = found.get(kind) if kind else None
         if child and child["element"]:
             terms.extend(walk(kind, found, members_of, by_element,

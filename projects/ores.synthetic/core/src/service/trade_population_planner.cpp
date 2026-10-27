@@ -894,4 +894,71 @@ fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     return plan;
 }
 
+
+namespace {
+
+/**
+ * @brief The id a grouped structure takes, derived from its first leg.
+ *
+ * A run that is repeated names the same structures, which is what lets the
+ * service skip the ones already there instead of grouping the same trades
+ * again under new ids. One byte is flipped so a structure's id can never be a
+ * trade's.
+ */
+boost::uuids::uuid structure_id_for(const boost::uuids::uuid& first_leg) {
+    auto id = first_leg;
+    id.data[15] = static_cast<unsigned char>(id.data[15] ^ 0x5A);
+    return id;
+}
+
+}
+
+void group_into_structures(domain::trade_population_plan& plan, std::uint32_t structures_per_book) {
+    if (structures_per_book == 0 || plan.slots.empty())
+        return;
+
+    // Trades are grouped within their own book: a structure belongs to the book
+    // its legs were booked into, so pairing across books would state a deal no
+    // desk holds.
+    std::vector<std::size_t> order(plan.slots.size());
+    for (std::size_t i = 0; i < order.size(); ++i)
+        order[i] = i;
+
+    std::vector<bool> grouped(plan.slots.size(), false);
+    for (std::uint32_t n = 0; n < structures_per_book; ++n) {
+        std::optional<std::size_t> first;
+        bool paired = false;
+        for (const auto i : order) {
+            if (grouped[i])
+                continue;
+            if (!first) {
+                first = i;
+                continue;
+            }
+            if (plan.slots[i].book_id != plan.slots[*first].book_id)
+                continue;
+
+            domain::trade_population_structure structure;
+            structure.structure_id = structure_id_for(plan.slots[*first].trade_id);
+            structure.counterparty_id = plan.slots[*first].counterparty_id;
+            structure.kind = "Package";
+
+            plan.slots[*first].structure_id = structure.structure_id;
+            plan.slots[*first].structure_role = "leg";
+            plan.slots[*first].structure_sequence = 1;
+            plan.slots[i].structure_id = structure.structure_id;
+            plan.slots[i].structure_role = "leg";
+            plan.slots[i].structure_sequence = 2;
+            grouped[*first] = true;
+            grouped[i] = true;
+
+            plan.structures.push_back(std::move(structure));
+            paired = true;
+            break;
+        }
+        if (!first || !paired)
+            break;
+    }
+}
+
 }

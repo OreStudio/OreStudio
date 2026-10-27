@@ -164,6 +164,19 @@ struct trade_generation_config final {
     int trades_per_book = 8;
 
     /**
+     * @brief How many structures the generated trades are grouped into, per book. A structure is a
+     * deal a customer sees, so a population that produced trades and no structures would leave the
+     * composition screens with nothing to show: this states how many the run groups, and the
+     * planner decides which trades go in and in what role.
+     *
+     * Zero states that the scope groups nothing, which is what a tenant that wants only flat trades
+     * asks for.
+     *
+     * It is a count per book and not a total, like the trade count beside it.
+     */
+    int structures_per_book = 2;
+
+    /**
      * @brief Whether the configuration is active and eligible for generation.
      */
     bool enabled = false;

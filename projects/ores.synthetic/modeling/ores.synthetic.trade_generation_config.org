@@ -243,6 +243,29 @@ books states four times this many trades.
 std::uint32_t{8}
 #+end_src
 
+** structures_per_book
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 2
+:END:
+
+How many structures the generated trades are grouped into, per book. A
+structure is a deal a customer sees, so a population that produced trades and
+no structures would leave the composition screens with nothing to show: this
+states how many the run groups, and the planner decides which trades go in and
+in what role.
+
+Zero states that the scope groups nothing, which is what a tenant that wants
+only flat trades asks for.
+
+It is a count per book and not a total, like the trade count beside it.
+
+#+begin_src cpp :name generator
+std::uint32_t{2}
+#+end_src
+
 ** enabled
 :PROPERTIES:
 :type:     boolean

@@ -99,6 +99,14 @@ struct trade_generation_scope final {
      */
     std::uint32_t trades_per_book = 8;
     /**
+     * @brief How many structures each book's trades are grouped into.
+     *
+     * Zero states that the scope groups nothing. The generator decides which
+     * trades go together and in what role, because grouping is a property of
+     * the population it made rather than of the configuration.
+     */
+    std::uint32_t structures_per_book = 0;
+    /**
      * @brief The commodities the tenant's catalogue holds.
      *
      * A commodity is a fact about the tenant's reference data and not about
@@ -387,6 +395,29 @@ struct trade_population_slot final {
     bool intra_group = false;
     /// The facts that belong to this slot's own family, and to no other.
     trade_terms terms;
+    /// The structure this trade is a leg of, when the population groups one.
+    std::optional<boost::uuids::uuid> structure_id;
+    /// The role it takes in that structure, and its place among the legs.
+    std::string structure_role;
+    std::uint32_t structure_sequence = 0;
+};
+
+/**
+ * @brief A deal a customer sees, holding trades the same run generated.
+ *
+ * The population groups its own trades, so a fresh environment has structures
+ * whose legs are real trades rather than rows invented for a screen. Only the
+ * kind is stated: a package is a structure whose legs confirm on their own, and
+ * it needs no template, which is what makes grouping possible before a tenant
+ * has chosen a template of its own.
+ */
+struct trade_population_structure final {
+    boost::uuids::uuid structure_id;
+    /// The party on the other side, which the structure states once for all
+    /// its legs.
+    boost::uuids::uuid counterparty_id;
+    std::string kind;
+    std::string template_code;
 };
 
 /**
@@ -397,6 +428,7 @@ struct trade_population_plan final {
     boost::uuids::uuid party_id;
     std::chrono::year_month_day as_of_date;
     std::vector<trade_population_slot> slots;
+    std::vector<trade_population_structure> structures;
 };
 
 }

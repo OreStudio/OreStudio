@@ -100,6 +100,11 @@
 \ir ./reporting_report_error_events_notify_trigger_create.sql
 \ir ./reporting_report_input_bundles_create.sql
 \ir ./reporting_in_flight_instance_fn_create.sql
+-- The rows a report run produced, and their trigger. The table names the run it
+-- belongs to, so it loads after the run tables above it.
+\ir ./reporting_report_result_rows_create.sql
+\ir ./reporting_report_result_rows_notify_trigger_create.sql
+
 \ir ./reporting_resolve_book_ids_fn_create.sql
 \ir ./reporting_configuration_analytics_fn_create.sql
 \ir ./reporting_publish_from_dq_create.sql

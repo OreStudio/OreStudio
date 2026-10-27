@@ -111,6 +111,29 @@ public:
      */
     virtual void write_trade(const domain::trade_population_slot& slot,
                              const domain::trade_generation_scope& scope) = 0;
+
+    /**
+     * @brief Whether the store already holds the structure.
+     *
+     * A grouped structure's id is derived from its first leg, so a repeated run
+     * finds the structure it made the first time and groups nothing twice.
+     */
+    [[nodiscard]] virtual bool structure_exists(const boost::uuids::uuid& structure_id) = 0;
+
+    /**
+     * @brief Creates the structure the population grouped.
+     *
+     * The creation is what names it: the trading service writes its reference
+     * and the deal becomes addressable without this writer stating one.
+     */
+    virtual void write_structure(const domain::trade_population_structure& structure,
+                                 const domain::trade_generation_scope& scope) = 0;
+
+    /**
+     * @brief Adds a booked trade to its structure, in the role the plan gave it.
+     */
+    virtual void write_structure_member(const boost::uuids::uuid& structure_id,
+                                        const domain::trade_population_slot& slot) = 0;
 };
 
 }

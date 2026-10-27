@@ -23,7 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/change_reason_category_repository.hpp"
-#include "ores.database/q/execute.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/change_reason_category.hpp"
 #include "ores.dq.api/domain/change_reason_category_json_io.hpp" // IWYU pragma: keep.
@@ -46,14 +46,14 @@
 
 namespace ores::dq::repository {
 
-namespace q = ores::database::q;
-using namespace ores::database::q;
-using namespace ores::database::q::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string change_reason_category_repository::sql() {
-    return q::generate_create_table_sql<change_reason_category_entity>(lg());
+    return query_builder::generate_create_table_sql<change_reason_category_entity>(lg());
 }
 
 bool change_reason_category_repository::is_sortable(std::string_view field) {
@@ -68,9 +68,10 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-q::order change_reason_category_list_order(const ores::utility::domain::order& order,
-                                           std::initializer_list<std::string> default_columns,
-                                           bool default_descending) {
+query_builder::order
+change_reason_category_list_order(const ores::utility::domain::order& order,
+                                  std::initializer_list<std::string> default_columns,
+                                  bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!change_reason_category_repository::is_sortable(order.field))
@@ -83,13 +84,13 @@ q::order change_reason_category_list_order(const ores::utility::domain::order& o
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<q::condition> change_reason_category_filter_condition(
+std::optional<query_builder::condition> change_reason_category_filter_condition(
     const std::optional<messaging::change_reason_categories_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<q::condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->code_one_of) {
-        std::vector<q::value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->code_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("code", std::move(values)));
@@ -180,7 +181,7 @@ void change_reason_category_repository::write(
 std::vector<domain::change_reason_category>
 change_reason_category_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = q::read<std::vector<change_reason_category_entity>> |
+    const auto query = query_builder::read<std::vector<change_reason_category_entity>> |
                        where("valid_to"_c == max.value()) | order_by("code"_c);
 
     return execute_read_query<change_reason_category_entity, domain::change_reason_category>(
@@ -195,7 +196,7 @@ std::vector<domain::change_reason_category>
 change_reason_category_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest change reason category. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = q::read<std::vector<change_reason_category_entity>> |
+    const auto query = query_builder::read<std::vector<change_reason_category_entity>> |
                        where("code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<change_reason_category_entity, domain::change_reason_category>(
@@ -211,7 +212,7 @@ std::vector<domain::change_reason_category>
 change_reason_category_repository::read_all(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all change reason category versions. "
                                << "code: " << code;
-    const auto query = q::read<std::vector<change_reason_category_entity>> |
+    const auto query = query_builder::read<std::vector<change_reason_category_entity>> |
                        where("code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
@@ -227,8 +228,8 @@ std::optional<domain::change_reason_category> change_reason_category_repository:
     context ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading change reason category at version. " << "code: " << code
                                << " version: " << version;
-    const auto query = q::read<std::vector<change_reason_category_entity>> |
-                       where("code"_c == code && "version"_c == version) | q::limit(1);
+    const auto query = query_builder::read<std::vector<change_reason_category_entity>> |
+                       where("code"_c == code && "version"_c == version) | query_builder::limit(1);
 
     const auto entities =
         execute_read_query<change_reason_category_entity, domain::change_reason_category>(
@@ -259,7 +260,7 @@ change_reason_category_repository::remove_status change_reason_category_reposito
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = q::delete_from<change_reason_category_entity> |
+    const auto query = query_builder::delete_from<change_reason_category_entity> |
                        where("tenant_id"_c == tid && "code"_c == code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
@@ -285,8 +286,8 @@ std::vector<domain::change_reason_category> change_reason_category_repository::r
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest change reason categories with offset: " << offset
                                << " and limit: " << limit;
-    const auto query =
-        q::read<std::vector<change_reason_category_entity>> | q::offset(offset) | q::limit(limit);
+    const auto query = query_builder::read<std::vector<change_reason_category_entity>> |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return execute_ordered_read_query<change_reason_category_entity,
                                       domain::change_reason_category>(
@@ -305,7 +306,7 @@ std::uint32_t change_reason_category_repository::get_total_category_count(
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active change reason category count";
 
-    const auto query = q::read<std::vector<change_reason_category_entity>>;
+    const auto query = query_builder::read<std::vector<change_reason_category_entity>>;
 
     return execute_count_query<change_reason_category_entity>(
         ctx,
@@ -320,7 +321,7 @@ change_reason_category_repository::read_latest(context ctx, const std::vector<st
     if (codes.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = q::read<std::vector<change_reason_category_entity>> |
+    const auto query = query_builder::read<std::vector<change_reason_category_entity>> |
                        where("code"_c.in(codes) && "valid_to"_c == max.value());
     auto result = execute_read_query<change_reason_category_entity, domain::change_reason_category>(
         ctx,
@@ -343,7 +344,7 @@ void change_reason_category_repository::remove(context ctx, const std::vector<st
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        q::delete_from<change_reason_category_entity> |
+        query_builder::delete_from<change_reason_category_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing change reason categories.");
 }

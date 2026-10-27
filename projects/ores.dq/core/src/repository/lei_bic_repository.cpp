@@ -23,7 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/lei_bic_repository.hpp"
-#include "ores.database/q/execute.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/lei_bic.hpp"
 #include "ores.dq.api/domain/lei_bic_json_io.hpp" // IWYU pragma: keep.
@@ -46,14 +46,14 @@
 
 namespace ores::dq::repository {
 
-namespace q = ores::database::q;
-using namespace ores::database::q;
-using namespace ores::database::q::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string lei_bic_repository::sql() {
-    return q::generate_create_table_sql<lei_bic_entity>(lg());
+    return query_builder::generate_create_table_sql<lei_bic_entity>(lg());
 }
 
 bool lei_bic_repository::is_sortable(std::string_view field) {
@@ -68,9 +68,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-q::order lei_bic_list_order(const ores::utility::domain::order& order,
-                            std::initializer_list<std::string> default_columns,
-                            bool default_descending) {
+query_builder::order lei_bic_list_order(const ores::utility::domain::order& order,
+                                        std::initializer_list<std::string> default_columns,
+                                        bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"lei"});
     if (!lei_bic_repository::is_sortable(order.field))
@@ -82,13 +82,13 @@ q::order lei_bic_list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<q::condition>
+std::optional<query_builder::condition>
 lei_bic_filter_condition(const std::optional<messaging::lei_bic_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<q::condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->lei_one_of) {
-        std::vector<q::value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->lei_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("lei", std::move(values)));
@@ -140,8 +140,10 @@ void lei_bic_repository::write(context ctx,
                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing LEI BIC. " << "lei: " << v.lei;
     const auto t = apply_claim(ctx, v, claim);
-    execute_write_op(
-        ctx, q::insert_or_replace(lei_bic_mapper::map(t)), lg(), "Writing LEI BIC to database.");
+    execute_write_op(ctx,
+                     query_builder::insert_or_replace(lei_bic_mapper::map(t)),
+                     lg(),
+                     "Writing LEI BIC to database.");
 }
 
 void lei_bic_repository::write(context ctx,
@@ -153,13 +155,13 @@ void lei_bic_repository::write(context ctx,
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
     execute_write_op(ctx,
-                     q::insert_or_replace(lei_bic_mapper::map(batch)),
+                     query_builder::insert_or_replace(lei_bic_mapper::map(batch)),
                      lg(),
                      "Writing LEI BIC to database.");
 }
 
 std::vector<domain::lei_bic> lei_bic_repository::read_latest(context ctx) {
-    const auto query = q::read<std::vector<lei_bic_entity>> | order_by("lei"_c);
+    const auto query = query_builder::read<std::vector<lei_bic_entity>> | order_by("lei"_c);
 
     return execute_read_query<lei_bic_entity, domain::lei_bic>(
         ctx,
@@ -171,7 +173,7 @@ std::vector<domain::lei_bic> lei_bic_repository::read_latest(context ctx) {
 
 std::vector<domain::lei_bic> lei_bic_repository::read_latest(context ctx, const std::string& lei) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI BIC. " << "lei: " << lei;
-    const auto query = q::read<std::vector<lei_bic_entity>> | where("lei"_c == lei);
+    const auto query = query_builder::read<std::vector<lei_bic_entity>> | where("lei"_c == lei);
 
     return execute_read_query<lei_bic_entity, domain::lei_bic>(
         ctx,
@@ -184,8 +186,8 @@ std::vector<domain::lei_bic> lei_bic_repository::read_latest(context ctx, const 
 
 std::vector<domain::lei_bic> lei_bic_repository::read_all(context ctx, const std::string& lei) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all LEI BIC versions. " << "lei: " << lei;
-    const auto query =
-        q::read<std::vector<lei_bic_entity>> | where("lei"_c == lei) | order_by("lei"_c);
+    const auto query = query_builder::read<std::vector<lei_bic_entity>> | where("lei"_c == lei) |
+                       order_by("lei"_c);
 
     return execute_read_query<lei_bic_entity, domain::lei_bic>(
         ctx,
@@ -209,7 +211,7 @@ lei_bic_repository::remove_status lei_bic_repository::remove(context ctx,
         return remove_status::missing;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        q::delete_from<lei_bic_entity> | where("tenant_id"_c == tid && "lei"_c == lei);
+        query_builder::delete_from<lei_bic_entity> | where("tenant_id"_c == tid && "lei"_c == lei);
 
     execute_delete_query(ctx, query, lg(), "Removing LEI BIC from database.");
     return remove_status::removed;
@@ -227,7 +229,8 @@ lei_bic_repository::read_latest(context ctx,
                                 const std::optional<messaging::lei_bic_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI BIC with offset: " << offset
                                << " and limit: " << limit;
-    const auto query = q::read<std::vector<lei_bic_entity>> | q::offset(offset) | q::limit(limit);
+    const auto query = query_builder::read<std::vector<lei_bic_entity>> |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return execute_ordered_read_query<lei_bic_entity, domain::lei_bic>(
         ctx,
@@ -243,7 +246,7 @@ std::uint32_t lei_bic_repository::get_total_lei_bic_count(
     context ctx, const std::optional<messaging::lei_bic_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active LEI BIC count";
 
-    const auto query = q::read<std::vector<lei_bic_entity>>;
+    const auto query = query_builder::read<std::vector<lei_bic_entity>>;
 
     return execute_count_query<lei_bic_entity>(
         ctx, query, lei_bic_filter_condition(filter), lg(), "Counting LEI BIC");
@@ -253,7 +256,7 @@ std::vector<domain::lei_bic> lei_bic_repository::read_latest(context ctx,
                                                              const std::vector<std::string>& leis) {
     if (leis.empty())
         return {};
-    const auto query = q::read<std::vector<lei_bic_entity>> | where("lei"_c.in(leis));
+    const auto query = query_builder::read<std::vector<lei_bic_entity>> | where("lei"_c.in(leis));
     auto result = execute_read_query<lei_bic_entity, domain::lei_bic>(
         ctx,
         query,
@@ -273,8 +276,8 @@ void lei_bic_repository::remove(context ctx, const std::vector<std::string>& lei
     if (leis.empty())
         return;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        q::delete_from<lei_bic_entity> | where("tenant_id"_c == tid && "lei"_c.in(leis));
+    const auto query = query_builder::delete_from<lei_bic_entity> |
+                       where("tenant_id"_c == tid && "lei"_c.in(leis));
     execute_delete_query(ctx, query, lg(), "Batch removing LEI BIC.");
 }
 

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.dq.core/repository/dataset_dependency_repository.hpp"
-#include "ores.database/q/execute.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/dataset_dependency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/dataset_dependency_entity.hpp"
@@ -26,9 +26,9 @@
 
 namespace ores::dq::repository {
 
-namespace q = ores::database::q;
-using namespace ores::database::q;
-using namespace ores::database::q::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
@@ -37,7 +37,7 @@ dataset_dependency_repository::dataset_dependency_repository(context ctx)
 
 std::vector<domain::dataset_dependency> dataset_dependency_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = q::read<std::vector<dataset_dependency_entity>> |
+    const auto query = query_builder::read<std::vector<dataset_dependency_entity>> |
                        where("valid_to"_c == max.value()) |
                        order_by("dataset_code"_c, "dependency_code"_c);
 

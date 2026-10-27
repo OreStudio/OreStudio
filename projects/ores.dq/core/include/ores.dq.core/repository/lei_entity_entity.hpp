@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_LEI_ENTITY_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_LEI_ENTITY_ENTITY_HPP
 
-#include "ores.database/q/columns.hpp"
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include <optional>
 #include <ostream>
@@ -74,40 +74,49 @@ struct lei_entity_entity {
      */
     static constexpr auto columns() {
         using e = lei_entity_entity;
-        namespace q = ores::database::q;
-        return q::columns<e>() | q::key("lei", &e::lei) | q::bind("tenant_id", &e::tenant_id) |
-               q::bind("entity_legal_name", &e::entity_legal_name) |
-               q::bind("entity_entity_category", &e::entity_entity_category) |
-               q::bind("entity_entity_sub_category", &e::entity_entity_sub_category) |
-               q::bind("entity_entity_status", &e::entity_entity_status) |
-               q::bind("entity_legal_form_entity_legal_form_code",
-                       &e::entity_legal_form_entity_legal_form_code) |
-               q::bind("entity_legal_form_other_legal_form",
-                       &e::entity_legal_form_other_legal_form) |
-               q::bind("entity_legal_jurisdiction", &e::entity_legal_jurisdiction) |
-               q::bind("entity_legal_address_first_address_line",
-                       &e::entity_legal_address_first_address_line) |
-               q::bind("entity_legal_address_city", &e::entity_legal_address_city) |
-               q::bind("entity_legal_address_region", &e::entity_legal_address_region) |
-               q::bind("entity_legal_address_country", &e::entity_legal_address_country) |
-               q::bind("entity_legal_address_postal_code", &e::entity_legal_address_postal_code) |
-               q::bind("entity_headquarters_address_first_address_line",
-                       &e::entity_headquarters_address_first_address_line) |
-               q::bind("entity_headquarters_address_city", &e::entity_headquarters_address_city) |
-               q::bind("entity_headquarters_address_region",
-                       &e::entity_headquarters_address_region) |
-               q::bind("entity_headquarters_address_country",
-                       &e::entity_headquarters_address_country) |
-               q::bind("entity_headquarters_address_postal_code",
-                       &e::entity_headquarters_address_postal_code) |
-               q::bind("entity_entity_creation_date", &e::entity_entity_creation_date) |
-               q::bind("registration_initial_registration_date",
-                       &e::registration_initial_registration_date) |
-               q::bind("registration_last_update_date", &e::registration_last_update_date) |
-               q::bind("registration_next_renewal_date", &e::registration_next_renewal_date) |
-               q::bind("registration_registration_status", &e::registration_registration_status) |
-               q::bind("entity_transliterated_name_1", &e::entity_transliterated_name_1) |
-               q::bind("entity_transliterated_name_1_type", &e::entity_transliterated_name_1_type);
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("lei", &e::lei) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("entity_legal_name", &e::entity_legal_name) |
+               query_builder::bind("entity_entity_category", &e::entity_entity_category) |
+               query_builder::bind("entity_entity_sub_category", &e::entity_entity_sub_category) |
+               query_builder::bind("entity_entity_status", &e::entity_entity_status) |
+               query_builder::bind("entity_legal_form_entity_legal_form_code",
+                                   &e::entity_legal_form_entity_legal_form_code) |
+               query_builder::bind("entity_legal_form_other_legal_form",
+                                   &e::entity_legal_form_other_legal_form) |
+               query_builder::bind("entity_legal_jurisdiction", &e::entity_legal_jurisdiction) |
+               query_builder::bind("entity_legal_address_first_address_line",
+                                   &e::entity_legal_address_first_address_line) |
+               query_builder::bind("entity_legal_address_city", &e::entity_legal_address_city) |
+               query_builder::bind("entity_legal_address_region", &e::entity_legal_address_region) |
+               query_builder::bind("entity_legal_address_country",
+                                   &e::entity_legal_address_country) |
+               query_builder::bind("entity_legal_address_postal_code",
+                                   &e::entity_legal_address_postal_code) |
+               query_builder::bind("entity_headquarters_address_first_address_line",
+                                   &e::entity_headquarters_address_first_address_line) |
+               query_builder::bind("entity_headquarters_address_city",
+                                   &e::entity_headquarters_address_city) |
+               query_builder::bind("entity_headquarters_address_region",
+                                   &e::entity_headquarters_address_region) |
+               query_builder::bind("entity_headquarters_address_country",
+                                   &e::entity_headquarters_address_country) |
+               query_builder::bind("entity_headquarters_address_postal_code",
+                                   &e::entity_headquarters_address_postal_code) |
+               query_builder::bind("entity_entity_creation_date", &e::entity_entity_creation_date) |
+               query_builder::bind("registration_initial_registration_date",
+                                   &e::registration_initial_registration_date) |
+               query_builder::bind("registration_last_update_date",
+                                   &e::registration_last_update_date) |
+               query_builder::bind("registration_next_renewal_date",
+                                   &e::registration_next_renewal_date) |
+               query_builder::bind("registration_registration_status",
+                                   &e::registration_registration_status) |
+               query_builder::bind("entity_transliterated_name_1",
+                                   &e::entity_transliterated_name_1) |
+               query_builder::bind("entity_transliterated_name_1_type",
+                                   &e::entity_transliterated_name_1_type);
     }
 };
 

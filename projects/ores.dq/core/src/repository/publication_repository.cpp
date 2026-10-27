@@ -23,7 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/publication_repository.hpp"
-#include "ores.database/q/execute.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/publication.hpp"
 #include "ores.dq.api/domain/publication_json_io.hpp" // IWYU pragma: keep.
@@ -47,14 +47,14 @@
 
 namespace ores::dq::repository {
 
-namespace q = ores::database::q;
-using namespace ores::database::q;
-using namespace ores::database::q::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string publication_repository::sql() {
-    return q::generate_create_table_sql<publication_entity>(lg());
+    return query_builder::generate_create_table_sql<publication_entity>(lg());
 }
 
 bool publication_repository::is_sortable(std::string_view field) {
@@ -69,9 +69,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-q::order publication_list_order(const ores::utility::domain::order& order,
-                                std::initializer_list<std::string> default_columns,
-                                bool default_descending) {
+query_builder::order publication_list_order(const ores::utility::domain::order& order,
+                                            std::initializer_list<std::string> default_columns,
+                                            bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!publication_repository::is_sortable(order.field))
@@ -84,13 +84,13 @@ q::order publication_list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<q::condition>
+std::optional<query_builder::condition>
 publication_filter_condition(const std::optional<messaging::publications_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<q::condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->id_one_of) {
-        std::vector<q::value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
@@ -143,7 +143,7 @@ void publication_repository::write(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Writing publication. " << "id: " << v.id;
     const auto t = apply_claim(ctx, v, claim);
     execute_write_op(ctx,
-                     q::insert_or_replace(publication_mapper::map(t)),
+                     query_builder::insert_or_replace(publication_mapper::map(t)),
                      lg(),
                      "Writing publication to database.");
 }
@@ -157,13 +157,13 @@ void publication_repository::write(context ctx,
     for (std::size_t i = 0; i < v.size(); ++i)
         batch.push_back(apply_claim(ctx, v[i], claims[i]));
     execute_write_op(ctx,
-                     q::insert_or_replace(publication_mapper::map(batch)),
+                     query_builder::insert_or_replace(publication_mapper::map(batch)),
                      lg(),
                      "Writing publications to database.");
 }
 
 std::vector<domain::publication> publication_repository::read_latest(context ctx) {
-    const auto query = q::read<std::vector<publication_entity>> | order_by("id"_c);
+    const auto query = query_builder::read<std::vector<publication_entity>> | order_by("id"_c);
 
     return execute_read_query<publication_entity, domain::publication>(
         ctx,
@@ -176,7 +176,7 @@ std::vector<domain::publication> publication_repository::read_latest(context ctx
 std::vector<domain::publication> publication_repository::read_latest(context ctx,
                                                                      const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest publication. " << "id: " << id;
-    const auto query = q::read<std::vector<publication_entity>> | where("id"_c == id);
+    const auto query = query_builder::read<std::vector<publication_entity>> | where("id"_c == id);
 
     return execute_read_query<publication_entity, domain::publication>(
         ctx,
@@ -190,8 +190,8 @@ std::vector<domain::publication> publication_repository::read_latest(context ctx
 std::vector<domain::publication> publication_repository::read_all(context ctx,
                                                                   const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all publication versions. " << "id: " << id;
-    const auto query =
-        q::read<std::vector<publication_entity>> | where("id"_c == id) | order_by("id"_c);
+    const auto query = query_builder::read<std::vector<publication_entity>> | where("id"_c == id) |
+                       order_by("id"_c);
 
     return execute_read_query<publication_entity, domain::publication>(
         ctx,
@@ -213,8 +213,8 @@ publication_repository::remove_status publication_repository::remove(
     if (current.empty())
         return remove_status::missing;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        q::delete_from<publication_entity> | where("tenant_id"_c == tid && "id"_c == id);
+    const auto query = query_builder::delete_from<publication_entity> |
+                       where("tenant_id"_c == tid && "id"_c == id);
 
     execute_delete_query(ctx, query, lg(), "Removing publication from database.");
     return remove_status::removed;
@@ -232,8 +232,8 @@ publication_repository::read_latest(context ctx,
                                     const std::optional<messaging::publications_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest publications with offset: " << offset
                                << " and limit: " << limit;
-    const auto query =
-        q::read<std::vector<publication_entity>> | q::offset(offset) | q::limit(limit);
+    const auto query = query_builder::read<std::vector<publication_entity>> |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return execute_ordered_read_query<publication_entity, domain::publication>(
         ctx,
@@ -249,7 +249,7 @@ std::uint32_t publication_repository::get_total_publication_count(
     context ctx, const std::optional<messaging::publications_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active publication count";
 
-    const auto query = q::read<std::vector<publication_entity>>;
+    const auto query = query_builder::read<std::vector<publication_entity>>;
 
     return execute_count_query<publication_entity>(
         ctx, query, publication_filter_condition(filter), lg(), "Counting publications");
@@ -259,7 +259,7 @@ std::vector<domain::publication>
 publication_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
-    const auto query = q::read<std::vector<publication_entity>> | where("id"_c.in(ids));
+    const auto query = query_builder::read<std::vector<publication_entity>> | where("id"_c.in(ids));
     auto result = execute_read_query<publication_entity, domain::publication>(
         ctx,
         query,
@@ -279,8 +279,8 @@ void publication_repository::remove(context ctx, const std::vector<std::string>&
     if (ids.empty())
         return;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        q::delete_from<publication_entity> | where("tenant_id"_c == tid && "id"_c.in(ids));
+    const auto query = query_builder::delete_from<publication_entity> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids));
     execute_delete_query(ctx, query, lg(), "Batch removing publications.");
 }
 

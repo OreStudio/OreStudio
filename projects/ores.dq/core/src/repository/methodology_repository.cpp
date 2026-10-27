@@ -23,7 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/methodology_repository.hpp"
-#include "ores.database/q/execute.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.dq.api/domain/methodology_json_io.hpp" // IWYU pragma: keep.
@@ -47,14 +47,14 @@
 
 namespace ores::dq::repository {
 
-namespace q = ores::database::q;
-using namespace ores::database::q;
-using namespace ores::database::q::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string methodology_repository::sql() {
-    return q::generate_create_table_sql<methodology_entity>(lg());
+    return query_builder::generate_create_table_sql<methodology_entity>(lg());
 }
 
 bool methodology_repository::is_sortable(std::string_view field) {
@@ -69,9 +69,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-q::order methodology_list_order(const ores::utility::domain::order& order,
-                                std::initializer_list<std::string> default_columns,
-                                bool default_descending) {
+query_builder::order methodology_list_order(const ores::utility::domain::order& order,
+                                            std::initializer_list<std::string> default_columns,
+                                            bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"id"});
     if (!methodology_repository::is_sortable(order.field))
@@ -84,13 +84,13 @@ q::order methodology_list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<q::condition>
+std::optional<query_builder::condition>
 methodology_filter_condition(const std::optional<messaging::methodologies_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<q::condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->id_one_of) {
-        std::vector<q::value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
@@ -169,7 +169,7 @@ void methodology_repository::write(context ctx,
 
 std::vector<domain::methodology> methodology_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = q::read<std::vector<methodology_entity>> |
+    const auto query = query_builder::read<std::vector<methodology_entity>> |
                        where("valid_to"_c == max.value()) | order_by("id"_c);
 
     return execute_read_query<methodology_entity, domain::methodology>(
@@ -184,7 +184,7 @@ std::vector<domain::methodology> methodology_repository::read_latest(context ctx
                                                                      const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest methodology. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = q::read<std::vector<methodology_entity>> |
+    const auto query = query_builder::read<std::vector<methodology_entity>> |
                        where("id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<methodology_entity, domain::methodology>(
@@ -199,7 +199,7 @@ std::vector<domain::methodology>
 methodology_repository::read_latest_by_name(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest methodology by name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = q::read<std::vector<methodology_entity>> |
+    const auto query = query_builder::read<std::vector<methodology_entity>> |
                        where("name"_c == name && "valid_to"_c == max.value());
 
     return execute_read_query<methodology_entity, domain::methodology>(
@@ -213,8 +213,9 @@ methodology_repository::read_latest_by_name(context ctx, const std::string& name
 std::vector<domain::methodology> methodology_repository::read_any_by_name(context ctx,
                                                                           const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any methodology by name: " << name;
-    const auto query = q::read<std::vector<methodology_entity>> | where("name"_c == name) |
-                       order_by("valid_from"_c.desc()) | q::limit(1);
+    const auto query = query_builder::read<std::vector<methodology_entity>> |
+                       where("name"_c == name) | order_by("valid_from"_c.desc()) |
+                       query_builder::limit(1);
 
     return execute_read_query<methodology_entity, domain::methodology>(
         ctx,
@@ -228,7 +229,7 @@ std::vector<domain::methodology> methodology_repository::read_any_by_name(contex
 std::vector<domain::methodology> methodology_repository::read_all(context ctx,
                                                                   const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all methodology versions. " << "id: " << id;
-    const auto query = q::read<std::vector<methodology_entity>> | where("id"_c == id) |
+    const auto query = query_builder::read<std::vector<methodology_entity>> | where("id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<methodology_entity, domain::methodology>(
@@ -243,8 +244,8 @@ std::optional<domain::methodology>
 methodology_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading methodology at version. " << "id: " << id
                                << " version: " << version;
-    const auto query = q::read<std::vector<methodology_entity>> |
-                       where("id"_c == id && "version"_c == version) | q::limit(1);
+    const auto query = query_builder::read<std::vector<methodology_entity>> |
+                       where("id"_c == id && "version"_c == version) | query_builder::limit(1);
 
     const auto entities = execute_read_query<methodology_entity, domain::methodology>(
         ctx,
@@ -274,7 +275,7 @@ methodology_repository::remove_status methodology_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = q::delete_from<methodology_entity> |
+    const auto query = query_builder::delete_from<methodology_entity> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value() &&
                              "version"_c == expected);
 
@@ -300,8 +301,8 @@ methodology_repository::read_latest(context ctx,
                                     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest methodologies with offset: " << offset
                                << " and limit: " << limit;
-    const auto query =
-        q::read<std::vector<methodology_entity>> | q::offset(offset) | q::limit(limit);
+    const auto query = query_builder::read<std::vector<methodology_entity>> |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return execute_ordered_read_query<methodology_entity, domain::methodology>(
         ctx,
@@ -319,7 +320,7 @@ std::uint32_t methodology_repository::get_total_methodology_count(
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active methodology count";
 
-    const auto query = q::read<std::vector<methodology_entity>>;
+    const auto query = query_builder::read<std::vector<methodology_entity>>;
 
     return execute_count_query<methodology_entity>(
         ctx,
@@ -334,7 +335,7 @@ methodology_repository::read_latest(context ctx, const std::vector<std::string>&
     if (ids.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = q::read<std::vector<methodology_entity>> |
+    const auto query = query_builder::read<std::vector<methodology_entity>> |
                        where("id"_c.in(ids) && "valid_to"_c == max.value());
     auto result = execute_read_query<methodology_entity, domain::methodology>(
         ctx,
@@ -356,7 +357,7 @@ void methodology_repository::remove(context ctx, const std::vector<std::string>&
         return;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = q::delete_from<methodology_entity> |
+    const auto query = query_builder::delete_from<methodology_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing methodologies.");
 }

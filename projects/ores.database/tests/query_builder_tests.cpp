@@ -16,12 +16,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/q/execute.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 
-namespace q = ores::database::q;
-using namespace ores::database::q::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 
 namespace {
 
@@ -36,23 +36,25 @@ struct probe_entity {
 
     static constexpr auto columns() {
         using e = probe_entity;
-        return q::columns<e>() | q::key("code", &e::code) | q::bind("tenant_id", &e::tenant_id) |
-               q::bind("version", &e::version) | q::bind("valid_to", &e::valid_to);
+        return query_builder::columns<e>() | query_builder::key("code", &e::code) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("valid_to", &e::valid_to);
     }
 };
 
 }
 
 TEST_CASE("each placeholder is numbered in the order it appears", "[q]") {
-    CHECK(q::detail::numbered("a = ? and (b = ? or c in (?, ?))") ==
+    CHECK(query_builder::detail::numbered("a = ? and (b = ? or c in (?, ?))") ==
           "a = $1 and (b = $2 or c in ($3, $4))");
 }
 
 TEST_CASE("an insert names every column and an upsert replaces all but the key", "[q]") {
-    CHECK(q::detail::insert_sql<probe_entity>(false) ==
+    CHECK(query_builder::detail::insert_sql<probe_entity>(false) ==
           "insert into public.probe_tbl (code, tenant_id, version, valid_to)"
           " values ($1, $2, $3, $4)");
-    CHECK(q::detail::insert_sql<probe_entity>(true) ==
+    CHECK(query_builder::detail::insert_sql<probe_entity>(true) ==
           "insert into public.probe_tbl (code, tenant_id, version, valid_to)"
           " values ($1, $2, $3, $4) on conflict (code) do update set"
           " tenant_id = excluded.tenant_id, version = excluded.version,"
@@ -60,12 +62,13 @@ TEST_CASE("an insert names every column and an upsert replaces all but the key",
 }
 
 TEST_CASE("a read states its condition, order, limit and offset with bound values", "[q]") {
-    const auto query = q::read<std::vector<probe_entity>> |
-                       q::where("code"_c == std::string("a'b") && "version"_c > 2) |
-                       q::order_by("version"_c.desc(), "code"_c) | q::limit(10) | q::offset(20);
-    const auto s = q::detail::select_sql<probe_entity>(
+    const auto query = query_builder::read<std::vector<probe_entity>> |
+                       query_builder::where("code"_c == std::string("a'b") && "version"_c > 2) |
+                       query_builder::order_by("version"_c.desc(), "code"_c) |
+                       query_builder::limit(10) | query_builder::offset(20);
+    const auto s = query_builder::detail::select_sql<probe_entity>(
         query.filter, query.sorting, query.max_rows, query.skip);
-    CHECK(q::detail::numbered(s.sql) ==
+    CHECK(query_builder::detail::numbered(s.sql) ==
           "select code, tenant_id, version, valid_to from public.probe_tbl"
           " where (code = $1) and (version > $2) order by version desc, code limit $3 offset $4");
     REQUIRE(s.params.size() == 4);
@@ -79,12 +82,12 @@ TEST_CASE("a list in a condition makes the statement unnamed, and an empty one h
     const auto some = "code"_c.in(std::vector<std::string>{"a", "b"});
     CHECK(some.sql == "code in (?, ?)");
     CHECK(some.variadic);
-    CHECK(q::one_of("code", {}).sql == "1 = 0");
+    CHECK(query_builder::one_of("code", {}).sql == "1 = 0");
 }
 
 TEST_CASE("a page reads the current row, or the row valid at an instant", "[q]") {
-    CHECK(q::valid_at(std::nullopt).sql == "valid_to = ?");
-    const auto at = q::valid_at(std::string("2026-10-27T12:00:00Z"));
+    CHECK(query_builder::valid_at(std::nullopt).sql == "valid_to = ?");
+    const auto at = query_builder::valid_at(std::string("2026-10-27T12:00:00Z"));
     CHECK(at.sql == "valid_from <= ? and valid_to > ?");
     CHECK(at.params.size() == 2);
 }

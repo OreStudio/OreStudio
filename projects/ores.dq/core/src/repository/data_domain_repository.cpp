@@ -23,7 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/data_domain_repository.hpp"
-#include "ores.database/q/execute.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/data_domain.hpp"
 #include "ores.dq.api/domain/data_domain_json_io.hpp" // IWYU pragma: keep.
@@ -46,14 +46,14 @@
 
 namespace ores::dq::repository {
 
-namespace q = ores::database::q;
-using namespace ores::database::q;
-using namespace ores::database::q::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string data_domain_repository::sql() {
-    return q::generate_create_table_sql<data_domain_entity>(lg());
+    return query_builder::generate_create_table_sql<data_domain_entity>(lg());
 }
 
 bool data_domain_repository::is_sortable(std::string_view field) {
@@ -68,9 +68,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-q::order data_domain_list_order(const ores::utility::domain::order& order,
-                                std::initializer_list<std::string> default_columns,
-                                bool default_descending) {
+query_builder::order data_domain_list_order(const ores::utility::domain::order& order,
+                                            std::initializer_list<std::string> default_columns,
+                                            bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"name"});
     if (!data_domain_repository::is_sortable(order.field))
@@ -83,13 +83,13 @@ q::order data_domain_list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<q::condition>
+std::optional<query_builder::condition>
 data_domain_filter_condition(const std::optional<messaging::data_domains_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<q::condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->name_one_of) {
-        std::vector<q::value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->name_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("name", std::move(values)));
@@ -168,7 +168,7 @@ void data_domain_repository::write(context ctx,
 
 std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = q::read<std::vector<data_domain_entity>> |
+    const auto query = query_builder::read<std::vector<data_domain_entity>> |
                        where("valid_to"_c == max.value()) | order_by("name"_c);
 
     return execute_read_query<data_domain_entity, domain::data_domain>(
@@ -183,7 +183,7 @@ std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx
                                                                      const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest data domain. " << "name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = q::read<std::vector<data_domain_entity>> |
+    const auto query = query_builder::read<std::vector<data_domain_entity>> |
                        where("name"_c == name && "valid_to"_c == max.value());
 
     return execute_read_query<data_domain_entity, domain::data_domain>(
@@ -198,7 +198,8 @@ std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx
 std::vector<domain::data_domain> data_domain_repository::read_all(context ctx,
                                                                   const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all data domain versions. " << "name: " << name;
-    const auto query = q::read<std::vector<data_domain_entity>> | where("name"_c == name) |
+    const auto query = query_builder::read<std::vector<data_domain_entity>> |
+                       where("name"_c == name) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<data_domain_entity, domain::data_domain>(
@@ -214,8 +215,8 @@ std::optional<domain::data_domain> data_domain_repository::read_at_version(conte
                                                                            std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading data domain at version. " << "name: " << name
                                << " version: " << version;
-    const auto query = q::read<std::vector<data_domain_entity>> |
-                       where("name"_c == name && "version"_c == version) | q::limit(1);
+    const auto query = query_builder::read<std::vector<data_domain_entity>> |
+                       where("name"_c == name && "version"_c == version) | query_builder::limit(1);
 
     const auto entities = execute_read_query<data_domain_entity, domain::data_domain>(
         ctx,
@@ -245,7 +246,7 @@ data_domain_repository::remove_status data_domain_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = q::delete_from<data_domain_entity> |
+    const auto query = query_builder::delete_from<data_domain_entity> |
                        where("tenant_id"_c == tid && "name"_c == name &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
@@ -271,8 +272,8 @@ data_domain_repository::read_latest(context ctx,
                                     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest data domains with offset: " << offset
                                << " and limit: " << limit;
-    const auto query =
-        q::read<std::vector<data_domain_entity>> | q::offset(offset) | q::limit(limit);
+    const auto query = query_builder::read<std::vector<data_domain_entity>> |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return execute_ordered_read_query<data_domain_entity, domain::data_domain>(
         ctx,
@@ -290,7 +291,7 @@ std::uint32_t data_domain_repository::get_total_domain_count(
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active data domain count";
 
-    const auto query = q::read<std::vector<data_domain_entity>>;
+    const auto query = query_builder::read<std::vector<data_domain_entity>>;
 
     return execute_count_query<data_domain_entity>(
         ctx,
@@ -305,7 +306,7 @@ data_domain_repository::read_latest(context ctx, const std::vector<std::string>&
     if (names.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = q::read<std::vector<data_domain_entity>> |
+    const auto query = query_builder::read<std::vector<data_domain_entity>> |
                        where("name"_c.in(names) && "valid_to"_c == max.value());
     auto result = execute_read_query<data_domain_entity, domain::data_domain>(
         ctx,
@@ -328,7 +329,7 @@ void data_domain_repository::remove(context ctx, const std::vector<std::string>&
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        q::delete_from<data_domain_entity> |
+        query_builder::delete_from<data_domain_entity> |
         where("tenant_id"_c == tid && "name"_c.in(names) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing data domains.");
 }

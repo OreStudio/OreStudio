@@ -16,8 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DATABASE_Q_COLUMNS_HPP
-#define ORES_DATABASE_Q_COLUMNS_HPP
+#ifndef ORES_DATABASE_QUERY_BUILDER_COLUMNS_HPP
+#define ORES_DATABASE_QUERY_BUILDER_COLUMNS_HPP
 
 #include <string_view>
 #include <tuple>
@@ -27,7 +27,7 @@
  * it, and whether it is part of the key. A generated entity states them in
  * columns(), so the query builder reads and writes a row without reflection.
  */
-namespace ores::database::q {
+namespace ores::database::query_builder {
 
 template <typename Entity, typename Member>
 struct column_binding {

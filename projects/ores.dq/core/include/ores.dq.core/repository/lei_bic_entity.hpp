@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_LEI_BIC_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_LEI_BIC_ENTITY_HPP
 
-#include "ores.database/q/columns.hpp"
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include <optional>
 #include <ostream>
@@ -51,9 +51,10 @@ struct lei_bic_entity {
      */
     static constexpr auto columns() {
         using e = lei_bic_entity;
-        namespace q = ores::database::q;
-        return q::columns<e>() | q::key("lei", &e::lei) | q::bind("tenant_id", &e::tenant_id) |
-               q::bind("bic", &e::bic);
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("lei", &e::lei) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("bic", &e::bic);
     }
 };
 

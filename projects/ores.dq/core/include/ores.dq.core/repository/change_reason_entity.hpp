@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_CHANGE_REASON_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_CHANGE_REASON_ENTITY_HPP
 
-#include "ores.database/q/columns.hpp"
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include <optional>
 #include <ostream>
@@ -64,19 +64,23 @@ struct change_reason_entity {
      */
     static constexpr auto columns() {
         using e = change_reason_entity;
-        namespace q = ores::database::q;
-        return q::columns<e>() | q::key("code", &e::code) | q::bind("tenant_id", &e::tenant_id) |
-               q::bind("version", &e::version) | q::bind("description", &e::description) |
-               q::bind("category_code", &e::category_code) |
-               q::bind("applies_to_new", &e::applies_to_new) |
-               q::bind("applies_to_amend", &e::applies_to_amend) |
-               q::bind("applies_to_delete", &e::applies_to_delete) |
-               q::bind("requires_commentary", &e::requires_commentary) |
-               q::bind("display_order", &e::display_order) |
-               q::bind("modified_by", &e::modified_by) | q::bind("performed_by", &e::performed_by) |
-               q::bind("change_reason_code", &e::change_reason_code) |
-               q::bind("change_commentary", &e::change_commentary) |
-               q::bind("valid_from", &e::valid_from) | q::bind("valid_to", &e::valid_to);
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("code", &e::code) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("description", &e::description) |
+               query_builder::bind("category_code", &e::category_code) |
+               query_builder::bind("applies_to_new", &e::applies_to_new) |
+               query_builder::bind("applies_to_amend", &e::applies_to_amend) |
+               query_builder::bind("applies_to_delete", &e::applies_to_delete) |
+               query_builder::bind("requires_commentary", &e::requires_commentary) |
+               query_builder::bind("display_order", &e::display_order) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
     }
 };
 

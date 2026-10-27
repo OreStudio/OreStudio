@@ -127,7 +127,7 @@ Every component reads and writes the database through generated statements on a 
   - [[id:B1575A54-4B73-4E3C-B958-0041E01D1625][Declare hand-written statements once, prepared and typed]]
   - [[id:E750C5F0-5A59-466D-A33A-538B90A1F1B9][Say in every store error whether to retry]]
 - *The repositories move through a query builder that matches sqlgen.* The
-  repository templates keep their sqlgen-shaped queries; =ores::database::q=
+  repository templates keep their sqlgen-shaped queries; =ores::database::query_builder=
   runs them on the libpq layer with sqlgen's names and SQL, and reads text into
   the entity sqlgen filled. A component moves by stating
   =#+repository_backend: libpq=. Typed binary rows and generated statements

@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_LEI_RELATIONSHIP_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_LEI_RELATIONSHIP_ENTITY_HPP
 
-#include "ores.database/q/columns.hpp"
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include <optional>
 #include <ostream>
@@ -61,24 +61,33 @@ struct lei_relationship_entity {
      */
     static constexpr auto columns() {
         using e = lei_relationship_entity;
-        namespace q = ores::database::q;
-        return q::columns<e>() |
-               q::key("relationship_start_node_node_id", &e::relationship_start_node_node_id) |
-               q::bind("tenant_id", &e::tenant_id) |
-               q::bind("relationship_start_node_node_id_type",
-                       &e::relationship_start_node_node_id_type) |
-               q::bind("relationship_end_node_node_id", &e::relationship_end_node_node_id) |
-               q::bind("relationship_end_node_node_id_type",
-                       &e::relationship_end_node_node_id_type) |
-               q::bind("relationship_relationship_type", &e::relationship_relationship_type) |
-               q::bind("relationship_relationship_status", &e::relationship_relationship_status) |
-               q::bind("relationship_period_1_start_date", &e::relationship_period_1_start_date) |
-               q::bind("relationship_period_1_end_date", &e::relationship_period_1_end_date) |
-               q::bind("registration_initial_registration_date",
-                       &e::registration_initial_registration_date) |
-               q::bind("registration_last_update_date", &e::registration_last_update_date) |
-               q::bind("registration_registration_status", &e::registration_registration_status) |
-               q::bind("registration_validation_sources", &e::registration_validation_sources);
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() |
+               query_builder::key("relationship_start_node_node_id",
+                                  &e::relationship_start_node_node_id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("relationship_start_node_node_id_type",
+                                   &e::relationship_start_node_node_id_type) |
+               query_builder::bind("relationship_end_node_node_id",
+                                   &e::relationship_end_node_node_id) |
+               query_builder::bind("relationship_end_node_node_id_type",
+                                   &e::relationship_end_node_node_id_type) |
+               query_builder::bind("relationship_relationship_type",
+                                   &e::relationship_relationship_type) |
+               query_builder::bind("relationship_relationship_status",
+                                   &e::relationship_relationship_status) |
+               query_builder::bind("relationship_period_1_start_date",
+                                   &e::relationship_period_1_start_date) |
+               query_builder::bind("relationship_period_1_end_date",
+                                   &e::relationship_period_1_end_date) |
+               query_builder::bind("registration_initial_registration_date",
+                                   &e::registration_initial_registration_date) |
+               query_builder::bind("registration_last_update_date",
+                                   &e::registration_last_update_date) |
+               query_builder::bind("registration_registration_status",
+                                   &e::registration_registration_status) |
+               query_builder::bind("registration_validation_sources",
+                                   &e::registration_validation_sources);
     }
 };
 

@@ -16,12 +16,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DATABASE_Q_QUERY_HPP
-#define ORES_DATABASE_Q_QUERY_HPP
+#ifndef ORES_DATABASE_QUERY_BUILDER_QUERY_HPP
+#define ORES_DATABASE_QUERY_BUILDER_QUERY_HPP
 
 #include "ores.database/export.hpp"
 #include "ores.database/pq/text.hpp"
-#include "ores.database/q/columns.hpp"
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -43,7 +43,7 @@
  * used, as a literal was. A condition holds its SQL with '?' for each
  * parameter, and the statement numbers them when it is run.
  */
-namespace ores::database::q {
+namespace ores::database::query_builder {
 
 /**
  * @brief A condition: its SQL, with '?' for each parameter, and the values.

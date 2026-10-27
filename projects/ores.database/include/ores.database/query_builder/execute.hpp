@@ -16,12 +16,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DATABASE_Q_EXECUTE_HPP
-#define ORES_DATABASE_Q_EXECUTE_HPP
+#ifndef ORES_DATABASE_QUERY_BUILDER_EXECUTE_HPP
+#define ORES_DATABASE_QUERY_BUILDER_EXECUTE_HPP
 
 #include "ores.database/domain/context_transact.hpp"
 #include "ores.database/export.hpp"
-#include "ores.database/q/query.hpp"
+#include "ores.database/query_builder/query.hpp"
 #include "ores.database/repository/entity_write_observer.hpp"
 #include "ores.database/repository/repository_exception.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -43,7 +43,7 @@
  * with a list or a request's filter runs unnamed. A store error reaches the
  * caller as the repository_exception sqlgen's errors became.
  */
-namespace ores::database::q {
+namespace ores::database::query_builder {
 
 namespace detail {
 

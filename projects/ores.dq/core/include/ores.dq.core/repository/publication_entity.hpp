@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_PUBLICATION_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_PUBLICATION_ENTITY_HPP
 
-#include "ores.database/q/columns.hpp"
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include <optional>
 #include <ostream>
@@ -60,16 +60,19 @@ struct publication_entity {
      */
     static constexpr auto columns() {
         using e = publication_entity;
-        namespace q = ores::database::q;
-        return q::columns<e>() | q::key("id", &e::id) | q::bind("tenant_id", &e::tenant_id) |
-               q::bind("dataset_id", &e::dataset_id) | q::bind("dataset_code", &e::dataset_code) |
-               q::bind("mode", &e::mode) | q::bind("target_table", &e::target_table) |
-               q::bind("records_inserted", &e::records_inserted) |
-               q::bind("records_updated", &e::records_updated) |
-               q::bind("records_skipped", &e::records_skipped) |
-               q::bind("records_deleted", &e::records_deleted) |
-               q::bind("published_by", &e::published_by) |
-               q::bind("published_at", &e::published_at);
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("dataset_id", &e::dataset_id) |
+               query_builder::bind("dataset_code", &e::dataset_code) |
+               query_builder::bind("mode", &e::mode) |
+               query_builder::bind("target_table", &e::target_table) |
+               query_builder::bind("records_inserted", &e::records_inserted) |
+               query_builder::bind("records_updated", &e::records_updated) |
+               query_builder::bind("records_skipped", &e::records_skipped) |
+               query_builder::bind("records_deleted", &e::records_deleted) |
+               query_builder::bind("published_by", &e::published_by) |
+               query_builder::bind("published_at", &e::published_at);
     }
 };
 

@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_DATASET_BUNDLE_MEMBER_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_DATASET_BUNDLE_MEMBER_ENTITY_HPP
 
-#include "ores.database/q/columns.hpp"
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include <optional>
 #include <ostream>
@@ -63,16 +63,20 @@ struct dataset_bundle_member_entity {
      */
     static constexpr auto columns() {
         using e = dataset_bundle_member_entity;
-        namespace q = ores::database::q;
-        return q::columns<e>() | q::key("bundle_code", &e::bundle_code) |
-               q::bind("tenant_id", &e::tenant_id) | q::bind("dataset_code", &e::dataset_code) |
-               q::bind("version", &e::version) | q::bind("display_order", &e::display_order) |
-               q::bind("optional", &e::optional) | q::bind("modified_by", &e::modified_by) |
-               q::bind("performed_by", &e::performed_by) |
-               q::bind("change_reason_code", &e::change_reason_code) |
-               q::bind("change_commentary", &e::change_commentary) |
-               q::bind("valid_from", &e::valid_from) | q::bind("valid_to", &e::valid_to) |
-               q::bind("closed_by", &e::closed_by);
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("bundle_code", &e::bundle_code) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("dataset_code", &e::dataset_code) |
+               query_builder::bind("version", &e::version) |
+               query_builder::bind("display_order", &e::display_order) |
+               query_builder::bind("optional", &e::optional) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to) |
+               query_builder::bind("closed_by", &e::closed_by);
     }
 };
 

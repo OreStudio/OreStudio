@@ -23,7 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/badge_severity_repository.hpp"
-#include "ores.database/q/execute.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/badge_severity.hpp"
 #include "ores.dq.api/domain/badge_severity_json_io.hpp" // IWYU pragma: keep.
@@ -46,14 +46,14 @@
 
 namespace ores::dq::repository {
 
-namespace q = ores::database::q;
-using namespace ores::database::q;
-using namespace ores::database::q::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string badge_severity_repository::sql() {
-    return q::generate_create_table_sql<badge_severity_entity>(lg());
+    return query_builder::generate_create_table_sql<badge_severity_entity>(lg());
 }
 
 bool badge_severity_repository::is_sortable(std::string_view field) {
@@ -68,9 +68,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-q::order badge_severity_list_order(const ores::utility::domain::order& order,
-                                   std::initializer_list<std::string> default_columns,
-                                   bool default_descending) {
+query_builder::order badge_severity_list_order(const ores::utility::domain::order& order,
+                                               std::initializer_list<std::string> default_columns,
+                                               bool default_descending) {
     if (order.field.empty())
         return make_order(default_columns, default_descending != order.descending, {"code"});
     if (!badge_severity_repository::is_sortable(order.field))
@@ -83,13 +83,13 @@ q::order badge_severity_list_order(const ores::utility::domain::order& order,
  * The conditions the filter record sets. Every member is optional, and the
  * members a request sets must all hold.
  */
-std::optional<q::condition>
+std::optional<query_builder::condition>
 badge_severity_filter_condition(const std::optional<messaging::badge_severities_filter>& filter) {
     if (!filter)
         return std::nullopt;
-    std::vector<q::condition> r;
+    std::vector<query_builder::condition> r;
     if (filter->code_one_of) {
-        std::vector<q::value> values;
+        std::vector<query_builder::value> values;
         for (const auto& v : *filter->code_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("code", std::move(values)));
@@ -173,7 +173,7 @@ void badge_severity_repository::write(
 std::vector<domain::badge_severity> badge_severity_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = q::read<std::vector<badge_severity_entity>> |
+    const auto query = query_builder::read<std::vector<badge_severity_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("code"_c);
 
@@ -191,7 +191,7 @@ badge_severity_repository::read_latest(context ctx, const std::string& code) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        q::read<std::vector<badge_severity_entity>> |
+        query_builder::read<std::vector<badge_severity_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<badge_severity_entity, domain::badge_severity>(
@@ -207,7 +207,7 @@ std::vector<domain::badge_severity> badge_severity_repository::read_all(context 
                                                                         const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all badge severity versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = q::read<std::vector<badge_severity_entity>> |
+    const auto query = query_builder::read<std::vector<badge_severity_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
@@ -224,9 +224,9 @@ std::optional<domain::badge_severity> badge_severity_repository::read_at_version
     BOOST_LOG_SEV(lg(), debug) << "Reading badge severity at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = q::read<std::vector<badge_severity_entity>> |
+    const auto query = query_builder::read<std::vector<badge_severity_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
-                       q::limit(1);
+                       query_builder::limit(1);
 
     const auto entities = execute_read_query<badge_severity_entity, domain::badge_severity>(
         ctx,
@@ -256,7 +256,7 @@ badge_severity_repository::remove_status badge_severity_repository::remove(
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = q::delete_from<badge_severity_entity> |
+    const auto query = query_builder::delete_from<badge_severity_entity> |
                        where("tenant_id"_c == tid && "code"_c == code &&
                              "valid_to"_c == max.value() && "version"_c == expected);
 
@@ -283,8 +283,9 @@ std::vector<domain::badge_severity> badge_severity_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest badge severities with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = q::read<std::vector<badge_severity_entity>> | where("tenant_id"_c == tid) |
-                       q::offset(offset) | q::limit(limit);
+    const auto query = query_builder::read<std::vector<badge_severity_entity>> |
+                       where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
     return execute_ordered_read_query<badge_severity_entity, domain::badge_severity>(
         ctx,
@@ -303,7 +304,8 @@ std::uint32_t badge_severity_repository::get_total_severity_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active badge severity count";
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = q::read<std::vector<badge_severity_entity>> | where("tenant_id"_c == tid);
+    const auto query =
+        query_builder::read<std::vector<badge_severity_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<badge_severity_entity>(
         ctx,
@@ -320,7 +322,7 @@ badge_severity_repository::read_latest(context ctx, const std::vector<std::strin
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        q::read<std::vector<badge_severity_entity>> |
+        query_builder::read<std::vector<badge_severity_entity>> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
     auto result = execute_read_query<badge_severity_entity, domain::badge_severity>(
         ctx,
@@ -343,7 +345,7 @@ void badge_severity_repository::remove(context ctx, const std::vector<std::strin
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        q::delete_from<badge_severity_entity> |
+        query_builder::delete_from<badge_severity_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing badge severities.");
 }

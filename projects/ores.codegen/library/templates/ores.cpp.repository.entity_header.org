@@ -37,7 +37,7 @@ The full template source. Edit here and re-tangle with
 #include "sqlgen/PrimaryKey.hpp"
 {{/repository_on_libpq}}
 {{#repository_on_libpq}}
-#include "ores.database/q/columns.hpp"
+#include "ores.database/query_builder/columns.hpp"
 {{/repository_on_libpq}}
 {{#cpp.includes.entity}}
 #include {{{.}}}
@@ -154,32 +154,32 @@ struct {{entity_singular}}_entity {
      */
     static constexpr auto columns() {
         using e = {{entity_singular}}_entity;
-        namespace q = ores::database::q;
-        return q::columns<e>()
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>()
 {{#primary_key.columns}}
-            | q::key("{{column}}", &e::{{column}})
+            | query_builder::key("{{column}}", &e::{{column}})
 {{/primary_key.columns}}
 {{#has_tenant_id}}
-            | q::bind("tenant_id", &e::tenant_id)
+            | query_builder::bind("tenant_id", &e::tenant_id)
 {{/has_tenant_id}}
 {{#has_audit_columns}}
-            | q::bind("version", &e::version)
+            | query_builder::bind("version", &e::version)
 {{/has_audit_columns}}
 {{#natural_keys}}
-            | q::bind("{{column}}", &e::{{column}})
+            | query_builder::bind("{{column}}", &e::{{column}})
 {{/natural_keys}}
 {{#columns}}
-            | q::bind("{{name}}", &e::{{name}})
+            | query_builder::bind("{{name}}", &e::{{name}})
 {{/columns}}
 {{#has_audit_columns}}
-            | q::bind("modified_by", &e::modified_by)
-            | q::bind("performed_by", &e::performed_by)
-            | q::bind("change_reason_code", &e::change_reason_code)
-            | q::bind("change_commentary", &e::change_commentary)
+            | query_builder::bind("modified_by", &e::modified_by)
+            | query_builder::bind("performed_by", &e::performed_by)
+            | query_builder::bind("change_reason_code", &e::change_reason_code)
+            | query_builder::bind("change_commentary", &e::change_commentary)
 {{/has_audit_columns}}
 {{^current_state}}
-            | q::bind("valid_from", &e::valid_from)
-            | q::bind("valid_to", &e::valid_to)
+            | query_builder::bind("valid_from", &e::valid_from)
+            | query_builder::bind("valid_to", &e::valid_to)
 {{/current_state}}
             ;
     }
@@ -204,7 +204,7 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
 #include "sqlgen/PrimaryKey.hpp"
 {{/repository_on_libpq}}
 {{#repository_on_libpq}}
-#include "ores.database/q/columns.hpp"
+#include "ores.database/query_builder/columns.hpp"
 {{/repository_on_libpq}}
 {{#cpp.includes.entity}}
 #include {{{.}}}
@@ -252,25 +252,25 @@ struct {{name_singular}}_entity {
      */
     static constexpr auto columns() {
         using e = {{name_singular}}_entity;
-        namespace q = ores::database::q;
-        return q::columns<e>()
-            | q::key("{{left.column}}", &e::{{left.column}})
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>()
+            | query_builder::key("{{left.column}}", &e::{{left.column}})
 {{#has_tenant_id}}
-            | q::bind("tenant_id", &e::tenant_id)
+            | query_builder::bind("tenant_id", &e::tenant_id)
 {{/has_tenant_id}}
-            | q::bind("{{right.column}}", &e::{{right.column}})
-            | q::bind("version", &e::version)
+            | query_builder::bind("{{right.column}}", &e::{{right.column}})
+            | query_builder::bind("version", &e::version)
 {{#columns}}
-            | q::bind("{{name}}", &e::{{name}})
+            | query_builder::bind("{{name}}", &e::{{name}})
 {{/columns}}
-            | q::bind("modified_by", &e::modified_by)
-            | q::bind("performed_by", &e::performed_by)
-            | q::bind("change_reason_code", &e::change_reason_code)
-            | q::bind("change_commentary", &e::change_commentary)
-            | q::bind("valid_from", &e::valid_from)
-            | q::bind("valid_to", &e::valid_to)
+            | query_builder::bind("modified_by", &e::modified_by)
+            | query_builder::bind("performed_by", &e::performed_by)
+            | query_builder::bind("change_reason_code", &e::change_reason_code)
+            | query_builder::bind("change_commentary", &e::change_commentary)
+            | query_builder::bind("valid_from", &e::valid_from)
+            | query_builder::bind("valid_to", &e::valid_to)
 {{#history}}
-            | q::bind("closed_by", &e::closed_by)
+            | query_builder::bind("closed_by", &e::closed_by)
 {{/history}}
             ;
     }

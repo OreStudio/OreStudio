@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_DATASET_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_DATASET_ENTITY_HPP
 
-#include "ores.database/q/columns.hpp"
+#include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include <optional>
 #include <ostream>
@@ -78,28 +78,34 @@ struct dataset_entity {
      */
     static constexpr auto columns() {
         using e = dataset_entity;
-        namespace q = ores::database::q;
-        return q::columns<e>() | q::key("id", &e::id) | q::bind("tenant_id", &e::tenant_id) |
-               q::bind("version", &e::version) | q::bind("code", &e::code) |
-               q::bind("catalog_name", &e::catalog_name) |
-               q::bind("subject_area_name", &e::subject_area_name) |
-               q::bind("domain_name", &e::domain_name) |
-               q::bind("coding_scheme_code", &e::coding_scheme_code) |
-               q::bind("origin_code", &e::origin_code) | q::bind("nature_code", &e::nature_code) |
-               q::bind("treatment_code", &e::treatment_code) |
-               q::bind("methodology_id", &e::methodology_id) | q::bind("name", &e::name) |
-               q::bind("description", &e::description) |
-               q::bind("source_system_id", &e::source_system_id) |
-               q::bind("business_context", &e::business_context) |
-               q::bind("upstream_derivation_id", &e::upstream_derivation_id) |
-               q::bind("lineage_depth", &e::lineage_depth) | q::bind("as_of_date", &e::as_of_date) |
-               q::bind("ingestion_timestamp", &e::ingestion_timestamp) |
-               q::bind("license_info", &e::license_info) |
-               q::bind("artefact_type", &e::artefact_type) |
-               q::bind("modified_by", &e::modified_by) | q::bind("performed_by", &e::performed_by) |
-               q::bind("change_reason_code", &e::change_reason_code) |
-               q::bind("change_commentary", &e::change_commentary) |
-               q::bind("valid_from", &e::valid_from) | q::bind("valid_to", &e::valid_to);
+        namespace query_builder = ores::database::query_builder;
+        return query_builder::columns<e>() | query_builder::key("id", &e::id) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
+               query_builder::bind("version", &e::version) | query_builder::bind("code", &e::code) |
+               query_builder::bind("catalog_name", &e::catalog_name) |
+               query_builder::bind("subject_area_name", &e::subject_area_name) |
+               query_builder::bind("domain_name", &e::domain_name) |
+               query_builder::bind("coding_scheme_code", &e::coding_scheme_code) |
+               query_builder::bind("origin_code", &e::origin_code) |
+               query_builder::bind("nature_code", &e::nature_code) |
+               query_builder::bind("treatment_code", &e::treatment_code) |
+               query_builder::bind("methodology_id", &e::methodology_id) |
+               query_builder::bind("name", &e::name) |
+               query_builder::bind("description", &e::description) |
+               query_builder::bind("source_system_id", &e::source_system_id) |
+               query_builder::bind("business_context", &e::business_context) |
+               query_builder::bind("upstream_derivation_id", &e::upstream_derivation_id) |
+               query_builder::bind("lineage_depth", &e::lineage_depth) |
+               query_builder::bind("as_of_date", &e::as_of_date) |
+               query_builder::bind("ingestion_timestamp", &e::ingestion_timestamp) |
+               query_builder::bind("license_info", &e::license_info) |
+               query_builder::bind("artefact_type", &e::artefact_type) |
+               query_builder::bind("modified_by", &e::modified_by) |
+               query_builder::bind("performed_by", &e::performed_by) |
+               query_builder::bind("change_reason_code", &e::change_reason_code) |
+               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::bind("valid_to", &e::valid_to);
     }
 };
 

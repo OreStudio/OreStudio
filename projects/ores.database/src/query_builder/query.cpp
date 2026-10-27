@@ -16,13 +16,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/q/execute.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include <map>
 #include <memory>
 #include <mutex>
 
-namespace ores::database::q {
+namespace ores::database::query_builder {
 
 namespace {
 

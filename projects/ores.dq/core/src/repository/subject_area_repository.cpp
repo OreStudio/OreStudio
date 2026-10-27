@@ -23,7 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.dq.core/repository/subject_area_repository.hpp"
-#include "ores.database/q/execute.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.api/domain/subject_area_json_io.hpp" // IWYU pragma: keep.
@@ -47,14 +47,14 @@
 
 namespace ores::dq::repository {
 
-namespace q = ores::database::q;
-using namespace ores::database::q;
-using namespace ores::database::q::literals;
+namespace query_builder = ores::database::query_builder;
+using namespace ores::database::query_builder;
+using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string subject_area_repository::sql() {
-    return q::generate_create_table_sql<subject_area_entity>(lg());
+    return query_builder::generate_create_table_sql<subject_area_entity>(lg());
 }
 
 bool subject_area_repository::is_sortable(std::string_view field) {
@@ -69,9 +69,9 @@ namespace {
  * the stated direction reverses; any other field must be sortable, because
  * the service refuses the rest before it reaches the store.
  */
-q::order subject_area_list_order(const ores::utility::domain::order& order,
-                                 std::initializer_list<std::string> default_columns,
-                                 bool default_descending) {
+query_builder::order subject_area_list_order(const ores::utility::domain::order& order,
+                                             std::initializer_list<std::string> default_columns,
+                                             bool default_descending) {
     if (order.field.empty())
         return make_order(
             default_columns, default_descending != order.descending, {"name", "domain_name"});
@@ -155,7 +155,7 @@ void subject_area_repository::write(
 
 std::vector<domain::subject_area> subject_area_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = q::read<std::vector<subject_area_entity>> |
+    const auto query = query_builder::read<std::vector<subject_area_entity>> |
                        where("valid_to"_c == max.value()) | order_by("name"_c, "domain_name"_c);
 
     return execute_read_query<subject_area_entity, domain::subject_area>(
@@ -172,7 +172,7 @@ std::vector<domain::subject_area> subject_area_repository::read_latest(
                                << " domain_name: " << domain_name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query =
-        q::read<std::vector<subject_area_entity>> |
+        query_builder::read<std::vector<subject_area_entity>> |
         where("name"_c == name && "domain_name"_c == domain_name && "valid_to"_c == max.value());
 
     return execute_read_query<subject_area_entity, domain::subject_area>(
@@ -188,7 +188,7 @@ std::vector<domain::subject_area> subject_area_repository::read_all(
     context ctx, const std::string& name, const std::string& domain_name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all subject area versions. " << "name: " << name
                                << " domain_name: " << domain_name;
-    const auto query = q::read<std::vector<subject_area_entity>> |
+    const auto query = query_builder::read<std::vector<subject_area_entity>> |
                        where("name"_c == name && "domain_name"_c == domain_name) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
@@ -205,9 +205,9 @@ std::optional<domain::subject_area> subject_area_repository::read_at_version(
     BOOST_LOG_SEV(lg(), debug) << "Reading subject area at version. " << "name: " << name
                                << " domain_name: " << domain_name << " version: " << version;
     const auto query =
-        q::read<std::vector<subject_area_entity>> |
+        query_builder::read<std::vector<subject_area_entity>> |
         where("name"_c == name && "domain_name"_c == domain_name && "version"_c == version) |
-        q::limit(1);
+        query_builder::limit(1);
 
     const auto entities = execute_read_query<subject_area_entity, domain::subject_area>(
         ctx,
@@ -242,7 +242,7 @@ subject_area_repository::remove(context ctx,
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
-        q::delete_from<subject_area_entity> |
+        query_builder::delete_from<subject_area_entity> |
         where("tenant_id"_c == tid && "name"_c == name && "domain_name"_c == domain_name &&
               "valid_to"_c == max.value() && "version"_c == expected);
 
@@ -269,8 +269,8 @@ subject_area_repository::read_latest(context ctx,
                                      const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest subject areas with offset: " << offset
                                << " and limit: " << limit;
-    const auto query =
-        q::read<std::vector<subject_area_entity>> | q::offset(offset) | q::limit(limit);
+    const auto query = query_builder::read<std::vector<subject_area_entity>> |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return execute_ordered_read_query<subject_area_entity, domain::subject_area>(
         ctx,
@@ -287,7 +287,7 @@ subject_area_repository::get_total_area_count(context ctx,
                                               const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active subject area count";
 
-    const auto query = q::read<std::vector<subject_area_entity>>;
+    const auto query = query_builder::read<std::vector<subject_area_entity>>;
 
     return execute_count_query<subject_area_entity>(
         ctx, query, narrowed(valid_at(as_of), std::nullopt), lg(), "Counting subject areas");
@@ -300,7 +300,7 @@ subject_area_repository::read_latest(context ctx,
     if (names.empty() || domain_names.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = q::read<std::vector<subject_area_entity>> |
+    const auto query = query_builder::read<std::vector<subject_area_entity>> |
                        where("name"_c.in(names) && "domain_name"_c.in(domain_names) &&
                              "valid_to"_c == max.value());
     auto result = execute_read_query<subject_area_entity, domain::subject_area>(

@@ -30,6 +30,9 @@ Nothing is measured by reading logs.
 | A tick lane ([[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]]) | Batches, rows, batch time, skipped duplicates |
 | The tick funnel | Published, received, dropped by reason, stored, republished |
 
+The republished count is a gauge of the lane's work. It is not the delivery meter
+of [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]], which counts each delivery to each party for billing.
+
 ** Where it goes
 
 The numbers are counters and gauges in memory. A service publishes a sample of

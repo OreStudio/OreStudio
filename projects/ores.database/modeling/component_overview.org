@@ -50,7 +50,7 @@ it to =exit_code::schema_mismatch= after printing its message.
 
 * Outputs
 
-- Pooled libpqxx connections scoped to tenant/party context.
+- Pooled libpq connections scoped to tenant/party context.
 - Bitemporal entity CRUD results with version-conflict detection.
 
 * Entry points
@@ -63,7 +63,7 @@ it to =exit_code::schema_mismatch= after printing its message.
 
 * Dependencies
 
-- libpqxx — PostgreSQL C++ client.
+- sqlgen — statements and connections over libpq, the PostgreSQL C client.
 - =ores.logging= — structured logging.
 
 * Entity modules

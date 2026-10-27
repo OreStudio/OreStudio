@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 2EEE37F6-0570-43B8-979F-079153A3DECA
 :END:
-#+title: Work is pushed to the grid and an idle grid costs nothing
-#+description: A wrapper waits for work to reach it; the claim runs only when work exists, and an idle grid runs no queries.
+#+title: Work is pushed to the grid, and an idle grid costs one claim per wrapper per timeout
+#+description: A wrapper waits for work to reach it; it claims when a notice says work exists, or after a long timeout, so an idle grid runs one claim per wrapper per timeout and nothing else.
 #+type: knowledge
 #+level: cross
 #+filetags: :architecture:compute:nats:
@@ -15,8 +15,8 @@ Work reaches a wrapper; a wrapper does not poll for it. The server publishes a
 notice when it adds work for a platform. An idle wrapper waits for the notice
 and claims when it arrives, and the claim takes one job under a lease. A wrapper
 also claims after a long timeout, measured in minutes, which covers a lost
-notice. With no notice and no timeout it sends nothing. An idle grid sends no
-claims and runs no queries.
+notice. Between those it sends nothing, so an idle grid runs one claim per
+wrapper per timeout and nothing else.
 
 * Detail
 

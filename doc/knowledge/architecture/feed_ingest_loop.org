@@ -13,8 +13,8 @@
 
 The ingest loop is the one path every tick takes. An adapter publishes a tick
 with a vendor id. The loop maps the id to an internal item, checks the value,
-stores the tick once in the source's stream, and delivers the tick on the
-stream of each party routed to the source. The path is the same for every adapter and every
+delivers the tick on the stream of each party routed to the source, and stores
+the tick once in the source's stream. Delivery never waits for the store. The path is the same for every adapter and every
 asset class. The loop never asks whether the source is live or simulated.
 
 * Detail
@@ -38,16 +38,17 @@ The stages, in order:
 3. *Check quality.* See [[id:98E49FCD-10E4-4DCE-9099-E728359B6D60][Quality checks run between mapping and storage and ignore the source kind]].
 4. *Resolve the parties.* The loop finds every party routed to the tick's
    source for that provider, for delivery. See [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]].
-5. *Store.* One point in the source's stream, however many parties the source
-   serves. A party's series points at the stream. The loop writes no
-   observation row for a tick. A client reads the ticks with the history call,
-   which checks the party's entitlement. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]],
-   [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] and
-   [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]].
+5. *Deliver and meter.* The loop delivers the tick on each party stream and
+   counts the delivery for each party. See [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]].
 6. *Compose.* A composite item that uses this series is recomputed. See
    [[id:41D84AD1-0058-4135-9B9D-BDE08BE8169A][A composite attributes its use to the providers of its inputs]].
-7. *Deliver and meter.* The loop delivers the tick on each party stream and
-   counts the delivery for each party. See [[id:3E51B0BD-D22B-4790-821F-E2FED44D152C][Usage is recorded as events and priced later]].
+7. *Store.* The tick's lane writes one point in the source's stream in its next
+   batch, however many parties the source serves. A party's series points at the
+   stream. The loop writes no observation row for a tick. A client reads the
+   ticks with the history call, which checks the party's entitlement. See
+   [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]],
+   [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]] and
+   [[id:E1A582A6-9E12-4074-877E-91ACD7E64301][The history call returns every tick of a range in one reply, or refuses the range]].
 
 ** How the loop keeps the newest value
 
@@ -62,10 +63,11 @@ The stages, in order:
   is split in two until the failing row is alone, and the loop logs that row
   and goes on.
 - The worker drops a tick older than 5 seconds and counts the drop.
-- The loop delivers a tick after the commit of its batch, with no wait for an
-  acknowledgement. A store that is down does not stop delivery: the loop
-  delivers the ticks it cannot store, and it waits one second, then doubles the
-  wait to thirty seconds, before it tries the store again.
+- The loop delivers a tick before its batch commits, with no wait for an
+  acknowledgement or for the store. A slow store delays the history, never the
+  live tick. A store that is down does not stop delivery: the lane keeps the
+  ticks it cannot store, and it waits one second, then doubles the wait to
+  thirty seconds, before it tries the store again.
 - A shutdown stops the subscription, works through the queue for two seconds,
   and logs how many ticks it dropped.
 - The loop keeps the id of each series after one read. The cache clears when
@@ -93,12 +95,12 @@ The loop counts a drop for each adapter and each reason: =unmapped=, =not_a_numb
 logged. The bounds of =out_of_range= are one absolute limit for every item until items carry
 bounds of their own.
 
-** The one place an if remains
+** Derived consumers are taps
 
-After a successful store, the loop offers an FX spot datum to the CRM bridge
-under the condition =datum.type() == fx_spot=. A third asset class that feeds
-CRM needs an edit at that line. It is the one place where an =if= stands in for
-a registered hook.
+The CRM bridge, and any other consumer inside the service, is a tap registered
+for an instrument type. It reads the conflated live output of the lanes, so it
+sees the newest value and never a backlog. The loop has no =if= for an asset
+class. See [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline]].
 
 * See also
 

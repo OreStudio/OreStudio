@@ -31,8 +31,10 @@ connections.
 | =app.current_actor= | The account the audit columns name |
 | =app.current_service= | The service acting, for audit and for the policies of service roles |
 
-The time zone is the only setting a connection keeps for its life: every
-connection uses UTC, so it is set once when the connection opens.
+The time zone is not a setting of the connection. It is a default of each
+service's database role, =ALTER ROLE ... SET TimeZone = 'UTC'=, so every server
+connection the role opens starts in UTC, whichever client the pooler hands it
+to. A connection carries nothing between transactions.
 
 ** Row-level security reads them
 

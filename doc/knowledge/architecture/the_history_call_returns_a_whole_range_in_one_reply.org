@@ -137,22 +137,7 @@ store then answers the whole span.
 A datum that no consumer watches keeps only its last tick in the window. A span for it
 comes from the store alone, and the store trails the lane by one batch. A tick that the
 lane took before the client subscribed, and that the store has not yet committed, is in
-neither the reply nor the buffer. How the lane learns that a datum is watched is open on
-the pipeline page. If the subscription tells it, the window fills from the subscription
-on, and the case shrinks to the ticks of one batch.
-
-** Open questions
-
-- Does the first build keep the ceiling of 25,000 ticks? The measurement of reply size and
-  of read time decides.
-- Can a tick fall between the store and the window, as the two tiers section describes?
-  The measurement of the batch delay against the first reply decides whether the call
-  must wait for the commit of the batch in flight.
-- The live subject names a series by the percent-encoded series URI, and this call names
-  it by id. The client reads both from the series catalogue. Should the live subject carry
-  the id instead, so that one name serves both calls?
-- Should the reply carry the =source_id=? This page says no. A client that audits a tick
-  reads the store.
+neither the reply nor the buffer.
 
 * Patterns used
 

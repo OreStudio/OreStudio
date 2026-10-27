@@ -54,7 +54,7 @@ party's subject. The delivery meter counts each delivery for the party
 
 At one hundred thousand feeds the store takes about 29,000 rows a second, one for
 each source tick, whatever the number of parties. The points carry no
-row-level security, so closed chunks compress ([[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded by compression, narrow chunks and retention policies]]).
+row-level security, so closed chunks compress ([[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded]]).
 
 * See also
 

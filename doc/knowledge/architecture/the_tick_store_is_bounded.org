@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: A79C25FA-9F70-453B-A52E-780B4402ABAA
 :END:
-#+title: The tick store is bounded by compression, narrow chunks and retention policies
-#+description: Closed chunks are compressed, chunks are sized so the hot index fits in memory, and retention and compression run as TimescaleDB policies.
+#+title: The tick store is bounded
+#+description: The tick store holds a bounded window, so its size follows from the tick rate and the window; compression, narrow chunks and retention policies keep it there.
 #+type: knowledge
 #+level: cross
 #+filetags: :architecture:marketdata:ticks:timescaledb:
@@ -45,7 +45,10 @@ old data costs a chunk drop, never a delete of rows.
 ** Size
 
 The store holds the window's rows, compressed. Its size is the tick rate times
-the window, divided by the compression ratio.
+the window, divided by the compression ratio. A week of raw ticks at 29,000 rows a
+second is about 17.5 billion rows, or about 2.8 TB at 162 bytes a row before
+compression. The target is that week in under 300 GB on disk, which sets the
+compression the store reaches: about ten to one.
 
 * See also
 

@@ -75,7 +75,7 @@ in [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]].
   row-level security, entitlement is checked when a party reads, and so closed
   chunks compress ([[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]]).
 - *TimescaleDB runs under the Timescale licence,* which the compression and the
-  policy jobs need ([[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded by compression, narrow chunks and retention policies]]).
+  policy jobs need ([[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded]]).
 
 * Out of scope
 

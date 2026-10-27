@@ -25,6 +25,10 @@ session reports its own numbers.
 This page orders the cluster. Read it top to bottom when changing how a
 service talks to the store; read one page when changing one piece.
 
+Every page of the cluster states the target, in the present tense: what the
+data path is once it is built. What is built so far is tracked by the tasks of
+[[id:A600B721-6BE3-4750-AF03-2438C3A06F94][Carry one hundred thousand feeds on the data path]].
+
 * Reading order
 
 The order follows dependency: each page needs the one before it.
@@ -42,25 +46,25 @@ The order follows dependency: each page needs the one before it.
    fits.
 6. [[id:E11DB09A-328A-476A-A71B-8E303A68D07D][A store error says whether a retry can succeed]] — what comes back out of it, and what the caller does about it.
 7. [[id:4DA654B3-7CE6-4637-B4D8-E8E2B4D092B3][Delivery threads enqueue and a bounded pool runs the handlers]] — who runs the handlers, and why their number equals the
-   connections'.
+   connections' of page 2. It follows page 6 only because it closes the control plane.
 8. [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]] — the data plane begins: what the store holds, and why a party's
    entitlement moves to the read.
 9. [[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]] — how the points get there, given that they hold no tenant.
-10. [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded by compression, narrow chunks and retention policies]] — how much of them is kept, given that they carry no row-level
+10. [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded]] — how much of them is kept, given that they carry no row-level
     security and so compress.
 11. [[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]] — how ten environments share the instance, which needs the
     stateless connections of page 3 and the prepared statements of page 5.
-12. [[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Work is pushed to the grid and an idle grid costs nothing]] — the compute grid, which applies the same rule to its claims: no
+12. [[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Work is pushed to the grid, and an idle grid costs one claim per wrapper per timeout]] — the compute grid, which applies the same rule to its claims: no
     query runs until there is work.
 13. [[id:7425094C-C5A0-4AF7-8EF4-B8062979A7BD][Every queue and every session reports its own numbers]] — how every page above reports what it costs, so a change shows as
     a number.
 
 * Pages beside the sequence
-# aside
 
 - [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] — the lane, the ring buffer, the age gate and the overload states of
-  the tick ingest in full, and the practice they follow. Read it when working on
-  a lane.
+  the tick ingest in full. Read it when working on a lane.
+- [[id:4E423566-F61B-4D0F-8787-25E4EEB4887C][The tick ingest pipeline design record]] — the measurements, the practice and the options
+  set aside behind the pipeline.
 - [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] — the conventions of the store itself: schema, roles, bitemporal design.
   Read it when writing SQL.
 

@@ -2,17 +2,18 @@
 :ID: 6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2
 :END:
 #+title: The tick ingest pipeline: freshness first
-#+description: Proposal for an ingest pipeline that keeps the newest tick, drops what is stale, and holds tens of thousands of ticks per second: lanes, latest-value conflation, batched writes and a bounded ring. It compares the design with the tickerplant, conflated feeds and time-series stores.
+#+description: The ingest pipeline for market ticks: it keeps the newest tick, drops what is stale, and holds tens of thousands of ticks per second, with lanes, latest-value conflation, batched writes and a bounded ring.
 #+type: knowledge
 #+level: cross
-#+filetags: :marketdata:ingest:ticks:performance:architecture:proposal:
+#+filetags: :marketdata:ingest:ticks:performance:architecture:
 #+created: 2026-10-20
 #+updated: 2026-10-26
 
 * Summary
 
-This note designs the ingest pipeline for market ticks, the data plane of
-[[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]], and records the measurements and the practice behind it.
+This note states the ingest pipeline for market ticks, the data plane of
+[[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]]. The measurements, the practice and the options behind it are in
+[[id:4E423566-F61B-4D0F-8787-25E4EEB4887C][The tick ingest pipeline design record]].
 
 The pipeline puts freshness first. A tick that arrives late, while a newer tick
 waits, is worse than a tick that is lost. So the pipeline keeps the newest tick
@@ -53,64 +54,7 @@ what a feed owes the pipeline and what the pipeline owes the feed.
 8. *A consumer receives what it watches.* A consumer selects a class, a series or a
    datum on the broker. It does not receive every tick of its party and discard most.
 
-** Why the present path cannot meet them
-
-[[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop]] handles each tick on
-one thread, in arrival order. For each route of the tick, it reads the series,
-inserts two observations, and publishes to JetStream. Each insert is a commit. The
-publish waits for an acknowledgement. The rule that the republish follows the stored
-row ties the live view to the speed of the database.
-
-The queue sits inside the NATS client. It has no age limit, and it serves the oldest
-tick first. When the loop falls behind, it spends its time on old ticks while newer
-ticks wait. This is the behaviour that requirement 1 forbids.
-
-Measurements on one environment (release build, one server shared by five
-environments, a burst of 4,000 ticks) show the limit.
-
-#+ATTR_HTML: :class hug-leading
-| Configuration | Rows written each second |
-|---------------+--------------------------|
-| As built: synchronous commit on, one NOTIFY for each row | 143 |
-| Synchronous commit off for the marketdata role | 166 |
-| Synchronous commit off, and the NOTIFY function empty | 210 |
-| Step 1 built: batches, no notification, core NATS | about 2,260 |
-
-Three facts come from the samples.
-
-- Exactly one database session of the marketdata service is active. The work is
-  serial.
-- With the commit sync removed, 41 percent of the samples of that session wait on a
-  database-wide lock, 34 percent run on the CPU, and 24 percent wait for the
-  service. The lock is the one that a transaction takes at commit after it calls
-  =NOTIFY=. PostgreSQL takes it so that notifications enter the queue in commit
-  order. The row trigger =ores_marketdata_market_observations_notify_trg= calls
-  =pg_notify= for every row.
-- The blockers of that lock were the marketdata sessions of two other environments
-  on the same server. The lock is shared across databases, so ingests that share
-  one server slow each other.
-
-A commit sync is also slow on this disk. One =fdatasync= takes about 4.3 ms.
-
-The write path has more costs for each row than the commit. Each row passes a
-before-insert trigger that runs an =UPDATE= on the same table and calls
-=ores_iam_validate_tenant_fn=. The table has seven indexes, and one of them is a
-partial unique index. Each statement runs through a tenant-aware connection that sets
-=app.current_tenant_id= when it takes the connection.
-
-Two JetStream streams also store every tick. The stream =synthetic_ticks= covers the
-producer subjects, and the stream =marketdata_ticks= covers the republish subjects. Both
-keep their messages in files for 7 days, and both have no consumer. A producer waits
-for an acknowledgement of each tick, and the ingest waits for one more for each
-route. The streams give nothing that a client reads. In one environment the second
-stream holds 1,812 subjects after two days.
-
-The demand is small today. One environment receives 13 ticks each second. Each tick
-reaches 4.6 routes on average, and each route stores two rows. That is about 120
-rows each second against a ceiling of about 150. At 30,000 ticks each second the
-same fan-out is about 280,000 rows each second.
-
-** The proposal
+** The pipeline
 
 The pipeline has a receive stage and a set of lanes. The receive stage decodes ticks
 and routes each one to a lane. A bounded ring buffer in each lane holds the ticks. A
@@ -180,14 +124,8 @@ arrives, so no value waits longer than the interval. A class with =consistency= 
 
 *** The live subject
 
-Today the republish subject ends in one token: the whole canonical URI of the datum,
-percent-encoded. A wildcard can then select a whole party and nothing smaller. The
-Hedgr client subscribes to the whole party and discards the ticks of series that it
-does not watch. Each session decodes every tick of its party. At tens of thousands of
-ticks each second, that costs a delivery thread for each session, and it costs the
-broker the same traffic for each session. It breaks requirement 8.
-
-The live subject splits its tail into tokens:
+A consumer selects what it watches on the broker, so the live subject splits its
+tail into tokens:
 
 =marketdata.v1.ops.market_tick.<tenant>.<party>.<instrument_type>.<series_token>.<coordinate_token>=
 
@@ -197,9 +135,7 @@ consumer then subscribes to a class with =...<instrument_type>.>=, to a series w
 =...<instrument_type>.<series_token>.>=, or to one datum. A chart subscribes to the
 series that it shows, and the broker sends nothing else.
 
-The change touches every consumer of the stream. Hedgr is the only client today, and
-the Qt client no longer exists, so the cost of the change is at its lowest now. The
-ingress subject, =marketdata.v1.ingress.<adapter>.<id token>=, does not change.
+The ingress subject is =marketdata.v1.ingress.<adapter>.<id token>=.
 
 *** The recent window
 
@@ -231,7 +167,7 @@ the ring, so the window is as fresh as the live path and does not wait for the s
 *** Batched persistence
 
 The same cycle writes every tick that passed the age gate in one transaction, with a
-multi-row insert or a =COPY=. One commit now covers hundreds or thousands of rows.
+multi-row insert or a =COPY=. One commit covers hundreds or thousands of rows.
 The cost of the commit is shared by all of them.
 
 - The series identity of each key comes from a cache in memory. A route event
@@ -294,22 +230,20 @@ Each lane reports these values to the status log and to telemetry.
 - The share of the time that the worker is busy, for each lane, so that an uneven
   split of series over lanes shows.
 
-An alert fires when the lag is above the first limit for longer than a set time.
-The lag of 70 minutes that started this work would have fired it within seconds.
+An alert fires when the lag is above the first limit for longer than a set time,
+so a lag of seconds shows within seconds.
 
-** What changes in the broker
+** The broker
 
 - *Perishable ticks use core NATS, on both subjects.* A producer publishes a quote
   without waiting for an acknowledgement. The lane publishes the live tick without
   waiting. A producer that waits for an acknowledgement on each tick limits its own
   rate to the round trip of the broker, and a feed of tens of thousands of ticks each
   second cannot work that way.
-- *The two streams go away for perishable subjects.* They have no consumer, and they
-  store every tick for 7 days. At 30,000 ticks each second and 5.6 publishes for each
-  tick, that is about 170,000 stream writes each second, and about 100 billion messages
-  in a week. A broker that wants to serve the last value uses a stream with one
-  message for each subject, in memory and with a short age. The recent window of the
-  lane makes even that unnecessary.
+- *Perishable subjects have no stream.* A stream that stored every tick would take
+  about 170,000 writes each second at 30,000 ticks each second and 5.6 publishes for
+  each tick, and about 100 billion messages in a week, for no consumer. The recent
+  window of the lane serves the last value instead.
 - *Durable classes keep a stream.* A durable class has its own stream and its own
   consumer, as the section on durability describes.
 - *Loss is counted.* Core NATS drops a message for a slow client and reports it only
@@ -319,26 +253,19 @@ The lag of 70 minutes that started this work would have fired it within seconds.
 - *More subjects.* The tokenised live subject has one subject for each datum and party.
   The count of subjects is a cost in the memory of the broker and a limit to check.
 
-** What changes in the store
+** The store
 
-- *No notification at all.* The observation table has a row trigger that calls
-  =pg_notify=. The code generator adds it to a table by default. The pattern behind
-  it, in [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][the PostgreSQL architecture note]],
-  is a signal that an entity changed, so that a client marks its copy stale and
-  reloads it. That fits a table that changes now and then. It does not fit a time
-  series. The series changes many times each second, and no client can reload at that
-  rate. The live path already carries each new value to the consumers that need it.
-  So the trigger goes away, and so does the event mapping that republishes it.
-  The model of the table sets the =ores.sql.schema.notify_trigger= knob to false.
-  Three other marketdata tables already do this. Without the trigger, a commit never
-  takes the notification lock, and the ingests of other databases on the same
-  server no longer wait for it.
-- *The second row for each tick.* The ingest stored each tick twice, once at its own
-  time and once under the previous business day, so that a fresh environment could value
-  a report at the previous close. The second row was the newest value under another date,
-  and it doubled the writes. Decision of the owner, 2026-10-21: the ingest stores only the
-  real tick. A close is a question for the reader, which asks for the latest tick at or
-  before the end of the day. The export of ORE market data takes a valuation date and asks
+- *No notification.* A tick table has no row trigger that calls =pg_notify=, and no
+  event mapping republishes one. The change signal of
+  [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][the PostgreSQL architecture note]] tells a
+  client to reload a copy of an entity that changes now and then. A series changes
+  many times each second, no client can reload at that rate, and the live path already
+  carries each new value. The model of the table sets the
+  =ores.sql.schema.notify_trigger= knob to false. A commit therefore never takes the
+  notification lock, and the ingests of other databases on the same server do not wait
+  for it.
+- *One row for each tick.* The ingest stores only the real tick. A close is a question
+  for the reader, which asks for the latest tick at or before the end of the day. The export of ORE market data takes a valuation date and asks
   that question for that date, and keeps the history of the other dates. A value older than
   an age limit, 5 days by default, is not carried to the date, so a run does not take a stale
   quote for a current one. A series with no tick at or before the date has no line in the file. A
@@ -346,18 +273,14 @@ The lag of 70 minutes that started this work would have fired it within seconds.
   backfill, not from the ingest.
 - *One row for each source.* A tick is stored once, in the stream of its source, and
   parties read it through their series and their entitlement. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]].
-- *Indexes.* The table has seven indexes and a trigger that closes the previous
-  current point. Each index costs a write. A measurement with a batch decides
-  which of them the hot path needs.
 - *A tick is an immutable fact.* The observation table is bitemporal. Each row has a
   =valid_from= and a =valid_to=, and a trigger closes the previous row of the same key.
   That serves curated and manual points that people correct. It does not serve a tick,
-  which nobody corrects. The proposal gives ticks their own append-only hypertable. It
-  has no trigger and no =valid_to=. It has one index on the series and the time, and
-  it stores the series and the coordinate as identifiers, not the URI text in each
-  row. A view joins it with the observation table for a reader that wants both. The
-  step 0 prototype measures the gain before the choice is made.
-- *The volume.* An append-only row takes 162 bytes uncompressed, as step 0 measured.
+  which nobody corrects. Ticks have their own append-only hypertable. It has no
+  trigger and no =valid_to=. It has one index on the series and the time, and it
+  stores the series and the coordinate as identifiers, not the URI text in each row. A
+  view joins it with the observation table for a reader that wants both.
+- *The volume.* An append-only row takes 162 bytes uncompressed, as the design record measured.
   Thirty thousand source ticks each second, stored once, are about 2.6 billion rows
   each day. Raw ticks stay for a short window, such as a week, and a retention policy
   then drops the chunk. Bars of one second and one minute are kept longer. The class
@@ -365,7 +288,7 @@ The lag of 70 minutes that started this work would have fired it within seconds.
 - *Compression.* Closed chunks are compressed. The points carry no tenant and no
   row-level security, which compression requires, and the instance runs TimescaleDB
   under the Timescale licence, which compresses chunks and runs the policy jobs. See
-  [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded by compression, narrow chunks and retention policies]].
+  [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded]].
 - *A batch holds any stream.* A point carries no tenant, so a lane writes the points
   of every stream it owns in one batch, and a lane's batch size follows the tick rate,
   not the number of tenants.
@@ -444,7 +367,7 @@ gauges.
 
 Some consumers sit inside the service. The CRM bridge turns an FX spot rate into a
 driver update. Cross rates and blended rates are derived from observed rates. The
-loop has one =if= for the CRM bridge today. The pipeline replaces it with taps.
+pipeline serves them through taps.
 
 - A tap is registered for an instrument type. It reads the conflated live output of
   the lanes, so it sees the newest value and never a backlog. The CRM bridge fits this.
@@ -544,323 +467,6 @@ bounded, and the states change at their limits. Failure injection covers a slow 
 and a full ring. The tick injector is the load test.
 It becomes a tool in the repository, so that anyone can reproduce a lag.
 
-*** Notes to update when this is built
-
-When the pipeline replaces the loop, these notes change: the ingest loop note, which
-states that a republish follows the stored row; the note on adding an asset class,
-which gains the rules above; the PostgreSQL architecture note, which states that a
-time-series table sets the notification knob to false; the notes on the producer
-subject and the market tick, which state the live subject; and the subscription note.
-No client of the observation change event exists. Hedgr has none, and the Qt client is
-decommissioned.
-
-** What the first consumer needs: Hedgr
-
-Hedgr is the new desktop client. Its plan, =docs/plans/market-eventing.md= in the
-Hedgr repository, shows how a real consumer reads the pipeline.
-
-- *Live values come from the party tick stream.* Hedgr subscribes once for each
-  session to =marketdata.v1.ops.market_tick.<tenant>.<party>.>=. This is the subject
-  that the ingest loop publishes to after it stores a row. The tick stream is the
-  only subscription that Hedgr makes in its own code. Hedgr has no subscription to
-  any observation change event. That confirms that the database notification serves
-  no client here.
-- *Hedgr filters on the client.* The tick sink of Hedgr says that the party
-  subscription delivers every tick of the party, and that it keeps the ticks of the
-  watched series and drops the rest. Each tick costs a decode, two calls of the URI
-  codec, a number parse, a lock and a map lookup, on the one NATS delivery thread.
-  The section on the live subject makes the broker do the selection.
-- *The live tick has no coordinate.* The backfill of Hedgr gives each point its term.
-  The live tick carries a series URI, a time and a value, and the aggregator takes no
-  term. A series with coordinates, such as the pillars of a curve, would mix its
-  pillars in one live bucket stream. This was read in the code and not run against a
-  live curve. FX spot has no coordinate and is not affected.
-- *Hedgr waits for the store without knowing it.* The subject carries a tick only
-  after the ingest has stored it. When the ingest fell behind, the chart showed ticks
-  that were 70 minutes old, and nothing in Hedgr was at fault. The live path of
-  this proposal removes that coupling.
-- *Hedgr measures freshness itself.* It judges the age of a tick from the
-  =observation_time= of the tick, and it draws that age beside the verdict. This is
-  the right measure. It is also the acceptance measure for the pipeline: the age of
-  a tick as the client sees it, at the 99th percentile.
-- *Hedgr already conflates.* It buckets ticks into 1 second, 1 minute and 1 hour
-  levels on the NATS thread, and it passes closed buckets to the frame loop through a
-  fixed ring. A chart needs at most one point for each second. The class interval of
-  100 milliseconds therefore loses nothing that a chart shows. It cuts the fan-out
-  from tens of thousands of ticks each second to at most ten for each datum. A
-  consumer that wants less conflates for itself, as Hedgr does.
-- *The subject is scoped to a party.* The live publish must still go to one subject
-  for each route. Its cost is small compared with a commit, because core NATS
-  carries it without an acknowledgement. The cost grows with the number of parties
-  that watch a source.
-- *Hedgr seeds a chart with one history call.* On open, on reconnect and on a manual
-  refresh it asks for a span of time and merges the reply with its live ticks. See
-  [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]].
-- *One difference needs a decision.* The ring of Hedgr drops the newest bucket when
-  it is full. Its source comment gives the reason: a tick is worth less than the
-  progress of the dispatch thread, and the chart shows the points it did receive.
-  The freshness rule says to overwrite the oldest. The two rules differ only when the
-  frame loop stalls by more than 4,096 buckets, but they should agree.
-- *The reconnect gap.* Hedgr loses the ticks between a drop and a reconnect, and it
-  fills the gap with a history call from its newest tick. The recent window serves the
-  recent part of that call from memory.
-
-** How tick systems are built in practice
-
-Tick processing is an old problem, and the industry has settled on a small number of
-shapes. This section lists them. The sources are linked where this session read
-them. Claims that come from a vendor are marked as such.
-
-*** The tickerplant, the real-time store and the history store
-
-The shape that many trading firms use comes from kdb+. A feed handler captures the
-raw feed. A tickerplant receives each update, writes it to a log file, and publishes
-it to subscribers. A real-time database subscribes, holds the current day in memory,
-and answers intraday queries. At the end of the day it writes its data to a
-historical database that is partitioned by date. The
-[[https://code.kx.com/q/architecture/][KX architecture guide]] and the
-[[https://code.kx.com/q/kb/kdb-tick/][kdb+tick page]] describe the parts. The log is
-the recovery source: a restarted real-time database replays it.
-
-Two details matter here. First, the tickerplant can run in zero-latency mode or
-publish in batches on a timer. The KX guidance says that a subscriber that only plots
-graphs needs an update every few seconds, so a chained tickerplant serves slow
-subscribers. That is conflation by another name. Second, the split between a
-real-time tier in memory and a history tier on disk is the norm. A chart of the
-last few minutes reads memory. It does not query the history store.
-
-*** Conflated feeds
-
-Exchanges and vendors sell the same idea as a product. The CME MDP 3.0 conflated
-feed sends only the most recent update of each instrument, which cuts the bandwidth
-and the work of the consumer. See the
-[[https://b2bits.atlassian.net/wiki/spaces/B2BITS/pages/286294017/Java+TCP+Handler+for+CME+MDP+3.0+Conflated+Feed][description of a handler for it]].
-A patent that came up in the same search notes the limit: some data conflates well,
-such as the current price, and some does not, such as a trade cancellation.
-This pipeline carries observed values, so it can conflate them. A trade or an event
-needs a lane that does not conflate.
-
-Chronicle sells a ring buffer in two forms: one that delivers every message in order,
-and one that conflates to the newest value for a reader that wants only that. It
-claims under 200 nanoseconds at the 99.9th percentile for the conflating form. That
-is a vendor figure on one machine, so treat it as indicative. See the
-[[https://chronicle.software/ring-buffer][Chronicle page]].
-
-*** In-process hand-off
-
-Low-latency trading systems pass messages between threads on a ring buffer. The LMAX
-Disruptor, Aeron with its ring-buffer adaptors, and Chronicle Queue are the common
-tools. They exist for nanosecond hand-off. This pipeline needs a millisecond commit, so
-it takes the pattern and not the tools.
-
-*** Time-series databases
-
-A database that is built for ticks ingests in batches and makes the commit interval an
-explicit setting.
-
-- *QuestDB* writes through a write-ahead log and takes data over its line protocol.
-  Its out-of-order handling holds rows in memory and commits after a lag. The
-  [[https://questdb.com/docs/guides/out-of-order-commit-lag][commit lag guide]]
-  calls the setting a trade between throughput and the time until data is readable.
-  A forum answer in the same results says the cost sits mostly in the commit and not
-  in the number of rows. The lane cycle makes the same trade, and it sets the lag
-  from the measured lag of the lane.
-- *ClickHouse* wants
-  [[https://clickhouse.com/docs/concepts/best-practices/selecting-an-insert-strategy.md][inserts of 10,000 to 100,000 rows]],
-  about one each second. When clients cannot batch, its
-  [[https://clickhouse.com/docs/concepts/features/operations/insert/asyncinserts][asynchronous inserts]]
-  batch in the server and accept a loss on a crash.
-- *TimescaleDB* groups rows by chunk and writes each chunk in one transaction. It
-  recommends =COPY= for bulk loads. See the
-  [[https://www.tigerdata.com/docs/build/data-management/write-data/insert][insert documentation]].
-
-All three say one thing: never commit once for each tick.
-
-*** Streams with a compacted topic
-
-Kafka offers log compaction, which keeps the last record of each key. A common
-design puts ticks on a Kafka topic and loads a column store from it, for example
-through the ClickHouse Kafka table engine and a materialized view. It fits a system
-that must replay. It adds a broker, and a consumer that falls behind reads old
-records first, which is the behaviour this pipeline avoids.
-
-*** The last value for a late joiner
-
-A consumer that starts late needs the current value at once. The kdb+ real-time
-database serves it from memory. A compacted topic serves it as the last record of a
-key. This proposal serves it from the memory of the lane, as the real-time database does.
-It needs no extra stream.
-
-** Where the proposal follows practice and where it departs
-
-It follows practice in these points.
-
-- It has a receive stage, a fan-out to live consumers, and a store writer, which is the
-  tickerplant, the real-time store and the history writer in the kdb+ shape.
-- A lane that conflates for its live consumers is a chained tickerplant.
-- Writes to the store are batched with an explicit commit interval, as in QuestDB,
-  ClickHouse and TimescaleDB.
-- The recent window is the real-time database of a kdb+ system, held in each lane. It
-  answers recent reads from memory, and the history store serves only older data.
-- The store has no change signal for each row, because none of these systems has one.
-
-It departs from practice in two points, and both follow from the requirements.
-
-- *No replay log.* A tickerplant logs every tick so that a restart can replay it.
-  This pipeline keeps no log, because a replayed tick is a stale tick. A restart
-  resumes at the newest tick.
-- *Age-based shedding.* A tickerplant keeps every tick and lets a slow subscriber
-  fall behind. This pipeline drops old ticks and keeps the newest.
-
-** Prior art
-
-- *The LMAX Disruptor* (Thompson, Farley and others, 2011). A ring buffer with
-  slots allocated once, sequence numbers, one writer for each ring, and a consumer
-  that takes every available event as a batch. It avoids locks and queue
-  contention. This pipeline takes four ideas from it: the bounded ring, the
-  pre-allocated slots, the single writer, and batching without a timer. It does not
-  take the library, the busy-spin wait strategies or the graph of consumers. The
-  cost here is milliseconds for a commit and not nanoseconds for a hand-off, so a
-  plain mutex and a condition variable are enough for the receive side.
-- *The single writer principle* (Martin Thompson, "Mechanical Sympathy"). One thread
-  owns each piece of mutable state. The lane follows it: one writer owns the ring
-  and the connection of its lane.
-- *Reactive libraries.* Reactive Streams libraries name the same drop-the-old idea
-  =onBackpressureLatest=. A consumer that cannot keep up gets the newest item and not
-  the oldest.
-
-** Options set aside
-
-- *A durable JetStream consumer as the buffer for quotes.* It makes the backlog
-  visible, and it loses nothing at a restart. It also replays old ticks in order, and
-  requirement 1 forbids that. It fits data that must not be lost, and the durable tier
-  uses it. It does not fit a perishable tick.
-- *Back-pressure that blocks the producer, for quotes.* It protects every tick and
-  makes the newest tick wait for the oldest. It breaks requirement 1. The durable tier
-  uses it.
-- *A JetStream stream with one message for each subject, for late joiners.* It holds
-  the last value. The window in each lane holds it already, and it also holds the
-  recent run that a chart needs. A second copy would need its own upkeep.
-- *A GPU.* The work waits for commits and locks and does little arithmetic. A GPU
-  has nothing to speed up on this path.
-- *A column store for the history now.* A column store takes more than a million
-  rows each second. It is a large change, and a batched write to the present store
-  may be enough. Measure first. The decision belongs to steps 0 and 3 below.
-
-** Step 0: the measured write ceiling
-
-The first pass of step 0 times batched inserts into scratch tables of one environment,
-on one connection. The rows are made inside the database, so the figures leave out the
-client and the network. They are upper bounds. The script and the raw output are in the
-=evidence= folder of the investigation task.
-
-#+ATTR_HTML: :class hug-leading
-| Rows in a transaction | Observation table, as built | Same table, no trigger | Append-only table |
-|-----------------------+-----------------------------+------------------------+-------------------|
-| 1 | 231 each second | 273 | 226 |
-| 100 | 6,024 | 18,225 | 22,890 |
-| 1,000 | 7,815 | 28,716 | 111,028 |
-| 10,000 | 8,301 | 32,751 | 186,824 |
-| Bytes for each row, with indexes | 1,199 | 942 | 162 |
-
-Four facts follow.
-
-- *One row for each commit is commit-bound.* The three shapes give 226 to 273 rows each
-  second, and that is the 230 syncs each second of the disk.
-- *Batching alone does not help the present table.* It rises from 231 to 8,301 rows each
-  second and stops there. The trigger and its two lookups of the tenant table for each
-  row set the ceiling. Removing the trigger gives four times more, and the seven indexes
-  then set a new ceiling of about 33,000.
-- *The append-only table is 22 times faster than the present one.* One index and no
-  trigger give 187,000 rows each second on one connection, at 162 bytes for each row.
-- *=COPY= from a client file* loaded 300,000 rows into the table without a trigger in
-  7.3 seconds, which is 41,000 each second, and into the append-only table in 1.6
-  seconds, which is 188,000 each second.
-
-The demand of 276,000 rows each second needs 34 connections of the present table, at
-perfect scaling, and a disk that writes 330 megabytes each second. It needs two
-connections of the append-only table, and a disk that writes 45 megabytes each second. With
-one row for each source it needs less than one connection.
-
-These figures have limits. The scratch tables were empty at the start, so the indexes
-were small and warm. The server was shared with four other environments. Row-level
-security and the tenant-aware connection were not in the test. The second pass below
-removes the first and the third limit and states what stays.
-
-*** The second pass, from the application
-
-The second pass measures from C++ code with =libpq=, in a hidden test of the marketdata
-core tests, so it includes the client: the text of each row, the unique identifier of each
-row, and the round trips. The script and the raw output are in the =evidence= folder of
-the task. All figures are rows each second for one connection.
-
-#+ATTR_HTML: :class hug-leading
-| Writer | Table | Rows in a transaction | Rows each second |
-|--------+-------+-----------------------+------------------|
-| =market_observation_repository::insert= (the ingest today) | observation, as built, one tenant | 100 | 919 |
-| same | same | 1,000 | 1,776 |
-| same | same | 5,000 | 2,195 |
-| same | same | 20,000 | 2,326 |
-| =COPY= through =libpq= | observation shape, with a copy of its insert trigger, no row-level security | 1,000 | 10,237 |
-| same | same | 10,000 | 10,568 |
-| same | same | 50,000 | 11,086 |
-| =COPY= through =libpq= | observation shape, no trigger | 1,000 | 34,619 |
-| same | same | 10,000 | 46,424 |
-| same | append-only | 1,000 | 92,839 |
-| same | append-only | 10,000 | 150,545 |
-| same | append-only | 50,000 | 185,259 |
-
-The batch of one tenant matters. A batch of 50,000 rows that the lane splits across
-tenants makes one transaction for each tenant.
-
-#+ATTR_HTML: :class hug-leading
-| Tenants in a batch of 50,000 | Rows in a transaction | Append-only table | Observation shape |
-|------------------------------+-----------------------+-------------------+-------------------|
-| 1 | 50,000 | 185,259 | 37,214 |
-| 10 | 5,000 | 114,276 | 33,975 |
-| 100 | 500 | 63,078 | 15,758 |
-
-A transaction of 100 rows gives 12,000 to 19,000 rows each second on the tables without a trigger, a transaction of 10 rows
-about 2,000, and a transaction of one row about 220, which is the commit rate of the disk.
-So a transaction should hold at least 1,000 rows. With 100 tenants that means a batch of
-100,000 rows, which is a long wait at a low tick rate.
-
-The history costs 6 to 25 percent, from single runs on a shared server. A table that holds
-100 million rows in 61 chunks of one day
-takes 141,154 rows each second at 10,000 rows in a transaction, against 150,545 when it is
-empty, and 137,992 at 50,000 rows, against 185,259. The observation shape with 5 million
-rows still takes about 48,000 to 50,000. The server filled the 100 million rows at about
-240,000 rows each second, and the rate did not fall as the table grew. A row of the
-100 million row table takes 178 bytes with its index, and a row of the observation shape
-takes 986 bytes.
-
-Four conclusions follow.
-
-- *The writer, the trigger and the table each cost a factor of about five.* The repository
-  insert gives 2,326 rows each second. =COPY= into a copy of the same table with its insert
-  trigger gives 10,568 at 10,000 rows, which is 4.5 times more, so the writer is a factor
-  of about five. The same =COPY= without the trigger gives 46,424 and 53,794 in two runs,
-  so the trigger is another factor of about five. The append-only table, which has no
-  trigger and one index, gives 185,259, which is 80 times the repository insert. The
-  batch writer should use =COPY=. The trigger must go as well, or its work must move into
-  the batch. The scratch copy has no row-level security, so the cost of the policy sits
-  inside the repository figure and is not separated. PostgreSQL refuses =COPY FROM= for a role
-  that the policy applies to. A role with =BYPASSRLS= can copy, as the section on tenant and
-  party isolation shows.
-- *A row for each tenant makes small transactions.* At 100 tenants the append-only table
-  falls from 185,000 to 63,000 rows each second, and the observation shape to 16,000. A
-  row for each source, with the tenants reading it through the routes, keeps one large
-  transaction. This turns that open question into a requirement.
-- *The append-only table meets the target on two connections, or on one with one row for
-  each source.* With today's fan-out the
-  target is 276,000 rows each second, which needs two connections at 141,000. With a row for
-  each source it is about 30,000 rows each second, which one connection holds with room.
-- *Compression is not part of the plan.* See the volume item above.
-
-What stays untested: the row-level security policy and the tenant-aware connection on the
-append-only table, a real mix of series and times, and the disk of a machine that is not
-shared.
-
 ** Tenant and party isolation of the tick table
 
 A tick belongs to a stream. A vendor's or a simulator's source stream is shared by the
@@ -870,14 +476,6 @@ row: its key is the tenant, the party and the URI, under row-level security, and
 at a stream. The points themselves are the installation's and carry no tenant, and the
 unit of isolation is the series that a party reads through. See [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]].
 
-*** What the second pass found
-
-The second pass tried to write the observation table with =COPY= as a role that the policy
-applies to. The server answered "COPY FROM not supported with row-level security". That
-role was =ores_brave_hopper_test_ddl_user=, which has no =BYPASSRLS=. A later test showed
-that =COPY= works for a role that has =BYPASSRLS=, also when that role does not own the
-table. So the fast writer and the policy do not exclude each other. The rule is by role.
-
 *** The design
 
 - *One append-only hypertable of points for each retention class.* The columns are the
@@ -886,7 +484,7 @@ table. So the fast writer and the policy do not exclude each other. The rule is 
   whole chunks by time, so a class with a different retention needs its own table. The
   number of tables follows the policy table and does not grow with the tenants.
 - *Compression.* Closed chunks are compressed, segmented by stream and ordered by time.
-  See [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded by compression, narrow chunks and retention policies]].
+  See [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded]].
 - *Grants, not policies.* Only the marketdata service's roles hold grants on the streams
   and the points. A tenant's session holds none.
 - *A writer role with =INSERT= only.* It writes with binary =COPY= and has no =SELECT=.
@@ -900,195 +498,9 @@ table. So the fast writer and the policy do not exclude each other. The rule is 
   on the live path, in the context of the party. It emits ticks for the party's derived
   stream into the same lane and the same writer.
 
-*** What was measured
-
-All figures are from single runs on a server shared with other environments. The raw
-output is in the =evidence= folder of the task that measured them.
-
-#+ATTR_HTML: :class hug-leading
-| Shape | Rows in a transaction | Rows each second |
-|-------+-----------------------+------------------|
-| append-only, no owner columns | 1,000 | 92,040 |
-| same | 10,000 | 181,129 |
-| same | 50,000 | 180,185 |
-| with =tenant_id= and =party_id=, =FORCE= policies, written by a =BYPASSRLS= role that does not own it | 1,000 | 116,845 |
-| same | 10,000 | 155,531 |
-| same | 50,000 | 194,094 |
-| same, 50,000 rows split over 100 tenants | 500 | 76,952 |
-| append-only, 50,000 rows split over 100 tenants | 500 | 76,481 |
-
-The owner columns show no cost that this test can resolve. The ratio of the owner shape to
-the append-only shape ranged from 0.86 to 1.27 across the cells, and the two shapes ran as
-different roles in separate processes. These are single runs, so the table does not show
-that the cost is zero. It shows that the cost is smaller than the noise.
-A rerun with the final policy form, in one process, gave 1.38, 1.23 and 1.01 times the
-append-only rate at 1,000, 10,000 and 50,000 rows, and 1.37 times at 50,000 rows split over
-100 tenants. The owner shape was never slower in that run.
-
-The read test held 5 million rows in 30 chunks of one day, with 100 tenants, 1,000 parties
-and 2,000 series. The reader was subject to both policies. The times are milliseconds.
-
-#+ATTR_HTML: :class hug-leading
-| Policy | One series, 2,500 rows, by the index | One party, 5,000 rows, a scan | One tenant, 50,000 rows, a scan |
-|--------+--------------------------------------+-------------------------------+---------------------------------|
-| none | 3.4 | 212 | 203 |
-| the session functions, as the other tables define them | 23 to 26 | 449 to 586 | 726 |
-| inline =current_setting= | 16 | 258 to 307 | 446 |
-| a scalar subquery for each setting | 4.5 | 509 | 506 |
-
-Five findings follow.
-
-- *The session functions are the cost.* =ores_iam_current_tenant_id_fn= and
-  =ores_iam_visible_party_ids_fn= are plpgsql functions with an =EXCEPTION= block. The
-  planner calls them for every row that it filters, and each call starts a subtransaction.
-  A read of one series by the index is seven times slower, at about 8 to 10 microseconds
-  for each row. A subquery around the setting makes the planner evaluate it once for each
-  query, and the same read takes 4.5 ms against 3.4 ms without a policy. Every table that
-  uses these functions in a policy has this cost. That is a separate task.
-- *The party policy needs a different form.* =party_id = ANY((select ...))= does not
-  compile, because PostgreSQL reads it as a comparison with a subquery. The form that
-  works is =party_id in (select unnest(nullif(current_setting('app.visible_party_ids',
-  true), '')::uuid[]))=. The first attempt failed to create the policy, and the check that
-  followed read 5,000 rows of a party that was not visible. The test of isolation must
-  run after the policy exists, and it must include a party outside the visible list.
-- *A scan pays for the policy on every row.* A read of a party or a tenant without an
-  index scans the chunks, and the policy adds 0.3 seconds over 5 million rows. The tick
-  table has an index on the series and the time only. A reader that wants a party or a
-  tenant must list its series first and read by series.
-- *The isolation held.* A session of another tenant read 0 rows of the series of the
-  first tenant. A session with no settings read 0 rows. A session of the right tenant
-  with only one party visible read 0 rows of another party and 5,000 rows of its own.
-  The writer role was refused =SELECT=.
-- *The cost of the owner columns on disk is not measured.* They add 32 bytes to a row of
-  about 178. This is arithmetic from the column sizes. The points of the design carry no
-  owner columns at all.
-
-*** The options that were set aside
-
-- *A table for each party.* The data fits it, because nothing is shared. It costs a
-  chunk for each table each day, so 100 tenants and 61 days make 6,100 chunks. Each
-  table needs its own policies, a new party needs a new table, and a reader that spans
-  parties needs a view over all of them. The policy gives the same isolation for no
-  catalog cost. This option stays as the fallback if one party must be erased on demand
-  or kept apart on disk.
-- *Isolation in the service layer only.* One forgotten code path would be the only guard,
-  and every other table of the project has a database policy.
-- *A view with the tenant filter over a table without a policy.* It works, but it is not
-  the pattern of the other tables.
-- *A staging table, then an insert from it.* It writes every row twice, and the bypass role
-  makes it unnecessary.
-- *A multi-row =INSERT= with the policy.* It gives up =COPY=. It was not measured.
-- *One row for each source.* A tick belongs to a series, and the series belongs to a
-  party. A blended or vendor series exists only for its party, and a valuation must
-  reproduce the tick that the party observed. A route that only passes a series
-  through inside one tenant could read the source series through the route. That is an
-  optimisation to evaluate later, and it is not part of the base design.
-
-*** What stays untested
-
-- The provisioning of the writer role. The project creates its service roles with a
-  script, and none of them has =BYPASSRLS= except the DDL users. A new role needs a change
-  to that script in every environment.
-- =drop_chunks= as the retention job on the Apache build.
-- A read of one party or one tenant by its series list, at the size of a real deployment.
-- The cost of the policy in the repository code that reads through the tenant-aware pool,
-  which adds the client path to these figures.
-
-** The risks, and what would change the design
-
-#+ATTR_HTML: :class hug-leading
-| Risk | What would show it | What changes if it is true |
-|------+--------------------+----------------------------|
-| PostgreSQL cannot sustain the batch rate. The target is about 29,000 rows each second, one for each source tick, and about 116,000 in an active market. Step 0 shows that the present table cannot, at 8,300 each second for each connection, and that an append-only table can, at 187,000. | The next pass of step 0, from the application. It writes batches of 5,000 rows into the hypertable with the notification trigger removed, and it times the rate for each batch size. | Move the history to a column store sooner. Cut the fan-out first: one row for each source, and no second row for each tick. |
-| One thread decodes every tick. | The busy share of the receive thread at 30,000 ticks each second. | Run several ingest instances, as the section on scale describes. |
-| One series is much hotter than the others. | The busy share of each lane. | Split the lane key below the series, and give up whole-series operations for that class. |
-| The volume of rows exceeds what the store holds. | The bytes for each row and the rows each day, measured in step 0. | Store bars only for the high-rate classes, and keep raw ticks for a short time. |
-| The trigger and the indexes cap the rows each second of one connection. | The step 0 table with and without the trigger and with fewer indexes. | The append-only tick table of the store section. |
-| The tick streams of JetStream cap the rate of the producers. | The rate of a feed with and without the acknowledgement. | Core publish, and no stream, for perishable subjects. |
-| The windows use too much memory. | The memory of a lane against the number of watched datums. | Bound the window by bytes, and keep a bucketed window. |
-| The live subject change breaks a consumer. | A search for every subscriber of the republish subject. Hedgr is the only client. | Migrate the client in the same wave, and keep no old subject. |
-
-** Delivery in four steps
-
-Each step ends with a measurement. The test tool is the tick injector, which sends
-a burst of ticks at a chosen rate and times the drain.
-
-0. *Prove the write ceiling.* Build a prototype of the batch writer and time it. No
-   product code changes. Find how =sqlgen::insert= writes a vector: the library splits
-   it into batches of 50,000 rows, and the form of the statement is not yet verified,
-   so the prototype may need =COPY= from libpq. Acceptance: a table of rows each second
-   for each batch size, with and without the trigger that closes the previous point,
-   with the append-only table, and with the policy of one tenant for each batch. It
-   also states the bytes for each row. The result decides whether the later steps need
-   a column store.
-1. *Remove the per-row costs.* Step 0 shows that batching the present table stops at
-   8,300 rows each second, so this step moves ticks to the append-only table. Drop the
-   notification trigger of the observation table, add a series cache and a batch
-   writer, and stop waiting for acknowledgements on the live publish and on the
-   producers. Remove the two tick
-   streams for perishable subjects. Add the lag gauge. Acceptance: the burst
-   drain rate reaches the rate that step 0 measured, and the lag gauge shows the lag
-   of a loaded system. The ten-fold gain is a target and not a result until step 0
-   confirms it.
-2. *Lanes, the ring, the age gate, the overload states and the recent window.*
-   Add the history call, which the window and the store answer in one reply, and
-   split the live subject into tokens. Move Hedgr to both: a subscription for each
-   watched series, and a history call. Acceptance: a burst of ten times the sustained rate leaves
-   no backlog after the burst ends. The lag of the live path stays below the age
-   limit at all times. A chart opens from the window in under 100 ms and does not
-   read the store for the span that the window covers.
-3. *Scale out, and open the policy table.* Several lanes, each with its own connection.
-   The policy table with its default row, the durable tier, the taps that replace the
-   CRM =if=, and a rollout by source: a setting moves one source at a time to the new
-   pipeline. Tune the indexes and chunks. Decide on a column store for history. Acceptance: 30,000 ticks each second
-   for ten minutes, with the lag of the store below 1 second at the 99th percentile.
-
-** Open questions
-
-- Does a stream that can carry a tick that the store dropped cause a problem for any
-  consumer? This note accepts it. The stream is the live view, and the table is the
-  record of what the pipeline wrote.
-- What is the age limit for each asset class? Interest rate curves tick slowly,
-  and FX spot ticks fast.
-- Should the CRM bridge read from the conflated live path and not from the store path?
-- Is the second row for each tick worth its cost at scale?
-- Should the ring of Hedgr overwrite its oldest bucket when it is full, to follow the
-  freshness rule?
-- How large is the recent window? The starting bound is 600 ticks or 10 minutes for a
-  watched datum. Hedgr keeps 2 hours of 1 second points for a watched series, so a
-  longer window or a bucketed window may be needed.
-- How does the lane learn which datums a consumer watches? A subscription, a request
-  to open a chart, or a setting for each source are the choices.
-- Which tokens does the live subject need beyond the instrument type and the series?
-  A venue or a currency token would let a client select more finely, and each token
-  adds a level to every subscription.
-- Does any client need to learn that a series changed? If so, the signal belongs on
-  the live tick stream, at most once each second for each series. A database
-  notification is not the way.
-- Which classes need =bars= and which need a =reducer=? The answer comes from the
-  first equity and option feeds. The default row serves FX and rates.
-- How does a client learn that a curve published as one consistent set? The tick has
-  no field for it today, so a curve may need a set marker on the tick.
-- Does any series need a lane key below the series? A very large surface in one series
-  may overload one lane. The busy share of each lane answers it.
-- Does the reader of the store need the bitemporal observation table for ticks? No. The
-  readers of snapshots, evolution, slices and the ORE export read the tick table and the
-  observation table side by side, and take the latest value of each datum. They need no view.
-- How long does the store keep raw ticks, and which classes keep bars only? The
-  answer is a policy row for each class.
-- Who provisions the writer role with =BYPASSRLS=, and does the project accept a role that
-  skips the policy for writes? The section on tenant and party isolation gives the design
-  and the measurements.
-- Should the session functions of the policies change for every table? The section on tenant
-  and party isolation shows a seven-fold cost on an indexed read.
-- The deployment runs TimescaleDB under the Timescale licence, which compresses chunks and
-  schedules the retention and compression policies. See [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded by compression, narrow chunks and retention policies]].
-- How many lanes does one server need, and how many connections can the database
-  give them?
-
 * See also
 
-- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], the code this note proposes to change.
+- [[id:00D63182-C7FF-4AC9-8A83-9A5D984B2876][The ingest loop and the one pipeline]], the loop that runs this pipeline.
 - [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]], the type that the pipeline moves.
 - [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][Series and observation]], what the store holds.
 - [[id:10E479D2-990E-4627-95A2-1DA0FA5D68D5][A chart reads a series with one history call and one live subscription]], how a client reads the window and the store.

@@ -31,8 +31,11 @@ one transaction at a time and takes it back when the transaction ends.
 The pool is as large as the service's worker pool ([[id:4DA654B3-7CE6-4637-B4D8-E8E2B4D092B3][Delivery threads enqueue and a bounded pool runs the handlers]]), because a worker is
 what holds a connection, and a connection no worker can use is idle. A service
 with only control-plane work holds two to four. The marketdata service holds
-the same small pool for its reads, and each tick lane holds one connection of
-the writer role ([[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]]).
+the same small pool for its reads, and each tick lane holds one more connection
+of the writer role, outside the pool and around the pooler
+([[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]]). The count for the whole machine is
+the pooler's cap for each environment plus those lane connections
+([[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the database through a transaction pooler]]).
 
 ** When a connection breaks
 

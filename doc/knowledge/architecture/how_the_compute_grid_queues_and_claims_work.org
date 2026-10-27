@@ -13,19 +13,19 @@
 
 The compute grid keeps its queue in the database, in a ledger that the installation owns. A node that is free asks the server for a job. The server takes the next waiting entry from the ledger under a lease, enters the tenant that owns the job to mark its result as taken, mints the storage token for that job at that moment, and replies with the assignment. A lease that runs out puts the job back in the queue, and a job that runs out of attempts ends as a failure that a person can see. A plain NATS notice wakes idle nodes. JetStream carries events and records, and it carries no work.
 
-This replaces the first design, in which the server published each job to a JetStream stream and pushed it to a node. That design failed on 2026-10-12. This page states the problem, compares the options, and gives the protocol that replaces it.
+Work is not pushed to a node from a stream. This page states why, compares the options, and gives the protocol.
 
 * Detail
 
-** What went wrong with the push design
+** Why work is not pushed from a stream
 
-Three facts about the first design combined into a failure.
+Three facts about a pushed stream combine into a failure.
 
 1. The dispatcher published one assignment for each result and put a storage token in it. The token lives for one hour, from the moment of publishing.
 2. The wrapper subscribes to a push durable. The server pushes the wrapper every message that has no acknowledgement, up to a window of 1000 for the whole durable. The client library buffers them in the wrapper.
 3. The client acknowledges a message after the handler returns, and a wrapper runs one job at a time. The ack wait is 30 seconds. A wrapper with 40 buffered messages needs longer than that to reach the last one, so the server pushes them again.
 
-A job that waited more than an hour failed on its first storage request. The failures kept the window full, and the duplicates filled the buffers again. With 1000 messages outstanding the server delivered nothing else, so new jobs waited behind jobs that could not succeed. The grid finished 1.7 jobs a minute when it could finish 27. A purge of the stream did not help, because the wrappers held the messages in their buffers. The story [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] holds the measurements.
+A job that waits more than an hour fails on its first storage request. The failures keep the window full, and the duplicates fill the buffers again. With 1000 messages outstanding the server delivers nothing else, so new jobs wait behind jobs that cannot succeed. A grid built this way finished 1.7 jobs a minute when it could finish 27, and a purge of the stream did not help, because the wrappers held the messages in their buffers. The story [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] holds the measurements.
 
 The cause is not one setting. A push consumer hands work to a worker before the worker is free. A message broker holds a message and has no knowledge of the job that the message names. A queue of jobs that run for seconds or minutes, and that wait for hours, needs a different shape.
 
@@ -93,7 +93,7 @@ A submit changes a result only when the result is InProgress and the host is the
 
 *** The wake-up
 
-The server publishes a notice on =compute.v1.ops.work_available= when it adds Unsent results. The notice is plain NATS. It holds no state and it is lost if no node listens. A node that gets "no work" waits for the notice, or for a long timeout measured in minutes that covers a lost notice, and sends nothing until one of them comes. A node that finishes a job claims again at once. An idle grid therefore sends no claims and runs no queries. See [[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Work is pushed to the grid and an idle grid costs nothing]].
+The server publishes a notice on =compute.v1.ops.work_available= when it adds Unsent results. The notice is plain NATS. It holds no state and it is lost if no node listens. A node that gets "no work" waits for the notice, or for a long timeout measured in minutes that covers a lost notice, and sends nothing until one of them comes. A node that finishes a job claims again at once. An idle grid therefore sends no claims and runs no queries. See [[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Work is pushed to the grid, and an idle grid costs one claim per wrapper per timeout]].
 
 *** The bound
 
@@ -113,18 +113,8 @@ The state of a result is the state of the job. The batch, workunit and result en
 
 ** Security
 
-The claim and the submit are trusted at the transport, as the heartbeat is today. The claim reads the ledger as the service and enters one tenant to write one result, which is the way the service already enters a tenant for a submit and a dispatch. It reads no tenant's rows across tenants, and no policy is widened. The wrapper connects with a TLS client certificate, and one certificate serves the whole wrapper role. A claim therefore says "a wrapper" and not "this wrapper". A certificate for each node, checked at the claim, is a later step. The token that the claim returns covers one job and lives from the claim, so a stolen assignment grants access to one job's keys for one hour at most.
+The claim and the submit are trusted at the transport, as the heartbeat is. The claim reads the ledger as the service and enters one tenant to write one result, which is the way the service already enters a tenant for a submit and a dispatch. It reads no tenant's rows across tenants, and no policy is widened. The wrapper connects with a TLS client certificate, and one certificate serves the whole wrapper role. A claim therefore says "a wrapper" and not "this wrapper". The claim checks no certificate for each node. The token that the claim returns covers one job and lives from the claim, so a stolen assignment grants access to one job's keys for one hour at most.
 
-** Rollout
-
-1. Make the submit idempotent and make the node skip an assignment whose token has ended. These changes are right in every design and go first.
-2. Add the work ledger with its lease and attempt count, queue the results that the dispatcher creates, and serve the claim from it.
-3. Change the wrapper to claim work, with the notice and the poll.
-4. Add the reaper over the ledger, and the bound for each tenant.
-5. Show the depth and the age on the grid screen.
-6. Remove the assignments stream, its durable consumer and the dispatcher's publish.
-
-All six steps are done. The old =pull_work= and =result_started= operations are removed too.
 
 * Patterns used
 
@@ -138,6 +128,6 @@ All six steps are done. The old =pull_work= and =result_started= operations are 
 
 * See also
 
-- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — the lifecycle as it runs today.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — the lifecycle of a job.
 - [[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and durable consumers]] — the stream that this design retires.
 - [[id:3E28909B-6E42-4D5B-8B34-06B80F6630C8][Keep queued grid jobs runnable for as long as they wait]] — the story with the measurements.

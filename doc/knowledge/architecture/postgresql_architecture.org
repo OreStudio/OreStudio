@@ -185,16 +185,19 @@ see [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] f
 
 * Session conventions
 
-A connection sets one thing for its life, when it opens:
+The time zone is a default of every role in the table above, not a setting a connection
+makes:
 
 #+begin_src sql
--- Force UTC: all TIMESTAMPTZ values are returned as "YYYY-MM-DD HH:MM:SS+00"
-SELECT set_config('TimeZone', 'UTC', false);
+-- All TIMESTAMPTZ values are returned as "YYYY-MM-DD HH:MM:SS+00"
+ALTER ROLE ores_<env>_marketdata_service SET TimeZone = 'UTC';
 #+end_src
 
-*Every connection uses =TimeZone = UTC=.*  Without it, PostgreSQL uses the
-server's local timezone and returns =TIMESTAMPTZ= values with local offsets
-rather than =+00=.  All C++ timestamp parsing assumes UTC.
+*Every server connection starts in =TimeZone = UTC=.*  Without it, PostgreSQL
+uses the server's local timezone and returns =TIMESTAMPTZ= values with local
+offsets rather than =+00=.  All C++ timestamp parsing assumes UTC. Because the
+default belongs to the role, it holds behind the transaction pooler, which hands
+one server connection to many clients.
 
 Everything else a statement needs, the tenant, the party, the visible
 parties, the actor and the service, is set for each transaction and ends with

@@ -2,7 +2,7 @@
 :ID: BCD7D253-8B1E-4887-B476-EDD3EDE01BE6
 :END:
 #+title: Ticks reach the store through sharded binary COPY in bounded batches
-#+description: A few lanes sharded by series each commit binary COPY batches bounded by size or a short wait, idempotent on stream, time and coordinate.
+#+description: A few lanes sharded by stream each commit binary COPY batches bounded by size or a short wait, idempotent on stream, time and coordinate.
 #+type: knowledge
 #+level: cross
 #+filetags: :architecture:marketdata:ticks:database:
@@ -56,4 +56,4 @@ points carry no tenant ([[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick
 
 - [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
 - [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest pipeline: freshness first]] — the lane, its ring buffer and its age gate in full.
-- [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded by compression, narrow chunks and retention policies]] — what happens to the rows once they are stored.
+- [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][The tick store is bounded]] — what happens to the rows once they are stored.

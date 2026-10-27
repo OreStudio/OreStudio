@@ -61,7 +61,7 @@ task and name that file in the Command column.
 
 * Notes
 
-- Target state: [[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Work is pushed to the grid and an idle grid costs nothing]].
+- Target state: [[id:2EEE37F6-0570-43B8-979F-079153A3DECA][Work is pushed to the grid, and an idle grid costs one claim per wrapper per timeout]].
 
 * Test Scenarios
 

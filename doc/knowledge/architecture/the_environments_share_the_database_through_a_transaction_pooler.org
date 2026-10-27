@@ -34,7 +34,8 @@ pooler's cap is what the environment may have running at once.
 
 Work that needs a session goes around the pooler:
 
-- a listener on =LISTEN=,
+- the listener on =LISTEN= that =postgres_event_source= in =ores.eventing= runs, which turns
+  entity change notifications into events,
 - a lock held across transactions,
 - the tick lanes ([[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]]), whose long COPY batches would hold a pooled server
   connection for their whole length.

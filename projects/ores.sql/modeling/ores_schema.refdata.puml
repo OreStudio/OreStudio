@@ -2632,7 +2632,7 @@ package "refdata" #FFF3E0 {
     One curve entry of one section of a curveconfig.xml, held as the identity
     every part of the entry hangs off: the document it belongs to, its section, its
     CurveId and CurveDescription, and its place in the document.
-    The settings that follow differ by section and live on a detail row per
+    The parameters that follow differ by section and live on a detail row per
     section family, as typed columns: yield_curve_config for YieldCurves. The lists an
     entry holds are child rows keyed to this one: its segments in curve_segment,
     its quotes in curve_quote, its BootstrapConfig in curve_bootstrap_config.
@@ -5808,9 +5808,9 @@ package "refdata" #FFF3E0 {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Yield Curve Config Table
-    The settings of one YieldCurve entry of a curveconfig.xml, one row per
+    The parameters of one YieldCurve entry of a curveconfig.xml, one row per
     curve_definition in the YieldCurves section. The entry's identity is on the
-    definition, its segments in curve_segment, its bootstrap settings in
+    definition, its segments in curve_segment, its bootstrap configuration in
     curve_bootstrap_config; this row holds the rest, each as the column its
     schema type calls for.
     Extrapolation and ExcludeT0FromInterpolation are ORE booleans, which accept

@@ -1173,7 +1173,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_curve_definitions_artefact_tbl
-    One curve entry of one section of a curveconfig.xml, held as the identity every part of the entry hangs off: the document it belongs to, its section, its CurveId and CurveDescription, and its place in the document. The settings that follow differ by section and live on a detail row per section family, as typed columns: yield_curve_config for YieldCurves. The lists an entry holds are child rows keyed to this one: its segments in curve_segment, its quotes in curve_quote, its BootstrapConfig in curve_bootstrap_config. So one table of quotes serves every section, and a reference to a curve is a reference to this row whatever its section. The natural key is the document, the section and the curve id together: EUR-ESTR names a curve inside one section of one document, another section may name its own, and two documents may define the same curve differently. - Artefact Table
+    One curve entry of one section of a curveconfig.xml, held as the identity every part of the entry hangs off: the document it belongs to, its section, its CurveId and CurveDescription, and its place in the document. The parameters that follow differ by section and live on a detail row per section family, as typed columns: yield_curve_config for YieldCurves. The lists an entry holds are child rows keyed to this one: its segments in curve_segment, its quotes in curve_quote, its BootstrapConfig in curve_bootstrap_config. So one table of quotes serves every section, and a reference to a curve is a reference to this row whatever its section. The natural key is the document, the section and the curve id together: EUR-ESTR names a curve inside one section of one document, another section may name its own, and two documents may define the same curve differently. - Artefact Table
     end note
 
     entity ores_dq_curve_global_reports_artefact_tbl  #F7E5FF {
@@ -2868,7 +2868,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_yield_curve_configs_artefact_tbl
-    The settings of one YieldCurve entry of a curveconfig.xml, one row per curve_definition in the YieldCurves section. The entry's identity is on the definition, its segments in curve_segment, its bootstrap settings in curve_bootstrap_config; this row holds the rest, each as the column its schema type calls for. Extrapolation and ExcludeT0FromInterpolation are ORE booleans, which accept Y, true and True among other spellings. They are held as the spelling the document used, so the export writes it back unchanged. The day counter is held the same way and refers to day_counter. - Artefact Table
+    The parameters of one YieldCurve entry of a curveconfig.xml, one row per curve_definition in the YieldCurves section. The entry's identity is on the definition, its segments in curve_segment, its bootstrap configuration in curve_bootstrap_config; this row holds the rest, each as the column its schema type calls for. Extrapolation and ExcludeT0FromInterpolation are ORE booleans, which accept Y, true and True among other spellings. They are held as the spelling the document used, so the export writes it back unchanged. The day counter is held the same way and refers to day_counter. - Artefact Table
     end note
 
     entity ores_dq_zero_conventions_artefact_tbl  #F7E5FF {

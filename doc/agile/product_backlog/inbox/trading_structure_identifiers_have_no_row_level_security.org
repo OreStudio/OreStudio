@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 96127F86-A0AA-4733-A9AF-841709DB4ACF
+:END:
+#+title: Trading structure identifiers have no row level security
+#+description: The er-diagram check's strict validation reports that ores_trading_structure_identifiers_tbl has tenant_id and no ENABLE ROW LEVEL SECURITY in any create script, so a tenant could read another tenant's rows through it. The rls-widenings check does not see it because it looks for widenings, not for a missing guard. Add the guard and a policy, and confirm the table's other tenant-scoped siblings have theirs.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-27
+#+updated: 2026-10-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

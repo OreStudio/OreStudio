@@ -34,13 +34,13 @@
 namespace ores::refdata::domain {
 
 /**
- * @brief One curve recipe in an ORE curveconfig.xml, with the settings common to every section.
+ * @brief One curve recipe in an ORE curveconfig.xml, with the parameters common to every section.
  *
  * One curve entry of one section of a curveconfig.xml, held as the identity
  * every part of the entry hangs off: the document it belongs to, its section, its
  * CurveId and CurveDescription, and its place in the document.
  *
- * The settings that follow differ by section and live on a detail row per
+ * The parameters that follow differ by section and live on a detail row per
  * section family, as typed columns: yield_curve_config for YieldCurves. The lists an
  * entry holds are child rows keyed to this one: its segments in curve_segment,
  * its quotes in curve_quote, its BootstrapConfig in curve_bootstrap_config.

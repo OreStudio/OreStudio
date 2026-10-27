@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- The settings of one YieldCurve entry of a curveconfig.xml, one row per curve_definition in the YieldCurves section. The entry's identity is on the definition, its segments in curve_segment, its bootstrap settings in curve_bootstrap_config; this row holds the rest, each as the column its schema type calls for. Extrapolation and ExcludeT0FromInterpolation are ORE booleans, which accept Y, true and True among other spellings. They are held as the spelling the document used, so the export writes it back unchanged. The day counter is held the same way and refers to day_counter. - Artefact Table
+-- The parameters of one YieldCurve entry of a curveconfig.xml, one row per curve_definition in the YieldCurves section. The entry's identity is on the definition, its segments in curve_segment, its bootstrap configuration in curve_bootstrap_config; this row holds the rest, each as the column its schema type calls for. Extrapolation and ExcludeT0FromInterpolation are ORE booleans, which accept Y, true and True among other spellings. They are held as the spelling the document used, so the export writes it back unchanged. The day counter is held the same way and refers to day_counter. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_yield_curve_configs_artefact_tbl" (

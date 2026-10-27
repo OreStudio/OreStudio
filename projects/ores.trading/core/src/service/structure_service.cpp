@@ -47,7 +47,6 @@
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 using ores::service::messaging::stamp;
@@ -62,6 +61,9 @@ namespace ores::trading::service {
 using namespace ores::logging;
 
 
+structure_service::structure_service(context ctx)
+    : ctx_(std::move(ctx)) {}
+namespace {
 /**
  * @brief The prefix a deal reference carries for a kind of structure.
  *
@@ -83,16 +85,24 @@ std::string reference_prefix(const std::string& kind) {
 }
 
 /**
- * @brief Names a new structure with the reference that addresses it.
+ * @brief Names a structure that has no reference yet.
  *
  * A structure is grouped before anybody can book a leg into it, so the grouping
  * is where it needs a name. The value is derived from the structure's own id,
  * which is unique already, so two structures cannot collide and no counter has
  * to be kept.
+ *
+ * This runs on every write and not only on a creation. The structure and its
+ * identifier are two statements, so a run cut between them would otherwise
+ * leave a deal that no later write ever names again.
  */
-void name_structure(const ores::database::context& ctx,
-                    const ores::utility::domain::precondition& claim,
-                    const domain::structure& value) {
+void name_structure(const ores::database::context& ctx, const domain::structure& value) {
+    repository::structure_identifier_repository identifiers;
+    const auto named =
+        identifiers.read_latest(ctx, boost::uuids::to_string(value.id), std::string("Internal"));
+    if (!named.empty())
+        return;
+
     domain::structure_identifier identifier;
     identifier.tenant_id = value.tenant_id;
     identifier.structure_id = value.id;
@@ -105,12 +115,12 @@ void name_structure(const ores::database::context& ctx,
     identifier.change_commentary = value.change_commentary;
     identifier.recorded_at = value.recorded_at;
 
-    repository::structure_identifier_repository{}.write(ctx, identifier, claim);
+    // The claim is the identifier's own: a structure's claim speaks about the
+    // structure, and a version on it would mean nothing here.
+    identifiers.write(
+        ctx, identifier, {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt});
 }
 
-structure_service::structure_service(context ctx)
-    : ctx_(std::move(ctx)) {}
-namespace {
 
 /**
  * @brief The current row a key names, or an empty vector when there is none.
@@ -230,12 +240,11 @@ structure_service::put_structure(const messaging::put_structure_request& request
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     // Creation is decided by looking, not by the claim the caller stated: a
-    // caller may amend without saying so, and a structure that exists is not
-    // named a second time.
+    // caller may amend without saying so.
     const auto existed = !structure_read_one(repo_, ctx_, structure_key_from(value)).empty();
     repo_.write(ctx_, value, request.change.precondition);
     if (!existed)
-        name_structure(ctx_, request.change.precondition, value);
+        name_structure(ctx_, value);
     auto written = structure_read_one(repo_, ctx_, structure_key_from(value));
     if (!written.empty())
         response.structure = std::move(written.front());
@@ -272,7 +281,7 @@ structure_service::put_many_structures(const messaging::put_many_structures_requ
     repo_.write(ctx_, batch, claims);
     for (std::size_t i = 0; i < batch.size(); ++i)
         if (!existed[i])
-            name_structure(ctx_, claims[i], batch[i]);
+            name_structure(ctx_, batch[i]);
     response.structures.reserve(batch.size());
     for (const auto& value : batch) {
         auto written = structure_read_one(repo_, ctx_, structure_key_from(value));

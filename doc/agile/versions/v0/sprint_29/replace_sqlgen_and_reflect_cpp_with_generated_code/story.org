@@ -84,6 +84,7 @@ Every component reads and writes the database through generated statements on a 
 | [[id:7A1D09B8-B3F2-4E02-9669-3C2F6CC2C6EC][Remove reflect-cpp]] | BACKLOG | | | Move the dynamic JSON, enum tables and schemas, clear the reflectors from the infrastructure components, and drop the dependency. |
 | [[id:7254F18A-2C86-4264-8E69-413AF69C760E][Measure the full build after the move]] | BACKLOG | | | Measure the full build without sqlgen and reflect-cpp against the baseline and against the unity build of step 1. |
 | [[id:6237A857-BD6E-431A-8B89-9F6F0452CA39][Close the gaps the unity build review found]] | BACKLOG | | | Group the collision check by target, read every namespace and the test headers in the type-name check, keep the exclusion choice stable, record relative log paths, pin the CMake minimum, give lint a fallback without git, and reword the own-or-system RLS comment. |
+| [[id:672C8E2B-0209-4437-B166-77177E322C4B][Fix the test failures found after the unity build merge]] | DONE | | 2026-10-27 | The full ctest run after PR #3904 merged found the vendor catalogue test still expecting 86 ids per provider, which main's per-feed catalogue seed had made wrong, and a second feed ingest test that times out under load. |
 
 * Decisions
 

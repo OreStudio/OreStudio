@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 672C8E2B-0209-4437-B166-77177E322C4B
+:END:
+#+title: Task: Fix the test failures found after the unity build merge
+#+description: The full ctest run after PR #3904 merged found the vendor catalogue test still expecting 86 ids per provider, which main's per-feed catalogue seed had made wrong, and a second feed ingest test that times out under load.
+#+type: task
+#+level: s1
+#+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
+#+owner: marco
+#+branch: fix/vendor-catalogue-test-floors
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-10-27
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the full ctest run pass again after PR #3904 merged, except for the
+failures that main already carries and that have their own captures.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+- =every_installed_vendor_instrument_roundtrips_through_its_providers_notation=
+  passes on a freshly recreated database.
+- Every ingest test that fails only under load is named in the feed ingest
+  timing capture.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Full ctest after the rebase | 93 of 96 suites pass; failures in marketdata core, marketdata service and analytics quant (=tick_clock=) | =./compass.sh check --only ctest= | c8c832f038 |
+| System-tenant vendor instruments per provider on a fresh database | Bloomberg 362, Demo 71, LSEG 14 | =psql= count on =ores_marketdata_market_data_vendor_instruments_tbl= | 5b2c4b9304 |
+| =ores.marketdata.service.tests= run again alone | passes | =ctest --preset linux-clang-release-ninja -R ores.marketdata.service.tests= | c8c832f038 |
+| =ores.marketdata.core.tests= with the new floors | passes | =ctest --preset linux-clang-release-ninja -R ores.marketdata.core.tests= | 1139241a83 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The catalogue test now has one floor per provider, taken from the seed that
+main's 11d761e9f8 made per feed: 362 Bloomberg, 71 Demo, 14 LSEG. The two
+feed ingest tests that time out under load are named in their capture and
+are not fixed here. The =tick_clock= failure is main's and is captured
+separately.
